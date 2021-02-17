@@ -1,0 +1,11 @@
+{
+  "name": "com.bovinelabs.basics",
+  "description": "Basics for building games with DOTS.",
+  "version": "0.1.0",
+  "unity": "2021.1",
+  "displayName": "BovineLabs Basics",
+  "dependencies": {
+    "com.unity.entities": "0.17.0-preview.41"
+  },
+  "type": "library"
+}
