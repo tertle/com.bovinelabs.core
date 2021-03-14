@@ -1,0 +1,65 @@
+.settings-splitter {
+    flex-direction: row;
+    flex-grow: 1;
+    min-width: 250px;
+}
+
+.settings-list {
+    min-width: 100px;
+    flex-basis: 0;
+    margin-top: 4px;
+}
+
+.settings-content {
+    margin-left: 8px;
+    margin-right: 8px;
+    flex-grow: 1;
+}
+
+.settings-content TextField Label {
+    min-width: 200px;
+}
+
+.settings-toolbar-root {
+    border-left-color: rgb(31, 31, 31);
+    border-right-color: rgb(31, 31, 31);
+    border-top-color: rgb(31, 31, 31);
+    border-bottom-color: rgb(31, 31, 31);
+    border-bottom-width: 1px;
+    flex-direction: row;
+}
+
+.unity-listview-item {
+    padding-left: 16px;
+}
+
+.settings-scrollview {
+    min-width: 250px;
+    border-left-color: rgb(31, 31, 31);
+    border-right-color: rgb(31, 31, 31);
+    border-top-color: rgb(31, 31, 31);
+    border-bottom-color: rgb(31, 31, 31);
+    border-left-width: 1px;
+    flex-basis: 0;
+}
+
+.settings-title {
+    font-size: 18px;
+    -unity-font-style: bold;
+    padding-right: 8px;
+    padding-left: 8px;
+    padding-bottom: 8px;
+}
+
+.settings-title-darkmode {
+    color: rgb(196, 196, 196);
+}
+
+.settings-toolbar {
+    flex-direction: row;
+}
+
+.unity-base-field__label {
+    overflow: hidden;
+    width: 200px;
+}
