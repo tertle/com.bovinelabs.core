@@ -8,6 +8,7 @@ namespace BovineLabs.Basics.Collections
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using BovineLabs.Basics;
+    using BovineLabs.Basics.Internal;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
@@ -51,7 +52,17 @@ namespace BovineLabs.Basics.Collections
             where TValue : struct
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            hashMap.m_Safety = this.temporaryHandle;
+            hashMap.SetSafety(this.temporaryHandle);
+#endif
+        }
+
+        [Conditional(SafetyChecks.ConditionalSymbol)]
+        public void MarkNativeHashMapAsReadOnly<TKey, TValue>(ref NativeMultiHashMap<TKey, TValue> hashMap)
+            where TKey : struct, IEquatable<TKey>
+            where TValue : struct
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            hashMap.SetSafety(this.temporaryHandle);
 #endif
         }
 

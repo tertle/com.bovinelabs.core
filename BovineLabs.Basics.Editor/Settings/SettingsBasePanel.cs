@@ -47,6 +47,18 @@ namespace BovineLabs.Basics.Editor.Settings
         /// <param name="rootElement"> The UI root element. </param>
         public virtual void OnActivate(string searchContext, VisualElement rootElement)
         {
+            Editor editor = Editor.CreateEditor(this.SerializedObject.targetObject);
+            //editor.DrawDefaultInspector();
+
+
+            var imguiContainer = new IMGUIContainer(() =>
+            {
+                editor.DrawDefaultInspector();
+            });
+            rootElement.Add(imguiContainer);
+
+            return;
+
             var allMatch = string.IsNullOrWhiteSpace(searchContext);
 
             foreach (var group in IterateAllChildren(this.SerializedObject))

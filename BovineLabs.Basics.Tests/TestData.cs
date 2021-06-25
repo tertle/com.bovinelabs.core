@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Tests
+namespace BovineLabs.Basics.Tests
 {
     /// <summary> Interface that tests no implementation. </summary>
     public interface ITestInterface0

@@ -10,7 +10,7 @@ namespace BovineLabs.Basics.ConfigVars
     using UnityEngine;
 
     /// <summary> The config var container interface that ensures conversion to string for editor settings. </summary>
-    internal interface IConfigVarContainer
+    public interface IConfigVarContainer
     {
         /// <summary>
         /// Gets or sets the config var.

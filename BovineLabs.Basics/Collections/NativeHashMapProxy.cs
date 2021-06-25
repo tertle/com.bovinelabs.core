@@ -5,6 +5,7 @@
 namespace BovineLabs.Basics.Collections
 {
     using System;
+    using BovineLabs.Basics.Internal;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
@@ -16,12 +17,13 @@ namespace BovineLabs.Basics.Collections
 
         public NativeHashMapProxy(NativeHashMap<TKey, TValue> nativeHashMap)
         {
-            this.hashmap = nativeHashMap.m_HashMapData;
+            this.hashmap = nativeHashMap.GetHashMapData();
         }
 
         public NativeHashMap<TKey, TValue> ToNativeHashMap(AtomicSafetyManager* safetyManager)
         {
-            var nativeHashMap = new NativeHashMap<TKey, TValue> { m_HashMapData = this.hashmap };
+            var nativeHashMap = this.hashmap.AsNative();
+
             safetyManager->MarkNativeHashMapAsReadOnly(ref nativeHashMap);
             return nativeHashMap;
         }

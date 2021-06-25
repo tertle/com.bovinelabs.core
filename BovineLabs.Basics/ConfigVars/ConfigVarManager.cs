@@ -14,7 +14,7 @@ namespace BovineLabs.Basics.ConfigVars
     using UnityEngine;
 
     /// <summary> The manager for the config vars. Is pretty automated. </summary>
-    internal static class ConfigVarManager
+    public static class ConfigVarManager
     {
         private static readonly Regex ValidateNameRe = new Regex(@"^[a-z_+-][a-z0-9_+.-]*$");
 
@@ -24,10 +24,10 @@ namespace BovineLabs.Basics.ConfigVars
         private static bool isInitialized;
 
         /// <summary> Gets a readonly collection of all the configuration variables in the assembly. </summary>
-        internal static IReadOnlyDictionary<ConfigVarAttribute, IConfigVarContainer> All => NameConfigVars;
+        public static IReadOnlyDictionary<ConfigVarAttribute, IConfigVarContainer> All => NameConfigVars;
 
         /// <summary> Initializes the <see cref="ConfigVarAttribute" />s throughout the project. </summary>
-        internal static void Init()
+        public static void Init()
         {
             if (isInitialized)
             {
@@ -69,7 +69,7 @@ namespace BovineLabs.Basics.ConfigVars
             }
         }
 
-        internal static void Shutdown()
+        public static void Shutdown()
         {
             foreach (var c in NameConfigVars)
             {

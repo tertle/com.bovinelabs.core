@@ -20,7 +20,7 @@ namespace BovineLabs.Basics.Editor.Settings
         /// <inheritdoc/>
         protected override string TitleText { get; } = "Settings";
 
-        [MenuItem("BovineLabs/Settings", false, 11)]
+        [MenuItem("BovineLabs/Settings", priority = 11)]
         internal static void OpenSettings()
         {
             Open();

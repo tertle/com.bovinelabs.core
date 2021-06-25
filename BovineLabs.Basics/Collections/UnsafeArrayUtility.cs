@@ -7,7 +7,7 @@
     public static class UnsafeArrayUtility
     {
         public static unsafe UnsafeArray<T> ConvertExistingDataToUnsafeArray<T>(void* dataPointer, int length, Allocator allocator)
-            where T : unmanaged
+            where T : struct
         {
             CheckConvertArguments<T>(length, allocator);
             return new UnsafeArray<T>
@@ -22,7 +22,7 @@
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckConvertArguments<T>(int length, Allocator allocator)
-            where T : unmanaged
+            where T : struct
         {
             if (length < 0)
             {

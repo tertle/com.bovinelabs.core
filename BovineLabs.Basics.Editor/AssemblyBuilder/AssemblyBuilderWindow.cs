@@ -32,7 +32,7 @@ namespace BovineLabs.Basics.Editor.AssemblyBuilder
 
         private readonly Dictionary<string, string> assemblyNameToGUID = new Dictionary<string, string>();
 
-        [MenuItem("BovineLabs/Assembly Builder _%&a")]
+        [MenuItem("BovineLabs/Assembly Builder _%&a", priority = 1000)]
         private static void ShowWindow()
         {
             // Get existing open window or if none, make a new one:

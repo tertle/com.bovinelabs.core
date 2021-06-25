@@ -7,7 +7,6 @@ namespace BovineLabs.Basics.Helpers
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using UnityEditor.Compilation;
     using Assembly = System.Reflection.Assembly;
 
     /// <summary> Common reflection helpers. </summary>
@@ -84,6 +83,7 @@ namespace BovineLabs.Basics.Helpers
                 .SelectMany(s => s.GetTypes())
                 .Where(t => t != type1 && t != type2)
                 .Where(t => t.IsClass && !t.IsInterface && !t.IsAbstract)
+                .Where(t => !t.ContainsGenericParameters)
                 .Where(t => type1.IsAssignableFrom(t) && type2.IsAssignableFrom(t));
         }
 
@@ -126,7 +126,7 @@ namespace BovineLabs.Basics.Helpers
         public static IEnumerable<UnityEditor.Compilation.Assembly> GetAllUnityAssembliesWithReference(Assembly reference)
         {
             var refName = reference.GetName().Name;
-            var refAsm = CompilationPipeline.GetAssemblies().FirstOrDefault(a => a.name == refName);
+            var refAsm = UnityEditor.Compilation.CompilationPipeline.GetAssemblies().FirstOrDefault(a => a.name == refName);
 
             return GetAllUnityAssembliesWithReference(refAsm);
         }
@@ -136,8 +136,8 @@ namespace BovineLabs.Basics.Helpers
         /// <returns>The name of all the assemblies. </returns>
         public static IEnumerable<UnityEditor.Compilation.Assembly> GetAllUnityAssembliesWithReference(UnityEditor.Compilation.Assembly reference)
         {
-            return CompilationPipeline.GetAssemblies()
-                .Where(asm => (asm.flags & AssemblyFlags.EditorAssembly) == 0)
+            return UnityEditor.Compilation.CompilationPipeline.GetAssemblies()
+                .Where(asm => (asm.flags & UnityEditor.Compilation.AssemblyFlags.EditorAssembly) == 0)
                 .Where(asm => IsAssemblyReferencingAssembly(asm, reference));
         }
 
@@ -147,8 +147,8 @@ namespace BovineLabs.Basics.Helpers
         public static bool IsAssemblyEditorAssembly(this Assembly asm)
         {
             var refName = asm.GetName().Name;
-            var refAsm = CompilationPipeline.GetAssemblies().First(a => a.name == refName);
-            return (refAsm.flags & AssemblyFlags.EditorAssembly) != 0;
+            var refAsm = UnityEditor.Compilation.CompilationPipeline.GetAssemblies().First(a => a.name == refName);
+            return (refAsm.flags & UnityEditor.Compilation.AssemblyFlags.EditorAssembly) != 0;
         }
 #else
         /// <summary> Gets the name of all assemblies with a specific reference. </summary>

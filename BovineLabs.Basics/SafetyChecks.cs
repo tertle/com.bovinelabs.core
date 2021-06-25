@@ -4,7 +4,7 @@
 
 namespace BovineLabs.Basics
 {
-    static class SafetyChecks
+    public static class SafetyChecks
     {
         public const string ConditionalSymbol = "ENABLE_UNITY_COLLECTIONS_CHECKS";
     }

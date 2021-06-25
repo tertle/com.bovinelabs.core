@@ -2,6 +2,7 @@
     "name": "BovineLabs.Basics",
     "rootNamespace": "",
     "references": [
+        "GUID:1cf99951d719ff4458bcbc2493ce644a",
         "GUID:2665a8d13d1b3f18800f46e256720795",
         "GUID:e0cd26848372d4e5c891c569017e11f1",
         "GUID:734d92eba21c94caba915361bd5ac177",

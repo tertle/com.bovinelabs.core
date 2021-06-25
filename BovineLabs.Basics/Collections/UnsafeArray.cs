@@ -11,7 +11,7 @@
     using UnityEngine.Internal;
 
     /// <summary>
-    ///     <para>A UnsafeArray exposes a buffer of native memory to managed code, making it possible to share data between managed and native without marshalling costs.</para>
+    /// A UnsafeArray exposes a buffer of native memory to managed code, making it possible to share data between managed and native without marshalling costs.
     /// </summary>
     [NativeContainer]
     [NativeContainerSupportsDeallocateOnJobCompletion]
@@ -20,7 +20,7 @@
     [DebuggerTypeProxy(typeof(UnsafeArrayDebugView<>))]
     // [NativeContainerSupportsDeferredConvertListToArray]
     public struct UnsafeArray<T> : IDisposable, IEnumerable<T>, IEquatable<UnsafeArray<T>>
-        where T : unmanaged
+        where T : struct
     {
         [NativeDisableUnsafePtrRestriction]
         internal unsafe void* m_Buffer;

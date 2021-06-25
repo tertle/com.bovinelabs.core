@@ -21,7 +21,7 @@ namespace BovineLabs.Basics.Editor.ConfigVars
         /// <inheritdoc/>
         protected override string TitleText { get; } = "ConfigVars";
 
-        [MenuItem("BovineLabs/ConfigVars", false, 10)]
+        [MenuItem("BovineLabs/ConfigVars", priority = 10)]
         internal static void OpenSettings()
         {
             Open();

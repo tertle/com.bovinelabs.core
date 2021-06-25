@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Tests.Core
+namespace BovineLabs.Basics.Tests.Extensions
 {
     using BovineLabs.Basics.Extensions;
     using BovineLabs.Testing;
