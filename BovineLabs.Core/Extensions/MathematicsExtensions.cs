@@ -4,35 +4,13 @@
 
 namespace BovineLabs.Core.Extensions
 {
+    using System.Runtime.CompilerServices;
     using Unity.Mathematics;
+    using UnityEngine;
 
     /// <summary> Extensions for the mathematics package. </summary>
     public static class MathematicsExtensions
     {
-        /// <summary> Converts a quaternion to euler. </summary>
-        /// <param name="quaternion"> The quaternion. </param>
-        /// <returns> Euler angles in radians. </returns>
-        public static float3 ToEuler(this quaternion quaternion)
-        {
-            var q = quaternion.value;
-
-            // roll (x-axis rotation)
-            var sinRCosP = 2 * ((q.w * q.x) + (q.y * q.z));
-            var cosRCosP = 1 - (2 * ((q.x * q.x) + (q.y * q.y)));
-            var roll = math.atan2(sinRCosP, cosRCosP);
-
-            // pitch (y-axis rotation)
-            var sinP = 2 * ((q.w * q.y) - (q.z * q.x));
-            var pitch = math.select(math.asin(sinP), (math.sign(sinP) * math.PI) / 2, math.abs(sinP) >= 1);
-
-            // yaw (z-axis rotation)
-            var sinYCosP = 2 * ((q.w * q.z) + (q.x * q.y));
-            var cosYCosP = 1 - (2 * ((q.y * q.y) + (q.z * q.z)));
-            var yaw = math.atan2(sinYCosP, cosYCosP);
-
-            return new float3(roll, pitch, yaw);
-        }
-
         /// <summary> Encapsulates two AABBs. </summary>
         /// <param name="aabb"> The base AABB. </param>
         /// <param name="bounds"> The second AABB. </param>
@@ -88,6 +66,24 @@ namespace BovineLabs.Core.Extensions
         public static float3 Forward(this float4x4 value)
         {
             return new float3(value.c2.x, value.c2.y, value.c2.z);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float3 Right(this quaternion value)
+        {
+            return math.mul(value, math.right());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float3 Up(this quaternion value)
+        {
+            return math.mul(value, math.up());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float3 Forward(this quaternion value)
+        {
+            return math.mul(value, math.forward());
         }
 
         /// <summary> Get the position from a transformation matrix. </summary>

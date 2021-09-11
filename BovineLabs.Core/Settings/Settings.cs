@@ -14,7 +14,6 @@ namespace BovineLabs.Core.Settings
     [SuppressMessage("ReSharper", "Unity.RedundantSerializeFieldAttribute", Justification = "Required.")]
     public abstract class Settings : ScriptableObject, ISettings
     {
-        /// <inheritdoc />
-        public abstract void Convert(EntityManager dstManager, Entity entity);
+        public abstract void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem);
     }
 }

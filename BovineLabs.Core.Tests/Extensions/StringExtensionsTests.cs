@@ -11,15 +11,11 @@ namespace BovineLabs.Core.Tests.Extensions
     public class StringExtensionsTests
     {
         /// <summary> Tests <see cref="ToSentence"/>. </summary>
-        [Test]
-        public void ToSentence()
+        [TestCase("ThisIsATestString", "This Is A Test String")]
+        [TestCase("thisIsATestString", "this Is A Test String")]
+        public void ToSentence(string input, string expected)
         {
-            const string s1 = "ThisIsATestString";
-            const string s2 = "thisIsATestString";
-            const string expected = "This Is A Test String";
-
-            Assert.AreEqual(expected, s1.ToSentence());
-            Assert.AreEqual(expected, s2.ToSentence());
+            Assert.AreEqual(expected, input.ToSentence());
         }
 
         /// <summary> Tests <see cref="FirstCharToUpper"/>. </summary>

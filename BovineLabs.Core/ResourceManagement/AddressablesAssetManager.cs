@@ -21,7 +21,7 @@ namespace BovineLabs.Core.ResourceManagement
     [UsedImplicitly(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
     public class AddressablesAssetManager : IAssetManager
     {
-        private const int UpdateDelayInMs = 20;
+        private const int UpdateDelayInMs = 1000 / 30;
 
         private bool isQuitting;
 
@@ -131,7 +131,6 @@ namespace BovineLabs.Core.ResourceManagement
 
             return Task.Factory.StartNew(() =>
             {
-                Profiler.BeginThreadProfiling("AddressablesAssetManager", "");
                 while (!asyncOperation.IsDone)
                 {
                     Task.Delay(UpdateDelayInMs).Wait();

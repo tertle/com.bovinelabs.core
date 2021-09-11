@@ -39,17 +39,18 @@ namespace BovineLabs.Core.Settings
         }
 
         /// <inheritdoc />
-        public sealed override void Convert(EntityManager dstManager, Entity entity)
+        public sealed override void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
             var c = this.assets.ApplyTo(this.component);
             dstManager.AddComponentData(entity, c);
-            this.CustomConvert(dstManager, entity);
+            this.CustomConvert(dstManager, entity, conversionSystem);
         }
 
         /// <summary> Implement to add extra custom conversion. </summary>
         /// <param name="dstManager"> The manager of the world. </param>
         /// <param name="entity"> The entity where the settings should be added. </param>
-        protected virtual void CustomConvert(EntityManager dstManager, Entity entity)
+        /// <param name="conversionSystem"> The conversion system. </param>
+        protected virtual void CustomConvert(EntityManager dstManager, Entity entity, GameObjectConversionSystem conversionSystem)
         {
         }
 

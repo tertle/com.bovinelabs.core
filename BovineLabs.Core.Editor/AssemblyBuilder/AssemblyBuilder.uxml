@@ -13,6 +13,8 @@
                     <ui:Toggle label="Unity.Entities" value="true" />
                     <ui:Toggle label="Unity.Entities.Hybrid" value="true" />
                     <ui:Toggle label="Unity.Mathematics" value="true" />
+                    <ui:Toggle label="Unity.NetCode" value="true" />
+                    <ui:Toggle label="Unity.Physics" value="true" />
                     <ui:Toggle label="Unity.Transforms" value="true" />
                 </ui:VisualElement>
                 <ui:Label text="Assemblies" style="font-size: 14px; -unity-font-style: bold;" />
@@ -26,6 +28,7 @@
                 <ui:VisualElement>
                     <ui:Toggle label="Internals Visible To" tooltip="Provide the Editor, Tests and PerformanceTests assemblies internal access to the Main assembly" value="true" name="internalAccess" />
                     <ui:Toggle label="Disable Auto Creation" tooltip="Add a assembly wide [DisableAutoCreation] attribute to the Test and PerformanceTest assemblies" name="disableAutoCreation" value="true" />
+                    <ui:Toggle label="Allow Unsafe Code" tooltip="Enable unsafe code within the generated assemblies" name="allowUnsafeCode" value="true" />
                 </ui:VisualElement>
             </ui:ScrollView>
         </ui:VisualElement>

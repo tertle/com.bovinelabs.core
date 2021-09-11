@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Editor.Settings
     public abstract class SettingsBaseWindow<T> : EditorWindow
         where T : SettingsBaseWindow<T>
     {
-        private const string UxmlPath = "Packages/com.bovinelabs.basics/BovineLabs.Basics.Editor/Settings/SettingsWindow.uxml";
+        private const string UxmlPath = "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/Settings/SettingsWindow.uxml";
         private const string DarkSkinKey = "settings-title-darkmode";
 
         private readonly List<ISettingsPanel> settingPanels = new List<ISettingsPanel>();
@@ -202,7 +202,7 @@ namespace BovineLabs.Core.Editor.Settings
                 this.filteredSettingsPanel.AddRange(filtered);
             }
 
-            this.list.Refresh();
+            this.list.Rebuild();
 
             // Keep selecting the same panel if possible
             var index = this.filteredSettingsPanel.IndexOf((ISettingsPanel)selected);

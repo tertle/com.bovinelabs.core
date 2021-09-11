@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Extensions
     /// <summary> Extensions for strings. </summary>
     public static class StringExtensions
     {
-        /// <summary> Splits a PascalCase or CamelCase string into a sentence. </summary>
+        /// <summary> Splits a PascalCase or camelCase string into a sentence. </summary>
         /// <param name="input"> The string to split. </param>
         /// <returns> The returned sentence. </returns>
         public static string ToSentence(this string input)

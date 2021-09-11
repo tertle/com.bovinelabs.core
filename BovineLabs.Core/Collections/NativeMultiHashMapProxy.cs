@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Collections
 
         public NativeMultiHashMapProxy(NativeMultiHashMap<TKey, TValue> nativeHashMap)
         {
-            this.hashmap = nativeHashMap.GetHashMapData();
+            this.hashmap = nativeHashMap.GetUnsafeMultiHashMap();
         }
 
         public NativeMultiHashMap<TKey, TValue> ToNativeHashMap(AtomicSafetyManager* safetyManager)

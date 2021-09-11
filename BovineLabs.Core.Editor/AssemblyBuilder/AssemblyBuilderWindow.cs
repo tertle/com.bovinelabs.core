@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
     /// <summary> An editor window that allows easy creation of new assembly definitions. </summary>
     public class AssemblyBuilderWindow : EditorWindow
     {
-        private const string UXMLDirectory = "Packages/com.bovinelabs.basics/BovineLabs.Basics.Editor/AssemblyBuilder/AssemblyBuilder.uxml";
+        private const string UXMLDirectory = "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/AssemblyBuilder/AssemblyBuilder.uxml";
 
         private const string AssemblyInfoTemplate =
             "// <copyright file=\"AssemblyInfo.cs\" company=\"{0}\">\n// Copyright (c) {0}. All rights reserved.\n// </copyright>\n\n";
@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private readonly Dictionary<string, string> assemblyNameToGUID = new Dictionary<string, string>();
 
-        [MenuItem("BovineLabs/Assembly Builder _%&a", priority = 1000)]
+        [MenuItem("BovineLabs/Tools/Assembly Builder _%&a", priority = 1000)]
         private static void ShowWindow()
         {
             // Get existing open window or if none, make a new one:
@@ -120,8 +120,9 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 return;
             }
 
-            var internalAccess = this.GetInternalAccess();
-            var disableAutoCreation = this.GetDisableAutoCreation();
+            var internalAccess = this.GetToggleValue("internalAccess");
+            var disableAutoCreation = this.GetToggleValue("disableAutoCreation");
+            var allowUnsafeCode = this.GetToggleValue("allowUnsafeCode");
 
             foreach (var toggle in assemblyToggles)
             {
@@ -139,6 +140,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
                 var definition = AssemblyDefinitionTemplate.New();
                 definition.name = assemblyName;
+                definition.allowUnsafeCode = allowUnsafeCode;
 
                 var references = this.rootVisualElement.Q<Foldout>($"reference{toggle.label}")?.Children().OfType<Toggle>().Select(t => t.label).ToList()
                                  ?? new List<string>();
@@ -218,12 +220,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private IEnumerable<string> GetCommonReferences() => this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().Select(t => t.label);
 
-        private bool GetInternalAccess() => this.rootVisualElement.Q<Toggle>("internalAccess").value;
-
-        private bool GetDisableAutoCreation()
-        {
-            // TODO CHECK ENTITIES PACKAGE SELECTED
-            return this.rootVisualElement.Q<Toggle>("disableAutoCreation").value;
-        }
+        private bool GetToggleValue(string toggleName) => this.rootVisualElement.Q<Toggle>(toggleName).value;
     }
 }

@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Extensions
 {
+    using System.Diagnostics;
     using Unity.Entities;
 
     /// <summary> Physics extensions. </summary>
@@ -43,7 +44,15 @@ namespace BovineLabs.Core.Extensions
             return true;
         }
 
-        public static bool HasSingletonEntity<T>(this EntityManager em)
+        [Conditional("UNITY_EDITOR")]
+        public static void SetNameSafe(this EntityManager entityManager, Entity entity, string name)
+        {
+#if UNITY_EDITOR
+            entityManager.SetName(entity, name);
+#endif
+        }
+
+        public static bool HasSingleton<T>(this EntityManager em)
         {
             using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
             return query.CalculateChunkCount() != 0;
@@ -54,6 +63,19 @@ namespace BovineLabs.Core.Extensions
         {
             using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
             return query.GetSingleton<T>();
+        }
+
+        public static T GetManagedSingleton<T>(this EntityManager em)
+            where T : class, IComponentData
+        {
+            using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
+            return query.GetSingleton<T>();
+        }
+
+        public static T GetSingletonObject<T>(this EntityManager em)
+        {
+            using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
+            return em.GetComponentObject<T>(query.GetSingletonEntity());
         }
 
         public static bool TryGetSingleton<T>(this EntityManager em, out T component)

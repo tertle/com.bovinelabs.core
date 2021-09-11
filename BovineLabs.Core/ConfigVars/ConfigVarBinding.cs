@@ -7,17 +7,17 @@ namespace BovineLabs.Core.ConfigVars
     using System;
     using UnityEngine.UIElements;
 
-    internal class SharedStaticBinding<T> : IBinding
+    internal class ConfigVarBinding<T> : IBinding
         where T : struct, IEquatable<T>
     {
         private readonly BaseField<T> baseField;
-        private readonly ConfigVarContainer<T> sharedStatic;
+        private readonly ConfigVarSharedStaticContainer<T> container;
 
         private bool hasFocus;
 
-        public SharedStaticBinding(BaseField<T> baseField, ConfigVarContainer<T> sharedStatic)
+        public ConfigVarBinding(BaseField<T> baseField, ConfigVarSharedStaticContainer<T> container)
         {
-            this.sharedStatic = sharedStatic;
+            this.container = container;
             this.baseField = baseField;
 
             this.baseField.RegisterCallback<FocusInEvent>(this.GainFocus);
@@ -32,9 +32,9 @@ namespace BovineLabs.Core.ConfigVars
         {
             if (!this.hasFocus)
             {
-                if (!this.baseField.value.Equals(this.sharedStatic.DirectValue))
+                if (!this.baseField.value.Equals(this.container.DirectValue))
                 {
-                    this.baseField.SetValueWithoutNotify(this.sharedStatic.DirectValue);
+                    this.baseField.SetValueWithoutNotify(this.container.DirectValue);
                 }
             }
         }
@@ -60,11 +60,11 @@ namespace BovineLabs.Core.ConfigVars
         where T : struct
     {
         private readonly BaseField<string> baseField;
-        private readonly ConfigVarStringContainer<T> sharedStatic;
+        private readonly ConfigVarSharedStaticStringContainer<T> sharedStatic;
 
         private bool hasFocus;
 
-        public SharedStaticTextFieldBind(BaseField<string> baseField, ConfigVarStringContainer<T> sharedStatic)
+        public SharedStaticTextFieldBind(BaseField<string> baseField, ConfigVarSharedStaticStringContainer<T> sharedStatic)
         {
             this.sharedStatic = sharedStatic;
             this.baseField = baseField;

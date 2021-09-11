@@ -152,21 +152,21 @@ namespace BovineLabs.Core.ConfigVars
             switch (obj)
             {
                 case SharedStatic<int> intField:
-                    return new ConfigVarContainer<int>(intField);
+                    return new ConfigVarSharedStaticContainer<int>(intField);
                 case SharedStatic<float> floatField:
-                    return new ConfigVarContainer<float>(floatField);
+                    return new ConfigVarSharedStaticContainer<float>(floatField);
                 case SharedStatic<bool> boolField:
-                    return new ConfigVarContainer<bool>(boolField);
+                    return new ConfigVarSharedStaticContainer<bool>(boolField);
                 case SharedStatic<FixedString32> stringField32:
-                    return new ConfigVarStringContainer<FixedString32>(stringField32);
+                    return new ConfigVarSharedStaticStringContainer<FixedString32>(stringField32);
                 case SharedStatic<FixedString64> stringField64:
-                    return new ConfigVarStringContainer<FixedString64>(stringField64);
+                    return new ConfigVarSharedStaticStringContainer<FixedString64>(stringField64);
                 case SharedStatic<FixedString128> stringField128:
-                    return new ConfigVarStringContainer<FixedString128>(stringField128);
+                    return new ConfigVarSharedStaticStringContainer<FixedString128>(stringField128);
                 case SharedStatic<FixedString512> stringField512:
-                    return new ConfigVarStringContainer<FixedString512>(stringField512);
+                    return new ConfigVarSharedStaticStringContainer<FixedString512>(stringField512);
                 case SharedStatic<FixedString4096> stringField4096:
-                    return new ConfigVarStringContainer<FixedString4096>(stringField4096);
+                    return new ConfigVarSharedStaticStringContainer<FixedString4096>(stringField4096);
                 default:
                     return null;
             }

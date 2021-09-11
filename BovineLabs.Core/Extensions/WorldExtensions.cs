@@ -10,6 +10,11 @@ namespace BovineLabs.Core.Extensions
     {
         public static WorldFlags GetMainFlag(this World world)
         {
+            return world.Unmanaged.GetMainFlag();
+        }
+
+        public static WorldFlags GetMainFlag(this WorldUnmanaged world)
+        {
             if ((world.Flags & WorldFlags.Shadow) != 0)
             {
                 return WorldFlags.Shadow;

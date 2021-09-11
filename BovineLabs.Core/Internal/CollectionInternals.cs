@@ -11,10 +11,19 @@ namespace BovineLabs.Core.Internal
     public static class CollectionInternals
     {
         // NativeHashMap
-        public static UnsafeHashMap<TKey, TValue> GetHashMapData<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap)
+        public static UnsafeHashMap<TKey, TValue> GetUnsafeHashMap<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+            return hashMap.m_HashMapData;
+        }
+
+        public static UnsafeHashMap<TKey, TValue> GetReadOnlyUnsafeHashMap<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap)
+            where TKey : struct, IEquatable<TKey>
+            where TValue : struct
+        {
+            AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
             return hashMap.m_HashMapData;
         }
 
@@ -35,10 +44,19 @@ namespace BovineLabs.Core.Internal
         }
 
         // NativeMultiHashMap
-        public static UnsafeMultiHashMap<TKey, TValue> GetHashMapData<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap)
+        public static UnsafeMultiHashMap<TKey, TValue> GetUnsafeMultiHashMap<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+            return hashMap.m_MultiHashMapData;
+        }
+
+        public static UnsafeMultiHashMap<TKey, TValue> GetReadOnlyUnsafeMultiHashMap<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap)
+            where TKey : struct, IEquatable<TKey>
+            where TValue : struct
+        {
+            AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
             return hashMap.m_MultiHashMapData;
         }
 

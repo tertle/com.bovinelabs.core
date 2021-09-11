@@ -5,15 +5,10 @@
 namespace BovineLabs.Core.Settings
 {
     using BovineLabs.Core.Extensions;
-    using Unity.Entities;
 
     /// <summary> Internal interface for handling settings. </summary>
     public interface ISettings
     {
-        /// <summary> Convert the settings file to entity representation. </summary>
-        /// <param name="dstManager"> The worlds manager the entity belongs to. </param>
-        /// <param name="entity"> The settings entity to store the settings on. </param>
-        void Convert(EntityManager dstManager, Entity entity);
     }
 
     /// <summary> Extensions for <see cref="ISettings" />. </summary>

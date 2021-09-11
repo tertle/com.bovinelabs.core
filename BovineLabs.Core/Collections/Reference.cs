@@ -22,13 +22,11 @@ namespace BovineLabs.Core.Collections
     {
         private ReferenceData data;
 
-        /// <summary>
-        /// Gets a "null" blob asset reference that can be used to test if a Reference instance.
-        /// </summary>
+        /// <summary> Gets a "null" reference that can be used to test if a Reference instance. </summary>
         public static Reference<T> Null => default(Reference<T>);
 
-        /// <summary> Gets a value indicating whether reports whether this instance references a valid blob asset. </summary>
-        /// <value> True, if this instance references a valid blob instance. </value>
+        /// <summary> Gets a value indicating whether reports whether this instance references a valid asset. </summary>
+        /// <value> True, if this instance references a valid instance. </value>
         public bool IsCreated => this.data.Ptr != null;
 
         /// <summary> Gets a reference to the data. </summary>
@@ -64,13 +62,12 @@ namespace BovineLabs.Core.Collections
             return lhs.data.Ptr != rhs.data.Ptr;
         }
 
-        /// <summary> Creates a blob asset from a pointer to data and a specified size. </summary>
-        /// <remarks><para>The blob asset is created in unmanaged memory. Call <see cref="Dispose"/> to free the asset memory
+        /// <summary> Creates a asset from a pointer to data and a specified size. </summary>
+        /// <remarks><para>The asset is created in unmanaged memory. Call <see cref="Dispose"/> to free the asset memory
         /// when it is no longer needed. This function can only be used in an <see cref="Unsafe"/> context.</para></remarks>
-        /// <param name="ptr">A pointer to the buffer containing the data to store in the blob asset.</param>
+        /// <param name="ptr">A pointer to the buffer containing the data to store in the asset.</param>
         /// <param name="length">The length of the buffer in bytes.</param>
-        /// <returns>A reference to newly created blob asset.</returns>
-        /// <seealso cref="BlobBuilder"/>
+        /// <returns>A reference to newly created asset.</returns>
         public static Reference<T> Create(void* ptr, int length)
         {
             byte* buffer =
@@ -83,8 +80,32 @@ namespace BovineLabs.Core.Collections
             header->Length = length;
             header->Allocator = Allocator.Persistent;
 
-            // @TODO use 64bit hash
-            header->Hash = math.hash(ptr, length);
+            Reference<T> reference;
+            reference.data.Align8Union = 0;
+            header->ValidationPtr = reference.data.Ptr = buffer + sizeof(ReferenceHeader);
+            return reference;
+        }
+
+        /// <summary> Creates a reference to data of a specified size. </summary>
+        /// <remarks><para>The asset is created in unmanaged memory. Call <see cref="Dispose"/> to free the asset memory
+        /// when it is no longer needed. This function can only be used in an <see cref="Unsafe"/> context.</para></remarks>
+        /// <param name="headerPtr">A pointer to the header to store in the asset.</param>
+        /// <param name="headerLength">The length of the header in bytes.</param>
+        /// <param name="dataPtr">A pointer to the data to store in the asset. This will stored right after the header.</param>
+        /// <param name="dataLength">The length of the data in bytes.</param>
+        /// <returns>A reference to newly created blob asset.</returns>
+        public static Reference<T> Create(void* headerPtr, int headerLength, void* dataPtr, int dataLength)
+        {
+            byte* buffer =
+                (byte*)UnsafeUtility.Malloc(sizeof(ReferenceHeader) + headerLength + dataLength, 16, Allocator.Persistent);
+            UnsafeUtility.MemCpy(buffer + sizeof(ReferenceHeader), headerPtr, headerLength);
+            UnsafeUtility.MemCpy(buffer + sizeof(ReferenceHeader) + headerLength, dataPtr, dataLength);
+
+            ReferenceHeader* header = (ReferenceHeader*)buffer;
+            *header = default(ReferenceHeader);
+
+            header->Length = headerLength + dataLength;
+            header->Allocator = Allocator.Persistent;
 
             Reference<T> reference;
             reference.data.Align8Union = 0;
@@ -268,7 +289,7 @@ namespace BovineLabs.Core.Collections
     // TODO: For now the size of ReferenceHeader needs to be multiple of 16 to ensure alignment of blob assets
     // TODO: Add proper alignment support to blob assets
     // TODO: Reduce the size of the header at runtime or remove it completely
-    [StructLayout(LayoutKind.Explicit, Size = 32)]
+    [StructLayout(LayoutKind.Explicit, Size = 16)]
     internal unsafe struct ReferenceHeader
     {
         [FieldOffset(0)]
@@ -280,12 +301,6 @@ namespace BovineLabs.Core.Collections
         [FieldOffset(12)]
         public Allocator Allocator;
 
-        [FieldOffset(16)]
-        public ulong Hash;
-
-        [FieldOffset(24)]
-        private ulong padding;
-
         internal static ReferenceHeader CreateForSerialize(int length, ulong hash)
         {
             return new ReferenceHeader
@@ -293,8 +308,6 @@ namespace BovineLabs.Core.Collections
                 ValidationPtr = null,
                 Length = length,
                 Allocator = Allocator.None,
-                Hash = hash,
-                padding = 0,
             };
         }
 

@@ -13,17 +13,6 @@ namespace BovineLabs.Core.Tests.Extensions
     /// <summary> Tests for <see cref="MathematicsExtensions"/>. </summary>
     public class MathematicsExtensionsTests
     {
-        /// <summary> Tests <see cref="MathematicsExtensions.ToEuler"/>. </summary>
-        [Test]
-        public void ToEuler()
-        {
-            var euler = new float3(0.1f, 0.4f, 0.7f);
-            var q = quaternion.EulerXYZ(euler);
-            var euler2 = q.ToEuler();
-
-            AssertMath.AreApproximatelyEqual(euler, euler2, 0.0001f);
-        }
-
         /// <summary> Tests for the AABB extension methods. </summary>
         public class AABBTests
         {

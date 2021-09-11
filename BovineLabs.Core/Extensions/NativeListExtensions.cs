@@ -29,5 +29,12 @@ namespace BovineLabs.Core.Extensions
         {
             return (IntPtr)list.GetUnsafeReadOnlyPtr();
         }
+
+        public static void Insert<T>(this NativeList<T> list, int index, T item)
+            where T : struct
+        {
+            list.InsertRangeWithBeginEnd(index, index + 1);
+            list[index] = item;
+        }
     }
 }

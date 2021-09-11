@@ -79,33 +79,24 @@ namespace BovineLabs.Core.Editor.ConfigVars
 
         private static VisualElement CreateVisualElement(ConfigVarAttribute configVar, IConfigVarContainer obj)
         {
-            switch (obj)
+            return obj switch
             {
-                case ConfigVarContainer<int> intField:
-                    return SetupField(new IntegerField(), configVar, intField);
-                case ConfigVarContainer<float> floatField:
-                    return SetupField(new FloatField(), configVar, floatField);
-                case ConfigVarContainer<bool> boolField:
-                    return SetupField(new Toggle(), configVar, boolField);
-                case ConfigVarStringContainer<FixedString32> stringField32:
-                    return SetupTextField(new TextField(), configVar, stringField32);
-                case ConfigVarStringContainer<FixedString64> stringField64:
-                    return SetupTextField(new TextField(), configVar, stringField64);
-                case ConfigVarStringContainer<FixedString128> stringField128:
-                    return SetupTextField(new TextField(), configVar, stringField128);
-                case ConfigVarStringContainer<FixedString512> stringField512:
-                    return SetupTextField(new TextField(), configVar, stringField512);
-                case ConfigVarStringContainer<FixedString4096> stringField4096:
-                    return SetupTextField(new TextField(), configVar, stringField4096);
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                ConfigVarSharedStaticContainer<int> intField => SetupField(new IntegerField(), configVar, intField),
+                ConfigVarSharedStaticContainer<float> floatField => SetupField(new FloatField(), configVar, floatField),
+                ConfigVarSharedStaticContainer<bool> boolField => SetupField(new Toggle(), configVar, boolField),
+                ConfigVarSharedStaticStringContainer<FixedString32> stringField32 => SetupTextField(new TextField(), configVar, stringField32),
+                ConfigVarSharedStaticStringContainer<FixedString64> stringField64 => SetupTextField(new TextField(), configVar, stringField64),
+                ConfigVarSharedStaticStringContainer<FixedString128> stringField128 => SetupTextField(new TextField(), configVar, stringField128),
+                ConfigVarSharedStaticStringContainer<FixedString512> stringField512 => SetupTextField(new TextField(), configVar, stringField512),
+                ConfigVarSharedStaticStringContainer<FixedString4096> stringField4096 => SetupTextField(new TextField(), configVar, stringField4096),
+                _ => throw new ArgumentOutOfRangeException(),
+            };
         }
 
-        private static BaseField<T> SetupField<T>(BaseField<T> field, ConfigVarAttribute configVar, ConfigVarContainer<T> container)
+        private static BaseField<T> SetupField<T>(BaseField<T> field, ConfigVarAttribute configVar, ConfigVarSharedStaticContainer<T> container)
             where T : struct, IEquatable<T>
         {
-            field.binding = new SharedStaticBinding<T>(field, container);
+            field.binding = new ConfigVarBinding<T>(field, container);
 
             field.label = configVar.Name;
             field.tooltip = configVar.Description;
@@ -125,7 +116,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
             return field;
         }
 
-        private static BaseField<string> SetupTextField<T>(TextInputBaseField<string> field, ConfigVarAttribute configVar, ConfigVarStringContainer<T> container)
+        private static BaseField<string> SetupTextField<T>(TextInputBaseField<string> field, ConfigVarAttribute configVar, ConfigVarSharedStaticStringContainer<T> container)
             where T : struct
         {
             field.binding = new SharedStaticTextFieldBind<T>(field, container);
