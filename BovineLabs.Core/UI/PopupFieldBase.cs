@@ -249,7 +249,7 @@ namespace BovineLabs.Core.UI
 
         private static ListView CreateMenu(List<string> displayNames, bool multiSelect)
         {
-            var menu = new ListView { itemHeight = ItemHeight };
+            var menu = new ListView { fixedItemHeight = ItemHeight };
             menu.AddToClassList(MenuUssClassName);
 
             VisualElement MakeItem()
@@ -299,7 +299,7 @@ namespace BovineLabs.Core.UI
             this.Menu.style.width = this.worldBound.width;
             this.Menu.style.left = this.worldBound.xMin;
             this.Menu.style.top = this.worldBound.yMax;
-            this.Menu.itemHeight = ItemHeight;
+            this.Menu.fixedItemHeight = ItemHeight;
 
             // var maxHeight = this.menu.resolvedStyle.maxHeight.value;
             // var height = this.displayNames.Count * ItemHeight;//math.min(maxHeight, items.Count * ItemHeight);

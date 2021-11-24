@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Collections
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
+    using BovineLabs.Core.Memory;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -17,10 +18,15 @@ namespace BovineLabs.Core.Collections
 
     /// <summary> Implements a reference type, based off <see cref="BlobAssetReference{T}"/>. </summary>
     /// <typeparam name="T"> The type to hold. </typeparam>
-    public unsafe struct Reference<T> : IDisposable, IEquatable<Reference<T>>
+    public readonly unsafe struct Reference<T> : IEquatable<Reference<T>>
         where T : struct
     {
-        private ReferenceData data;
+        private readonly ReferenceData data;
+
+        private Reference(ReferenceData value)
+        {
+            this.data = value;
+        }
 
         /// <summary> Gets a "null" reference that can be used to test if a Reference instance. </summary>
         public static Reference<T> Null => default(Reference<T>);
@@ -63,41 +69,38 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary> Creates a asset from a pointer to data and a specified size. </summary>
-        /// <remarks><para>The asset is created in unmanaged memory. Call <see cref="Dispose"/> to free the asset memory
-        /// when it is no longer needed. This function can only be used in an <see cref="Unsafe"/> context.</para></remarks>
+        /// <remarks><para>The asset is created in unmanaged memory. This function can only be used in an <see cref="Unsafe"/> context.</para></remarks>
         /// <param name="ptr">A pointer to the buffer containing the data to store in the asset.</param>
         /// <param name="length">The length of the buffer in bytes.</param>
+        /// <param name="allocator">The allocator to use.</param>
         /// <returns>A reference to newly created asset.</returns>
-        public static Reference<T> Create(void* ptr, int length)
+        public static Reference<T> Create(void* ptr, int length, MemoryAllocator allocator)
         {
-            byte* buffer =
-                (byte*)UnsafeUtility.Malloc(sizeof(ReferenceHeader) + length, 16, Allocator.Persistent);
+            var buffer = (byte*)allocator.Malloc(sizeof(ReferenceHeader) + length, 16);
             UnsafeUtility.MemCpy(buffer + sizeof(ReferenceHeader), ptr, length);
 
             ReferenceHeader* header = (ReferenceHeader*)buffer;
             *header = default(ReferenceHeader);
 
             header->Length = length;
-            header->Allocator = Allocator.Persistent;
 
-            Reference<T> reference;
-            reference.data.Align8Union = 0;
-            header->ValidationPtr = reference.data.Ptr = buffer + sizeof(ReferenceHeader);
-            return reference;
+            ReferenceData data;
+            data.Align8Union = 0;
+            header->ValidationPtr = data.Ptr = buffer + sizeof(ReferenceHeader);
+            return new Reference<T>(data);
         }
 
         /// <summary> Creates a reference to data of a specified size. </summary>
-        /// <remarks><para>The asset is created in unmanaged memory. Call <see cref="Dispose"/> to free the asset memory
-        /// when it is no longer needed. This function can only be used in an <see cref="Unsafe"/> context.</para></remarks>
+        /// <remarks><para>The asset is created in unmanaged memory. This function can only be used in an <see cref="Unsafe"/> context.</para></remarks>
         /// <param name="headerPtr">A pointer to the header to store in the asset.</param>
         /// <param name="headerLength">The length of the header in bytes.</param>
         /// <param name="dataPtr">A pointer to the data to store in the asset. This will stored right after the header.</param>
         /// <param name="dataLength">The length of the data in bytes.</param>
+        /// <param name="allocator">The allocator to use.</param>
         /// <returns>A reference to newly created blob asset.</returns>
-        public static Reference<T> Create(void* headerPtr, int headerLength, void* dataPtr, int dataLength)
+        public static Reference<T> Create(void* headerPtr, int headerLength, void* dataPtr, int dataLength, MemoryAllocator allocator)
         {
-            byte* buffer =
-                (byte*)UnsafeUtility.Malloc(sizeof(ReferenceHeader) + headerLength + dataLength, 16, Allocator.Persistent);
+            byte* buffer = (byte*)allocator.Malloc(sizeof(ReferenceHeader) + headerLength + dataLength, 16);
             UnsafeUtility.MemCpy(buffer + sizeof(ReferenceHeader), headerPtr, headerLength);
             UnsafeUtility.MemCpy(buffer + sizeof(ReferenceHeader) + headerLength, dataPtr, dataLength);
 
@@ -105,39 +108,39 @@ namespace BovineLabs.Core.Collections
             *header = default(ReferenceHeader);
 
             header->Length = headerLength + dataLength;
-            header->Allocator = Allocator.Persistent;
 
-            Reference<T> reference;
-            reference.data.Align8Union = 0;
-            header->ValidationPtr = reference.data.Ptr = buffer + sizeof(ReferenceHeader);
-            return reference;
+            ReferenceData data;
+            data.Align8Union = 0;
+            header->ValidationPtr = data.Ptr = buffer + sizeof(ReferenceHeader);
+            return new Reference<T>(data);
         }
 
         /// <summary> Creates a blob asset from a byte array. </summary>
-        /// <remarks><para>The blob asset is created in unmanaged memory. Call <see cref="Dispose"/> to free the asset memory
-        /// when it is no longer needed. This function can only be used in an <see cref="Unsafe"/> context.</para></remarks>
+        /// <remarks><para>The blob asset is created in unmanaged memory. This function can only be used in an <see cref="Unsafe"/> context.</para></remarks>
         /// <param name="data">The byte array containing the data to store in the blob asset.</param>
+        /// <param name="allocator">The allocator to use.</param>
         /// <returns>A reference to newly created blob asset.</returns>
         /// <seealso cref="BlobBuilder"/>
-        public static Reference<T> Create(byte[] data)
+        public static Reference<T> Create(byte[] data, MemoryAllocator allocator)
         {
             fixed (byte* ptr = &data[0])
             {
-                return Create(ptr, data.Length);
+                return Create(ptr, data.Length, allocator);
             }
         }
 
         /// <summary> Creates a blob asset from an instance of a struct. </summary>
-        /// <remarks> <para>The struct must only contain blittable fields (primitive types, fixed-length arrays, or other structs
-        /// meeting these same criteria). The blob asset is created in unmanaged memory. Call <see cref="Dispose"/> to
-        /// free the asset memory when it is no longer needed. This function can only be used in an <see cref="Unsafe"/>
-        /// context.</para> </remarks>
+        /// <remarks> <para>
+        /// The struct must only contain blittable fields (primitive types, fixed-length arrays, or other structs
+        /// meeting these same criteria). The blob asset is created in unmanaged memory. This function can only be used in an <see cref="Unsafe"/> context.
+        /// </para> </remarks>
         /// <param name="value"> An instance of <typeparamref name="T"/>. </param>
+        /// <param name="allocator">The allocator to use.</param>
         /// <returns> A reference to newly created blob asset. </returns>
         /// <seealso cref="BlobBuilder"/>
-        public static Reference<T> Create(T value)
+        public static Reference<T> Create(T value, MemoryAllocator allocator)
         {
-            return Create(UnsafeUtility.AddressOf(ref value), UnsafeUtility.SizeOf<T>());
+            return Create(UnsafeUtility.AddressOf(ref value), UnsafeUtility.SizeOf<T>(), allocator);
         }
 
         /// <summary> Provides an unsafe pointer to the blob asset data. </summary>
@@ -149,13 +152,13 @@ namespace BovineLabs.Core.Collections
             return this.data.Ptr;
         }
 
-        /// <summary> Destroys the referenced blob asset and frees its memory. </summary>
-        /// <exception cref="InvalidOperationException">Thrown if you attempt to dispose a blob asset that loaded as
-        /// part of a scene or subscene.</exception>
-        public void Dispose()
-        {
-            this.data.Dispose();
-        }
+        // /// <summary> Destroys the referenced blob asset and frees its memory. </summary>
+        // /// <exception cref="InvalidOperationException">Thrown if you attempt to dispose a blob asset that loaded as
+        // /// part of a scene or subscene.</exception>
+        // public void Dispose()
+        // {
+        //     this.data.Dispose();
+        // }
 
         /// <summary> Two References are equal when they reference the same data. </summary>
         /// <param name="other">The reference to compare to this one.</param>
@@ -188,7 +191,7 @@ namespace BovineLabs.Core.Collections
         /// <returns> The created Reference. </returns>
         internal static Reference<T> Create(ReferenceData blobData)
         {
-            return new Reference<T> { data = blobData };
+            return new Reference<T>(blobData);
         }
     }
 
@@ -236,24 +239,6 @@ namespace BovineLabs.Core.Collections
             this.ValidateBurst();
         }
 
-        internal void Dispose()
-        {
-            this.ValidateNotNull();
-            var header = this.Header;
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (header->Allocator == Allocator.None)
-            {
-                throw new InvalidOperationException(
-                    "It's not possible to release a blob asset reference that was deserialized. It will be automatically released when the scene is unloaded ");
-            }
-
-            Header->Invalidate();
-#endif
-
-            UnsafeUtility.Free(header, header->Allocator);
-            this.Ptr = null;
-        }
-
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [BurstDiscard]
         [SuppressMessage("ReSharper", "ERP022", Justification = "Intentional for the check.")]
@@ -286,34 +271,9 @@ namespace BovineLabs.Core.Collections
         }
     }
 
-    // TODO: For now the size of ReferenceHeader needs to be multiple of 16 to ensure alignment of blob assets
-    // TODO: Add proper alignment support to blob assets
-    // TODO: Reduce the size of the header at runtime or remove it completely
-    [StructLayout(LayoutKind.Explicit, Size = 16)]
     internal unsafe struct ReferenceHeader
     {
-        [FieldOffset(0)]
         public void* ValidationPtr;
-
-        [FieldOffset(8)]
         public int Length;
-
-        [FieldOffset(12)]
-        public Allocator Allocator;
-
-        internal static ReferenceHeader CreateForSerialize(int length, ulong hash)
-        {
-            return new ReferenceHeader
-            {
-                ValidationPtr = null,
-                Length = length,
-                Allocator = Allocator.None,
-            };
-        }
-
-        internal void Invalidate()
-        {
-            this.ValidationPtr = (void*)0xdddddddddddddddd;
-        }
     }
 }

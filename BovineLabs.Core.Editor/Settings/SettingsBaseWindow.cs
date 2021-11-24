@@ -202,7 +202,11 @@ namespace BovineLabs.Core.Editor.Settings
                 this.filteredSettingsPanel.AddRange(filtered);
             }
 
+#if UNITY_2021_2_OR_NEWER
             this.list.Rebuild();
+#else
+            this.list.Refresh();
+#endif
 
             // Keep selecting the same panel if possible
             var index = this.filteredSettingsPanel.IndexOf((ISettingsPanel)selected);

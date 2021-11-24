@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Runtime.InteropServices;
+    using JetBrains.Annotations;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs;
@@ -263,7 +264,8 @@
 
             if (srcIndex + length > srcLength)
             {
-                throw new ArgumentException("length is greater than the number of elements from srcIndex to the end of the source UnsafeArray.", nameof(length));
+                throw new ArgumentException("length is greater than the number of elements from srcIndex to the end of the source UnsafeArray.",
+                    nameof(length));
             }
 
             if (srcIndex + length < 0)
@@ -273,7 +275,8 @@
 
             if (dstIndex + length > dstLength)
             {
-                throw new ArgumentException("length is greater than the number of elements from dstIndex to the end of the destination UnsafeArray.", nameof(length));
+                throw new ArgumentException("length is greater than the number of elements from dstIndex to the end of the destination UnsafeArray.",
+                    nameof(length));
             }
 
             if (dstIndex + length < 0)
@@ -439,6 +442,7 @@
             }
         }
 
+        [Pure]
         public UnsafeArray<U> Reinterpret<U>(int expectedTypeSize)
             where U : unmanaged
         {
@@ -635,6 +639,7 @@
     {
         [NativeDisableUnsafePtrRestriction]
         internal unsafe void* m_Buffer;
+
         internal Allocator m_AllocatorLabel;
 
         public unsafe void Dispose() => UnsafeUtility.Free(this.m_Buffer, this.m_AllocatorLabel);

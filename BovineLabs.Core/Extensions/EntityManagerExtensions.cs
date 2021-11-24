@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Extensions
 {
+    using System;
     using System.Diagnostics;
     using Unity.Entities;
 
@@ -114,6 +115,15 @@ namespace BovineLabs.Core.Extensions
             var entity = query.GetSingletonEntity();
             buffer = em.GetBuffer<T>(entity);
             return true;
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        public static void AssertHasComponent<T>(this EntityManager entityManager, Entity entity)
+        {
+            if (!entityManager.HasComponent<T>(entity))
+            {
+                throw new ArgumentException($"Entity {entity} has no {nameof(T)}");
+            }
         }
     }
 }

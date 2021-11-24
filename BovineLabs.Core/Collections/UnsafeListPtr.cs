@@ -12,11 +12,11 @@ namespace BovineLabs.Core.Collections
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs;
 
-    public unsafe struct UnsafeListPtr<T> : INativeDisposable, INativeList<T> // Used by collection initializers.
+    public readonly unsafe struct UnsafeListPtr<T> : INativeDisposable, INativeList<T> // Used by collection initializers.
         where T : unmanaged
     {
         [NativeDisableUnsafePtrRestriction]
-        private UnsafeList* listData;
+        private readonly UnsafeList* listData;
 
         /// <summary>
         /// Constructs a new list using the specified type of memory allocation.
@@ -248,7 +248,6 @@ namespace BovineLabs.Core.Collections
         public void Dispose()
         {
             UnsafeList.Destroy(this.listData);
-            this.listData = null;
         }
 
         /// <summary>
@@ -266,8 +265,6 @@ namespace BovineLabs.Core.Collections
         public JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new NativeListDisposeJob { Data = new NativeListDispose { m_ListData = this.listData } }.Schedule(inputDeps);
-            this.listData = null;
-
             return jobHandle;
         }
 
@@ -299,13 +296,38 @@ namespace BovineLabs.Core.Collections
             this.Resize(length, NativeArrayOptions.UninitializedMemory);
         }
 
+        public NativeArray<T> AsArray()
+        {
+            var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(this.listData->Ptr, this.listData->Length, Allocator.None);
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, AtomicSafetyHandle.GetTempMemoryHandle());
+#endif
+            return array;
+        }
+
         /// <summary>
         /// Returns parallel writer instance.
         /// </summary>
         /// <returns>Parallel writer instance.</returns>
         public ParallelWriter AsParallelWriter()
         {
-            return new ParallelWriter(this.listData->Ptr, this.listData);
+            return new ParallelWriter(this.listData);
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckReinterpretSize<U>(long tSize, long uSize, int expectedTypeSize, long byteLen, long uLen)
+        {
+            if (tSize != expectedTypeSize)
+            {
+                throw new InvalidOperationException($"Type {typeof(T)} was expected to be {expectedTypeSize} but is {tSize} bytes");
+            }
+
+            if (uLen * uSize != byteLen)
+            {
+                throw new InvalidOperationException(
+                    $"Types {typeof(T)} (array length {this.Length}) and {typeof(U)} cannot be aliased due to size constraints. The size of the types and lengths involved must line up.");
+            }
         }
 
         /// <summary>
@@ -318,17 +340,10 @@ namespace BovineLabs.Core.Collections
             ///
             /// </summary>
             [NativeDisableUnsafePtrRestriction]
-            public readonly void* Ptr;
-
-            /// <summary>
-            ///
-            /// </summary>
-            [NativeDisableUnsafePtrRestriction]
             public UnsafeList* ListData;
 
-            internal ParallelWriter(void* ptr, UnsafeList* listData)
+            internal ParallelWriter(UnsafeList* listData)
             {
-                this.Ptr = ptr;
                 this.ListData = listData;
             }
 
@@ -344,7 +359,7 @@ namespace BovineLabs.Core.Collections
                 var idx = Interlocked.Increment(ref this.ListData->Length) - 1;
                 CheckSufficientCapacity(this.ListData->Capacity, idx + 1);
 
-                UnsafeUtility.WriteArrayElement(this.Ptr, idx, value);
+                UnsafeUtility.WriteArrayElement(this.ListData->Ptr, idx, value);
             }
 
             void AddRangeNoResize(int sizeOf, int alignOf, void* ptr, int length)
@@ -352,7 +367,7 @@ namespace BovineLabs.Core.Collections
                 var idx = Interlocked.Add(ref this.ListData->Length, length) - length;
                 CheckSufficientCapacity(this.ListData->Capacity, idx + length);
 
-                void* dst = (byte*)this.Ptr + (idx * sizeOf);
+                void* dst = (byte*)this.ListData->Ptr + (idx * sizeOf);
                 UnsafeUtility.MemCpy(dst, ptr, length * sizeOf);
             }
 
@@ -385,7 +400,7 @@ namespace BovineLabs.Core.Collections
             public void Reserve(int length, out T* ptr, out int idx)
             {
                 idx = Interlocked.Add(ref this.ListData->Length, length) - length;
-                ptr = (T*)((byte*)this.Ptr + (idx * UnsafeUtility.SizeOf<T>()));
+                ptr = (T*)((byte*)this.ListData->Ptr + (idx * UnsafeUtility.SizeOf<T>()));
             }
         }
 

@@ -36,5 +36,19 @@ namespace BovineLabs.Core.Extensions
             list.InsertRangeWithBeginEnd(index, index + 1);
             list[index] = item;
         }
+
+        public static void ResizeInitialized<T>(this NativeList<T> list, int length, byte value)
+            where T : struct
+        {
+            list.ResizeUninitialized(length);
+            UnsafeUtility.MemSet(list.GetUnsafePtr(), value, UnsafeUtility.SizeOf<int>() * length);
+        }
+
+        public static void ResizeInitialized<T>(this NativeList<T> list, int length)
+            where T : struct
+        {
+            list.ResizeUninitialized(length);
+            UnsafeUtility.MemClear(list.GetUnsafePtr(), UnsafeUtility.SizeOf<int>() * length);
+        }
     }
 }

@@ -121,19 +121,19 @@ namespace BovineLabs.Core.Collections
         /// <summary> Bit-wise Not operator </summary>
         /// <param name="a">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray8 operator ~(BitArray8 a) => new((byte)~a.data);
+        public static BitArray8 operator ~(BitArray8 a) => new BitArray8((byte)~a.data);
 
         /// <summary> Bit-wise Or operator </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray8 operator |(BitArray8 a, BitArray8 b) => new((byte)(a.data | b.data));
+        public static BitArray8 operator |(BitArray8 a, BitArray8 b) => new BitArray8((byte)(a.data | b.data));
 
         /// <summary> Bit-wise And operator </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray8 operator &(BitArray8 a, BitArray8 b) => new((byte)(a.data & b.data));
+        public static BitArray8 operator &(BitArray8 a, BitArray8 b) => new BitArray8((byte)(a.data & b.data));
 
         /// <summary> Equality operator. </summary>
         /// <param name="a">First bit array.</param>
@@ -241,19 +241,19 @@ namespace BovineLabs.Core.Collections
         /// <summary> Bit-wise Not operator. </summary>
         /// <param name="a">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray16 operator ~(BitArray16 a) => new((ushort)~a.data);
+        public static BitArray16 operator ~(BitArray16 a) => new BitArray16((ushort)~a.data);
 
         /// <summary> Bit-wise Or operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray16 operator |(BitArray16 a, BitArray16 b) => new((ushort)(a.data | b.data));
+        public static BitArray16 operator |(BitArray16 a, BitArray16 b) => new BitArray16((ushort)(a.data | b.data));
 
         /// <summary> Bit-wise And operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray16 operator &(BitArray16 a, BitArray16 b) => new((ushort)(a.data & b.data));
+        public static BitArray16 operator &(BitArray16 a, BitArray16 b) => new BitArray16((ushort)(a.data & b.data));
 
         /// <summary> Equality operator. </summary>
         /// <param name="a">First bit array.</param>
@@ -353,19 +353,19 @@ namespace BovineLabs.Core.Collections
         /// <summary> Bit-wise Not operator. </summary>
         /// <param name="a">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray32 operator ~(BitArray32 a) => new(~a.data);
+        public static BitArray32 operator ~(BitArray32 a) => new BitArray32(~a.data);
 
         /// <summary> Bit-wise Or operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray32 operator |(BitArray32 a, BitArray32 b) => new(a.data | b.data);
+        public static BitArray32 operator |(BitArray32 a, BitArray32 b) => new BitArray32(a.data | b.data);
 
         /// <summary> Bit-wise And operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray32 operator &(BitArray32 a, BitArray32 b) => new(a.data & b.data);
+        public static BitArray32 operator &(BitArray32 a, BitArray32 b) => new BitArray32(a.data & b.data);
 
         /// <summary> Equality operator. </summary>
         /// <param name="a">First bit array.</param>
@@ -465,19 +465,19 @@ namespace BovineLabs.Core.Collections
         /// <summary> Bit-wise Not operator/ </summary>
         /// <param name="a">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray64 operator ~(BitArray64 a) => new(~a.data);
+        public static BitArray64 operator ~(BitArray64 a) => new BitArray64(~a.data);
 
         /// <summary> Bit-wise Or operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray64 operator |(BitArray64 a, BitArray64 b) => new(a.data | b.data);
+        public static BitArray64 operator |(BitArray64 a, BitArray64 b) => new BitArray64(a.data | b.data);
 
         /// <summary> Bit-wise And operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray64 operator &(BitArray64 a, BitArray64 b) => new(a.data & b.data);
+        public static BitArray64 operator &(BitArray64 a, BitArray64 b) => new BitArray64(a.data & b.data);
 
         /// <summary> Equality operator. </summary>
         /// <param name="a">First bit array.</param>
@@ -591,7 +591,7 @@ namespace BovineLabs.Core.Collections
         /// <summary> Bit-wise Not operator </summary>
         /// <param name="a">First bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray128 operator ~(BitArray128 a) => new(~a.data1, ~a.data2);
+        public static BitArray128 operator ~(BitArray128 a) => new BitArray128(~a.data1, ~a.data2);
 
         /// <summary>
         /// Bit-wise Or operator
@@ -599,7 +599,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray128 operator |(BitArray128 a, BitArray128 b) => new(a.data1 | b.data1, a.data2 | b.data2);
+        public static BitArray128 operator |(BitArray128 a, BitArray128 b) => new BitArray128(a.data1 | b.data1, a.data2 | b.data2);
 
         /// <summary>
         /// Bit-wise And operator
@@ -607,7 +607,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray128 operator &(BitArray128 a, BitArray128 b) => new(a.data1 & b.data1, a.data2 & b.data2);
+        public static BitArray128 operator &(BitArray128 a, BitArray128 b) => new BitArray128(a.data1 & b.data1, a.data2 & b.data2);
 
         /// <summary>
         /// Equality operator.
@@ -757,19 +757,19 @@ namespace BovineLabs.Core.Collections
         /// <summary> Bit-wise Not operator </summary>
         /// <param name="a">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray256 operator ~(BitArray256 a) => new(~a.data1, ~a.data2, ~a.data3, ~a.data4);
+        public static BitArray256 operator ~(BitArray256 a) => new BitArray256(~a.data1, ~a.data2, ~a.data3, ~a.data4);
 
         /// <summary> Bit-wise Or operator </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray256 operator |(BitArray256 a, BitArray256 b) => new(a.data1 | b.data1, a.data2 | b.data2, a.data3 | b.data3, a.data4 | b.data4);
+        public static BitArray256 operator |(BitArray256 a, BitArray256 b) => new BitArray256(a.data1 | b.data1, a.data2 | b.data2, a.data3 | b.data3, a.data4 | b.data4);
 
         /// <summary> Bit-wise And operator </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray256 operator &(BitArray256 a, BitArray256 b) => new(a.data1 & b.data1, a.data2 & b.data2, a.data3 & b.data3, a.data4 & b.data4);
+        public static BitArray256 operator &(BitArray256 a, BitArray256 b) => new BitArray256(a.data1 & b.data1, a.data2 & b.data2, a.data3 & b.data3, a.data4 & b.data4);
 
         /// <summary> Equality operator. </summary>
         /// <param name="a">First bit array.</param>

@@ -32,6 +32,15 @@ namespace BovineLabs.Core.Extensions
             UnsafeUtility.MemCpyReplicate(array.GetUnsafeReadOnlyPtr(), &value, UnsafeUtility.SizeOf<T>(), array.Length);
         }
 
+        /// <summary> Efficiently clears all values in a NativeArray. </summary>
+        /// <param name="array"> The array to clear. </param>
+        /// <typeparam name="T"> The unmanaged type the array holds. </typeparam>
+        public static unsafe void Clear<T>(this NativeArray<T> array)
+            where T : unmanaged
+        {
+            UnsafeUtility.MemClear(array.GetUnsafeReadOnlyPtr(), UnsafeUtility.SizeOf<T>() * array.Length);
+        }
+
         public static NativeArray<T> Clone<T>(this NativeArray<T> array, Allocator allocator = Allocator.Temp)
             where T : struct
         {
