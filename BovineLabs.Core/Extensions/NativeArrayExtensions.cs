@@ -20,8 +20,14 @@ namespace BovineLabs.Core.Extensions
         TOutput Select(TInput val);
     }
 
-    public static class NativeArrayExtensions
+    public static unsafe class NativeArrayExtensions
     {
+        public static ref T ElementAt<T>(this NativeArray<T> array, int index)
+            where T : struct
+        {
+            return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafePtr(), index);
+        }
+
         /// <summary> Efficiently sets all values in a NativeArray to a specific value. </summary>
         /// <param name="array"> The array to fill. </param>
         /// <param name="value"> The value that the array elements will be set to. </param>

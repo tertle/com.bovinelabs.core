@@ -8,20 +8,26 @@
         public static T* Malloc<T>(Allocator allocator)
             where T : unmanaged
         {
-            return (T*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), allocator);
+            return Memory.Unmanaged.Allocate<T>(allocator);
         }
 
         public static T* MallocClear<T>(Allocator allocator)
             where T : unmanaged
         {
-            var ptr = (T*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), allocator);
+            var ptr = Malloc<T>(allocator);
             UnsafeUtility.MemClear(ptr, UnsafeUtility.SizeOf<T>());
             return ptr;
         }
 
         public static void Free(void* ptr, Allocator allocator)
         {
-            UnsafeUtility.Free(ptr, allocator);
+            Memory.Unmanaged.Free(ptr, allocator);
+        }
+
+        public static void Free<T>(T* ptr, Allocator allocator)
+            where T : unmanaged
+        {
+            Memory.Unmanaged.Free(ptr, allocator);
         }
     }
 }

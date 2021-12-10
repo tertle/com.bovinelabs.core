@@ -18,6 +18,12 @@ namespace BovineLabs.Core.Assertions
             Hint.Assume(assumption);
         }
 
+        public static void Assume(bool assumption, string message)
+        {
+            IsTrue(assumption, message);
+            Hint.Assume(assumption);
+        }
+
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         public static void IsTrue(bool condition)
         {

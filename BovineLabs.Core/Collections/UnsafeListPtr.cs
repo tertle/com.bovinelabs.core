@@ -12,6 +12,8 @@ namespace BovineLabs.Core.Collections
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs;
 
+    [DebuggerDisplay("Length = {Length}")]
+    [DebuggerTypeProxy(typeof(UnsafeListPtrDebugView<>))]
     public readonly unsafe struct UnsafeListPtr<T> : INativeDisposable, INativeList<T> // Used by collection initializers.
         where T : unmanaged
     {
@@ -64,6 +66,11 @@ namespace BovineLabs.Core.Collections
             return ref UnsafeUtility.ArrayElementAsRef<T>(this.listData->Ptr, index);
         }
 
+        public T* PtrAt(int index)
+        {
+            return (T*)((byte*)this.listData->Ptr + (UnsafeUtility.SizeOf<T>() * index));
+        }
+
         /// <summary>
         /// The current number of items in the list.
         /// </summary>
@@ -87,6 +94,11 @@ namespace BovineLabs.Core.Collections
         {
             get => CollectionHelper.AssumePositive(this.listData->Capacity);
             set => this.listData->SetCapacity<T>(value);
+        }
+
+        public void SetCapacity(int capacity)
+        {
+            this.Capacity = capacity;
         }
 
         /// <summary>
@@ -306,6 +318,14 @@ namespace BovineLabs.Core.Collections
             return array;
         }
 
+        /// <summary> A copy of this list as a managed array.. </summary>
+        /// <returns>A ManagedArray containing copies of all the items in the list.</returns>
+        [NotBurstCompatible]
+        public T[] ToArray()
+        {
+            return this.AsArray().ToArray();
+        }
+
         /// <summary>
         /// Returns parallel writer instance.
         /// </summary>
@@ -441,5 +461,17 @@ namespace BovineLabs.Core.Collections
                 this.Data.Dispose();
             }
         }
+    }
+
+    sealed class UnsafeListPtrDebugView<T> where T : unmanaged
+    {
+        private UnsafeListPtr<T> array;
+
+        public UnsafeListPtrDebugView(UnsafeListPtr<T> array)
+        {
+            this.array = array;
+        }
+
+        public T[] Items => this.array.ToArray();
     }
 }
