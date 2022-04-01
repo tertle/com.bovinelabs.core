@@ -29,7 +29,7 @@
         {
             foreach (var p in this.ptrs.AsArray())
             {
-                UnsafeList.Destroy((UnsafeList*)p);
+                UnsafeList<T>.Destroy((UnsafeList<T>*)p);
             }
 
             this.ptrs.Dispose();

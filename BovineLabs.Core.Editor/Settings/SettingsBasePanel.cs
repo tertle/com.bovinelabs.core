@@ -18,6 +18,7 @@ namespace BovineLabs.Core.Editor.Settings
         where T : ScriptableObject, ISettings
     {
         private readonly List<string> keywordList = new List<string>();
+        private Editor editor;
 
         /// <summary> Initializes a new instance of the <see cref="SettingsBasePanel{T}"/> class. </summary>
         protected SettingsBasePanel()
@@ -44,17 +45,13 @@ namespace BovineLabs.Core.Editor.Settings
         /// <param name="rootElement"> The UI root element. </param>
         public virtual void OnActivate(string searchContext, VisualElement rootElement)
         {
-            Editor editor = Editor.CreateEditor(this.SerializedObject.targetObject);
-            //editor.DrawDefaultInspector();
-
+            this.editor = Editor.CreateEditor(this.SerializedObject.targetObject);
 
             var imguiContainer = new IMGUIContainer(() =>
             {
-                editor.DrawDefaultInspector();
+                this.editor.OnInspectorGUI();
             });
             rootElement.Add(imguiContainer);
-
-            return;
 
             // var allMatch = string.IsNullOrWhiteSpace(searchContext);
             //
@@ -100,10 +97,10 @@ namespace BovineLabs.Core.Editor.Settings
             // }
         }
 
-
         /// <summary> Executed when deactivate is called from teh settings window. </summary>
         public virtual void OnDeactivate()
         {
+            UnityEngine.Object.DestroyImmediate(this.editor);
         }
 
         /// <inheritdoc/>

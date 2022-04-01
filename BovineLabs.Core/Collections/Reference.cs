@@ -19,11 +19,11 @@ namespace BovineLabs.Core.Collections
     /// <summary> Implements a reference type, based off <see cref="BlobAssetReference{T}"/>. </summary>
     /// <typeparam name="T"> The type to hold. </typeparam>
     public readonly unsafe struct Reference<T> : IEquatable<Reference<T>>
-        where T : struct
+        where T : unmanaged
     {
         private readonly ReferenceData data;
 
-        private Reference(ReferenceData value)
+        public Reference(ReferenceData value)
         {
             this.data = value;
         }
@@ -76,7 +76,7 @@ namespace BovineLabs.Core.Collections
         /// <returns>A reference to newly created asset.</returns>
         public static Reference<T> Create(void* ptr, int length, MemoryAllocator allocator)
         {
-            var buffer = (byte*)allocator.Malloc(sizeof(ReferenceHeader) + length, 16);
+            var buffer = (byte*)allocator.Allocate(sizeof(ReferenceHeader) + length, 16);
             UnsafeUtility.MemCpy(buffer + sizeof(ReferenceHeader), ptr, length);
 
             ReferenceHeader* header = (ReferenceHeader*)buffer;
@@ -100,7 +100,7 @@ namespace BovineLabs.Core.Collections
         /// <returns>A reference to newly created blob asset.</returns>
         public static Reference<T> Create(void* headerPtr, int headerLength, void* dataPtr, int dataLength, MemoryAllocator allocator)
         {
-            byte* buffer = (byte*)allocator.Malloc(sizeof(ReferenceHeader) + headerLength + dataLength, 16);
+            byte* buffer = (byte*)allocator.Allocate(sizeof(ReferenceHeader) + headerLength + dataLength, 16);
             UnsafeUtility.MemCpy(buffer + sizeof(ReferenceHeader), headerPtr, headerLength);
             UnsafeUtility.MemCpy(buffer + sizeof(ReferenceHeader) + headerLength, dataPtr, dataLength);
 
@@ -152,6 +152,8 @@ namespace BovineLabs.Core.Collections
             return this.data.Ptr;
         }
 
+        public ReferenceData ReferenceData => this.data;
+
         // /// <summary> Destroys the referenced blob asset and frees its memory. </summary>
         // /// <exception cref="InvalidOperationException">Thrown if you attempt to dispose a blob asset that loaded as
         // /// part of a scene or subscene.</exception>
@@ -196,7 +198,7 @@ namespace BovineLabs.Core.Collections
     }
 
     [StructLayout(LayoutKind.Explicit, Size = 8)]
-    internal unsafe struct ReferenceData
+    public unsafe struct ReferenceData
     {
         [NativeDisableUnsafePtrRestriction]
         [FieldOffset(0)]

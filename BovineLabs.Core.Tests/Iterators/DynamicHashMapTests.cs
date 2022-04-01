@@ -1,3 +1,7 @@
+// <copyright file="DynamicHashMapTests.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
 namespace BovineLabs.Core.Tests.Iterators
 {
     using BovineLabs.Core.Iterators;
@@ -37,6 +41,8 @@ namespace BovineLabs.Core.Tests.Iterators
             {
                 Assert.IsTrue(hashMap.Remove(i + i));
             }
+
+            Assert.AreEqual(0, hashMap.Count());
         }
 
         [Test]
@@ -53,7 +59,7 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.IsFalse(hashMap.TryGetValue(47, out _));
         }
 
-        private DynamicHashMap<TestHashMap, int, byte> CreateHashMap()
+        private DynamicHashMap<int, byte> CreateHashMap()
         {
             var entity = this.Manager.CreateEntity(typeof(TestHashMap));
             return this.Manager.GetBuffer<TestHashMap>(entity).AsHashMap<TestHashMap, int, byte>();
@@ -61,7 +67,7 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private struct TestHashMap : IDynamicHashMap<int, byte>
         {
-            public byte Value { get; }
+            byte IDynamicHashMapBase<int, byte>.Value { get; }
         }
     }
 }

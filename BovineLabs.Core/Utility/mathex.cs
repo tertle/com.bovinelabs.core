@@ -391,6 +391,87 @@ namespace BovineLabs.Core.Utility
             return eulerReorderBack(euler, order);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float SmoothDampAngle(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+        {
+            target = current + DeltaAngle(current, target);
+            var result = SmoothDamp(current, target, ref currentVelocity, smoothTime, maxSpeed, deltaTime);
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float SmoothDamp(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+        {
+            // Based on Game Programming Gems 4 Chapter 1.10
+            smoothTime = math.max(0.0001F, smoothTime);
+            float omega = 2F / smoothTime;
+
+            float x = omega * deltaTime;
+            float exp = 1F / (1F + x + 0.48F * x * x + 0.235F * x * x * x);
+            float change = current - target;
+            float originalTo = target;
+
+            // Clamp maximum speed
+            float maxChange = maxSpeed * smoothTime;
+            change = math.clamp(change, -maxChange, maxChange);
+            target = current - change;
+
+            float temp = (currentVelocity + omega * change) * deltaTime;
+            currentVelocity = (currentVelocity - omega * temp) * exp;
+            float result = target + (change + temp) * exp;
+
+            // Prevent overshooting
+            if (originalTo - current > 0.0F == result > originalTo)
+            {
+                result = originalTo;
+                currentVelocity = (result - originalTo) / deltaTime;
+            }
+
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float DeltaAngle(float current, float target)
+        {
+            float delta = Repeat((target - current), 360.0F);
+            if (delta > 180.0F)
+            {
+                delta -= 360.0F;
+            }
+
+            var result = delta;
+
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Repeat(float t, float length)
+        {
+            return math.clamp(t - math.floor(t / length) * length, 0.0f, length);
+        }
+
+        // https://answers.unity.com/questions/47115/vector3-rotate-around.html
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float3 RotateAround(float3 point, float3 pivot, quaternion angle)
+        {
+            // Center the point around the origin
+            float3 finalPos = point - pivot;
+
+            // Rotate the point.
+            finalPos = math.mul(angle, finalPos);
+
+            // Move the point back to its original offset.
+            finalPos += pivot;
+
+            return finalPos;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool AreApproximatelyEqual(float3 f1, float3 f2, float delta = 0.01f)
+        {
+            return math.abs(f1.x - f2.x) < delta && math.abs(f1.y - f2.y) < delta && math.abs(f1.z - f2.z) < delta;
+        }
+
         static float3 eulerReorderBack(float3 euler, math.RotationOrder order)
         {
             switch (order)

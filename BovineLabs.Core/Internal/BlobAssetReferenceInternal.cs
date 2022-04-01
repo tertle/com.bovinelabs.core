@@ -1,4 +1,8 @@
-﻿namespace BovineLabs.Core.Internal
+﻿// <copyright file="BlobAssetReferenceInternal.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Internal
 {
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -15,7 +19,7 @@
             UnsafeUtility.MemCpy(buffer + sizeof(BlobAssetHeader) + headerLength, dataPtr, dataLength);
 
             BlobAssetHeader* header = (BlobAssetHeader*)buffer;
-            *header = new BlobAssetHeader();
+            *header = default;
             header->Length = headerLength + dataLength;
             header->Allocator = Allocator.Persistent;
 

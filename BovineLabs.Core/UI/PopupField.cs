@@ -8,6 +8,7 @@ namespace BovineLabs.Core.UI
     using System.Linq;
     using BovineLabs.Core.Extensions;
     using JetBrains.Annotations;
+    using UnityEngine.Scripting;
     using UnityEngine.UIElements;
 
     /// <summary> A popup element. </summary>
@@ -74,7 +75,7 @@ namespace BovineLabs.Core.UI
         }
 
         /// <summary> The factory for UI builder support. </summary>
-        [UsedImplicitly]
+        [Preserve]
         public new class UxmlFactory : UxmlFactory<PopupField, UxmlFactory.PopupUxmlTraits>
         {
             /// <summary> Custom traits for the factory. </summary>

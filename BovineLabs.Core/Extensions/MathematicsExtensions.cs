@@ -6,7 +6,6 @@ namespace BovineLabs.Core.Extensions
 {
     using System.Runtime.CompilerServices;
     using Unity.Mathematics;
-    using UnityEngine;
 
     /// <summary> Extensions for the mathematics package. </summary>
     public static class MathematicsExtensions

@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Memory
     using System;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
+    using Unity.Mathematics;
     using UnityEngine;
 
     public unsafe struct MemoryAllocator : IDisposable
@@ -22,9 +23,9 @@ namespace BovineLabs.Core.Memory
 
         public Allocator Allocator => this.allocator;
 
-        public void* Malloc(long size, int alignOf)
+        public void* Allocate(int itemSizeInBytes, int alignmentInBytes, int items = 1)
         {
-            var ptr = UnsafeUtility.Malloc(size, alignOf, this.Allocator);
+            var ptr = AllocatorManager.Allocate(this.Allocator, itemSizeInBytes, alignmentInBytes, items);
             this.allocated.Add(ptr);
             return ptr;
         }
@@ -33,10 +34,24 @@ namespace BovineLabs.Core.Memory
             where T : unmanaged
         {
             Debug.Assert(count > 0);
+            return (T*)this.Allocate(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), count);
+        }
 
-            var ptr = (T*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<T>() * count, UnsafeUtility.AlignOf<T>(), this.Allocator);
-            this.allocated.Add(ptr);
-            return ptr;
+        // TODO turn into array
+        public UnsafeList<T> CreateList<T>(int capacity)
+            where T : unmanaged
+        {
+            var newCapacity = math.max(capacity, 64 / UnsafeUtility.SizeOf<T>());
+            newCapacity = math.ceilpow2(newCapacity);
+
+            var buffer = this.Create<T>(newCapacity);
+
+            return new UnsafeList<T>
+            {
+                Ptr = buffer,
+                m_capacity = newCapacity,
+                Allocator = Allocator.None,
+            };
         }
 
         public void FreeAll()
@@ -45,7 +60,7 @@ namespace BovineLabs.Core.Memory
 
             foreach (var ptr in array)
             {
-                UnsafeUtility.Free(ptr, this.Allocator);
+                AllocatorManager.Free(this.Allocator, ptr);
             }
 
             this.allocated.Clear();

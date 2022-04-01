@@ -66,13 +66,6 @@ namespace BovineLabs.Core.Extensions
             return query.GetSingleton<T>();
         }
 
-        public static T GetManagedSingleton<T>(this EntityManager em)
-            where T : class, IComponentData
-        {
-            using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
-            return query.GetSingleton<T>();
-        }
-
         public static T GetSingletonObject<T>(this EntityManager em)
         {
             using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
@@ -116,6 +109,30 @@ namespace BovineLabs.Core.Extensions
             buffer = em.GetBuffer<T>(entity);
             return true;
         }
+
+#if !UNITY_DISABLE_MANAGED_COMPONENTS
+        public static T GetManagedSingleton<T>(this EntityManager em)
+            where T : class, IComponentData
+        {
+            using var query = em.CreateEntityQuery(ComponentType.ReadWrite<T>());
+            return query.GetSingleton<T>();
+        }
+
+        public static bool TryGetManagedSingleton<T>(this EntityManager em, out T component)
+            where T : class, IComponentData
+        {
+            using var query = em.CreateEntityQuery(ComponentType.ReadWrite<T>());
+
+            if (query.CalculateEntityCount() == 0)
+            {
+                component = default;
+                return false;
+            }
+
+            component = query.GetSingleton<T>();
+            return true;
+        }
+#endif
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         public static void AssertHasComponent<T>(this EntityManager entityManager, Entity entity)

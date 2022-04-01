@@ -8,7 +8,7 @@ namespace BovineLabs.Core.Utility
     using Unity.Entities;
 
     /// <summary> Limits a component group to update on a timestep but not enforcing a fixed timestep and no catchup. </summary>
-    public class LimitedRateNoCatchUpManager : IFixedRateManager
+    public class LimitedRateNoCatchUpManager : IRateManager
     {
         private bool didPushTime;
         private double lastPushedTime;

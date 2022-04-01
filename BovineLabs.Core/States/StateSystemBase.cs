@@ -1,4 +1,4 @@
-﻿// <copyright file="StateSystemBase.cs" company="BovineLabs">
+// <copyright file="StateSystemBase.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -15,7 +15,7 @@ namespace BovineLabs.Core.States
     /// <summary> A generic general purpose state system that ensures only a single state component exists on an entity but driven from a byte field. </summary>
     /// <typeparam name="T"> The state component. </typeparam>
     /// <typeparam name="TP"> The previous state component. </typeparam>
-    public abstract class StateSystemBase<T, TP> : SystemBase
+    public abstract partial class StateSystemBase<T, TP> : SystemBase
         where T : struct, IStateComponent
         where TP : struct, IStatePreviousComponent
     {
@@ -32,7 +32,7 @@ namespace BovineLabs.Core.States
 
             this.missingQuery = this.GetEntityQuery(ComponentType.ReadOnly<T>(), ComponentType.Exclude<TP>());
             this.query = this.GetEntityQuery(ComponentType.ReadOnly<T>(), ComponentType.ReadWrite<TP>());
-            this.query.AddChangedVersionFilter(typeof(T));
+            this.query.AddChangedVersionFilter(ComponentType.ReadOnly<T>());
 
             var systems = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
@@ -70,10 +70,11 @@ namespace BovineLabs.Core.States
         {
             this.EntityManager.AddComponent<TP>(this.missingQuery);
 
-            if (this.query.IsEmpty)
-            {
-                return;
-            }
+            // TODO this fails sometimes for some reason
+            // if (this.query.IsEmpty)
+            // {
+            //     return;
+            // }
 
             var stateJob = this.CreateStateJob();
             stateJob.RegisteredStates = this.registeredStatesMap;
@@ -81,7 +82,8 @@ namespace BovineLabs.Core.States
             stateJob.StateType = this.GetComponentTypeHandle<T>(true);
             stateJob.PreviousStateType = this.GetComponentTypeHandle<TP>();
             stateJob.CommandBuffer = this.bufferSystem.CreateCommandBuffer().AsParallelWriter();
-            this.Dependency = stateJob.ScheduleParallel(this.query, 1, this.Dependency);
+            stateJob.LastSystemVersion = this.LastSystemVersion;
+            this.Dependency = stateJob.ScheduleParallel(this.query, this.Dependency);
 
             this.bufferSystem.AddJobHandleForProducer(this.Dependency);
         }
@@ -90,21 +92,28 @@ namespace BovineLabs.Core.States
         protected struct StateJob : IJobEntityBatch
         {
             [ReadOnly]
-            public NativeHashMap<byte, ComponentType> RegisteredStates;
+            internal NativeHashMap<byte, ComponentType> RegisteredStates;
 
             [ReadOnly]
-            public EntityTypeHandle EntityType;
+            internal EntityTypeHandle EntityType;
 
             [ReadOnly]
-            public ComponentTypeHandle<T> StateType;
+            internal ComponentTypeHandle<T> StateType;
 
-            public ComponentTypeHandle<TP> PreviousStateType;
+            internal ComponentTypeHandle<TP> PreviousStateType;
 
-            public EntityCommandBuffer.ParallelWriter CommandBuffer;
+            internal EntityCommandBuffer.ParallelWriter CommandBuffer;
+
+            internal uint LastSystemVersion;
 
             /// <inheritdoc/>
             public void Execute(ArchetypeChunk batchInChunk, int batchIndex)
             {
+                if (!batchInChunk.DidChange(this.StateType, this.LastSystemVersion))
+                {
+                    return;
+                }
+
                 var entities = batchInChunk.GetNativeArray(this.EntityType);
                 var states = batchInChunk.GetNativeArray(this.StateType);
                 var previousStates = batchInChunk.GetNativeArray(this.PreviousStateType);

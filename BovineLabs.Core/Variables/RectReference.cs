@@ -11,5 +11,11 @@ namespace BovineLabs.Core.Variables
     [Serializable]
     public class RectReference : Reference<RectVariable, Rect>
     {
+        /// <summary> Initializes a new instance of the <see cref="RectReference"/> class. </summary>
+        /// <param name="value"> A default constant. </param>
+        public RectReference(Rect value)
+            : base(value)
+        {
+        }
     }
 }

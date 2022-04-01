@@ -11,5 +11,11 @@ namespace BovineLabs.Core.Variables
     [Serializable]
     public class Vector2Reference : Reference<Vector2Variable, Vector2>
     {
+        /// <summary> Initializes a new instance of the <see cref="Vector2Reference"/> class. </summary>
+        /// <param name="value"> A default constant. </param>
+        public Vector2Reference(Vector2 value)
+            : base(value)
+        {
+        }
     }
 }

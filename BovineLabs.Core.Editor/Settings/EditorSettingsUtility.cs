@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Editor.Settings
 {
     using System;
+    using System.IO;
     using System.Linq;
     using BovineLabs.Core.Settings;
     using UnityEditor;
@@ -13,8 +14,6 @@ namespace BovineLabs.Core.Editor.Settings
     /// <summary> Utility for setting up and getting settings. </summary>
     public static class EditorSettingsUtility
     {
-        private const string ResourceSettingsBasePath = "Settings/{0}";
-
         /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
         /// <typeparam name="T"> The type. </typeparam>
         /// <returns> The settings instance. </returns>
@@ -30,26 +29,34 @@ namespace BovineLabs.Core.Editor.Settings
             {
                 case 0:
 
+                    var directory = GetAssetDirectory();
+                    var path = Path.Combine(directory, $"{typeof(T).Name}.asset");
+
                     // Search didn't work, for some reason this seems to fail sometimes due to library state
                     // So before creating a new instance, try to directly look it up where we expect it
-                    const string directory = "Prefabs";
-                    var path = $"Assets/{directory}/{GetResourcePath(typeof(T))}.asset";
-
                     var instance = AssetDatabase.LoadAssetAtPath<T>(path);
                     if (instance != null)
                     {
                         return instance;
                     }
 
-                    // Still couldn't find it, create a new one
-                    if (!UnityEditor.AssetDatabase.IsValidFolder($"Assets/{directory}"))
+                    var combo = string.Empty;
+                    var dir = directory.Split('/');
+                    foreach (var d in dir)
                     {
-                        UnityEditor.AssetDatabase.CreateFolder("Assets", directory);
-                    }
+                        if (string.IsNullOrWhiteSpace(d))
+                        {
+                            continue;
+                        }
 
-                    if (!UnityEditor.AssetDatabase.IsValidFolder($"Assets/{directory}/Settings"))
-                    {
-                        UnityEditor.AssetDatabase.CreateFolder($"Assets/{directory}", "Settings");
+                        var p = Path.Combine(combo, d);
+
+                        if (!UnityEditor.AssetDatabase.IsValidFolder(p))
+                        {
+                            UnityEditor.AssetDatabase.CreateFolder(combo, d);
+                        }
+
+                        combo = p;
                     }
 
                     instance = ScriptableObject.CreateInstance<T>();
@@ -70,104 +77,25 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(asset));
-
-// #if BL_ADDRESSABLES
-//             var directory = $"Prefabs";
-// #else
-//             var directory = $"Resources";
-// #endif
-//
-//             var path = $"Assets/{directory}/{SettingsUtility.GetResourcePath(typeof(T)).RuntimeKey}.asset";
-//
-//             var instance = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(path);
-//
-//             if (instance == null)
-//             {
-//                 if (!UnityEditor.AssetDatabase.IsValidFolder($"Assets/{directory}"))
-//                 {
-//                     UnityEditor.AssetDatabase.CreateFolder("Assets", directory);
-//                 }
-//
-//                 if (!UnityEditor.AssetDatabase.IsValidFolder($"Assets/{directory}/Settings"))
-//                 {
-//                     UnityEditor.AssetDatabase.CreateFolder($"Assets/{directory}", "Settings");
-//                 }
-//
-//                 var existingAsset = AssetDatabase.FindAssets($"t:{typeof(T)}");
-//                 if (existingAsset.Length == 0)
-//                 {
-//                     instance = ScriptableObject.CreateInstance<T>();
-//                     UnityEditor.AssetDatabase.CreateAsset(instance, path);
-//                     UnityEditor.AssetDatabase.SaveAssets();
-//                 }
-//                 else if (existingAsset.Length == 1)
-//                 {
-//                     instance = MoveSettings<T>(existingAsset[0], path);
-//                 }
-//                 else
-//                 {
-//                     var existing = existingAsset.Where(s => !AssetDatabase.GUIDToAssetPath(s).StartsWith("Packages/")).ToArray();
-//
-//                     if (existing.Length == 1)
-//                     {
-//                         instance = MoveSettings<T>(existing[0], path);
-//                     }
-//                     else
-//                     {
-//                         throw new Exception($"More than one {typeof(T)} found in project, not sure what to use");
-//                     }
-//                 }
-//             }
-//
-// #if BL_ADDRESSABLES
-//
-//             if (UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings == null)
-//             {
-//                 throw new Exception("Addressable default group not setup");
-//             }
-//
-//             var aaSettings = UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings;
-//             var guid = AssetDatabase.AssetPathToGUID(path);
-//
-//             var entry = aaSettings.FindAssetEntry(guid) ?? aaSettings.CreateOrMoveEntry(guid, aaSettings.DefaultGroup);
-//
-//             var key = SettingsUtility.GetResourcePath(typeof(T)).RuntimeKey.ToString();
-//
-//             if (entry.address != key)
-//             {
-//                 Debug.Log($"Updating address of {typeof(T).Name}");
-//                 entry.SetAddress(key);
-//                 entry.parentGroup.SetDirty(
-//                     UnityEditor.AddressableAssets.Settings.AddressableAssetSettings.ModificationEvent.EntryModified,
-//                     new List<UnityEditor.AddressableAssets.Settings.AddressableAssetEntry> { entry },
-//                     false);
-//             }
-// #endif
-            // return instance;
         }
 
-        // private static T MoveSettings<T>(string existingAsset, string path)
-        //     where T : ScriptableObject, ISettings
-        // {
-        //     var existingPath = AssetDatabase.GUIDToAssetPath(existingAsset);
-        //
-        //     if (existingPath.StartsWith("Packages/"))
-        //     {
-        //         Debug.Log($"Found existing settings ({typeof(T)}) at {existingPath}, copying to {path} for use in project");
-        //         UnityEditor.AssetDatabase.CopyAsset(existingPath, path);
-        //     }
-        //     else
-        //     {
-        //         Debug.Log($"Found existing settings ({typeof(T)}) at {existingPath}, moving to {path} for use in project");
-        //         UnityEditor.AssetDatabase.MoveAsset(existingPath, path);
-        //     }
-        //
-        //     return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(path);
-        // }
-
-        private static string GetResourcePath(Type type)
+        private static string GetAssetDirectory()
         {
-            return string.Format($"{ResourceSettingsBasePath}", type.Name);
+            var assets = AssetDatabase.FindAssets($"t:{nameof(EditorSettingsBase)}");
+
+            // No editor settings, use the default
+            if (assets.Length == 0)
+            {
+                return EditorSettingsBase.DefaultSettingsDirectory;
+            }
+
+            if (assets.Length > 2)
+            {
+                Debug.LogError($"More than 1 EditorSettingsBase found, using {AssetDatabase.GUIDToAssetPath(assets[0])}");
+            }
+
+            var settings = AssetDatabase.LoadAssetAtPath<EditorSettingsBase>(AssetDatabase.GUIDToAssetPath(assets[0]));
+            return settings.SettingsPath;
         }
     }
 }

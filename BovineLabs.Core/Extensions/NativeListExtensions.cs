@@ -14,38 +14,38 @@ namespace BovineLabs.Core.Extensions
         public static void ReserveNoResize<T>(this NativeList<T>.ParallelWriter nativeList, int length, out T* ptr, out int idx)
             where T : unmanaged
         {
-            idx = Interlocked.Add(ref nativeList.ListData->Length, length) - length;
+            idx = Interlocked.Add(ref nativeList.ListData->m_length, length) - length;
             ptr = (T*)((byte*)nativeList.Ptr + (idx * UnsafeUtility.SizeOf<T>()));
         }
 
         public static IntPtr GetUnsafeIntPtr<T>(this NativeList<T> list)
-            where T : struct
+            where T : unmanaged
         {
             return (IntPtr)list.GetUnsafePtr();
         }
 
         public static IntPtr GetUnsafeReadOnlyIntPtr<T>(this NativeList<T> list)
-            where T : struct
+            where T : unmanaged
         {
             return (IntPtr)list.GetUnsafeReadOnlyPtr();
         }
 
         public static void Insert<T>(this NativeList<T> list, int index, T item)
-            where T : struct
+            where T : unmanaged
         {
             list.InsertRangeWithBeginEnd(index, index + 1);
             list[index] = item;
         }
 
         public static void ResizeInitialized<T>(this NativeList<T> list, int length, byte value)
-            where T : struct
+            where T : unmanaged
         {
             list.ResizeUninitialized(length);
             UnsafeUtility.MemSet(list.GetUnsafePtr(), value, UnsafeUtility.SizeOf<int>() * length);
         }
 
         public static void ResizeInitialized<T>(this NativeList<T> list, int length)
-            where T : struct
+            where T : unmanaged
         {
             list.ResizeUninitialized(length);
             UnsafeUtility.MemClear(list.GetUnsafePtr(), UnsafeUtility.SizeOf<int>() * length);

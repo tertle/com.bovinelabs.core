@@ -1,18 +1,13 @@
-﻿namespace BovineLabs.Core.Internal
+﻿// <copyright file="ArchetypeChunkInternals.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Internal
 {
     using System;
     using System.Diagnostics;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-
-    public unsafe struct ArrayInternals
-    {
-        public void* Buffer;
-        public int Length;
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-        public AtomicSafetyHandle Safety;
-#endif
-    }
 
     public static class ArchetypeChunkInternals
     {
@@ -43,12 +38,36 @@
             {
                 Buffer = buffer,
                 Length = length,
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                Safety = chunkComponentTypeHandle.m_Safety,
-#endif
             };
 
             return result;
+        }
+
+        public static unsafe BufferInternals BufferInternals<T>(this ArchetypeChunk chunk, BufferTypeHandle<T> bufferComponentTypeHandle)
+            where T : struct, IBufferElementData
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(bufferComponentTypeHandle.m_Safety0);
+#endif
+            var archetype = chunk.m_Chunk->Archetype;
+            var typeIndex = bufferComponentTypeHandle.m_TypeIndex;
+            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(archetype, typeIndex);
+            if (typeIndexInArchetype == -1)
+            {
+                return new BufferInternals(null, 0, 0, 0);
+            }
+
+            int internalCapacity = archetype->BufferCapacities[typeIndexInArchetype];
+
+            byte* ptr = bufferComponentTypeHandle.IsReadOnly
+                ? ChunkDataUtility.GetComponentDataRO(chunk.m_Chunk, 0, typeIndexInArchetype)
+                : ChunkDataUtility.GetComponentDataRW(chunk.m_Chunk, 0, typeIndexInArchetype, bufferComponentTypeHandle.GlobalSystemVersion);
+
+            var length = chunk.Count;
+            int stride = archetype->SizeOfs[typeIndexInArchetype];
+            var batchStartOffset = chunk.m_BatchStartEntityIndex * stride;
+
+            return new BufferInternals(ptr + batchStartOffset, length, stride, internalCapacity);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

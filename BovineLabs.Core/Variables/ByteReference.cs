@@ -10,5 +10,11 @@ namespace BovineLabs.Core.Variables
     [Serializable]
     public class ByteReference : Reference<ByteVariable, byte>
     {
+        /// <summary> Initializes a new instance of the <see cref="ByteReference"/> class. </summary>
+        /// <param name="value"> A default constant. </param>
+        public ByteReference(byte value)
+            : base(value)
+        {
+        }
     }
 }

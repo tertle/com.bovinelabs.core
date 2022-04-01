@@ -11,40 +11,13 @@ namespace BovineLabs.Core.Iterators
     using Unity.Entities;
     using CollectionHelper = Unity.Collections.CollectionHelper;
 
-    public interface IDynamicHashMap<TKey, TValue> : IBufferElementData
-        where TKey : struct, IEquatable<TKey>
-        where TValue : struct
+    public unsafe struct DynamicHashMap<TKey, TValue>
+        where TKey : unmanaged, IEquatable<TKey>
+        where TValue : unmanaged
     {
-        byte Value { get; }
-    }
+        private DynamicBuffer<byte> data;
 
-    public static class IDynamicHashMapExtension
-    {
-        public static DynamicHashMap<TBuffer, TKey, TValue> AsHashMap<TBuffer, TKey, TValue>(this DynamicBuffer<TBuffer> buffer)
-            where TBuffer : struct, IDynamicHashMap<TKey, TValue>
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
-        {
-            return new DynamicHashMap<TBuffer, TKey, TValue>(buffer);
-        }
-
-        internal static unsafe DynamicHashMapData* AsData<TBuffer, TKey, TValue>(this DynamicBuffer<TBuffer> buffer)
-            where TBuffer : struct, IDynamicHashMap<TKey, TValue>
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
-        {
-            return (DynamicHashMapData*)buffer.GetUnsafePtr();
-        }
-    }
-
-    public unsafe struct DynamicHashMap<TBuffer, TKey, TValue>
-        where TBuffer : struct, IDynamicHashMap<TKey, TValue>
-        where TKey : struct, IEquatable<TKey>
-        where TValue : struct
-    {
-        private DynamicBuffer<TBuffer> data;
-
-        internal DynamicHashMap(DynamicBuffer<TBuffer> buffer)
+        internal DynamicHashMap(DynamicBuffer<byte> buffer)
         {
             CheckSize(buffer);
 
@@ -57,28 +30,28 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-        /// <summary> Reports whether container is empty. </summary>
+        /// <summary> Gets a value indicating whether container is empty. </summary>
         /// <value>True if this container empty.</value>
-        public bool IsEmpty => !this.IsCreated || DynamicHashMapData.IsEmpty(this.Buffer);
+        public bool IsEmpty => !this.IsCreated || DynamicHashMapData.IsEmpty(this.BufferReadOnly);
 
         public bool IsCreated => this.data.IsCreated;
 
-        /// <summary> The number of items that can fit in the container. </summary>
+        /// <summary> Gets or sets the number of items that can fit in the container. </summary>
         /// <value>The number of items that the container can hold before it resizes its internal storage.</value>
         /// <remarks>Capacity specifies the number of items the container can currently hold. You can change Capacity
         /// to fit more or fewer items. Changing Capacity creates a new array of the specified size, copies the
         /// old array to the new one, and then deallocates the original array memory.</remarks>
         public int Capacity
         {
-            get => this.data.AsData<TBuffer, TKey, TValue>()->KeyCapacity;
-            set => DynamicHashMapData.ReallocateHashMap<TBuffer, TKey, TValue>(this.data, value, UnsafeHashMapData.GetBucketSize(value), out _);
+            get => this.data.AsDataReadOnly<TKey, TValue>()->KeyCapacity;
+            set => DynamicHashMapData.ReallocateHashMap<TKey, TValue>(this.data, value, UnsafeHashMapData.GetBucketSize(value), out _);
         }
 
-        private DynamicHashMapData* Buffer => this.data.AsData<TBuffer, TKey, TValue>();
+        private DynamicHashMapData* BufferReadOnly => this.data.AsDataReadOnly<TKey, TValue>();
 
         /// <summary> The current number of items in the container. </summary>
         /// <returns>The item count.</returns>
-        public int Count() => DynamicHashMapData.GetCount(this.Buffer);
+        public int Count() => DynamicHashMapData.GetCount(this.BufferReadOnly);
 
         /// <summary>
         /// Clears the container.
@@ -86,7 +59,7 @@ namespace BovineLabs.Core.Iterators
         /// <remarks>Containers capacity remains unchanged.</remarks>
         public void Clear()
         {
-            DynamicHashMapBase<TBuffer, TKey, TValue>.Clear(this.data);
+            DynamicHashMapBase<TKey, TValue>.Clear(this.data);
         }
 
         /// <summary>
@@ -97,7 +70,7 @@ namespace BovineLabs.Core.Iterators
         /// <returns>Returns true if value is added into the container, otherwise returns false.</returns>
         public bool TryAdd(TKey key, TValue item)
         {
-            return DynamicHashMapBase<TBuffer, TKey, TValue>.TryAdd(this.data, key, item, false);
+            return DynamicHashMapBase<TKey, TValue>.TryAdd(this.data, key, item, false);
         }
 
         /// <summary>
@@ -117,33 +90,27 @@ namespace BovineLabs.Core.Iterators
         /// <returns>Returns true if the key was removed from the container, otherwise returns false indicating key wasn't in the container.</returns>
         public bool Remove(TKey key)
         {
-            return DynamicHashMapBase<TBuffer, TKey, TValue>.Remove(this.data, key, false) != 0;
+            return DynamicHashMapBase<TKey, TValue>.Remove(this.data, key, false) != 0;
         }
 
-        /// <summary>
-        /// Gets the value associated with the specified key.
-        /// </summary>
-        /// <param name="key">The key of the value to get.</param>
-        /// <param name="item">If key is found item parameter will contain value</param>
-        /// <returns>Returns true if key is found, otherwise returns false.</returns>
+        /// <summary> Gets the value associated with the specified key. </summary>
+        /// <param name="key"> The key of the value to get. </param>
+        /// <param name="item"> If key is found item parameter will contain value. </param>
+        /// <returns> Returns true if key is found, otherwise returns false. </returns>
         public bool TryGetValue(TKey key, out TValue item)
         {
-            return DynamicHashMapBase<TBuffer, TKey, TValue>.TryGetFirstValueAtomic(this.Buffer, key, out item, out _);
+            return DynamicHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(this.BufferReadOnly, key, out item, out _);
         }
 
-        /// <summary>
-        /// Determines whether an key is in the container.
-        /// </summary>
-        /// <param name="key">The key to locate in the container.</param>
-        /// <returns>Returns true if the container contains the key.</returns>
+        /// <summary> Determines whether an key is in the container. </summary>
+        /// <param name="key"> The key to locate in the container. </param>
+        /// <returns> Returns true if the container contains the key. </returns>
         public bool ContainsKey(TKey key)
         {
-            return DynamicHashMapBase<TBuffer, TKey, TValue>.TryGetFirstValueAtomic(this.Buffer, key, out var tempValue, out var tempIt);
+            return DynamicHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(this.BufferReadOnly, key, out _, out _);
         }
 
-        /// <summary>
-        /// Returns array populated with keys.
-        /// </summary>
+        /// <summary> Returns array populated with keys. </summary>
         /// <remarks>Number of returned keys will match number of values in the container. If key contains multiple values it will appear number of times
         /// how many values are associated to the same key. If only unique key values desired use GetUniqueKeyArray instead.</remarks>
         /// <param name="allocator">A member of the
@@ -152,7 +119,7 @@ namespace BovineLabs.Core.Iterators
         public NativeArray<TKey> GetKeyArray(Allocator allocator)
         {
             var result = new NativeArray<TKey>(this.Count(), allocator, NativeArrayOptions.UninitializedMemory);
-            DynamicHashMapData.GetKeyArray(this.Buffer, result);
+            DynamicHashMapData.GetKeyArray(this.BufferReadOnly, result);
             return result;
         }
 
@@ -165,7 +132,7 @@ namespace BovineLabs.Core.Iterators
         public NativeArray<TValue> GetValueArray(Allocator allocator)
         {
             var result = new NativeArray<TValue>(this.Count(), allocator, NativeArrayOptions.UninitializedMemory);
-            DynamicHashMapData.GetValueArray(this.Buffer, result);
+            DynamicHashMapData.GetValueArray(this.BufferReadOnly, result);
             return result;
         }
 
@@ -179,8 +146,17 @@ namespace BovineLabs.Core.Iterators
         public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(Allocator allocator)
         {
             var result = new NativeKeyValueArrays<TKey, TValue>(this.Count(), allocator, NativeArrayOptions.UninitializedMemory);
-            DynamicHashMapData.GetKeyValueArrays(this.Buffer, result);
+            DynamicHashMapData.GetKeyValueArrays(this.BufferReadOnly, result);
             return result;
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckSize(DynamicBuffer<byte> buffer)
+        {
+            if (buffer.Length != 0 && buffer.Length < UnsafeUtility.SizeOf<DynamicHashMapData>())
+            {
+                throw new InvalidOperationException($"Buffer has data but is too small to be a header.");
+            }
         }
 
         private void Allocate()
@@ -188,22 +164,8 @@ namespace BovineLabs.Core.Iterators
             CollectionHelper.CheckIsUnmanaged<TKey>();
             CollectionHelper.CheckIsUnmanaged<TValue>();
 
-            DynamicHashMapData.AllocateHashMap<TBuffer, TKey, TValue>(this.data, 0, 0, out _);
+            DynamicHashMapData.AllocateHashMap<TKey, TValue>(this.data, 0, 0, out _);
             this.Clear();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckSize(DynamicBuffer<TBuffer> buffer)
-        {
-            if (UnsafeUtility.SizeOf<TBuffer>() != 1)
-            {
-                throw new InvalidOperationException($"Type {typeof(TBuffer)} is not size 1.");
-            }
-
-            if (buffer.Length != 0 && buffer.Length < UnsafeUtility.SizeOf<DynamicHashMapData>())
-            {
-                throw new InvalidOperationException($"Buffer has data but is too small to be a header.");
-            }
         }
     }
 }

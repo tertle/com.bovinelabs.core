@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Memory
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    public unsafe struct PoolAllocator<T> : IDisposable
+        public unsafe struct PoolAllocator<T> : IDisposable
         where T : unmanaged
     {
         private readonly int maxItems;

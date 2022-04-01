@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Collections
         where T : unmanaged
     {
         [NativeDisableUnsafePtrRestriction]
-        private readonly UnsafeList* listData;
+        private readonly UnsafeList<T>* listData;
 
         /// <summary>
         /// Constructs a new list using the specified type of memory allocation.
@@ -41,7 +41,7 @@ namespace BovineLabs.Core.Collections
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         public UnsafeListPtr(int initialCapacity, Allocator allocator)
         {
-            this.listData = UnsafeList.Create(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), initialCapacity, allocator);
+            this.listData = UnsafeList<T>.Create(initialCapacity, allocator);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace BovineLabs.Core.Collections
         public int Length
         {
             get => CollectionHelper.AssumePositive(this.listData->Length);
-            set => this.listData->Resize<T>(value, NativeArrayOptions.ClearMemory);
+            set => this.listData->Resize(value, NativeArrayOptions.ClearMemory);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace BovineLabs.Core.Collections
         public int Capacity
         {
             get => CollectionHelper.AssumePositive(this.listData->Capacity);
-            set => this.listData->SetCapacity<T>(value);
+            set => this.listData->SetCapacity(value);
         }
 
         public void SetCapacity(int capacity)
@@ -105,7 +105,7 @@ namespace BovineLabs.Core.Collections
         /// Return internal UnsafeList*
         /// </summary>
         /// <returns></returns>
-        public UnsafeList* GetUnsafeList() => this.listData;
+        public UnsafeList<T>* GetUnsafeList() => this.listData;
 
         /// <summary>
         /// Adds an element to the list.
@@ -130,7 +130,7 @@ namespace BovineLabs.Core.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if length is negative.</exception>
         public void AddRangeNoResize(void* ptr, int length)
         {
-            this.listData->AddRangeNoResize<T>(ptr, length);
+            this.listData->AddRangeNoResize(ptr, length);
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace BovineLabs.Core.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if count is negative.</exception>
         public void AddRange(void* elements, int count)
         {
-            this.listData->AddRange<T>(elements, CollectionHelper.AssumePositive(count));
+            this.listData->AddRange(elements, CollectionHelper.AssumePositive(count));
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace BovineLabs.Core.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
-            this.listData->InsertRangeWithBeginEnd<T>(CollectionHelper.AssumePositive(begin), CollectionHelper.AssumePositive(end));
+            this.listData->InsertRangeWithBeginEnd(CollectionHelper.AssumePositive(begin), CollectionHelper.AssumePositive(end));
         }
 
         /// <summary>
@@ -185,20 +185,20 @@ namespace BovineLabs.Core.Collections
         /// <exception cref="ArgumentOutOfRangeException">If index is negative or >= <see cref="Length"/>.</exception>
         public void RemoveAtSwapBack(int index)
         {
-            this.listData->RemoveAtSwapBack<T>(CollectionHelper.AssumePositive(index));
+            this.listData->RemoveAtSwapBack(CollectionHelper.AssumePositive(index));
         }
 
         /// <summary>
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The index of the first element to overwrite.</param>
+        /// <param name="count">The number of elements to copy and remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            this.listData->RemoveRangeSwapBackWithBeginEnd<T>(CollectionHelper.AssumePositive(begin), CollectionHelper.AssumePositive(end));
+            this.listData->RemoveRangeSwapBack(CollectionHelper.AssumePositive(index), CollectionHelper.AssumePositive(count));
         }
 
         /// <summary>
@@ -212,24 +212,7 @@ namespace BovineLabs.Core.Collections
         /// </remarks>
         public void RemoveAt(int index)
         {
-            this.listData->RemoveAt<T>(CollectionHelper.AssumePositive(index));
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            this.listData->RemoveRangeWithBeginEnd<T>(begin, end);
+            this.listData->RemoveAt(CollectionHelper.AssumePositive(index));
         }
 
         /// <summary>
@@ -259,7 +242,7 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         public void Dispose()
         {
-            UnsafeList.Destroy(this.listData);
+            UnsafeList<T>.Destroy(this.listData);
         }
 
         /// <summary>
@@ -296,7 +279,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
         public void Resize(int length, NativeArrayOptions options)
         {
-            this.listData->Resize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), length, options);
+            this.listData->Resize(length, options);
         }
 
         /// <summary>
@@ -360,9 +343,9 @@ namespace BovineLabs.Core.Collections
             ///
             /// </summary>
             [NativeDisableUnsafePtrRestriction]
-            public UnsafeList* ListData;
+            public UnsafeList<T>* ListData;
 
-            internal ParallelWriter(UnsafeList* listData)
+            internal ParallelWriter(UnsafeList<T>* listData)
             {
                 this.ListData = listData;
             }
@@ -376,7 +359,7 @@ namespace BovineLabs.Core.Collections
             /// </remarks>
             public void AddNoResize(T value)
             {
-                var idx = Interlocked.Increment(ref this.ListData->Length) - 1;
+                var idx = Interlocked.Increment(ref this.ListData->m_length) - 1;
                 CheckSufficientCapacity(this.ListData->Capacity, idx + 1);
 
                 UnsafeUtility.WriteArrayElement(this.ListData->Ptr, idx, value);
@@ -384,7 +367,7 @@ namespace BovineLabs.Core.Collections
 
             void AddRangeNoResize(int sizeOf, int alignOf, void* ptr, int length)
             {
-                var idx = Interlocked.Add(ref this.ListData->Length, length) - length;
+                var idx = Interlocked.Add(ref this.ListData->m_length, length) - length;
                 CheckSufficientCapacity(this.ListData->Capacity, idx + length);
 
                 void* dst = (byte*)this.ListData->Ptr + (idx * sizeOf);
@@ -412,14 +395,14 @@ namespace BovineLabs.Core.Collections
             /// <remarks>
             /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
             /// </remarks>
-            public void AddRangeNoResize(UnsafeList list)
+            public void AddRangeNoResize(UnsafeList<T> list)
             {
                 this.AddRangeNoResize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), list.Ptr, list.Length);
             }
 
             public void Reserve(int length, out T* ptr, out int idx)
             {
-                idx = Interlocked.Add(ref this.ListData->Length, length) - length;
+                idx = Interlocked.Add(ref this.ListData->m_length, length) - length;
                 ptr = (T*)((byte*)this.ListData->Ptr + (idx * UnsafeUtility.SizeOf<T>()));
             }
         }
@@ -438,7 +421,7 @@ namespace BovineLabs.Core.Collections
         internal struct NativeListDispose
         {
             [NativeDisableUnsafePtrRestriction]
-            public UnsafeList* m_ListData;
+            public UnsafeList<T>* m_ListData;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
@@ -446,7 +429,7 @@ namespace BovineLabs.Core.Collections
 
             public void Dispose()
             {
-                UnsafeList.Destroy(this.m_ListData);
+                UnsafeList<T>.Destroy(this.m_ListData);
             }
         }
 

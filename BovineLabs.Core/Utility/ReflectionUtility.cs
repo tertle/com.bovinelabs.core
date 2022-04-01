@@ -156,9 +156,17 @@ namespace BovineLabs.Core.Utility
         /// <returns>The name of all the assemblies. </returns>
         public static IEnumerable<string> GetAllAssemblyNamesWithReference(Assembly reference)
         {
-            return AppDomain.CurrentDomain.GetAssemblies().Where(a => IsAssemblyReferencingAssembly(a, reference)).Select(a => a.GetName().Name);
+            return GetAllAssemblyWithReference(reference).Select(a => a.GetName().Name);
         }
 #endif
+
+        /// <summary> Gets the name of all assemblies with a specific reference. </summary>
+        /// <param name="reference"> The reference. </param>
+        /// <returns>The name of all the assemblies. </returns>
+        public static IEnumerable<Assembly> GetAllAssemblyWithReference(Assembly reference)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies().Where(a => IsAssemblyReferencingAssembly(a, reference));
+        }
 
         private static T GetCustomImplementation<T>(Type defaultImplementation)
         {

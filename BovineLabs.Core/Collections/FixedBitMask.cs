@@ -9,8 +9,6 @@ namespace BovineLabs.Core.Collections
     using BovineLabs.Core.Utility;
     using Unity.Collections.LowLevel.Unsafe;
 
-    public interface IFixedSize { }
-
     public unsafe struct FixedBitMask<T>
         where T : unmanaged, IFixedSize
     {

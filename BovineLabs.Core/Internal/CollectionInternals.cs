@@ -15,7 +15,9 @@ namespace BovineLabs.Core.Internal
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+#endif
             return hashMap.m_HashMapData;
         }
 
@@ -23,7 +25,9 @@ namespace BovineLabs.Core.Internal
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
+#endif
             return hashMap.m_HashMapData;
         }
 
@@ -48,7 +52,9 @@ namespace BovineLabs.Core.Internal
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+#endif
             return hashMap.m_MultiHashMapData;
         }
 
@@ -56,7 +62,9 @@ namespace BovineLabs.Core.Internal
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
+#endif
             return hashMap.m_MultiHashMapData;
         }
 
@@ -75,6 +83,21 @@ namespace BovineLabs.Core.Internal
         {
             return new NativeMultiHashMap<TKey, TValue> { m_MultiHashMapData = hashMapData };
         }
+
+        public static unsafe byte* Buffer<T>(this FixedList32Bytes<T> list)
+            where T : unmanaged => list.Buffer;
+
+        public static unsafe byte* Buffer<T>(this FixedList64Bytes<T> list)
+            where T : unmanaged => list.Buffer;
+
+        public static unsafe byte* Buffer<T>(this FixedList128Bytes<T> list)
+            where T : unmanaged => list.Buffer;
+
+        public static unsafe byte* Buffer<T>(this FixedList512Bytes<T> list)
+            where T : unmanaged => list.Buffer;
+
+        public static unsafe byte* Buffer<T>(this FixedList4096Bytes<T> list)
+            where T : unmanaged => list.Buffer;
 
         // NativeReference
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

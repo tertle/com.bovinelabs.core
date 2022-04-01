@@ -5,7 +5,6 @@
 namespace BovineLabs.Core.Tests.Extensions
 {
     using BovineLabs.Core.Extensions;
-    using BovineLabs.Testing;
     using NUnit.Framework;
     using Unity.Mathematics;
     using Assert = UnityEngine.Assertions.Assert;

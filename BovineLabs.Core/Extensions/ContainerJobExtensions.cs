@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Extensions
     public static class ContainerJobExtensions
     {
         public static JobHandle Clear<T>(this NativeList<T> list, JobHandle handle)
-            where T : struct
+            where T : unmanaged
         {
             return new ClearListJob<T> { List = list }.Schedule(handle);
         }
@@ -39,7 +39,7 @@ namespace BovineLabs.Core.Extensions
 
         [BurstCompile]
         private struct ClearListJob<T> : IJob
-            where T : struct
+            where T : unmanaged
         {
             public NativeList<T> List;
 

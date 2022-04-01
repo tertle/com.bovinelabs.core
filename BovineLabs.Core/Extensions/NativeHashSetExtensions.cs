@@ -1,4 +1,8 @@
-﻿namespace BovineLabs.Core.Extensions
+﻿// <copyright file="NativeHashSetExtensions.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Extensions
 {
     using System;
     using Unity.Collections;

@@ -5,13 +5,14 @@
 namespace BovineLabs.Core.Memory
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using BovineLabs.Core.Collections;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using UnityEngine;
 
     [NativeContainer]
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
     public unsafe struct SlabAllocator<T> : IDisposable
         where T : unmanaged
     {
@@ -23,10 +24,14 @@ namespace BovineLabs.Core.Memory
         private readonly int* count;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#pragma warning disable SA1308
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Required by safety")]
         private AtomicSafetyHandle m_Safety;
 
         [NativeSetClassTypeToNullOnSchedule]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Required by safety")]
         private DisposeSentinel m_DisposeSentinel;
+#pragma warning restore SA1308
 #endif
 
         public SlabAllocator(int countPerSlab, Allocator allocator)
@@ -49,11 +54,8 @@ namespace BovineLabs.Core.Memory
 
         public bool IsCreated => this.slabs.IsCreated;
 
-        /// <summary>
-        /// Returns a pointer
-        /// Please note, this memory is not cleared.
-        /// </summary>
-        /// <returns></returns>
+        /// <summary> Returns a pointer. This memory is not cleared. </summary>
+        /// <returns> The pointer. </returns>
         public T* Alloc()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -67,7 +69,7 @@ namespace BovineLabs.Core.Memory
                 this.slabs.Add(ptr);
             }
 
-            var lastSlab = (T*)this.slabs[this.slabs.Length - 1].ToPointer();
+            var lastSlab = (T*)this.slabs[this.slabs.Length-1].ToPointer();
             return lastSlab + (*this.count)++;
         }
 

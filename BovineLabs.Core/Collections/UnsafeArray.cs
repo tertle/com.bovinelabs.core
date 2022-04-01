@@ -1,4 +1,8 @@
-﻿namespace BovineLabs.Core.Collections
+﻿// <copyright file="UnsafeArray.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Collections;
@@ -19,7 +23,6 @@
     [NativeContainerSupportsMinMaxWriteRestriction]
     [DebuggerDisplay("Length = {" + nameof(Length) + "}")]
     [DebuggerTypeProxy(typeof(UnsafeArrayDebugView<>))]
-    // [NativeContainerSupportsDeferredConvertListToArray]
     public struct UnsafeArray<T> : IDisposable, IEnumerable<T>, IEquatable<UnsafeArray<T>>
         where T : struct
     {

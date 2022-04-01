@@ -1,4 +1,4 @@
-﻿// <copyright file="StateFlagSystemBase.cs" company="BovineLabs">
+// <copyright file="StateFlagSystemBase.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -17,7 +17,7 @@ namespace BovineLabs.Core.States
     /// <typeparam name="T"> The bit array type. </typeparam>
     /// <typeparam name="TS"> The state component. </typeparam>
     /// <typeparam name="TP"> The previous state component. </typeparam>
-    public abstract class StateFlagSystemBase<T, TS, TP> : SystemBase
+    public abstract partial class StateFlagSystemBase<T, TS, TP> : SystemBase
         where T : unmanaged, IBitArray<T>
         where TS : struct, IStateFlagComponent<T>
         where TP : struct, IStateFlagPreviousComponent<T>
@@ -80,7 +80,7 @@ namespace BovineLabs.Core.States
             stateJob.StateType = this.GetComponentTypeHandle<TS>(true);
             stateJob.PreviousStateType = this.GetComponentTypeHandle<TP>();
             stateJob.CommandBuffer = this.bufferSystem.CreateCommandBuffer().AsParallelWriter();
-            this.Dependency = stateJob.ScheduleParallel(this.query, 1, this.Dependency);
+            this.Dependency = stateJob.ScheduleParallel(this.query, this.Dependency);
 
             this.bufferSystem.AddJobHandleForProducer(this.Dependency);
         }
@@ -89,17 +89,17 @@ namespace BovineLabs.Core.States
         protected struct StateJob : IJobEntityBatch
         {
             [ReadOnly]
-            public NativeHashMap<uint, ComponentType> RegisteredStates;
+            internal NativeHashMap<uint, ComponentType> RegisteredStates;
 
             [ReadOnly]
-            public EntityTypeHandle EntityType;
+            internal EntityTypeHandle EntityType;
 
             [ReadOnly]
-            public ComponentTypeHandle<TS> StateType;
+            internal ComponentTypeHandle<TS> StateType;
 
-            public ComponentTypeHandle<TP> PreviousStateType;
+            internal ComponentTypeHandle<TP> PreviousStateType;
 
-            public EntityCommandBuffer.ParallelWriter CommandBuffer;
+            internal EntityCommandBuffer.ParallelWriter CommandBuffer;
 
             /// <inheritdoc/>
             public void Execute(ArchetypeChunk batchInChunk, int batchIndex)
@@ -130,17 +130,17 @@ namespace BovineLabs.Core.States
                     {
                         if (toRemove[r])
                         {
-                            Debug.Assert(this.RegisteredStates.ContainsKey(r), "Trying to remove state {r} that was not registered");
+                            Debug.Assert(this.RegisteredStates.ContainsKey(r), $"Trying to remove state {r} that was not registered");
                             var stateComponent = this.RegisteredStates[r];
                             this.CommandBuffer.RemoveComponent(batchIndex, entity, stateComponent);
                         }
                     }
 
-                    for (uint r = 0; r < toRemove.Capacity; r++)
+                    for (uint r = 0; r < toAdd.Capacity; r++)
                     {
                         if (toAdd[r])
                         {
-                            Debug.Assert(this.RegisteredStates.ContainsKey(r), "Trying to add state {r} that was not registered");
+                            Debug.Assert(this.RegisteredStates.ContainsKey(r), $"Trying to add state {r} that was not registered");
                             var stateComponent = this.RegisteredStates[r];
                             this.CommandBuffer.AddComponent(batchIndex, entity, stateComponent);
                         }

@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Collections
     /// </summary>
     /// <typeparam name="T"> The type.</typeparam>
     public interface IBitArray<T>
-        where T : IBitArray<T>
+        where T : unmanaged, IBitArray<T>
     {
         /// <summary>Gets the capacity of this BitArray. This is the number of bits that are usable.</summary>
         uint Capacity { get; }

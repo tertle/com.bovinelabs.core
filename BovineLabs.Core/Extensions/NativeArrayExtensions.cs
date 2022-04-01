@@ -10,6 +10,7 @@ namespace BovineLabs.Core.Extensions
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Mathematics;
 
+#pragma warning disable SA1649
     public interface IPredicate<in T>
     {
         bool Check(T val);
@@ -19,6 +20,7 @@ namespace BovineLabs.Core.Extensions
     {
         TOutput Select(TInput val);
     }
+#pragma warning restore SA1649
 
     public static unsafe class NativeArrayExtensions
     {
@@ -32,7 +34,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="array"> The array to fill. </param>
         /// <param name="value"> The value that the array elements will be set to. </param>
         /// <typeparam name="T"> The unmanaged type the array holds. </typeparam>
-        public static unsafe void SetAll<T>(this NativeArray<T> array, T value)
+        public static void SetAll<T>(this NativeArray<T> array, T value)
             where T : unmanaged
         {
             UnsafeUtility.MemCpyReplicate(array.GetUnsafeReadOnlyPtr(), &value, UnsafeUtility.SizeOf<T>(), array.Length);
@@ -41,7 +43,7 @@ namespace BovineLabs.Core.Extensions
         /// <summary> Efficiently clears all values in a NativeArray. </summary>
         /// <param name="array"> The array to clear. </param>
         /// <typeparam name="T"> The unmanaged type the array holds. </typeparam>
-        public static unsafe void Clear<T>(this NativeArray<T> array)
+        public static void Clear<T>(this NativeArray<T> array)
             where T : unmanaged
         {
             UnsafeUtility.MemClear(array.GetUnsafeReadOnlyPtr(), UnsafeUtility.SizeOf<T>() * array.Length);

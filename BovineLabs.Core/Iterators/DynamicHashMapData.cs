@@ -43,6 +43,9 @@ namespace BovineLabs.Core.Iterators
         [FieldOffset(40)]
         internal int AllocatedIndexLength;
 
+        [FieldOffset(44)]
+        internal int FirstFreeIDX;
+
         internal static int GetBucketSize(int capacity)
         {
             return capacity * 2;
@@ -59,14 +62,13 @@ namespace BovineLabs.Core.Iterators
         }
 
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int), typeof(int) })]
-        internal static void AllocateHashMap<TBuffer, TKey, TValue>(
-            DynamicBuffer<TBuffer> buffer,
+        internal static void AllocateHashMap<TKey, TValue>(
+            DynamicBuffer<byte> buffer,
             int length,
             int bucketLength,
             out DynamicHashMapData* outBuf)
-            where TBuffer : struct, IDynamicHashMap<TKey, TValue>
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
             Debug.Assert(buffer.Length == 0, "Buffer already assigned");
 
@@ -80,7 +82,7 @@ namespace BovineLabs.Core.Iterators
 
             buffer.ResizeUninitialized(hashMapDataSize + totalSize);
 
-            var data = buffer.AsData<TBuffer, TKey, TValue>();
+            var data = buffer.AsData<TKey, TValue>();
             var ptr = (byte*)data;
 
             data->KeyCapacity = length;
@@ -95,16 +97,15 @@ namespace BovineLabs.Core.Iterators
         }
 
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int), typeof(int) })]
-        internal static void ReallocateHashMap<TBuffer, TKey, TValue>(
-            DynamicBuffer<TBuffer> buffer,
+        internal static void ReallocateHashMap<TKey, TValue>(
+            DynamicBuffer<byte> buffer,
             int newCapacity,
             int newBucketCapacity,
             out DynamicHashMapData* data)
-            where TBuffer : struct, IDynamicHashMap<TKey, TValue>
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
-            data = buffer.AsData<TBuffer, TKey, TValue>();
+            data = buffer.AsData<TKey, TValue>();
 
             newBucketCapacity = math.ceilpow2(newBucketCapacity);
 
@@ -132,7 +133,7 @@ namespace BovineLabs.Core.Iterators
 
             buffer.ResizeUninitialized(hashMapDataSize + totalSize);
 
-            data = buffer.AsData<TBuffer, TKey, TValue>();
+            data = buffer.AsData<TKey, TValue>();
             var ptr = (byte*)data;
 
             byte* newValues = ptr + hashMapDataSize;
@@ -216,7 +217,15 @@ namespace BovineLabs.Core.Iterators
                 return 0;
             }
 
-            return math.min(data->KeyCapacity, data->AllocatedIndexLength);
+            var bucketNext = (int*)data->Next;
+            var freeListSize = 0;
+
+            for (var freeIdx = data->FirstFreeIDX; freeIdx >= 0; freeIdx = bucketNext[freeIdx])
+            {
+                ++freeListSize;
+            }
+
+            return math.min(data->KeyCapacity, data->AllocatedIndexLength) - freeListSize;
         }
 
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]

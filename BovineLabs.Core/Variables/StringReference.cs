@@ -10,5 +10,11 @@ namespace BovineLabs.Core.Variables
     [Serializable]
     public class StringReference : Reference<StringVariable, string>
     {
+        /// <summary> Initializes a new instance of the <see cref="StringReference"/> class. </summary>
+        /// <param name="value"> A default constant. </param>
+        public StringReference(string value)
+            : base(value)
+        {
+        }
     }
 }

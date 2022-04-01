@@ -5,23 +5,22 @@
 namespace BovineLabs.Core.Utility
 {
     using System.Collections.Generic;
+    using BovineLabs.Core.Extensions;
     using Unity.Entities;
 
     /// <summary> Utility for worlds. </summary>
     public static class WorldUtility
     {
-        /// <summary> Get all worlds excluding the built in loading ones. </summary>
-        /// <returns> The worlds. </returns>
-        public static IEnumerable<World> AllExcludingLoading()
+        public static IEnumerable<World> AllExcludingAdvanced()
         {
             foreach (var world in World.All)
             {
-                if (world.Name.StartsWith("LoadingWorld"))
-                {
-                    continue;
-                }
+                var flags = world.GetMainFlag();
 
-                yield return world;
+                if (flags == WorldFlags.Live)
+                {
+                    yield return world;
+                }
             }
         }
     }

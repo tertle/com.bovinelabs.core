@@ -10,6 +10,5 @@ namespace BovineLabs.Core.Variables
     [CreateAssetMenu(menuName = "BovineLabs/Variables/Float")]
     public class FloatVariable : Variable<float>
     {
-
     }
 }

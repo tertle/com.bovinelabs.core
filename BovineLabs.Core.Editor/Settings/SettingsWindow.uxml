@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
-    <Style src="SettingsWindow.uss" />
+    <Style src="project://database/Packages/com.bovinelabs.core/BovineLabs.Core.Editor/Settings/SettingsWindow.uss?fileID=7433441132597879392&amp;guid=c7163d47d39ea7045957db49bc23d5fd&amp;type=3#SettingsWindow" />
     <uie:Toolbar class="settings-toolbar-root">
         <ui:VisualElement name="toolbar" class="settings-toolbar" />
         <uie:ToolbarSpacer style="flex-grow: 1;" />

@@ -47,7 +47,7 @@ namespace BovineLabs.Core.Jobs
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
-            var data = hashMap.GetBucketData();
+            var data = hashMap.GetUnsafeBucketData();
 
             var fullData = new NativeHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>
             {
@@ -126,7 +126,7 @@ namespace BovineLabs.Core.Jobs
                         return;
                     }
 
-                    var data = fullData.HashMap.GetBucketData();
+                    var data = fullData.HashMap.GetUnsafeBucketData();
 
                     var buckets = (int*)data.buckets;
                     var bucketNext = (int*)data.next;

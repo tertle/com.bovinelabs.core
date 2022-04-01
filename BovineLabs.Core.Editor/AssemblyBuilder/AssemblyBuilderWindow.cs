@@ -21,18 +21,17 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
         private const string UXMLDirectory = "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/AssemblyBuilder/AssemblyBuilder.uxml";
 
         private const string AssemblyInfoTemplate =
-            "// <copyright file=\"AssemblyInfo.cs\" company=\"{0}\">\n// Copyright (c) {0}. All rights reserved.\n// </copyright>\n\n";
+            "// <copyright file=\"AssemblyInfo.cs\" company=\"{0}\">\n// Copyright (c) {0}. All rights reserved.\n// </copyright>\n\nusing System.Runtime.CompilerServices;\n";
 
         private const string DisableAutoCreationTemplate = "using Unity.Entities;\n\n[assembly: DisableAutoCreation]";
 
-        private const string InternalAccessTemplate =
-            "using System.Runtime.CompilerServices;\n\n[assembly: InternalsVisibleTo(\"{0}\")]\n[assembly: InternalsVisibleTo(\"{1}\")]\n[assembly: InternalsVisibleTo(\"{2}\")]";
+        private const string InternalAccessTemplate = "\n[assembly: InternalsVisibleTo(\"{0}\")]";
 
         private static Func<string> getActiveFolderPath;
 
         private readonly Dictionary<string, string> assemblyNameToGUID = new Dictionary<string, string>();
 
-        [MenuItem("BovineLabs/Tools/Assembly Builder _%&a", priority = 1000)]
+        [MenuItem("BovineLabs/Tools/Assembly Builder", priority = 1007)]
         private static void ShowWindow()
         {
             // Get existing open window or if none, make a new one:
@@ -57,7 +56,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private static string GetAssemblyInfoPath(string folder) => $"{System.IO.Directory.GetCurrentDirectory()}/{folder}/AssemblyInfo.cs";
 
-        private static string GetAssemblyInfoTemplate() => string.Format(AssemblyInfoTemplate, PlayerSettings.companyName);
+        private static string GetAssemblyInfoHeader() => string.Format(AssemblyInfoTemplate, PlayerSettings.companyName);
 
         private void OnEnable()
         {
@@ -113,7 +112,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
             var nameField = this.rootVisualElement.Q<TextField>("name").value;
 
-            // TODO VALIDATE
             if (string.IsNullOrWhiteSpace(nameField))
             {
                 Debug.LogError($"AssemblyName '{nameField}' is invalid");
@@ -153,15 +151,21 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                     if (internalAccess)
                     {
                         var otherAssemblies = this.rootVisualElement.Query<Toggle>(className: "assembly")
-                                                  .ToList()
-                                                  .Where(t => t.label != "Main")
-                                                  .Select(t => (object)$"{nameField}.{t.label}")
-                                                  .ToArray();
+                            .ToList()
+                            .Where(t => t.label != "Main")
+                            .Select(t => (object)$"{nameField}.{t.label}")
+                            .ToArray();
 
                         var assemblyInfoPath = GetAssemblyInfoPath(folder);
-                        var internalAccessTemplate = string.Format(InternalAccessTemplate, otherAssemblies);
-                        var text = GetAssemblyInfoTemplate() + internalAccessTemplate;
-                        File.WriteAllText(assemblyInfoPath, text);
+
+                        var internalAccessTemplate = GetAssemblyInfoHeader();
+                        foreach (var assembly in otherAssemblies)
+                        {
+                            internalAccessTemplate += string.Format(InternalAccessTemplate, assembly);
+                        }
+
+                        // var text = GetAssemblyInfoTemplate() + internalAccessTemplate;
+                        File.WriteAllText(assemblyInfoPath, internalAccessTemplate);
                     }
                 }
                 else
@@ -169,31 +173,51 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                     // And the main assembly
                     definition.references.Add(nameField);
 
-                    // Limit to editor platform
-                    definition.includePlatforms.Add("Editor");
+                    var isDebug = label == "Debug";
+                    var isAuthoring = label == "Authoring";
 
-                    var isTest = label == "Tests";
-                    var isPerformance = label == "PerformanceTests";
-
-                    // Add test requirements
-                    if (isTest || isPerformance)
+                    if (isDebug)
                     {
-                        definition.overrideReferences = true;
-                        definition.precompiledReferences.Add("nunit.framework.dll");
-                        definition.defineConstraints.Add("UNITY_INCLUDE_TESTS");
+                        definition.defineConstraints.Add("UNITY_EDITOR || DEVELOPMENT_BUILD");
+                    }
+                    else if (isAuthoring)
+                    {
+                        definition.defineConstraints.Add("UNITY_EDITOR");
+                    }
+                    else
+                    {
+                        // Limit to editor platform
+                        definition.includePlatforms.Add("Editor");
 
-                        references.Add("BovineLabs.Testing");
+                        var isTest = label == "Tests";
+                        var isPerformance = label == "PerformanceTests";
 
-                        if (isPerformance)
+                        // Add test requirements
+                        if (isTest || isPerformance)
                         {
-                            references.Add("Unity.PerformanceTesting");
-                        }
+                            definition.overrideReferences = true;
+                            definition.precompiledReferences.Add("nunit.framework.dll");
+                            definition.defineConstraints.Add("UNITY_INCLUDE_TESTS");
 
-                        if (disableAutoCreation)
-                        {
-                            var assemblyInfoPath = GetAssemblyInfoPath(folder);
-                            var text = GetAssemblyInfoTemplate() + DisableAutoCreationTemplate;
-                            File.WriteAllText(assemblyInfoPath, text);
+                            references.Add("BovineLabs.Testing");
+
+                            if (isTest)
+                            {
+                                references.Add("UnityEditor.TestRunner");
+                                references.Add("UnityEngine.TestRunner");
+                            }
+
+                            if (isPerformance)
+                            {
+                                references.Add("Unity.PerformanceTesting");
+                            }
+
+                            if (disableAutoCreation)
+                            {
+                                var assemblyInfoPath = GetAssemblyInfoPath(folder);
+                                var text = GetAssemblyInfoHeader() + DisableAutoCreationTemplate;
+                                File.WriteAllText(assemblyInfoPath, text);
+                            }
                         }
                     }
                 }
@@ -201,7 +225,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 // Sort alphabetical because it's nicer
                 references.Sort();
 
-                // Convert name to GUID, TODO search project
                 definition.references.AddRange(references.Where(r => this.assemblyNameToGUID.ContainsKey(r)).Select(r => this.assemblyNameToGUID[r]));
 
                 var json = EditorJsonUtility.ToJson(definition, true);

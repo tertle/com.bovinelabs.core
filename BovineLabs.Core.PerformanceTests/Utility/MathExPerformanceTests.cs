@@ -186,9 +186,9 @@ namespace BovineLabs.Core.PerformanceTests.Utility
             {
                 var result = 0f;
 
-                for (var i = 0; i < Input.Length; i++)
+                for (var i = 0; i < this.Input.Length; i++)
                 {
-                    result += Input[i];
+                    result += this.Input[i];
                 }
 
                 this.Result.Value = result;

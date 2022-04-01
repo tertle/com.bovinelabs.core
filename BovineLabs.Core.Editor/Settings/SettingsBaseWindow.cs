@@ -7,9 +7,12 @@ namespace BovineLabs.Core.Editor.Settings
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Unity.Scenes;
+    using Unity.Scenes.Editor;
     using UnityEditor;
     using UnityEditor.UIElements;
     using UnityEngine;
+    using UnityEngine.Assertions;
     using UnityEngine.UIElements;
 
     /// <summary> The base settings window that can be used to implement custom drawers. </summary>
@@ -23,6 +26,7 @@ namespace BovineLabs.Core.Editor.Settings
         private readonly List<ISettingsPanel> settingPanels = new List<ISettingsPanel>();
         private readonly List<ISettingsPanel> filteredSettingsPanel = new List<ISettingsPanel>();
 
+        private ToolbarButton applyButton;
         private ToolbarSearchField searchField;
         private VisualElement splitter;
         private ListView list;
@@ -69,7 +73,7 @@ namespace BovineLabs.Core.Editor.Settings
 
         /// <summary> Call this to create and/or open a new settings window. </summary>
         /// <returns> The window instance. </returns>
-        protected static T Open()
+        public static T Open()
         {
             var window = FindWindowByScope() ?? Create();
             window.Show();
@@ -135,6 +139,7 @@ namespace BovineLabs.Core.Editor.Settings
             this.list.bindItem = (element, i) => ((Label)element).text = this.filteredSettingsPanel[i].DisplayName;
             this.list.onSelectionChange += this.SelectionChanged;
             this.list.style.flexGrow = this.splitterFlex;
+            this.list.itemHeight = 16; // this.list.fixedItemHeight = 16;
 
             var contentsView = root.Q<ScrollView>("scroll");
             contentsView.style.flexGrow = 1 - this.splitterFlex;

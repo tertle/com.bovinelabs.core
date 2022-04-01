@@ -1,4 +1,4 @@
-﻿// <copyright file="StateInstanceSystemBase.cs" company="BovineLabs">
+// <copyright file="StateInstanceSystemBase.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -17,7 +17,7 @@ namespace BovineLabs.Core.States
     }
 
     [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Used by reflection to determine what group this system belongs to.")]
-    public abstract class StateInstanceSystemBase<T> : SystemBase, IStateInstanceSystem
+    public abstract partial class StateInstanceSystemBase<T> : SystemBase, IStateInstanceSystem
         where T : IStateComponent
     {
         /// <inheritdoc/>

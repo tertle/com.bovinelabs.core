@@ -84,13 +84,13 @@ namespace BovineLabs.Core.Editor.Settings
             settingPanels.Sort((p1, p2) => string.Compare(p1.DisplayName, p2.DisplayName, StringComparison.Ordinal));
         }
 
-        private static IEnumerable<(Type, Type)> GetAllSettingsBasePanels()
+        private static IEnumerable<(Type Settings, Type Panel)> GetAllSettingsBasePanels()
         {
             return from t in AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes())
                 where !t.IsAbstract && !t.IsInterface && !t.IsGenericType
                 let i = t.BaseType
                 where i != null && i.IsGenericType && i.GetGenericTypeDefinition() == typeof(SettingsBasePanel<>)
-                select ValueTuple.Create(i.GetGenericArguments()[0], t);
+                select (i.GetGenericArguments()[0], t);
         }
     }
 }

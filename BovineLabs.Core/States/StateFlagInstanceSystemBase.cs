@@ -1,4 +1,4 @@
-﻿// <copyright file="StateFlagInstanceSystemBase.cs" company="BovineLabs">
+// <copyright file="StateFlagInstanceSystemBase.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -11,20 +11,19 @@ namespace BovineLabs.Core.States
     public interface IStateFlagInstanceSystem
     {
         /// <summary> Gets the state key. </summary>
-        byte StateKey { get; }
+        uint StateKey { get; }
 
         /// <summary> Gets the state instance component this system reacts to. </summary>
         ComponentType StateInstanceComponent { get; }
     }
 
     [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Used by reflection to determine what group this system belongs to.")]
-    public abstract class StateFlagInstanceSystemBase<T, TS> : SystemBase, IStateFlagInstanceSystem
+    public abstract partial class StateFlagInstanceSystemBase<T, TS> : SystemBase, IStateFlagInstanceSystem
         where T : unmanaged, IBitArray<T>
         where TS : IStateFlagComponent<T>
     {
         /// <inheritdoc/>
-        public abstract byte StateKey { get; }
-
+        public abstract uint StateKey { get; }
 
         /// <inheritdoc/>
         public abstract ComponentType StateInstanceComponent { get; }

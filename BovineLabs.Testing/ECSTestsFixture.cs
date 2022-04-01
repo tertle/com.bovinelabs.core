@@ -10,19 +10,6 @@ namespace BovineLabs.Testing
     using Unity.Jobs.LowLevel.Unsafe;
     using UnityEngine.LowLevel;
 
-    public class ECSTestsCommonBase
-    {
-        [SetUp]
-        public virtual void Setup()
-        {
-        }
-
-        [TearDown]
-        public virtual void TearDown()
-        {
-        }
-    }
-
     public abstract class ECSTestsFixture : ECSTestsCommonBase
     {
         private World previousWorld;
@@ -109,7 +96,8 @@ namespace BovineLabs.Testing
             Assert.AreEqual(version, chunk.GetOrderVersion());
         }
 
-        public void AssetHasBufferChangeVersion<T>(Entity e, uint version) where T : struct, IBufferElementData
+        public void AssetHasBufferChangeVersion<T>(Entity e, uint version)
+            where T : struct, IBufferElementData
         {
             var type = this.Manager.GetBufferTypeHandle<T>(true);
             var chunk = this.Manager.GetChunk(e);
@@ -118,7 +106,8 @@ namespace BovineLabs.Testing
             Assert.IsTrue(chunk.DidChange(type, version - 1));
         }
 
-        public void AssetHasSharedChangeVersion<T>(Entity e, uint version) where T : struct, ISharedComponentData
+        public void AssetHasSharedChangeVersion<T>(Entity e, uint version)
+            where T : struct, ISharedComponentData
         {
             var type = this.Manager.GetSharedComponentTypeHandle<T>();
             var chunk = this.Manager.GetChunk(e);

@@ -84,11 +84,11 @@ namespace BovineLabs.Core.Editor.ConfigVars
                 ConfigVarSharedStaticContainer<int> intField => SetupField(new IntegerField(), configVar, intField),
                 ConfigVarSharedStaticContainer<float> floatField => SetupField(new FloatField(), configVar, floatField),
                 ConfigVarSharedStaticContainer<bool> boolField => SetupField(new Toggle(), configVar, boolField),
-                ConfigVarSharedStaticStringContainer<FixedString32> stringField32 => SetupTextField(new TextField(), configVar, stringField32),
-                ConfigVarSharedStaticStringContainer<FixedString64> stringField64 => SetupTextField(new TextField(), configVar, stringField64),
-                ConfigVarSharedStaticStringContainer<FixedString128> stringField128 => SetupTextField(new TextField(), configVar, stringField128),
-                ConfigVarSharedStaticStringContainer<FixedString512> stringField512 => SetupTextField(new TextField(), configVar, stringField512),
-                ConfigVarSharedStaticStringContainer<FixedString4096> stringField4096 => SetupTextField(new TextField(), configVar, stringField4096),
+                ConfigVarSharedStaticStringContainer<FixedString32Bytes> stringField32 => SetupTextField(new TextField(), configVar, stringField32),
+                ConfigVarSharedStaticStringContainer<FixedString64Bytes> stringField64 => SetupTextField(new TextField(), configVar, stringField64),
+                ConfigVarSharedStaticStringContainer<FixedString128Bytes> stringField128 => SetupTextField(new TextField(), configVar, stringField128),
+                ConfigVarSharedStaticStringContainer<FixedString512Bytes> stringField512 => SetupTextField(new TextField(), configVar, stringField512),
+                ConfigVarSharedStaticStringContainer<FixedString4096Bytes> stringField4096 => SetupTextField(new TextField(), configVar, stringField4096),
                 _ => throw new ArgumentOutOfRangeException(),
             };
         }

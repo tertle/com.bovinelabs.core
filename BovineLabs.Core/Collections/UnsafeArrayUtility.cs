@@ -1,4 +1,8 @@
-﻿namespace BovineLabs.Core.Collections
+﻿// <copyright file="UnsafeArrayUtility.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Diagnostics;
@@ -9,7 +13,7 @@
         public static unsafe UnsafeArray<T> ConvertExistingDataToUnsafeArray<T>(void* dataPointer, int length, Allocator allocator)
             where T : struct
         {
-            CheckConvertArguments<T>(length, allocator);
+            CheckConvertArguments(length);
             return new UnsafeArray<T>
             {
                 m_Buffer = dataPointer,
@@ -21,8 +25,7 @@
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckConvertArguments<T>(int length, Allocator allocator)
-            where T : struct
+        private static void CheckConvertArguments(int length)
         {
             if (length < 0)
             {

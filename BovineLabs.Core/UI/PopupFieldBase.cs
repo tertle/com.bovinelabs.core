@@ -12,7 +12,7 @@ namespace BovineLabs.Core.UI
     /// <typeparam name="T"> The fields value. </typeparam>
     public abstract class PopupFieldBase<T> : BaseField<T>
     {
-        private const int ItemHeight = 16;
+        private const int ItemHeight = 18; // TODO expose
 
         private const string UssClassName = "bl-popup-field";
         private const string LabelUssClassName = UssClassName + "__label";
@@ -83,7 +83,7 @@ namespace BovineLabs.Core.UI
         public IReadOnlyList<string> DisplayNames => this.displayNames;
 
         /// <summary> Gets the menu element. </summary>
-        protected ListView Menu { get; }
+        public ListView Menu { get; }
 
         /// <summary> Sets the display names. </summary>
         /// <param name="names"> The names to display. </param>
@@ -131,9 +131,7 @@ namespace BovineLabs.Core.UI
             var hideMenu = false;
             if (evt is KeyDownEvent kde)
             {
-                if (kde.keyCode == KeyCode.Space ||
-                    kde.keyCode == KeyCode.KeypadEnter ||
-                    kde.keyCode == KeyCode.Return)
+                if (kde.keyCode == KeyCode.Space || kde.keyCode == KeyCode.KeypadEnter || kde.keyCode == KeyCode.Return)
                 {
                     showMenu = true;
                 }
@@ -249,7 +247,7 @@ namespace BovineLabs.Core.UI
 
         private static ListView CreateMenu(List<string> displayNames, bool multiSelect)
         {
-            var menu = new ListView { fixedItemHeight = ItemHeight };
+            var menu = new ListView {itemHeight = ItemHeight}; // var menu = new ListView { fixedItemHeight = ItemHeight };
             menu.AddToClassList(MenuUssClassName);
 
             VisualElement MakeItem()
@@ -262,6 +260,8 @@ namespace BovineLabs.Core.UI
                 ((Label)e).text = displayNames[i];
             }
 
+            displayNames.Add("Default");
+
             menu.itemsSource = displayNames;
             menu.makeItem = MakeItem;
             menu.bindItem = BindItem;
@@ -269,8 +269,25 @@ namespace BovineLabs.Core.UI
 
             menu.style.position = Position.Absolute;
             menu.style.maxHeight = 200;
+            menu.style.minHeight = 0;
 
             return menu;
+        }
+
+        private static void CopyStylesTo(VisualElement visualElement, VisualElement targetVisualElement)
+        {
+            if (visualElement.hierarchy.parent != null)
+            {
+                CopyStylesTo(visualElement.hierarchy.parent, targetVisualElement);
+            }
+
+            var sheets = visualElement.styleSheets;
+
+            for (var i = 0; i < sheets.count; i++)
+            {
+                var sheet = sheets[i];
+                targetVisualElement.styleSheets.Add(sheet);
+            }
         }
 
         private void ToggleMenu()
@@ -289,21 +306,14 @@ namespace BovineLabs.Core.UI
 
             var root = this.GetRoot();
 
-            // Copy all style sheets from this
-            this.Menu.styleSheets.Clear();
-            for (var i = 0; i < this.styleSheets.count; i++)
-            {
-                this.Menu.styleSheets.Add(this.styleSheets[i]);
-            }
-
-            this.Menu.style.width = this.worldBound.width;
+            this.Menu.style.minWidth = this.worldBound.width;
             this.Menu.style.left = this.worldBound.xMin;
             this.Menu.style.top = this.worldBound.yMax;
-            this.Menu.fixedItemHeight = ItemHeight;
-
-            // var maxHeight = this.menu.resolvedStyle.maxHeight.value;
-            // var height = this.displayNames.Count * ItemHeight;//math.min(maxHeight, items.Count * ItemHeight);
+            this.Menu.itemHeight = ItemHeight; // this.Menu.fixedItemHeight = ItemHeight;
             this.Menu.style.height = this.DisplayNames.Count * ItemHeight;
+
+            this.Menu.styleSheets.Clear();
+            CopyStylesTo(this, this.Menu);
 
             root.Add(this.Menu);
             root.RegisterCallback<MouseDownEvent>(this.MenuNotClicked);

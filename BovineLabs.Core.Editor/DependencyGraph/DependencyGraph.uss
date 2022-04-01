@@ -1,0 +1,38 @@
+.horizontal {
+    flex-direction: row;
+}
+
+.grow {
+    flex-grow: 1;
+}
+
+.unity-text-element {
+    font-size: 12px;
+}
+
+.asset-button {
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    background-color: rgba(0, 0, 0, 0);
+    -unity-text-align: upper-left;
+    padding-left: 3px;
+    padding-right: 3px;
+    margin-left: 1px;
+    margin-right: 1px;
+}
+
+.thumbnail {
+    -unity-background-scale-mode: scale-to-fit;
+    width: 20px;
+}
+
+.dependency-arrow {
+    padding-left: 6px;
+    padding-right: 6px;
+}

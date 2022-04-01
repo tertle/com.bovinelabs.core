@@ -157,16 +157,16 @@ namespace BovineLabs.Core.ConfigVars
                     return new ConfigVarSharedStaticContainer<float>(floatField);
                 case SharedStatic<bool> boolField:
                     return new ConfigVarSharedStaticContainer<bool>(boolField);
-                case SharedStatic<FixedString32> stringField32:
-                    return new ConfigVarSharedStaticStringContainer<FixedString32>(stringField32);
-                case SharedStatic<FixedString64> stringField64:
-                    return new ConfigVarSharedStaticStringContainer<FixedString64>(stringField64);
-                case SharedStatic<FixedString128> stringField128:
-                    return new ConfigVarSharedStaticStringContainer<FixedString128>(stringField128);
-                case SharedStatic<FixedString512> stringField512:
-                    return new ConfigVarSharedStaticStringContainer<FixedString512>(stringField512);
-                case SharedStatic<FixedString4096> stringField4096:
-                    return new ConfigVarSharedStaticStringContainer<FixedString4096>(stringField4096);
+                case SharedStatic<FixedString32Bytes> stringField32:
+                    return new ConfigVarSharedStaticStringContainer<FixedString32Bytes>(stringField32);
+                case SharedStatic<FixedString64Bytes> stringField64:
+                    return new ConfigVarSharedStaticStringContainer<FixedString64Bytes>(stringField64);
+                case SharedStatic<FixedString128Bytes> stringField128:
+                    return new ConfigVarSharedStaticStringContainer<FixedString128Bytes>(stringField128);
+                case SharedStatic<FixedString512Bytes> stringField512:
+                    return new ConfigVarSharedStaticStringContainer<FixedString512Bytes>(stringField512);
+                case SharedStatic<FixedString4096Bytes> stringField4096:
+                    return new ConfigVarSharedStaticStringContainer<FixedString4096Bytes>(stringField4096);
                 default:
                     return null;
             }

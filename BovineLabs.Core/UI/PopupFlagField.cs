@@ -8,6 +8,7 @@ namespace BovineLabs.Core.UI
     using System.Linq;
     using BovineLabs.Core.Extensions;
     using JetBrains.Annotations;
+    using UnityEngine.Scripting;
     using UnityEngine.UIElements;
 
     /// <summary> A popup flag element. </summary>
@@ -39,12 +40,12 @@ namespace BovineLabs.Core.UI
         public PopupFlagField(string label, string[] displayNames = null, IReadOnlyList<int> defaultValue = null)
             : base(label, displayNames, true)
         {
-            this.rawValue = new int[0];
+            this.rawValue = null;
             this.defaultValue = defaultValue ?? new int[0];
 
             if (this.DisplayNames != null && this.DisplayNames.Count > 0)
             {
-                this.SetValueWithoutNotify(defaultValue);
+                this.SetValueWithoutNotify(this.defaultValue);
             }
 
             this.Menu.onSelectionChange += this.MenuOnSelectionChange;
@@ -81,6 +82,16 @@ namespace BovineLabs.Core.UI
         /// <inheritdoc />
         protected override bool AreEquals(IReadOnlyList<int> t1, IReadOnlyList<int> t2)
         {
+            if (t1 == null && t2 == null)
+            {
+                return true;
+            }
+
+            if (t1 == null || t2 == null)
+            {
+                return false;
+            }
+
             return t1.SequenceEqual(t2);
         }
 
@@ -107,7 +118,7 @@ namespace BovineLabs.Core.UI
         }
 
         /// <summary> The factory for UI Builder. </summary>
-        [UsedImplicitly]
+        [Preserve]
         public new class UxmlFactory : UxmlFactory<PopupFlagField, UxmlTraits>
         {
         }

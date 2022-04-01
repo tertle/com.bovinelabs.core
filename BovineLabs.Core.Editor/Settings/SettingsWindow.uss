@@ -29,7 +29,7 @@
     flex-direction: row;
 }
 
-.unity-listview-item {
+.unity-list-view__item {
     padding-left: 16px;
 }
 

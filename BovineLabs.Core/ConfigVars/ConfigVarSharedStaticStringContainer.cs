@@ -30,15 +30,15 @@ namespace BovineLabs.Core.ConfigVars
             {
                 switch (this.field)
                 {
-                    case SharedStatic<FixedString32> s32:
+                    case SharedStatic<FixedString32Bytes> s32:
                         return s32.Data.ToString();
-                    case SharedStatic<FixedString64> s64:
+                    case SharedStatic<FixedString64Bytes> s64:
                         return s64.Data.ToString();
-                    case SharedStatic<FixedString128> s128:
+                    case SharedStatic<FixedString128Bytes> s128:
                         return s128.Data.ToString();
-                    case SharedStatic<FixedString512> s512:
+                    case SharedStatic<FixedString512Bytes> s512:
                         return s512.Data.ToString();
-                    case SharedStatic<FixedString4096> s4096:
+                    case SharedStatic<FixedString4096Bytes> s4096:
                         return s4096.Data.ToString();
                     default:
                         throw new InvalidOperationException("String config var must be a FixedString type");
@@ -51,20 +51,20 @@ namespace BovineLabs.Core.ConfigVars
 
                 switch (this.field)
                 {
-                    case SharedStatic<FixedString32> s32:
-                        s32.Data = new FixedString32(value);
+                    case SharedStatic<FixedString32Bytes> s32:
+                        s32.Data = new FixedString32Bytes(value);
                         break;
-                    case SharedStatic<FixedString64> s64:
-                        s64.Data = new FixedString64(value);
+                    case SharedStatic<FixedString64Bytes> s64:
+                        s64.Data = new FixedString64Bytes(value);
                         break;
-                    case SharedStatic<FixedString128> s128:
-                        s128.Data = new FixedString128(value);
+                    case SharedStatic<FixedString128Bytes> s128:
+                        s128.Data = new FixedString128Bytes(value);
                         break;
-                    case SharedStatic<FixedString512> s512:
-                        s512.Data = new FixedString512(value);
+                    case SharedStatic<FixedString512Bytes> s512:
+                        s512.Data = new FixedString512Bytes(value);
                         break;
-                    case SharedStatic<FixedString4096> s4096:
-                        s4096.Data = new FixedString4096(value);
+                    case SharedStatic<FixedString4096Bytes> s4096:
+                        s4096.Data = new FixedString4096Bytes(value);
                         break;
                     default:
                         throw new InvalidOperationException("String config var must be a FixedString type");

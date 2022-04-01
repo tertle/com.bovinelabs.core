@@ -52,7 +52,9 @@ namespace BovineLabs.Core.Tests.Collections
         }
 
         [StructLayout(LayoutKind.Explicit, Size = 4)]
-        private struct Bytes4 : IFixedSize { }
+        private struct Bytes4 : IFixedSize
+        {
+        }
     }
 }
 

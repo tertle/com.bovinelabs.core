@@ -10,5 +10,11 @@ namespace BovineLabs.Core.Variables
     [Serializable]
     public class BoolReference : Reference<BoolVariable, bool>
     {
+        /// <summary> Initializes a new instance of the <see cref="BoolReference"/> class. </summary>
+        /// <param name="value"> A default constant. </param>
+        public BoolReference(bool value)
+            : base(value)
+        {
+        }
     }
 }

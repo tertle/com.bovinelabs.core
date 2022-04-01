@@ -10,24 +10,25 @@ namespace BovineLabs.Core.Iterators
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
-    internal unsafe struct DynamicHashMapBase<TBuffer, TKey, TValue>
-        where TBuffer : struct, IDynamicHashMap<TKey, TValue>
-        where TKey : struct, IEquatable<TKey>
-        where TValue : struct
+    internal unsafe struct DynamicHashMapBase<TKey, TValue>
+        where TKey : unmanaged, IEquatable<TKey>
+        where TValue : unmanaged
     {
-        internal static void Clear(DynamicBuffer<TBuffer> buffer)
+        internal static void Clear(DynamicBuffer<byte> buffer)
         {
-            var data = buffer.AsData<TBuffer, TKey, TValue>();
+            var data = buffer.AsData<TKey, TValue>();
 
             UnsafeUtility.MemSet(data->Buckets, 0xff, (data->BucketCapacityMask + 1) * 4);
             UnsafeUtility.MemSet(data->Next, 0xff, data->KeyCapacity * 4);
 
+            data->FirstFreeIDX = -1;
+
             data->AllocatedIndexLength = 0;
         }
 
-        internal static bool TryAdd(DynamicBuffer<TBuffer> buffer, TKey key, TValue item, bool isMultiHashMap)
+        internal static bool TryAdd(DynamicBuffer<byte> buffer, TKey key, TValue item, bool isMultiHashMap)
         {
-            var data = buffer.AsData<TBuffer, TKey, TValue>();
+            var data = buffer.AsData<TKey, TValue>();
 
             if (!isMultiHashMap && TryGetFirstValueAtomic(data, key, out _, out _))
             {
@@ -35,13 +36,22 @@ namespace BovineLabs.Core.Iterators
             }
 
             // Allocate an entry from the free list
-            if (data->AllocatedIndexLength >= data->KeyCapacity)
+            if (data->AllocatedIndexLength >= data->KeyCapacity && data->FirstFreeIDX < 0)
             {
                 int newCap = DynamicHashMapData.GrowCapacity(data->KeyCapacity);
-                DynamicHashMapData.ReallocateHashMap<TBuffer, TKey, TValue>(buffer, newCap, DynamicHashMapData.GetBucketSize(newCap), out data);
+                DynamicHashMapData.ReallocateHashMap<TKey, TValue>(buffer, newCap, DynamicHashMapData.GetBucketSize(newCap), out data);
             }
 
-            var idx = data->AllocatedIndexLength++;
+            var idx = data->FirstFreeIDX;
+
+            if (idx >= 0)
+            {
+                data->FirstFreeIDX = ((int*)data->Next)[idx];
+            }
+            else
+            {
+                idx = data->AllocatedIndexLength++;
+            }
 
             CheckIndexOutOfBounds(data, idx);
 
@@ -61,9 +71,9 @@ namespace BovineLabs.Core.Iterators
             return true;
         }
 
-        internal static int Remove(DynamicBuffer<TBuffer> buffer, TKey key, bool isMultiHashMap)
+        internal static int Remove(DynamicBuffer<byte> buffer, TKey key, bool isMultiHashMap)
         {
-            var data = buffer.AsData<TBuffer, TKey, TValue>();
+            var data = buffer.AsData<TKey, TValue>();
 
             if (data->KeyCapacity == 0)
             {
@@ -96,7 +106,10 @@ namespace BovineLabs.Core.Iterators
                     }
 
                     // And free the index
-                    entryIdx = nextPtrs[entryIdx];
+                    int nextIdx = nextPtrs[entryIdx];
+                    nextPtrs[entryIdx] = data->FirstFreeIDX;
+                    data->FirstFreeIDX = entryIdx;
+                    entryIdx = nextIdx;
 
                     // Can only be one hit in regular hashmaps, so return
                     if (!isMultiHashMap)
@@ -160,6 +173,88 @@ namespace BovineLabs.Core.Iterators
             item = UnsafeUtility.ReadArrayElement<TValue>(data->Values, entryIdx);
 
             return true;
+        }
+
+        internal static void RemoveKeyValue<TValueEq>(DynamicHashMapData* data, TKey key, TValueEq value)
+            where TValueEq : unmanaged, IEquatable<TValueEq>
+        {
+            if (data->KeyCapacity == 0)
+            {
+                return;
+            }
+
+            var buckets = (int*)data->Buckets;
+            var keyCapacity = (uint)data->KeyCapacity;
+            var prevNextPtr = buckets + (key.GetHashCode() & data->BucketCapacityMask);
+            var entryIdx = *prevNextPtr;
+
+            if ((uint)entryIdx >= keyCapacity)
+            {
+                return;
+            }
+
+            var nextPtrs = (int*)data->Next;
+            var keys = data->Keys;
+            var values = data->Values;
+
+            do
+            {
+                if (UnsafeUtility.ReadArrayElement<TKey>(keys, entryIdx).Equals(key)
+                    && UnsafeUtility.ReadArrayElement<TValueEq>(values, entryIdx).Equals(value))
+                {
+                    var nextIdx = nextPtrs[entryIdx];
+                    nextPtrs[entryIdx] = data->FirstFreeIDX;
+                    data->FirstFreeIDX = entryIdx;
+                    *prevNextPtr = entryIdx = nextIdx;
+                }
+                else
+                {
+                    prevNextPtr = nextPtrs + entryIdx;
+                    entryIdx = *prevNextPtr;
+                }
+            }
+            while ((uint)entryIdx < keyCapacity);
+        }
+
+        internal static bool FindFirst<TValueEq>(DynamicHashMapData* data, TKey key, TValueEq value, out TValueEq* result)
+            where TValueEq : unmanaged, IEquatable<TValueEq>
+        {
+            result = null;
+
+            if (data->KeyCapacity == 0)
+            {
+                return false;
+            }
+
+            var buckets = (int*)data->Buckets;
+            var keyCapacity = (uint)data->KeyCapacity;
+            var prevNextPtr = buckets + (key.GetHashCode() & data->BucketCapacityMask);
+            var entryIdx = *prevNextPtr;
+
+            if ((uint)entryIdx >= keyCapacity)
+            {
+                return false;
+            }
+
+            var nextPtrs = (int*)data->Next;
+            var keys = data->Keys;
+            var values = data->Values;
+
+            do
+            {
+                if (UnsafeUtility.ReadArrayElement<TKey>(keys, entryIdx).Equals(key)
+                    && UnsafeUtility.ReadArrayElement<TValueEq>(values, entryIdx).Equals(value))
+                {
+                    result = (TValueEq*)(values + (entryIdx * sizeof(TValueEq)));
+                    return true;
+                }
+
+                prevNextPtr = nextPtrs + entryIdx;
+                entryIdx = *prevNextPtr;
+            }
+            while ((uint)entryIdx < keyCapacity);
+
+            return false;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
