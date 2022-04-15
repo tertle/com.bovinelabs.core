@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if UNITY_PHYSICS
 namespace BovineLabs.Core.Internal
 {
     using Unity.Mathematics;
@@ -30,3 +31,4 @@ namespace BovineLabs.Core.Internal
         }
     }
 }
+#endif

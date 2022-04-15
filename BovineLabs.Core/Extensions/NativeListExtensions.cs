@@ -11,6 +11,14 @@ namespace BovineLabs.Core.Extensions
 
     public static unsafe class NativeListExtensions
     {
+        public static void ReserveNoResize<T>(this NativeList<T> nativeList, int length, out T* ptr, out int idx)
+            where T : unmanaged
+        {
+            idx = nativeList.Length;
+            nativeList.Length += length;
+            ptr = (T*)((byte*)nativeList.m_ListData->Ptr + (idx * UnsafeUtility.SizeOf<T>()));
+        }
+
         public static void ReserveNoResize<T>(this NativeList<T>.ParallelWriter nativeList, int length, out T* ptr, out int idx)
             where T : unmanaged
         {

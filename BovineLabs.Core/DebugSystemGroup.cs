@@ -7,7 +7,9 @@ namespace BovineLabs.Core
     using Unity.Entities;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-    [UpdateInGroup(typeof(SimulationSystemGroup), OrderLast = true)]
+#if !UNITY_NETCODE // When using NetCode we want to be able to insert this in the server as well
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
+#endif
     public class DebugSystemGroup : ComponentSystemGroup
     {
     }

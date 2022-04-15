@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if UNITY_2021_2_OR_NEWER || UNITY_UI_TOOLKIT
 namespace BovineLabs.Core.Editor.DependencyGraph
 {
     using System;
@@ -211,3 +212,4 @@ namespace BovineLabs.Core.Editor.DependencyGraph
         }
     }
 }
+#endif
