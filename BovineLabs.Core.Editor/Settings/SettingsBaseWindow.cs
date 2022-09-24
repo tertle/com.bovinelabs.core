@@ -23,8 +23,8 @@ namespace BovineLabs.Core.Editor.Settings
         private const string UxmlPath = "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/Settings/SettingsWindow.uxml";
         private const string DarkSkinKey = "settings-title-darkmode";
 
-        private readonly List<ISettingsPanel> settingPanels = new List<ISettingsPanel>();
-        private readonly List<ISettingsPanel> filteredSettingsPanel = new List<ISettingsPanel>();
+        private readonly List<ISettingsPanel> settingPanels = new();
+        private readonly List<ISettingsPanel> filteredSettingsPanel = new();
 
         private ToolbarButton applyButton;
         private ToolbarSearchField searchField;
@@ -139,7 +139,7 @@ namespace BovineLabs.Core.Editor.Settings
             this.list.bindItem = (element, i) => ((Label)element).text = this.filteredSettingsPanel[i].DisplayName;
             this.list.onSelectionChange += this.SelectionChanged;
             this.list.style.flexGrow = this.splitterFlex;
-            this.list.itemHeight = 16; // this.list.fixedItemHeight = 16;
+            this.list.fixedItemHeight = 16;
 
             var contentsView = root.Q<ScrollView>("scroll");
             contentsView.style.flexGrow = 1 - this.splitterFlex;

@@ -1,0 +1,17 @@
+﻿.search-field__filter-label {
+  
+}
+
+.search-field__icon {
+    height: 16px;
+    width: 16px;
+    background-image: resource("Icons/search_icon");
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.search-field__container {
+    position: absolute;
+    flex-direction: row;
+    align-items: center;
+}

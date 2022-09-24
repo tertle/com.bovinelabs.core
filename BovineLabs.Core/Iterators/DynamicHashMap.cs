@@ -5,12 +5,13 @@
 namespace BovineLabs.Core.Iterators
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-    using CollectionHelper = Unity.Collections.CollectionHelper;
 
+    [DebuggerTypeProxy(typeof(DynamicHashMapDebuggerTypeProxy<,>))]
     public unsafe struct DynamicHashMap<TKey, TValue>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
@@ -44,10 +45,42 @@ namespace BovineLabs.Core.Iterators
         public int Capacity
         {
             get => this.data.AsDataReadOnly<TKey, TValue>()->KeyCapacity;
-            set => DynamicHashMapData.ReallocateHashMap<TKey, TValue>(this.data, value, UnsafeHashMapData.GetBucketSize(value), out _);
+            set => DynamicHashMapData.ReallocateHashMap<TKey, TValue>(this.data, value, UnsafeParallelHashMapData.GetBucketSize(value), out _);
         }
 
         private DynamicHashMapData* BufferReadOnly => this.data.AsDataReadOnly<TKey, TValue>();
+
+        /// <summary> Gets and sets values by key. </summary>
+        /// <remarks> Getting a key that is not present will throw. Setting a key that is not already present will add the key. </remarks>
+        /// <param name="key"> The key to look up. </param>
+        /// <value> The value associated with the key. </value>
+        /// <exception cref="ArgumentException"> For getting, thrown if the key was not present. </exception>
+        public TValue this[TKey key]
+        {
+            get
+            {
+                if (this.TryGetValue(key, out var res))
+                {
+                    return res;
+                }
+
+                ThrowKeyNotPresent(key);
+
+                return default;
+            }
+
+            set
+            {
+                if (DynamicHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(this.BufferReadOnly, key, out _, out var iterator))
+                {
+                    DynamicHashMapBase<TKey, TValue>.SetValue(this.data, ref iterator, value);
+                }
+                else
+                {
+                    DynamicHashMapBase<TKey, TValue>.TryAdd(this.data, key, value, false);
+                }
+            }
+        }
 
         /// <summary> The current number of items in the container. </summary>
         /// <returns>The item count.</returns>
@@ -159,6 +192,12 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void ThrowKeyNotPresent(TKey key)
+        {
+            throw new ArgumentException($"Key: {key} is not present in the NativeHashMap.");
+        }
+
         private void Allocate()
         {
             CollectionHelper.CheckIsUnmanaged<TKey>();
@@ -166,6 +205,33 @@ namespace BovineLabs.Core.Iterators
 
             DynamicHashMapData.AllocateHashMap<TKey, TValue>(this.data, 0, 0, out _);
             this.Clear();
+        }
+    }
+
+    internal sealed class DynamicHashMapDebuggerTypeProxy<TKey, TValue>
+        where TKey : unmanaged, IEquatable<TKey>
+        where TValue : unmanaged
+    {
+        private DynamicHashMap<TKey, TValue> target;
+
+        public DynamicHashMapDebuggerTypeProxy(DynamicHashMap<TKey, TValue> target)
+        {
+            this.target = target;
+        }
+
+        public List<Pair<TKey, TValue>> Items
+        {
+            get
+            {
+                var result = new List<Pair<TKey, TValue>>();
+                var kva = this.target.GetKeyValueArrays(Allocator.Temp);
+                for (var i = 0; i < kva.Length; ++i)
+                {
+                    result.Add(new Pair<TKey, TValue>(kva.Keys[i], kva.Values[i]));
+                }
+
+                return result;
+            }
         }
     }
 }

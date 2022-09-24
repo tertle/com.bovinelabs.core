@@ -30,7 +30,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
 
         /// <summary> Gets a list of all the config vars this panel draws. </summary>
         internal List<(ConfigVarAttribute ConfigVar, IConfigVarContainer Container)> ConfigVars { get; }
-            = new List<(ConfigVarAttribute, IConfigVarContainer)>();
+            = new();
 
         /// <inheritdoc/>
         void ISettingsPanel.OnActivate(string searchContext, VisualElement rootElement)

@@ -82,7 +82,7 @@ namespace BovineLabs.Core.Extensions
 
         /// <summary> Read a chunk of memory that could have been larger than the max allocation size. </summary>
         /// <param name="reader"> The reader. </param>
-        /// <param name="buffer"> A buffer to write back to. </param>
+        /// <param name="buffer"> A Buffer to write back to. </param>
         /// <param name="size"> For an array, this is UnsafeUtility.SizeOf{T} * length. </param>
         public static void ReadLarge(this ref NativeStream.Reader reader, byte* buffer, int size)
         {

@@ -28,21 +28,15 @@ namespace BovineLabs.Core.ConfigVars
         {
             get
             {
-                switch (this.field)
+                return this.field switch
                 {
-                    case SharedStatic<FixedString32Bytes> s32:
-                        return s32.Data.ToString();
-                    case SharedStatic<FixedString64Bytes> s64:
-                        return s64.Data.ToString();
-                    case SharedStatic<FixedString128Bytes> s128:
-                        return s128.Data.ToString();
-                    case SharedStatic<FixedString512Bytes> s512:
-                        return s512.Data.ToString();
-                    case SharedStatic<FixedString4096Bytes> s4096:
-                        return s4096.Data.ToString();
-                    default:
-                        throw new InvalidOperationException("String config var must be a FixedString type");
-                }
+                    SharedStatic<FixedString32Bytes> s32 => s32.Data.ToString(),
+                    SharedStatic<FixedString64Bytes> s64 => s64.Data.ToString(),
+                    SharedStatic<FixedString128Bytes> s128 => s128.Data.ToString(),
+                    SharedStatic<FixedString512Bytes> s512 => s512.Data.ToString(),
+                    SharedStatic<FixedString4096Bytes> s4096 => s4096.Data.ToString(),
+                    _ => throw new InvalidOperationException("String config var must be a FixedString type"),
+                };
             }
 
             set

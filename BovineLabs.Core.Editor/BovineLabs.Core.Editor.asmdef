@@ -2,19 +2,24 @@
     "name": "BovineLabs.Core.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:f8242764ccad06a4ca6d427d36be92ab",
-        "GUID:2665a8d13d1b3f18800f46e256720795",
-        "GUID:e0cd26848372d4e5c891c569017e11f1",
-        "GUID:734d92eba21c94caba915361bd5ac177",
-        "GUID:8819f35a0fc84499b990e90a4ca1911f",
-        "GUID:5f3cf485eb0554709a8abbeace890c86",
-        "GUID:61431be5104c24137b41fcf2264ef434"
+        "BovineLabs.Core",
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Entities.Editor",
+        "Unity.Entities.Hybrid",
+        "Unity.Mathematics",
+        "Unity.Properties",
+        "Unity.Properties.UI.Editor",
+        "Unity.Scenes",
+        "Unity.Scenes.Editor",
+        "Unity.Physics"
     ],
     "includePlatforms": [
         "Editor"
     ],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
+    "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
@@ -27,8 +32,23 @@
         },
         {
             "name": "com.unity.ui",
-            "expression": "",
+            "expression": "0",
             "define": "UNITY_UI_TOOLKIT"
+        },
+        {
+            "name": "com.unity.rendering.hybrid",
+            "expression": "0",
+            "define": "UNITY_RENDERER"
+        },
+        {
+            "name": "com.unity.physics",
+            "expression": "0",
+            "define": "UNITY_PHYSICS"
+        },
+        {
+            "name": "com.unity.netcode",
+            "expression": "0",
+            "define": "UNITY_NETCODE"
         }
     ],
     "noEngineReferences": false

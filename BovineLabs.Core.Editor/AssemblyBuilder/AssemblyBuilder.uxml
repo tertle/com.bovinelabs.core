@@ -8,12 +8,15 @@
             <ui:ScrollView>
                 <ui:Label text="Assembly Definition Reference" style="font-size: 14px; -unity-font-style: bold;" />
                 <ui:VisualElement name="referenceCommon">
+                    <ui:Toggle label="BovineLabs.Core" value="true" />
                     <ui:Toggle label="Unity.Burst" value="true" />
                     <ui:Toggle label="Unity.Collections" value="true" />
                     <ui:Toggle label="Unity.Entities" value="true" />
                     <ui:Toggle label="Unity.Entities.Hybrid" value="true" />
+                    <ui:Toggle label="Unity.InputSystem" value="true" />
                     <ui:Toggle label="Unity.Mathematics" value="true" />
                     <ui:Toggle label="Unity.NetCode" value="true" />
+                    <ui:Toggle label="Unity.Networking.Transport" value="true" />
                     <ui:Toggle label="Unity.Physics" value="true" />
                     <ui:Toggle label="Unity.Transforms" value="true" />
                 </ui:VisualElement>

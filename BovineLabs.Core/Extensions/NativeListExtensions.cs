@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Extensions
 {
     using System;
+    using System.Runtime.InteropServices;
     using System.Threading;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -57,6 +58,14 @@ namespace BovineLabs.Core.Extensions
         {
             list.ResizeUninitialized(length);
             UnsafeUtility.MemClear(list.GetUnsafePtr(), UnsafeUtility.SizeOf<int>() * length);
+        }
+
+        public static void AddRange<T>(this NativeList<T> list, T[] array)
+            where T : unmanaged
+        {
+            var gcHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
+            list.AddRange((void*)gcHandle.AddrOfPinnedObject(), array.Length);
+            gcHandle.Free();
         }
     }
 }

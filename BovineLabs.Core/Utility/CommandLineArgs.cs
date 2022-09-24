@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Utility
     /// <summary> Utility for handling CommandLineArgs passed to the app. </summary>
     public static class CommandLineArgs
     {
-        private static readonly List<string> Args = new List<string>(Environment.GetCommandLineArgs());
+        private static readonly List<string> Args = new(Environment.GetCommandLineArgs());
 
         /// <summary> Try get an argument and its value. </summary>
         /// <param name="arg"> The option to check. </param>

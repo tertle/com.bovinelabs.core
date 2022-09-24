@@ -13,7 +13,7 @@ namespace BovineLabs.Core.Tests.Memory
         [Test]
         public unsafe void Alloc()
         {
-            var allocator = new SlabAllocator<int>(16, Allocator.Temp);
+            var allocator = new NativeSlabAllocator<int>(16, Allocator.Temp);
 
             for (var i = 0; i < 16; i++)
             {

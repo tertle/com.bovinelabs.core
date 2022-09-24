@@ -7,7 +7,6 @@ namespace BovineLabs.Core.UI
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Extensions;
-    using JetBrains.Annotations;
     using UnityEngine.Scripting;
     using UnityEngine.UIElements;
 
@@ -15,8 +14,8 @@ namespace BovineLabs.Core.UI
     public sealed class PopupFlagField : PopupFieldBase<IReadOnlyList<int>>
     {
         private readonly IReadOnlyList<int> defaultValue;
-        private List<int> selected = new List<int>();
-        private List<int> selected1 = new List<int>();
+        private List<int> selected = new();
+        private List<int> selected1 = new();
 
         /// <summary> Initializes a new instance of the <see cref="PopupFlagField" /> class. </summary>
         public PopupFlagField()

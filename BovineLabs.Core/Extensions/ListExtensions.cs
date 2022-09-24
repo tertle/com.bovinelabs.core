@@ -53,12 +53,12 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Adds a range of values to a list using a buffer.
+        /// Adds a range of values to a list using a Buffer.
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="list">The list to add the values to.</param>
-        /// <param name="arrayBuffer">The buffer to add from.</param>
-        /// <param name="length">The length of the buffer.</param>
+        /// <param name="arrayBuffer">The Buffer to add from.</param>
+        /// <param name="length">The length of the Buffer.</param>
         public static unsafe void AddRangeNative<T>(this List<T> list, void* arrayBuffer, int length)
             where T : struct
         {

@@ -13,12 +13,12 @@ namespace BovineLabs.Core.Editor.ConfigVars
         public const int LabelWidth = 220;
         public const int IndentLevel = 0;
 
-        private static readonly ThemeStyle DarkTheme = new ThemeStyle
+        private static readonly ThemeStyle DarkTheme = new()
         {
             HighlightColor = new Color32(255, 255, 255, 32),
         };
 
-        private static readonly ThemeStyle LightTheme = new ThemeStyle
+        private static readonly ThemeStyle LightTheme = new()
         {
             HighlightColor = new Color32(0, 0, 0, 32),
         };
@@ -36,7 +36,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
 
         public static ThemeStyle Style { get; }
 
-        public static GUIStyle None { get; } = new GUIStyle();
+        public static GUIStyle None { get; } = new();
 
         public static GUIStyle HighlightStyle { get; }
 

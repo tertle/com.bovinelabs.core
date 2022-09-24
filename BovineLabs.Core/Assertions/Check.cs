@@ -6,18 +6,21 @@ namespace BovineLabs.Core.Assertions
 {
     using System;
     using System.Diagnostics;
+    using System.Runtime.CompilerServices;
     using Unity.Burst.CompilerServices;
     using Debug = UnityEngine.Debug;
 
     [DebuggerStepThrough]
     public static class Check
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Assume(bool assumption)
         {
             IsTrue(assumption);
             Hint.Assume(assumption);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Assume(bool assumption, string message)
         {
             IsTrue(assumption, message);

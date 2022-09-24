@@ -6,15 +6,12 @@ namespace BovineLabs.Core.Memory
 {
     using System;
 
-    /// <summary>
-    /// This is used because in 2020.3 IntPtr isn't IEquatable
-    /// TODO in 2021.2+ switch to IntPtr
-    /// </summary>
+    /// <summary> This is used because in 2020.3 IntPtr isn't IEquatable and in 2021.3 Equality isn't burstable. </summary>
     public readonly unsafe struct Ptr : IEquatable<Ptr>
     {
-        public static readonly Ptr Zero;
-
         public readonly void* Value;
+
+        public static readonly Ptr Zero;
 
         public Ptr(void* value)
         {

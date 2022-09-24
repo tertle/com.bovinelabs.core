@@ -4,7 +4,6 @@
 
 namespace BovineLabs.Core.Tests.Settings
 {
-    using BovineLabs.Core.Variables;
     using NUnit.Framework;
     using Unity.Burst;
     using Unity.Collections;
@@ -18,10 +17,10 @@ namespace BovineLabs.Core.Tests.Settings
         {
             var kvp = new[]
             {
-                new NameValue { Name = "test1", Value = new ByteReference(1) },
-                new NameValue { Name = "test2", Value = new ByteReference(2) },
-                new NameValue { Name = "test3", Value = new ByteReference(3) },
-                new NameValue { Name = "test4", Value = new ByteReference(4) },
+                new NameValue { Name = "test1", Value = 1 },
+                new NameValue { Name = "test2", Value = 2 },
+                new NameValue { Name = "test3", Value = 3 },
+                new NameValue { Name = "test4", Value = 4 },
             };
 
             K<KTests>.Initialize(kvp);

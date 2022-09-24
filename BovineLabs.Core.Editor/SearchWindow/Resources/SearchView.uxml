@@ -1,0 +1,10 @@
+<ui:UXML xmlns:uiex="UnityEngine.UIExtras"
+         xmlns:ui="UnityEngine.UIElements"
+         xmlns:uie="UnityEditor.UIElements">
+  <!--ui:Label text="Add Element" class="SearchView-Label__Title" /-->
+    <uiex:SearchField class="SearchView-SearchField"/>
+     <ui:Button name="ReturnButton" class="SearchView-NavigateButton" text="Item">
+          <ui:VisualElement name="ReturnIcon" class="SearchView-Icon__Return" />
+     </ui:Button>
+     <ui:ListView name="SearchResults" item-height="20" class="SearchView-ListView__Results" />
+</ui:UXML>

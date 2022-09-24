@@ -29,16 +29,16 @@ namespace BovineLabs.Core.UI
         }
 
         /// <summary> Gets mouse events for any button. </summary>
-        public Events Any { get; } = new Events();
+        public Events Any { get; } = new();
 
         /// <summary> Gets mouse events for the left button. </summary>
-        public Events Left { get; } = new Events();
+        public Events Left { get; } = new();
 
         /// <summary> Gets mouse events for the right button. </summary>
-        public Events Right { get; } = new Events();
+        public Events Right { get; } = new();
 
         /// <summary> Gets mouse events for the middle button. </summary>
-        public Events Middle { get; } = new Events();
+        public Events Middle { get; } = new();
 
         /// <inheritdoc />
         protected override void RegisterCallbacksOnTarget()

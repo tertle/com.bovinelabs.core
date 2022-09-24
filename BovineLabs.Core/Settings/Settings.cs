@@ -19,6 +19,6 @@ namespace BovineLabs.Core.Settings
         {
         }
 
-        public abstract void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem);
+        public abstract void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem, GameObject owner);
     }
 }

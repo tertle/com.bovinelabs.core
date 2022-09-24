@@ -7,7 +7,6 @@ namespace BovineLabs.Core.UI
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Extensions;
-    using JetBrains.Annotations;
     using UnityEngine.Scripting;
     using UnityEngine.UIElements;
 
@@ -81,7 +80,7 @@ namespace BovineLabs.Core.UI
             /// <summary> Custom traits for the factory. </summary>
             public class PopupUxmlTraits : BaseField<int>.UxmlTraits
             {
-                private readonly UxmlStringAttributeDescription displayNames = new UxmlStringAttributeDescription { name = "display-names" };
+                private readonly UxmlStringAttributeDescription displayNames = new() { name = "display-names" };
 
                 /// <inheritdoc />
                 public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)

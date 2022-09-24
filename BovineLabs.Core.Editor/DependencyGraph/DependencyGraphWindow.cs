@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_2021_2_OR_NEWER || UNITY_UI_TOOLKIT
 namespace BovineLabs.Core.Editor.DependencyGraph
 {
     using System;
@@ -13,11 +12,12 @@ namespace BovineLabs.Core.Editor.DependencyGraph
     using UnityEngine.UIElements;
     using Object = UnityEngine.Object;
 
+    /// <summary> Based off the Dependency Graph for units DOTS shooter. </summary>
     public class DependencyGraphWindow : EditorWindow
     {
         private const string Directory = "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/DependencyGraph/";
 
-        private readonly List<DependencyData> dependencyData = new List<DependencyData>();
+        private readonly List<DependencyData> dependencyData = new();
 
         private DropdownField mode;
         private ScrollView content;
@@ -206,10 +206,11 @@ namespace BovineLabs.Core.Editor.DependencyGraph
 
         private class DependencyData
         {
-            public Object Asset;
-            public string AssetPath;
-            public List<(Object Asset, string Path)> Dependencies = new List<(Object Asset, string Path)>();
+            public List<(Object Asset, string Path)> Dependencies { get; } = new();
+
+            public Object Asset { get; set; }
+
+            public string AssetPath { get; set; }
         }
     }
 }
-#endif

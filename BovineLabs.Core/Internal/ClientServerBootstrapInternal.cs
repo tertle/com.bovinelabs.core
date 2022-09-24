@@ -18,13 +18,9 @@ namespace BovineLabs.Core.Internal
 
         public static List<Type> ClientPresentationSystems => ClientServerBootstrap.s_State.ClientPresentationSystems;
 
-        // public static List<ClientServerBootstrap.ChildSystem> ClientChildSystems()
-
         public static List<Type> ServerInitializationSystems => ClientServerBootstrap.s_State.ServerInitializationSystems;
 
         public static List<Type> ServerSimulationSystems => ClientServerBootstrap.s_State.ServerSimulationSystems;
-
-        // public static List<ClientServerBootstrap.ChildSystem> ServerChildSystems()
     }
 }
 

@@ -1,4 +1,8 @@
-﻿namespace BovineLabs.Core.Memory
+﻿// <copyright file="Mem.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Memory
 {
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;

@@ -16,33 +16,29 @@ namespace BovineLabs.Core.Collections
     using UnityEngine.Internal;
 
     /// <summary>
-    /// A UnsafeArray exposes a buffer of native memory to managed code, making it possible to share data between managed and native without marshalling costs.
+    /// A UnsafeArray exposes a Buffer of native memory to managed code, making it possible to share data between managed and native without marshalling costs.
     /// </summary>
-    [NativeContainer]
-    [NativeContainerSupportsDeallocateOnJobCompletion]
-    [NativeContainerSupportsMinMaxWriteRestriction]
+    /// <typeparam name="T"> The type of data the array holds. </typeparam>
     [DebuggerDisplay("Length = {" + nameof(Length) + "}")]
     [DebuggerTypeProxy(typeof(UnsafeArrayDebugView<>))]
-    public struct UnsafeArray<T> : IDisposable, IEnumerable<T>, IEquatable<UnsafeArray<T>>
+    public unsafe struct UnsafeArray<T> : IDisposable, IEnumerable<T>, IEquatable<UnsafeArray<T>>
         where T : struct
     {
         [NativeDisableUnsafePtrRestriction]
-        internal unsafe void* m_Buffer;
+        private void* buffer;
 
-        internal int m_Length;
-        internal int m_MinIndex;
-        internal int m_MaxIndex;
-        internal Allocator m_AllocatorLabel;
+        private int length;
+        private Allocator allocatorLabel;
 
-        public unsafe UnsafeArray(int length, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+        public UnsafeArray(int length, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
             Allocate(length, allocator, out this);
-            if ((options & NativeArrayOptions.ClearMemory) != NativeArrayOptions.ClearMemory)
+            if (options == NativeArrayOptions.UninitializedMemory)
             {
                 return;
             }
 
-            UnsafeUtility.MemClear(this.m_Buffer, UnsafeUtility.SizeOf<T>() * (long)this.Length);
+            UnsafeUtility.MemClear(this.buffer, UnsafeUtility.SizeOf<T>() * (long)this.Length);
         }
 
         public UnsafeArray(T[] array, Allocator allocator)
@@ -62,150 +58,38 @@ namespace BovineLabs.Core.Collections
             Copy(array, 0, this, 0, array.Length);
         }
 
-        public int Length => this.m_Length;
+        public UnsafeArray(void* dataPointer, int length, Allocator allocator)
+        {
+            CheckConvertArguments(length);
 
-        public unsafe bool IsCreated => (IntPtr)this.m_Buffer != IntPtr.Zero;
+            this.buffer = dataPointer;
+            this.length = length;
+            this.allocatorLabel = allocator;
+        }
 
-        public unsafe T this[int index]
+        public int Length => this.length;
+
+        public bool IsCreated => (IntPtr)this.buffer != IntPtr.Zero;
+
+        public T this[int index]
         {
             get
             {
-                this.CheckElementReadAccess(index);
-                return UnsafeUtility.ReadArrayElement<T>(this.m_Buffer, index);
+                this.CheckIndexRange(index);
+                return UnsafeUtility.ReadArrayElement<T>(this.buffer, index);
             }
 
             [WriteAccessRequired]
             set
             {
-                this.CheckElementWriteAccess(index);
-                UnsafeUtility.WriteArrayElement(this.m_Buffer, index, value);
+                this.CheckIndexRange(index);
+                UnsafeUtility.WriteArrayElement(this.buffer, index, value);
             }
         }
 
         public static bool operator ==(UnsafeArray<T> left, UnsafeArray<T> right) => left.Equals(right);
 
         public static bool operator !=(UnsafeArray<T> left, UnsafeArray<T> right) => !left.Equals(right);
-
-        [WriteAccessRequired]
-        public unsafe void Dispose()
-        {
-            if ((IntPtr)this.m_Buffer == IntPtr.Zero)
-            {
-                throw new ObjectDisposedException("The UnsafeArray is already disposed.");
-            }
-
-            if (this.m_AllocatorLabel == Allocator.Invalid)
-            {
-                throw new InvalidOperationException("The UnsafeArray can not be Disposed because it was not allocated with a valid allocator.");
-            }
-
-            if (this.m_AllocatorLabel > Allocator.None)
-            {
-                UnsafeUtility.Free(this.m_Buffer, this.m_AllocatorLabel);
-                this.m_AllocatorLabel = Allocator.Invalid;
-            }
-
-            this.m_Buffer = null;
-            this.m_Length = 0;
-        }
-
-        public unsafe JobHandle Dispose(JobHandle inputDeps)
-        {
-            if (this.m_AllocatorLabel == Allocator.Invalid)
-            {
-                throw new InvalidOperationException("The UnsafeArray can not be Disposed because it was not allocated with a valid allocator.");
-            }
-
-            if ((IntPtr)this.m_Buffer == IntPtr.Zero)
-            {
-                throw new InvalidOperationException("The UnsafeArray is already disposed.");
-            }
-
-            if (this.m_AllocatorLabel > Allocator.None)
-            {
-                var jobHandle = new UnsafeArrayDisposeJob()
-                {
-                    Data = new UnsafeArrayDispose
-                    {
-                        m_Buffer = this.m_Buffer,
-                        m_AllocatorLabel = this.m_AllocatorLabel,
-                    },
-                }.Schedule(inputDeps);
-
-                this.m_Buffer = null;
-                this.m_Length = 0;
-                this.m_AllocatorLabel = Allocator.Invalid;
-                return jobHandle;
-            }
-
-            this.m_Buffer = null;
-            this.m_Length = 0;
-            return inputDeps;
-        }
-
-        [WriteAccessRequired]
-        public void CopyFrom(T[] array) => Copy(array, this);
-
-        [WriteAccessRequired]
-        public void CopyFrom(UnsafeArray<T> array) => Copy(array, this);
-
-        public void CopyTo(T[] array) => Copy(this, array);
-
-        public void CopyTo(UnsafeArray<T> array) => Copy(this, array);
-
-        public T[] ToArray()
-        {
-            var dst = new T[this.Length];
-            Copy(this, dst, this.Length);
-            return dst;
-        }
-
-        public UnsafeArray<T>.Enumerator GetEnumerator() => new UnsafeArray<T>.Enumerator(ref this);
-
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() => new UnsafeArray<T>.Enumerator(ref this);
-
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
-
-        public unsafe bool Equals(UnsafeArray<T> other) => this.m_Buffer == other.m_Buffer && this.m_Length == other.m_Length;
-
-        public override bool Equals(object obj) => obj != null && (obj is UnsafeArray<T> other && this.Equals(other));
-
-        public override unsafe int GetHashCode() => (int)this.m_Buffer * 397 ^ this.m_Length;
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckAllocateArguments(int length, Allocator allocator, long totalSize)
-        {
-            if (allocator <= Allocator.None)
-            {
-                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
-            }
-
-            if (length < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(length), "Length must be >= 0");
-            }
-        }
-
-        private static unsafe void Allocate(int length, Allocator allocator, out UnsafeArray<T> array)
-        {
-            var num = UnsafeUtility.SizeOf<T>() * (long)length;
-            CheckAllocateArguments(length, allocator, num);
-            array = default;
-            array.m_Buffer = UnsafeUtility.Malloc(num, UnsafeUtility.AlignOf<T>(), allocator);
-            array.m_Length = length;
-            array.m_AllocatorLabel = allocator;
-            array.m_MinIndex = 0;
-            array.m_MaxIndex = length - 1;
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckCopyLengths(int srcLength, int dstLength)
-        {
-            if (srcLength != dstLength)
-            {
-                throw new ArgumentException("source and destination length must be the same");
-            }
-        }
 
         public static void Copy(UnsafeArray<T> src, UnsafeArray<T> dst)
         {
@@ -247,6 +131,248 @@ namespace BovineLabs.Core.Collections
 
         public static void Copy(UnsafeArray<T>.ReadOnly src, T[] dst, int length) => Copy(src, 0, dst, 0, length);
 
+        public static void Copy(UnsafeArray<T> src, int srcIndex, UnsafeArray<T> dst, int dstIndex, int length)
+        {
+            CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
+            UnsafeUtility.MemCpy(
+                (void*)((IntPtr)dst.buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
+                (void*)((IntPtr)src.buffer + (srcIndex * UnsafeUtility.SizeOf<T>())),
+                UnsafeUtility.SizeOf<T>() * length);
+        }
+
+        public static void Copy(UnsafeArray<T>.ReadOnly src, int srcIndex, UnsafeArray<T> dst, int dstIndex, int length)
+        {
+            CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
+            UnsafeUtility.MemCpy(
+                (void*)((IntPtr)dst.buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
+                (void*)((IntPtr)src.Buffer + (srcIndex * UnsafeUtility.SizeOf<T>())),
+                UnsafeUtility.SizeOf<T>() * length);
+        }
+
+        public static void Copy(T[] src, int srcIndex, UnsafeArray<T> dst, int dstIndex, int length)
+        {
+            if (src == null)
+            {
+                throw new ArgumentNullException(nameof(src));
+            }
+
+            CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
+            var gcHandle = GCHandle.Alloc(src, GCHandleType.Pinned);
+            var num = gcHandle.AddrOfPinnedObject();
+            UnsafeUtility.MemCpy(
+                (void*)((IntPtr)dst.buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
+                (void*)((IntPtr)(void*)num + (srcIndex * UnsafeUtility.SizeOf<T>())),
+                UnsafeUtility.SizeOf<T>() * length);
+            gcHandle.Free();
+        }
+
+        public static void Copy(UnsafeArray<T> src, int srcIndex, T[] dst, int dstIndex, int length)
+        {
+            if (dst == null)
+            {
+                throw new ArgumentNullException(nameof(dst));
+            }
+
+            CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
+            var gcHandle = GCHandle.Alloc(dst, GCHandleType.Pinned);
+            UnsafeUtility.MemCpy(
+                (void*)((IntPtr)(void*)gcHandle.AddrOfPinnedObject() + (dstIndex * UnsafeUtility.SizeOf<T>())),
+                (void*)((IntPtr)src.buffer + (srcIndex * UnsafeUtility.SizeOf<T>())),
+                UnsafeUtility.SizeOf<T>() * length);
+            gcHandle.Free();
+        }
+
+        public static void Copy(UnsafeArray<T>.ReadOnly src, int srcIndex, T[] dst, int dstIndex, int length)
+        {
+            if (dst == null)
+            {
+                throw new ArgumentNullException(nameof(dst));
+            }
+
+            CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
+            var gcHandle = GCHandle.Alloc(dst, GCHandleType.Pinned);
+            UnsafeUtility.MemCpy(
+                (void*)((IntPtr)(void*)gcHandle.AddrOfPinnedObject() + (dstIndex * UnsafeUtility.SizeOf<T>())),
+                (void*)((IntPtr)src.Buffer + (srcIndex * UnsafeUtility.SizeOf<T>())),
+                length * UnsafeUtility.SizeOf<T>());
+            gcHandle.Free();
+        }
+
+        [WriteAccessRequired]
+        public void Dispose()
+        {
+            if ((IntPtr)this.buffer == IntPtr.Zero)
+            {
+                throw new ObjectDisposedException("The UnsafeArray is already disposed.");
+            }
+
+            if (this.allocatorLabel == Allocator.Invalid)
+            {
+                throw new InvalidOperationException("The UnsafeArray can not be Disposed because it was not allocated with a valid allocator.");
+            }
+
+            if (this.allocatorLabel > Allocator.None)
+            {
+                UnsafeUtility.Free(this.buffer, this.allocatorLabel);
+                this.allocatorLabel = Allocator.Invalid;
+            }
+
+            this.buffer = null;
+            this.length = 0;
+        }
+
+        public JobHandle Dispose(JobHandle inputDeps)
+        {
+            if (this.allocatorLabel == Allocator.Invalid)
+            {
+                throw new InvalidOperationException("The UnsafeArray can not be Disposed because it was not allocated with a valid allocator.");
+            }
+
+            if ((IntPtr)this.buffer == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("The UnsafeArray is already disposed.");
+            }
+
+            if (this.allocatorLabel > Allocator.None)
+            {
+                var jobHandle = new UnsafeArrayDisposeJob()
+                {
+                    Data = new UnsafeArrayDispose
+                    {
+                        Buffer = this.buffer,
+                        AllocatorLabel = this.allocatorLabel,
+                    },
+                }.Schedule(inputDeps);
+
+                this.buffer = null;
+                this.length = 0;
+                this.allocatorLabel = Allocator.Invalid;
+                return jobHandle;
+            }
+
+            this.buffer = null;
+            this.length = 0;
+            return inputDeps;
+        }
+
+        [WriteAccessRequired]
+        public void CopyFrom(T[] array) => Copy(array, this);
+
+        [WriteAccessRequired]
+        public void CopyFrom(UnsafeArray<T> array) => Copy(array, this);
+
+        public void CopyTo(T[] array) => Copy(this, array);
+
+        public void CopyTo(UnsafeArray<T> array) => Copy(this, array);
+
+        public TU ReinterpretLoad<TU>(int sourceIndex)
+            where TU : unmanaged
+        {
+            this.CheckReinterpretLoadRange<TU>(sourceIndex);
+
+            var offset = UnsafeUtility.SizeOf<T>() * (long)sourceIndex;
+            var startBuffer = new IntPtr(((IntPtr)this.buffer).ToInt64() + offset);
+            return UnsafeUtility.ReadArrayElement<TU>((void*)startBuffer, 0);
+        }
+
+        public void ReinterpretStore<TU>(int destIndex, TU data)
+            where TU : unmanaged
+        {
+            this.CheckReinterpretStoreRange<TU>(destIndex);
+
+            var offset = UnsafeUtility.SizeOf<T>() * (long)destIndex;
+            var startBuffer = new IntPtr(((IntPtr)this.buffer).ToInt64() + offset);
+
+            UnsafeUtility.WriteArrayElement((void*)startBuffer, 0, data);
+        }
+
+        public UnsafeArray<TU> Reinterpret<TU>()
+            where TU : unmanaged
+        {
+            CheckReinterpretSize<TU>();
+            return this.InternalReinterpret<TU>(this.Length);
+        }
+
+        [Pure]
+        public UnsafeArray<TU> Reinterpret<TU>(int expectedTypeSize)
+            where TU : unmanaged
+        {
+            long tSize = UnsafeUtility.SizeOf<T>();
+            long uSize = UnsafeUtility.SizeOf<TU>();
+            var byteLen = this.Length * tSize;
+            var uLen = byteLen / uSize;
+            this.CheckReinterpretSize<TU>(tSize, uSize, expectedTypeSize, byteLen, uLen);
+            return this.InternalReinterpret<TU>((int)uLen);
+        }
+
+        public UnsafeArray<T> GetSubArray(int start, int newLength)
+        {
+            this.CheckGetSubArrayArguments(start, newLength);
+
+            var offset = UnsafeUtility.SizeOf<T>() * (long)start;
+            var startBuffer = new IntPtr(((IntPtr)this.buffer).ToInt64() + offset);
+            return new UnsafeArray<T>((void*)startBuffer, newLength, Allocator.Invalid);
+        }
+
+        public UnsafeArray<T>.ReadOnly AsReadOnly() => new(this.buffer, this.length);
+
+        public T[] ToArray()
+        {
+            var dst = new T[this.Length];
+            Copy(this, dst, this.Length);
+            return dst;
+        }
+
+        public void* GetUnsafePtr()
+        {
+            return this.buffer;
+        }
+
+        public UnsafeArray<T>.Enumerator GetEnumerator() => new(ref this);
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => new UnsafeArray<T>.Enumerator(ref this);
+
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
+        public bool Equals(UnsafeArray<T> other) => this.buffer == other.buffer && this.length == other.length;
+
+        public override bool Equals(object obj) => obj != null && (obj is UnsafeArray<T> other && this.Equals(other));
+
+        public override int GetHashCode() => (int)this.buffer * 397 ^ this.length;
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckAllocateArguments(int length, Allocator allocator)
+        {
+            if (allocator <= Allocator.None)
+            {
+                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
+            }
+
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length), "Length must be >= 0");
+            }
+        }
+
+        private static void Allocate(int length, Allocator allocator, out UnsafeArray<T> array)
+        {
+            var num = UnsafeUtility.SizeOf<T>() * (long)length;
+            CheckAllocateArguments(length, allocator);
+            array = default;
+            array.buffer = UnsafeUtility.Malloc(num, UnsafeUtility.AlignOf<T>(), allocator);
+            array.length = length;
+            array.allocatorLabel = allocator;
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckCopyLengths(int srcLength, int dstLength)
+        {
+            if (srcLength != dstLength)
+            {
+                throw new ArgumentException("source and destination length must be the same");
+            }
+        }
+
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckCopyArguments(int srcLength, int srcIndex, int dstLength, int dstIndex, int length)
         {
@@ -267,8 +393,8 @@ namespace BovineLabs.Core.Collections
 
             if (srcIndex + length > srcLength)
             {
-                throw new ArgumentException("length is greater than the number of elements from srcIndex to the end of the source UnsafeArray.",
-                    nameof(length));
+                throw new ArgumentException(
+                    "length is greater than the number of elements from srcIndex to the end of the source UnsafeArray.", nameof(length));
             }
 
             if (srcIndex + length < 0)
@@ -278,8 +404,8 @@ namespace BovineLabs.Core.Collections
 
             if (dstIndex + length > dstLength)
             {
-                throw new ArgumentException("length is greater than the number of elements from dstIndex to the end of the destination UnsafeArray.",
-                    nameof(length));
+                throw new ArgumentException(
+                    "length is greater than the number of elements from dstIndex to the end of the destination UnsafeArray.", nameof(length));
             }
 
             if (dstIndex + length < 0)
@@ -288,79 +414,32 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        public static unsafe void Copy(UnsafeArray<T> src, int srcIndex, UnsafeArray<T> dst, int dstIndex, int length)
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckReinterpretSize<TU>()
+            where TU : unmanaged
         {
-            CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
-            UnsafeUtility.MemCpy(
-                (void*)((IntPtr)dst.m_Buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
-                (void*)((IntPtr)src.m_Buffer + (srcIndex * UnsafeUtility.SizeOf<T>())),
-                UnsafeUtility.SizeOf<T>() * length);
-        }
-
-        public static unsafe void Copy(UnsafeArray<T>.ReadOnly src, int srcIndex, UnsafeArray<T> dst, int dstIndex, int length)
-        {
-            CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
-            UnsafeUtility.MemCpy(
-                (void*)((IntPtr)dst.m_Buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
-                (void*)((IntPtr)src.m_Buffer + (srcIndex * UnsafeUtility.SizeOf<T>())),
-                UnsafeUtility.SizeOf<T>() * length);
-        }
-
-        public static unsafe void Copy(T[] src, int srcIndex, UnsafeArray<T> dst, int dstIndex, int length)
-        {
-            if (src == null)
+            if (UnsafeUtility.SizeOf<T>() != UnsafeUtility.SizeOf<TU>())
             {
-                throw new ArgumentNullException(nameof(src));
+                throw new InvalidOperationException(
+                    $"Types {typeof(T)} and {typeof(TU)} are different sizes - direct reinterpretation is not possible. If this is what you intended, use Reinterpret(<type size>)");
             }
-
-            CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
-            var gcHandle = GCHandle.Alloc(src, GCHandleType.Pinned);
-            var num = gcHandle.AddrOfPinnedObject();
-            UnsafeUtility.MemCpy(
-                (void*)((IntPtr)dst.m_Buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
-                (void*)((IntPtr)(void*)num + (srcIndex * UnsafeUtility.SizeOf<T>())),
-                UnsafeUtility.SizeOf<T>() * length);
-            gcHandle.Free();
-        }
-
-        public static unsafe void Copy(UnsafeArray<T> src, int srcIndex, T[] dst, int dstIndex, int length)
-        {
-            if (dst == null)
-            {
-                throw new ArgumentNullException(nameof(dst));
-            }
-
-            CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
-            var gcHandle = GCHandle.Alloc(dst, GCHandleType.Pinned);
-            UnsafeUtility.MemCpy(
-                (void*)((IntPtr)(void*)gcHandle.AddrOfPinnedObject() + (dstIndex * UnsafeUtility.SizeOf<T>())),
-                (void*)((IntPtr)src.m_Buffer + (srcIndex * UnsafeUtility.SizeOf<T>())),
-                UnsafeUtility.SizeOf<T>() * length);
-            gcHandle.Free();
-        }
-
-        public static unsafe void Copy(UnsafeArray<T>.ReadOnly src, int srcIndex, T[] dst, int dstIndex, int length)
-        {
-            if (dst == null)
-            {
-                throw new ArgumentNullException(nameof(dst));
-            }
-
-            CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
-            var gcHandle = GCHandle.Alloc(dst, GCHandleType.Pinned);
-            UnsafeUtility.MemCpy(
-                (void*)((IntPtr)(void*)gcHandle.AddrOfPinnedObject() + (dstIndex * UnsafeUtility.SizeOf<T>())),
-                (void*)((IntPtr)src.m_Buffer + (srcIndex * UnsafeUtility.SizeOf<T>())),
-                length * UnsafeUtility.SizeOf<T>());
-            gcHandle.Free();
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckReinterpretLoadRange<U>(int sourceIndex)
-            where U : unmanaged
+        private static void CheckConvertArguments(int length)
+        {
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length), "Length must be >= 0");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckReinterpretLoadRange<TU>(int sourceIndex)
+            where TU : unmanaged
         {
             long num1 = UnsafeUtility.SizeOf<T>();
-            long num2 = UnsafeUtility.SizeOf<U>();
+            long num2 = UnsafeUtility.SizeOf<TU>();
             var num3 = this.Length * num1;
             var num4 = sourceIndex * num1;
             var num5 = num4 + num2;
@@ -371,11 +450,11 @@ namespace BovineLabs.Core.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckReinterpretStoreRange<U>(int destIndex)
-            where U : unmanaged
+        private void CheckReinterpretStoreRange<TU>(int destIndex)
+            where TU : unmanaged
         {
             long num1 = UnsafeUtility.SizeOf<T>();
-            long num2 = UnsafeUtility.SizeOf<U>();
+            long num2 = UnsafeUtility.SizeOf<TU>();
             var num3 = this.Length * num1;
             var num4 = destIndex * num1;
             var num5 = num4 + num2;
@@ -385,53 +464,14 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        public unsafe U ReinterpretLoad<U>(int sourceIndex)
-            where U : unmanaged
+        private UnsafeArray<TU> InternalReinterpret<TU>(int newLength)
+            where TU : unmanaged
         {
-            this.CheckReinterpretLoadRange<U>(sourceIndex);
-
-            var offset = UnsafeUtility.SizeOf<T>() * (long)sourceIndex;
-            var startBuffer = new IntPtr(((IntPtr)this.m_Buffer).ToInt64() + offset);
-            return UnsafeUtility.ReadArrayElement<U>((void*)startBuffer, 0);
-        }
-
-        public unsafe void ReinterpretStore<U>(int destIndex, U data)
-            where U : unmanaged
-        {
-            this.CheckReinterpretStoreRange<U>(destIndex);
-
-            var offset = UnsafeUtility.SizeOf<T>() * (long)destIndex;
-            var startBuffer = new IntPtr(((IntPtr)this.m_Buffer).ToInt64() + offset);
-
-            UnsafeUtility.WriteArrayElement((void*)startBuffer, 0, data);
-        }
-
-        private unsafe UnsafeArray<U> InternalReinterpret<U>(int length)
-            where U : unmanaged
-        {
-            return UnsafeArrayUtility.ConvertExistingDataToUnsafeArray<U>(this.m_Buffer, length, this.m_AllocatorLabel);
+            return new UnsafeArray<TU>(this.buffer, newLength, this.allocatorLabel);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckReinterpretSize<U>()
-            where U : unmanaged
-        {
-            if (UnsafeUtility.SizeOf<T>() != UnsafeUtility.SizeOf<U>())
-            {
-                throw new InvalidOperationException(
-                    $"Types {typeof(T)} and {typeof(U)} are different sizes - direct reinterpretation is not possible. If this is what you intended, use Reinterpret(<type size>)");
-            }
-        }
-
-        public UnsafeArray<U> Reinterpret<U>()
-            where U : unmanaged
-        {
-            CheckReinterpretSize<U>();
-            return this.InternalReinterpret<U>(this.Length);
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckReinterpretSize<U>(long tSize, long uSize, int expectedTypeSize, long byteLen, long uLen)
+        private void CheckReinterpretSize<TU>(long tSize, long uSize, int expectedTypeSize, long byteLen, long uLen)
         {
             if (tSize != expectedTypeSize)
             {
@@ -441,97 +481,56 @@ namespace BovineLabs.Core.Collections
             if (uLen * uSize != byteLen)
             {
                 throw new InvalidOperationException(
-                    $"Types {typeof(T)} (array length {this.Length}) and {typeof(U)} cannot be aliased due to size constraints. The size of the types and lengths involved must line up.");
+                    $"Types {typeof(T)} (array length {this.Length}) and {typeof(TU)} cannot be aliased due to size constraints. The size of the types and lengths involved must line up.");
             }
         }
 
-        [Pure]
-        public UnsafeArray<U> Reinterpret<U>(int expectedTypeSize)
-            where U : unmanaged
-        {
-            long tSize = UnsafeUtility.SizeOf<T>();
-            long uSize = UnsafeUtility.SizeOf<U>();
-            var byteLen = this.Length * tSize;
-            var uLen = byteLen / uSize;
-            this.CheckReinterpretSize<U>(tSize, uSize, expectedTypeSize, byteLen, uLen);
-            return this.InternalReinterpret<U>((int)uLen);
-        }
-
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckElementReadAccess(int index)
+        private void CheckIndexRange(int index)
         {
-            if (index < this.m_MinIndex || index > this.m_MaxIndex)
+            if (index < 0 || index >= this.length)
             {
-                this.FailOutOfRangeError(index);
+                throw new IndexOutOfRangeException($"Index {(object)index} is out of range of '{(object)this.Length}' Length.");
             }
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckElementWriteAccess(int index)
-        {
-            if (index < this.m_MinIndex || index > this.m_MaxIndex)
-            {
-                this.FailOutOfRangeError(index);
-            }
-        }
-
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void FailOutOfRangeError(int index)
-        {
-            if (index < this.Length && (this.m_MinIndex != 0 || this.m_MaxIndex != this.Length - 1))
-            {
-                throw new IndexOutOfRangeException(
-                    $"Index {(object)index} is out of restricted IJobParallelFor range [{this.m_MinIndex}...{this.m_MaxIndex}] in ReadWriteBuffer.\n" +
-                    "ReadWriteBuffers are restricted to only read & write the element at the job index. You can use double buffering strategies to avoid race conditions due to reading & writing in parallel to the same elements from a job.");
-            }
-
-            throw new IndexOutOfRangeException($"Index {(object)index} is out of range of '{(object)this.Length}' Length.");
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckGetSubArrayArguments(int start, int length)
+        private void CheckGetSubArrayArguments(int start, int subArrayLength)
         {
             if (start < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(start), "start must be >= 0");
             }
 
-            if (start + length > this.Length)
+            if (start + subArrayLength > this.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(length),
-                    $"sub array range {start}-{start + length - 1} is outside the range of the native array 0-{this.Length - 1}");
+                throw new ArgumentOutOfRangeException(
+                    nameof(subArrayLength),
+                    $"sub array range {start}-{start + subArrayLength - 1} is outside the range of the native array 0-{this.Length - 1}");
             }
 
-            if (start + length < 0)
+            if (start + subArrayLength < 0)
             {
                 throw new ArgumentException(
-                    $"sub array range {start}-{start + length - 1} caused an integer overflow and is outside the range of the native array 0-{this.Length - 1}");
+                    $"sub array range {start}-{start + subArrayLength - 1} caused an integer overflow and is outside the range of the native array 0-{this.Length - 1}");
             }
         }
-
-        public unsafe UnsafeArray<T> GetSubArray(int start, int length)
-        {
-            this.CheckGetSubArrayArguments(start, length);
-
-            var offset = UnsafeUtility.SizeOf<T>() * (long)start;
-            var startBuffer = new IntPtr(((IntPtr)this.m_Buffer).ToInt64() + offset);
-            return UnsafeArrayUtility.ConvertExistingDataToUnsafeArray<T>((void*)startBuffer, length, Allocator.Invalid);
-        }
-
-        public unsafe UnsafeArray<T>.ReadOnly AsReadOnly() => new UnsafeArray<T>.ReadOnly(this.m_Buffer, this.m_Length);
 
         [ExcludeFromDocs]
         public struct Enumerator : IEnumerator<T>
         {
-            private UnsafeArray<T> m_Array;
-            private int m_Index;
+            private UnsafeArray<T> array;
+            private int index;
 
             public Enumerator(ref UnsafeArray<T> array)
             {
-                this.m_Array = array;
-                this.m_Index = -1;
+                this.array = array;
+                this.index = -1;
             }
+
+            public T Current => this.array[this.index];
+
+            object IEnumerator.Current => this.Current;
 
             public void Dispose()
             {
@@ -539,15 +538,11 @@ namespace BovineLabs.Core.Collections
 
             public bool MoveNext()
             {
-                ++this.m_Index;
-                return this.m_Index < this.m_Array.Length;
+                ++this.index;
+                return this.index < this.array.Length;
             }
 
-            public void Reset() => this.m_Index = -1;
-
-            public T Current => this.m_Array[this.m_Index];
-
-            object IEnumerator.Current => this.Current;
+            public void Reset() => this.index = -1;
         }
 
         /// <summary>
@@ -560,17 +555,28 @@ namespace BovineLabs.Core.Collections
         public struct ReadOnly
         {
             [NativeDisableUnsafePtrRestriction]
-            internal unsafe void* m_Buffer;
+            private readonly void* buffer;
 
-            internal int m_Length;
+            private readonly int length;
 
-            internal unsafe ReadOnly(void* buffer, int length)
+            internal ReadOnly(void* buffer, int length)
             {
-                this.m_Buffer = buffer;
-                this.m_Length = length;
+                this.buffer = buffer;
+                this.length = length;
             }
 
-            public int Length => this.m_Length;
+            public int Length => this.length;
+
+            internal void* Buffer => this.buffer;
+
+            public T this[int index]
+            {
+                get
+                {
+                    this.CheckElementReadAccess(index);
+                    return UnsafeUtility.ReadArrayElement<T>(this.buffer, index);
+                }
+            }
 
             public void CopyTo(T[] array) => Copy(this, array);
 
@@ -578,56 +584,27 @@ namespace BovineLabs.Core.Collections
 
             public T[] ToArray()
             {
-                var dst = new T[this.m_Length];
-                Copy(this, dst, this.m_Length);
+                var dst = new T[this.length];
+                Copy(this, dst, this.length);
                 return dst;
             }
 
-            public unsafe UnsafeArray<U>.ReadOnly Reinterpret<U>()
-                where U : unmanaged
+            public UnsafeArray<TU>.ReadOnly Reinterpret<TU>()
+                where TU : unmanaged
             {
-                CheckReinterpretSize<U>();
-                return new UnsafeArray<U>.ReadOnly(this.m_Buffer, this.m_Length);
-            }
-
-            public unsafe T this[int index]
-            {
-                get
-                {
-                    this.CheckElementReadAccess(index);
-                    return UnsafeUtility.ReadArrayElement<T>(this.m_Buffer, index);
-                }
+                CheckReinterpretSize<TU>();
+                return new UnsafeArray<TU>.ReadOnly(this.buffer, this.length);
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             private void CheckElementReadAccess(int index)
             {
-                if (index < 0 || index >= this.m_Length)
+                if (index < 0 || index >= this.length)
                 {
-                    throw new IndexOutOfRangeException($"Index {index} is out of range (must be between 0 and {this.m_Length - 1}).");
+                    throw new IndexOutOfRangeException($"Index {index} is out of range (must be between 0 and {this.length - 1}).");
                 }
             }
         }
-    }
-
-    internal sealed class UnsafeArrayDebugView<T>
-        where T : unmanaged
-    {
-        private UnsafeArray<T> m_Array;
-
-        public UnsafeArrayDebugView(UnsafeArray<T> array) => this.m_Array = array;
-
-        public T[] Items => this.m_Array.ToArray();
-    }
-
-    internal sealed class UnsafeArrayReadOnlyDebugView<T>
-        where T : unmanaged
-    {
-        private UnsafeArray<T>.ReadOnly m_Array;
-
-        public UnsafeArrayReadOnlyDebugView(UnsafeArray<T>.ReadOnly array) => this.m_Array = array;
-
-        public T[] Items => this.m_Array.ToArray();
     }
 
     internal struct UnsafeArrayDisposeJob : IJob
@@ -641,10 +618,30 @@ namespace BovineLabs.Core.Collections
     internal struct UnsafeArrayDispose
     {
         [NativeDisableUnsafePtrRestriction]
-        internal unsafe void* m_Buffer;
+        internal unsafe void* Buffer;
 
-        internal Allocator m_AllocatorLabel;
+        internal Allocator AllocatorLabel;
 
-        public unsafe void Dispose() => UnsafeUtility.Free(this.m_Buffer, this.m_AllocatorLabel);
+        public unsafe void Dispose() => UnsafeUtility.Free(this.Buffer, this.AllocatorLabel);
+    }
+
+    internal sealed class UnsafeArrayDebugView<T>
+        where T : unmanaged
+    {
+        private UnsafeArray<T> array;
+
+        public UnsafeArrayDebugView(UnsafeArray<T> array) => this.array = array;
+
+        public T[] Items => this.array.ToArray();
+    }
+
+    internal sealed class UnsafeArrayReadOnlyDebugView<T>
+        where T : unmanaged
+    {
+        private UnsafeArray<T>.ReadOnly array;
+
+        public UnsafeArrayReadOnlyDebugView(UnsafeArray<T>.ReadOnly array) => this.array = array;
+
+        public T[] Items => this.array.ToArray();
     }
 }

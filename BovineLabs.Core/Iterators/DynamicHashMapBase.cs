@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Iterators
     {
         internal static void Clear(DynamicBuffer<byte> buffer)
         {
-            var data = buffer.AsData<TKey, TValue>();
+            DynamicHashMapData* data = buffer.AsData<TKey, TValue>();
 
             UnsafeUtility.MemSet(data->Buckets, 0xff, (data->BucketCapacityMask + 1) * 4);
             UnsafeUtility.MemSet(data->Next, 0xff, data->KeyCapacity * 4);
@@ -127,7 +127,21 @@ namespace BovineLabs.Core.Iterators
             return removed;
         }
 
-        internal static bool TryGetFirstValueAtomic(DynamicHashMapData* data, TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        internal static bool SetValue(DynamicBuffer<byte> buffer, ref NativeParallelMultiHashMapIterator<TKey> it, in TValue item)
+        {
+            var data = buffer.AsData<TKey, TValue>();
+
+            int entryIdx = it.EntryIndex;
+            if (entryIdx < 0 || entryIdx >= data->KeyCapacity)
+            {
+                return false;
+            }
+
+            UnsafeUtility.WriteArrayElement(data->Values, entryIdx, item);
+            return true;
+        }
+
+        internal static bool TryGetFirstValueAtomic(DynamicHashMapData* data, TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
         {
             it.key = key;
 
@@ -145,7 +159,7 @@ namespace BovineLabs.Core.Iterators
             return TryGetNextValueAtomic(data, out item, ref it);
         }
 
-        internal static bool TryGetNextValueAtomic(DynamicHashMapData* data, out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        internal static bool TryGetNextValueAtomic(DynamicHashMapData* data, out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
         {
             int entryIdx = it.NextEntryIndex;
             it.NextEntryIndex = -1;
@@ -262,7 +276,7 @@ namespace BovineLabs.Core.Iterators
         {
             if (idx < 0 || idx >= data->KeyCapacity)
             {
-                throw new InvalidOperationException("Internal HashMap error");
+                throw new InvalidOperationException("Internal Map error");
             }
         }
     }

@@ -6,8 +6,10 @@ namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
+    using Unity.Jobs;
     using Unity.Mathematics;
 
 #pragma warning disable SA1649
@@ -47,6 +49,19 @@ namespace BovineLabs.Core.Extensions
             where T : unmanaged
         {
             UnsafeUtility.MemClear(array.GetUnsafeReadOnlyPtr(), UnsafeUtility.SizeOf<T>() * array.Length);
+        }
+
+        public static void Reverse<T>(this NativeArray<T> array)
+            where T : unmanaged
+        {
+            var halfLength = array.Length / 2;
+            var i = 0;
+            var j = array.Length - 1;
+
+            for (; i < halfLength; i++, j--)
+            {
+                (array[i], array[j]) = (array[j], array[i]);
+            }
         }
 
         public static NativeArray<T> Clone<T>(this NativeArray<T> array, Allocator allocator = Allocator.Temp)

@@ -14,5 +14,17 @@ namespace BovineLabs.Core.Utility
 
         [FieldOffset(0)]
         public float FloatValue;
+
+        public IntFloatUnion(int value)
+        {
+            this.FloatValue = 0;
+            this.IntValue = value;
+        }
+
+        public IntFloatUnion(float value)
+        {
+            this.IntValue = 0;
+            this.FloatValue = value;
+        }
     }
 }

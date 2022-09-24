@@ -53,7 +53,7 @@ namespace BovineLabs.Core
             for (byte index = 0; index < kvp.Count; index++)
             {
                 var key = (MiniString)kvp[index].Name;
-                var value = kvp[index].Value.Value;
+                var value = kvp[index].Value;
                 var bucket = GetBucket(key);
 
                 this.keys[index] = key;

@@ -6,29 +6,52 @@ namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
+    using BovineLabs.Core.Iterators;
+    using Unity.Collections;
     using Unity.Entities;
 
-    /// <summary> Physics extensions. </summary>
+    /// <summary> Extensions for <see cref="EntityManager"/>. </summary>
     public static class EntityManagerExtensions
     {
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(BurstCompatibleComponentData) })]
+        public static unsafe SharedComponentDataFromIndex<T> GetSharedComponentDataFromEntity<T>(this EntityManager entityManager, bool isReadOnly = true)
+            where T : struct, ISharedComponentData
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+            var typeIndex = TypeManager.GetTypeIndex<T>();
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var safetyHandles = &access->DependencyManager->Safety;
+#endif
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            return new SharedComponentDataFromIndex<T>(access, safetyHandles->GetSafetyHandleForComponentDataFromEntity(typeIndex, isReadOnly));
+#else
+            return new SharedComponentDataFromIndex<T>(access);
+#endif
+        }
+
         /// <summary> Gets or creates the <see cref="T"/> singleton entity. </summary>
-        /// <remarks>
-        /// This is currently required for working around ISystemBase limitations since GetSingleton, Query.GetX don't seem to work yet.
-        /// Will be obsoleted when this support is added to ISystemBase.
-        /// </remarks>
         /// <param name="em"> The entity manager. </param>
         /// <typeparam name="T"> The singleton type. </typeparam>
         /// <returns> The entity. </returns>
         public static Entity GetOrCreateSingletonEntity<T>(this EntityManager em)
         {
             using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
-            return query.CalculateChunkCount() == 0 ? em.CreateEntity(typeof(T)) : query.GetSingletonEntity();
+            return query.IsEmptyIgnoreFilter ? em.CreateEntity(typeof(T)) : query.GetSingletonEntity();
         }
 
         public static Entity GetSingletonEntity<T>(this EntityManager em)
         {
             using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
             return query.GetSingletonEntity();
+        }
+
+        public static void SetSingletonEntity<T>(this EntityManager em, T value)
+            where T : struct, IComponentData
+        {
+            using var query = em.CreateEntityQuery(ComponentType.ReadWrite<T>());
+            query.SetSingleton(value);
         }
 
         public static bool TryGetSingletonEntity<T>(this EntityManager em, out Entity entity)
@@ -43,14 +66,6 @@ namespace BovineLabs.Core.Extensions
 
             entity = query.GetSingletonEntity();
             return true;
-        }
-
-        [Conditional("UNITY_EDITOR")]
-        public static void SetNameSafe(this EntityManager entityManager, Entity entity, string name)
-        {
-#if UNITY_EDITOR
-            entityManager.SetName(entity, name);
-#endif
         }
 
         public static bool HasSingleton<T>(this EntityManager em)
@@ -87,14 +102,14 @@ namespace BovineLabs.Core.Extensions
             return true;
         }
 
-        public static DynamicBuffer<T> GetSingletonBuffer<T>(this EntityManager em)
+        public static DynamicBuffer<T> GetSingletonBuffer<T>(this EntityManager em, bool isReadOnly = false)
             where T : struct, IBufferElementData
         {
             using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
-            return em.GetBuffer<T>(query.GetSingletonEntity());
+            return em.GetBuffer<T>(query.GetSingletonEntity(), isReadOnly);
         }
 
-        public static bool TryGetSingletonBuffer<T>(this EntityManager em, out DynamicBuffer<T> buffer)
+        public static bool TryGetSingletonBuffer<T>(this EntityManager em, out DynamicBuffer<T> buffer, bool isReadOnly = false)
             where T : struct, IBufferElementData
         {
             using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
@@ -106,7 +121,7 @@ namespace BovineLabs.Core.Extensions
             }
 
             var entity = query.GetSingletonEntity();
-            buffer = em.GetBuffer<T>(entity);
+            buffer = em.GetBuffer<T>(entity, isReadOnly);
             return true;
         }
 

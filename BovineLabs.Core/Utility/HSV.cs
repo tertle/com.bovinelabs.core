@@ -36,7 +36,7 @@ namespace BovineLabs.Core.Utility
         public Color ToColor()
         {
             var c = this.V * this.S;
-            var hh = (int)(this.H / 60);
+            var hh = this.H / 60f;
             var x = c * (1 - math.abs((hh % 2) - 1));
             var m = this.V - c;
 

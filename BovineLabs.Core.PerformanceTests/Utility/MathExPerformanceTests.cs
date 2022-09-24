@@ -13,6 +13,7 @@ namespace BovineLabs.Core.PerformanceTests.Utility
         private const ushort Seed = 1234;
         private const int TestCase1 = 100001;
         private const int TestCase2 = 10000001;
+        private const int AddValue = 3;
 
         [TestCase(TestCase1)]
         [TestCase(TestCase2)]
@@ -93,8 +94,6 @@ namespace BovineLabs.Core.PerformanceTests.Utility
 
         [TestCase(TestCase1)]
         [TestCase(TestCase2)]
-        [TestCase(TestCase1)]
-        [TestCase(TestCase2)]
         [Performance]
         public void SumTestComparison(int length)
         {
@@ -116,6 +115,56 @@ namespace BovineLabs.Core.PerformanceTests.Utility
 
             input.Dispose();
             result.Dispose();
+        }
+
+        [TestCase(TestCase1)]
+        [TestCase(TestCase2)]
+        [Performance]
+        public void AddTest(int length)
+        {
+            var input = new NativeArray<int>(length, Allocator.Persistent);
+            var output = new NativeArray<int>(length, Allocator.Persistent);
+            var run = 0;
+
+            Measure
+                .Method(() => new MathExAddJob { Input = input, Result = output, Value = AddValue }.Run())
+                .SetUp(() =>
+                {
+                    var random = Random.CreateFromIndex((uint)(Seed + run++));
+                    for (var i = 0; i < input.Length; i++)
+                    {
+                        input[i] = random.NextInt(-10000, 10000);
+                    }
+                })
+                .Run();
+
+            input.Dispose();
+            output.Dispose();
+        }
+
+        [TestCase(TestCase1)]
+        [TestCase(TestCase2)]
+        [Performance]
+        public void AddTestComparison(int length)
+        {
+            var input = new NativeArray<int>(length, Allocator.Persistent);
+            var output = new NativeArray<int>(length, Allocator.Persistent);
+            var run = 0;
+
+            Measure
+                .Method(() => new AddJob { Input = input, Result = output, Value = AddValue }.Run())
+                .SetUp(() =>
+                {
+                    var random = Random.CreateFromIndex((uint)(Seed + run++));
+                    for (var i = 0; i < input.Length; i++)
+                    {
+                        input[i] = random.NextInt(-10000, 10000);
+                    }
+                })
+                .Run();
+
+            input.Dispose();
+            output.Dispose();
         }
 
         [BurstCompile]
@@ -195,5 +244,43 @@ namespace BovineLabs.Core.PerformanceTests.Utility
             }
         }
 
+        [BurstCompile]
+        [NoAlias]
+        private struct MathExAddJob : IJob
+        {
+            [ReadOnly]
+            public NativeArray<int> Input;
+
+            [WriteOnly]
+            public NativeArray<int> Result;
+
+            public int Value;
+
+            public void Execute()
+            {
+                mathex.add(this.Result, this.Input, this.Value);
+            }
+        }
+
+        [BurstCompile]
+        [NoAlias]
+        private struct AddJob : IJob
+        {
+            [ReadOnly]
+            public NativeArray<int> Input;
+
+            [WriteOnly]
+            public NativeArray<int> Result;
+
+            public int Value;
+
+            public void Execute()
+            {
+                for (var i = 0; i < this.Input.Length; i++)
+                {
+                    this.Result[i] = this.Input[i] + this.Value;
+                }
+            }
+        }
     }
 }

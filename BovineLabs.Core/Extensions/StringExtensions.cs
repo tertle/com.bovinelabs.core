@@ -5,7 +5,7 @@
 namespace BovineLabs.Core.Extensions
 {
     using System;
-    using System.Linq;
+    using System.Text;
 
     /// <summary> Extensions for strings. </summary>
     public static class StringExtensions
@@ -20,7 +20,7 @@ namespace BovineLabs.Core.Extensions
                 return input;
             }
 
-            var output = string.Empty;
+            var output = new StringBuilder();
 
             for (var index = 0; index < input.Length; index++)
             {
@@ -29,15 +29,16 @@ namespace BovineLabs.Core.Extensions
                 {
                     if (char.IsUpper(input[index]) && (!char.IsUpper(input[index - 1]) || !char.IsUpper(input[index + 1])))
                     {
-                        output += $" {input[index]}";
+                        output.Append(' ');
+                        output.Append(input[index]);
                         continue;
                     }
                 }
 
-                output += input[index];
+                output.Append(input[index]);
             }
 
-            return output;
+            return output.ToString();
         }
 
         /// <summary> Capitalize the first character in a string.. </summary>
@@ -50,7 +51,7 @@ namespace BovineLabs.Core.Extensions
                 return input;
             }
 
-            return input.First().ToString().ToUpper() + input.Substring(1);
+            return char.ToUpper(input[0]) + input[1..];
         }
 
         /// <summary> Trim a string from the end of a string. </summary>

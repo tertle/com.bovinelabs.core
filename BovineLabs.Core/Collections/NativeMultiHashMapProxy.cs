@@ -13,14 +13,14 @@ namespace BovineLabs.Core.Collections
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
-        private readonly UnsafeMultiHashMap<TKey, TValue> hashmap;
+        private readonly UnsafeParallelMultiHashMap<TKey, TValue> hashmap;
 
-        public NativeMultiHashMapProxy(NativeMultiHashMap<TKey, TValue> nativeHashMap)
+        public NativeMultiHashMapProxy(NativeParallelMultiHashMap<TKey, TValue> nativeHashMap)
         {
             this.hashmap = nativeHashMap.GetUnsafeMultiHashMap();
         }
 
-        public NativeMultiHashMap<TKey, TValue> ToNativeHashMap(AtomicSafetyManager* safetyManager)
+        public NativeParallelMultiHashMap<TKey, TValue> ToNativeHashMap(AtomicSafetyManager* safetyManager)
         {
             var nativeHashMap = this.hashmap.AsNative();
             safetyManager->MarkNativeHashMapAsReadOnly(ref nativeHashMap);

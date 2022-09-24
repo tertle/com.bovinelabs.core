@@ -1,0 +1,61 @@
+.SearchItem {
+  flex-direction: row;
+  align-items: center;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.SearchItem:checked {
+  background-color: initial;
+}
+
+.SearchItem-Label {
+  -unity-text-align: middle-left;
+}
+
+.SearchItem-NextContainer {
+  flex-grow: 1;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.SearchItem-Icon {
+  height: 16px;
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.SearchItem-Icon__Next {
+  height: 16px;
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.UnityThemeDark .SearchItem-Icon__Next {
+  background-image: resource("d_tab_next.png");
+}
+
+.UnityThemeLight .SearchItem-Icon__Next {
+  background-image: resource("tab_next.png");
+}
+
+.UnityThemeDark .SearchItem {
+  background-color: #383838;
+}
+
+.UnityThemeDark .SearchItem:hover {
+  background-color: #3d6091;
+}
+
+.UnityThemeLight .SearchItem {
+  background-color: #c2c2c2;
+}
+
+.UnityThemeLight .SearchItem:hover {
+  background-color: #3d80df;
+}
+
+.SearchItem:hover .SearchItem-Label {
+  color: #ffffff;
+}

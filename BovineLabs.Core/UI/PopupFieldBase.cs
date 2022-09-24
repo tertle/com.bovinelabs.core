@@ -12,7 +12,7 @@ namespace BovineLabs.Core.UI
     /// <typeparam name="T"> The fields value. </typeparam>
     public abstract class PopupFieldBase<T> : BaseField<T>
     {
-        private const int ItemHeight = 18; // TODO expose
+        public const int ItemHeight = 18; // TODO expose
 
         private const string UssClassName = "bl-popup-field";
         private const string LabelUssClassName = UssClassName + "__label";
@@ -20,7 +20,7 @@ namespace BovineLabs.Core.UI
         private const string TextUssClassName = UssClassName + "__text";
         private const string ArrowUssClassName = UssClassName + "__arrow";
         private const string MenuUssClassName = UssClassName + "__menu";
-        private readonly List<string> displayNames = new List<string>();
+        private readonly List<string> displayNames = new();
 
         private readonly VisualElement visualInput;
         private readonly TextElement textElement;
@@ -247,7 +247,7 @@ namespace BovineLabs.Core.UI
 
         private static ListView CreateMenu(List<string> displayNames, bool multiSelect)
         {
-            var menu = new ListView {itemHeight = ItemHeight}; // var menu = new ListView { fixedItemHeight = ItemHeight };
+            var menu = new ListView { fixedItemHeight = ItemHeight };
             menu.AddToClassList(MenuUssClassName);
 
             VisualElement MakeItem()
@@ -309,7 +309,7 @@ namespace BovineLabs.Core.UI
             this.Menu.style.minWidth = this.worldBound.width;
             this.Menu.style.left = this.worldBound.xMin;
             this.Menu.style.top = this.worldBound.yMax;
-            this.Menu.itemHeight = ItemHeight; // this.Menu.fixedItemHeight = ItemHeight;
+            this.Menu.fixedItemHeight = ItemHeight;
             this.Menu.style.height = this.DisplayNames.Count * ItemHeight;
 
             this.Menu.styleSheets.Clear();

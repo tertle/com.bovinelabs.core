@@ -6,6 +6,8 @@ namespace BovineLabs.Core.Utility
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
+    using BovineLabs.Core.Assertions;
+    using Unity.Burst;
     using Unity.Burst.CompilerServices;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -24,8 +26,8 @@ namespace BovineLabs.Core.Utility
         /// Returns the modulus of two numbers unlike % which returns the remainder.
         /// For positive values this is exactly the same as % just slower.
         /// </summary>
-        /// <param name="x"> The left value. </param>
-        /// <param name="m"> Thge </param>
+        /// <param name="x"> The dividend. </param>
+        /// <param name="m"> The divisor. </param>
         /// <returns> The modulus. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int mod(int x, int m)
@@ -227,6 +229,31 @@ namespace BovineLabs.Core.Utility
             }
 
             return sumValue;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void add(NativeArray<int> output, NativeArray<int> input, int value)
+        {
+            Check.Assume(output.Length == input.Length);
+            add((int*)output.GetUnsafePtr(), (int*)input.GetUnsafeReadOnlyPtr(), input.Length, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void add([NoAlias]int* dst, [ReadOnly]int* src, [AssumeRange(0, int.MaxValue)] int length, int value)
+        {
+            var dst4 = (int4*)dst;
+            var src4 = (int4*)src;
+
+            var numSamples4 = length >> 2;
+            for (var iValue = 0; iValue < numSamples4; iValue++)
+            {
+                dst4[iValue] = src4[iValue] + value;
+            }
+
+            for (var iValue = numSamples4 << 2; iValue < length; iValue++)
+            {
+                dst[iValue] = src[iValue] + value;
+            }
         }
 
         /// <summary> Converts a quaternion to euler. </summary>
@@ -467,9 +494,38 @@ namespace BovineLabs.Core.Utility
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool AreApproximatelyEqual(float2 f1, float2 f2, float delta = 0.01f)
+        {
+            return math.abs(f1.x - f2.x) < delta && math.abs(f1.y - f2.y) < delta;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool AreApproximatelyEqual(float3 f1, float3 f2, float delta = 0.01f)
         {
             return math.abs(f1.x - f2.x) < delta && math.abs(f1.y - f2.y) < delta && math.abs(f1.z - f2.z) < delta;
+        }
+
+        // fisher-yates-shuffle
+        public static void Shuffle<T>(this NativeArray<T> array, ref Random random)
+            where T : struct
+        {
+            for (var n = array.Length - 1; n > 0; n--)
+            {
+                var r = random.NextInt(n + 1);
+                (array[r], array[n]) = (array[n], array[r]);
+            }
+        }
+
+        /// <summary>
+        /// Returns the 2D vector perpendicular to this 2D vector.
+        /// The result is always rotated 90-degrees in a counter-clockwise direction for a 2D coordinate system where the positive Y axis goes up.
+        /// </summary>
+        /// <remarks> This is a copy of Vector2.Perpendicular. </remarks>
+        /// <param name="inDirection">The input direction.</param>
+        /// <returns> The perpendicular direction. </returns>
+        public static float2 Perpendicular(float2 inDirection)
+        {
+            return new float2(-inDirection.y, inDirection.x);
         }
 
         static float3 eulerReorderBack(float3 euler, math.RotationOrder order)

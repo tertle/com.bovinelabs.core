@@ -2,18 +2,18 @@
     "name": "BovineLabs.Core",
     "rootNamespace": "",
     "references": [
-        "GUID:9e24947de15b9834991c9d8411ea37cf",
-        "GUID:2665a8d13d1b3f18800f46e256720795",
-        "GUID:e0cd26848372d4e5c891c569017e11f1",
-        "GUID:734d92eba21c94caba915361bd5ac177",
-        "GUID:8819f35a0fc84499b990e90a4ca1911f",
-        "GUID:8a2eafa29b15f444eb6d74f94a930e1d",
-        "GUID:d8b63aba1907145bea998dd612889d6b",
-        "GUID:e04e6c86a9f3947eb95fded39f9e60cc",
-        "GUID:953adc2a6b8b4e3c8df5b728bcd546e9",
-        "GUID:63afb046c8423dd448ae7aba042ea63d",
-        "GUID:84651a3751eca9349aac36a66bba901b",
-        "GUID:a5baed0c9693541a5bd947d336ec7659"
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Unity.Jobs",
+        "Unity.Mathematics",
+        "Unity.Mathematics.Extensions",
+        "Unity.NetCode",
+        "Unity.Physics",
+        "Unity.Rendering.Hybrid",
+        "Unity.Scenes",
+        "Unity.Transforms"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -24,6 +24,11 @@
     "defineConstraints": [],
     "versionDefines": [
         {
+            "name": "com.bovinelabs.game",
+            "expression": "0",
+            "define": "BL_GAME"
+        },
+        {
             "name": "com.unity.netcode",
             "expression": "0",
             "define": "UNITY_NETCODE"
@@ -32,6 +37,11 @@
             "name": "com.unity.physics",
             "expression": "0",
             "define": "UNITY_PHYSICS"
+        },
+        {
+            "name": "com.unity.rendering.hybrid",
+            "expression": "0",
+            "define": "UNITY_RENDERER"
         }
     ],
     "noEngineReferences": false

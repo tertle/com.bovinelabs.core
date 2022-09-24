@@ -17,11 +17,11 @@ namespace BovineLabs.Core
     [BurstCompatible]
     internal struct MiniString : INativeList<byte>, IUTF8Bytes
     {
-        internal const ushort utf8MaxLengthInBytes = 15;
+        internal const ushort UTF8MaxLengthInBytes = 15;
 
         // First byte is utf8LengthInBytes
         [SerializeField]
-        internal FixedBytes16 bytes;
+        private FixedBytes16 bytes;
 
         /// <summary> Initializes a new instance of the <see cref="MiniString"/> struct. </summary>
         /// <param name="source"> The System.String object to construct this MiniString with. </param>
@@ -32,10 +32,10 @@ namespace BovineLabs.Core
             {
                 fixed (char* sourceptr = source)
                 {
-                    var error = UTF8ArrayUnsafeUtility.Copy(this.GetUnsafePtr(), out var lengthInBytes, utf8MaxLengthInBytes, sourceptr, source.Length);
-                    this.utf8LengthInBytes = (byte)lengthInBytes;
+                    var error = UTF8ArrayUnsafeUtility.Copy(this.GetUnsafePtr(), out var lengthInBytes, UTF8MaxLengthInBytes, sourceptr, source.Length);
+                    this.UTF8LengthInBytes = (byte)lengthInBytes;
                     CheckCopyError(error, source);
-                    this.Length = this.utf8LengthInBytes;
+                    this.Length = this.UTF8LengthInBytes;
                 }
             }
         }
@@ -44,8 +44,8 @@ namespace BovineLabs.Core
         {
             this.bytes = default;
 
-            this.utf8LengthInBytes = (byte)source.Length;
-            this.Length = this.utf8LengthInBytes;
+            this.UTF8LengthInBytes = (byte)source.Length;
+            this.Length = this.UTF8LengthInBytes;
 
             unsafe
             {
@@ -53,19 +53,13 @@ namespace BovineLabs.Core
             }
         }
 
-        private byte utf8LengthInBytes
-        {
-            get => this.bytes.byte0000;
-            set => this.bytes.byte0000 = value;
-        }
-
         public int Length
         {
-            get => this.utf8LengthInBytes;
+            get => this.UTF8LengthInBytes;
             set
             {
                 this.CheckLengthInRange(value);
-                this.utf8LengthInBytes = (byte)value;
+                this.UTF8LengthInBytes = (byte)value;
             }
         }
 
@@ -78,7 +72,7 @@ namespace BovineLabs.Core
         /// </summary>
         public int Capacity
         {
-            get => utf8MaxLengthInBytes;
+            get => UTF8MaxLengthInBytes;
             set => this.CheckCapacityInRange(value);
         }
 
@@ -86,7 +80,13 @@ namespace BovineLabs.Core
         /// Reports whether container is empty.
         /// </summary>
         /// <value>True if this container empty.</value>
-        public bool IsEmpty => this.utf8LengthInBytes == 0;
+        public bool IsEmpty => this.UTF8LengthInBytes == 0;
+
+        private byte UTF8LengthInBytes
+        {
+            get => this.bytes.byte0000;
+            set => this.bytes.byte0000 = value;
+        }
 
         /// <summary>
         /// Return the byte at the given byte (not character) index.  The index
@@ -117,17 +117,17 @@ namespace BovineLabs.Core
         /// <param name="b"> The System.String object to convert to a FixedString32. </param>
         /// <returns></returns>
         [NotBurstCompatible]
-        public static implicit operator MiniString(string b) => new MiniString(b);
+        public static implicit operator MiniString(string b) => new(b);
 
-        public static implicit operator MiniString(FixedString32Bytes b) => new MiniString(b);
+        public static implicit operator MiniString(FixedString32Bytes b) => new(b);
 
         public static bool operator ==(in MiniString a, in MiniString b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe
             {
-                int alen = a.utf8LengthInBytes;
-                int blen = b.utf8LengthInBytes;
+                int alen = a.UTF8LengthInBytes;
+                int blen = b.UTF8LengthInBytes;
                 byte* aptr = a.GetUnsafePtr();
                 byte* bptr = b.GetUnsafePtr();
                 return UTF8ArrayUnsafeUtility.EqualsUTF8Bytes(aptr, alen, bptr, blen);
@@ -159,12 +159,12 @@ namespace BovineLabs.Core
 
         public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
         {
-            if (newLength < 0 || newLength > utf8MaxLengthInBytes)
+            if (newLength < 0 || newLength > UTF8MaxLengthInBytes)
             {
                 return false;
             }
 
-            if (newLength == this.utf8LengthInBytes)
+            if (newLength == this.UTF8LengthInBytes)
             {
                 return true;
             }
@@ -173,17 +173,17 @@ namespace BovineLabs.Core
             {
                 if (clearOptions == NativeArrayOptions.ClearMemory)
                 {
-                    if (newLength > this.utf8LengthInBytes)
+                    if (newLength > this.UTF8LengthInBytes)
                     {
-                        UnsafeUtility.MemClear(this.GetUnsafePtr() + this.utf8LengthInBytes, newLength - this.utf8LengthInBytes);
+                        UnsafeUtility.MemClear(this.GetUnsafePtr() + this.UTF8LengthInBytes, newLength - this.UTF8LengthInBytes);
                     }
                     else
                     {
-                        UnsafeUtility.MemClear(this.GetUnsafePtr() + newLength, this.utf8LengthInBytes - newLength);
+                        UnsafeUtility.MemClear(this.GetUnsafePtr() + newLength, this.UTF8LengthInBytes - newLength);
                     }
                 }
 
-                this.utf8LengthInBytes = (byte)newLength;
+                this.UTF8LengthInBytes = (byte)newLength;
             }
 
             return true;
@@ -300,9 +300,9 @@ namespace BovineLabs.Core
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
             }
 
-            if (index >= this.utf8LengthInBytes)
+            if (index >= this.UTF8LengthInBytes)
             {
-                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString32 of '{this.utf8LengthInBytes}' Length.");
+                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString32 of '{this.UTF8LengthInBytes}' Length.");
             }
         }
 
@@ -314,18 +314,18 @@ namespace BovineLabs.Core
                 throw new ArgumentOutOfRangeException($"Length {length} must be positive.");
             }
 
-            if (length > utf8MaxLengthInBytes)
+            if (length > UTF8MaxLengthInBytes)
             {
-                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString32 of '{utf8MaxLengthInBytes}' Capacity.");
+                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString32 of '{UTF8MaxLengthInBytes}' Capacity.");
             }
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private void CheckCapacityInRange(int capacity)
         {
-            if (capacity > utf8MaxLengthInBytes)
+            if (capacity > UTF8MaxLengthInBytes)
             {
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {utf8MaxLengthInBytes}.");
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {UTF8MaxLengthInBytes}.");
             }
         }
 

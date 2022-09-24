@@ -11,7 +11,7 @@ namespace BovineLabs.Core.Internal
     public static class CollectionInternals
     {
         // NativeHashMap
-        public static UnsafeHashMap<TKey, TValue> GetUnsafeHashMap<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap)
+        public static UnsafeParallelHashMap<TKey, TValue> GetUnsafeHashMap<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> hashMap)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Internal
             return hashMap.m_HashMapData;
         }
 
-        public static UnsafeHashMap<TKey, TValue> GetReadOnlyUnsafeHashMap<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap)
+        public static UnsafeParallelHashMap<TKey, TValue> GetReadOnlyUnsafeHashMap<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> hashMap)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Internal
         }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        public static void SetSafety<TKey, TValue>(this ref NativeHashMap<TKey, TValue> hashMap, AtomicSafetyHandle safetyHandle)
+        public static void SetSafety<TKey, TValue>(this ref NativeParallelHashMap<TKey, TValue> hashMap, AtomicSafetyHandle safetyHandle)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -40,15 +40,15 @@ namespace BovineLabs.Core.Internal
         }
 #endif
 
-        public static NativeHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeHashMap<TKey, TValue> hashMapData)
+        public static NativeParallelHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeParallelHashMap<TKey, TValue> hashMapData)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
-            return new NativeHashMap<TKey, TValue> { m_HashMapData = hashMapData };
+            return new NativeParallelHashMap<TKey, TValue> { m_HashMapData = hashMapData };
         }
 
         // NativeMultiHashMap
-        public static UnsafeMultiHashMap<TKey, TValue> GetUnsafeMultiHashMap<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap)
+        public static UnsafeParallelMultiHashMap<TKey, TValue> GetUnsafeMultiHashMap<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> hashMap)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -58,7 +58,7 @@ namespace BovineLabs.Core.Internal
             return hashMap.m_MultiHashMapData;
         }
 
-        public static UnsafeMultiHashMap<TKey, TValue> GetReadOnlyUnsafeMultiHashMap<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap)
+        public static UnsafeParallelMultiHashMap<TKey, TValue> GetReadOnlyUnsafeMultiHashMap<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> hashMap)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -69,7 +69,7 @@ namespace BovineLabs.Core.Internal
         }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        public static void SetSafety<TKey, TValue>(this ref NativeMultiHashMap<TKey, TValue> hashMap, AtomicSafetyHandle safetyHandle)
+        public static void SetSafety<TKey, TValue>(this ref NativeParallelMultiHashMap<TKey, TValue> hashMap, AtomicSafetyHandle safetyHandle)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -77,11 +77,11 @@ namespace BovineLabs.Core.Internal
         }
 #endif
 
-        public static NativeMultiHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> hashMapData)
+        public static NativeParallelMultiHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeParallelMultiHashMap<TKey, TValue> hashMapData)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
-            return new NativeMultiHashMap<TKey, TValue> { m_MultiHashMapData = hashMapData };
+            return new NativeParallelMultiHashMap<TKey, TValue> { m_MultiHashMapData = hashMapData };
         }
 
         public static unsafe byte* Buffer<T>(this FixedList32Bytes<T> list)

@@ -11,6 +11,81 @@ namespace BovineLabs.Core.Internal
 
     public static class ArchetypeChunkInternals
     {
+        public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ComponentTypeHandle<T> handle)
+            where T : unmanaged, IComponentData
+        {
+            SetChangeFilterCheckWriteAndThrow(handle);
+
+            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
+            if (typeIndexInArchetype == -1)
+            {
+                return;
+            }
+
+            // This should (=S) be thread safe int writes are atomic in c#
+            chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, handle.GlobalSystemVersion);
+        }
+
+        public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ComponentTypeHandle<T> handle, uint version)
+            where T : unmanaged, IComponentData
+        {
+            SetChangeFilterCheckWriteAndThrow(handle);
+
+            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
+            if (typeIndexInArchetype == -1)
+            {
+                return;
+            }
+
+            // This should (=S) be thread safe int writes are atomic in c#
+            chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, version);
+        }
+
+        public static unsafe void SetChangeFilterWithCache<T>(this ArchetypeChunk chunk, ComponentTypeHandle<T> handle)
+            where T : unmanaged, IComponentData
+        {
+            SetChangeFilterCheckWriteAndThrow(handle);
+
+            ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex, ref handle.m_LookupCache);
+            if (handle.m_LookupCache == -1)
+            {
+                return;
+            }
+
+            // This should (=S) be thread safe int writes are atomic in c#
+            chunk.m_Chunk->SetChangeVersion(handle.m_LookupCache, handle.GlobalSystemVersion);
+        }
+
+        public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, BufferTypeHandle<T> handle)
+            where T : unmanaged, IBufferElementData
+        {
+            SetChangeFilterCheckWriteAndThrow(handle);
+
+            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
+            if (typeIndexInArchetype == -1)
+            {
+                return;
+            }
+
+            // This should (=S) be thread safe int writes are atomic in c#
+            chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, handle.GlobalSystemVersion);
+        }
+
+        public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, BufferTypeHandle<T> handle, uint version)
+            where T : unmanaged, IBufferElementData
+        {
+            SetChangeFilterCheckWriteAndThrow(handle);
+
+            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
+            if (typeIndexInArchetype == -1)
+            {
+                return;
+            }
+
+            // This should (=S) be thread safe int writes are atomic in c#
+            chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, version);
+        }
+
         public static unsafe ArrayInternals ArrayInternals<T>(this ArchetypeChunk chunk, ComponentTypeHandle<T> chunkComponentTypeHandle)
             where T : unmanaged, IComponentData
         {
@@ -76,6 +151,26 @@ namespace BovineLabs.Core.Internal
             if (chunkComponentType.m_IsZeroSized)
             {
                 throw new ArgumentException($"ArchetypeChunk.GetNativeArray<{typeof(T)}> cannot be called on zero-sized IComponentData");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void SetChangeFilterCheckWriteAndThrow<T>(ComponentTypeHandle<T> chunkComponentType)
+            where T : IComponentData
+        {
+            if (chunkComponentType.IsReadOnly)
+            {
+                throw new ArgumentException("SetChangeFilter used on read only type handle");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void SetChangeFilterCheckWriteAndThrow<T>(BufferTypeHandle<T> chunkComponentType)
+            where T : unmanaged, IBufferElementData
+        {
+            if (chunkComponentType.IsReadOnly)
+            {
+                throw new ArgumentException("SetChangeFilter used on read only type handle");
             }
         }
     }

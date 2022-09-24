@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Editor.Settings
     using System;
     using System.IO;
     using System.Linq;
+    using BovineLabs.Core.Editor.Helpers;
     using BovineLabs.Core.Settings;
     using UnityEditor;
     using UnityEngine;
@@ -21,15 +22,17 @@ namespace BovineLabs.Core.Editor.Settings
         public static T GetSettings<T>()
             where T : ScriptableObject, ISettings
         {
-            var assets = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
+            var type = typeof(T);
+
+            var filter = type.Namespace == null ? type.Name : $"{type.Namespace}.{type.Name}";
+            var assets = AssetDatabase.FindAssets($"t:{filter}");
 
             string asset;
 
             switch (assets.Length)
             {
                 case 0:
-
-                    var directory = GetAssetDirectory();
+                    var directory = GetAssetDirectory(EditorFoldersSettings.SettingsKey, EditorFoldersSettings.DefaultSettingsDirectory);
                     var path = Path.Combine(directory, $"{typeof(T).Name}.asset");
 
                     // Search didn't work, for some reason this seems to fail sometimes due to library state
@@ -38,25 +41,6 @@ namespace BovineLabs.Core.Editor.Settings
                     if (instance != null)
                     {
                         return instance;
-                    }
-
-                    var combo = string.Empty;
-                    var dir = directory.Split('/');
-                    foreach (var d in dir)
-                    {
-                        if (string.IsNullOrWhiteSpace(d))
-                        {
-                            continue;
-                        }
-
-                        var p = Path.Combine(combo, d);
-
-                        if (!UnityEditor.AssetDatabase.IsValidFolder(p))
-                        {
-                            UnityEditor.AssetDatabase.CreateFolder(combo, d);
-                        }
-
-                        combo = p;
                     }
 
                     instance = ScriptableObject.CreateInstance<T>();
@@ -79,23 +63,26 @@ namespace BovineLabs.Core.Editor.Settings
             return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(asset));
         }
 
-        private static string GetAssetDirectory()
+        public static string GetAssetDirectory(string key, string defaultDirectory)
         {
-            var assets = AssetDatabase.FindAssets($"t:{nameof(EditorSettingsBase)}");
+            var assets = AssetDatabase.FindAssets($"t:{nameof(EditorFoldersSettings)}");
 
             // No editor settings, use the default
-            if (assets.Length == 0)
+            if (assets.Length != 0)
             {
-                return EditorSettingsBase.DefaultSettingsDirectory;
+                if (assets.Length > 2)
+                {
+                    Debug.LogError($"More than 1 EditorFoldersSettings found, using {AssetDatabase.GUIDToAssetPath(assets[0])}");
+                }
+
+                var settings = AssetDatabase.LoadAssetAtPath<EditorFoldersSettings>(AssetDatabase.GUIDToAssetPath(assets[0]));
+
+                settings.GetOrAddPath(key, ref defaultDirectory);
             }
 
-            if (assets.Length > 2)
-            {
-                Debug.LogError($"More than 1 EditorSettingsBase found, using {AssetDatabase.GUIDToAssetPath(assets[0])}");
-            }
+            AssetDatabaseHelper.CreateDirectories(defaultDirectory);
 
-            var settings = AssetDatabase.LoadAssetAtPath<EditorSettingsBase>(AssetDatabase.GUIDToAssetPath(assets[0]));
-            return settings.SettingsPath;
+            return defaultDirectory;
         }
     }
 }

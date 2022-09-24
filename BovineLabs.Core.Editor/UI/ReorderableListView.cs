@@ -14,11 +14,11 @@ namespace BovineLabs.Core.Editor.UI
     public class ReorderableListView<T> : VisualElement
     {
         private readonly bool allowReorder;
-        private ReorderableList reorderableList;
+        private readonly string headerLabel;
 
+        private ReorderableList reorderableList;
         private GUIStyle labelStyle;
         private int selectedIndex = -1;
-        private string headerLabel;
 
         public ReorderableListView(List<T> dataList, string header, bool allowReorder = true)
         {
@@ -31,14 +31,19 @@ namespace BovineLabs.Core.Editor.UI
         }
 
         // callback to override how an item is removed from the list
-        public delegate void RemoveItemDelegate(List<T> list, int itemIndex);
+        public delegate void RemoveItemDelegate(ReorderableList reorderableList, List<T> list, int itemIndex);
 
         // callback when the list is reordered
-        public delegate void ListReorderedDelegate(List<T> reorderedList);
+        public delegate void ListReorderedDelegate(ReorderableList reorderableList, List<T> reorderedList);
+
+        // callback when the list is reordered
+        public delegate void ListSelectedDelegate(ReorderableList reorderableList, int index);
 
         public ReorderableList.AddDropdownCallbackDelegate AddDropdown { get; set; }
 
         public RemoveItemDelegate ItemRemoved { get; set; }
+
+        public ListSelectedDelegate Select { get; set; }
 
         public ListReorderedDelegate Reordered { get; set; }
 
@@ -50,6 +55,12 @@ namespace BovineLabs.Core.Editor.UI
         public ReorderableList.ElementCallbackDelegate DrawElement { get; set; }
 
         public ReorderableList.ElementHeightCallbackDelegate GetHeight { get; set; }
+
+        public int Index
+        {
+            get => this.reorderableList.index;
+            set => this.reorderableList.index = value;
+        }
 
         // the List we are editing
         protected List<T> DataList { get; private set; }
@@ -104,7 +115,7 @@ namespace BovineLabs.Core.Editor.UI
             });
 
             // Draw Element
-            this.reorderableList.drawElementCallback = this.DrawElement ?? ((rect, index, _, __) =>
+            this.reorderableList.drawElementCallback = this.DrawElement ?? ((rect, index, _, _) =>
             {
                 EditorGUI.LabelField(
                     new Rect(rect.x, rect.y, rect.width / 2, EditorGUIUtility.singleLineHeight),
@@ -125,11 +136,12 @@ namespace BovineLabs.Core.Editor.UI
         private void SelectEntry(ReorderableList list)
         {
             this.selectedIndex = list.index;
+            this.Select?.Invoke(list, list.index);
         }
 
         private void ReorderEntries(ReorderableList list)
         {
-            this.Reordered?.Invoke(this.DataList);
+            this.Reordered?.Invoke(list, this.DataList);
         }
 
         private void OnRemove(ReorderableList list)
@@ -142,7 +154,7 @@ namespace BovineLabs.Core.Editor.UI
 
             if (indexToRemove >= 0)
             {
-                this.ItemRemoved(this.DataList, indexToRemove);
+                this.ItemRemoved(list, this.DataList, indexToRemove);
             }
         }
     }

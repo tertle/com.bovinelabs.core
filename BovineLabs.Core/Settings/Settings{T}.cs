@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Settings
     using System;
     using System.Diagnostics.CodeAnalysis;
     using JetBrains.Annotations;
-    using Sirenix.OdinInspector;
     using Unity.Entities;
     using UnityEngine;
 
@@ -19,8 +18,6 @@ namespace BovineLabs.Core.Settings
         where T : struct, IComponentData
     {
         [SerializeField]
-        [InlineProperty]
-        [LabelText("$ComponentLabel")]
         private T component;
 
         /// <summary> Gets or sets the component. </summary>
@@ -36,7 +33,7 @@ namespace BovineLabs.Core.Settings
 #endif
 
         /// <inheritdoc />
-        public sealed override void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
+        public sealed override void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem, GameObject owner)
         {
             dstManager.AddComponentData(entity, this.component);
 

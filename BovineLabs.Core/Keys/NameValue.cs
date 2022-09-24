@@ -5,7 +5,6 @@
 namespace BovineLabs.Core
 {
     using System;
-    using BovineLabs.Core.Variables;
     using UnityEngine;
 
     [Serializable]
@@ -15,12 +14,12 @@ namespace BovineLabs.Core
         private string name;
 
         [SerializeField]
-        private ByteReference value;
+        private byte value;
 
         /// <summary> Initializes a new instance of the <see cref="NameValue"/> struct. </summary>
         /// <param name="name"> They name. </param>
         /// <param name="value"> The value. </param>
-        public NameValue(string name, ByteReference value)
+        public NameValue(string name, byte value)
         {
             this.name = name;
             this.value = value;
@@ -32,7 +31,7 @@ namespace BovineLabs.Core
             internal set => this.name = value;
         }
 
-        public ByteReference Value
+        public byte Value
         {
             get => this.value;
             internal set => this.value = value;

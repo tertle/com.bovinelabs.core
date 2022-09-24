@@ -10,10 +10,10 @@ namespace BovineLabs.Core.Editor.Keys
     using UnityEditor;
     using UnityEngine;
 
-    [CustomPropertyDrawer(typeof(KAttribute))]
+    [CustomPropertyDrawer(typeof(KAttribute), true)]
     public class KAttributeDrawer : PropertyDrawer
     {
-        private static readonly Dictionary<string, KSettings> SettingsMap = new Dictionary<string, KSettings>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, KSettings> SettingsMap = new(StringComparer.OrdinalIgnoreCase);
 
         public static KSettings GetSettingsFile(KAttribute attr)
         {
@@ -53,7 +53,7 @@ namespace BovineLabs.Core.Editor.Keys
             int index;
             for (index = 0; index < k.Keys.Length; index++)
             {
-                if (k.Keys[index].Value.Value == current)
+                if (k.Keys[index].Value == current)
                 {
                     break;
                 }
@@ -63,7 +63,7 @@ namespace BovineLabs.Core.Editor.Keys
             var newIndex = EditorGUI.Popup(position, label, index, k.Keys.Select(s => new GUIContent(s.Name)).ToArray());
             if (newIndex != index)
             {
-                property.intValue = k.Keys[newIndex].Value.Value;
+                property.intValue = k.Keys[newIndex].Value;
             }
 
             EditorGUI.EndProperty();

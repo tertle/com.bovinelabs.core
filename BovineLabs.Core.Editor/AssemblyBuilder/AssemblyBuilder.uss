@@ -1,0 +1,3 @@
+.unity-toggle > .unity-label {
+    min-width: 200px;
+}

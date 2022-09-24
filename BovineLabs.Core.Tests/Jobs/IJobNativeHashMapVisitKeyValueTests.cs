@@ -11,7 +11,7 @@ namespace BovineLabs.Core.Tests.Jobs
     using Unity.Collections;
     using Unity.Mathematics;
 
-    /// <summary> Tests for <see cref="IJobNativeHashMapVisitKeyValue{TKey,TValue}"/>. </summary>
+    /// <summary> Tests for <see cref="IJobNativeParallelHashMapVisitKeyValue{TKey,TValue}"/>. </summary>
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Matching interface its testing.")]
     public class IJobNativeHashMapVisitKeyValueTests
     {
@@ -19,8 +19,8 @@ namespace BovineLabs.Core.Tests.Jobs
         [Test]
         public void VisitsEveryKey()
         {
-            var input = new NativeHashMap<int, int>(128, Allocator.TempJob);
-            var output = new NativeHashMap<int, int>(128, Allocator.TempJob);
+            var input = new NativeParallelHashMap<int, int>(128, Allocator.TempJob);
+            var output = new NativeParallelHashMap<int, int>(128, Allocator.TempJob);
 
             var random = new Random((uint)UnityEngine.Random.Range(1, int.MaxValue));
 
@@ -51,9 +51,9 @@ namespace BovineLabs.Core.Tests.Jobs
         }
 
         [BurstCompile]
-        private struct TestJob : IJobNativeHashMapVisitKeyValue<int, int>
+        private struct TestJob : IJobNativeParallelHashMapVisitKeyValue<int, int>
         {
-            public NativeHashMap<int, int>.ParallelWriter Output;
+            public NativeParallelHashMap<int, int>.ParallelWriter Output;
 
             public void ExecuteNext(int key, int progress)
             {

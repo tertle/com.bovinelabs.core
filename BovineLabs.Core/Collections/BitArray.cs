@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Collections
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using UnityEngine;
 
     /// <summary>
@@ -44,6 +45,7 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         /// <param name="other">BitArray with which to the And operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         T BitAnd(T other);
 
         /// <summary>
@@ -52,10 +54,12 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         /// <param name="other">BitArray with which to the Or operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         T BitOr(T other);
 
         /// <summary> Return the BitArray with every bit inverted. </summary>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         T BitNot();
     }
 
@@ -121,24 +125,28 @@ namespace BovineLabs.Core.Collections
         /// <summary> Bit-wise Not operator </summary>
         /// <param name="a">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray8 operator ~(BitArray8 a) => new BitArray8((byte)~a.data);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray8 operator ~(BitArray8 a) => new((byte)~a.data);
 
         /// <summary> Bit-wise Or operator </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray8 operator |(BitArray8 a, BitArray8 b) => new BitArray8((byte)(a.data | b.data));
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray8 operator |(BitArray8 a, BitArray8 b) => new((byte)(a.data | b.data));
 
         /// <summary> Bit-wise And operator </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray8 operator &(BitArray8 a, BitArray8 b) => new BitArray8((byte)(a.data & b.data));
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray8 operator &(BitArray8 a, BitArray8 b) => new((byte)(a.data & b.data));
 
         /// <summary> Equality operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>True if both bit arrays are equals.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray8 a, BitArray8 b) => a.data == b.data;
 
         /// <summary>
@@ -147,22 +155,26 @@ namespace BovineLabs.Core.Collections
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>True if the bit arrays are not equals.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitArray8 a, BitArray8 b) => a.data != b.data;
 
         /// <summary> Bit-wise And </summary>
         /// <param name="other">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray8 BitAnd(BitArray8 other) => this & other;
 
         /// <summary> Bit-wise Or </summary>
         /// <param name="other">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray8 BitOr(BitArray8 other) => this | other;
 
         /// <summary>
         /// Bit-wise Not
         /// </summary>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray8 BitNot() => ~this;
 
         /// <summary>
@@ -170,7 +182,7 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         /// <param name="obj">Bit array to compare to.</param>
         /// <returns>True if the provided bit array is equal to this..</returns>
-        public override bool Equals(object obj) => obj is BitArray8 && ((BitArray8)obj).data == this.data;
+        public override bool Equals(object obj) => obj is BitArray8 array8 && array8.data == this.data;
 
         /// <summary>
         /// Get the hashcode of the bit array.
@@ -241,44 +253,52 @@ namespace BovineLabs.Core.Collections
         /// <summary> Bit-wise Not operator. </summary>
         /// <param name="a">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray16 operator ~(BitArray16 a) => new BitArray16((ushort)~a.data);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray16 operator ~(BitArray16 a) => new((ushort)~a.data);
 
         /// <summary> Bit-wise Or operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray16 operator |(BitArray16 a, BitArray16 b) => new BitArray16((ushort)(a.data | b.data));
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray16 operator |(BitArray16 a, BitArray16 b) => new((ushort)(a.data | b.data));
 
         /// <summary> Bit-wise And operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray16 operator &(BitArray16 a, BitArray16 b) => new BitArray16((ushort)(a.data & b.data));
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray16 operator &(BitArray16 a, BitArray16 b) => new((ushort)(a.data & b.data));
 
         /// <summary> Equality operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>True if both bit arrays are equals.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray16 a, BitArray16 b) => a.data == b.data;
 
         /// <summary> Inequality operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>True if the bit arrays are not equals.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitArray16 a, BitArray16 b) => a.data != b.data;
 
         /// <summary> Bit-wise And. </summary>
         /// <param name="other">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray16 BitAnd(BitArray16 other) => this & other;
 
         /// <summary> Bit-wise Or. </summary>
         /// <param name="other">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray16 BitOr(BitArray16 other) => this | other;
 
         /// <summary> Bit-wise Not. </summary>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray16 BitNot() => ~this;
 
         /// <summary> Equality operator. </summary>
@@ -334,8 +354,6 @@ namespace BovineLabs.Core.Collections
         /// <summary>True if all bits are 1.</summary>
         public bool AllTrue => this.data == uint.MaxValue;
 
-        private string humanizedVersion => Convert.ToString(this.data, 2);
-
         /// <summary>Returns the bit array in a human readable form.</summary>
         public string HumanizedData => System.Text.RegularExpressions.Regex.Replace(string.Format("{0, " + this.Capacity + "}", Convert.ToString(this.data, 2)).Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
@@ -353,50 +371,58 @@ namespace BovineLabs.Core.Collections
         /// <summary> Bit-wise Not operator. </summary>
         /// <param name="a">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray32 operator ~(BitArray32 a) => new BitArray32(~a.data);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray32 operator ~(BitArray32 a) => new(~a.data);
 
         /// <summary> Bit-wise Or operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray32 operator |(BitArray32 a, BitArray32 b) => new BitArray32(a.data | b.data);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray32 operator |(BitArray32 a, BitArray32 b) => new(a.data | b.data);
 
         /// <summary> Bit-wise And operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray32 operator &(BitArray32 a, BitArray32 b) => new BitArray32(a.data & b.data);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray32 operator &(BitArray32 a, BitArray32 b) => new(a.data & b.data);
 
         /// <summary> Equality operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>True if both bit arrays are equals.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray32 a, BitArray32 b) => a.data == b.data;
 
         /// <summary> Inequality operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>True if the bit arrays are not equals.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitArray32 a, BitArray32 b) => a.data != b.data;
 
         /// <summary> Bit-wise And. </summary>
         /// <param name="other">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray32 BitAnd(BitArray32 other) => this & other;
 
         /// <summary> Bit-wise Or. </summary>
         /// <param name="other">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray32 BitOr(BitArray32 other) => this | other;
 
         /// <summary> Bit-wise Not. </summary>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray32 BitNot() => ~this;
 
         /// <summary> Equality operator. </summary>
         /// <param name="obj">Bit array to compare to.</param>
         /// <returns>True if the provided bit array is equal to this..</returns>
-        public override bool Equals(object obj) => obj is BitArray32 && ((BitArray32)obj).data == this.data;
+        public override bool Equals(object obj) => obj is BitArray32 array32 && array32.data == this.data;
 
         /// <summary> Get the hashcode of the bit array. </summary>
         /// <returns>Hashcode of the bit array.</returns>
@@ -465,50 +491,58 @@ namespace BovineLabs.Core.Collections
         /// <summary> Bit-wise Not operator/ </summary>
         /// <param name="a">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray64 operator ~(BitArray64 a) => new BitArray64(~a.data);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray64 operator ~(BitArray64 a) => new(~a.data);
 
         /// <summary> Bit-wise Or operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray64 operator |(BitArray64 a, BitArray64 b) => new BitArray64(a.data | b.data);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray64 operator |(BitArray64 a, BitArray64 b) => new(a.data | b.data);
 
         /// <summary> Bit-wise And operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray64 operator &(BitArray64 a, BitArray64 b) => new BitArray64(a.data & b.data);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray64 operator &(BitArray64 a, BitArray64 b) => new(a.data & b.data);
 
         /// <summary> Equality operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>True if both bit arrays are equals.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray64 a, BitArray64 b) => a.data == b.data;
 
         /// <summary> Inequality operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>True if the bit arrays are not equals.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitArray64 a, BitArray64 b) => a.data != b.data;
 
         /// <summary> Bit-wise And. </summary>
         /// <param name="other">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray64 BitAnd(BitArray64 other) => this & other;
 
         /// <summary> Bit-wise Or. </summary>
         /// <param name="other">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray64 BitOr(BitArray64 other) => this | other;
 
         /// <summary> Bit-wise Not. </summary>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray64 BitNot() => ~this;
 
         /// <summary> Equality operator. </summary>
         /// <param name="obj">Bit array to compare to.</param>
         /// <returns>True if the provided bit array is equal to this..</returns>
-        public override bool Equals(object obj) => obj is BitArray64 && ((BitArray64)obj).data == this.data;
+        public override bool Equals(object obj) => obj is BitArray64 array64 && array64.data == this.data;
 
         /// <summary> Get the hashcode of the bit array. </summary>
         /// <returns>Hashcode of the bit array.</returns>
@@ -558,7 +592,9 @@ namespace BovineLabs.Core.Collections
                 else
                 {
                     if (bitIndex < this.Capacity)
-                    this.data2 |= 1uL << (int)(bitIndex - 64u);
+                    {
+                        this.data2 |= 1uL << (int)(bitIndex - 64u);
+                    }
                 }
             }
         }
@@ -574,10 +610,8 @@ namespace BovineLabs.Core.Collections
 
         /// <summary>Returns the bit array in a human readable form.</summary>
         public string HumanizedData =>
-            System.Text.RegularExpressions.Regex.Replace(string.Format("{0, " + 64u + "}", Convert.ToString((long)this.data2, 2)).Replace(' ', '0'), ".{8}",
-                "$0.")
-            + System.Text.RegularExpressions.Regex
-                .Replace(string.Format("{0, " + 64u + "}", Convert.ToString((long)this.data1, 2)).Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
+            System.Text.RegularExpressions.Regex.Replace(string.Format("{0, " + 64u + "}", Convert.ToString((long)this.data2, 2)).Replace(' ', '0'), ".{8}", "$0.")
+            + System.Text.RegularExpressions.Regex.Replace(string.Format("{0, " + 64u + "}", Convert.ToString((long)this.data1, 2)).Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         /// <summary> Returns the state of the bit at a specific index. </summary>
         /// <param name="index">Index of the bit.</param>
@@ -591,7 +625,8 @@ namespace BovineLabs.Core.Collections
         /// <summary> Bit-wise Not operator </summary>
         /// <param name="a">First bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray128 operator ~(BitArray128 a) => new BitArray128(~a.data1, ~a.data2);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray128 operator ~(BitArray128 a) => new(~a.data1, ~a.data2);
 
         /// <summary>
         /// Bit-wise Or operator
@@ -599,7 +634,8 @@ namespace BovineLabs.Core.Collections
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray128 operator |(BitArray128 a, BitArray128 b) => new BitArray128(a.data1 | b.data1, a.data2 | b.data2);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray128 operator |(BitArray128 a, BitArray128 b) => new(a.data1 | b.data1, a.data2 | b.data2);
 
         /// <summary>
         /// Bit-wise And operator
@@ -607,7 +643,8 @@ namespace BovineLabs.Core.Collections
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray128 operator &(BitArray128 a, BitArray128 b) => new BitArray128(a.data1 & b.data1, a.data2 & b.data2);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray128 operator &(BitArray128 a, BitArray128 b) => new(a.data1 & b.data1, a.data2 & b.data2);
 
         /// <summary>
         /// Equality operator.
@@ -615,6 +652,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>True if both bit arrays are equals.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray128 a, BitArray128 b) => a.data1 == b.data1 && a.data2 == b.data2;
 
         /// <summary>
@@ -623,6 +661,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>True if the bit arrays are not equals.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitArray128 a, BitArray128 b) => a.data1 != b.data1 || a.data2 != b.data2;
 
         /// <summary>
@@ -630,6 +669,7 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         /// <param name="other">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray128 BitAnd(BitArray128 other) => this & other;
 
         /// <summary>
@@ -637,12 +677,14 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         /// <param name="other">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray128 BitOr(BitArray128 other) => this | other;
 
         /// <summary>
         /// Bit-wise Not
         /// </summary>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray128 BitNot() => ~this;
 
         /// <summary>
@@ -650,7 +692,7 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         /// <param name="obj">Bit array to compare to.</param>
         /// <returns>True if the provided bit array is equal to this..</returns>
-        public override bool Equals(object obj) => (obj is BitArray128) && this.data1.Equals(((BitArray128)obj).data1) && this.data2.Equals(((BitArray128)obj).data2);
+        public override bool Equals(object obj) => (obj is BitArray128 array128) && this.data1.Equals(array128.data1) && this.data2.Equals(array128.data2);
 
         /// <summary>
         /// Get the hashcode of the bit array.
@@ -659,8 +701,8 @@ namespace BovineLabs.Core.Collections
         public override int GetHashCode()
         {
             var hashCode = 1755735569;
-            hashCode = hashCode * -1521134295 + this.data1.GetHashCode();
-            hashCode = hashCode * -1521134295 + this.data2.GetHashCode();
+            hashCode = (hashCode * -1521134295) + this.data1.GetHashCode();
+            hashCode = (hashCode * -1521134295) + this.data2.GetHashCode();
             return hashCode;
         }
     }
@@ -738,7 +780,7 @@ namespace BovineLabs.Core.Collections
         /// <summary>True if all bits are 1.</summary>
         public bool AllTrue => this.data1 == ulong.MaxValue && this.data2 == ulong.MaxValue && this.data3 == ulong.MaxValue && this.data4 == ulong.MaxValue;
 
-        /// <summary>Returns the bit array in a human readable form.</summary>
+        /// <summary>Gets the bit array in a human readable form.</summary>
         public string HumanizedData =>
             System.Text.RegularExpressions.Regex.Replace(string.Format("{0, " + 64u + "}", Convert.ToString((long)this.data4, 2)).Replace(' ', '0'), ".{8}", "$0.")
             + System.Text.RegularExpressions.Regex.Replace(string.Format("{0, " + 64u + "}", Convert.ToString((long)this.data3, 2)).Replace(' ', '0'), ".{8}", "$0.")
@@ -757,67 +799,75 @@ namespace BovineLabs.Core.Collections
         /// <summary> Bit-wise Not operator </summary>
         /// <param name="a">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray256 operator ~(BitArray256 a) => new BitArray256(~a.data1, ~a.data2, ~a.data3, ~a.data4);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray256 operator ~(BitArray256 a) => new(~a.data1, ~a.data2, ~a.data3, ~a.data4);
 
         /// <summary> Bit-wise Or operator </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray256 operator |(BitArray256 a, BitArray256 b) => new BitArray256(a.data1 | b.data1, a.data2 | b.data2, a.data3 | b.data3, a.data4 | b.data4);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray256 operator |(BitArray256 a, BitArray256 b) => new(a.data1 | b.data1, a.data2 | b.data2, a.data3 | b.data3, a.data4 | b.data4);
 
         /// <summary> Bit-wise And operator </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>The resulting bit array.</returns>
-        public static BitArray256 operator &(BitArray256 a, BitArray256 b) => new BitArray256(a.data1 & b.data1, a.data2 & b.data2, a.data3 & b.data3, a.data4 & b.data4);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray256 operator &(BitArray256 a, BitArray256 b) => new(a.data1 & b.data1, a.data2 & b.data2, a.data3 & b.data3, a.data4 & b.data4);
 
         /// <summary> Equality operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>True if both bit arrays are equals.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray256 a, BitArray256 b) => a.data1 == b.data1 && a.data2 == b.data2 && a.data3 == b.data3 && a.data4 == b.data4;
 
         /// <summary> Inequality operator. </summary>
         /// <param name="a">First bit array.</param>
         /// <param name="b">Second bit array.</param>
         /// <returns>True if the bit arrays are not equals.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitArray256 a, BitArray256 b) => a.data1 != b.data1 || a.data2 != b.data2 || a.data3 != b.data3 || a.data4 != b.data4;
 
         /// <summary> Bit-wise And </summary>
         /// <param name="other">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray256 BitAnd(BitArray256 other) => this & other;
 
         /// <summary> Bit-wise Or </summary>
         /// <param name="other">Bit array with which to do the operation.</param>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray256 BitOr(BitArray256 other) => this | other;
 
         /// <summary>
         /// Bit-wise Not
         /// </summary>
         /// <returns>The resulting bit array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray256 BitNot() => ~this;
 
         /// <summary> Equality operator. </summary>
         /// <param name="obj">Bit array to compare to.</param>
         /// <returns>True if the provided bit array is equal to this..</returns>
         public override bool Equals(object obj) =>
-            (obj is BitArray256)
-            && this.data1.Equals(((BitArray256)obj).data1)
-            && this.data2.Equals(((BitArray256)obj).data2)
-            && this.data3.Equals(((BitArray256)obj).data3)
-            && this.data4.Equals(((BitArray256)obj).data4);
+            (obj is BitArray256 array256)
+            && this.data1.Equals(array256.data1)
+            && this.data2.Equals(array256.data2)
+            && this.data3.Equals(array256.data3)
+            && this.data4.Equals(array256.data4);
 
         /// <summary> Get the hashcode of the bit array. </summary>
         /// <returns>Hashcode of the bit array.</returns>
         public override int GetHashCode()
         {
             var hashCode = 1870826326;
-            hashCode = hashCode * -1521134295 + this.data1.GetHashCode();
-            hashCode = hashCode * -1521134295 + this.data2.GetHashCode();
-            hashCode = hashCode * -1521134295 + this.data3.GetHashCode();
-            hashCode = hashCode * -1521134295 + this.data4.GetHashCode();
+            hashCode = (hashCode * -1521134295) + this.data1.GetHashCode();
+            hashCode = (hashCode * -1521134295) + this.data2.GetHashCode();
+            hashCode = (hashCode * -1521134295) + this.data3.GetHashCode();
+            hashCode = (hashCode * -1521134295) + this.data4.GetHashCode();
             return hashCode;
         }
     }
@@ -835,6 +885,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="index">Bit index.</param>
         /// <param name="data">Bit array data.</param>
         /// <returns>The value of the bit at the specific index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Get8(uint index, byte data) => (data & (1u << (int)index)) != 0u;
 
         /// <summary>
@@ -843,6 +894,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="index">Bit index.</param>
         /// <param name="data">Bit array data.</param>
         /// <returns>The value of the bit at the specific index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Get16(uint index, ushort data) => (data & (1u << (int)index)) != 0u;
 
         /// <summary>
@@ -851,6 +903,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="index">Bit index.</param>
         /// <param name="data">Bit array data.</param>
         /// <returns>The value of the bit at the specific index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Get32(uint index, uint data) => (data & (1u << (int)index)) != 0u;
 
         /// <summary>
@@ -859,6 +912,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="index">Bit index.</param>
         /// <param name="data">Bit array data.</param>
         /// <returns>The value of the bit at the specific index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Get64(uint index, ulong data) => (data & (1uL << (int)index)) != 0uL;
 
         /// <summary>
@@ -868,6 +922,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="data1">Bit array data 1.</param>
         /// <param name="data2">Bit array data 2.</param>
         /// <returns>The value of the bit at the specific index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Get128(uint index, ulong data1, ulong data2)
             => index < 64u
             ? (data1 & (1uL << (int)index)) != 0uL
@@ -882,6 +937,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="data3">Bit array data 3.</param>
         /// <param name="data4">Bit array data 4.</param>
         /// <returns>The value of the bit at the specific index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Get256(uint index, ulong data1, ulong data2, ulong data3, ulong data4)
             => index < 128u
             ? index < 64u
@@ -897,6 +953,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="index">Bit index.</param>
         /// <param name="data">Bit array data.</param>
         /// <param name="value">Value to set the bit to.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Set8(uint index, ref byte data, bool value) => data = (byte)(value ? (data | (1u << (int)index)) : (data & ~(1u << (int)index)));
 
         /// <summary>
@@ -905,6 +962,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="index">Bit index.</param>
         /// <param name="data">Bit array data.</param>
         /// <param name="value">Value to set the bit to.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Set16(uint index, ref ushort data, bool value) => data = (ushort)(value ? (data | (1u << (int)index)) : (data & ~(1u << (int)index)));
 
         /// <summary>
@@ -913,6 +971,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="index">Bit index.</param>
         /// <param name="data">Bit array data.</param>
         /// <param name="value">Value to set the bit to.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Set32(uint index, ref uint data, bool value) => data = value ? (data | (1u << (int)index)) : (data & ~(1u << (int)index));
 
         /// <summary>
@@ -921,6 +980,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="index">Bit index.</param>
         /// <param name="data">Bit array data.</param>
         /// <param name="value">Value to set the bit to.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Set64(uint index, ref ulong data, bool value) => data = value ? (data | (1uL << (int)index)) : (data & ~(1uL << (int)index));
 
         /// <summary>
@@ -930,6 +990,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="data1">Bit array data 1.</param>
         /// <param name="data2">Bit array data 2.</param>
         /// <param name="value">Value to set the bit to.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Set128(uint index, ref ulong data1, ref ulong data2, bool value)
         {
             if (index < 64u)
@@ -951,6 +1012,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="data3">Bit array data 3.</param>
         /// <param name="data4">Bit array data 4.</param>
         /// <param name="value">Value to set the bit to.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Set256(uint index, ref ulong data1, ref ulong data2, ref ulong data3, ref ulong data4, bool value)
         {
             if (index < 64u)

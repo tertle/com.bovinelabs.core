@@ -14,15 +14,15 @@ namespace BovineLabs.Core.States
     using UnityEngine;
 
     /// <summary> A generic general purpose state system that ensures only a single state component exists on an entity but driven from a byte field. </summary>
-    /// <typeparam name="T"> The bit array type. </typeparam>
-    /// <typeparam name="TS"> The state component. </typeparam>
-    /// <typeparam name="TP"> The previous state component. </typeparam>
-    public abstract partial class StateFlagSystemBase<T, TS, TP> : SystemBase
-        where T : unmanaged, IBitArray<T>
-        where TS : struct, IStateFlagComponent<T>
-        where TP : struct, IStateFlagPreviousComponent<T>
+    /// <typeparam name="TSize"> The bit array type. </typeparam>
+    /// <typeparam name="TComponent"> The state component. </typeparam>
+    /// <typeparam name="TPrevious"> The previous state component. </typeparam>
+    public abstract partial class StateFlagSystemBase<TSize, TComponent, TPrevious> : SystemBase
+        where TSize : unmanaged, IBitArray<TSize>
+        where TComponent : struct, IStateFlagComponent<TSize>
+        where TPrevious : struct, IStateFlagPreviousComponent<TSize>
     {
-        private NativeHashMap<uint, ComponentType> registeredStatesMap;
+        private NativeParallelHashMap<uint, ComponentType> registeredStatesMap;
         private EndSimulationEntityCommandBufferSystem bufferSystem;
         private EntityQuery query;
         private EntityQuery missingQuery;
@@ -30,12 +30,12 @@ namespace BovineLabs.Core.States
         /// <inheritdoc/>
         protected override void OnCreate()
         {
-            this.registeredStatesMap = new NativeHashMap<uint, ComponentType>(256, Allocator.Persistent);
-            this.bufferSystem = this.World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
+            this.registeredStatesMap = new NativeParallelHashMap<uint, ComponentType>(256, Allocator.Persistent);
+            this.bufferSystem = this.World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
 
-            this.missingQuery = this.GetEntityQuery(ComponentType.ReadOnly<TS>(), ComponentType.Exclude<TP>());
-            this.query = this.GetEntityQuery(ComponentType.ReadOnly<TS>(), ComponentType.ReadWrite<TP>());
-            this.query.AddChangedVersionFilter(typeof(TS));
+            this.missingQuery = this.GetEntityQuery(ComponentType.ReadOnly<TComponent>(), ComponentType.Exclude<TPrevious>());
+            this.query = this.GetEntityQuery(ComponentType.ReadOnly<TComponent>(), ComponentType.ReadWrite<TPrevious>());
+            this.query.AddChangedVersionFilter(typeof(TComponent));
 
             var systems = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
@@ -43,12 +43,12 @@ namespace BovineLabs.Core.States
                 .Where(t =>
                 {
                     var subClass = t.GetSubclassOfRawGeneric(typeof(StateFlagInstanceSystemBase<,>));
-                    return subClass != null && subClass.GetGenericArguments()[1] == typeof(TS);
+                    return subClass != null && subClass.GetGenericArguments()[1] == typeof(TComponent);
                 });
 
             foreach (var systemType in systems)
             {
-                var system = (IStateFlagInstanceSystem)this.World.GetOrCreateSystem(systemType);
+                var system = (IStateFlagInstanceSystem)this.World.GetExistingSystem(systemType);
                 this.registeredStatesMap.Add(system.StateKey, system.StateInstanceComponent);
             }
         }
@@ -67,19 +67,15 @@ namespace BovineLabs.Core.States
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            this.EntityManager.AddComponent<TP>(this.missingQuery);
-
-            if (this.query.IsEmpty)
-            {
-                return;
-            }
+            this.EntityManager.AddComponent<TPrevious>(this.missingQuery);
 
             var stateJob = this.CreateStateJob();
             stateJob.RegisteredStates = this.registeredStatesMap;
             stateJob.EntityType = this.GetEntityTypeHandle();
-            stateJob.StateType = this.GetComponentTypeHandle<TS>(true);
-            stateJob.PreviousStateType = this.GetComponentTypeHandle<TP>();
+            stateJob.StateType = this.GetComponentTypeHandle<TComponent>(true);
+            stateJob.PreviousStateType = this.GetComponentTypeHandle<TPrevious>();
             stateJob.CommandBuffer = this.bufferSystem.CreateCommandBuffer().AsParallelWriter();
+            stateJob.LastSystemVersion = this.LastSystemVersion;
             this.Dependency = stateJob.ScheduleParallel(this.query, this.Dependency);
 
             this.bufferSystem.AddJobHandleForProducer(this.Dependency);
@@ -89,21 +85,28 @@ namespace BovineLabs.Core.States
         protected struct StateJob : IJobEntityBatch
         {
             [ReadOnly]
-            internal NativeHashMap<uint, ComponentType> RegisteredStates;
+            internal NativeParallelHashMap<uint, ComponentType> RegisteredStates;
 
             [ReadOnly]
             internal EntityTypeHandle EntityType;
 
             [ReadOnly]
-            internal ComponentTypeHandle<TS> StateType;
+            internal ComponentTypeHandle<TComponent> StateType;
 
-            internal ComponentTypeHandle<TP> PreviousStateType;
+            internal ComponentTypeHandle<TPrevious> PreviousStateType;
 
             internal EntityCommandBuffer.ParallelWriter CommandBuffer;
+
+            internal uint LastSystemVersion;
 
             /// <inheritdoc/>
             public void Execute(ArchetypeChunk batchInChunk, int batchIndex)
             {
+                if (!batchInChunk.DidChange(this.StateType, this.LastSystemVersion))
+                {
+                    return;
+                }
+
                 var entities = batchInChunk.GetNativeArray(this.EntityType);
                 var states = batchInChunk.GetNativeArray(this.StateType);
                 var previousStates = batchInChunk.GetNativeArray(this.PreviousStateType);
@@ -112,7 +115,7 @@ namespace BovineLabs.Core.States
                 {
                     var entity = entities[i];
                     var state = states[i];
-                    var previous = previousStates[i];
+                    ref var previous = ref previousStates.ElementAt(i);
 
                     // S P | R A
                     // ---------
@@ -147,7 +150,6 @@ namespace BovineLabs.Core.States
                     }
 
                     previous.Value = state.Value;
-                    previousStates[i] = previous;
                 }
             }
         }

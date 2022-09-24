@@ -17,20 +17,20 @@ namespace BovineLabs.Core.Extensions
             return new ClearListJob<T> { List = list }.Schedule(handle);
         }
 
-        public static JobHandle Clear<T>(this NativeHashSet<T> hashSet, JobHandle handle)
+        public static JobHandle Clear<T>(this NativeParallelHashSet<T> hashSet, JobHandle handle)
             where T : unmanaged, IEquatable<T>
         {
             return new ClearHashSetJob<T> { HashSet = hashSet }.Schedule(handle);
         }
 
-        public static JobHandle Clear<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, JobHandle handle)
+        public static JobHandle Clear<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> hashMap, JobHandle handle)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
             return new ClearNativeHashMapJob<TKey, TValue> { HashMap = hashMap }.Schedule(handle);
         }
 
-        public static JobHandle Clear<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap, JobHandle handle)
+        public static JobHandle Clear<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> hashMap, JobHandle handle)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -53,7 +53,7 @@ namespace BovineLabs.Core.Extensions
         private struct ClearHashSetJob<T> : IJob
             where T : unmanaged, IEquatable<T>
         {
-            public NativeHashSet<T> HashSet;
+            public NativeParallelHashSet<T> HashSet;
 
             public void Execute()
             {
@@ -66,7 +66,7 @@ namespace BovineLabs.Core.Extensions
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
-            public NativeHashMap<TKey, TValue> HashMap;
+            public NativeParallelHashMap<TKey, TValue> HashMap;
 
             public void Execute()
             {
@@ -79,7 +79,7 @@ namespace BovineLabs.Core.Extensions
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
-            public NativeMultiHashMap<TKey, TValue> HashMap;
+            public NativeParallelMultiHashMap<TKey, TValue> HashMap;
 
             public void Execute()
             {

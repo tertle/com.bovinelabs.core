@@ -120,9 +120,9 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary>
-        /// Adds elements from a buffer to this list.
+        /// Adds elements from a Buffer to this list.
         /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="ptr">A pointer to the Buffer.</param>
         /// <param name="length">The number of elements to add to the list.</param>
         /// <remarks>
         /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
@@ -155,9 +155,9 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary>
-        /// Adds elements from a buffer to this list.
+        /// Adds elements from a Buffer to this list.
         /// </summary>
-        /// <param name="elements">A pointer to the buffer.</param>
+        /// <param name="elements">A pointer to the Buffer.</param>
         /// <param name="count">The number of elements to add to the list.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if count is negative.</exception>
         public void AddRange(void* elements, int count)
@@ -375,9 +375,9 @@ namespace BovineLabs.Core.Collections
             }
 
             /// <summary>
-            /// Adds elements from a buffer to this list.
+            /// Adds elements from a Buffer to this list.
             /// </summary>
-            /// <param name="ptr">A pointer to the buffer.</param>
+            /// <param name="ptr">A pointer to the Buffer.</param>
             /// <param name="length">The number of elements to add to the list.</param>
             /// <remarks>
             /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.

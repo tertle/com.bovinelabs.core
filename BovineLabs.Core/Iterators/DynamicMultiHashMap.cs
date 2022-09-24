@@ -5,17 +5,13 @@
 namespace BovineLabs.Core.Iterators
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
-    public interface IDynamicMultiHashMap<TKey, TValue> : IDynamicHashMapBase<TKey, TValue>
-        where TKey : unmanaged, IEquatable<TKey>
-        where TValue : unmanaged
-    {
-    }
-
+    [DebuggerTypeProxy(typeof(DynamicMultiHashMapDebuggerTypeProxy<,>))]
     public unsafe struct DynamicMultiHashMap<TKey, TValue>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
@@ -35,13 +31,13 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-        /// <summary> Reports whether container is empty. </summary>
+        /// <summary> Gets a value indicating whether container is empty. </summary>
         /// <value>True if this container empty.</value>
         public bool IsEmpty => !this.IsCreated || DynamicHashMapData.IsEmpty(this.BufferReadOnly);
 
         public bool IsCreated => this.data.IsCreated;
 
-        /// <summary> The number of items that can fit in the container. </summary>
+        /// <summary> Gets or sets the number of items that can fit in the container. </summary>
         /// <value>The number of items that the container can hold before it resizes its internal storage.</value>
         /// <remarks>Capacity specifies the number of items the container can currently hold. You can change Capacity
         /// to fit more or fewer items. Changing Capacity creates a new array of the specified size, copies the
@@ -49,7 +45,7 @@ namespace BovineLabs.Core.Iterators
         public int Capacity
         {
             get => this.data.AsDataReadOnly<TKey, TValue>()->KeyCapacity;
-            set => DynamicHashMapData.ReallocateHashMap<TKey, TValue>(this.data, value, UnsafeHashMapData.GetBucketSize(value), out _);
+            set => DynamicHashMapData.ReallocateHashMap<TKey, TValue>(this.data, value, UnsafeParallelHashMapData.GetBucketSize(value), out _);
         }
 
         internal DynamicHashMapData* Buffer => this.data.AsData<TKey, TValue>();
@@ -107,7 +103,7 @@ namespace BovineLabs.Core.Iterators
         /// <param name="item">Output value.</param>
         /// <param name="it">Iterator.</param>
         /// <returns>Returns true if the container contains the key.</returns>
-        public bool TryGetFirstValue(TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        public bool TryGetFirstValue(TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
         {
             return DynamicHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(this.BufferReadOnly, key, out item, out it);
         }
@@ -118,7 +114,7 @@ namespace BovineLabs.Core.Iterators
         /// <param name="item">Output value.</param>
         /// <param name="it">Iterator.</param>
         /// <returns>Returns true if next value for the key is found.</returns>
-        public bool TryGetNextValue(out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        public bool TryGetNextValue(out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
         {
             return DynamicHashMapBase<TKey, TValue>.TryGetNextValueAtomic(this.BufferReadOnly, out item, ref it);
         }
@@ -206,6 +202,52 @@ namespace BovineLabs.Core.Iterators
 
             DynamicHashMapData.AllocateHashMap<TKey, TValue>(this.data, 0, 0, out _);
             this.Clear();
+        }
+    }
+
+    internal sealed class DynamicMultiHashMapDebuggerTypeProxy<TKey, TValue>
+        where TKey : unmanaged, IEquatable<TKey>, IComparable<TKey>
+        where TValue : unmanaged
+    {
+        private DynamicMultiHashMap<TKey, TValue> target;
+
+        public DynamicMultiHashMapDebuggerTypeProxy(DynamicMultiHashMap<TKey, TValue> target)
+        {
+            this.target = target;
+        }
+
+        public List<ListPair<TKey, List<TValue>>> Items
+        {
+            get
+            {
+                var result = new List<ListPair<TKey, List<TValue>>>();
+                var keys = GetUniqueKeyArray(ref this.target);
+
+                for (var k = 0; k < keys.Length; ++k)
+                {
+                    var values = new List<TValue>();
+                    if (this.target.TryGetFirstValue(keys.Keys[k], out var value, out var iterator))
+                    {
+                        do
+                        {
+                            values.Add(value);
+                        }
+                        while (this.target.TryGetNextValue(out value, ref iterator));
+                    }
+
+                    result.Add(new ListPair<TKey, List<TValue>>(keys.Keys[k], values));
+                }
+
+                return result;
+            }
+        }
+
+        private static (NativeArray<TKey> Keys, int Length) GetUniqueKeyArray(ref DynamicMultiHashMap<TKey, TValue> hashMap)
+        {
+            var withDuplicates = hashMap.GetKeyArray(Allocator.Temp);
+            withDuplicates.Sort();
+            int uniques = withDuplicates.Unique();
+            return (withDuplicates, uniques);
         }
     }
 }

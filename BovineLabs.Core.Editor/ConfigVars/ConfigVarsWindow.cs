@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
     /// <summary> Window for config vars. </summary>
     public class ConfigVarsWindow : SettingsBaseWindow<ConfigVarsWindow>
     {
-        private readonly Dictionary<string, ConfigVarPanel> panels = new Dictionary<string, ConfigVarPanel>();
+        private readonly Dictionary<string, ConfigVarPanel> panels = new();
 
         /// <inheritdoc/>
         protected override string TitleText { get; } = "ConfigVars";

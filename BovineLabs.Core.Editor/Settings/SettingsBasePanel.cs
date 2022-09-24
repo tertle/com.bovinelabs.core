@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Editor.Settings
     public abstract class SettingsBasePanel<T> : ISettingsPanel
         where T : ScriptableObject, ISettings
     {
-        private readonly List<string> keywordList = new List<string>();
+        private readonly List<string> keywordList = new();
         private Editor editor;
 
         /// <summary> Initializes a new instance of the <see cref="SettingsBasePanel{T}"/> class. </summary>
@@ -46,12 +46,8 @@ namespace BovineLabs.Core.Editor.Settings
         public virtual void OnActivate(string searchContext, VisualElement rootElement)
         {
             this.editor = Editor.CreateEditor(this.SerializedObject.targetObject);
-
-            var imguiContainer = new IMGUIContainer(() =>
-            {
-                this.editor.OnInspectorGUI();
-            });
-            rootElement.Add(imguiContainer);
+            var container = this.editor.CreateInspectorGUI() ?? new IMGUIContainer(() => { this.editor.OnInspectorGUI(); });
+            rootElement.Add(container);
 
             // var allMatch = string.IsNullOrWhiteSpace(searchContext);
             //

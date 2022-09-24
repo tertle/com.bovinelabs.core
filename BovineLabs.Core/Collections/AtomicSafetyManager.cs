@@ -46,7 +46,7 @@ namespace BovineLabs.Core.Collections
         }
 
         [Conditional(SafetyChecks.ConditionalSymbol)]
-        public void MarkNativeHashMapAsReadOnly<TKey, TValue>(ref NativeHashMap<TKey, TValue> hashMap)
+        public void MarkNativeHashMapAsReadOnly<TKey, TValue>(ref NativeParallelHashMap<TKey, TValue> hashMap)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -56,7 +56,7 @@ namespace BovineLabs.Core.Collections
         }
 
         [Conditional(SafetyChecks.ConditionalSymbol)]
-        public void MarkNativeHashMapAsReadOnly<TKey, TValue>(ref NativeMultiHashMap<TKey, TValue> hashMap)
+        public void MarkNativeHashMapAsReadOnly<TKey, TValue>(ref NativeParallelMultiHashMap<TKey, TValue> hashMap)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -68,7 +68,6 @@ namespace BovineLabs.Core.Collections
         [Conditional(SafetyChecks.ConditionalSymbol)]
         public void BumpTemporaryHandleVersions()
         {
-            // TODO: There should be a better way to invalidate older versions...
             this.ReleaseTemporaryHandle();
             this.CreateTemporaryHandle();
         }

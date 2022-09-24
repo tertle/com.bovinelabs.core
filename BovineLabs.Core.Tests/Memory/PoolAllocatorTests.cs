@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Tests.Memory
         [Test]
         public unsafe void Alloc()
         {
-            var allocator = new PoolAllocator<int>(16, Allocator.Temp);
+            var allocator = new UnsafeFixedPoolAllocator<int>(16, Allocator.Temp);
 
             var list = new List<IntPtr>();
 

@@ -8,7 +8,6 @@ namespace BovineLabs.Core.ConfigVars
     using System.Collections.Generic;
     using System.Reflection;
     using System.Text.RegularExpressions;
-    using BovineLabs.Core.Serialization;
     using BovineLabs.Core.Utility;
     using Unity.Burst;
     using Unity.Collections;
@@ -17,10 +16,9 @@ namespace BovineLabs.Core.ConfigVars
     /// <summary> The manager for the config vars. Is pretty automated. </summary>
     public static class ConfigVarManager
     {
-        private static readonly Regex ValidateNameRe = new Regex(@"^[a-z_+-][a-z0-9_+.-]*$");
+        private static readonly Regex ValidateNameRe = new(@"^[a-z_+-][a-z0-9_+.-]*$");
 
-        private static readonly Dictionary<ConfigVarAttribute, IConfigVarContainer> NameConfigVars
-            = new Dictionary<ConfigVarAttribute, IConfigVarContainer>();
+        private static readonly Dictionary<ConfigVarAttribute, IConfigVarContainer> NameConfigVars = new();
 
         private static bool isInitialized;
 
@@ -63,7 +61,7 @@ namespace BovineLabs.Core.ConfigVars
                     // always load in editor
                     if (Application.isEditor || configVar.Flags.HasFlag(ConfigVarFlags.Save))
                     {
-                        container.Value = UserPrefs.GetString(configVar.Name, configVar.DefaultValue);
+                        container.Value = PlayerPrefs.GetString(configVar.Name, configVar.DefaultValue);
                     }
                     else
                     {
@@ -149,27 +147,18 @@ namespace BovineLabs.Core.ConfigVars
 
         private static IConfigVarContainer GetContainer(object obj)
         {
-            switch (obj)
+            return obj switch
             {
-                case SharedStatic<int> intField:
-                    return new ConfigVarSharedStaticContainer<int>(intField);
-                case SharedStatic<float> floatField:
-                    return new ConfigVarSharedStaticContainer<float>(floatField);
-                case SharedStatic<bool> boolField:
-                    return new ConfigVarSharedStaticContainer<bool>(boolField);
-                case SharedStatic<FixedString32Bytes> stringField32:
-                    return new ConfigVarSharedStaticStringContainer<FixedString32Bytes>(stringField32);
-                case SharedStatic<FixedString64Bytes> stringField64:
-                    return new ConfigVarSharedStaticStringContainer<FixedString64Bytes>(stringField64);
-                case SharedStatic<FixedString128Bytes> stringField128:
-                    return new ConfigVarSharedStaticStringContainer<FixedString128Bytes>(stringField128);
-                case SharedStatic<FixedString512Bytes> stringField512:
-                    return new ConfigVarSharedStaticStringContainer<FixedString512Bytes>(stringField512);
-                case SharedStatic<FixedString4096Bytes> stringField4096:
-                    return new ConfigVarSharedStaticStringContainer<FixedString4096Bytes>(stringField4096);
-                default:
-                    return null;
-            }
+                SharedStatic<int> intField => new ConfigVarSharedStaticContainer<int>(intField),
+                SharedStatic<float> floatField => new ConfigVarSharedStaticContainer<float>(floatField),
+                SharedStatic<bool> boolField => new ConfigVarSharedStaticContainer<bool>(boolField),
+                SharedStatic<FixedString32Bytes> stringField32 => new ConfigVarSharedStaticStringContainer<FixedString32Bytes>(stringField32),
+                SharedStatic<FixedString64Bytes> stringField64 => new ConfigVarSharedStaticStringContainer<FixedString64Bytes>(stringField64),
+                SharedStatic<FixedString128Bytes> stringField128 => new ConfigVarSharedStaticStringContainer<FixedString128Bytes>(stringField128),
+                SharedStatic<FixedString512Bytes> stringField512 => new ConfigVarSharedStaticStringContainer<FixedString512Bytes>(stringField512),
+                SharedStatic<FixedString4096Bytes> stringField4096 => new ConfigVarSharedStaticStringContainer<FixedString4096Bytes>(stringField4096),
+                _ => null,
+            };
         }
     }
 }

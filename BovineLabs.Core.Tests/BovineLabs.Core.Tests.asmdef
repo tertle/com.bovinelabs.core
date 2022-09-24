@@ -2,15 +2,15 @@
     "name": "BovineLabs.Core.Tests",
     "rootNamespace": "",
     "references": [
-        "GUID:f8242764ccad06a4ca6d427d36be92ab",
-        "GUID:11d478a8d126ee740870fb20e69aeb83",
-        "GUID:2665a8d13d1b3f18800f46e256720795",
-        "GUID:e0cd26848372d4e5c891c569017e11f1",
-        "GUID:734d92eba21c94caba915361bd5ac177",
-        "GUID:d8b63aba1907145bea998dd612889d6b",
-        "GUID:e04e6c86a9f3947eb95fded39f9e60cc",
-        "GUID:0acc523941302664db1f4e527237feb3",
-        "GUID:27619889b8ba8c24980f49ee34dbb44a"
+        "BovineLabs.Core",
+        "BovineLabs.Testing",
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Mathematics",
+        "Unity.Mathematics.Extensions",
+        "UnityEditor.TestRunner",
+        "UnityEngine.TestRunner"
     ],
     "includePlatforms": [
         "Editor"

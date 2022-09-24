@@ -40,9 +40,9 @@ namespace BovineLabs.Core.Editor.EditorToolbar
 #endif
         }
 
-        public static List<Action> LeftToolbarGUI { get; } = new List<Action>();
+        public static List<Action> LeftToolbarGUI { get; } = new();
 
-        public static List<Action> RightToolbarGUI { get; } = new List<Action>();
+        public static List<Action> RightToolbarGUI { get; } = new();
 
         private static void OnGUI()
         {

@@ -70,8 +70,8 @@ namespace BovineLabs.Core.Collections
 
         /// <summary> Creates a asset from a pointer to data and a specified size. </summary>
         /// <remarks><para>The asset is created in unmanaged memory. This function can only be used in an <see cref="Unsafe"/> context.</para></remarks>
-        /// <param name="ptr">A pointer to the buffer containing the data to store in the asset.</param>
-        /// <param name="length">The length of the buffer in bytes.</param>
+        /// <param name="ptr">A pointer to the Buffer containing the data to store in the asset.</param>
+        /// <param name="length">The length of the Buffer in bytes.</param>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>A reference to newly created asset.</returns>
         public static Reference<T> Create(void* ptr, int length, MemoryAllocator allocator)

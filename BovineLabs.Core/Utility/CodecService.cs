@@ -12,15 +12,6 @@ namespace BovineLabs.Core.Utility
     {
         private const string DllName = "liblz4";
 
-        [DllImport(DllName, EntryPoint = "LZ4_compressBound")]
-        private static extern int CompressBoundLZ4(int srcSize);
-
-        [DllImport(DllName, EntryPoint = "LZ4_compress_default")]
-        private static extern int CompressLZ4(byte* src, byte* dst, int srcSize, int dstCapacity);
-
-        [DllImport(DllName, EntryPoint = "LZ4_decompress_safe")]
-        private static extern int DecompressLZ4(byte* src, byte* dst, int compressedSize, int dstCapacity);
-
         public static int Compress(in byte* src, int srcSize, out byte* dst, Allocator allocator = Allocator.Temp)
         {
             int boundedSize = CompressBoundLZ4(srcSize);
@@ -41,5 +32,15 @@ namespace BovineLabs.Core.Utility
         {
             return DecompressLZ4(compressedData, decompressedData, compressedSize, decompressedSize) > 0;
         }
+
+        [DllImport(DllName, EntryPoint = "LZ4_compressBound")]
+        private static extern int CompressBoundLZ4(int srcSize);
+
+        [DllImport(DllName, EntryPoint = "LZ4_compress_default")]
+        private static extern int CompressLZ4(byte* src, byte* dst, int srcSize, int dstCapacity);
+
+        [DllImport(DllName, EntryPoint = "LZ4_decompress_safe")]
+        private static extern int DecompressLZ4(byte* src, byte* dst, int compressedSize, int dstCapacity);
+
     }
 }

@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private static Func<string> getActiveFolderPath;
 
-        private readonly Dictionary<string, string> assemblyNameToGUID = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> assemblyNameToGUID = new();
 
         [MenuItem("BovineLabs/Tools/Assembly Builder", priority = 1007)]
         private static void ShowWindow()
@@ -65,7 +65,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var fileName = Path.GetFileNameWithoutExtension(path);
-
                 this.assemblyNameToGUID[fileName] = $"GUID:{guid}";
             }
 

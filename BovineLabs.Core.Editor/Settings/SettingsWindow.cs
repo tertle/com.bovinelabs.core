@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Editor.Settings
     /// <summary> The settings editor window. </summary>
     internal class SettingsWindow : SettingsBaseWindow<SettingsWindow>
     {
-        private readonly Dictionary<Type, Type> settingsPanelMap = new Dictionary<Type, Type>();
+        private readonly Dictionary<Type, Type> settingsPanelMap = new();
 
         /// <inheritdoc/>
         protected override string TitleText { get; } = "Settings";

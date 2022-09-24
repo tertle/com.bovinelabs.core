@@ -23,7 +23,6 @@ namespace BovineLabs.Core.Internal
             header->Length = headerLength + dataLength;
             header->Allocator = Allocator.Persistent;
 
-            // @TODO use 64bit hash
             var hash1 = math.hash(headerPtr, headerLength);
             var hash2 = math.hash(dataPtr, dataLength);
             header->Hash = ((ulong)hash1 << 32) | hash2;
@@ -31,7 +30,14 @@ namespace BovineLabs.Core.Internal
             BlobAssetReference<T> blobAssetReference;
             blobAssetReference.m_data.m_Align8Union = 0;
             header->ValidationPtr = blobAssetReference.m_data.m_Ptr = buffer + sizeof(BlobAssetHeader);
+
             return blobAssetReference;
+        }
+
+        public static long GetHash<T>(this BlobAssetReference<T> blobAssetReference)
+            where T : struct
+        {
+            return blobAssetReference.m_data.m_Align8Union;
         }
     }
 }

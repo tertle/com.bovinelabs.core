@@ -29,6 +29,11 @@ namespace BovineLabs.Core.Internal
             from = collider.ConvexHull.Vertices[fromIndex];
             to = collider.ConvexHull.Vertices[toIndex];
         }
+
+        public static bool GetRespondsToCollision(this ref Collider collider)
+        {
+            return collider.RespondsToCollision;
+        }
     }
 }
 #endif

@@ -49,10 +49,8 @@ namespace BovineLabs.Core.Settings
                     continue;
                 }
 
-                // TODO this only works on game objects
-                // conversionSystem.DeclareAssetDependency(this.gameObject, setting);
-
-                setting.Convert(entity, dstManager, conversionSystem);
+                conversionSystem.DeclareAssetDependency(this.gameObject, setting);
+                setting.Convert(entity, dstManager, conversionSystem, this.gameObject);
             }
         }
     }

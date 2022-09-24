@@ -1,0 +1,76 @@
+.SearchView {
+  flex-grow: 1;
+  border-width: 1px;
+}
+
+.UnityThemeDark {
+  background-color: #383838;
+  border-color: #232323;
+}
+
+.UnityThemeLight {
+  background-color: #c2c2c2;
+  border-color: #999999;
+}
+
+.SearchView-Label__Title {
+  padding: 4px;
+  font-size: 14px;
+  -unity-text-align: middle-center;
+  -unity-font-style: bold;
+}
+
+.SearchView-SearchField {
+  margin: 4px;
+}
+
+.SearchView-NavigateButton {
+  height: 24px;
+  margin: 0px;
+  padding: 0px;
+  border-width: 1px 0px;
+  border-radius: 0px;
+  justify-content: center;
+  -unity-font-style: bold;
+}
+
+.UnityThemeDark .SearchView-NavigateButton {
+  background-color: #404040;
+}
+
+.UnityThemeLight .SearchView-NavigateButton {
+  background-color: #cfcfcf;
+}
+
+.SearchView-NavigateButton:disabled {
+  opacity: 1.0;
+}
+
+.SearchView-Icon__Return {
+  height: 16px;
+  width: 16px;
+  visibility: hidden;
+}
+
+.UnityThemeDark .SearchView-Icon__Return {
+  background-image: resource("d_tab_prev.png"); 
+}
+
+.UnityThemeLight .SearchView-Icon__Return {
+  background-image: resource("tab_prev.png");
+}
+
+.UnityThemeDark .SearchView-NavigateButton:hover {
+  background-color: #454545;
+}
+
+.UnityThemeLight .SearchView-NavigateButton:hover {
+  background-color: #dedede;
+}
+
+.SearchView-ListView__Results {
+  flex-grow: 1;
+  padding: 0px;
+  margin: 0px;
+  -unity-text-align: middle-left;
+}

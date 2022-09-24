@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Settings
         }
 
         /// <inheritdoc />
-        public sealed override void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
+        public sealed override void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem, GameObject owner)
         {
             var entityBuffer = dstManager.AddBuffer<T>(entity);
             foreach (var b in this.buffer)

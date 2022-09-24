@@ -2,14 +2,14 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !UNITY_DISABLE_MANAGED_COMPONENTS && !DOTS_HYBRID_COMPONENTS_DEBUG
+#if !UNITY_DISABLE_MANAGED_COMPONENTS
 namespace BovineLabs.Core.Internal
 {
-    using Unity.Entities;
+    using System;
 
     public static class TypesInternal
     {
-        public static ComponentType CompanionLink => typeof(Unity.Entities.CompanionLink);
+        public static readonly Type CompanionLink = typeof(Unity.Entities.CompanionLink);
     }
 }
 #endif

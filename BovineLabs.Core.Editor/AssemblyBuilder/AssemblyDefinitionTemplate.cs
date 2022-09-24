@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
         public bool noEngineReferences;
 
         public static AssemblyDefinitionTemplate New() =>
-            new AssemblyDefinitionTemplate
+            new()
             {
                 references = new List<string>(),
                 includePlatforms = new List<string>(),

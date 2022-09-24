@@ -1,4 +1,8 @@
-﻿namespace BovineLabs.Core.Memory
+﻿// <copyright file="UnsafeListPtrAllocator.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Memory
 {
     using System;
     using BovineLabs.Core.Collections;
@@ -8,20 +12,20 @@
     public unsafe struct UnsafeListPtrAllocator<T>
         where T : unmanaged
     {
-        private NativeList<IntPtr> ptrs;
+        private NativeList<Ptr> ptrs;
 
         private readonly Allocator allocator;
 
         public UnsafeListPtrAllocator(Allocator allocator)
         {
             this.allocator = allocator;
-            this.ptrs = new NativeList<IntPtr>(this.allocator);
+            this.ptrs = new NativeList<Ptr>(this.allocator);
         }
 
         public UnsafeListPtr<T> Alloc()
         {
             var p = new UnsafeListPtr<T>(Allocator.Persistent);
-            this.ptrs.Add((IntPtr)p.GetUnsafeList());
+            this.ptrs.Add(p.GetUnsafeList());
             return p;
         }
 

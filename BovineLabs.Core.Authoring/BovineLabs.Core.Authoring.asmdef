@@ -1,0 +1,39 @@
+{
+    "name": "BovineLabs.Core.Authoring",
+    "rootNamespace": "",
+    "references": [
+        "BovineLabs.Core",
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Unity.Mathematics",
+        "Unity.NetCode",
+        "Unity.NetCode.Authoring.Hybrid",
+        "Unity.Physics",
+        "Unity.Physics.Hybrid",
+        "Unity.Transforms"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.netcode",
+            "expression": "",
+            "define": "UNITY_NETCODE"
+        },
+        {
+            "name": "com.unity.physics",
+            "expression": "",
+            "define": "UNITY_PHYSICS"
+        }
+    ],
+    "noEngineReferences": false
+}
