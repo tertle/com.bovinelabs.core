@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Editor.Keys
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using BovineLabs.Core.Keys;
     using UnityEditor;
     using UnityEngine;
 

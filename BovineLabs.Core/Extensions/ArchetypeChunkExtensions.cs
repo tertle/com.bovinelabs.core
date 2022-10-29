@@ -49,7 +49,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static unsafe BufferAccessor<T> GetBufferAccessorRO<T>(this ArchetypeChunk archetypeChunk, BufferTypeHandle<T> bufferComponentTypeHandle)
-            where T : struct, IBufferElementData
+            where T : unmanaged, IBufferElementData
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(bufferComponentTypeHandle.m_Safety0);
@@ -84,7 +84,7 @@ namespace BovineLabs.Core.Extensions
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         private static void CheckZeroSizedComponentData<T>(ArchetypeChunk archetypeChunk, ComponentTypeHandle<T> chunkComponentType)
         {
-            if (chunkComponentType.m_IsZeroSized)
+            if (chunkComponentType.IsZeroSized)
                 throw new ArgumentException($"ArchetypeChunk.GetNativeArray<{typeof(T)}> cannot be called on zero-sized IComponentData");
         }
     }

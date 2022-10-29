@@ -5,7 +5,6 @@
 namespace BovineLabs.Core.Settings
 {
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using Unity.Entities;
     using UnityEngine;
@@ -15,10 +14,6 @@ namespace BovineLabs.Core.Settings
     [SuppressMessage("ReSharper", "Unity.RedundantSerializeFieldAttribute", Justification = "Required.")]
     public abstract class Settings : ScriptableObject, ISettings
     {
-        public virtual void DeclareReferencedPrefabs(List<GameObject> referencedPrefabs)
-        {
-        }
-
-        public abstract void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem, GameObject owner);
+        public abstract void Bake(IBaker baker);
     }
 }

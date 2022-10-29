@@ -8,8 +8,7 @@ namespace BovineLabs.Core.Editor.Inspectors
     using BovineLabs.Core.Internal;
     using Unity.Entities;
     using Unity.Physics;
-    using Unity.Properties.UI;
-    using UnityEditor.UIElements;
+    using Unity.Platforms.UI;
     using UnityEngine;
     using UnityEngine.UIElements;
     using BoxCollider = Unity.Physics.BoxCollider;
@@ -17,27 +16,32 @@ namespace BovineLabs.Core.Editor.Inspectors
     using Collider = Unity.Physics.Collider;
     using SphereCollider = Unity.Physics.SphereCollider;
 
-    internal unsafe class ColliderInspector : Inspector<BlobAssetReference<Collider>>
+    internal unsafe class ColliderInspector : PropertyInspector<BlobAssetReference<Collider>>
     {
         /// <inheritdoc/>
         public override VisualElement Build()
         {
             var root = new VisualElement();
-            root.Add(CreateDisabled<LongField, long>("Hash", this.Target.GetHash()));
-            root.Add(CreateDisabled<Toggle, bool>("RespondsToCollision", this.Target.Value.GetRespondsToCollision()));
+            if (this.Target.IsCreated)
+            {
+                root.Add(CreateDisabled<LongField, long>("Hash", this.Target.GetHash()));
+                root.Add(CreateDisabled<Toggle, bool>("RespondsToCollision", this.Target.Value.GetRespondsToCollision()));
 
-            var collider = new Foldout { text = this.Target.Value.Type.ToString() };
-            root.Add(collider);
-            CreateCollider(collider, (Collider*)this.Target.GetUnsafePtr());
+                var collider = new Foldout { text = this.Target.Value.Type.ToString() };
+                root.Add(collider);
+                CreateCollider(collider, (Collider*)this.Target.GetUnsafePtr());
 
-            // TODO be nice if this was in popup format
-            var filter = new Foldout { text = nameof(this.Target.Value.Filter) };
-            root.Add(filter);
-            filter.Add(CreateDisabled<LongField, long>(nameof(this.Target.Value.Filter.BelongsTo), this.Target.Value.Filter.BelongsTo));
-            filter.Add(CreateDisabled<LongField, long>(nameof(this.Target.Value.Filter.CollidesWith), this.Target.Value.Filter.CollidesWith));
-            filter.Add(CreateDisabled<LongField, long>(nameof(this.Target.Value.Filter.GroupIndex), this.Target.Value.Filter.GroupIndex));
+                // TODO be nice if this was in popup format
+                var filter = this.Target.Value.GetCollisionFilter();
 
-            CreateMassProperties(root, ref this.Target.Value);
+                var filterFoldout = new Foldout { text = "filter" };
+                root.Add(filterFoldout);
+                filterFoldout.Add(CreateDisabled<LongField, long>(nameof(filter.BelongsTo), filter.BelongsTo));
+                filterFoldout.Add(CreateDisabled<LongField, long>(nameof(filter.CollidesWith), filter.CollidesWith));
+                filterFoldout.Add(CreateDisabled<LongField, long>(nameof(filter.GroupIndex), filter.GroupIndex));
+
+                CreateMassProperties(root, ref this.Target.Value);
+            }
 
             return root;
         }

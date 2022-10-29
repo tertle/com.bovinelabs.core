@@ -15,9 +15,7 @@ namespace BovineLabs.Core.Utility
         {
             foreach (var world in World.All)
             {
-                var flags = world.GetMainFlag();
-
-                if (flags == WorldFlags.Live)
+                if ((world.Flags & WorldFlags.Live) == WorldFlags.Live)
                 {
                     yield return world;
                 }

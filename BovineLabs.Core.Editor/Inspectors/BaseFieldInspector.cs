@@ -1,10 +1,11 @@
 ﻿namespace BovineLabs.Core.Editor.Inspectors
 {
-    using Unity.Properties.UI;
+    using Unity.Entities.Editor;
+    using Unity.Platforms.UI;
     using UnityEngine.UIElements;
 
     // Copy from Unity.Entities.Editor.Inspectors
-    public abstract class BaseFieldInspector<TField, TFieldValue, TValue> : Inspector<TValue>
+    internal abstract class BaseFieldInspector<TField, TFieldValue, TValue> : PropertyInspector<TValue>
         where TField : BaseField<TFieldValue>, new()
     {
         protected TField m_Field;
@@ -18,6 +19,8 @@
                 tooltip = this.Tooltip,
                 bindingPath = "."
             };
+
+            InspectorUtility.AddRuntimeBar(m_Field);
             return this.m_Field;
         }
     }

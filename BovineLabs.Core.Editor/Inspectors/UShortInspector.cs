@@ -7,25 +7,25 @@ namespace BovineLabs.Core.Editor.Inspectors
     using JetBrains.Annotations;
     using Unity.Mathematics;
     using Unity.Properties;
-    using UnityEditor.UIElements;
+
 
     [UsedImplicitly]
-    internal class UShortInspector : BaseFieldInspector<IntegerField, int, ushort>
+    internal class UShortInspector : BaseFieldInspector<UnityEngine.UIElements.IntegerField, int, ushort>
     {
         static UShortInspector()
         {
-            TypeConversion.Register<ushort, int>(v => v);
-            TypeConversion.Register<int, ushort>(v => (ushort)math.clamp(v, ushort.MinValue, ushort.MaxValue));
+            TypeConversion.Register((ref ushort v) => (int)v);
+            TypeConversion.Register((ref int v) => (ushort)math.clamp(v, ushort.MinValue, ushort.MaxValue));
         }
     }
 
     [UsedImplicitly]
-    internal class ShortInspector : BaseFieldInspector<IntegerField, int, short>
+    internal class ShortInspector : BaseFieldInspector<UnityEngine.UIElements.IntegerField, int, short>
     {
         static ShortInspector()
         {
-            TypeConversion.Register<short, int>(v => v);
-            TypeConversion.Register<int, short>(v => (short)math.clamp(v, short.MinValue, short.MaxValue));
+            TypeConversion.Register((ref short v) => (int)v);
+            TypeConversion.Register((ref int v) => (short)math.clamp(v, short.MinValue, short.MaxValue));
         }
     }
 }

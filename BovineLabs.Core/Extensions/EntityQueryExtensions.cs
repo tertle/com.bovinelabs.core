@@ -11,42 +11,43 @@ namespace BovineLabs.Core.Extensions
 
     public static unsafe class EntityQueryExtensions
     {
-        public static bool TryGetSharedComponentInFilter<T>(this EntityQuery query, EntityManager entityManager, out T sharedComponent)
+        public static bool QueryHasSharedFilter<T>(this EntityQuery query, out int scdIndex)
             where T : struct, ISharedComponentData
         {
             var filters = query.GetSharedFilters();
+            var requiredType = TypeManager.GetTypeIndex<T>();
 
             for (var i = 0; i < filters.Count; i++)
             {
-                var scdIndex = filters.SharedComponentIndex[i];
-                var scd = entityManager.GetSharedComponentDataNonDefaultBoxed(scdIndex);
-
-                if (scd is T component)
+                var indexInEntityQuery = filters.IndexInEntityQuery[i];
+                var component = query.__impl->_QueryData->RequiredComponents[indexInEntityQuery].TypeIndex;
+                if (component == requiredType)
                 {
-                    sharedComponent = component;
+                    scdIndex = filters.SharedComponentIndex[i];
                     return true;
                 }
             }
 
-            sharedComponent = default;
+            scdIndex = -1;
             return false;
         }
 
-        public static bool TryGetSharedComponentInFilter<T>(this EntityQuery query, EntityManager entityManager, int index, out T sharedComponent)
+        public static bool QueryHasSharedFilter<T>(this EntityQuery query, int index)
             where T : struct, ISharedComponentData
         {
-            AssertRange(index, query._GetImpl()->_Filter.Shared.Count);
+            var impl = query._GetImpl();
+            var filters = query.GetSharedFilters();
+            var requiredType = TypeManager.GetTypeIndex<T>();
 
-            var scdIndex = query._GetImpl()->_Filter.Shared.SharedComponentIndex[index];
-            var scd = entityManager.GetSharedComponentDataNonDefaultBoxed(scdIndex);
+            AssertRange(index, impl->_Filter.Shared.Count);
 
-            if (scd is T component)
+            var indexInEntityQuery = filters.IndexInEntityQuery[index];
+            var component = query.__impl->_QueryData->RequiredComponents[indexInEntityQuery].TypeIndex;
+            if (component == requiredType)
             {
-                sharedComponent = component;
                 return true;
             }
 
-            sharedComponent = default;
             return false;
         }
 

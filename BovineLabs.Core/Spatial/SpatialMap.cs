@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Spatial
 {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Collections;
     using Unity.Burst;
@@ -61,9 +62,40 @@ namespace BovineLabs.Core.Spatial
                 return SpatialMap.Hash(quantized, this.quantizeWidth);
             }
         }
+
+        // Jobs outside to avoid generic issues
+        [BurstCompile]
+        internal struct ResizeNativeKeyedMapJob : IJob
+        {
+            public NativeKeyedMap<int> Map;
+
+            public int Length;
+
+            public void Execute()
+            {
+                if (this.Map.Capacity < this.Length)
+                {
+                    this.Map.Capacity = this.Length;
+                }
+
+                this.Map.Clear();
+                this.Map.SetLength(this.Length);
+            }
+        }
+
+        [BurstCompile]
+        internal struct CalculateMap : IJob
+        {
+            public NativeKeyedMap<int> SpatialHashMap;
+
+            public void Execute()
+            {
+                this.SpatialHashMap.RecalculateBuckets();
+            }
+        }
     }
 
-    public unsafe struct SpatialMap<T> : IDisposable
+    public struct SpatialMap<T> : IDisposable
         where T : unmanaged, ISpatialPosition
     {
         private readonly float quantizeStep;
@@ -106,16 +138,13 @@ namespace BovineLabs.Core.Spatial
             this.map.Dispose(dependency);
         }
 
-        /// <summary> Rebuilds the spatial hash map with the collection of positions. </summary>
-        /// <param name="positions"> The positions to store in the map. </param>
-        /// <param name="dependency"> The system dependency. </param>
-        /// <returns> Dependency for the building jobs. </returns>
-        public JobHandle Build(NativeArray<T> positions, JobHandle dependency)
+        [SuppressMessage("ReSharper", "UnusedParameter.Global", Justification = "Sneaky way to allow this to run in bursted ISystem")]
+        public JobHandle Build(NativeArray<T> positions, JobHandle dependency, QuantizeJob _ = default)
         {
             // Deferred native arrays are supported so we must part it into the job to get the length
-            dependency = new ResizeHashMapJob
+            dependency = new SpatialMap.ResizeNativeKeyedMapJob
                 {
-                    Array = positions,
+                    Length = positions.Length,
                     Map = this.map,
                 }
                 .Schedule(dependency);
@@ -136,7 +165,7 @@ namespace BovineLabs.Core.Spatial
                 }
                 .ScheduleParallel(workers, 1, dependency);
 
-            dependency = new CalculateMap
+            dependency = new SpatialMap.CalculateMap
                 {
                     SpatialHashMap = this.map,
                 }
@@ -150,28 +179,8 @@ namespace BovineLabs.Core.Spatial
         public SpatialMap.ReadOnly AsReadOnly() => new(this.quantizeStep, this.quantizeSize, this.halfSize, this.map);
 
         [BurstCompile]
-        private struct ResizeHashMapJob : IJob
-        {
-            public NativeKeyedMap<int> Map;
-
-            [ReadOnly]
-            public NativeArray<T> Array;
-
-            public void Execute()
-            {
-                if (this.Map.Capacity < this.Array.Length)
-                {
-                    this.Map.Capacity = this.Array.Length;
-                }
-
-                this.Map.Clear();
-                this.Map.SetLength(this.Array.Length);
-            }
-        }
-
-        [BurstCompile]
         [NoAlias]
-        private struct QuantizeJob : IJobFor
+        public unsafe struct QuantizeJob : IJobFor
         {
             [ReadOnly]
             public NativeArray<T> Positions;
@@ -225,17 +234,6 @@ namespace BovineLabs.Core.Spatial
                     throw new ArgumentException($"Position {position} is outside the size of the world");
                 }
 #endif
-            }
-        }
-
-        [BurstCompile]
-        private struct CalculateMap : IJob
-        {
-            public NativeKeyedMap<int> SpatialHashMap;
-
-            public void Execute()
-            {
-                this.SpatialHashMap.RecalculateBuckets();
             }
         }
     }

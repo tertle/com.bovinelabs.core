@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Utility
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using UnityEngine;
     using Assembly = System.Reflection.Assembly;
 
     /// <summary> Common reflection helpers. </summary>
@@ -164,7 +165,11 @@ namespace BovineLabs.Core.Utility
         /// <returns> True if editor assembly. </returns>
         public static bool IsAssemblyEditorAssembly(this Assembly asm)
         {
-            var uAssembly = AssembliesMap[asm.GetName().Name];
+            if (!AssembliesMap.TryGetValue(asm.GetName().Name, out var uAssembly))
+            {
+                return false; // this happens in sub scene conversion process if a new assembly is added after loading unity...
+            }
+
             return (uAssembly.flags & UnityEditor.Compilation.AssemblyFlags.EditorAssembly) != 0;
         }
 #else

@@ -137,7 +137,7 @@ namespace BovineLabs.Core.Editor.Settings
             this.list.itemsSource = this.filteredSettingsPanel;
             this.list.makeItem = () => new Label();
             this.list.bindItem = (element, i) => ((Label)element).text = this.filteredSettingsPanel[i].DisplayName;
-            this.list.onSelectionChange += this.SelectionChanged;
+            this.list.selectionChanged += this.SelectionChanged;
             this.list.style.flexGrow = this.splitterFlex;
             this.list.fixedItemHeight = 16;
 
@@ -187,7 +187,7 @@ namespace BovineLabs.Core.Editor.Settings
         private void CleanupUI()
         {
             this.searchField.UnregisterValueChangedCallback(this.SearchFiltering);
-            this.list.onSelectionChange -= this.SelectionChanged;
+            this.list.selectionChanged -= this.SelectionChanged;
             this.toolbar.Clear();
         }
 

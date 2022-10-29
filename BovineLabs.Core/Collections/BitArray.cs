@@ -10,6 +10,7 @@ namespace BovineLabs.Core.Collections
     using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.CompilerServices;
+    using Unity.Mathematics;
     using UnityEngine;
 
     /// <summary>
@@ -61,6 +62,11 @@ namespace BovineLabs.Core.Collections
         /// <returns>The resulting bit array.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         T BitNot();
+
+        /// <summary> Count the number of enabled bits. </summary>
+        /// <returns> Number of bits set to 1 within x. </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        int CountBits();
     }
 
     // /!\ Important for serialization:
@@ -100,6 +106,8 @@ namespace BovineLabs.Core.Collections
                 this.data |= (byte)(1u << (int)bitIndex);
             }
         }
+
+        public byte Data => this.data;
 
         /// <summary>Number of elements in the bit array.</summary>
         public uint Capacity => 8u;
@@ -177,6 +185,13 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray8 BitNot() => ~this;
 
+        /// <summary> Count the number of enabled bits. </summary>
+        /// <returns> Number of bits set to 1 within x. </returns>
+        public int CountBits()
+        {
+            return math.countbits((uint)this.data);
+        }
+
         /// <summary>
         /// Equality operator.
         /// </summary>
@@ -225,6 +240,8 @@ namespace BovineLabs.Core.Collections
             }
         }
 
+        public ushort Data => this.data;
+
         /// <summary>Number of elements in the bit array.</summary>
         public uint Capacity => 16u;
 
@@ -248,7 +265,6 @@ namespace BovineLabs.Core.Collections
             get => BitArrayUtilities.Get16(index, this.data);
             set => BitArrayUtilities.Set16(index, ref this.data, value);
         }
-
 
         /// <summary> Bit-wise Not operator. </summary>
         /// <param name="a">Bit array with which to do the operation.</param>
@@ -301,6 +317,13 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray16 BitNot() => ~this;
 
+        /// <summary> Count the number of enabled bits. </summary>
+        /// <returns> Number of bits set to 1 within x. </returns>
+        public int CountBits()
+        {
+            return math.countbits((uint)this.data);
+        }
+
         /// <summary> Equality operator. </summary>
         /// <param name="obj">Bit array to compare to.</param>
         /// <returns>True if the provided bit array is equal to this..</returns>
@@ -344,6 +367,8 @@ namespace BovineLabs.Core.Collections
                 this.data |= 1u << (int)bitIndex;
             }
         }
+
+        public uint Data => this.data;
 
         /// <summary>Number of elements in the bit array.</summary>
         public uint Capacity => 32u;
@@ -419,6 +444,13 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray32 BitNot() => ~this;
 
+        /// <summary> Count the number of enabled bits. </summary>
+        /// <returns> Number of bits set to 1 within x. </returns>
+        public int CountBits()
+        {
+            return math.countbits(this.data);
+        }
+
         /// <summary> Equality operator. </summary>
         /// <param name="obj">Bit array to compare to.</param>
         /// <returns>True if the provided bit array is equal to this..</returns>
@@ -464,6 +496,8 @@ namespace BovineLabs.Core.Collections
                 this.data |= 1uL << (int)bitIndex;
             }
         }
+
+        public ulong Data => this.data;
 
         /// <summary>Number of elements in the bit array.</summary>
         public uint Capacity => 64u;
@@ -539,6 +573,13 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray64 BitNot() => ~this;
 
+        /// <summary> Count the number of enabled bits. </summary>
+        /// <returns> Number of bits set to 1 within x. </returns>
+        public int CountBits()
+        {
+            return math.countbits(this.data);
+        }
+
         /// <summary> Equality operator. </summary>
         /// <param name="obj">Bit array to compare to.</param>
         /// <returns>True if the provided bit array is equal to this..</returns>
@@ -573,7 +614,6 @@ namespace BovineLabs.Core.Collections
 
         /// <summary> Initializes a new instance of the <see cref="BitArray128"/> struct. </summary>
         /// <param name="bitIndexTrue">List of indices where bits should be set to true.</param>
-
         public BitArray128(IEnumerable<uint> bitIndexTrue)
         {
             this.data1 = this.data2 = 0uL;
@@ -598,6 +638,10 @@ namespace BovineLabs.Core.Collections
                 }
             }
         }
+
+        public ulong Data1 => this.data1;
+
+        public ulong Data2 => this.data2;
 
         /// <summary>Number of elements in the bit array.</summary>
         public uint Capacity => 128u;
@@ -687,6 +731,13 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray128 BitNot() => ~this;
 
+        /// <summary> Count the number of enabled bits. </summary>
+        /// <returns> Number of bits set to 1 within x. </returns>
+        public int CountBits()
+        {
+            return math.countbits(this.data1) + math.countbits(this.data2);
+        }
+
         /// <summary>
         /// Equality operator.
         /// </summary>
@@ -771,6 +822,14 @@ namespace BovineLabs.Core.Collections
             }
         }
 
+        public ulong Data1 => this.data1;
+
+        public ulong Data2 => this.data2;
+
+        public ulong Data3 => this.data3;
+
+        public ulong Data4 => this.data4;
+
         /// <summary>Number of elements in the bit array.</summary>
         public uint Capacity => 256u;
 
@@ -848,6 +907,13 @@ namespace BovineLabs.Core.Collections
         /// <returns>The resulting bit array.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BitArray256 BitNot() => ~this;
+
+        /// <summary> Count the number of enabled bits. </summary>
+        /// <returns> Number of bits set to 1 within x. </returns>
+        public int CountBits()
+        {
+            return math.countbits(this.data1) + math.countbits(this.data2) + math.countbits(this.data3) + math.countbits(this.data4);
+        }
 
         /// <summary> Equality operator. </summary>
         /// <param name="obj">Bit array to compare to.</param>

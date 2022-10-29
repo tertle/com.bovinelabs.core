@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Internal
     public static class BlobAssetReferenceInternal
     {
         public static unsafe BlobAssetReference<T> Create<T>(void* headerPtr, int headerLength, void* dataPtr, int dataLength)
-            where T : struct
+            where T : unmanaged
         {
             byte* buffer = (byte*)Memory.Unmanaged.Allocate(sizeof(BlobAssetHeader) + headerLength + dataLength, 16, Allocator.Persistent);
             UnsafeUtility.MemCpy(buffer + sizeof(BlobAssetHeader), headerPtr, headerLength);
@@ -35,7 +35,7 @@ namespace BovineLabs.Core.Internal
         }
 
         public static long GetHash<T>(this BlobAssetReference<T> blobAssetReference)
-            where T : struct
+            where T : unmanaged
         {
             return blobAssetReference.m_data.m_Align8Union;
         }

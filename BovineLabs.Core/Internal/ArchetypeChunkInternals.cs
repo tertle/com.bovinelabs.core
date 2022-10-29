@@ -41,21 +41,6 @@ namespace BovineLabs.Core.Internal
             chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, version);
         }
 
-        public static unsafe void SetChangeFilterWithCache<T>(this ArchetypeChunk chunk, ComponentTypeHandle<T> handle)
-            where T : unmanaged, IComponentData
-        {
-            SetChangeFilterCheckWriteAndThrow(handle);
-
-            ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex, ref handle.m_LookupCache);
-            if (handle.m_LookupCache == -1)
-            {
-                return;
-            }
-
-            // This should (=S) be thread safe int writes are atomic in c#
-            chunk.m_Chunk->SetChangeVersion(handle.m_LookupCache, handle.GlobalSystemVersion);
-        }
-
         public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, BufferTypeHandle<T> handle)
             where T : unmanaged, IBufferElementData
         {
@@ -119,7 +104,7 @@ namespace BovineLabs.Core.Internal
         }
 
         public static unsafe BufferInternals BufferInternals<T>(this ArchetypeChunk chunk, BufferTypeHandle<T> bufferComponentTypeHandle)
-            where T : struct, IBufferElementData
+            where T : unmanaged, IBufferElementData
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(bufferComponentTypeHandle.m_Safety0);
@@ -148,7 +133,7 @@ namespace BovineLabs.Core.Internal
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckZeroSizedComponentData<T>(ComponentTypeHandle<T> chunkComponentType)
         {
-            if (chunkComponentType.m_IsZeroSized)
+            if (chunkComponentType.IsZeroSized)
             {
                 throw new ArgumentException($"ArchetypeChunk.GetNativeArray<{typeof(T)}> cannot be called on zero-sized IComponentData");
             }

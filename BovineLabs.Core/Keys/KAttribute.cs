@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core
+namespace BovineLabs.Core.Keys
 {
     using System;
     using UnityEngine;

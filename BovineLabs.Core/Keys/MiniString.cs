@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core
+namespace BovineLabs.Core.Keys
 {
     using System;
     using System.Diagnostics;
@@ -14,7 +14,7 @@ namespace BovineLabs.Core
 
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size = 16)]
-    [BurstCompatible]
+
     internal struct MiniString : INativeList<byte>, IUTF8Bytes
     {
         internal const ushort UTF8MaxLengthInBytes = 15;
@@ -116,7 +116,7 @@ namespace BovineLabs.Core
         /// <summary> Enable implicit conversion of System.String to FixedString32. </summary>
         /// <param name="b"> The System.String object to convert to a FixedString32. </param>
         /// <returns></returns>
-        [NotBurstCompatible]
+
         public static implicit operator MiniString(string b) => new(b);
 
         public static implicit operator MiniString(FixedString32Bytes b) => new(b);
@@ -139,7 +139,6 @@ namespace BovineLabs.Core
             return !(a == b);
         }
 
-        [NotBurstCompatible]
         public override bool Equals(object obj)
         {
             return obj switch
@@ -234,7 +233,7 @@ namespace BovineLabs.Core
         ///  0 if they are identical, or
         ///  1 if the other System.String would appear first if sorted.
         /// </returns>
-        [NotBurstCompatible]
+
         public int CompareTo(String other)
         {
             return this.ToString().CompareTo(other);
@@ -246,7 +245,7 @@ namespace BovineLabs.Core
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
-        [NotBurstCompatible]
+
         public bool Equals(string other)
         {
             return this.ToString().Equals(other);
@@ -276,7 +275,7 @@ namespace BovineLabs.Core
         /// Convert this FixedString32 to a System.String.
         /// </summary>
         /// <returns>A System.String with a copy of this FixedString32</returns>
-        [NotBurstCompatible]
+
         public override String ToString()
         {
             return this.ConvertToString();

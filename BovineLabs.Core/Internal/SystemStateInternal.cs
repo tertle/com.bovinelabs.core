@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Internal
         public static string GetSystemTypeName(this SystemState state)
         {
             var managed = state.GetManagedSystem();
-            return managed != null ? TypeManager.GetSystemName(managed.GetType()) : state.DebugName.ToString();
+            return managed != null ? TypeManager.GetSystemName(managed.GetType()).ToString() : state.DebugName.ToString();
         }
     }
 }

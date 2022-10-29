@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Settings
 
     [Serializable]
     public abstract class SettingsBuffer<T> : Settings
-        where T : struct, IBufferElementData
+        where T : unmanaged, IBufferElementData
     {
         [SerializeField]
         private T[] buffer;
@@ -23,22 +23,20 @@ namespace BovineLabs.Core.Settings
         }
 
         /// <inheritdoc />
-        public sealed override void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem, GameObject owner)
+        public sealed override void Bake(IBaker baker)
         {
-            var entityBuffer = dstManager.AddBuffer<T>(entity);
+            var entityBuffer = baker.AddBuffer<T>();
             foreach (var b in this.buffer)
             {
                 entityBuffer.Add(b);
             }
 
-            this.CustomConvert(dstManager, entity, conversionSystem);
+            this.CustomBake(baker);
         }
 
         /// <summary> Implement to add extra custom conversion. </summary>
-        /// <param name="dstManager"> The manager of the world. </param>
-        /// <param name="entity"> The entity where the settings should be added. </param>
-        /// <param name="conversionSystem"> The conversion system. </param>
-        protected virtual void CustomConvert(EntityManager dstManager, Entity entity, GameObjectConversionSystem conversionSystem)
+        /// <param name="baker"> The baker. </param>
+        protected virtual void CustomBake(IBaker baker)
         {
         }
 

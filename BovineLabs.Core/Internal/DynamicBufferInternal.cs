@@ -18,13 +18,13 @@ namespace BovineLabs.Core.Internal
             bool useMemoryInitPattern,
             byte memoryInitPattern,
             int internalCapacity)
-            where T : struct
+            where T : unmanaged
         {
             return new DynamicBuffer<T>((BufferHeader*)header, safety, arrayInvalidationSafety, isReadOnly, useMemoryInitPattern, memoryInitPattern, internalCapacity);
         }
 #else
         public static DynamicBuffer<T> Create<T>(void* header, int internalCapacity)
-            where T : struct
+            where T : unmanaged
         {
             return new DynamicBuffer<T>((BufferHeader*)header, internalCapacity);
         }

@@ -96,8 +96,8 @@ namespace UnityEngine.UIExtras
                 searchItem.Item = m_CurrentNode[index];
             };
 
-            m_List.onSelectionChange += OnListSelectionChange;
-            m_List.onItemsChosen += OnItemsChosen;
+            m_List.selectionChanged += OnListSelectionChange;
+            m_List.itemsChosen += OnItemsChosen;
 
 
             Title = "Root";

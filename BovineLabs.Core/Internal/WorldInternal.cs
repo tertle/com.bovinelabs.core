@@ -24,15 +24,15 @@ namespace BovineLabs.Core.Internal
 
     public static unsafe class WorldInternal
     {
-        public static void GetAllStatesNoAlloc(this World world, NativeList<SystemStatePtr> list)
-        {
-            list.Clear();
-
-            var allUnmanaged = world.Unmanaged.GetAllUnmanagedSystemStates(Allocator.Temp);
-            for (int i = 0; i < allUnmanaged.Length; ++i)
-            {
-                list.Add((SystemState*)allUnmanaged[i]);
-            }
-        }
+        // public static void GetAllStatesNoAlloc(this World world, NativeList<SystemStatePtr> list)
+        // {
+        //     list.Clear();
+        //
+        //     var allUnmanaged = world.Unmanaged.GetImpl().GetAllSystems(Allocator.Temp);
+        //     for (int i = 0; i < allUnmanaged.Length; ++i)
+        //     {
+        //         list.Add((SystemState*)allUnmanaged[i]);
+        //     }
+        // }
     }
 }

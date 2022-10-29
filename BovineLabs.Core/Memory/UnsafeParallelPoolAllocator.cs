@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Memory
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
 
-    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+    
     public unsafe struct UnsafeParallelPoolAllocator<T> : IDisposable
         where T : unmanaged
     {

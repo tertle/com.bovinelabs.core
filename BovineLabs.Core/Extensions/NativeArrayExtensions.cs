@@ -32,6 +32,12 @@ namespace BovineLabs.Core.Extensions
             return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafePtr(), index);
         }
 
+        public static ref readonly T ElementAtRO<T>(this NativeArray<T> array, int index)
+            where T : struct
+        {
+            return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafeReadOnlyPtr(), index);
+        }
+
         /// <summary> Efficiently sets all values in a NativeArray to a specific value. </summary>
         /// <param name="array"> The array to fill. </param>
         /// <param name="value"> The value that the array elements will be set to. </param>
@@ -39,7 +45,7 @@ namespace BovineLabs.Core.Extensions
         public static void SetAll<T>(this NativeArray<T> array, T value)
             where T : unmanaged
         {
-            UnsafeUtility.MemCpyReplicate(array.GetUnsafeReadOnlyPtr(), &value, UnsafeUtility.SizeOf<T>(), array.Length);
+            UnsafeUtility.MemCpyReplicate(array.GetUnsafePtr(), &value, UnsafeUtility.SizeOf<T>(), array.Length);
         }
 
         /// <summary> Efficiently clears all values in a NativeArray. </summary>
@@ -48,7 +54,7 @@ namespace BovineLabs.Core.Extensions
         public static void Clear<T>(this NativeArray<T> array)
             where T : unmanaged
         {
-            UnsafeUtility.MemClear(array.GetUnsafeReadOnlyPtr(), UnsafeUtility.SizeOf<T>() * array.Length);
+            UnsafeUtility.MemClear(array.GetUnsafePtr(), UnsafeUtility.SizeOf<T>() * array.Length);
         }
 
         public static void Reverse<T>(this NativeArray<T> array)

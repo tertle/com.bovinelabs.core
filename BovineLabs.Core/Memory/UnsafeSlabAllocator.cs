@@ -10,23 +10,23 @@ namespace BovineLabs.Core.Memory
     using Unity.Collections.LowLevel.Unsafe;
     using UnityEngine;
 
-    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+
     public unsafe struct UnsafeSlabAllocator<T> : IDisposable
         where T : unmanaged
     {
         private readonly int countPerSlab;
-        private readonly Allocator allocator;
+        private readonly AllocatorManager.AllocatorHandle allocator;
 
-        private UnsafeListPtr<Ptr> slabs;
+        private UnsafeList<Ptr>* slabs;
 
         [NativeDisableUnsafePtrRestriction]
         private int* count;
 
-        public UnsafeSlabAllocator(int countPerSlab, Allocator allocator)
+        public UnsafeSlabAllocator(int countPerSlab, AllocatorManager.AllocatorHandle allocator)
         {
             Debug.Assert(countPerSlab > 0);
 
-            this.slabs = new UnsafeListPtr<Ptr>(0, allocator);
+            this.slabs = UnsafeList<Ptr>.Create(0, ref allocator);
             this.allocator = allocator;
             this.countPerSlab = countPerSlab;
 
@@ -34,7 +34,7 @@ namespace BovineLabs.Core.Memory
             *this.count = countPerSlab;
         }
 
-        public int AllocationCount => (this.countPerSlab * (this.slabs.Length - 1)) + *this.count;
+        public int AllocationCount => (this.countPerSlab * (this.slabs->Length - 1)) + *this.count;
 
         public bool IsCreated => this.count != null;
 
@@ -46,21 +46,21 @@ namespace BovineLabs.Core.Memory
             {
                 *this.count = 0;
                 var ptr = (Ptr)Memory.Unmanaged.Allocate(this.countPerSlab * UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), this.allocator);
-                this.slabs.Add(ptr);
+                this.slabs->Add(ptr);
             }
 
-            var lastSlab = (T*)this.slabs[^1];
+            var lastSlab = (T*)(*this.slabs)[^1];
             return lastSlab + (*this.count)++;
         }
 
         public void Clear()
         {
-            for (var i = 0; i < this.slabs.Length; i++)
+            for (var i = 0; i < this.slabs->Length; i++)
             {
-                UnsafeUtility.Free(this.slabs[i], this.allocator);
+                Memory.Unmanaged.Free((*this.slabs)[i], this.allocator);
             }
 
-            this.slabs.Clear();
+            this.slabs->Clear();
             *this.count = this.countPerSlab;
         }
 
@@ -68,7 +68,7 @@ namespace BovineLabs.Core.Memory
         public void Dispose()
         {
             this.Clear();
-            this.slabs.Dispose();
+            UnsafeList<Ptr>.Destroy(this.slabs);
 
             Memory.Unmanaged.Free(this.count, this.allocator);
 

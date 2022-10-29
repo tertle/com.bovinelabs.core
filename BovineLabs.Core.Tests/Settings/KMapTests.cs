@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Tests.Settings
 {
     using System;
+    using BovineLabs.Core.Keys;
     using NUnit.Framework;
 
     public class KMapTests
@@ -31,12 +32,12 @@ namespace BovineLabs.Core.Tests.Settings
         {
             var kvp = new NameValue[KMap.MaxCapacity + 1];
 
-            for (byte i = 0; i < kvp.Length; i++)
+            for (int i = 0; i < kvp.Length; i++)
             {
                 kvp[i] = new NameValue
                 {
                     Name = i.ToString(),
-                    Value = i,
+                    Value = (byte)i,
                 };
             }
 

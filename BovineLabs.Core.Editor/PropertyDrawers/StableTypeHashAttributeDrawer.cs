@@ -114,7 +114,7 @@ namespace BovineLabs.Core.Editor.PropertyDrawers
                     continue;
                 }
 
-                Type type = t.Type;
+                var type = t.Type;
 
                 if (type == null)
                 {
@@ -131,7 +131,7 @@ namespace BovineLabs.Core.Editor.PropertyDrawers
                     continue;
                 }
 
-                if (!type.Assembly.IsAssemblyEditorAssembly())
+                if (type.Assembly.IsAssemblyEditorAssembly())
                 {
                     continue;
                 }
@@ -141,7 +141,7 @@ namespace BovineLabs.Core.Editor.PropertyDrawers
                     continue;
                 }
 
-                componentTypes.Add(new SearchView.Item { Path = t.DebugTypeName, Data = t.StableTypeHash });
+                componentTypes.Add(new SearchView.Item { Path = t.DebugTypeName.ToString(), Data = t.StableTypeHash });
             }
 
             return componentTypes;

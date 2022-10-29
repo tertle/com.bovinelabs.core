@@ -4,13 +4,9 @@
 
 namespace BovineLabs.Core.Extensions
 {
-    using BovineLabs.Core.Internal;
     using BovineLabs.Core.Iterators;
-    using Unity.Burst;
-    using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-    using Unity.Jobs;
 
     public static class ComponentSystemBaseExtensions
     {
@@ -21,13 +17,13 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static DynamicBuffer<T> GetSingletonBuffer<T>(this ComponentSystemBase system, bool isReadOnly = false)
-            where T : struct, IBufferElementData
+            where T : unmanaged, IBufferElementData
         {
             return system.EntityManager.GetBuffer<T>(system.GetSingletonEntity<T>(), isReadOnly);
         }
 
         public static bool TryGetSingletonBuffer<T>(this ComponentSystemBase system, out DynamicBuffer<T> buffer, bool isReadOnly = false)
-            where T : struct, IBufferElementData
+            where T : unmanaged, IBufferElementData
         {
             if (!system.TryGetSingletonEntity<T>(out var entity))
             {
@@ -37,11 +33,6 @@ namespace BovineLabs.Core.Extensions
 
             buffer = system.EntityManager.GetBuffer<T>(entity, isReadOnly);
             return true;
-        }
-
-        public static unsafe ref SystemState GetSystemState(this ComponentSystemBase system)
-        {
-            return ref UnsafeUtility.AsRef<SystemState>(system.CheckedState());
         }
     }
 }

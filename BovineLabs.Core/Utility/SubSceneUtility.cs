@@ -12,25 +12,31 @@ namespace BovineLabs.Core.Utility
     public struct SubSceneUtility
     {
         [ReadOnly]
-        private ComponentDataFromEntity<SceneReference> sceneReferences;
+        private ComponentLookup<SceneReference> sceneReferences;
 
         [ReadOnly]
-        private BufferFromEntity<ResolvedSectionEntity> resolvedSectionEntitys;
+        private BufferLookup<ResolvedSectionEntity> resolvedSectionEntitys;
 
         [ReadOnly]
-        private ComponentDataFromEntity<SceneSectionStreamingSystem.StreamingState> streamingStates;
+        private ComponentLookup<SceneSectionStreamingSystem.StreamingState> streamingStates;
 
         [ReadOnly]
-        private ComponentDataFromEntity<RequestSceneLoaded> requestSceneLoadeds;
+        private ComponentLookup<RequestSceneLoaded> requestSceneLoadeds;
 
-        public SubSceneUtility(SystemBase systemBase)
+        public SubSceneUtility(ref SystemState state)
         {
-            this.sceneReferences = systemBase.GetComponentDataFromEntity<SceneReference>(true);
-            this.resolvedSectionEntitys = systemBase.GetBufferFromEntity<ResolvedSectionEntity>(true);
-            this.streamingStates = systemBase.GetComponentDataFromEntity<SceneSectionStreamingSystem.StreamingState>(true);
-            this.requestSceneLoadeds = systemBase.GetComponentDataFromEntity<RequestSceneLoaded>(true);
+            this.sceneReferences = state.GetComponentLookup<SceneReference>(true);
+            this.resolvedSectionEntitys = state.GetBufferLookup<ResolvedSectionEntity>(true);
+            this.streamingStates = state.GetComponentLookup<SceneSectionStreamingSystem.StreamingState>(true);
+            this.requestSceneLoadeds = state.GetComponentLookup<RequestSceneLoaded>(true);
+        }
 
-            // TODO add Build() method/s
+        public void Update(ref SystemState state)
+        {
+            this.sceneReferences.Update(ref state);
+            this.resolvedSectionEntitys.Update(ref state);
+            this.streamingStates.Update(ref state);
+            this.requestSceneLoadeds.Update(ref state);
         }
 
         /// <summary> Check if a subscene is loaded. </summary>
@@ -43,7 +49,7 @@ namespace BovineLabs.Core.Utility
                 return false;
             }
 
-            if (!this.resolvedSectionEntitys.HasComponent(entity))
+            if (!this.resolvedSectionEntitys.HasBuffer(entity))
             {
                 return false;
             }

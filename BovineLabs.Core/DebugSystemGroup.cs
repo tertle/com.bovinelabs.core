@@ -5,34 +5,15 @@
 namespace BovineLabs.Core
 {
     using Unity.Entities;
-#if UNITY_NETCODE
-    using Unity.NetCode;
-#endif
+    using WorldFlag = Unity.Entities.WorldSystemFilterFlags;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-#if BL_GAME
-    // When using Game we want to be able to insert this in the server as well so we manually move it to presentation on clients
-    [UpdateInGroup(typeof(SimulationSystemGroup), OrderLast = true)]
-#else
     [UpdateInGroup(typeof(PresentationSystemGroup))]
-#endif
-    [AlwaysUpdateSystem]
-    public class DebugSystemGroup : ComponentSystemGroup
+    [WorldSystemFilter(
+        WorldFlag.LocalSimulation | WorldFlag.ClientSimulation | WorldFlag.ServerSimulation | WorldFlag.ThinClientSimulation | WorldFlag.Editor,
+        WorldFlag.LocalSimulation | WorldFlag.ClientSimulation | WorldFlag.ServerSimulation | WorldFlag.ThinClientSimulation)]
+    public partial class DebugSystemGroup : ComponentSystemGroup
     {
-        protected override void OnUpdate()
-        {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-#if UNITY_NETCODE
-            if (this.HasSingleton<ThinClientComponent>())
-            {
-                return;
-            }
-#endif
-#endif
-
-            base.OnUpdate();
-        }
     }
 #endif
-
 }

@@ -13,7 +13,7 @@ namespace BovineLabs.Core.Extensions
     /// <summary> Extensions for <see cref="EntityManager"/>. </summary>
     public static class EntityManagerExtensions
     {
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(BurstCompatibleComponentData) })]
+
         public static unsafe SharedComponentDataFromIndex<T> GetSharedComponentDataFromEntity<T>(this EntityManager entityManager, bool isReadOnly = true)
             where T : struct, ISharedComponentData
         {
@@ -21,13 +21,9 @@ namespace BovineLabs.Core.Extensions
             var typeIndex = TypeManager.GetTypeIndex<T>();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var safetyHandles = &access->DependencyManager->Safety;
-#endif
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            return new SharedComponentDataFromIndex<T>(access, safetyHandles->GetSafetyHandleForComponentDataFromEntity(typeIndex, isReadOnly));
+            return new SharedComponentDataFromIndex<T>(typeIndex, access, isReadOnly);
 #else
-            return new SharedComponentDataFromIndex<T>(access);
+            return new SharedComponentDataFromIndex<T>(typeIndex, access);
 #endif
         }
 
@@ -48,7 +44,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static void SetSingletonEntity<T>(this EntityManager em, T value)
-            where T : struct, IComponentData
+            where T : unmanaged, IComponentData
         {
             using var query = em.CreateEntityQuery(ComponentType.ReadWrite<T>());
             query.SetSingleton(value);
@@ -75,7 +71,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static T GetSingleton<T>(this EntityManager em)
-            where T : struct, IComponentData
+            where T : unmanaged, IComponentData
         {
             using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
             return query.GetSingleton<T>();
@@ -88,7 +84,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static bool TryGetSingleton<T>(this EntityManager em, out T component)
-            where T : struct, IComponentData
+            where T : unmanaged, IComponentData
         {
             using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
 
@@ -103,14 +99,14 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static DynamicBuffer<T> GetSingletonBuffer<T>(this EntityManager em, bool isReadOnly = false)
-            where T : struct, IBufferElementData
+            where T : unmanaged, IBufferElementData
         {
             using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
             return em.GetBuffer<T>(query.GetSingletonEntity(), isReadOnly);
         }
 
         public static bool TryGetSingletonBuffer<T>(this EntityManager em, out DynamicBuffer<T> buffer, bool isReadOnly = false)
-            where T : struct, IBufferElementData
+            where T : unmanaged, IBufferElementData
         {
             using var query = em.CreateEntityQuery(ComponentType.ReadOnly<T>());
 

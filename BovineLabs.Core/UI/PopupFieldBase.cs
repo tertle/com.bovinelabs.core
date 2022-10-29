@@ -310,9 +310,11 @@ namespace BovineLabs.Core.UI
             this.Menu.style.left = this.worldBound.xMin;
             this.Menu.style.top = this.worldBound.yMax;
             this.Menu.fixedItemHeight = ItemHeight;
-            this.Menu.style.height = this.DisplayNames.Count * ItemHeight;
+            this.Menu.style.height = this.DisplayNames.Count * ItemHeight + 1;
 
             this.Menu.styleSheets.Clear();
+            this.Menu.Rebuild();
+
             CopyStylesTo(this, this.Menu);
 
             root.Add(this.Menu);

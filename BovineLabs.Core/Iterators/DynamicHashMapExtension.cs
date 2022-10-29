@@ -13,7 +13,7 @@ namespace BovineLabs.Core.Iterators
     public static class DynamicHashMapExtension
     {
         public static DynamicHashMap<TKey, TValue> AsHashMap<TBuffer, TKey, TValue>(this DynamicBuffer<TBuffer> buffer)
-            where TBuffer : struct, IDynamicHashMap<TKey, TValue>
+            where TBuffer : unmanaged, IDynamicHashMap<TKey, TValue>
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -24,7 +24,7 @@ namespace BovineLabs.Core.Iterators
         }
 
         public static DynamicMultiHashMap<TKey, TValue> AsMultiHashMap<TBuffer, TKey, TValue>(this DynamicBuffer<TBuffer> buffer)
-            where TBuffer : struct, IDynamicMultiHashMap<TKey, TValue>
+            where TBuffer : unmanaged, IDynamicMultiHashMap<TKey, TValue>
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {

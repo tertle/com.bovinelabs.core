@@ -5,13 +5,13 @@
 namespace BovineLabs.Core.Memory
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using UnityEngine;
 
     [NativeContainer]
-    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+
     public unsafe struct NativeSlabAllocator<T> : IDisposable
         where T : unmanaged
     {
@@ -19,23 +19,25 @@ namespace BovineLabs.Core.Memory
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 #pragma warning disable SA1308
-        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Required by safety")]
         private AtomicSafetyHandle m_Safety;
-
-        [NativeSetClassTypeToNullOnSchedule]
-        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Required by safety")]
-        private DisposeSentinel m_DisposeSentinel;
+        private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeSlabAllocator<T>>();
 #pragma warning restore SA1308
 #endif
 
-        public NativeSlabAllocator(int countPerSlab, Allocator allocator)
+        public NativeSlabAllocator(int countPerSlab, AllocatorManager.AllocatorHandle allocator)
         {
             Debug.Assert(countPerSlab > 0);
 
             this.slabAllocator = new UnsafeSlabAllocator<T>(countPerSlab, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            DisposeSentinel.Create(out this.m_Safety, out this.m_DisposeSentinel, 1, allocator);
+            CollectionHelper.CheckAllocator(allocator.Handle);
+
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
+            CollectionHelper.InitNativeContainer<T>(this.m_Safety);
+
+            CollectionHelper.SetStaticSafetyId<NativeSlabAllocator<T>>(ref this.m_Safety, ref s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(this.m_Safety, true);
 #endif
         }
 
@@ -74,7 +76,7 @@ namespace BovineLabs.Core.Memory
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            DisposeSentinel.Dispose(ref this.m_Safety, ref this.m_DisposeSentinel);
+            CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
 #endif
             this.slabAllocator.Dispose();
         }

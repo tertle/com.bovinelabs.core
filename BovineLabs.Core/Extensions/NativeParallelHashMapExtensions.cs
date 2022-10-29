@@ -14,7 +14,7 @@ namespace BovineLabs.Core.Extensions
     public static class NativeParallelHashMapExtensions
     {
         /// <summary>
-        /// Clear a <see cref="NativeHashMap{TKey,TValue}"/> then efficiently add a collection of keys and values to it.
+        /// Clear a <see cref="NativeParallelHashMap{TKey,TValue}"/> then efficiently add a collection of keys and values to it.
         /// This is much faster than iterating and using Add.
         /// NOTE: this is not safe. It does not check for duplicates and must only be used when keys are gauranteed to be unique.
         /// </summary>
@@ -54,7 +54,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Clear a <see cref="NativeHashMap{TKey,TValue}"/> then efficiently add a collection of keys and values to it.
+        /// Clear a <see cref="NativeParallelHashMap{TKey,TValue}"/> then efficiently add a collection of keys and values to it.
         /// This is much faster than iterating and using Add.
         /// NOTE: this is not safe. It does not check for duplicates and must only be used when keys are gauranteed to be unique.
         /// </summary>
@@ -101,7 +101,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Clear a <see cref="NativeHashMap{TKey,TValue}"/> then efficiently add a collection of keys and values to it.
+        /// Clear a <see cref="NativeParallelHashMap{TKey,TValue}"/> then efficiently add a collection of keys and values to it.
         /// This is much faster than iterating and using Add.
         /// NOTE: this is not safe. It does not check for duplicates and must only be used when keys are gauranteed to be unique.
         /// </summary>
@@ -273,7 +273,7 @@ namespace BovineLabs.Core.Extensions
                 hashMap.Capacity = newLength;
             }
 
-            UnsafeHashMapBucketData data = hashMap.GetUnsafeBucketData();
+            UnsafeParallelHashMapBucketData data = hashMap.GetUnsafeBucketData();
 
             var keyPtr = ((TKey*)data.keys) + oldLength;
 
@@ -317,7 +317,7 @@ namespace BovineLabs.Core.Extensions
                 hashMap.Capacity = length;
             }
 
-            UnsafeHashMapBucketData data = hashMap.GetUnsafeBucketData();
+            UnsafeParallelHashMapBucketData data = hashMap.GetUnsafeBucketData();
             UnsafeUtility.MemCpy(data.keys, keys, length * UnsafeUtility.SizeOf<TKey>());
 
             var buckets = (int*)data.buckets;
@@ -365,30 +365,30 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static unsafe ref TValue GetValueByRef<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> map, TKey key)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
             return ref map.m_HashMapData.m_Buffer->GetValueByRef<TKey, TValue>(key);
         }
 
         public static unsafe TKey FirstKey<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> map)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
             return map.m_HashMapData.m_Buffer->FirstKey<TKey>();
         }
 
         public static unsafe bool TryGetFirstKeyValue<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> map, out TKey key, out TValue value)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
             var startIndex = 0;
             return map.m_HashMapData.m_Buffer->TryGetFirstKeyValue<TKey, TValue>(out key, out value, ref startIndex);
         }
 
         public static unsafe bool TryGetFirstKeyValue<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> map, out TKey key, out TValue value, ref int index)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
             return map.m_HashMapData.m_Buffer->TryGetFirstKeyValue<TKey, TValue>(out key, out value, ref index);
         }

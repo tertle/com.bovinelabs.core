@@ -2,13 +2,14 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_RENDERER
+#if UNITY_GRAPHICS
 namespace BovineLabs.Core.Utility
 {
     using System;
     using System.Collections.Generic;
     using BovineLabs.Core.Extensions;
     using Unity.Burst;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -154,7 +155,7 @@ namespace BovineLabs.Core.Utility
                 this.matrices.AddRangeNative(chunk.Transforms.Ptr, chunk.Transforms.Length);
                 var matrixArray = NoAllocHelpers.ExtractArrayFromListT(this.matrices);
 
-                var mesh = this.system.World.EntityManager.GetSharedComponentData<RenderMesh>(chunk.Mesh);
+                var mesh = this.system.World.EntityManager.GetSharedComponentManaged<RenderMesh>(chunk.Mesh);
 
                 this.commandBuffer.DrawMeshInstanced(mesh.mesh, mesh.subMesh, this.material, -1, matrixArray, this.matrices.Count, this.propertyBlock);
             }
@@ -188,7 +189,7 @@ namespace BovineLabs.Core.Utility
         }
 
         [BurstCompile]
-        private struct GatherRenderMeshJob : IJobEntityBatch
+        private struct GatherRenderMeshJob : IJobChunk
         {
             [ReadOnly]
             public EntityTypeHandle EntityType;
@@ -203,14 +204,14 @@ namespace BovineLabs.Core.Utility
 
             public NativeParallelHashMap<Color, Entity>.ParallelWriter Map;
 
-            public void Execute(ArchetypeChunk batchInChunk, int batchIndex)
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var colors = new UnsafeList<Vector4>(batchInChunk.Count, Allocator.Persistent);
-                var transforms = new UnsafeList<Matrix4x4>(batchInChunk.Count, Allocator.Persistent);
+                var colors = new UnsafeList<Vector4>(chunk.Count, Allocator.Persistent);
+                var transforms = new UnsafeList<Matrix4x4>(chunk.Count, Allocator.Persistent);
 
-                var entities = batchInChunk.GetNativeArray(this.EntityType);
-                var localToWorlds = batchInChunk.GetNativeArray(this.LocalToWorldType);
-                var mesh = batchInChunk.GetSharedComponentIndex(this.RenderMeshType);
+                var entities = chunk.GetNativeArray(this.EntityType);
+                var localToWorlds = chunk.GetNativeArray(this.LocalToWorldType);
+                var mesh = chunk.GetSharedComponentIndex(this.RenderMeshType);
 
                 for (var index = 0; index < entities.Length; index++)
                 {

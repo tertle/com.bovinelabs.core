@@ -45,7 +45,7 @@ namespace BovineLabs.Core.UI
                 this.SetValueWithoutNotify(defaultValue);
             }
 
-            this.Menu.onSelectionChange += this.MenuOnSelectionChange;
+            this.Menu.selectionChanged += this.MenuOnSelectionChange;
         }
 
         /// <inheritdoc />

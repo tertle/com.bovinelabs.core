@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Settings
     [Serializable]
     [SuppressMessage("ReSharper", "Unity.RedundantSerializeFieldAttribute", Justification = "Required.")]
     public abstract class Settings<T> : Settings
-        where T : struct, IComponentData
+        where T : unmanaged, IComponentData
     {
         [SerializeField]
         private T component;
@@ -33,18 +33,16 @@ namespace BovineLabs.Core.Settings
 #endif
 
         /// <inheritdoc />
-        public sealed override void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem, GameObject owner)
+        public sealed override void Bake(IBaker baker)
         {
-            dstManager.AddComponentData(entity, this.component);
+            baker.AddComponent(this.component);
 
-            this.CustomConvert(dstManager, entity, conversionSystem);
+            this.CustomBake(baker);
         }
 
         /// <summary> Implement to add extra custom conversion. </summary>
-        /// <param name="dstManager"> The manager of the world. </param>
-        /// <param name="entity"> The entity where the settings should be added. </param>
-        /// <param name="conversionSystem"> The conversion system. </param>
-        protected virtual void CustomConvert(EntityManager dstManager, Entity entity, GameObjectConversionSystem conversionSystem)
+        /// <param name="baker"> The baker. </param>
+        protected virtual void CustomBake(IBaker baker)
         {
         }
 

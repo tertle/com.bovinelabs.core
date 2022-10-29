@@ -13,12 +13,12 @@ namespace BovineLabs.Core.Memory
     public unsafe struct MemoryAllocator : IDisposable
     {
         private readonly Allocator allocator;
-        private NativeParallelHashSet<Ptr> allocated;
+        private NativeHashSet<Ptr> allocated;
 
         public MemoryAllocator(Allocator allocator)
         {
             this.allocator = allocator;
-            this.allocated = new NativeParallelHashSet<Ptr>(0, allocator);
+            this.allocated = new NativeHashSet<Ptr>(0, allocator);
         }
 
         public Allocator Allocator => this.allocator;

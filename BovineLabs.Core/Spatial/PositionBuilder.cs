@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Spatial
 {
     using Unity.Burst;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -21,39 +22,58 @@ namespace BovineLabs.Core.Spatial
 
     public struct PositionBuilder
     {
-        private readonly SystemBase system;
         private EntityQuery query;
+#if ENABLE_TRANSFORM_V1
         private ComponentTypeHandle<Translation> translationHandle;
         private ComponentTypeHandle<LocalToWorld> localToWorldHandle;
         private ComponentTypeHandle<Parent> parentHandle;
+#else
+        private ComponentTypeHandle<LocalToWorldTransform > localToWorldTransformHandle;
+#endif
 
         /// <summary> Initializes a new instance of the <see cref="PositionBuilder"/> struct. </summary>
-        /// <param name="system"> The owning system. </param>
+        /// <param name="state"> The owning state. </param>
         /// <param name="query"> Query of entities to use. <see cref="Translation"/> will be used if found, otherwise <see cref="LocalToWorld"/>. </param>
-        public PositionBuilder(SystemBase system, EntityQuery query)
+        public PositionBuilder(ref SystemState state, EntityQuery query)
         {
-            this.system = system;
             this.query = query;
 
-            this.translationHandle = system.GetComponentTypeHandle<Translation>(true);
-            this.localToWorldHandle = system.GetComponentTypeHandle<LocalToWorld>(true);
-            this.parentHandle = system.GetComponentTypeHandle<Parent>(true);
+#if ENABLE_TRANSFORM_V1
+            this.translationHandle = state.GetComponentTypeHandle<Translation>(true);
+            this.localToWorldHandle = state.GetComponentTypeHandle<LocalToWorld>(true);
+            this.parentHandle = state.GetComponentTypeHandle<Parent>(true);
+#else
+            this.localToWorldTransformHandle = state.GetComponentTypeHandle<LocalToWorldTransform>(true);
+#endif
+
         }
 
-        public JobHandle Gather(JobHandle dependency, out NativeArray<SpatialPosition> positions)
+        public JobHandle Gather(ref SystemState state, JobHandle dependency, out NativeArray<SpatialPosition> positions)
         {
-            this.translationHandle.Update(this.system);
-            this.localToWorldHandle.Update(this.system);
-            this.parentHandle.Update(this.system);
+#if ENABLE_TRANSFORM_V1
+            this.translationHandle.Update(ref state);
+            this.localToWorldHandle.Update(ref state);
+            this.parentHandle.Update(ref state);
+#else
+            this.localToWorldTransformHandle.Update(ref state);
+#endif
 
-            positions = this.system.World.UpdateAllocator.AllocateNativeArray<SpatialPosition>(this.query.CalculateEntityCount());
+            positions = state.WorldRewindableAllocator.AllocateNativeArray<SpatialPosition>(this.query.CalculateEntityCount());
+
+            var firstEntityIndices = this.query.CalculateBaseEntityIndexArrayAsync(Allocator.TempJob, dependency, out var dependency1);
+            dependency = JobHandle.CombineDependencies(dependency, dependency1);
 
             dependency = new GatherPositionsJob
                 {
+#if ENABLE_TRANSFORM_V1
                     TranslationHandle = this.translationHandle,
                     LocalToWorldHandle = this.localToWorldHandle,
                     ParentHandle = this.parentHandle,
+#else
+                    LocalToWorldTransformHandle = this.localToWorldTransformHandle,
+#endif
                     Positions = positions,
+                    FirstEntityIndices = firstEntityIndices,
                 }
                 .ScheduleParallel(this.query, dependency);
 
@@ -61,39 +81,54 @@ namespace BovineLabs.Core.Spatial
         }
 
         [BurstCompile]
-        private unsafe struct GatherPositionsJob : IJobEntityBatchWithIndex
+        private unsafe struct GatherPositionsJob : IJobChunk
         {
             [ReadOnly]
+#if ENABLE_TRANSFORM_V1
             public ComponentTypeHandle<Translation> TranslationHandle;
-
-            [ReadOnly]
-            public ComponentTypeHandle<LocalToWorld> LocalToWorldHandle;
 
             [ReadOnly]
             public ComponentTypeHandle<Parent> ParentHandle;
 
+            [ReadOnly]
+            public ComponentTypeHandle<LocalToWorld> LocalToWorldHandle;
+#else
+            public ComponentTypeHandle<LocalToWorldTransform> LocalToWorldTransformHandle;
+#endif
+
             [NativeDisableParallelForRestriction]
             public NativeArray<SpatialPosition> Positions;
 
-            public void Execute(ArchetypeChunk batchInChunk, int batchIndex, int indexOfFirstEntityInQuery)
+            [ReadOnly]
+            public NativeArray<int> FirstEntityIndices;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 var ptr = (float3*)this.Positions.GetUnsafePtr();
-                var dst = ptr + indexOfFirstEntityInQuery;
+                var dst = ptr + this.FirstEntityIndices[unfilteredChunkIndex];
 
                 var size = UnsafeUtility.SizeOf<float3>();
 
                 // Is static or has parent, can't use Transform as it's in local space
-                if (!batchInChunk.Has(this.TranslationHandle) || batchInChunk.Has(this.ParentHandle))
+#if ENABLE_TRANSFORM_V1
+                if (!chunk.Has(this.TranslationHandle) || chunk.Has(this.ParentHandle))
                 {
-                    var ltw = batchInChunk.GetNativeArray(this.LocalToWorldHandle).Reinterpret<float4x4>();
+                    var ltw = chunk.GetNativeArray(this.LocalToWorldHandle).Reinterpret<float4x4>();
                     var stride = ltw.Slice().SliceWithStride<float3>(UnsafeUtility.SizeOf<float4>() * 3);
                     UnsafeUtility.MemCpyStride(dst, size, stride.GetUnsafeReadOnlyPtr(), stride.Stride, size, ltw.Length);
                 }
                 else
+#endif
                 {
-                    var translations = batchInChunk.GetNativeArray(this.TranslationHandle);
+#if ENABLE_TRANSFORM_V1
+                    var translations = chunk.GetNativeArray(this.TranslationHandle);
                     var src = translations.GetUnsafeReadOnlyPtr();
                     UnsafeUtility.MemCpy(dst, src, size * translations.Length);
+#else
+                    var localToWorldTransforms = chunk.GetNativeArray(this.LocalToWorldTransformHandle).Reinterpret<UniformScaleTransform>();
+                    var stride = localToWorldTransforms.Slice().SliceWithStride<float3>(0);
+                    UnsafeUtility.MemCpyStride(dst, size, stride.GetUnsafeReadOnlyPtr(), stride.Stride, size, localToWorldTransforms.Length);
+#endif
                 }
             }
         }

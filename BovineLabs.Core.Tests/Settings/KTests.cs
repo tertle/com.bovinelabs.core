@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Tests.Settings
 {
+    using BovineLabs.Core.Keys;
     using NUnit.Framework;
     using Unity.Burst;
     using Unity.Collections;

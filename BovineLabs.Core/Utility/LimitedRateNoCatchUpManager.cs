@@ -34,18 +34,18 @@ namespace BovineLabs.Core.Utility
                 return false;
             }
 
-            var deltaTime = (float)(group.Time.ElapsedTime - this.lastPushedTime);
+            var deltaTime = (float)(group.World.Unmanaged.Time.ElapsedTime - this.lastPushedTime);
 
             // Not enough time elapsed
-            if (group.Time.ElapsedTime - this.lastPushedTime < this.Timestep)
+            if (group.World.Unmanaged.Time.ElapsedTime - this.lastPushedTime < this.Timestep)
             {
                 return false;
             }
 
-            this.lastPushedTime = group.Time.ElapsedTime;
+            this.lastPushedTime = group.World.Unmanaged.Time.ElapsedTime;
 
             group.World.PushTime(new TimeData(
-                group.Time.ElapsedTime,
+                group.World.Unmanaged.Time.ElapsedTime,
                 deltaTime));
 
             this.didPushTime = true;

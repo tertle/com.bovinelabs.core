@@ -20,7 +20,7 @@ namespace BovineLabs.Core.Utility
         private EntityQuery query;
 
         public DeferredDynamicBuffer(ComponentSystemBase system, bool isReadOnly = false, bool createSingletonEntity = true)
-            : this(ref system.GetSystemState(), isReadOnly, createSingletonEntity)
+            : this(ref *system.m_StatePtr, isReadOnly, createSingletonEntity)
         {
         }
 
@@ -47,7 +47,7 @@ namespace BovineLabs.Core.Utility
 
         public JobHandle GetDeferredBuffer(ComponentSystemBase system, JobHandle dependency, out NativeArray<T> output)
         {
-            return this.GetDeferredBuffer(ref system.GetSystemState(), dependency, out output);
+            return this.GetDeferredBuffer(system.m_StatePtr, dependency, out output);
         }
 
         /// <summary> Requests a DynamicBuffer as a Deferred NativeArray which will be populated on job schedule. </summary>
@@ -57,7 +57,7 @@ namespace BovineLabs.Core.Utility
         /// <param name="output"> A deferred array of the dynamic Buffer. </param>
         /// <typeparam name="T"> The dynamic Buffer type. </typeparam>
         /// <returns></returns>
-        public JobHandle GetDeferredBuffer(ref SystemState system, JobHandle dependency, out NativeArray<T> output)
+        public JobHandle GetDeferredBuffer(SystemState* system, JobHandle dependency, out NativeArray<T> output)
         {
             var buffer = (byte*)this.reference;
 
@@ -69,23 +69,25 @@ namespace BovineLabs.Core.Utility
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref output, AtomicSafetyHandle.Create());
 #endif
-            var chunks = this.query.CreateArchetypeChunkArrayAsync(Allocator.TempJob, out var handle);
+            var chunks = this.query.ToArchetypeChunkListAsync(Allocator.TempJob, out var handle);
             dependency = JobHandle.CombineDependencies(dependency, handle);
 
             dependency = new CreateDeferredJob
                 {
-                    Chunks = chunks,
-                    BufferType = system.GetDynamicComponentTypeHandle(this.componentType),
+                    Chunks = chunks.AsDeferredJobArray(),
+                    BufferType = system->GetDynamicComponentTypeHandle(this.componentType),
                     Reference = this.reference,
                 }
                 .Schedule(dependency);
+
+            chunks.Dispose(dependency);
 
             return dependency;
         }
 
         public JobHandle GetDeferredBufferWrite(ComponentSystemBase system, JobHandle dependency, out NativeArray<T> output, int length = -1)
         {
-            return this.GetDeferredBufferWrite(ref system.GetSystemState(), dependency, out output, length);
+            return this.GetDeferredBufferWrite(ref *system.m_StatePtr, dependency, out output, length);
         }
 
         /// <summary> Requests a DynamicBuffer as a Deferred NativeArray with write permission and optional ability to resize. </summary>
@@ -108,27 +110,28 @@ namespace BovineLabs.Core.Utility
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref output, AtomicSafetyHandle.Create());
 #endif
-            var chunks = system.GetSingletonEntityQueryInternal(ComponentType.ReadWrite<T>()).CreateArchetypeChunkArrayAsync(Allocator.TempJob, out var handle);
+            var chunks = system.GetSingletonEntityQueryInternal(ComponentType.ReadWrite<T>()).ToArchetypeChunkListAsync(Allocator.TempJob, out var handle);
             dependency = JobHandle.CombineDependencies(dependency, handle);
 
             dependency = new ResizeAndCreateDeferredJob
                 {
-                    Chunks = chunks,
+                    Chunks = chunks.AsDeferredJobArray(),
                     BufferType = system.GetDynamicComponentTypeHandle(ComponentType.ReadWrite<T>()),
                     Reference = this.reference,
                     Length = length,
                 }
                 .Schedule(dependency);
 
+            chunks.Dispose(dependency);
+
             return dependency;
         }
     }
 
     [BurstCompile]
-    internal unsafe struct CreateDeferredJob : IJobBurstSchedulable
+    internal unsafe struct CreateDeferredJob : IJob
     {
         [ReadOnly]
-        [DeallocateOnJobCompletion]
         public NativeArray<ArchetypeChunk> Chunks;
 
         [ReadOnly]
@@ -148,10 +151,9 @@ namespace BovineLabs.Core.Utility
     }
 
     [BurstCompile]
-    internal unsafe struct ResizeAndCreateDeferredJob : IJobBurstSchedulable
+    internal unsafe struct ResizeAndCreateDeferredJob : IJob
     {
         [ReadOnly]
-        [DeallocateOnJobCompletion]
         public NativeArray<ArchetypeChunk> Chunks;
 
         public DynamicComponentTypeHandle BufferType;
