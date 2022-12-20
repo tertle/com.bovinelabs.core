@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Collections
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeCounter>();
 #endif
 
-        readonly AllocatorManager.AllocatorHandle allocator;
+        private readonly AllocatorManager.AllocatorHandle allocator;
 
         public NativeCounter(AllocatorManager.AllocatorHandle allocator)
         {
@@ -71,7 +71,7 @@ namespace BovineLabs.Core.Collections
 
         public bool IsCreated => this.count != null;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -95,7 +95,7 @@ namespace BovineLabs.Core.Collections
             private readonly int* count;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle m_Safety;
+            private readonly AtomicSafetyHandle m_Safety;
 #endif
 
             internal ParallelWriter(NativeCounter counter)

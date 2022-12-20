@@ -4,7 +4,6 @@
 
 namespace BovineLabs.Core.Internal
 {
-    using Unity.Collections;
     using Unity.Entities;
 
     public unsafe struct SystemStatePtr
@@ -22,7 +21,7 @@ namespace BovineLabs.Core.Internal
         }
     }
 
-    public static unsafe class WorldInternal
+    public static class WorldInternal
     {
         // public static void GetAllStatesNoAlloc(this World world, NativeList<SystemStatePtr> list)
         // {

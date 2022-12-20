@@ -9,7 +9,7 @@ namespace BovineLabs.Core.ConfigVars
     using System.Globalization;
     using Unity.Burst;
 
-    /// <summary> The attribute defining a config variable. This should only be placed on a <see cref="SharedStatic{T}"/>. </summary>
+    /// <summary> The attribute defining a config variable. This should only be placed on a <see cref="SharedStatic{T}" />. </summary>
     public class ConfigVarAttribute : Attribute, IEquatable<ConfigVarAttribute>
     {
         /// <summary> Initializes a new instance of the <see cref="ConfigVarAttribute" /> class. </summary>
@@ -76,11 +76,6 @@ namespace BovineLabs.Core.ConfigVars
         [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global", Justification = "Used in build.")]
         public ConfigVarFlags Flags { get; }
 
-        public static implicit operator ConfigVarAttribute(string s)
-        {
-            return new ConfigVarAttribute(s, 0, string.Empty);
-        }
-
         /// <inheritdoc />
         public bool Equals(ConfigVarAttribute other)
         {
@@ -90,6 +85,11 @@ namespace BovineLabs.Core.ConfigVars
             }
 
             return this.Name == other.Name;
+        }
+
+        public static implicit operator ConfigVarAttribute(string s)
+        {
+            return new ConfigVarAttribute(s, 0, string.Empty);
         }
 
         /// <inheritdoc />

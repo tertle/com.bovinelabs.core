@@ -42,16 +42,6 @@
             "name": "com.unity.entities.graphics",
             "expression": "0",
             "define": "UNITY_GRAPHICS"
-        },
-        {
-            "name": "com.unity.physics",
-            "expression": "0.60.0-preview.88",
-            "define": "ENABLE_TRANSFORM_V1"
-        },
-        {
-            "name": "com.unity.netcode",
-            "expression": "0.60.0-preview.90",
-            "define": "ENABLE_TRANSFORM_V1"
         }
     ],
     "noEngineReferences": false

@@ -44,9 +44,9 @@ namespace BovineLabs.Core.Iterators
             get
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
 #endif
-                return m_Access->GetSharedComponentData<T>(index);
+                return this.m_Access->GetSharedComponentData<T>(index);
             }
         }
 
@@ -55,10 +55,10 @@ namespace BovineLabs.Core.Iterators
         /// inside the system's Update() method performs the minimal incremental updates necessary to make the
         /// type handle safe to use.
         /// </summary>
-        /// <param name="system">The system on which this type handle is cached.</param>
+        /// <param name="system"> The system on which this type handle is cached. </param>
         public void Update(SystemBase system)
         {
-            Update(ref *system.m_StatePtr);
+            this.Update(ref *system.m_StatePtr);
         }
 
         /// <summary>
@@ -66,12 +66,12 @@ namespace BovineLabs.Core.Iterators
         /// inside the system's Update() method performs the minimal incremental updates necessary to make the
         /// type handle safe to use.
         /// </summary>
-        /// <param name="systemState">The SystemState of the system on which this type handle is cached.</param>
+        /// <param name="systemState"> The SystemState of the system on which this type handle is cached. </param>
         public void Update(ref SystemState systemState)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var safetyHandles = &m_Access->DependencyManager->Safety;
-            m_Safety = safetyHandles->GetSafetyHandleForComponentLookup(m_TypeIndex, m_IsReadOnly != 0);
+            var safetyHandles = &this.m_Access->DependencyManager->Safety;
+            this.m_Safety = safetyHandles->GetSafetyHandleForComponentLookup(this.m_TypeIndex, this.m_IsReadOnly != 0);
 #endif
         }
     }

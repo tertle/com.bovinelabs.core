@@ -14,12 +14,10 @@ namespace BovineLabs.Core.Collections
     using Unity.Jobs;
     using Unity.Jobs.LowLevel.Unsafe;
 
-
     /// <summary>
     /// An iterator over all values associated with an individual key in a multi hash map.
     /// </summary>
-    /// <remarks>The iteration order over the values associated with a key is an implementation detail. Do not rely upon any particular ordering.</remarks>
-
+    /// <remarks> The iteration order over the values associated with a key is an implementation detail. Do not rely upon any particular ordering. </remarks>
     public struct UnsafeKeyedMapIterator
     {
         internal int Key;
@@ -27,7 +25,6 @@ namespace BovineLabs.Core.Collections
     }
 
     [StructLayout(LayoutKind.Explicit)]
-
     internal unsafe struct KeyedMapData
     {
         [FieldOffset(0)]
@@ -86,12 +83,12 @@ namespace BovineLabs.Core.Collections
 
             CheckHashMapReallocateDoesNotShrink(data, newCapacity);
 
-            int totalSize = CalculateDataSize<TValue>(newCapacity, data->BucketCapacity, out var keyOffset, out var nextOffset, out var bucketOffset);
+            var totalSize = CalculateDataSize<TValue>(newCapacity, data->BucketCapacity, out var keyOffset, out var nextOffset, out var bucketOffset);
 
-            byte* newData = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, label);
-            byte* newKeys = newData + keyOffset;
-            byte* newNext = newData + nextOffset;
-            byte* newBuckets = newData + bucketOffset;
+            var newData = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, label);
+            var newKeys = newData + keyOffset;
+            var newNext = newData + nextOffset;
+            var newBuckets = newData + bucketOffset;
 
             // The items are taken from a free-list and might not be tightly packed, copy all of the old capcity
             UnsafeUtility.MemCpy(newData, data->Values, data->KeyCapacity * UnsafeUtility.SizeOf<TValue>());
@@ -99,7 +96,7 @@ namespace BovineLabs.Core.Collections
             UnsafeUtility.MemCpy(newNext, data->Next, data->KeyCapacity * UnsafeUtility.SizeOf<int>());
             UnsafeUtility.MemCpy(newBuckets, data->Buckets, data->BucketCapacity * UnsafeUtility.SizeOf<int>());
 
-            for (int emptyNext = data->KeyCapacity; emptyNext < newCapacity; ++emptyNext)
+            for (var emptyNext = data->KeyCapacity; emptyNext < newCapacity; ++emptyNext)
             {
                 ((int*)newNext)[emptyNext] = -1;
             }
@@ -150,7 +147,7 @@ namespace BovineLabs.Core.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckHashMapReallocateDoesNotShrink(KeyedMapData* data, int newCapacity)
+        private static void CheckHashMapReallocateDoesNotShrink(KeyedMapData* data, int newCapacity)
         {
             if (data->KeyCapacity > newCapacity)
             {
@@ -171,11 +168,11 @@ namespace BovineLabs.Core.Collections
     }
 
     [NativeContainer]
-
     internal unsafe struct UnsafeKeyedMapDataDispose
     {
         [NativeDisableUnsafePtrRestriction]
         internal KeyedMapData* Buffer;
+
         internal AllocatorManager.AllocatorHandle AllocatorLabel;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -199,8 +196,8 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// Initializes and returns an instance of UnsafeMultiHashMap.
         /// </summary>
-        /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
-        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="capacity"> The number of key-value pairs that should fit in the initial allocation. </param>
+        /// <param name="allocator"> The allocator to use. </param>
         public UnsafeKeyedMap(int capacity, int maxKey, AllocatorManager.AllocatorHandle allocator)
         {
             Check.Assume(maxKey > 0);
@@ -213,15 +210,15 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// Whether this hash map has been allocated (and not yet deallocated).
         /// </summary>
-        /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+        /// <value> True if this hash map has been allocated (and not yet deallocated). </value>
         public bool IsCreated => this.buffer != null;
 
         /// <summary>
         /// Returns the number of key-value pairs that fit in the current allocation.
         /// </summary>
-        /// <value>The number of key-value pairs that fit in the current allocation.</value>
-        /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
-        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
+        /// <value> The number of key-value pairs that fit in the current allocation. </value>
+        /// <param name="value"> A new capacity. Must be larger than the current capacity. </param>
+        /// <exception cref="Exception"> Thrown if `value` is less than the current capacity. </exception>
         public int Capacity
         {
             get => this.buffer->KeyCapacity;
@@ -262,7 +259,7 @@ namespace BovineLabs.Core.Collections
             UnsafeUtility.WriteArrayElement(this.buffer->Values, idx, item);
 
             // Add the index to the hash-map
-            int* buckets = (int*)this.buffer->Buckets;
+            var buckets = (int*)this.buffer->Buckets;
             var nextPtrs = (int*)this.buffer->Next;
 
             nextPtrs[idx] = buckets[key];
@@ -272,10 +269,10 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// Gets an iterator for a key.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="item">Outputs the associated value represented by the iterator.</param>
-        /// <param name="it">Outputs an iterator.</param>
-        /// <returns>True if the key was present.</returns>
+        /// <param name="key"> The key. </param>
+        /// <param name="item"> Outputs the associated value represented by the iterator. </param>
+        /// <param name="it"> Outputs an iterator. </param>
+        /// <returns> True if the key was present. </returns>
         public bool TryGetFirstValue(int key, out TValue item, out UnsafeKeyedMapIterator it)
         {
             CheckKeyOutOfBounds(this.buffer, key);
@@ -298,13 +295,13 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// Advances an iterator to the next value associated with its key.
         /// </summary>
-        /// <param name="item">Outputs the next value.</param>
-        /// <param name="it">A reference to the iterator to advance.</param>
-        /// <returns>True if the key was present and had another value.</returns>
+        /// <param name="item"> Outputs the next value. </param>
+        /// <param name="it"> A reference to the iterator to advance. </param>
+        /// <returns> True if the key was present and had another value. </returns>
         public bool TryGetNextValue(out TValue item, ref UnsafeKeyedMapIterator it)
         {
-            int entryIdx = it.NextEntryIndex;
-            if (entryIdx < 0/* || entryIdx >= this.Buffer->KeyCapacity*/)
+            var entryIdx = it.NextEntryIndex;
+            if (entryIdx < 0 /* || entryIdx >= this.Buffer->KeyCapacity*/)
             {
                 it.NextEntryIndex = -1;
                 item = default;
@@ -342,21 +339,32 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        public int* GetUnsafeKeysPtr() => (int*)this.buffer->Keys;
-        public TValue* GetUnsafeValuesPtr() => (TValue*)this.buffer->Values;
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckKeyOutOfBounds(KeyedMapData* data, int key)
+        public int* GetUnsafeKeysPtr()
         {
-            if (key < 0 || key >= data->BucketCapacity)
-                throw new InvalidOperationException("key < 0 || key >= data->BucketCapacity");
+            return (int*)this.buffer->Keys;
+        }
+
+        public TValue* GetUnsafeValuesPtr()
+        {
+            return (TValue*)this.buffer->Values;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckIndexOutOfBounds(KeyedMapData* data, int idx)
+        private static void CheckKeyOutOfBounds(KeyedMapData* data, int key)
         {
-            if (idx < 0 || idx >= data->KeyCapacity)
+            if ((key < 0) || (key >= data->BucketCapacity))
+            {
+                throw new InvalidOperationException("key < 0 || key >= data->BucketCapacity");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckIndexOutOfBounds(KeyedMapData* data, int idx)
+        {
+            if ((idx < 0) || (idx >= data->KeyCapacity))
+            {
                 throw new InvalidOperationException("Internal Map error");
+            }
         }
     }
 }

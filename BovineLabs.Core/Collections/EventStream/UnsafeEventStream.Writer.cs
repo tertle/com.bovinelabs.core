@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Collections
         public struct Writer
         {
             [NativeDisableUnsafePtrRestriction]
-            private UnsafeEventStreamBlockData* blockStream;
+            private readonly UnsafeEventStreamBlockData* blockStream;
 
 #pragma warning disable SA1308
             [NativeSetThreadIndex]
@@ -31,8 +31,8 @@ namespace BovineLabs.Core.Collections
             }
 
             /// <summary> Write data. </summary>
-            /// <typeparam name="T">The type of value.</typeparam>
-            /// <param name="value">Value to write.</param>
+            /// <typeparam name="T"> The type of value. </typeparam>
+            /// <param name="value"> Value to write. </param>
             [GenerateTestsForBurstCompatibility]
             public void Write<T>(T value)
                 where T : struct
@@ -42,8 +42,8 @@ namespace BovineLabs.Core.Collections
             }
 
             /// <summary> Allocate space for data. </summary>
-            /// <typeparam name="T">The type of value.</typeparam>
-            /// <returns>Reference to allocated space for data.</returns>
+            /// <typeparam name="T"> The type of value. </typeparam>
+            /// <returns> Reference to allocated space for data. </returns>
             [GenerateTestsForBurstCompatibility]
             public ref T Allocate<T>()
                 where T : struct
@@ -53,8 +53,8 @@ namespace BovineLabs.Core.Collections
             }
 
             /// <summary> Allocate space for data. </summary>
-            /// <param name="size">Size in bytes.</param>
-            /// <returns>Pointer to allocated space for data.</returns>
+            /// <param name="size"> Size in bytes. </param>
+            /// <returns> Pointer to allocated space for data. </returns>
             public byte* Allocate(int size)
             {
                 var threadIndex = AssumeThreadRange(this.m_ThreadIndex);

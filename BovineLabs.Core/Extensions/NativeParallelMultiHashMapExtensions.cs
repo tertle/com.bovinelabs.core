@@ -1,4 +1,4 @@
-﻿// <copyright file="NativeMultiHashMapExtensions.cs" company="BovineLabs">
+﻿// <copyright file="NativeParallelMultiHashMapExtensions.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -10,11 +10,11 @@ namespace BovineLabs.Core.Extensions
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Extensions for <see cref="NativeMultiHashMap{TKey,TValue}"/>. </summary>
+    /// <summary> Extensions for <see cref="NativeMultiHashMap{TKey,TValue}" />. </summary>
     public static class NativeMultiHashMapExtensions
     {
         /// <summary>
-        /// Clear a <see cref="NativeMultiHashMap{TKey,TValue}"/> then efficiently add a collection of keys and values to it.
+        /// Clear a <see cref="NativeMultiHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <param name="hashMap"> The hashmap to clear and add to. </param>
@@ -60,7 +60,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Clear a <see cref="NativeMultiHashMap{TKey,TValue}"/> then efficiently add a collection of keys and values to it.
+        /// Clear a <see cref="NativeMultiHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <param name="hashMap"> The hashmap to clear and add to. </param>
@@ -90,8 +90,10 @@ namespace BovineLabs.Core.Extensions
 
             var data = hashMap.GetUnsafeBucketData();
 
-            UnsafeUtility.MemCpyStride(data.keys, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), keys.Length);
-            UnsafeUtility.MemCpyStride(data.values, UnsafeUtility.SizeOf<TValue>(), values.GetUnsafeReadOnlyPtr(), values.Stride, UnsafeUtility.SizeOf<TValue>(), values.Length);
+            UnsafeUtility.MemCpyStride(data.keys, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(),
+                keys.Length);
+            UnsafeUtility.MemCpyStride(data.values, UnsafeUtility.SizeOf<TValue>(), values.GetUnsafeReadOnlyPtr(), values.Stride,
+                UnsafeUtility.SizeOf<TValue>(), values.Length);
 
             var buckets = (int*)data.buckets;
             var nextPtrs = (int*)data.next;
@@ -107,7 +109,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Efficiently add a collection of keys and values to a <see cref="NativeMultiHashMap{TKey,TValue}"/>.
+        /// Efficiently add a collection of keys and values to a <see cref="NativeMultiHashMap{TKey,TValue}" />.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
@@ -149,14 +151,14 @@ namespace BovineLabs.Core.Extensions
 
             var data = hashMap.GetUnsafeBucketData();
 
-            var keyPtr = ((TKey*)data.keys) + oldLength;
-            var valuePtr = ((TValue*)data.values) + oldLength;
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
 
             UnsafeUtility.MemCpy(keyPtr, keys, length * UnsafeUtility.SizeOf<TKey>());
             UnsafeUtility.MemCpy(valuePtr, values, length * UnsafeUtility.SizeOf<TValue>());
 
             var buckets = (int*)data.buckets;
-            var nextPtrs = ((int*)data.next) + oldLength;
+            var nextPtrs = (int*)data.next + oldLength;
 
             for (var idx = 0; idx < length; idx++)
             {
@@ -169,7 +171,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Efficiently add a collection of keys and values to a <see cref="NativeMultiHashMap{TKey,TValue}"/>.
+        /// Efficiently add a collection of keys and values to a <see cref="NativeMultiHashMap{TKey,TValue}" />.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <param name="hashMap"> The hashmap to clear and add to. </param>
@@ -200,11 +202,12 @@ namespace BovineLabs.Core.Extensions
 
             var data = hashMap.GetUnsafeBucketData();
 
-            var keyPtr = ((TKey*)data.keys) + oldLength;
-            var valuePtr = ((TValue*)data.values) + oldLength;
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
 
             UnsafeUtility.MemCpyStride(keyPtr, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), length);
-            UnsafeUtility.MemCpyStride(valuePtr, UnsafeUtility.SizeOf<TValue>(), values.GetUnsafeReadOnlyPtr(), values.Stride, UnsafeUtility.SizeOf<TValue>(), length);
+            UnsafeUtility.MemCpyStride(valuePtr, UnsafeUtility.SizeOf<TValue>(), values.GetUnsafeReadOnlyPtr(), values.Stride, UnsafeUtility.SizeOf<TValue>(),
+                length);
 
             var buckets = (int*)data.buckets;
             var nextPtrs = (int*)data.next + oldLength;
@@ -219,8 +222,8 @@ namespace BovineLabs.Core.Extensions
             hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength += length;
         }
 
-/// <summary>
-        /// Efficiently add a collection of keys and values to a <see cref="NativeMultiHashMap{TKey,TValue}"/>.
+        /// <summary>
+        /// Efficiently add a collection of keys and values to a <see cref="NativeMultiHashMap{TKey,TValue}" />.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <param name="hashMap"> The hashmap to clear and add to. </param>
@@ -252,8 +255,8 @@ namespace BovineLabs.Core.Extensions
 
             var data = hashMap.GetUnsafeBucketData();
 
-            var keyPtr = ((TKey*)data.keys) + oldLength;
-            var valuePtr = ((TValue*)data.values) + oldLength;
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
 
             UnsafeUtility.MemCpyStride(keyPtr, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), length);
             UnsafeUtility.MemCpy(valuePtr, values.GetUnsafeReadOnlyPtr(), length * UnsafeUtility.SizeOf<TValue>());
@@ -272,7 +275,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Efficiently adds a collection of values for a single key and values to a <see cref="NativeMultiHashMap{TKey,TValue}"/>.
+        /// Efficiently adds a collection of values for a single key and values to a <see cref="NativeMultiHashMap{TKey,TValue}" />.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
@@ -304,14 +307,14 @@ namespace BovineLabs.Core.Extensions
 
             var data = hashMap.GetUnsafeBucketData();
 
-            var keyPtr = ((TKey*)data.keys) + oldLength;
-            var valuePtr = ((TValue*)data.values) + oldLength;
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
 
             UnsafeUtility.MemCpyReplicate(keyPtr, &key, UnsafeUtility.SizeOf<TKey>(), length);
             UnsafeUtility.MemCpy(valuePtr, values, length * UnsafeUtility.SizeOf<TValue>());
 
             var buckets = (int*)data.buckets;
-            var nextPtrs = ((int*)data.next) + oldLength;
+            var nextPtrs = (int*)data.next + oldLength;
 
             var bucket = key.GetHashCode() & data.bucketCapacityMask;
 
@@ -325,7 +328,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Efficiently adds a collection of values for a single key and values to a <see cref="NativeMultiHashMap{TKey,TValue}"/>.
+        /// Efficiently adds a collection of values for a single key and values to a <see cref="NativeMultiHashMap{TKey,TValue}" />.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
@@ -355,14 +358,14 @@ namespace BovineLabs.Core.Extensions
 
             var data = hashMap.GetUnsafeBucketData();
 
-            var keyPtr = ((TKey*)data.keys) + oldLength;
-            var valuePtr = ((TValue*)data.values) + oldLength;
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
 
             UnsafeUtility.MemCpyReplicate(keyPtr, &key, UnsafeUtility.SizeOf<TKey>(), values.Length);
             UnsafeUtility.MemCpy(valuePtr, values.GetUnsafeReadOnlyPtr(), values.Length * UnsafeUtility.SizeOf<TValue>());
 
             var buckets = (int*)data.buckets;
-            var nextPtrs = ((int*)data.next) + oldLength;
+            var nextPtrs = (int*)data.next + oldLength;
 
             var bucket = key.GetHashCode() & data.bucketCapacityMask;
 

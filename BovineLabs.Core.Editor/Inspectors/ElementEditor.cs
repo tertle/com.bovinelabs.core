@@ -4,7 +4,6 @@
 
 namespace BovineLabs.Core.Editor.Inspectors
 {
-    using System;
     using BovineLabs.Core.Editor.Helpers;
     using UnityEditor;
     using UnityEditor.UIElements;

@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Extensions
     public static unsafe class EntityQueryExtensions
     {
         public static bool QueryHasSharedFilter<T>(this EntityQuery query, out int scdIndex)
-            where T : struct, ISharedComponentData
+            where T : unmanaged, ISharedComponentData
         {
             var filters = query.GetSharedFilters();
             var requiredType = TypeManager.GetTypeIndex<T>();
@@ -33,7 +33,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static bool QueryHasSharedFilter<T>(this EntityQuery query, int index)
-            where T : struct, ISharedComponentData
+            where T : unmanaged, ISharedComponentData
         {
             var impl = query._GetImpl();
             var filters = query.GetSharedFilters();
@@ -52,23 +52,24 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static void ReplaceSharedComponentFilter<T>(this EntityQuery query, int index, T sharedComponent)
-            where T : struct, ISharedComponentData
+            where T : unmanaged, ISharedComponentData
         {
             AssertRange(index, query._GetImpl()->_Filter.Shared.Count);
 
             // Reset only the index - from ResetFilter
-            query._GetImpl()->_Access->RemoveSharedComponentReference(query._GetImpl()->_Filter.Shared.SharedComponentIndex[index]);
+            query._GetImpl()->_Access->EntityComponentStore->RemoveSharedComponentReference_Unmanaged(
+                query._GetImpl()->_Filter.Shared.SharedComponentIndex[index]);
 
             // Replace with our new component - from AddSharedComponentFilter
             query._GetImpl()->_Filter.Shared.IndexInEntityQuery[index] = query.GetIndexInEntityQuery(TypeManager.GetTypeIndex<T>());
-            query._GetImpl()->_Filter.Shared.SharedComponentIndex[index] = query._GetImpl()->_Access->InsertSharedComponent(sharedComponent);
+            query._GetImpl()->_Filter.Shared.SharedComponentIndex[index] = query._GetImpl()->_Access->InsertSharedComponent_Unmanaged(sharedComponent);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
         private static void AssertRange(int index, int count)
         {
-            if (index < 0 || index >= count)
+            if ((index < 0) || (index >= count))
             {
                 throw new ArgumentOutOfRangeException(nameof(index), "Trying to replace shared filter outside of range");
             }

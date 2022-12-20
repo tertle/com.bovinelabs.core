@@ -1,55 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿// <copyright file="TreeNode.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
 
 namespace UnityEngine.UIExtras
 {
-    class TreeNode<T>
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Linq;
+
+    internal class TreeNode<T>
     {
-        private T m_Value;
-        internal List<TreeNode<T>> m_Children = new List<TreeNode<T>>();
-
-        public T Value { get => m_Value; set { m_Value = value; } }
-
-        public ReadOnlyCollection<TreeNode<T>> Children {
-            get { return m_Children.AsReadOnly(); }
-        }
-
-        public int ChildCount => m_Children.Count;
+        internal List<TreeNode<T>> m_Children = new();
 
         public TreeNode(T value)
         {
-            m_Value = value;
+            this.Value = value;
         }
 
-        public TreeNode<T> this[int i] {
-            get { return m_Children[i]; }
-        }
+        public T Value { get; set; }
+
+        public ReadOnlyCollection<TreeNode<T>> Children => this.m_Children.AsReadOnly();
+
+        public int ChildCount => this.m_Children.Count;
+
+        public TreeNode<T> this[int i] => this.m_Children[i];
 
         public TreeNode<T> Parent { get; internal set; }
 
         public TreeNode<T> AddChild(T value)
         {
             var node = new TreeNode<T>(value) { Parent = this };
-            m_Children.Add(node);
+            this.m_Children.Add(node);
             return node;
         }
 
         public TreeNode<T>[] AddChildren(params T[] values)
         {
-            return values.Select(AddChild).ToArray();
+            return values.Select(this.AddChild).ToArray();
         }
 
         public bool RemoveChild(TreeNode<T> node)
         {
-            return m_Children.Remove(node);
+            return this.m_Children.Remove(node);
         }
 
         public void Traverse(Action<T> action)
         {
-            action(Value);
-            foreach (var child in m_Children)
+            action(this.Value);
+            foreach (var child in this.m_Children)
             {
                 child.Traverse(action);
             }
@@ -58,7 +57,7 @@ namespace UnityEngine.UIExtras
         public void Traverse(Action<TreeNode<T>> action)
         {
             action(this);
-            foreach (var child in m_Children)
+            foreach (var child in this.m_Children)
             {
                 child.Traverse(action);
             }
@@ -66,7 +65,7 @@ namespace UnityEngine.UIExtras
 
         public IEnumerable<T> Flatten()
         {
-            return new[] { Value }.Concat(m_Children.SelectMany(x => x.Flatten()));
+            return new[] { this.Value }.Concat(this.m_Children.SelectMany(x => x.Flatten()));
         }
     }
 }

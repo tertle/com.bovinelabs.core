@@ -13,6 +13,5 @@ namespace BovineLabs.Core.Editor.Internal
         public static bool IsSelected => Selection.activeObject is EntitySelectionProxy;
         public static World World => ((EntitySelectionProxy)Selection.activeObject).World;
         public static Entity Entity => ((EntitySelectionProxy)Selection.activeObject).Entity;
-
     }
 }

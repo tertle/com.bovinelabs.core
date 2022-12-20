@@ -32,10 +32,10 @@ namespace BovineLabs.Core.Utility
             this.renderBounds = renderBounds;
         }
 
-        /// <summary> Toggles the <see cref="DisableRendering"/> component for all entities in a hierarchy. </summary>
+        /// <summary> Toggles the <see cref="DisableRendering" /> component for all entities in a hierarchy. </summary>
         /// <param name="commandBuffer"> Command buffer. </param>
         /// <param name="entity"> The parent entity. </param>
-        /// <param name="enabled"> When true adds <see cref="DisableRendering"/> otherwise removes it. </param>
+        /// <param name="enabled"> When true adds <see cref="DisableRendering" /> otherwise removes it. </param>
         public void SetWholeHierarchy(EntityCommandBuffer commandBuffer, Entity entity, bool enabled)
         {
             // We traverse the whole hierarchy and set all the rendering states using RenderBounds to determine if it's a rendering component
@@ -64,11 +64,11 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <summary> Toggles the <see cref="DisableRendering"/> component for all entities in a hierarchy. </summary>
+        /// <summary> Toggles the <see cref="DisableRendering" /> component for all entities in a hierarchy. </summary>
         /// <param name="commandBuffer"> Parallel command buffer. </param>
         /// <param name="sortIndex"> Index for the parallel command buffer. </param>
         /// <param name="entity"> The parent entity. </param>
-        /// <param name="enabled"> When true adds <see cref="DisableRendering"/> otherwise removes it. </param>
+        /// <param name="enabled"> When true adds <see cref="DisableRendering" /> otherwise removes it. </param>
         public void SetWholeHierarchy(EntityCommandBuffer.ParallelWriter commandBuffer, int sortIndex, Entity entity, bool enabled)
         {
             // We traverse the whole hierarchy and set all the rendering states using RenderBounds to determine if it's a rendering component

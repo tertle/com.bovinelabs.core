@@ -18,9 +18,25 @@ namespace BovineLabs.Core.Editor.DependencyGraph
         private const string Directory = "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/DependencyGraph/";
 
         private readonly List<DependencyData> dependencyData = new();
+        private ScrollView content;
 
         private DropdownField mode;
-        private ScrollView content;
+
+        private void OnEnable()
+        {
+            this.rootVisualElement.Clear();
+
+            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{Directory}DependencyGraph.uxml");
+            asset.CloneTree(this.rootVisualElement);
+
+            var findButton = this.rootVisualElement.Q<Button>("Find");
+            findButton.clicked += this.Find;
+
+            this.mode = this.rootVisualElement.Q<DropdownField>("Mode");
+            this.mode.RegisterValueChangedCallback(_ => this.Clear());
+
+            this.content = this.rootVisualElement.Q<ScrollView>("Content");
+        }
 
         [MenuItem("BovineLabs/Tools/Dependency Graph", priority = 1011)]
         private static void Execute()
@@ -60,22 +76,6 @@ namespace BovineLabs.Core.Editor.DependencyGraph
             parent.Add(assetButton);
 
             return parent;
-        }
-
-        private void OnEnable()
-        {
-            this.rootVisualElement.Clear();
-
-            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{Directory}DependencyGraph.uxml");
-            asset.CloneTree(this.rootVisualElement);
-
-            var findButton = this.rootVisualElement.Q<Button>("Find");
-            findButton.clicked += this.Find;
-
-            this.mode = this.rootVisualElement.Q<DropdownField>("Mode");
-            this.mode.RegisterValueChangedCallback(_ => this.Clear());
-
-            this.content = this.rootVisualElement.Q<ScrollView>("Content");
         }
 
         private void Find()
@@ -134,7 +134,7 @@ namespace BovineLabs.Core.Editor.DependencyGraph
                 var dependencies = new List<string>(AssetDatabase.GetDependencies(path));
                 dependencies.Remove(path); // GetDependencies returns itself
 
-                var data = new DependencyData()
+                var data = new DependencyData
                 {
                     AssetPath = path,
                     Asset = selected,

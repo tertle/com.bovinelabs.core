@@ -9,9 +9,9 @@ namespace BovineLabs.Core.Tests.Jobs
     using NUnit.Framework;
     using Unity.Burst;
     using Unity.Collections;
-    using Unity.Mathematics;
+    using UnityEngine;
 
-    /// <summary> Tests for <see cref="IJobNativeParallelHashMapVisitKeyValue{TKey,TValue}"/>. </summary>
+    /// <summary> Tests for <see cref="IJobNativeParallelHashMapVisitKeyValue{TKey,TValue}" />. </summary>
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Matching interface its testing.")]
     public class IJobNativeHashMapVisitKeyValueTests
     {
@@ -22,14 +22,14 @@ namespace BovineLabs.Core.Tests.Jobs
             var input = new NativeParallelHashMap<int, int>(128, Allocator.TempJob);
             var output = new NativeParallelHashMap<int, int>(128, Allocator.TempJob);
 
-            var random = new Random((uint)UnityEngine.Random.Range(1, int.MaxValue));
+            var random = new Unity.Mathematics.Random((uint)Random.Range(1, int.MaxValue));
 
             for (var i = 0; i < 128; i++)
             {
                 input.Add(i, random.NextInt());
             }
 
-            var job = new TestJob
+            var job = new HashMapTestJob
                 {
                     Output = output.AsParallelWriter(),
                 }
@@ -51,7 +51,7 @@ namespace BovineLabs.Core.Tests.Jobs
         }
 
         [BurstCompile]
-        private struct TestJob : IJobNativeParallelHashMapVisitKeyValue<int, int>
+        private struct HashMapTestJob : IJobNativeParallelHashMapVisitKeyValue<int, int>
         {
             public NativeParallelHashMap<int, int>.ParallelWriter Output;
 

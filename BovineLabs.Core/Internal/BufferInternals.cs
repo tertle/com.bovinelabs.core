@@ -10,6 +10,7 @@ namespace BovineLabs.Core.Internal
     {
         [NativeDisableUnsafePtrRestriction]
         public byte* BasePointer;
+
         public int Length;
         public int Stride;
         public int InternalCapacity;

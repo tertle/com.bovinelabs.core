@@ -5,11 +5,9 @@
 namespace BovineLabs.Core.Memory
 {
     using System;
-    using BovineLabs.Core.Collections;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using UnityEngine;
-
 
     public unsafe struct UnsafeSlabAllocator<T> : IDisposable
         where T : unmanaged
@@ -64,7 +62,7 @@ namespace BovineLabs.Core.Memory
             *this.count = this.countPerSlab;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void Dispose()
         {
             this.Clear();
@@ -74,6 +72,11 @@ namespace BovineLabs.Core.Memory
 
             this.count = default;
             this.slabs = default;
+        }
+
+        public int Allocated()
+        {
+            return this.slabs->Length * this.countPerSlab * UnsafeUtility.SizeOf<T>();
         }
     }
 }

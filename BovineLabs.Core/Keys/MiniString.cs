@@ -14,8 +14,7 @@ namespace BovineLabs.Core.Keys
 
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size = 16)]
-
-    internal struct MiniString : INativeList<byte>, IUTF8Bytes
+    internal struct MiniString : INativeList<byte>, IUTF8Bytes, IEquatable<MiniString>
     {
         internal const ushort UTF8MaxLengthInBytes = 15;
 
@@ -23,7 +22,7 @@ namespace BovineLabs.Core.Keys
         [SerializeField]
         private FixedBytes16 bytes;
 
-        /// <summary> Initializes a new instance of the <see cref="MiniString"/> struct. </summary>
+        /// <summary> Initializes a new instance of the <see cref="MiniString" /> struct. </summary>
         /// <param name="source"> The System.String object to construct this MiniString with. </param>
         public MiniString(string source)
         {
@@ -79,7 +78,7 @@ namespace BovineLabs.Core.Keys
         /// <summary>
         /// Reports whether container is empty.
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value> True if this container empty. </value>
         public bool IsEmpty => this.UTF8LengthInBytes == 0;
 
         private byte UTF8LengthInBytes
@@ -114,12 +113,32 @@ namespace BovineLabs.Core.Keys
         }
 
         /// <summary> Enable implicit conversion of System.String to FixedString32. </summary>
-        /// <param name="b"> The System.String object to convert to a FixedString32. </param>
-        /// <returns></returns>
+        /// <param name="s"> The System.String object to convert to a FixedString32. </param>
+        /// <returns> </returns>
+        public static implicit operator MiniString(string s)
+        {
+            return new MiniString(s);
+        }
 
-        public static implicit operator MiniString(string b) => new(b);
+        public static implicit operator MiniString(FixedString32Bytes s)
+        {
+            return new MiniString(s);
+        }
 
-        public static implicit operator MiniString(FixedString32Bytes b) => new(b);
+        public static implicit operator FixedString32Bytes(MiniString b)
+        {
+            var fs = new FixedString32Bytes
+            {
+                Length = b.Length,
+            };
+
+            unsafe
+            {
+                UnsafeUtility.MemCpy(fs.GetUnsafePtr(), b.GetUnsafePtr(), b.Length);
+            }
+
+            return fs;
+        }
 
         public static bool operator ==(in MiniString a, in MiniString b)
         {
@@ -128,8 +147,8 @@ namespace BovineLabs.Core.Keys
             {
                 int alen = a.UTF8LengthInBytes;
                 int blen = b.UTF8LengthInBytes;
-                byte* aptr = a.GetUnsafePtr();
-                byte* bptr = b.GetUnsafePtr();
+                var aptr = a.GetUnsafePtr();
+                var bptr = b.GetUnsafePtr();
                 return UTF8ArrayUnsafeUtility.EqualsUTF8Bytes(aptr, alen, bptr, blen);
             }
         }
@@ -158,7 +177,7 @@ namespace BovineLabs.Core.Keys
 
         public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
         {
-            if (newLength < 0 || newLength > UTF8MaxLengthInBytes)
+            if ((newLength < 0) || (newLength > UTF8MaxLengthInBytes))
             {
                 return false;
             }
@@ -193,8 +212,8 @@ namespace BovineLabs.Core.Keys
         /// must be in the range of [0..Length).  The ref byte is a direct reference into
         /// this FixedString, and is only valid while this FixedString is valid.
         /// </summary>
-        /// <param name="index">The byte index to access</param>
-        /// <returns>A ref byte for the requested index</returns>
+        /// <param name="index"> The byte index to access </param>
+        /// <returns> A ref byte for the requested index </returns>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -217,7 +236,7 @@ namespace BovineLabs.Core.Keys
         /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
         /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
         /// </summary>
-        /// <param name="value">The byte to append.</param>
+        /// <param name="value"> The byte to append. </param>
         public void Add(in byte value)
         {
             this[this.Length++] = value;
@@ -227,14 +246,13 @@ namespace BovineLabs.Core.Keys
         /// Compare this FixedString32 with a System.String in terms of lexigraphical order,
         /// and return which of the two strings would come first if sorted.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
+        /// <param name="other"> The System.String to compare with </param>
         /// <returns>
         /// -1 if this FixedString32 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other System.String would appear first if sorted.
+        /// 0 if they are identical, or
+        /// 1 if the other System.String would appear first if sorted.
         /// </returns>
-
-        public int CompareTo(String other)
+        public int CompareTo(string other)
         {
             return this.ToString().CompareTo(other);
         }
@@ -243,9 +261,8 @@ namespace BovineLabs.Core.Keys
         /// Compare this FixedString32 with a System.String,
         /// and return whether they contain the same string or not.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>true if they are equal, or false if they are not.</returns>
-
+        /// <param name="other"> The System.String to compare with </param>
+        /// <returns> true if they are equal, or false if they are not. </returns>
         public bool Equals(string other)
         {
             return this.ToString().Equals(other);
@@ -260,11 +277,11 @@ namespace BovineLabs.Core.Keys
         /// Compare this FixedString32 with a FixedString32 in terms of lexigraphical order,
         /// and return which of the two strings would come first if sorted.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
+        /// <param name="other"> The FixedString to compare with </param>
         /// <returns>
         /// -1 if this FixedString32 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString32 would appear first if sorted.
+        /// 0 if they are identical, or
+        /// 1 if the other FixedString32 would appear first if sorted.
         /// </returns>
         public int CompareTo(MiniString other)
         {
@@ -274,9 +291,8 @@ namespace BovineLabs.Core.Keys
         /// <summary>
         /// Convert this FixedString32 to a System.String.
         /// </summary>
-        /// <returns>A System.String with a copy of this FixedString32</returns>
-
-        public override String ToString()
+        /// <returns> A System.String with a copy of this FixedString32 </returns>
+        public override string ToString()
         {
             return this.ConvertToString();
         }
@@ -285,7 +301,7 @@ namespace BovineLabs.Core.Keys
         /// Compute a hash code of this FixedString32: an integer that is likely to be different for
         /// two FixedString32, if their contents are different.
         /// </summary>
-        /// <returns>A hash code of this FixedString32</returns>
+        /// <returns> A hash code of this FixedString32 </returns>
         public override int GetHashCode()
         {
             return this.ComputeHashCode();

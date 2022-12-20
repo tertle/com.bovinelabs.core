@@ -44,8 +44,8 @@ namespace BovineLabs.Core.Editor.Settings
                     }
 
                     instance = ScriptableObject.CreateInstance<T>();
-                    UnityEditor.AssetDatabase.CreateAsset(instance, path);
-                    UnityEditor.AssetDatabase.SaveAssets();
+                    AssetDatabase.CreateAsset(instance, path);
+                    AssetDatabase.SaveAssets();
                     return instance;
 
                 case 1:

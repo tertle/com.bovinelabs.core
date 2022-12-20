@@ -9,7 +9,6 @@ namespace BovineLabs.Core.Authoring
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Physics;
-    using Unity.Transforms;
     using UnityEngine;
 
     public class RemovePhysicsVelocityAuthoring : MonoBehaviour
@@ -31,7 +30,8 @@ namespace BovineLabs.Core.Authoring
 
     [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
-    public partial struct RemovePhysicsVelocityConversionSystem : ISystem {
+    public partial struct RemovePhysicsVelocityConversionSystem : ISystem
+    {
         public void OnCreate(ref SystemState state)
         {
         }
@@ -48,6 +48,7 @@ namespace BovineLabs.Core.Authoring
             {
                 ecb.RemoveComponent<PhysicsVelocity>(entity);
             }
+
             ecb.Playback(state.EntityManager);
         }
     }

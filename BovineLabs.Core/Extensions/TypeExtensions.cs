@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Extensions
     {
         public static Type GetSubclassOfRawGeneric(this Type type, Type generic)
         {
-            while (type != null && type != typeof(object))
+            while ((type != null) && (type != typeof(object)))
             {
                 var cur = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
                 if (generic == cur)

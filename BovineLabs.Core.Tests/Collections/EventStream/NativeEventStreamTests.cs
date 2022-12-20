@@ -3,7 +3,6 @@
 // </copyright>
 
 #if BL_TESTING
-
 namespace BovineLabs.Core.Tests.Collections.EventStream
 {
     using BovineLabs.Core.Collections;
@@ -11,7 +10,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
     using NUnit.Framework;
     using Unity.Collections;
 
-    /// <summary> Tests for <see cref="NativeEventStream"/> . </summary>
+    /// <summary> Tests for <see cref="NativeEventStream" /> . </summary>
     internal partial class NativeEventStreamTests : ECSTestsFixture
     {
         /// <summary> Tests that you can create and destroy. </summary>

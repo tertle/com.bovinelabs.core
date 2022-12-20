@@ -1,50 +1,54 @@
-﻿using UnityEngine;
-using UnityEngine.UIElements;
+﻿// <copyright file="SearchField.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
 
-namespace UnityEngine.UIExtras
+namespace BovineLabs.Core.Editor.SearchWindow
 {
-    class SearchField : TextField
-    {
-        VisualElement m_SearchContainer;
+    using UnityEngine;
+    using UnityEngine.UIElements;
 
-        internal new class UxmlFactory : UxmlFactory<SearchField, UxmlTraits> { }
+    internal class SearchField : TextField
+    {
+        private VisualElement searchContainer;
 
         public SearchField()
         {
-            LoadLayout();
+            this.LoadLayout();
         }
 
-        public SearchField(string label) : base(label)
+        public SearchField(string label)
+            : base(label)
         {
-            LoadLayout();
+            this.LoadLayout();
         }
 
-        public SearchField(int maxLength, bool multiline, bool isPasswordField, char maskChar) : base(maxLength, multiline, isPasswordField, maskChar)
+        public SearchField(int maxLength, bool multiline, bool isPasswordField, char maskChar)
+            : base(maxLength, multiline, isPasswordField, maskChar)
         {
-            LoadLayout();
-        }
-        public SearchField(string label, int maxLength, bool multiline, bool isPasswordField, char maskChar) : base(label, maxLength, multiline, isPasswordField, maskChar)
-        {
-            LoadLayout();
+            this.LoadLayout();
         }
 
-        void LoadLayout()
+        public SearchField(string label, int maxLength, bool multiline, bool isPasswordField, char maskChar)
+            : base(label, maxLength, multiline, isPasswordField, maskChar)
         {
-            styleSheets.Add(Resources.Load("SearchFieldStyles") as StyleSheet);
-            var visualTree = Resources.Load("SearchFieldLayout") as VisualTreeAsset;
+            this.LoadLayout();
+        }
+
+        private void LoadLayout()
+        {
+            this.styleSheets.Add(Resources.Load("UI/SearchFieldStyles") as StyleSheet);
+            var visualTree = (VisualTreeAsset)Resources.Load("UI/SearchFieldLayout");
             visualTree.CloneTree(this);
 
-            m_SearchContainer = this.Q<VisualElement>(null, "search-field__container");
+            this.searchContainer = this.Q<VisualElement>(null, "search-field__container");
 
-            RegisterCallback<FocusInEvent>(e =>
-            {
-                m_SearchContainer.style.display = DisplayStyle.None;
-            });
+            this.RegisterCallback<FocusInEvent>(_ => { this.searchContainer.style.display = DisplayStyle.None; });
 
-            RegisterCallback<FocusOutEvent>(e =>
-            {
-                m_SearchContainer.style.display = (value.Length == 0) ? DisplayStyle.Flex : DisplayStyle.None;
-            });
+            this.RegisterCallback<FocusOutEvent>(_ => { this.searchContainer.style.display = this.value.Length == 0 ? DisplayStyle.Flex : DisplayStyle.None; });
+        }
+
+        internal new class UxmlFactory : UxmlFactory<SearchField, UxmlTraits>
+        {
         }
     }
 }

@@ -8,13 +8,11 @@ namespace BovineLabs.Core.Extensions
     using System.Collections.Generic;
     using System.Threading;
     using Unity.Burst;
-    using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
-    using UnityEngine;
 
     public static unsafe class UnsafeParallelHashMapDataExtensions
     {
-        internal static unsafe void AddBatchUnsafe<TKey, TValue>(
+        internal static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this ref UnsafeParallelHashMapData data,
             [NoAlias] TKey* keys,
             [NoAlias] TValue* values,
@@ -25,14 +23,14 @@ namespace BovineLabs.Core.Extensions
             var newLength = Interlocked.Add(ref data.allocatedIndexLength, length);
             var oldLength = newLength - length;
 
-            var keyPtr = ((TKey*)data.keys) + oldLength;
-            var valuePtr = ((TValue*)data.values) + oldLength;
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
 
             UnsafeUtility.MemCpy(keyPtr, keys, length * UnsafeUtility.SizeOf<TKey>());
             UnsafeUtility.MemCpy(valuePtr, values, length * UnsafeUtility.SizeOf<TValue>());
 
             var buckets = (int*)data.buckets;
-            var nextPtrs = ((int*)data.next) + oldLength;
+            var nextPtrs = (int*)data.next + oldLength;
 
             for (var idx = 0; idx < length; idx++)
             {
@@ -43,7 +41,7 @@ namespace BovineLabs.Core.Extensions
             }
         }
 
-        internal static unsafe void AddBatchUnsafe<TKey>(
+        internal static void AddBatchUnsafe<TKey>(
             [NoAlias] this ref UnsafeParallelHashMapData data,
             [NoAlias] TKey* keys,
             int length)
@@ -52,12 +50,12 @@ namespace BovineLabs.Core.Extensions
             var newLength = Interlocked.Add(ref data.allocatedIndexLength, length);
             var oldLength = newLength - length;
 
-            var keyPtr = ((TKey*)data.keys) + oldLength;
+            var keyPtr = (TKey*)data.keys + oldLength;
 
             UnsafeUtility.MemCpy(keyPtr, keys, length * UnsafeUtility.SizeOf<TKey>());
 
             var buckets = (int*)data.buckets;
-            var nextPtrs = ((int*)data.next) + oldLength;
+            var nextPtrs = (int*)data.next + oldLength;
 
             for (var idx = 0; idx < length; idx++)
             {
@@ -68,7 +66,7 @@ namespace BovineLabs.Core.Extensions
             }
         }
 
-        internal static unsafe ref TValue GetValueByRef<TKey, TValue>(this ref UnsafeParallelHashMapData data, TKey key)
+        internal static ref TValue GetValueByRef<TKey, TValue>(this ref UnsafeParallelHashMapData data, TKey key)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -89,7 +87,7 @@ namespace BovineLabs.Core.Extensions
             {
                 entryIdx = nextPtrs[entryIdx];
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                if (entryIdx < 0 || entryIdx >= data.keyCapacity)
+                if ((entryIdx < 0) || (entryIdx >= data.keyCapacity))
                 {
                     throw new KeyNotFoundException();
                 }

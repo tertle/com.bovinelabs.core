@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Editor.Settings
     {
         private readonly Dictionary<Type, Type> settingsPanelMap = new();
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override string TitleText { get; } = "Settings";
 
         [MenuItem("BovineLabs/Settings", priority = 11)]
@@ -50,7 +50,7 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             // Get all custom panel implementations
-            foreach (var settingsType in ReflectionUtility.GetAllImplementations<ISettings, ScriptableObject>())
+            foreach (var settingsType in ReflectionUtility.GetAllImplementationsRootOnly<ISettings, ScriptableObject>())
             {
                 // Custom implementation
                 if (this.settingsPanelMap.ContainsKey(settingsType))
@@ -89,7 +89,7 @@ namespace BovineLabs.Core.Editor.Settings
             return from t in AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes())
                 where !t.IsAbstract && !t.IsInterface && !t.IsGenericType
                 let i = t.BaseType
-                where i != null && i.IsGenericType && i.GetGenericTypeDefinition() == typeof(SettingsBasePanel<>)
+                where (i != null) && i.IsGenericType && (i.GetGenericTypeDefinition() == typeof(SettingsBasePanel<>))
                 select (i.GetGenericArguments()[0], t);
         }
     }

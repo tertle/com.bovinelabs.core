@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Memory
         private Ptr buffer;
         private UnsafeParallelHashSet<Ptr> freeIndex;
 
-        public UnsafeFixedPoolAllocator(int maxItems, Unity.Collections.Allocator allocator)
+        public UnsafeFixedPoolAllocator(int maxItems, Allocator allocator)
         {
             ValidateSize(maxItems);
 
@@ -28,7 +28,7 @@ namespace BovineLabs.Core.Memory
 
             this.buffer = Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<T>() * maxItems, UnsafeUtility.AlignOf<T>(), allocator);
 
-            for (int i = 0; i < maxItems; i++)
+            for (var i = 0; i < maxItems; i++)
             {
                 this.freeIndex.Add((T*)this.buffer + i);
             }
@@ -89,7 +89,7 @@ namespace BovineLabs.Core.Memory
                 throw new ArgumentException("Null pointer");
             }
 
-            if (p < this.buffer || p >= ((T*)this.buffer + this.maxItems))
+            if ((p < this.buffer) || (p >= (T*)this.buffer + this.maxItems))
             {
                 throw new ArgumentException("Ptr not from this allocator");
             }

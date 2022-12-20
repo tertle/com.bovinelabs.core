@@ -3,7 +3,6 @@
 // </copyright>
 
 #if BL_TESTING
-
 namespace BovineLabs.Core.Tests.Collections.EventStream
 {
     using BovineLabs.Core.Collections;
@@ -37,8 +36,8 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
         // }
 
         /// <summary> Tests that ComputeItemCount() works. </summary>
-        /// <param name="count"> <see cref="WriteIntsJob"/> count. </param>
-        /// <param name="batchSize"> <see cref="WriteIntsJob"/> batch size. </param>
+        /// <param name="count"> <see cref="WriteIntsJob" /> count. </param>
+        /// <param name="batchSize"> <see cref="WriteIntsJob" /> batch size. </param>
         [Test]
         public void ItemCount(
             [Values(1, 10, JobsUtility.MaxJobThreadCount + 1, 1024)]
@@ -49,14 +48,14 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
             var fillInts = new WriteIntsJob { Writer = stream.AsWriter() };
             fillInts.ScheduleParallel(count, batchSize, default).Complete();
 
-            Assert.AreEqual(count * (count - 1) / 2, stream.Count());
+            Assert.AreEqual((count * (count - 1)) / 2, stream.Count());
 
             stream.Dispose();
         }
 
         /// <summary> Tests that writing from job then reading in multiple jobs works. </summary>
-        /// <param name="count"> <see cref="WriteIntsJob"/> count. </param>
-        /// <param name="batchSize"> <see cref="WriteIntsJob"/> batch size. </param>
+        /// <param name="count"> <see cref="WriteIntsJob" /> count. </param>
+        /// <param name="batchSize"> <see cref="WriteIntsJob" /> batch size. </param>
         [Test]
         public void WriteRead(
             [Values(1, 10, JobsUtility.MaxJobThreadCount + 1)]
@@ -98,7 +97,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
 
             public void Execute(int index)
             {
-                for (int i = 0; i != index; i++)
+                for (var i = 0; i != index; i++)
                 {
                     this.Writer.Write(this.threadIndex);
                 }
@@ -113,9 +112,9 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
 
             public void Execute(int index)
             {
-                int count = this.JobReader.BeginForEachIndex(index);
+                var count = this.JobReader.BeginForEachIndex(index);
 
-                for (int i = 0; i != count; i++)
+                for (var i = 0; i != count; i++)
                 {
                     var value = this.JobReader.Read<int>();
 
@@ -240,9 +239,9 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
 
                 public void Execute(int index)
                 {
-                    int count = this.JobReader.BeginForEachIndex(index);
+                    var count = this.JobReader.BeginForEachIndex(index);
 
-                    for (int i = 0; i != count; i++)
+                    for (var i = 0; i != count; i++)
                     {
                         var value = this.JobReader.Read<int>();
                         this.HashMap.TryAdd(value, 0);

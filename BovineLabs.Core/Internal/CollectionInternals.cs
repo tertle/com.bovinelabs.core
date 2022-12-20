@@ -41,8 +41,7 @@ namespace BovineLabs.Core.Internal
 #endif
 
         public static NativeParallelHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeParallelHashMap<TKey, TValue> hashMapData)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
+            where TKey : unmanaged, IEquatable<TKey> where TValue : unmanaged
         {
             return new NativeParallelHashMap<TKey, TValue> { m_HashMapData = hashMapData };
         }
@@ -78,26 +77,40 @@ namespace BovineLabs.Core.Internal
 #endif
 
         public static NativeMultiHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> hashMapData)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
+            where TKey : unmanaged, IEquatable<TKey> where TValue : unmanaged
         {
             return new NativeMultiHashMap<TKey, TValue> { m_MultiHashMapData = hashMapData };
         }
 
         public static unsafe byte* Buffer<T>(this FixedList32Bytes<T> list)
-            where T : unmanaged => list.Buffer;
+            where T : unmanaged
+        {
+            return list.Buffer;
+        }
 
         public static unsafe byte* Buffer<T>(this FixedList64Bytes<T> list)
-            where T : unmanaged => list.Buffer;
+            where T : unmanaged
+        {
+            return list.Buffer;
+        }
 
         public static unsafe byte* Buffer<T>(this FixedList128Bytes<T> list)
-            where T : unmanaged => list.Buffer;
+            where T : unmanaged
+        {
+            return list.Buffer;
+        }
 
         public static unsafe byte* Buffer<T>(this FixedList512Bytes<T> list)
-            where T : unmanaged => list.Buffer;
+            where T : unmanaged
+        {
+            return list.Buffer;
+        }
 
         public static unsafe byte* Buffer<T>(this FixedList4096Bytes<T> list)
-            where T : unmanaged => list.Buffer;
+            where T : unmanaged
+        {
+            return list.Buffer;
+        }
 
         // NativeReference
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

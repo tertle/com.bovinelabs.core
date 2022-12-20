@@ -28,48 +28,50 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// Returns a newly allocated multi hash map.
         /// </summary>
-        /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
-        /// <param name="maxKey">Max value stored in this map.</param>
-        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="capacity"> The number of key-value pairs that should fit in the initial allocation. </param>
+        /// <param name="maxKey"> Max value stored in this map. </param>
+        /// <param name="allocator"> The allocator to use. </param>
         public NativeKeyedMap(int capacity, int maxKey, AllocatorManager.AllocatorHandle allocator)
         {
             this.keyedMapData = new UnsafeKeyedMap<TValue>(capacity, maxKey, allocator.Handle);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.CheckAllocator(allocator);
-            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+            this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
 
             if (UnsafeUtility.IsNativeContainerType<TValue>())
-                AtomicSafetyHandle.SetNestedContainer(m_Safety, true);
+            {
+                AtomicSafetyHandle.SetNestedContainer(this.m_Safety, true);
+            }
 
-            CollectionHelper.SetStaticSafetyId<NativeKeyedMap<TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
+            CollectionHelper.SetStaticSafetyId<NativeKeyedMap<TValue>>(ref this.m_Safety, ref s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(this.m_Safety, true);
 #endif
         }
 
         /// <summary>
         /// Whether this hash map has been allocated (and not yet deallocated).
         /// </summary>
-        /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+        /// <value> True if this hash map has been allocated (and not yet deallocated). </value>
         public bool IsCreated => this.keyedMapData.IsCreated;
 
         /// <summary>
         /// Returns the number of key-value pairs that fit in the current allocation.
         /// </summary>
-        /// <value>The number of key-value pairs that fit in the current allocation.</value>
-        /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
-        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
+        /// <value> The number of key-value pairs that fit in the current allocation. </value>
+        /// <param name="value"> A new capacity. Must be larger than the current capacity. </param>
+        /// <exception cref="Exception"> Thrown if `value` is less than the current capacity. </exception>
         public int Capacity
         {
             get
             {
-                CheckRead();
+                this.CheckRead();
                 return this.keyedMapData.Capacity;
             }
 
             set
             {
-                CheckWrite();
+                this.CheckWrite();
                 this.keyedMapData.Capacity = value;
             }
         }
@@ -80,7 +82,7 @@ namespace BovineLabs.Core.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
+            CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
 #endif
             this.keyedMapData.Dispose();
         }
@@ -88,8 +90,8 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// Creates and schedules a job that will dispose this hash map.
         /// </summary>
-        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
-        /// <returns>The handle of a new job that will dispose this hash map.</returns>
+        /// <param name="inputDeps"> A job handle. The newly scheduled job will depend upon this handle. </param>
+        /// <returns> The handle of a new job that will dispose this hash map. </returns>
         public unsafe JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new UnsafeKeyedMapDataDisposeJob
@@ -99,7 +101,7 @@ namespace BovineLabs.Core.Collections
                         Buffer = this.keyedMapData.buffer,
                         AllocatorLabel = this.keyedMapData.allocator,
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                        m_Safety = this.m_Safety
+                        m_Safety = this.m_Safety,
 #endif
                     },
                 }
@@ -116,7 +118,7 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// Removes all key-value pairs.
         /// </summary>
-        /// <remarks>Does not change the capacity.</remarks>
+        /// <remarks> Does not change the capacity. </remarks>
         public void Clear()
         {
             this.CheckWrite();
@@ -129,8 +131,8 @@ namespace BovineLabs.Core.Collections
         /// <remarks>
         /// If a key-value pair with this key is already present, an additional separate key-value pair is added.
         /// </remarks>
-        /// <param name="key">The key to add.</param>
-        /// <param name="item">The value to add.</param>
+        /// <param name="key"> The key to add. </param>
+        /// <param name="item"> The value to add. </param>
         public void Add(int key, TValue item)
         {
             this.CheckWrite();
@@ -140,25 +142,25 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// Gets an iterator for a key.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="item">Outputs the associated value represented by the iterator.</param>
-        /// <param name="it">Outputs an iterator.</param>
-        /// <returns>True if the key was present.</returns>
+        /// <param name="key"> The key. </param>
+        /// <param name="item"> Outputs the associated value represented by the iterator. </param>
+        /// <param name="it"> Outputs an iterator. </param>
+        /// <returns> True if the key was present. </returns>
         public bool TryGetFirstValue(int key, out TValue item, out UnsafeKeyedMapIterator it)
         {
-            CheckRead();
+            this.CheckRead();
             return this.keyedMapData.TryGetFirstValue(key, out item, out it);
         }
 
         /// <summary>
         /// Advances an iterator to the next value associated with its key.
         /// </summary>
-        /// <param name="item">Outputs the next value.</param>
-        /// <param name="it">A reference to the iterator to advance.</param>
-        /// <returns>True if the key was present and had another value.</returns>
+        /// <param name="item"> Outputs the next value. </param>
+        /// <param name="it"> A reference to the iterator to advance. </param>
+        /// <returns> True if the key was present and had another value. </returns>
         public bool TryGetNextValue(out TValue item, ref UnsafeKeyedMapIterator it)
         {
-            CheckRead();
+            this.CheckRead();
             return this.keyedMapData.TryGetNextValue(out item, ref it);
         }
 
@@ -174,8 +176,8 @@ namespace BovineLabs.Core.Collections
             this.keyedMapData.RecalculateBuckets();
         }
 
-        public unsafe int* GetUnsafeKeysPtr() {
-
+        public unsafe int* GetUnsafeKeysPtr()
+        {
             this.CheckWrite();
             return this.keyedMapData.GetUnsafeKeysPtr();
         }
@@ -186,8 +188,8 @@ namespace BovineLabs.Core.Collections
             return this.keyedMapData.GetUnsafeValuesPtr();
         }
 
-        public unsafe int* GetUnsafeReadOnlyKeysPtr() {
-
+        public unsafe int* GetUnsafeReadOnlyKeysPtr()
+        {
             this.CheckRead();
             return this.keyedMapData.GetUnsafeKeysPtr();
         }

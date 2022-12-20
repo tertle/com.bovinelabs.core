@@ -16,85 +16,6 @@ namespace BovineLabs.Core.Spatial
     using Unity.Mathematics;
     using Debug = UnityEngine.Debug;
 
-    public static class SpatialMap
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int2 Quantized(float2 position, float step, int2 halfSize)
-        {
-            return new int2(math.floor((position + halfSize) / step));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int Hash(int2 quantized, int width)
-        {
-            return quantized.x + (quantized.y * width);
-        }
-
-        /// <summary>  Readonly copy for querying the map. </summary>
-        public readonly struct ReadOnly
-        {
-            private readonly float quantizeStep;
-            private readonly int quantizeWidth;
-            private readonly int2 halfSize;
-
-            [ReadOnly]
-            private readonly NativeKeyedMap<int> map;
-
-            public ReadOnly(float quantizeStep, int quantizeWidth, int2 halfSize, NativeKeyedMap<int> map)
-            {
-                this.quantizeStep = quantizeStep;
-                this.quantizeWidth = quantizeWidth;
-                this.halfSize = halfSize;
-                this.map = map;
-            }
-
-            public NativeKeyedMap<int> Map => this.map;
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public int2 Quantized(float2 position)
-            {
-                return SpatialMap.Quantized(position, this.quantizeStep, this.halfSize);
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public int Hash(int2 quantized)
-            {
-                return SpatialMap.Hash(quantized, this.quantizeWidth);
-            }
-        }
-
-        // Jobs outside to avoid generic issues
-        [BurstCompile]
-        internal struct ResizeNativeKeyedMapJob : IJob
-        {
-            public NativeKeyedMap<int> Map;
-
-            public int Length;
-
-            public void Execute()
-            {
-                if (this.Map.Capacity < this.Length)
-                {
-                    this.Map.Capacity = this.Length;
-                }
-
-                this.Map.Clear();
-                this.Map.SetLength(this.Length);
-            }
-        }
-
-        [BurstCompile]
-        internal struct CalculateMap : IJob
-        {
-            public NativeKeyedMap<int> SpatialHashMap;
-
-            public void Execute()
-            {
-                this.SpatialHashMap.RecalculateBuckets();
-            }
-        }
-    }
-
     public struct SpatialMap<T> : IDisposable
         where T : unmanaged, ISpatialPosition
     {
@@ -125,7 +46,7 @@ namespace BovineLabs.Core.Spatial
 
         public bool IsCreated => this.map.IsCreated;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void Dispose()
         {
             this.map.Dispose();
@@ -139,7 +60,7 @@ namespace BovineLabs.Core.Spatial
         }
 
         [SuppressMessage("ReSharper", "UnusedParameter.Global", Justification = "Sneaky way to allow this to run in bursted ISystem")]
-        public JobHandle Build(NativeArray<T> positions, JobHandle dependency, QuantizeJob _ = default)
+        public JobHandle Build(NativeArray<T> positions, JobHandle dependency, QuantizeJob job = default)
         {
             // Deferred native arrays are supported so we must part it into the job to get the length
             dependency = new SpatialMap.ResizeNativeKeyedMapJob
@@ -176,7 +97,10 @@ namespace BovineLabs.Core.Spatial
 
         /// <summary> Gets a readonly copy of the struct that can be used to query the spatial hash map. Also includes methods to quantize and hash. </summary>
         /// <returns> A readonly container. </returns>
-        public SpatialMap.ReadOnly AsReadOnly() => new(this.quantizeStep, this.quantizeSize, this.halfSize, this.map);
+        public SpatialMap.ReadOnly AsReadOnly()
+        {
+            return new SpatialMap.ReadOnly(this.quantizeStep, this.quantizeSize, this.halfSize, this.map);
+        }
 
         [BurstCompile]
         [NoAlias]
@@ -234,6 +158,83 @@ namespace BovineLabs.Core.Spatial
                     throw new ArgumentException($"Position {position} is outside the size of the world");
                 }
 #endif
+            }
+        }
+    }
+
+    public static class SpatialMap
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int2 Quantized(float2 position, float step, int2 halfSize)
+        {
+            return new int2(math.floor((position + halfSize) / step));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Hash(int2 quantized, int width)
+        {
+            return quantized.x + (quantized.y * width);
+        }
+
+        /// <summary> Readonly copy for querying the map. </summary>
+        public readonly struct ReadOnly
+        {
+            private readonly float quantizeStep;
+            private readonly int quantizeWidth;
+            private readonly int2 halfSize;
+
+            public ReadOnly(float quantizeStep, int quantizeWidth, int2 halfSize, NativeKeyedMap<int> map)
+            {
+                this.quantizeStep = quantizeStep;
+                this.quantizeWidth = quantizeWidth;
+                this.halfSize = halfSize;
+                this.Map = map;
+            }
+
+            [field: ReadOnly]
+            public NativeKeyedMap<int> Map { get; }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int2 Quantized(float2 position)
+            {
+                return SpatialMap.Quantized(position, this.quantizeStep, this.halfSize);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Hash(int2 quantized)
+            {
+                return SpatialMap.Hash(quantized, this.quantizeWidth);
+            }
+        }
+
+        // Jobs outside to avoid generic issues
+        [BurstCompile]
+        internal struct ResizeNativeKeyedMapJob : IJob
+        {
+            public NativeKeyedMap<int> Map;
+
+            public int Length;
+
+            public void Execute()
+            {
+                if (this.Map.Capacity < this.Length)
+                {
+                    this.Map.Capacity = this.Length;
+                }
+
+                this.Map.Clear();
+                this.Map.SetLength(this.Length);
+            }
+        }
+
+        [BurstCompile]
+        internal struct CalculateMap : IJob
+        {
+            public NativeKeyedMap<int> SpatialHashMap;
+
+            public void Execute()
+            {
+                this.SpatialHashMap.RecalculateBuckets();
             }
         }
     }

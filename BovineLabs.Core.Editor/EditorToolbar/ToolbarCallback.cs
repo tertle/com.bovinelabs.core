@@ -1,7 +1,6 @@
 ﻿// <copyright file="ToolbarCallback.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
-// Based off work from https://github.com/marijnz/unity-toolbar-extender
 
 namespace BovineLabs.Core.Editor.EditorToolbar
 {
@@ -17,12 +16,6 @@ namespace BovineLabs.Core.Editor.EditorToolbar
         /// Callback for toolbar OnGUI method.
         /// </summary>
         public static Action OnToolbarGUI;
-
-#if UNITY_2021_1_OR_NEWER
-        public static Action OnToolbarGUILeft;
-
-        public static Action OnToolbarGUIRight;
-#endif
 
         private static readonly Type ToolbarType = typeof(Editor).Assembly.GetType("UnityEditor.Toolbar");
         private static readonly Type GUIViewType = typeof(Editor).Assembly.GetType("UnityEditor.GUIView");
@@ -56,29 +49,29 @@ namespace BovineLabs.Core.Editor.EditorToolbar
                 if (currentToolbar != null)
                 {
 #if UNITY_2021_1_OR_NEWER
-					var root = currentToolbar.GetType().GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
-					var rawRoot = root.GetValue(currentToolbar);
-					var mRoot = rawRoot as VisualElement;
-					RegisterCallback("ToolbarZoneLeftAlign", OnToolbarGUILeft);
-					RegisterCallback("ToolbarZoneRightAlign", OnToolbarGUIRight);
+                    var root = currentToolbar.GetType().GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
+                    var rawRoot = root.GetValue(currentToolbar);
+                    var mRoot = rawRoot as VisualElement;
+                    RegisterCallback("ToolbarZoneLeftAlign", OnToolbarGUILeft);
+                    RegisterCallback("ToolbarZoneRightAlign", OnToolbarGUIRight);
 
-					void RegisterCallback(string root, Action cb) {
-						var toolbarZone = mRoot.Q(root);
+                    void RegisterCallback(string root, Action cb)
+                    {
+                        var toolbarZone = mRoot.Q(root);
 
-						var parent = new VisualElement()
-						{
-							style = {
-								flexGrow = 1,
-								flexDirection = FlexDirection.Row,
-							}
-						};
-						var container = new IMGUIContainer();
-						container.onGUIHandler += () => {
-							cb?.Invoke();
-						};
-						parent.Add(container);
-						toolbarZone.Add(parent);
-					}
+                        var parent = new VisualElement
+                        {
+                            style =
+                            {
+                                flexGrow = 1,
+                                flexDirection = FlexDirection.Row,
+                            },
+                        };
+                        var container = new IMGUIContainer();
+                        container.onGUIHandler += () => { cb?.Invoke(); };
+                        parent.Add(container);
+                        toolbarZone.Add(parent);
+                    }
 #else
                     var windowBackend = WindowBackend.GetValue(currentToolbar);
 
@@ -104,5 +97,11 @@ namespace BovineLabs.Core.Editor.EditorToolbar
             var handler = OnToolbarGUI;
             handler?.Invoke();
         }
+
+#if UNITY_2021_1_OR_NEWER
+        public static Action OnToolbarGUILeft;
+
+        public static Action OnToolbarGUIRight;
+#endif
     }
 }

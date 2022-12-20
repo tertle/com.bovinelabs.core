@@ -22,7 +22,7 @@ namespace BovineLabs.Core.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             private int remainingBlocks;
 #pragma warning disable SA1308
-            private AtomicSafetyHandle m_Safety;
+            private readonly AtomicSafetyHandle m_Safety;
 #pragma warning restore SA1308
 #endif
 
@@ -124,7 +124,7 @@ namespace BovineLabs.Core.Collections
             /// <summary>
             /// The current number of items in the container.
             /// </summary>
-            /// <returns>The item count.</returns>
+            /// <returns> The item count. </returns>
             public int Count()
             {
                 this.CheckRead();
@@ -137,12 +137,12 @@ namespace BovineLabs.Core.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 if (this.remainingBlocks < 0)
                 {
-                    throw new System.ArgumentException("Reading out of bounds");
+                    throw new ArgumentException("Reading out of bounds");
                 }
 
-                if (this.remainingBlocks == 0 && size + sizeof(void*) > this.reader.m_LastBlockSize)
+                if ((this.remainingBlocks == 0) && (size + sizeof(void*) > this.reader.m_LastBlockSize))
                 {
-                    throw new System.ArgumentException("Reading out of bounds");
+                    throw new ArgumentException("Reading out of bounds");
                 }
 #endif
             }
@@ -177,7 +177,7 @@ namespace BovineLabs.Core.Collections
 
                 if ((uint)forEachIndex >= (uint)this.ForEachCount)
                 {
-                    throw new System.ArgumentOutOfRangeException(
+                    throw new ArgumentOutOfRangeException(
                         nameof(forEachIndex),
                         $"foreachIndex: {forEachIndex} must be between 0 and ForEachCount: {this.ForEachCount}");
                 }
@@ -189,13 +189,13 @@ namespace BovineLabs.Core.Collections
             {
                 if (this.reader.m_RemainingItemCount != 0)
                 {
-                    throw new System.ArgumentException(
+                    throw new ArgumentException(
                         "Not all elements (Count) have been read. If this is intentional, simply skip calling EndForEachIndex();");
                 }
 
                 if (this.reader.m_CurrentBlockEnd != this.reader.m_CurrentPtr)
                 {
-                    throw new System.ArgumentException(
+                    throw new ArgumentException(
                         "Not all data (Data Size) has been read. If this is intentional, simply skip calling EndForEachIndex();");
                 }
             }

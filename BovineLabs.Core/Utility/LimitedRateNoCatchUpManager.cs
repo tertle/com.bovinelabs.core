@@ -13,17 +13,17 @@ namespace BovineLabs.Core.Utility
         private bool didPushTime;
         private double lastPushedTime;
 
-        /// <summary> Initializes a new instance of the <see cref="LimitedRateNoCatchUpManager"/> class. </summary>
+        /// <summary> Initializes a new instance of the <see cref="LimitedRateNoCatchUpManager" /> class. </summary>
         /// <param name="defaultFixedTimestep"> The default timestep to try update to. </param>
         public LimitedRateNoCatchUpManager(float defaultFixedTimestep)
         {
             this.Timestep = defaultFixedTimestep;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public float Timestep { get; set; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public bool ShouldGroupUpdate(ComponentSystemGroup group)
         {
             // Already pushed this frame

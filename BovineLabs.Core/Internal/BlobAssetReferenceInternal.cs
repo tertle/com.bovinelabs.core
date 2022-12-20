@@ -14,11 +14,11 @@ namespace BovineLabs.Core.Internal
         public static unsafe BlobAssetReference<T> Create<T>(void* headerPtr, int headerLength, void* dataPtr, int dataLength)
             where T : unmanaged
         {
-            byte* buffer = (byte*)Memory.Unmanaged.Allocate(sizeof(BlobAssetHeader) + headerLength + dataLength, 16, Allocator.Persistent);
+            var buffer = (byte*)Memory.Unmanaged.Allocate(sizeof(BlobAssetHeader) + headerLength + dataLength, 16, Allocator.Persistent);
             UnsafeUtility.MemCpy(buffer + sizeof(BlobAssetHeader), headerPtr, headerLength);
             UnsafeUtility.MemCpy(buffer + sizeof(BlobAssetHeader) + headerLength, dataPtr, dataLength);
 
-            BlobAssetHeader* header = (BlobAssetHeader*)buffer;
+            var header = (BlobAssetHeader*)buffer;
             *header = default;
             header->Length = headerLength + dataLength;
             header->Allocator = Allocator.Persistent;

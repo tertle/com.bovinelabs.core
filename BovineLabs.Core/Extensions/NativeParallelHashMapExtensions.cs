@@ -14,7 +14,7 @@ namespace BovineLabs.Core.Extensions
     public static class NativeParallelHashMapExtensions
     {
         /// <summary>
-        /// Clear a <see cref="NativeParallelHashMap{TKey,TValue}"/> then efficiently add a collection of keys and values to it.
+        /// Clear a <see cref="NativeParallelHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
         /// This is much faster than iterating and using Add.
         /// NOTE: this is not safe. It does not check for duplicates and must only be used when keys are gauranteed to be unique.
         /// </summary>
@@ -54,7 +54,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Clear a <see cref="NativeParallelHashMap{TKey,TValue}"/> then efficiently add a collection of keys and values to it.
+        /// Clear a <see cref="NativeParallelHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
         /// This is much faster than iterating and using Add.
         /// NOTE: this is not safe. It does not check for duplicates and must only be used when keys are gauranteed to be unique.
         /// </summary>
@@ -101,7 +101,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Clear a <see cref="NativeParallelHashMap{TKey,TValue}"/> then efficiently add a collection of keys and values to it.
+        /// Clear a <see cref="NativeParallelHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
         /// This is much faster than iterating and using Add.
         /// NOTE: this is not safe. It does not check for duplicates and must only be used when keys are gauranteed to be unique.
         /// </summary>
@@ -183,14 +183,14 @@ namespace BovineLabs.Core.Extensions
 
             var data = hashMap.GetUnsafeBucketData();
 
-            var keyPtr = ((TKey*)data.keys) + oldLength;
-            var valuePtr = ((TValue*)data.values) + oldLength;
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
 
             UnsafeUtility.MemCpy(keyPtr, keys, length * UnsafeUtility.SizeOf<TKey>());
             UnsafeUtility.MemCpy(valuePtr, values, length * UnsafeUtility.SizeOf<TValue>());
 
             var buckets = (int*)data.buckets;
-            var nextPtrs = ((int*)data.next) + oldLength;
+            var nextPtrs = (int*)data.next + oldLength;
 
             for (var idx = 0; idx < length; idx++)
             {
@@ -226,14 +226,14 @@ namespace BovineLabs.Core.Extensions
 
             var data = hashMap.GetUnsafeBucketData();
 
-            var keyPtr = ((TKey*)data.keys) + oldLength;
-            var valuePtr = ((TValue*)data.values) + oldLength;
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
 
             UnsafeUtility.MemCpyStride(keyPtr, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), length);
             UnsafeUtility.MemCpy(valuePtr, values.GetUnsafeReadOnlyPtr(), length * UnsafeUtility.SizeOf<TValue>());
 
             var buckets = (int*)data.buckets;
-            var nextPtrs = ((int*)data.next) + oldLength;
+            var nextPtrs = (int*)data.next + oldLength;
 
             for (var idx = 0; idx < length; idx++)
             {
@@ -273,14 +273,14 @@ namespace BovineLabs.Core.Extensions
                 hashMap.Capacity = newLength;
             }
 
-            UnsafeParallelHashMapBucketData data = hashMap.GetUnsafeBucketData();
+            var data = hashMap.GetUnsafeBucketData();
 
-            var keyPtr = ((TKey*)data.keys) + oldLength;
+            var keyPtr = (TKey*)data.keys + oldLength;
 
             UnsafeUtility.MemCpy(keyPtr, keys, length * UnsafeUtility.SizeOf<TKey>());
 
             var buckets = (int*)data.buckets;
-            var nextPtrs = ((int*)data.next) + oldLength;
+            var nextPtrs = (int*)data.next + oldLength;
 
             for (var idx = 0; idx < length; idx++)
             {
@@ -317,7 +317,7 @@ namespace BovineLabs.Core.Extensions
                 hashMap.Capacity = length;
             }
 
-            UnsafeParallelHashMapBucketData data = hashMap.GetUnsafeBucketData();
+            var data = hashMap.GetUnsafeBucketData();
             UnsafeUtility.MemCpy(data.keys, keys, length * UnsafeUtility.SizeOf<TKey>());
 
             var buckets = (int*)data.buckets;
@@ -337,11 +337,11 @@ namespace BovineLabs.Core.Extensions
         /// Add a collection of keys and values to a hashmap in parallel.
         /// All keys added this way must be UNIQUE as it is not checked. Hashmap must not have had any elements removed.
         /// </summary>
-        /// <param name="hashMap"></param>
-        /// <param name="keys"></param>
-        /// <param name="values"></param>
-        /// <typeparam name="TKey"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
+        /// <param name="hashMap"> </param>
+        /// <param name="keys"> </param>
+        /// <param name="values"> </param>
+        /// <typeparam name="TKey"> </typeparam>
+        /// <typeparam name="TValue"> </typeparam>
         public static unsafe void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelHashMap<TKey, TValue>.ParallelWriter hashMap,
             [NoAlias] NativeArray<TKey> keys,
@@ -408,7 +408,7 @@ namespace BovineLabs.Core.Extensions
         private static void CheckLengthsMin(int keys, int values, int min)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (keys < min || values < min)
+            if ((keys < min) || (values < min))
             {
                 throw new ArgumentException("Key or value array isn't large enough");
             }

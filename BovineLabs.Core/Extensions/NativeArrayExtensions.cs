@@ -6,16 +6,14 @@ namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
-    using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
-    using Unity.Jobs;
     using Unity.Mathematics;
 
 #pragma warning disable SA1649
     public interface IPredicate<in T>
     {
-        bool Check(T val);
+        bool Check(T other);
     }
 
     public interface ISelector<in TInput, out TOutput>
@@ -23,6 +21,22 @@ namespace BovineLabs.Core.Extensions
         TOutput Select(TInput val);
     }
 #pragma warning restore SA1649
+
+    public struct Equals<T> : IPredicate<T>
+        where T : IEquatable<T>
+    {
+        private readonly T value;
+
+        public Equals(T value)
+        {
+            this.value = value;
+        }
+
+        public bool Check(T other)
+        {
+            return this.value.Equals(other);
+        }
+    }
 
     public static unsafe class NativeArrayExtensions
     {
@@ -71,13 +85,13 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static NativeArray<T> Clone<T>(this NativeArray<T> array, Allocator allocator = Allocator.Temp)
-            where T : struct
+            where T : unmanaged
         {
             return new NativeArray<T>(array, allocator);
         }
 
         public static NativeArray<T> Where<T, TPredicate>(this NativeArray<T> array, TPredicate predicate, Allocator allocator = Allocator.Temp)
-            where T : struct
+            where T : unmanaged
             where TPredicate : IPredicate<T>
         {
             var output = new NativeArray<T>(array.Length, allocator, NativeArrayOptions.UninitializedMemory);
@@ -95,7 +109,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static NativeArray<T> WhereNoAlloc<T, TPredicate>(this NativeArray<T> array, TPredicate predicate)
-            where T : struct
+            where T : unmanaged
             where TPredicate : IPredicate<T>
         {
             var c = 0;
@@ -110,9 +124,12 @@ namespace BovineLabs.Core.Extensions
             return array.GetSubArray(0, c);
         }
 
-        public static NativeArray<TOutput> Select<TInput, TOutput, TSelector>(this NativeArray<TInput> array, TSelector selector, Allocator allocator = Allocator.Temp)
-            where TInput : struct
-            where TOutput : struct
+        public static NativeArray<TOutput> Select<TInput, TOutput, TSelector>(
+            this NativeArray<TInput> array,
+            TSelector selector,
+            Allocator allocator = Allocator.Temp)
+            where TInput : unmanaged
+            where TOutput : unmanaged
             where TSelector : ISelector<TInput, TOutput>
         {
             var output = new NativeArray<TOutput>(array.Length, allocator, NativeArrayOptions.UninitializedMemory);
@@ -126,12 +143,12 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static bool All<T, TPredicate>(this NativeArray<T> collection, TPredicate predicate)
-            where T : struct
+            where T : unmanaged
             where TPredicate : IPredicate<T>
         {
-            for (var i = 0; i < collection.Length; i++)
+            foreach (var value in collection)
             {
-                if (!predicate.Check(collection[i]))
+                if (!predicate.Check(value))
                 {
                     return false;
                 }
@@ -140,13 +157,13 @@ namespace BovineLabs.Core.Extensions
             return true;
         }
 
-        public static bool Any<T, TPredicate>(this NativeArray<T> collection, TPredicate predicate)
-            where T : struct
+        public static bool Any<T, TPredicate>(this in NativeArray<T> collection, in TPredicate predicate)
+            where T : unmanaged
             where TPredicate : IPredicate<T>
         {
-            for (var i = 0; i < collection.Length; i++)
+            foreach (var value in collection)
             {
-                if (predicate.Check(collection[i]))
+                if (predicate.Check(value))
                 {
                     return true;
                 }
@@ -156,7 +173,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static T FirstOrDefault<T, TPredicate>(this NativeArray<T> collection, TPredicate predicate)
-            where T : struct
+            where T : unmanaged
             where TPredicate : IPredicate<T>
         {
             for (var i = 0; i < collection.Length; i++)
@@ -168,6 +185,21 @@ namespace BovineLabs.Core.Extensions
             }
 
             return default;
+        }
+
+        public static int IndexOf<T, TPredicate>(this NativeArray<T> collection, TPredicate predicate)
+            where T : unmanaged
+            where TPredicate : IPredicate<T>
+        {
+            for (var i = 0; i < collection.Length; i++)
+            {
+                if (predicate.Check(collection[i]))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         public static int Min(this NativeArray<int> collection)
@@ -228,7 +260,7 @@ namespace BovineLabs.Core.Extensions
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void ElementCheck<T>(NativeArray<T> array)
-            where T : struct
+            where T : unmanaged
         {
             if (array.Length == 0)
             {

@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Tests.Extensions
         [Test]
         public void ClearAndAddBatchTest()
         {
-            int length = 9;
+            var length = 9;
 
             var hashMap = new NativeMultiHashMap<int, short>(4, Allocator.Temp);
 
@@ -41,8 +41,8 @@ namespace BovineLabs.Core.Tests.Extensions
         [Test]
         public void AddBatchTest()
         {
-            int length = 9;
-            int split = 3;
+            var length = 9;
+            var split = 3;
 
             var hashMap = new NativeMultiHashMap<int, short>(4, Allocator.Temp);
 
@@ -95,8 +95,8 @@ namespace BovineLabs.Core.Tests.Extensions
         [Test]
         public void AddBatchSingleKeyTest()
         {
-            int length = 9;
-            int split = 3;
+            var length = 9;
+            var split = 3;
 
             var hashMap = new NativeMultiHashMap<int, short>(4, Allocator.Temp);
             var values = new NativeArray<short>(length, Allocator.Temp);
@@ -124,6 +124,7 @@ namespace BovineLabs.Core.Tests.Extensions
                 Assert.IsTrue(results.Remove(value));
             }
             while (hashMap.TryGetNextValue(out value, ref it));
+
             Assert.AreEqual(0, results.Count);
         }
     }

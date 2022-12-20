@@ -7,17 +7,26 @@ namespace Unity.NetCode
 {
     using System;
 
-
     public enum SmoothingAction
     {
         Clamp = 0,
         Interpolate = 1 << 0,
-        InterpolateAndExtrapolate = 3
+        InterpolateAndExtrapolate = 3,
     }
 
-    [AttributeUsage(AttributeTargets.Field|AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class GhostFieldAttribute : Attribute
     {
+        public GhostFieldAttribute()
+        {
+            this.Quantization = -1;
+            this.Smoothing = SmoothingAction.Clamp;
+            this.Composite = false;
+            this.SubType = 0;
+            this.SendData = true;
+            this.MaxSmoothingDistance = 0;
+        }
+
         public int Quantization { get; set; }
         public bool Composite { get; set; }
         public SmoothingAction Smoothing { get; set; }
@@ -34,22 +43,12 @@ namespace Unity.NetCode
         /// you want to apply smoothing for.
         /// </remarks>
         public int MaxSmoothingDistance { get; set; }
-
-        public GhostFieldAttribute()
-        {
-            Quantization = -1;
-            Smoothing = SmoothingAction.Clamp;
-            Composite = false;
-            SubType = 0;
-            SendData = true;
-            MaxSmoothingDistance = 0;
-        }
     }
 
     /// <summary>
     /// Add the attribute to prevent a field ICommandData struct to be serialized
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field|AttributeTargets.Property, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class DontSerializeForCommand : Attribute
     {
     }

@@ -3,7 +3,6 @@
 // </copyright>
 
 #if BL_TESTING
-
 namespace BovineLabs.Core.Tests.Collections.EventStream
 {
     using BovineLabs.Core.Collections;
@@ -12,7 +11,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Tests for <see cref="NativeEventStreamEx"/> . </summary>
+    /// <summary> Tests for <see cref="NativeEventStreamEx" /> . </summary>
     public class NativeEventStreamExTests : ECSTestsFixture
     {
         /// <summary> Tests the extensions AllocateLarge and ReadLarge. </summary>
@@ -32,7 +31,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
 
             var writer = stream.AsWriter();
             writer.Write(size);
-            NativeEventStreamEx.WriteLarge(ref writer, (byte*)sourceData.GetUnsafeReadOnlyPtr(), size);
+            writer.WriteLarge((byte*)sourceData.GetUnsafeReadOnlyPtr(), size);
 
             var reader = stream.AsReader();
 
@@ -44,7 +43,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
 
             var result = new NativeArray<byte>(readSize, Allocator.Temp);
 
-            NativeEventStreamEx.ReadLarge(ref reader, (byte*)result.GetUnsafePtr(), readSize);
+            reader.ReadLarge((byte*)result.GetUnsafePtr(), readSize);
 
             reader.EndForEachIndex();
 

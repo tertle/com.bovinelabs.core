@@ -1,7 +1,6 @@
 ﻿// <copyright file="ToolbarExtender.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
-// Based off work from https://github.com/marijnz/unity-toolbar-extender
 
 namespace BovineLabs.Core.Editor.EditorToolbar
 {
@@ -31,7 +30,7 @@ namespace BovineLabs.Core.Editor.EditorToolbar
 
             var toolIcons = toolbarType.GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
 
-            ToolCount = toolIcons != null ? ((int)toolIcons.GetValue(null)) : 8;
+            ToolCount = toolIcons != null ? (int)toolIcons.GetValue(null) : 8;
 
             ToolbarCallback.OnToolbarGUI = OnGUI;
 #if UNITY_2021_1_OR_NEWER

@@ -9,7 +9,6 @@ namespace BovineLabs.Core.Memory
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
 
-    
     public unsafe struct UnsafeParallelPoolAllocator<T> : IDisposable
         where T : unmanaged
     {
@@ -39,7 +38,7 @@ namespace BovineLabs.Core.Memory
 
         public bool IsCreated => this.pools != null;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void Dispose()
         {
             for (var i = 0; i < JobsUtility.MaxJobThreadCount; i++)
@@ -59,6 +58,18 @@ namespace BovineLabs.Core.Memory
         public void Free(T* p)
         {
             this.pools[this.threadIndex].Free(p);
+        }
+
+        public int Allocated()
+        {
+            var allocated = 0;
+
+            for (var i = 0; i < JobsUtility.MaxJobThreadCount; i++)
+            {
+                allocated += this.pools[i].Allocated();
+            }
+
+            return allocated;
         }
     }
 }

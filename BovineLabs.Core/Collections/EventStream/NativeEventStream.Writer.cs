@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Collections
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 #pragma warning disable SA1308
-            private AtomicSafetyHandle m_Safety;
+            private readonly AtomicSafetyHandle m_Safety;
 #pragma warning restore SA1308
 #endif
 
@@ -43,7 +43,7 @@ namespace BovineLabs.Core.Collections
             }
 
             /// <summary> Allocate space for data. </summary>
-            /// <typeparam name="T">The type of value.</typeparam>
+            /// <typeparam name="T"> The type of value. </typeparam>
             /// <returns> Reference to the data. </returns>
             public ref T Allocate<T>()
                 where T : struct
@@ -54,7 +54,7 @@ namespace BovineLabs.Core.Collections
             }
 
             /// <summary> Allocate space for data. </summary>
-            /// <param name="size">Size in bytes.</param>
+            /// <param name="size"> Size in bytes. </param>
             /// <returns> Pointer to the data. </returns>
             public byte* Allocate(int size)
             {

@@ -26,7 +26,7 @@ namespace BovineLabs.Core.Authoring
     {
         public override void Bake(PhysicsMassOverrideAuthoring authoring)
         {
-            AddComponent(new PhysicsMassOverride
+            this.AddComponent(new PhysicsMassOverride
             {
                 IsKinematic = (byte)(authoring.IsKinematic ? 1 : 0),
                 SetVelocityToZero = (byte)(authoring.SetVelocityToZero ? 1 : 0),

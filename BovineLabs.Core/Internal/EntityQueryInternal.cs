@@ -1,8 +1,11 @@
-﻿namespace BovineLabs.Core.Internal
+﻿// <copyright file="EntityQueryInternal.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Internal
 {
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-
 
     public unsafe struct SharedComponentData
     {

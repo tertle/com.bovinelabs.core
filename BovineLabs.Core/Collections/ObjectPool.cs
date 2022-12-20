@@ -1,7 +1,6 @@
 ﻿// <copyright file="ObjectPool.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
-// Based of work from com.unity.render-pipelines.core@10.8.1\Runtime\Common\ObjectPools.cs
 
 namespace BovineLabs.Core.Collections
 {
@@ -9,17 +8,17 @@ namespace BovineLabs.Core.Collections
     using System.Collections.Generic;
 
     /// <summary> Generic object pool. </summary>
-    /// <typeparam name="T">Type of the object pool.</typeparam>
+    /// <typeparam name="T"> Type of the object pool. </typeparam>
     public class ObjectPool<T> : IDisposable
         where T : new()
     {
-        private readonly Stack<T> stack = new();
         private readonly Func<T> create;
         private readonly Action<T> onDispose;
         private readonly Action<T> onGet;
         private readonly Action<T> onRelease;
+        private readonly Stack<T> stack = new();
 
-        /// <summary> Initializes a new instance of the <see cref="ObjectPool{T}"/> class. </summary>
+        /// <summary> Initializes a new instance of the <see cref="ObjectPool{T}" /> class. </summary>
         /// <param name="create"> Optional func for creating objects. </param>
         /// <param name="onDispose"> Optional callback when disposing the object pool. </param>
         /// <param name="actionOnGet"> Optional callback when an element is retrieved. </param>
@@ -41,8 +40,21 @@ namespace BovineLabs.Core.Collections
         /// <summary> Gets number of inactive objects in the pool. </summary>
         public int CountInactive => this.stack.Count;
 
+        public void Dispose()
+        {
+            if (this.onDispose == null)
+            {
+                return;
+            }
+
+            foreach (var element in this.stack)
+            {
+                this.onDispose.Invoke(element);
+            }
+        }
+
         /// <summary> Get an object from the pool. </summary>
-        /// <returns>A new object from the pool.</returns>
+        /// <returns> A new object from the pool. </returns>
         public T Get()
         {
             T element;
@@ -61,12 +73,15 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary> Get et new PooledObject. </summary>
-        /// <param name="v">Output new typed object.</param>
+        /// <param name="v"> Output new typed object. </param>
         /// <returns> New PooledObject. </returns>
-        public PooledObject Get(out T v) => new(v = this.Get(), this);
+        public PooledObject Get(out T v)
+        {
+            return new PooledObject(v = this.Get(), this);
+        }
 
         /// <summary> Release an object to the pool. </summary>
-        /// <param name="element">Object to release.</param>
+        /// <param name="element"> Object to release. </param>
         public void Release(T element)
         {
             // keep heavy checks in editor
@@ -81,19 +96,6 @@ namespace BovineLabs.Core.Collections
 #endif
             this.onRelease?.Invoke(element);
             this.stack.Push(element);
-        }
-
-        public void Dispose()
-        {
-            if (this.onDispose == null)
-            {
-                return;
-            }
-
-            foreach (var element in this.stack)
-            {
-                this.onDispose.Invoke(element);
-            }
         }
 
         /// <summary>
@@ -111,7 +113,10 @@ namespace BovineLabs.Core.Collections
             }
 
             /// <summary> Disposable pattern implementation. </summary>
-            void IDisposable.Dispose() => this.Pool.Release(this.Item);
+            void IDisposable.Dispose()
+            {
+                this.Pool.Release(this.Item);
+            }
         }
     }
 }

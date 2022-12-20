@@ -8,11 +8,11 @@ namespace BovineLabs.Core.Tests.Utility
     using BovineLabs.Core.Utility;
     using NUnit.Framework;
 
-    /// <summary> Tests for <see cref="ReflectionUtility"/>. </summary>
+    /// <summary> Tests for <see cref="ReflectionUtility" />. </summary>
     public class ReflectionUtilityTests
     {
         /// <summary>
-        /// Tests for <see cref="ReflectionUtility.GetCustomImplementation{T}"/> and <see cref="ReflectionUtility.GetCustomImplementation{T, TD}"/>.
+        /// Tests for <see cref="ReflectionUtility.GetCustomImplementation{T}" /> and <see cref="ReflectionUtility.GetCustomImplementation{T, TD}" />.
         /// </summary>
         public class GetCustomImplementation
         {

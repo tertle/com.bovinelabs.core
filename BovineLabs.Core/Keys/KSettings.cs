@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Keys
     using JetBrains.Annotations;
     using UnityEngine;
 
-    /// <summary> Generic implementation of <see cref="KSettings"/> to allow calling the generic <see cref="K{T}"/>. </summary>
+    /// <summary> Generic implementation of <see cref="KSettings" /> to allow calling the generic <see cref="K{T}" />. </summary>
     /// <typeparam name="T"> Itself. </typeparam>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Makes sense")]
     public abstract class KSettings<T> : KSettings
@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Keys
     }
 
     /// <summary>
-    /// The base KSettings file for defining custom enums, layers, keys. Do not implement this directly, implement <see cref="KSettings{T}"/>.
+    /// The base KSettings file for defining custom enums, layers, keys. Do not implement this directly, implement <see cref="KSettings{T}" />.
     /// </summary>
     [Serializable]
     public abstract class KSettings : ScriptableObject, ISettings
@@ -37,19 +37,6 @@ namespace BovineLabs.Core.Keys
         private NameValue[] keys;
 
         public NameValue[] Keys => this.keys;
-
-        internal abstract void Init();
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-        private static void LoadAll()
-        {
-            var kvSettings = Resources.LoadAll<KSettings>(string.Empty);
-
-            foreach (var setting in kvSettings)
-            {
-                setting.Init();
-            }
-        }
 
 #if UNITY_EDITOR
         private void OnValidate()
@@ -74,5 +61,18 @@ namespace BovineLabs.Core.Keys
             }
         }
 #endif
+
+        internal abstract void Init();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void LoadAll()
+        {
+            var kvSettings = Resources.LoadAll<KSettings>(string.Empty);
+
+            foreach (var setting in kvSettings)
+            {
+                setting.Init();
+            }
+        }
     }
 }

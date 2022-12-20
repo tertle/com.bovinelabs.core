@@ -14,10 +14,10 @@ namespace BovineLabs.Core.Utility
 
         public static int Compress(in byte* src, int srcSize, out byte* dst, Allocator allocator = Allocator.Temp)
         {
-            int boundedSize = CompressBoundLZ4(srcSize);
+            var boundedSize = CompressBoundLZ4(srcSize);
             dst = (byte*)Memory.Unmanaged.Allocate(boundedSize, 16, allocator);
 
-            int compressedSize = CompressLZ4(src, dst, srcSize, boundedSize);
+            var compressedSize = CompressLZ4(src, dst, srcSize, boundedSize);
 
             if (compressedSize < 0)
             {
@@ -41,6 +41,5 @@ namespace BovineLabs.Core.Utility
 
         [DllImport(DllName, EntryPoint = "LZ4_decompress_safe")]
         private static extern int DecompressLZ4(byte* src, byte* dst, int compressedSize, int dstCapacity);
-
     }
 }

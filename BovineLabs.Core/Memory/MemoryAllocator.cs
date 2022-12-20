@@ -12,16 +12,15 @@ namespace BovineLabs.Core.Memory
 
     public unsafe struct MemoryAllocator : IDisposable
     {
-        private readonly Allocator allocator;
         private NativeHashSet<Ptr> allocated;
 
         public MemoryAllocator(Allocator allocator)
         {
-            this.allocator = allocator;
+            this.Allocator = allocator;
             this.allocated = new NativeHashSet<Ptr>(0, allocator);
         }
 
-        public Allocator Allocator => this.allocator;
+        public Allocator Allocator { get; }
 
         public void* Allocate(int itemSizeInBytes, int alignmentInBytes, int items = 1)
         {
@@ -66,7 +65,7 @@ namespace BovineLabs.Core.Memory
             this.allocated.Clear();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void Dispose()
         {
             this.FreeAll();

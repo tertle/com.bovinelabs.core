@@ -34,7 +34,10 @@ namespace BovineLabs.Core.Internal
     public static class ComponentTypeHandleInternals
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        public static AtomicSafetyHandle GetSafety<T>(this ComponentTypeHandle<T> componentTypeHandle) => componentTypeHandle.m_Safety;
+        public static AtomicSafetyHandle GetSafety<T>(this ComponentTypeHandle<T> componentTypeHandle)
+        {
+            return componentTypeHandle.m_Safety;
+        }
 #endif
     }
 }

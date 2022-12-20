@@ -11,7 +11,7 @@ namespace BovineLabs.Core.Utility
     {
         /// <summary> Calculates the signed area of a polygon. </summary>
         /// <param name="points"> Polygon array. </param>
-        /// <returns></returns>
+        /// <returns> </returns>
         public static float SignedArea(NativeArray<float2> points)
         {
             if (points.Length <= 1)
@@ -45,7 +45,7 @@ namespace BovineLabs.Core.Utility
 
         /// <summary> Calculates the signed area of a polygon. </summary>
         /// <param name="points"> Polygon array. </param>
-        /// <returns></returns>
+        /// <returns> </returns>
         public static float SignedArea(NativeArray<float3> points)
         {
             if (points.Length <= 1)

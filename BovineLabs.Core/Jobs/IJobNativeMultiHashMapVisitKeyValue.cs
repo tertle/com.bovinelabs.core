@@ -12,8 +12,8 @@ namespace BovineLabs.Core.Jobs
     using Unity.Jobs.LowLevel.Unsafe;
 
     /// <summary> Job that visits each key value pair in a <see cref="NativeMultiHashMap{TKey,TValue}" />. </summary>
-    /// <typeparam name="TKey">The key type of the hash map.</typeparam>
-    /// <typeparam name="TValue">The value type of the hash map.</typeparam>
+    /// <typeparam name="TKey"> The key type of the hash map. </typeparam>
+    /// <typeparam name="TValue"> The value type of the hash map. </typeparam>
     [JobProducerType(typeof(JobNativeMultiHashMapVisitKeyValue.JobNativeMultiHashMapVisitKeyValueProducer<,,>))]
     [SuppressMessage("ReSharper", "TypeParameterCanBeVariant", Justification = "Strict requirements for compiler")]
     public interface IJobNativeMultiHashMapVisitKeyValue<TKey, TValue>
@@ -161,17 +161,15 @@ namespace BovineLabs.Core.Jobs
                     var keys = bucketData.keys;
                     var values = bucketData.values;
 
-                    for (int i = begin; i < end; i++)
+                    for (var i = begin; i < end; i++)
                     {
-                        int entryIndex = buckets[i];
+                        var entryIndex = buckets[i];
 
                         while (entryIndex != -1)
                         {
                             var key = UnsafeUtility.ReadArrayElement<TKey>(keys, entryIndex);
                             var value = UnsafeUtility.ReadArrayElement<TValue>(values, entryIndex);
-
                             fullData.JobData.ExecuteNext(key, value);
-
                             entryIndex = nextPtrs[entryIndex];
                         }
                     }

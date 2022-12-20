@@ -5,7 +5,6 @@
 namespace BovineLabs.Core.Utility
 {
     using System.Collections.Generic;
-    using BovineLabs.Core.Extensions;
     using Unity.Entities;
 
     /// <summary> Utility for worlds. </summary>

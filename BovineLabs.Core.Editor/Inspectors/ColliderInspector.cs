@@ -7,8 +7,8 @@ namespace BovineLabs.Core.Editor.Inspectors
 {
     using BovineLabs.Core.Internal;
     using Unity.Entities;
+    using Unity.Entities.UI;
     using Unity.Physics;
-    using Unity.Platforms.UI;
     using UnityEngine;
     using UnityEngine.UIElements;
     using BoxCollider = Unity.Physics.BoxCollider;
@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
     internal unsafe class ColliderInspector : PropertyInspector<BlobAssetReference<Collider>>
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override VisualElement Build()
         {
             var root = new VisualElement();

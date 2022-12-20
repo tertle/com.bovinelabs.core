@@ -16,7 +16,18 @@ namespace BovineLabs.Core.Extensions
                 return entityQueryBuilder;
             }
 
-            var list = new FixedList32Bytes<ComponentType> { type };
+            var list = new FixedList32Bytes<ComponentType> { new() { TypeIndex = type.TypeIndex, AccessModeType = ComponentType.AccessMode.ReadOnly } };
+            return entityQueryBuilder.WithAll(ref list);
+        }
+
+        public static EntityQueryBuilder WithAllRW(this EntityQueryBuilder entityQueryBuilder, ComponentType type)
+        {
+            if (type == default)
+            {
+                return entityQueryBuilder;
+            }
+
+            var list = new FixedList32Bytes<ComponentType> { new() { TypeIndex = type.TypeIndex, AccessModeType = ComponentType.AccessMode.ReadWrite } };
             return entityQueryBuilder.WithAll(ref list);
         }
 
@@ -27,7 +38,18 @@ namespace BovineLabs.Core.Extensions
                 return entityQueryBuilder;
             }
 
-            var list = new FixedList32Bytes<ComponentType> { type };
+            var list = new FixedList32Bytes<ComponentType> { new() { TypeIndex = type.TypeIndex, AccessModeType = ComponentType.AccessMode.ReadOnly } };
+            return entityQueryBuilder.WithAny(ref list);
+        }
+
+        public static EntityQueryBuilder WithAnyRW(this EntityQueryBuilder entityQueryBuilder, ComponentType type)
+        {
+            if (type == default)
+            {
+                return entityQueryBuilder;
+            }
+
+            var list = new FixedList32Bytes<ComponentType> { new() { TypeIndex = type.TypeIndex, AccessModeType = ComponentType.AccessMode.ReadWrite } };
             return entityQueryBuilder.WithAny(ref list);
         }
 

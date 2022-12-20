@@ -31,8 +31,9 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
         public List<string> versionDefines;
         public bool noEngineReferences;
 
-        public static AssemblyDefinitionTemplate New() =>
-            new()
+        public static AssemblyDefinitionTemplate New()
+        {
+            return new AssemblyDefinitionTemplate
             {
                 references = new List<string>(),
                 includePlatforms = new List<string>(),
@@ -45,5 +46,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 versionDefines = new List<string>(),
                 noEngineReferences = false,
             };
+        }
     }
 }

@@ -40,9 +40,9 @@ namespace BovineLabs.Core.Collections
             }
 
             /// <summary> Begin reading data at the iteration index. </summary>
-            /// <param name="foreachIndex"></param>
-            /// <remarks>BeginForEachIndex must always be called balanced by a EndForEachIndex.</remarks>
-            /// <returns>The number of elements at this index.</returns>
+            /// <param name="foreachIndex"> </param>
+            /// <remarks> BeginForEachIndex must always be called balanced by a EndForEachIndex. </remarks>
+            /// <returns> The number of elements at this index. </returns>
             public int BeginForEachIndex(int foreachIndex)
             {
                 this.m_RemainingItemCount = this.m_BlockStream->Ranges[foreachIndex].ElementCount;
@@ -58,7 +58,7 @@ namespace BovineLabs.Core.Collections
             /// <summary>
             /// Ensures that all data has been read for the active iteration index.
             /// </summary>
-            /// <remarks>EndForEachIndex must always be called balanced by a BeginForEachIndex.</remarks>
+            /// <remarks> EndForEachIndex must always be called balanced by a BeginForEachIndex. </remarks>
             public void EndForEachIndex()
             {
             }
@@ -76,8 +76,8 @@ namespace BovineLabs.Core.Collections
             /// <summary>
             /// Returns pointer to data.
             /// </summary>
-            /// <param name="size">Size in bytes.</param>
-            /// <returns>Pointer to data.</returns>
+            /// <param name="size"> Size in bytes. </param>
+            /// <returns> Pointer to data. </returns>
             public byte* ReadUnsafePtr(int size)
             {
                 this.m_RemainingItemCount--;
@@ -102,8 +102,8 @@ namespace BovineLabs.Core.Collections
             /// <summary>
             /// Read data.
             /// </summary>
-            /// <typeparam name="T">The type of value.</typeparam>
-            /// <returns>Reference to data.</returns>
+            /// <typeparam name="T"> The type of value. </typeparam>
+            /// <returns> Reference to data. </returns>
             [GenerateTestsForBurstCompatibility]
             public ref T Read<T>()
                 where T : struct
@@ -115,8 +115,8 @@ namespace BovineLabs.Core.Collections
             /// <summary>
             /// Peek into data.
             /// </summary>
-            /// <typeparam name="T">The type of value.</typeparam>
-            /// <returns>Reference to data.</returns>
+            /// <typeparam name="T"> The type of value. </typeparam>
+            /// <returns> Reference to data. </returns>
             [GenerateTestsForBurstCompatibility]
             public ref T Peek<T>()
                 where T : struct
@@ -135,7 +135,7 @@ namespace BovineLabs.Core.Collections
             /// <summary>
             /// The current number of items in the container.
             /// </summary>
-            /// <returns>The item count.</returns>
+            /// <returns> The item count. </returns>
             public int Count()
             {
                 var itemCount = 0;

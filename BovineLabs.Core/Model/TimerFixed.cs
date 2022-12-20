@@ -86,15 +86,15 @@ namespace BovineLabs.Core.Model
             [NativeDisableContainerSafetyRestriction] // Only initialized in the job
             private NativeList<bool> onBuffer;
 
-            /// <inheritdoc/>
+            /// <inheritdoc />
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var activeChanged = chunk.DidChange(this.ActiveHandle, this.SystemVersion);
+                var activeChanged = chunk.DidChange(ref this.ActiveHandle, this.SystemVersion);
 
                 if (activeChanged)
                 {
-                    var remainings = chunk.GetNativeArray(this.RemainingHandle).Reinterpret<float>();
-                    var triggers = chunk.GetNativeArray(this.ActiveHandle).Reinterpret<bool>();
+                    var remainings = chunk.GetNativeArray(ref this.RemainingHandle).Reinterpret<float>();
+                    var triggers = chunk.GetNativeArray(ref this.ActiveHandle).Reinterpret<bool>();
                     var durationOns = (bool*)chunk.GetComponentDataPtrRO(ref this.OnHandle);
 
                     for (var i = 0; i < chunk.Count; i++)
@@ -106,9 +106,9 @@ namespace BovineLabs.Core.Model
                     }
                 }
 
-                if (activeChanged || chunk.DidChange(this.RemainingHandle, this.SystemVersion))
+                if (activeChanged || chunk.DidChange(ref this.RemainingHandle, this.SystemVersion))
                 {
-                    var remainings = chunk.GetNativeArray(this.RemainingHandle).Reinterpret<float>();
+                    var remainings = chunk.GetNativeArray(ref this.RemainingHandle).Reinterpret<float>();
 
                     if (!this.onBuffer.IsCreated)
                     {
@@ -129,7 +129,7 @@ namespace BovineLabs.Core.Model
 
                     if (hasChanged)
                     {
-                        var ons = chunk.GetNativeArray(this.OnHandle);
+                        var ons = chunk.GetNativeArray(ref this.OnHandle);
                         ons.Reinterpret<bool>().CopyFrom(this.onBuffer.AsArray());
                     }
                 }

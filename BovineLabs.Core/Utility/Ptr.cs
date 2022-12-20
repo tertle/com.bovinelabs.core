@@ -11,7 +11,7 @@ namespace BovineLabs.Core.Utility
     {
         public readonly T* Value;
 
-        /// <summary> Initializes a new instance of the <see cref="Ptr{T}"/> struct. </summary>
+        /// <summary> Initializes a new instance of the <see cref="Ptr{T}" /> struct. </summary>
         /// <param name="value"> The pointer to hold. </param>
         public Ptr(T* value)
         {
@@ -30,13 +30,13 @@ namespace BovineLabs.Core.Utility
             return new Ptr<T>(ptr);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public bool Equals(Ptr<T> other)
         {
             return this.Value == other.Value;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return unchecked((int)(long)this.Value);

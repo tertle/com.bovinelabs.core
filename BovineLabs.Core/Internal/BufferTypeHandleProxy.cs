@@ -36,10 +36,16 @@ namespace BovineLabs.Core.Internal
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         public static AtomicSafetyHandle GetSafety0<T>(this BufferTypeHandle<T> componentTypeHandle)
-            where T : unmanaged, IBufferElementData => componentTypeHandle.m_Safety0;
+            where T : unmanaged, IBufferElementData
+        {
+            return componentTypeHandle.m_Safety0;
+        }
 
         public static AtomicSafetyHandle GetSafety1<T>(this BufferTypeHandle<T> componentTypeHandle)
-            where T : unmanaged, IBufferElementData => componentTypeHandle.m_Safety1;
+            where T : unmanaged, IBufferElementData
+        {
+            return componentTypeHandle.m_Safety1;
+        }
 #endif
     }
 }

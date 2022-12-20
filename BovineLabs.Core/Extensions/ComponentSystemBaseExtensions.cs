@@ -5,7 +5,6 @@
 namespace BovineLabs.Core.Extensions
 {
     using BovineLabs.Core.Iterators;
-    using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
     public static class ComponentSystemBaseExtensions
@@ -16,23 +15,10 @@ namespace BovineLabs.Core.Extensions
             return system.CheckedState()->GetSharedComponentDataFromIndex<T>(isReadOnly);
         }
 
-        public static DynamicBuffer<T> GetSingletonBuffer<T>(this ComponentSystemBase system, bool isReadOnly = false)
-            where T : unmanaged, IBufferElementData
+        public static unsafe SharedComponentLookup<T> GetSharedComponentLookup<T>(this ComponentSystemBase system, bool isReadOnly = false)
+            where T : unmanaged, ISharedComponentData
         {
-            return system.EntityManager.GetBuffer<T>(system.GetSingletonEntity<T>(), isReadOnly);
-        }
-
-        public static bool TryGetSingletonBuffer<T>(this ComponentSystemBase system, out DynamicBuffer<T> buffer, bool isReadOnly = false)
-            where T : unmanaged, IBufferElementData
-        {
-            if (!system.TryGetSingletonEntity<T>(out var entity))
-            {
-                buffer = default;
-                return false;
-            }
-
-            buffer = system.EntityManager.GetBuffer<T>(entity, isReadOnly);
-            return true;
+            return system.CheckedState()->GetSharedComponentLookup<T>(isReadOnly);
         }
     }
 }

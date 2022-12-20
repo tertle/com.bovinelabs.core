@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Tests.Extensions
     /// <summary> Tests for ListExtensions. </summary>
     public class ListExtensionsTests
     {
-        /// <summary> Tests <see cref="Core.Extensions.ListExtensions.AddRangeNative{T}(System.Collections.Generic.List{T},Unity.Collections.NativeArray{T})"/>. </summary>
+        /// <summary> Tests <see cref="Core.Extensions.ListExtensions.AddRangeNative{T}(System.Collections.Generic.List{T},Unity.Collections.NativeArray{T})" />. </summary>
         [Test]
         public void AddRangeNative()
         {
@@ -35,7 +35,7 @@ namespace BovineLabs.Core.Tests.Extensions
             }
         }
 
-        /// <summary> Tests <see cref="Core.Extensions.ListExtensions.AddRangeNative{T}(System.Collections.Generic.List{T},Unity.Collections.NativeArray{T},int)"/>. </summary>
+        /// <summary> Tests <see cref="Core.Extensions.ListExtensions.AddRangeNative{T}(System.Collections.Generic.List{T},Unity.Collections.NativeArray{T},int)" />. </summary>
         [Test]
         public void AddRangeNativeLength()
         {
@@ -58,7 +58,7 @@ namespace BovineLabs.Core.Tests.Extensions
             }
         }
 
-        /// <summary> Tests <see cref="Core.Extensions.ListExtensions.AddRangeNative{T}(System.Collections.Generic.List{T},Unity.Collections.NativeSlice{T})"/>. </summary>
+        /// <summary> Tests <see cref="Core.Extensions.ListExtensions.AddRangeNative{T}(System.Collections.Generic.List{T},Unity.Collections.NativeSlice{T})" />. </summary>
         [Test]
         public void AddRangeNativeSlice()
         {

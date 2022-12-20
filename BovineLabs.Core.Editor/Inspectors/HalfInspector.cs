@@ -7,10 +7,10 @@ namespace BovineLabs.Core.Editor.Inspectors
     using JetBrains.Annotations;
     using Unity.Mathematics;
     using Unity.Properties;
-
+    using UnityEngine.UIElements;
 
     [UsedImplicitly]
-    internal class HalfInspector : BaseFieldInspector<UnityEngine.UIElements.FloatField, float, half>
+    internal class HalfInspector : BaseFieldInspector<FloatField, float, half>
     {
         static HalfInspector()
         {

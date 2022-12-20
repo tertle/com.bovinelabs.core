@@ -32,16 +32,18 @@ namespace BovineLabs.Core.Iterators
         }
 
         /// <summary> Gets a value indicating whether container is empty. </summary>
-        /// <value>True if this container empty.</value>
+        /// <value> True if this container empty. </value>
         public bool IsEmpty => !this.IsCreated || DynamicHashMapData.IsEmpty(this.BufferReadOnly);
 
         public bool IsCreated => this.data.IsCreated;
 
         /// <summary> Gets or sets the number of items that can fit in the container. </summary>
-        /// <value>The number of items that the container can hold before it resizes its internal storage.</value>
-        /// <remarks>Capacity specifies the number of items the container can currently hold. You can change Capacity
+        /// <value> The number of items that the container can hold before it resizes its internal storage. </value>
+        /// <remarks>
+        /// Capacity specifies the number of items the container can currently hold. You can change Capacity
         /// to fit more or fewer items. Changing Capacity creates a new array of the specified size, copies the
-        /// old array to the new one, and then deallocates the original array memory.</remarks>
+        /// old array to the new one, and then deallocates the original array memory.
+        /// </remarks>
         public int Capacity
         {
             get => this.data.AsDataReadOnly<TKey, TValue>()->KeyCapacity;
@@ -83,13 +85,16 @@ namespace BovineLabs.Core.Iterators
         }
 
         /// <summary> The current number of items in the container. </summary>
-        /// <returns>The item count.</returns>
-        public int Count() => DynamicHashMapData.GetCount(this.BufferReadOnly);
+        /// <returns> The item count. </returns>
+        public int Count()
+        {
+            return DynamicHashMapData.GetCount(this.BufferReadOnly);
+        }
 
         /// <summary>
         /// Clears the container.
         /// </summary>
-        /// <remarks>Containers capacity remains unchanged.</remarks>
+        /// <remarks> Containers capacity remains unchanged. </remarks>
         public void Clear()
         {
             DynamicHashMapBase<TKey, TValue>.Clear(this.data);
@@ -98,9 +103,9 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Try adding an element with the specified key and value into the container. If the key already exist, the value won't be updated.
         /// </summary>
-        /// <param name="key">The key of the element to add.</param>
-        /// <param name="item">The value of the element to add.</param>
-        /// <returns>Returns true if value is added into the container, otherwise returns false.</returns>
+        /// <param name="key"> The key of the element to add. </param>
+        /// <param name="item"> The value of the element to add. </param>
+        /// <returns> Returns true if value is added into the container, otherwise returns false. </returns>
         public bool TryAdd(TKey key, TValue item)
         {
             return DynamicHashMapBase<TKey, TValue>.TryAdd(this.data, key, item, false);
@@ -109,8 +114,8 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Add an element with the specified key and value into the container.
         /// </summary>
-        /// <param name="key">The key of the element to add.</param>
-        /// <param name="item">The value of the element to add.</param>
+        /// <param name="key"> The key of the element to add. </param>
+        /// <param name="item"> The value of the element to add. </param>
         public void Add(TKey key, TValue item)
         {
             this.TryAdd(key, item);
@@ -119,8 +124,8 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Removes the element with the specified key from the container.
         /// </summary>
-        /// <param name="key">The key of the element to remove.</param>
-        /// <returns>Returns true if the key was removed from the container, otherwise returns false indicating key wasn't in the container.</returns>
+        /// <param name="key"> The key of the element to remove. </param>
+        /// <returns> Returns true if the key was removed from the container, otherwise returns false indicating key wasn't in the container. </returns>
         public bool Remove(TKey key)
         {
             return DynamicHashMapBase<TKey, TValue>.Remove(this.data, key, false) != 0;
@@ -144,11 +149,15 @@ namespace BovineLabs.Core.Iterators
         }
 
         /// <summary> Returns array populated with keys. </summary>
-        /// <remarks>Number of returned keys will match number of values in the container. If key contains multiple values it will appear number of times
-        /// how many values are associated to the same key. If only unique key values desired use GetUniqueKeyArray instead.</remarks>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>Array of keys.</returns>
+        /// <remarks>
+        /// Number of returned keys will match number of values in the container. If key contains multiple values it will appear number of times
+        /// how many values are associated to the same key. If only unique key values desired use GetUniqueKeyArray instead.
+        /// </remarks>
+        /// <param name="allocator">
+        /// A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.
+        /// </param>
+        /// <returns> Array of keys. </returns>
         public NativeArray<TKey> GetKeyArray(Allocator allocator)
         {
             var result = new NativeArray<TKey>(this.Count(), allocator, NativeArrayOptions.UninitializedMemory);
@@ -159,9 +168,11 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Returns array populated with values.
         /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>Array of values.</returns>
+        /// <param name="allocator">
+        /// A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.
+        /// </param>
+        /// <returns> Array of values. </returns>
         public NativeArray<TValue> GetValueArray(Allocator allocator)
         {
             var result = new NativeArray<TValue>(this.Count(), allocator, NativeArrayOptions.UninitializedMemory);
@@ -172,10 +183,12 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Returns arrays populated with keys and values.
         /// </summary>
-        /// <remarks>If key contains multiple values, returned key array will contain multiple identical keys.</remarks>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>Array of keys-values.</returns>
+        /// <remarks> If key contains multiple values, returned key array will contain multiple identical keys. </remarks>
+        /// <param name="allocator">
+        /// A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.
+        /// </param>
+        /// <returns> Array of keys-values. </returns>
         public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(Allocator allocator)
         {
             var result = new NativeKeyValueArrays<TKey, TValue>(this.Count(), allocator, NativeArrayOptions.UninitializedMemory);
@@ -186,9 +199,9 @@ namespace BovineLabs.Core.Iterators
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckSize(DynamicBuffer<byte> buffer)
         {
-            if (buffer.Length != 0 && buffer.Length < UnsafeUtility.SizeOf<DynamicHashMapData>())
+            if ((buffer.Length != 0) && (buffer.Length < UnsafeUtility.SizeOf<DynamicHashMapData>()))
             {
-                throw new InvalidOperationException($"Buffer has data but is too small to be a header.");
+                throw new InvalidOperationException("Buffer has data but is too small to be a header.");
             }
         }
 

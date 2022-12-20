@@ -36,14 +36,10 @@ namespace BovineLabs.Core.Model
             this.activeHandle = state.GetComponentTypeHandle<TActive>(true);
             this.durationHandle = state.GetComponentTypeHandle<TDuration>(true);
 
-            this.query = state.GetEntityQuery(
-                    ComponentType.ReadWrite<TRemaining>(),
-                    ComponentType.ReadWrite<TOn>(),
-                    ComponentType.ReadOnly<TActive>(),
-                    ComponentType.ReadOnly<TDuration>());
+            this.query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<TRemaining, TOn>().WithAll<TActive, TDuration>().Build(ref state);
         }
 
-        public void OnUpdate(ref SystemState state, UpdateTimeJob job)
+        public void OnUpdate(ref SystemState state, UpdateTimeJob job = default)
         {
             this.onHandle.Update(ref state);
             this.remainingHandle.Update(ref state);
@@ -80,13 +76,13 @@ namespace BovineLabs.Core.Model
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var activeChanged = chunk.DidChange(this.ActiveHandle, this.SystemVersion);
+                var activeChanged = chunk.DidChange(ref this.ActiveHandle, this.SystemVersion);
 
                 if (activeChanged)
                 {
-                    var remainings = chunk.GetNativeArray(this.RemainingHandle).Reinterpret<float>();
-                    var triggers = chunk.GetNativeArray(this.ActiveHandle).Reinterpret<bool>();
-                    var durations = chunk.GetNativeArray(this.DurationHandle).Reinterpret<float>();
+                    var remainings = chunk.GetNativeArray(ref this.RemainingHandle).Reinterpret<float>();
+                    var triggers = chunk.GetNativeArray(ref this.ActiveHandle).Reinterpret<bool>();
+                    var durations = chunk.GetNativeArray(ref this.DurationHandle).Reinterpret<float>();
                     var durationOns = (bool*)chunk.GetComponentDataPtrRO(ref this.OnHandle);
 
                     for (var i = 0; i < chunk.Count; i++)
@@ -98,9 +94,9 @@ namespace BovineLabs.Core.Model
                     }
                 }
 
-                if (activeChanged || chunk.DidChange(this.RemainingHandle, this.SystemVersion))
+                if (activeChanged || chunk.DidChange(ref this.RemainingHandle, this.SystemVersion))
                 {
-                    var remainings = chunk.GetNativeArray(this.RemainingHandle).Reinterpret<float>();
+                    var remainings = chunk.GetNativeArray(ref this.RemainingHandle).Reinterpret<float>();
 
                     if (!this.onBuffer.IsCreated)
                     {
@@ -121,7 +117,7 @@ namespace BovineLabs.Core.Model
 
                     if (hasChanged)
                     {
-                        var ons = chunk.GetNativeArray(this.OnHandle);
+                        var ons = chunk.GetNativeArray(ref this.OnHandle);
                         ons.Reinterpret<bool>().CopyFrom(this.onBuffer.AsArray());
                     }
                 }

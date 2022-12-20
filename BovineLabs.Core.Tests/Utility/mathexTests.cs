@@ -35,7 +35,7 @@ namespace BovineLabs.Core.Tests.Utility
 
             var input = new NativeArray<int>(length, Allocator.Temp);
             var output = new NativeArray<int>(length, Allocator.Temp);
-            int value = 5;
+            var value = 5;
 
             var random = Random.CreateFromIndex(1234);
             for (var i = 0; i < input.Length; i++)

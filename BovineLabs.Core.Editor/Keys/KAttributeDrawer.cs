@@ -31,7 +31,7 @@ namespace BovineLabs.Core.Editor.Keys
             return k;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var attr = (KAttribute)this.attribute;

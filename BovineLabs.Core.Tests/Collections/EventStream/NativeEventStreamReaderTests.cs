@@ -3,7 +3,6 @@
 // </copyright>
 
 #if BL_TESTING
-
 namespace BovineLabs.Core.Tests.Collections.EventStream
 {
     using System;

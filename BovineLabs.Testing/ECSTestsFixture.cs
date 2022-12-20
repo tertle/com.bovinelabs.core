@@ -1,3 +1,7 @@
+// <copyright file="ECSTestsFixture.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
 namespace BovineLabs.Testing
 {
     using NUnit.Framework;
@@ -7,14 +11,17 @@ namespace BovineLabs.Testing
 
     public abstract class ECSTestsFixture : ECSTestsCommonBase
     {
-        protected World PreviousWorld;
-        protected World World;
-        protected PlayerLoopSystem PreviousPlayerLoop;
-        protected EntityManager Manager;
-        protected EntityManager.EntityManagerDebug ManagerDebug;
+        private bool jobsDebuggerWasEnabled;
+        private PlayerLoopSystem previousPlayerLoop;
+        private World previousWorld;
 
-        protected int StressTestEntityCount = 1000;
-        private bool JobsDebuggerWasEnabled;
+        protected World World { get; private set; }
+
+        protected WorldUnmanaged WorldUnmanaged => this.World.Unmanaged;
+
+        protected EntityManager Manager { get; private set; }
+
+        protected EntityManager.EntityManagerDebug ManagerDebug { get; private set; }
 
         [SetUp]
         public override void Setup()
@@ -22,10 +29,10 @@ namespace BovineLabs.Testing
             base.Setup();
 
             // unit tests preserve the current player loop to restore later, and start from a blank slate.
-            this.PreviousPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
+            this.previousPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
             PlayerLoop.SetPlayerLoop(PlayerLoop.GetDefaultPlayerLoop());
 
-            this.PreviousWorld = World.DefaultGameObjectInjectionWorld;
+            this.previousWorld = World.DefaultGameObjectInjectionWorld;
             this.World = World.DefaultGameObjectInjectionWorld = new World("Test World");
             this.World.UpdateAllocatorEnableBlockFree = true;
             this.Manager = this.World.EntityManager;
@@ -33,7 +40,7 @@ namespace BovineLabs.Testing
 
             // Many ECS tests will only pass if the Jobs Debugger enabled;
             // force it enabled for all tests, and restore the original value at teardown.
-            this.JobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
+            this.jobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
             JobsUtility.JobDebuggerEnabled = true;
 
             // JobsUtility.ClearSystemIds();
@@ -47,7 +54,7 @@ namespace BovineLabs.Testing
         [TearDown]
         public override void TearDown()
         {
-            if (this.World != null && this.World.IsCreated)
+            if ((this.World != null) && this.World.IsCreated)
             {
                 // Clean up systems before calling CheckInternalConsistency because we might have filters etc
                 // holding on SharedComponentData making checks fail
@@ -61,17 +68,17 @@ namespace BovineLabs.Testing
                 this.World.Dispose();
                 this.World = null;
 
-                World.DefaultGameObjectInjectionWorld = this.PreviousWorld;
-                this.PreviousWorld = null;
+                World.DefaultGameObjectInjectionWorld = this.previousWorld;
+                this.previousWorld = null;
                 this.Manager = default;
             }
 
-            JobsUtility.JobDebuggerEnabled = this.JobsDebuggerWasEnabled;
+            JobsUtility.JobDebuggerEnabled = this.jobsDebuggerWasEnabled;
 
             // JobsUtility.ClearSystemIds();
 
 #if !UNITY_DOTSRUNTIME
-            PlayerLoop.SetPlayerLoop(this.PreviousPlayerLoop);
+            PlayerLoop.SetPlayerLoop(this.previousPlayerLoop);
 #endif
 
             base.TearDown();

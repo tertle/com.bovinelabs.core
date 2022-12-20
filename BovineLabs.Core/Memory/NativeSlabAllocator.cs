@@ -11,7 +11,6 @@ namespace BovineLabs.Core.Memory
     using UnityEngine;
 
     [NativeContainer]
-
     public unsafe struct NativeSlabAllocator<T> : IDisposable
         where T : unmanaged
     {
@@ -33,7 +32,7 @@ namespace BovineLabs.Core.Memory
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.CheckAllocator(allocator.Handle);
 
-            m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
+            this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
             CollectionHelper.InitNativeContainer<T>(this.m_Safety);
 
             CollectionHelper.SetStaticSafetyId<NativeSlabAllocator<T>>(ref this.m_Safety, ref s_staticSafetyId.Data);
@@ -72,7 +71,7 @@ namespace BovineLabs.Core.Memory
             this.slabAllocator.Clear();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

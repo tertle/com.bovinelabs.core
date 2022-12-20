@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Collections
 
         private UnsafeEventStream stream;
 
-        /// <summary> Initializes a new instance of the <see cref="NativeEventStream"/> struct. </summary>
+        /// <summary> Initializes a new instance of the <see cref="NativeEventStream" /> struct. </summary>
         /// <param name="allocator"> The specified type of memory allocation. </param>
         public NativeEventStream(AllocatorManager.AllocatorHandle allocator)
         {
@@ -40,8 +40,10 @@ namespace BovineLabs.Core.Collections
         /// <summary> Gets a value indicating whether memory for the container is allocated. </summary>
         /// <value> True if this container object's internal storage has been allocated. </value>
         /// <remarks>
-        /// <para> Note that the container storage is not created if you use the default constructor.
-        /// You must specify at least an allocation type to construct a usable container. </para>
+        /// <para>
+        /// Note that the container storage is not created if you use the default constructor.
+        /// You must specify at least an allocation type to construct a usable container.
+        /// </para>
         /// </remarks>
         public bool IsCreated => this.stream.IsCreated;
 
@@ -67,7 +69,7 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// The current number of items in the container.
         /// </summary>
-        /// <returns>The item count.</returns>
+        /// <returns> The item count. </returns>
         public int Count()
         {
             this.CheckReadAccess();
@@ -77,11 +79,13 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// Copies stream data into NativeArray.
         /// </summary>
-        /// <typeparam name="T">The type of value.</typeparam>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>A new NativeArray, allocated with the given strategy and wrapping the stream data.</returns>
-        /// <remarks>The array is a copy of stream data.</remarks>
+        /// <typeparam name="T"> The type of value. </typeparam>
+        /// <param name="allocator">
+        /// A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.
+        /// </param>
+        /// <returns> A new NativeArray, allocated with the given strategy and wrapping the stream data. </returns>
+        /// <remarks> The array is a copy of stream data. </remarks>
         /// <returns> The native array. </returns>
         public NativeArray<T> ToNativeArray<T>(Allocator allocator)
             where T : struct
@@ -104,14 +108,18 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
         /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
+        /// <remarks>
+        /// You can call this function dispose of the container immediately after scheduling the job. Pass
         /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
         /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
         /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
-        /// using it have run.</remarks>
-        /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
-        /// the container.</returns>
+        /// using it have run.
+        /// </remarks>
+        /// <param name="dependency"> All jobs spawned will depend on this JobHandle. </param>
+        /// <returns>
+        /// A new job handle containing the prior handles as well as the handle for the job that deletes
+        /// the container.
+        /// </returns>
         public JobHandle Dispose(JobHandle dependency)
         {
             var jobHandle = this.stream.Dispose(dependency);
@@ -122,13 +130,13 @@ namespace BovineLabs.Core.Collections
             return jobHandle;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public bool Equals(NativeEventStream other)
         {
             return this.stream.Equals(other.stream);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode", Justification = "Only changes in dispose.")]
         public override int GetHashCode()
         {
