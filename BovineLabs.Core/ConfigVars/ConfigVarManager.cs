@@ -73,11 +73,8 @@ namespace BovineLabs.Core.ConfigVars
 
         private static void Shutdown()
         {
-            foreach (var c in NameConfigVars)
+            foreach (var (configVar, container) in NameConfigVars)
             {
-                var configVar = c.Key;
-                var container = c.Value;
-
                 // always save in editor
                 if (Application.isEditor || configVar.Flags.HasFlag(ConfigVarFlags.Save))
                 {

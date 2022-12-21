@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !ENABLE_TRANSFORM_V1
 namespace BovineLabs.Core.Spatial
 {
     using BovineLabs.Core.Extensions;
@@ -85,3 +86,4 @@ namespace BovineLabs.Core.Spatial
         }
     }
 }
+#endif

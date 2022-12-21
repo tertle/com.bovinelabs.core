@@ -28,7 +28,7 @@
         {
             "name": "com.bovinelabs.game",
             "expression": "0",
-            "define": "BL_BOOTSTRAP"
+            "define": "BL_GAME"
         },
         {
             "name": "com.unity.ui",

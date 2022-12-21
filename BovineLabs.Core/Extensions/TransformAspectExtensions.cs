@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !ENABLE_TRANSFORM_V1
 namespace BovineLabs.Core.Extensions
 {
     using BovineLabs.Core.Assertions;
@@ -70,3 +71,4 @@ namespace BovineLabs.Core.Extensions
         }
     }
 }
+#endif

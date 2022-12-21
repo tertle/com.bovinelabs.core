@@ -66,10 +66,10 @@ namespace BovineLabs.Core.Collections
         }
 
 #else
-        internal DynamicBuffer(BufferHeader* header, int internalCapacity, int elementSize, int alignOf)
+        internal UntypedDynamicBuffer(BufferHeader* header, int internalCapacity, int elementSize, int alignOf)
         {
-            m_Buffer = header;
-            m_InternalCapacity = internalCapacity;
+            this.buffer = header;
+            this.internalCapacity = internalCapacity;
             this.elementSize = elementSize;
             this.alignOf = alignOf;
         }
@@ -122,7 +122,7 @@ namespace BovineLabs.Core.Collections
                 BufferHeader.SetCapacity(this.buffer, value, this.elementSize, this.alignOf, BufferHeader.TrashMode.RetainOldData,
                     this.m_useMemoryInitPattern == 1, this.m_memoryInitPattern, this.internalCapacity);
 #else
-                BufferHeader.SetCapacity(m_Buffer, value, this.elementSize, this.alignOf, BufferHeader.TrashMode.RetainOldData, false, 0, m_InternalCapacity);
+                BufferHeader.SetCapacity(this.buffer, value, this.elementSize, this.alignOf, BufferHeader.TrashMode.RetainOldData, false, 0, this.internalCapacity);
 #endif
             }
         }
@@ -263,7 +263,7 @@ namespace BovineLabs.Core.Collections
             BufferHeader.EnsureCapacity(this.buffer, length, this.elementSize, this.alignOf, BufferHeader.TrashMode.RetainOldData,
                 this.m_useMemoryInitPattern == 1, this.m_memoryInitPattern);
 #else
-            BufferHeader.EnsureCapacity(m_Buffer, length, this.elementSize), this.alignOf, BufferHeader.TrashMode.RetainOldData, false, 0);
+            BufferHeader.EnsureCapacity(this.buffer, length, this.elementSize, this.alignOf, BufferHeader.TrashMode.RetainOldData, false, 0);
 #endif
         }
 

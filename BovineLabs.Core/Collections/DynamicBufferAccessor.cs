@@ -56,11 +56,11 @@ namespace BovineLabs.Core.Collections
 #else
             internal DynamicBufferAccessor(byte* basePointer, int length, int stride, int elementSize, int internalCapacity)
             {
-                this.m_Pointer = basePointer;
-                this.m_InternalCapacity = internalCapacity;
-                this.m_ElementSize = elementSize;
-                this.m_Stride = stride;
-                this.m_Length = length;
+                this.pointer = basePointer;
+                this.internalCapacity = internalCapacity;
+                this.ElementSize = elementSize;
+                this.stride = stride;
+                this.Length = length;
             }
 #endif
 
@@ -74,7 +74,7 @@ namespace BovineLabs.Core.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             return new DynamicBuffer<T>(header, this.safety0, this.arrayInvalidationSafety, this.isReadOnly, false, 0, this.internalCapacity);
 #else
-            return new DynamicBuffer(header, this.m_InternalCapacity);
+            return new DynamicBuffer<T>(header, this.internalCapacity);
 #endif
         }
 
@@ -88,7 +88,7 @@ namespace BovineLabs.Core.Collections
             return new UntypedDynamicBuffer(header, this.safety0, this.arrayInvalidationSafety, this.isReadOnly, false, 0, this.internalCapacity,
                 this.ElementSize, 4);
 #else
-            return new DynamicBuffer(header, this.m_InternalCapacity, this.ElementSize, 4);
+            return new UntypedDynamicBuffer(header, this.internalCapacity, this.ElementSize, 4);
 #endif
         }
 
