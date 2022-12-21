@@ -5,13 +5,13 @@
         "Unity.Burst",
         "Unity.Collections",
         "Unity.Entities",
+        "Unity.Entities.Graphics",
         "Unity.Entities.Hybrid",
-        "Unity.Jobs",
+        "Unity.Logging",
         "Unity.Mathematics",
         "Unity.Mathematics.Extensions",
         "Unity.NetCode",
         "Unity.Physics",
-        "Unity.Rendering.Hybrid",
         "Unity.Scenes",
         "Unity.Transforms"
     ],
@@ -39,9 +39,9 @@
             "define": "UNITY_PHYSICS"
         },
         {
-            "name": "com.unity.rendering.hybrid",
+            "name": "com.unity.entities.graphics",
             "expression": "0",
-            "define": "UNITY_RENDERER"
+            "define": "UNITY_GRAPHICS"
         }
     ],
     "noEngineReferences": false

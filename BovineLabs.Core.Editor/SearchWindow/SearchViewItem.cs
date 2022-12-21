@@ -1,45 +1,45 @@
-﻿using UnityEngine;
-using UnityEngine.UIElements;
+﻿// <copyright file="SearchViewItem.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
 
-namespace UnityEngine.UIExtras
+namespace BovineLabs.Core.Editor.SearchWindow
 {
-    class SearchViewItem : VisualElement
-    {
-        Label m_Label;
-        VisualElement m_Icon;
-        VisualElement m_NextIcon;
+    using UnityEngine;
+    using UnityEngine.UIElements;
+    using UnityEngine.UIExtras;
 
-        string m_Name;
-        public string Name => m_Name;
+    internal class SearchViewItem : VisualElement
+    {
+        private readonly VisualElement icon;
+        private readonly Label label;
+        private readonly VisualElement nextIcon;
+
         public SearchViewItem()
         {
-            AddToClassList("SearchItem");
-            styleSheets.Add(Resources.Load<StyleSheet>("SearchItemStyle"));
-            VisualTreeAsset visualTree = Resources.Load<VisualTreeAsset>("SearchItem");
+            this.AddToClassList("SearchItem");
+            this.styleSheets.Add(Resources.Load<StyleSheet>("UI/SearchItemStyle"));
+            var visualTree = Resources.Load<VisualTreeAsset>("UI/SearchItem");
             visualTree.CloneTree(this);
 
-            m_Label = this.Q<Label>("Label");
-            m_Icon = this.Q("Icon");
-            m_NextIcon = this.Q("NextIcon");
-            tabIndex = -1;
+            this.label = this.Q<Label>("Label");
+            this.icon = this.Q("Icon");
+            this.nextIcon = this.Q("NextIcon");
+            this.tabIndex = -1;
         }
 
-        public TreeNode<SearchView.Item> Item {
-            get => userData as TreeNode<SearchView.Item>;
-            set {
-                userData = value;
-                m_Icon.style.backgroundImage = value.Value.Icon;
-                m_Name = value.Value.Name;
-                m_Label.text = Name;
+        public string Name { get; private set; }
 
-                if (value.ChildCount == 0)
-                {
-                    m_NextIcon.style.visibility = Visibility.Hidden;
-                }
-                else
-                {
-                    m_NextIcon.style.visibility = Visibility.Visible;
-                }
+        public TreeNode<SearchView.Item> Item
+        {
+            get => this.userData as TreeNode<SearchView.Item>;
+            set
+            {
+                this.userData = value;
+                this.icon.style.backgroundImage = value.Value.Icon;
+                this.Name = value.Value.Name;
+                this.label.text = this.Name;
+
+                this.nextIcon.style.visibility = value.ChildCount == 0 ? Visibility.Hidden : Visibility.Visible;
             }
         }
     }

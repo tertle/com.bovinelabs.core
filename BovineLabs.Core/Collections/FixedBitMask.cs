@@ -70,7 +70,7 @@ namespace BovineLabs.Core.Collections
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private void CheckArgs(int pos, int numBits)
         {
-            if (pos < 0 || pos >= this.Length || numBits < 1)
+            if ((pos < 0) || (pos >= this.Length) || (numBits < 1))
             {
                 throw new ArgumentException($"BitArray invalid arguments: pos {pos} (must be 0-{this.Length}), numBits {numBits} (must be greater than 0).");
             }

@@ -6,14 +6,15 @@ namespace BovineLabs.Core.Jobs
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs;
     using Unity.Jobs.LowLevel.Unsafe;
 
     /// <summary> Job that visits each key value pair in a <see cref="NativeParallelHashMap{TKey,TValue}" />. </summary>
-    /// <typeparam name="TKey">The key type of the hash map.</typeparam>
-    /// <typeparam name="TValue">The value type of the hash map.</typeparam>
+    /// <typeparam name="TKey"> The key type of the hash map. </typeparam>
+    /// <typeparam name="TValue"> The value type of the hash map. </typeparam>
     [JobProducerType(typeof(JobNativeParallelHashMapVisitKeyValue.NativeParallelHashMapVisitKeyValueJobStruct<,,>))]
     [SuppressMessage("ReSharper", "TypeParameterCanBeVariant", Justification = "Strict requirements for compiler")]
     public interface IJobNativeParallelHashMapVisitKeyValue<TKey, TValue>
@@ -43,9 +44,9 @@ namespace BovineLabs.Core.Jobs
             NativeParallelHashMap<TKey, TValue> hashMap,
             int minIndicesPerJobCount,
             JobHandle dependsOn = default)
-            where TJob : struct, IJobNativeParallelHashMapVisitKeyValue<TKey, TValue>
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TJob : unmanaged, IJobNativeParallelHashMapVisitKeyValue<TKey, TValue>
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
             var data = hashMap.GetUnsafeBucketData();
 
@@ -57,21 +58,33 @@ namespace BovineLabs.Core.Jobs
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(
                 UnsafeUtility.AddressOf(ref fullData),
-                NativeParallelHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>.Initialize(),
+                GetReflectionData<TJob, TKey, TValue>(),
                 dependsOn,
                 ScheduleMode.Parallel);
 
             return JobsUtility.ScheduleParallelFor(ref scheduleParams, data.bucketCapacityMask + 1, minIndicesPerJobCount);
         }
 
+        public static IntPtr GetReflectionData<TJob, TKey, TValue>()
+            where TJob : unmanaged, IJobNativeParallelHashMapVisitKeyValue<TKey, TValue>
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            NativeParallelHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>.Initialize();
+            var reflectionData = NativeParallelHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>.jobReflectionData.Data;
+            // JobValidationInternal.CheckReflectionDataCorrect<T>(reflectionData);
+            return reflectionData;
+        }
+
+
         /// <summary> The job execution struct. </summary>
         /// <typeparam name="TJob"> The type of the job. </typeparam>
         /// <typeparam name="TKey"> The type of the key in the hash map. </typeparam>
         /// <typeparam name="TValue"> The type of the value in the hash map. </typeparam>
         internal struct NativeParallelHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>
-            where TJob : struct, IJobNativeParallelHashMapVisitKeyValue<TKey, TValue>
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TJob : unmanaged, IJobNativeParallelHashMapVisitKeyValue<TKey, TValue>
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
             /// <summary> The <see cref="NativeParallelHashMap{TKey,TValue}" />. </summary>
             [ReadOnly]
@@ -81,7 +94,9 @@ namespace BovineLabs.Core.Jobs
             internal TJob JobData;
 
             // ReSharper disable once StaticMemberInGenericType
-            private static IntPtr jobReflectionData;
+            // private static IntPtr jobReflectionData;
+            internal static readonly SharedStatic<IntPtr> jobReflectionData =
+                SharedStatic<IntPtr>.GetOrCreate<NativeParallelHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>>();
 
             private delegate void ExecuteJobFunction(
                 ref NativeParallelHashMapVisitKeyValueJobStruct<TJob, TKey, TValue> fullData,
@@ -92,17 +107,28 @@ namespace BovineLabs.Core.Jobs
 
             /// <summary> Initializes the job. </summary>
             /// <returns> The job pointer. </returns>
-            internal static IntPtr Initialize()
+            [BurstDiscard]
+            internal static void Initialize()
             {
-                if (jobReflectionData == IntPtr.Zero)
+                if (!(jobReflectionData.Data == IntPtr.Zero))
                 {
-                    jobReflectionData = JobsUtility.CreateJobReflectionData(
-                        typeof(NativeParallelHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>),
-                        typeof(TJob),
-                        (ExecuteJobFunction)Execute);
+                    return;
                 }
 
-                return jobReflectionData;
+                jobReflectionData.Data = JobsUtility.CreateJobReflectionData(
+                    typeof(NativeParallelHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>),
+                    typeof(TJob),
+                    (ExecuteJobFunction)Execute);
+
+                // if (jobReflectionData == IntPtr.Zero)
+                // {
+                //     jobReflectionData = JobsUtility.CreateJobReflectionData(
+                //         typeof(NativeParallelHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>),
+                //         typeof(TJob),
+                //         (ExecuteJobFunction)Execute);
+                // }
+                //
+                // return jobReflectionData;
             }
 
             /// <summary> Executes the job. </summary>

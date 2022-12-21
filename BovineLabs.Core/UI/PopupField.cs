@@ -40,12 +40,12 @@ namespace BovineLabs.Core.UI
             this.rawValue = -1;
             this.defaultValue = defaultValue;
 
-            if (this.DisplayNames != null && this.DisplayNames.Count > 0)
+            if ((this.DisplayNames != null) && (this.DisplayNames.Count > 0))
             {
                 this.SetValueWithoutNotify(defaultValue);
             }
 
-            this.Menu.onSelectionChange += this.MenuOnSelectionChange;
+            this.Menu.selectionChanged += this.MenuOnSelectionChange;
         }
 
         /// <inheritdoc />
@@ -58,7 +58,7 @@ namespace BovineLabs.Core.UI
         /// <inheritdoc />
         protected override void UpdateText(TextElement textElement)
         {
-            textElement.text = this.rawValue >= 0 && this.rawValue < this.DisplayNames.Count ? this.DisplayNames[this.rawValue] : "[None]";
+            textElement.text = (this.rawValue >= 0) && (this.rawValue < this.DisplayNames.Count) ? this.DisplayNames[this.rawValue] : "[None]";
         }
 
         /// <inheritdoc />
@@ -78,7 +78,7 @@ namespace BovineLabs.Core.UI
         public new class UxmlFactory : UxmlFactory<PopupField, UxmlFactory.PopupUxmlTraits>
         {
             /// <summary> Custom traits for the factory. </summary>
-            public class PopupUxmlTraits : BaseField<int>.UxmlTraits
+            public class PopupUxmlTraits : UxmlTraits
             {
                 private readonly UxmlStringAttributeDescription displayNames = new() { name = "display-names" };
 

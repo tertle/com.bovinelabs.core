@@ -7,7 +7,7 @@ namespace BovineLabs.Core.Extensions
     using System;
     using System.Collections.Generic;
 
-    /// <summary> Extensions for <see cref="IReadOnlyList{T}"/>. </summary>
+    /// <summary> Extensions for <see cref="IReadOnlyList{T}" />. </summary>
     public static class ReadOnlyListExtensions
     {
         /// <summary> Finds the index of a value, if not found returns -1. </summary>

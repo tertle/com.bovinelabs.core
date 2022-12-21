@@ -12,30 +12,118 @@ namespace BovineLabs.Core.Utility
     public struct SubSceneUtility
     {
         [ReadOnly]
-        private ComponentDataFromEntity<SceneReference> sceneReferences;
+        private ComponentLookup<SceneReference> sceneReferences;
 
         [ReadOnly]
-        private BufferFromEntity<ResolvedSectionEntity> resolvedSectionEntitys;
+        private BufferLookup<ResolvedSectionEntity> resolvedSectionEntitys;
 
         [ReadOnly]
-        private ComponentDataFromEntity<SceneSectionStreamingSystem.StreamingState> streamingStates;
+        private ComponentLookup<SceneSectionStreamingSystem.StreamingState> streamingStates;
 
         [ReadOnly]
-        private ComponentDataFromEntity<RequestSceneLoaded> requestSceneLoadeds;
+        private ComponentLookup<RequestSceneLoaded> requestSceneLoadeds;
 
-        public SubSceneUtility(SystemBase systemBase)
+        public SubSceneUtility(ref SystemState state)
         {
-            this.sceneReferences = systemBase.GetComponentDataFromEntity<SceneReference>(true);
-            this.resolvedSectionEntitys = systemBase.GetBufferFromEntity<ResolvedSectionEntity>(true);
-            this.streamingStates = systemBase.GetComponentDataFromEntity<SceneSectionStreamingSystem.StreamingState>(true);
-            this.requestSceneLoadeds = systemBase.GetComponentDataFromEntity<RequestSceneLoaded>(true);
+            this.sceneReferences = state.GetComponentLookup<SceneReference>(true);
+            this.resolvedSectionEntitys = state.GetBufferLookup<ResolvedSectionEntity>(true);
+            this.streamingStates = state.GetComponentLookup<SceneSectionStreamingSystem.StreamingState>(true);
+            this.requestSceneLoadeds = state.GetComponentLookup<RequestSceneLoaded>(true);
+        }
 
-            // TODO add Build() method/s
+        public static void OpenScene(ref SystemState state, Entity entity)
+        {
+            if (state.EntityManager.HasComponent<RequestSceneLoaded>(entity))
+            {
+                Debug.LogWarning("Trying to open SubScene that is already open.");
+                return;
+            }
+
+            state.EntityManager.AddComponent<RequestSceneLoaded>(entity);
+
+            var resolvedSectionEntities = state.EntityManager.GetBuffer<ResolvedSectionEntity>(entity);
+            foreach (var section in resolvedSectionEntities.ToNativeArray(Allocator.Temp))
+            {
+                state.EntityManager.AddComponent<RequestSceneLoaded>(section.SectionEntity);
+            }
+        }
+
+        public static void CloseScene(ref SystemState state, Entity entity)
+        {
+            if (!state.EntityManager.HasComponent<RequestSceneLoaded>(entity))
+            {
+                Debug.LogWarning("Trying to close SubScene that isn't open.");
+                return;
+            }
+
+            state.EntityManager.RemoveComponent<RequestSceneLoaded>(entity);
+
+            var resolvedSectionEntities = state.EntityManager.GetBuffer<ResolvedSectionEntity>(entity);
+
+            foreach (var section in resolvedSectionEntities.ToNativeArray(Allocator.Temp))
+            {
+                if (state.EntityManager.HasComponent<RequestSceneLoaded>(section.SectionEntity))
+                {
+                    state.EntityManager.RemoveComponent<RequestSceneLoaded>(section.SectionEntity);
+                }
+            }
         }
 
         /// <summary> Check if a subscene is loaded. </summary>
-        /// <param name="entity">The entity with the loading component data.  This is the entity returned by LoadSceneAsync.</param>
-        /// <returns>True if the scene is loaded.</returns>
+        /// <param name="entity"> The entity with the loading component data.  This is the entity returned by LoadSceneAsync. </param>
+        /// <returns> True if the scene is loaded. </returns>
+        public static bool IsSceneLoaded(ref SystemState state, Entity entity)
+        {
+            if (!state.EntityManager.HasComponent<SceneReference>(entity))
+            {
+                return false;
+            }
+
+            if (!state.EntityManager.HasBuffer<ResolvedSectionEntity>(entity))
+            {
+                return false;
+            }
+
+            var resolvedSectionEntities = state.EntityManager.GetBuffer<ResolvedSectionEntity>(entity);
+            if (resolvedSectionEntities.Length == 0)
+            {
+                return false;
+            }
+
+            foreach (var s in resolvedSectionEntities)
+            {
+                if (!IsSectionLoaded(ref state, s.SectionEntity))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static bool IsSectionLoaded(ref SystemState state, Entity sectionEntity)
+        {
+            // return true;
+            if (!state.EntityManager.HasComponent<SceneSectionStreamingSystem.StreamingState>(sectionEntity))
+            {
+                return false;
+            }
+
+            var streamingState = state.EntityManager.GetComponentData<SceneSectionStreamingSystem.StreamingState>(sectionEntity);
+            return streamingState.Status == SceneSectionStreamingSystem.StreamingStatus.Loaded;
+        }
+
+        public void Update(ref SystemState state)
+        {
+            this.sceneReferences.Update(ref state);
+            this.resolvedSectionEntitys.Update(ref state);
+            this.streamingStates.Update(ref state);
+            this.requestSceneLoadeds.Update(ref state);
+        }
+
+        /// <summary> Check if a subscene is loaded. </summary>
+        /// <param name="entity"> The entity with the loading component data.  This is the entity returned by LoadSceneAsync. </param>
+        /// <returns> True if the scene is loaded. </returns>
         public bool IsSceneLoaded(Entity entity)
         {
             if (!this.sceneReferences.HasComponent(entity))
@@ -43,7 +131,7 @@ namespace BovineLabs.Core.Utility
                 return false;
             }
 
-            if (!this.resolvedSectionEntitys.HasComponent(entity))
+            if (!this.resolvedSectionEntitys.HasBuffer(entity))
             {
                 return false;
             }
@@ -69,9 +157,12 @@ namespace BovineLabs.Core.Utility
         /// <summary>
         /// Check if a section of a subscene is loaded.
         /// </summary>
-        /// <param name="sectionEntity">The section entity representing the scene section. The section entities can be found in the ResolvedSectionEntity Buffer on the scene entity.</param>
-        /// <returns>True if the scene section is loaded.</returns>
-        private bool IsSectionLoaded(Entity sectionEntity)
+        /// <param name="sectionEntity">
+        /// The section entity representing the scene section. The section entities can be found in the ResolvedSectionEntity Buffer on the
+        /// scene entity.
+        /// </param>
+        /// <returns> True if the scene section is loaded. </returns>
+        public bool IsSectionLoaded(Entity sectionEntity)
         {
             // return true;
             if (!this.streamingStates.HasComponent(sectionEntity))

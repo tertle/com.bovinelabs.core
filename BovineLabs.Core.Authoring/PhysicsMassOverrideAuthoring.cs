@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Authoring
     using Unity.Physics;
     using UnityEngine;
 
-    public class PhysicsMassOverrideAuthoring : MonoBehaviour, IConvertGameObjectToEntity
+    public class PhysicsMassOverrideAuthoring : MonoBehaviour
     {
         [SerializeField]
         private bool isKinematic = true;
@@ -17,12 +17,19 @@ namespace BovineLabs.Core.Authoring
         [SerializeField]
         private bool setVelocityToZero;
 
-        public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
+        public bool IsKinematic => this.isKinematic;
+
+        public bool SetVelocityToZero => this.setVelocityToZero;
+    }
+
+    public class PhysicsMassOverrideBaker : Baker<PhysicsMassOverrideAuthoring>
+    {
+        public override void Bake(PhysicsMassOverrideAuthoring authoring)
         {
-            dstManager.AddComponentData(entity, new PhysicsMassOverride
+            this.AddComponent(new PhysicsMassOverride
             {
-                IsKinematic = (byte)(this.isKinematic ? 1 : 0),
-                SetVelocityToZero = (byte)(this.setVelocityToZero ? 1 : 0),
+                IsKinematic = (byte)(authoring.IsKinematic ? 1 : 0),
+                SetVelocityToZero = (byte)(authoring.SetVelocityToZero ? 1 : 0),
             });
         }
     }

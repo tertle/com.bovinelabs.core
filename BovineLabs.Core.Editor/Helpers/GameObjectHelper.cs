@@ -7,17 +7,16 @@ namespace BovineLabs.Core.Editor.Helpers
     using System;
     using System.Reflection;
     using BovineLabs.Core.Extensions;
-    using Unity.Entities;
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.Assertions;
 
-    /// <summary> Helpers for <see cref="GameObject"/>. </summary>
+    /// <summary> Helpers for <see cref="GameObject" />. </summary>
     public static class GameObjectHelper
     {
         /// <summary>
         /// Add a component to of GameObject.
-        /// This is intended for use on entity components generated via <see cref="GenerateAuthoringComponentAttribute"/>.
+        /// This is intended for use on entity components generated via <see cref="GenerateAuthoringComponentAttribute" />.
         /// </summary>
         /// <remarks> Note this only works on types in an asmdef. </remarks>
         /// <param name="gameObject"> GameObject to add the component type to. </param>
@@ -29,7 +28,7 @@ namespace BovineLabs.Core.Editor.Helpers
 
         /// <summary>
         /// Add a component to a set of GameObjects.
-        /// This is intended for use on entity components generated via <see cref="GenerateAuthoringComponentAttribute"/>.
+        /// This is intended for use on entity components generated via <see cref="GenerateAuthoringComponentAttribute" />.
         /// </summary>
         /// <remarks> Note this only works on types in an asmdef. </remarks>
         /// <param name="gameObjects"> GameObjects to add the component type to. </param>

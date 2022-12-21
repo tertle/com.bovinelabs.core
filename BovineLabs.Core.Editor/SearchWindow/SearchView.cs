@@ -1,119 +1,125 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.UIElements;
+﻿// <copyright file="SearchView.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
 
-namespace UnityEngine.UIExtras
+namespace BovineLabs.Core.Editor.SearchWindow
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEditor;
+    using UnityEngine;
+    using UnityEngine.UIElements;
+    using UnityEngine.UIExtras;
+
     public class SearchView : VisualElement
     {
-        public event Action<Item> OnSelection;
+        private readonly ListView list;
+        private readonly Button returnButton;
+        private readonly VisualElement returnIcon;
+        private TreeNode<Item> currentNode;
 
-        SearchField m_SearchField;
-        Button m_ReturnButton;
-        VisualElement m_ReturnIcon;
-        ListView m_List;
-
-        public List<Item> Items
-        {
-            get => m_Items;
-            set
-            {
-                m_Items = value;
-                Reset();
-            }
-        }
-
-        public struct Item
-        {
-            public string Path;
-            public Texture2D Icon;
-            public object Data;
-
-            /*public Func<Status, Item> StatusCallback;
-            public enum Status
-            {
-                Normal,
-                Disabled
-            }*/
-
-            public string Name => System.IO.Path.GetFileName(Path);
-        }
-
-        List<Item> m_Items;
-
-        string m_Title;
-
-        public string Title
-        {
-            get => m_Title;
-            set
-            {
-                m_Title = value;
-                RefreshTitle();
-            }
-        }
-
-        TreeNode<Item> m_RootNode;
-        TreeNode<Item> m_CurrentNode;
-        TreeNode<Item> m_SearchNode;
-
-        public SelectionType SelectionType
-        {
-            get => m_List.selectionType;
-            set { m_List.selectionType = value; }
-        }
+        private List<Item> items;
+        private TreeNode<Item> rootNode;
+        private TreeNode<Item> searchNode;
+        private string title;
 
         public SearchView()
         {
-            AddToClassList("SearchView");
-            if (EditorGUIUtility.isProSkin)
-            {
-                AddToClassList("UnityThemeDark");
-            }
-            else
-            {
-                AddToClassList("UnityThemeLight");
-            }
+            this.AddToClassList("SearchView");
+            this.AddToClassList(EditorGUIUtility.isProSkin ? "UnityThemeDark" : "UnityThemeLight");
 
-            styleSheets.Add(Resources.Load<StyleSheet>("SearchViewStyle"));
-            VisualTreeAsset visualTree = Resources.Load<VisualTreeAsset>("SearchView");
+            this.styleSheets.Add(Resources.Load<StyleSheet>("UI/SearchViewStyle"));
+            var visualTree = Resources.Load<VisualTreeAsset>("UI/SearchView");
             visualTree.CloneTree(this);
 
-            m_SearchField = this.Q<SearchField>();
-            m_ReturnButton = this.Q<Button>("ReturnButton");
-            m_ReturnButton.clicked += OnNavigationReturn;
-            m_ReturnIcon = this.Q("ReturnIcon");
-            m_List = this.Q<ListView>("SearchResults");
-            m_List.selectionType = SelectionType.Single;
-            m_List.makeItem = () => { return new SearchViewItem(); };
-            m_List.bindItem = (VisualElement element, int index) =>
+            var searchField = this.Q<SearchField>();
+            this.returnButton = this.Q<Button>("ReturnButton");
+            this.returnButton.clicked += this.OnNavigationReturn;
+            this.returnIcon = this.Q("ReturnIcon");
+            this.list = this.Q<ListView>("SearchResults");
+            this.list.selectionType = SelectionType.Single;
+            this.list.makeItem = () => { return new SearchViewItem(); };
+            this.list.bindItem = (element, index) =>
             {
-                SearchViewItem searchItem = element as SearchViewItem;
-                searchItem.Item = m_CurrentNode[index];
+                var searchItem = (SearchViewItem)element;
+                searchItem.Item = this.currentNode[index];
             };
 
-            m_List.onSelectionChange += OnListSelectionChange;
-            m_List.onItemsChosen += OnItemsChosen;
+            this.list.selectionChanged += this.OnListSelectionChange;
+            this.list.itemsChosen += this.OnItemsChosen;
 
+            this.Title = "Root";
 
-            Title = "Root";
-
-            m_SearchField.RegisterValueChangedCallback(OnSearchQueryChanged);
+            searchField.RegisterValueChangedCallback(this.OnSearchQueryChanged);
         }
 
-        void OnSearchQueryChanged(ChangeEvent<string> changeEvent)
+        public List<Item> Items
         {
-            if (m_SearchNode != null && m_CurrentNode == m_SearchNode)
+            get => this.items;
+            set
             {
-                m_CurrentNode = m_SearchNode.Parent;
-                m_SearchNode = null;
+                this.items = value;
+                this.Reset();
+            }
+        }
+
+        public string Title
+        {
+            get => this.title;
+            set
+            {
+                this.title = value;
+                this.RefreshTitle();
+            }
+        }
+
+        public SelectionType SelectionType
+        {
+            get => this.list.selectionType;
+            set => this.list.selectionType = value;
+        }
+
+        public event Action<Item> OnSelection;
+
+        public void Reset()
+        {
+            this.rootNode = new TreeNode<Item>(new Item { Path = this.title, Data = null, Icon = null });
+            for (var i = 0; i < this.items.Count; ++i)
+            {
+                this.Add(this.items[i]);
+            }
+
+            this.SetCurrentSelectionNode(this.rootNode);
+        }
+
+        private static TreeNode<Item> FindNodeByPath(TreeNode<Item> parent, string path)
+        {
+            if ((parent == null) || (path.Length == 0))
+            {
+                return null;
+            }
+
+            for (var i = 0; i < parent.ChildCount; ++i)
+            {
+                if (parent[i].Value.Path.Equals(path))
+                {
+                    return parent[i];
+                }
+            }
+
+            return null;
+        }
+
+        private void OnSearchQueryChanged(ChangeEvent<string> changeEvent)
+        {
+            if ((this.searchNode != null) && (this.currentNode == this.searchNode))
+            {
+                this.currentNode = this.searchNode.Parent;
+                this.searchNode = null;
                 if (changeEvent.newValue.Length == 0)
                 {
-                    SetCurrentSelectionNode(m_CurrentNode);
+                    this.SetCurrentSelectionNode(this.currentNode);
                     return;
                 }
             }
@@ -123,111 +129,100 @@ namespace UnityEngine.UIExtras
                 return;
             }
 
-            List<TreeNode<Item>> searchResults = new List<TreeNode<Item>>();
-            m_RootNode.Traverse(delegate(TreeNode<Item> itemNode)
+            var searchResults = new List<TreeNode<Item>>();
+            this.rootNode.Traverse(delegate(TreeNode<Item> itemNode)
             {
                 if (itemNode.Value.Name.IndexOf(changeEvent.newValue, StringComparison.CurrentCultureIgnoreCase) != -1)
                 {
                     searchResults.Add(itemNode);
                 }
             });
-            m_SearchNode = new TreeNode<Item>(new Item { Path = "Search" });
-            m_SearchNode.m_Children = searchResults;
-            m_SearchNode.Parent = m_CurrentNode;
-            SetCurrentSelectionNode(m_SearchNode);
 
+            this.searchNode = new TreeNode<Item>(new Item { Path = "Search" })
+            {
+                m_Children = searchResults,
+                Parent = this.currentNode,
+            };
+
+            this.SetCurrentSelectionNode(this.searchNode);
         }
 
-        void OnListSelectionChange(IEnumerable<object> selection)
+        private void OnListSelectionChange(IEnumerable<object> selection)
         {
-            if (SelectionType == SelectionType.Single)
+            if (this.SelectionType == SelectionType.Single)
             {
-                OnItemsChosen(selection);
+                this.OnItemsChosen(selection);
             }
-            else
-            {
-                // TBD.
-            }
+            // TBD.
         }
 
-        void OnItemsChosen(IEnumerable<object> selection)
+        private void OnItemsChosen(IEnumerable<object> selection)
         {
-            TreeNode<Item> node = selection.First() as TreeNode<Item>;
+            var node = (TreeNode<Item>)selection.First();
             if (node.ChildCount == 0)
             {
-                OnSelection?.Invoke(node.Value);
+                this.OnSelection?.Invoke(node.Value);
             }
             else
             {
-                SetCurrentSelectionNode(node);
+                this.SetCurrentSelectionNode(node);
             }
         }
 
-        void RefreshTitle()
+        private void RefreshTitle()
         {
-            if (m_RootNode != null)
+            if (this.rootNode != null)
             {
-                m_RootNode.Value = new Item { Path = m_Title, Data = null, Icon = null };
+                this.rootNode.Value = new Item { Path = this.title, Data = null, Icon = null };
             }
 
-            if (m_CurrentNode == null)
+            if (this.currentNode == null)
             {
-                m_ReturnButton.text = m_Title;
+                this.returnButton.text = this.title;
                 return;
             }
 
-            m_ReturnButton.text = m_CurrentNode.Value.Name;
+            this.returnButton.text = this.currentNode.Value.Name;
         }
 
-        public void Reset()
+        private void SetCurrentSelectionNode(TreeNode<Item> node)
         {
-            m_RootNode = new TreeNode<Item>(new Item { Path = m_Title, Data = null, Icon = null });
-            for (int i = 0; i < m_Items.Count; ++i)
-            {
-                Add(m_Items[i]);
-            }
-
-            SetCurrentSelectionNode(m_RootNode);
-        }
-
-        void SetCurrentSelectionNode(TreeNode<Item> node)
-        {
-            m_CurrentNode = node;
-            m_List.itemsSource = m_CurrentNode.Children;
-            m_ReturnButton.text = m_CurrentNode.Value.Name;
-            m_List.RefreshItems();
+            this.currentNode = node;
+            this.list.itemsSource = this.currentNode.Children;
+            this.returnButton.text = this.currentNode.Value.Name;
+            this.list.RefreshItems();
 
             if (node.Parent == null)
             {
-                m_ReturnButton.SetEnabled(false);
-                m_ReturnIcon.style.visibility = Visibility.Hidden;
+                this.returnButton.SetEnabled(false);
+                this.returnIcon.style.visibility = Visibility.Hidden;
             }
             else
             {
-                m_ReturnButton.SetEnabled(true);
-                m_ReturnIcon.style.visibility = Visibility.Visible;
+                this.returnButton.SetEnabled(true);
+                this.returnIcon.style.visibility = Visibility.Visible;
             }
         }
 
-        void OnNavigationReturn()
+        private void OnNavigationReturn()
         {
-            if (m_CurrentNode != null && m_CurrentNode.Parent != null)
+            if ((this.currentNode != null) && (this.currentNode.Parent != null))
             {
-                SetCurrentSelectionNode(m_CurrentNode.Parent);
+                this.SetCurrentSelectionNode(this.currentNode.Parent);
             }
         }
 
-        void Add(Item item)
+        private void Add(Item item)
         {
             if (item.Path.Length == 0)
             {
                 return;
             }
 
-            string[] pathParts = item.Path.Split('/');
-            TreeNode<Item> parent = m_RootNode;
-            string currentPath = string.Empty;
-            for (int i = 0; i < pathParts.Length; ++i)
+            var pathParts = item.Path.Split('/');
+            var root = this.rootNode;
+            var currentPath = string.Empty;
+            for (var i = 0; i < pathParts.Length; ++i)
             {
                 if (currentPath.Length == 0)
                 {
@@ -238,39 +233,30 @@ namespace UnityEngine.UIExtras
                     currentPath += "/" + pathParts[i];
                 }
 
-                TreeNode<Item> node = FindNodeByPath(parent, currentPath);
+                var node = FindNodeByPath(root, currentPath);
                 if (node == null)
                 {
-                    node = parent.AddChild(new Item { Path = currentPath, Data = null, Icon = null });
+                    node = root.AddChild(new Item { Path = currentPath, Data = null, Icon = null });
                 }
 
-                if (i == (pathParts.Length - 1))
+                if (i == pathParts.Length - 1)
                 {
                     node.Value = item;
                 }
                 else
                 {
-                    parent = node;
+                    root = node;
                 }
             }
         }
 
-        TreeNode<Item> FindNodeByPath(TreeNode<Item> parent, string path)
+        public struct Item
         {
-            if (parent == null || path.Length == 0)
-            {
-                return null;
-            }
+            public string Path;
+            public Texture2D Icon;
+            public object Data;
 
-            for (int i = 0; i < parent.ChildCount; ++i)
-            {
-                if (parent[i].Value.Path.Equals(path))
-                {
-                    return parent[i];
-                }
-            }
-
-            return null;
+            public string Name => System.IO.Path.GetFileName(this.Path);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Internal
         public ComponentTypeHandleProxy(ComponentTypeHandle<T> typeHandle)
         {
             this.m_GlobalSystemVersion = typeHandle.m_GlobalSystemVersion;
-            this.m_IsReadOnly = typeHandle.m_IsReadOnly;
+            this.m_IsReadOnly = typeHandle.IsReadOnly;
         }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -34,7 +34,10 @@ namespace BovineLabs.Core.Internal
     public static class ComponentTypeHandleInternals
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        public static AtomicSafetyHandle GetSafety<T>(this ComponentTypeHandle<T> componentTypeHandle) => componentTypeHandle.m_Safety;
+        public static AtomicSafetyHandle GetSafety<T>(this ComponentTypeHandle<T> componentTypeHandle)
+        {
+            return componentTypeHandle.m_Safety;
+        }
 #endif
     }
 }

@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Iterators
     {
         internal static void Clear(DynamicBuffer<byte> buffer)
         {
-            DynamicHashMapData* data = buffer.AsData<TKey, TValue>();
+            var data = buffer.AsData<TKey, TValue>();
 
             UnsafeUtility.MemSet(data->Buckets, 0xff, (data->BucketCapacityMask + 1) * 4);
             UnsafeUtility.MemSet(data->Next, 0xff, data->KeyCapacity * 4);
@@ -36,9 +36,9 @@ namespace BovineLabs.Core.Iterators
             }
 
             // Allocate an entry from the free list
-            if (data->AllocatedIndexLength >= data->KeyCapacity && data->FirstFreeIDX < 0)
+            if ((data->AllocatedIndexLength >= data->KeyCapacity) && (data->FirstFreeIDX < 0))
             {
-                int newCap = DynamicHashMapData.GrowCapacity(data->KeyCapacity);
+                var newCap = DynamicHashMapData.GrowCapacity(data->KeyCapacity);
                 DynamicHashMapData.ReallocateHashMap<TKey, TValue>(buffer, newCap, DynamicHashMapData.GetBucketSize(newCap), out data);
             }
 
@@ -59,10 +59,10 @@ namespace BovineLabs.Core.Iterators
             UnsafeUtility.WriteArrayElement(data->Keys, idx, key);
             UnsafeUtility.WriteArrayElement(data->Values, idx, item);
 
-            int bucket = key.GetHashCode() & data->BucketCapacityMask;
+            var bucket = key.GetHashCode() & data->BucketCapacityMask;
 
             // Add the index to the hash-map
-            int* buckets = (int*)data->Buckets;
+            var buckets = (int*)data->Buckets;
             var nextPtrs = (int*)data->Next;
 
             nextPtrs[idx] = buckets[bucket];
@@ -89,7 +89,7 @@ namespace BovineLabs.Core.Iterators
             var prevEntry = -1;
             var entryIdx = buckets[bucket];
 
-            while (entryIdx >= 0 && entryIdx < data->KeyCapacity)
+            while ((entryIdx >= 0) && (entryIdx < data->KeyCapacity))
             {
                 if (UnsafeUtility.ReadArrayElement<TKey>(data->Keys, entryIdx).Equals(key))
                 {
@@ -106,7 +106,7 @@ namespace BovineLabs.Core.Iterators
                     }
 
                     // And free the index
-                    int nextIdx = nextPtrs[entryIdx];
+                    var nextIdx = nextPtrs[entryIdx];
                     nextPtrs[entryIdx] = data->FirstFreeIDX;
                     data->FirstFreeIDX = entryIdx;
                     entryIdx = nextIdx;
@@ -127,12 +127,12 @@ namespace BovineLabs.Core.Iterators
             return removed;
         }
 
-        internal static bool SetValue(DynamicBuffer<byte> buffer, ref NativeParallelMultiHashMapIterator<TKey> it, in TValue item)
+        internal static bool SetValue(DynamicBuffer<byte> buffer, ref NativeMultiHashMapIterator<TKey> it, in TValue item)
         {
             var data = buffer.AsData<TKey, TValue>();
 
-            int entryIdx = it.EntryIndex;
-            if (entryIdx < 0 || entryIdx >= data->KeyCapacity)
+            var entryIdx = it.EntryIndex;
+            if ((entryIdx < 0) || (entryIdx >= data->KeyCapacity))
             {
                 return false;
             }
@@ -141,7 +141,7 @@ namespace BovineLabs.Core.Iterators
             return true;
         }
 
-        internal static bool TryGetFirstValueAtomic(DynamicHashMapData* data, TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
+        internal static bool TryGetFirstValueAtomic(DynamicHashMapData* data, TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
         {
             it.key = key;
 
@@ -153,28 +153,28 @@ namespace BovineLabs.Core.Iterators
             }
 
             // First find the slot based on the hash
-            int* buckets = (int*)data->Buckets;
-            int bucket = key.GetHashCode() & data->BucketCapacityMask;
+            var buckets = (int*)data->Buckets;
+            var bucket = key.GetHashCode() & data->BucketCapacityMask;
             it.EntryIndex = it.NextEntryIndex = buckets[bucket];
             return TryGetNextValueAtomic(data, out item, ref it);
         }
 
-        internal static bool TryGetNextValueAtomic(DynamicHashMapData* data, out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
+        internal static bool TryGetNextValueAtomic(DynamicHashMapData* data, out TValue item, ref NativeMultiHashMapIterator<TKey> it)
         {
-            int entryIdx = it.NextEntryIndex;
+            var entryIdx = it.NextEntryIndex;
             it.NextEntryIndex = -1;
             it.EntryIndex = -1;
             item = default;
-            if (entryIdx < 0 || entryIdx >= data->KeyCapacity)
+            if ((entryIdx < 0) || (entryIdx >= data->KeyCapacity))
             {
                 return false;
             }
 
-            int* nextPtrs = (int*)data->Next;
+            var nextPtrs = (int*)data->Next;
             while (!UnsafeUtility.ReadArrayElement<TKey>(data->Keys, entryIdx).Equals(it.key))
             {
                 entryIdx = nextPtrs[entryIdx];
-                if (entryIdx < 0 || entryIdx >= data->KeyCapacity)
+                if ((entryIdx < 0) || (entryIdx >= data->KeyCapacity))
                 {
                     return false;
                 }
@@ -274,7 +274,7 @@ namespace BovineLabs.Core.Iterators
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckIndexOutOfBounds(DynamicHashMapData* data, int idx)
         {
-            if (idx < 0 || idx >= data->KeyCapacity)
+            if ((idx < 0) || (idx >= data->KeyCapacity))
             {
                 throw new InvalidOperationException("Internal Map error");
             }

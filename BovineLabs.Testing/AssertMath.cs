@@ -1,5 +1,5 @@
 // <copyright file="AssertMath.cs" company="BovineLabs">
-// Copyright (c) BovineLabs. All rights reserved.
+//     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 namespace BovineLabs.Testing
@@ -15,9 +15,9 @@ namespace BovineLabs.Testing
         /// <summary>
         /// Compares two quaternions to check if they are equal within delta range.
         /// </summary>
-        /// <param name="expected">The expected result.</param>
-        /// <param name="result">The actual result.</param>
-        /// <param name="delta">Delta.</param>
+        /// <param name="expected"> The expected result. </param>
+        /// <param name="result"> The actual result. </param>
+        /// <param name="delta"> Delta. </param>
         public static void AreApproximatelyEqual(quaternion expected, quaternion result, float delta)
         {
             Assert.AreApproximatelyEqual(expected.value.x, result.value.x, delta, $"Expected: {result} == {expected}, +-{delta}");
@@ -29,9 +29,9 @@ namespace BovineLabs.Testing
         /// <summary>
         /// Compares two float3 to check if they are equal within delta range.
         /// </summary>
-        /// <param name="expected">The expected result.</param>
-        /// <param name="result">The actual result.</param>
-        /// <param name="delta">Delta.</param>
+        /// <param name="expected"> The expected result. </param>
+        /// <param name="result"> The actual result. </param>
+        /// <param name="delta"> Delta. </param>
         public static void AreApproximatelyEqual(float3 expected, float3 result, float delta)
         {
             Assert.AreApproximatelyEqual(expected.x, result.x, delta, $"Expected: {result} == {expected}, +-{delta}");

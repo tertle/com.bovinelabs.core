@@ -7,16 +7,19 @@ namespace BovineLabs.Core.Utility
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Assembly = System.Reflection.Assembly;
+    using Unity.Collections;
+#if UNITY_EDITOR
+    using UnityEditor.Compilation;
+#endif
 
     /// <summary> Common reflection helpers. </summary>
     public static class ReflectionUtility
     {
 #if UNITY_EDITOR
-        private static Dictionary<string, UnityEditor.Compilation.Assembly> assemblies;
+        private static Dictionary<string, Assembly> assemblies;
 
-        private static Dictionary<string, UnityEditor.Compilation.Assembly> AssembliesMap =>
-            assemblies ??= UnityEditor.Compilation.CompilationPipeline.GetAssemblies().ToDictionary(r => r.name, r => r);
+        private static Dictionary<string, Assembly> AssembliesMap =>
+            assemblies ??= CompilationPipeline.GetAssemblies().ToDictionary(r => r.name, r => r);
 #endif
 
         /// <summary> Searches all assemblies to find all types that implement a type. </summary>
@@ -63,9 +66,9 @@ namespace BovineLabs.Core.Utility
             var types = from t in AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes())
                 where !t.IsAbstract && !t.IsInterface
                 let i = t.BaseType
-                where i != null && i.IsGenericType &&
-                      i.GetGenericTypeDefinition() == type &&
-                      i.GetGenericArguments()[0] == t // must equal itself
+                where (i != null) && i.IsGenericType &&
+                      (i.GetGenericTypeDefinition() == type) &&
+                      (i.GetGenericArguments()[0] == t) // must equal itself
                 select t;
 
             return types;
@@ -99,17 +102,49 @@ namespace BovineLabs.Core.Utility
 
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
-                .Where(t => t != type1 && t != type2)
+                .Where(t => (t != type1) && (t != type2))
                 .Where(t => t.IsClass && !t.IsInterface && !t.IsAbstract)
                 .Where(t => !t.ContainsGenericParameters)
                 .Where(t => type1.IsAssignableFrom(t) && type2.IsAssignableFrom(t));
+        }
+
+        /// <summary> Searches all assemblies to find all types that implement both 2 types but only keep top level inheritance. </summary>
+        /// <typeparam name="T1"> The first base type that is inherited from. </typeparam>
+        /// <typeparam name="T2"> The second base type that is inherited from. </typeparam>
+        /// <returns> All the types that inherit both types. </returns>
+        public static IEnumerable<Type> GetAllImplementationsRootOnly<T1, T2>()
+            where T1 : class
+            where T2 : class
+        {
+            var type1 = typeof(T1);
+            var type2 = typeof(T2);
+
+            var all = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetTypes())
+                .Where(t => (t != type1) && (t != type2))
+                .Where(t => t.IsClass && !t.IsInterface && !t.IsAbstract)
+                .Where(t => !t.ContainsGenericParameters)
+                .Where(t => type1.IsAssignableFrom(t) && type2.IsAssignableFrom(t))
+                .ToList();
+
+            // Remove anything that has been been inherited from
+            for (var i = all.Count - 1; i >= 0; i--)
+            {
+                var testing = all[i];
+                if (all.Any(t => (t != testing) && testing.IsAssignableFrom(t)))
+                {
+                    all.RemoveAtSwapBack(i);
+                }
+            }
+
+            return all;
         }
 
         /// <summary> Checks if an assembly is referencing another assembly. the name of all assemblies with a specific reference. </summary>
         /// <param name="assembly"> The assembly to check. </param>
         /// <param name="reference"> The reference to check if the assembly has. </param>
         /// <returns> True if referencing. </returns>
-        public static bool IsAssemblyReferencingAssembly(this Assembly assembly, Assembly reference)
+        public static bool IsAssemblyReferencingAssembly(this System.Reflection.Assembly assembly, System.Reflection.Assembly reference)
         {
             if (assembly == reference)
             {
@@ -123,8 +158,8 @@ namespace BovineLabs.Core.Utility
 #if UNITY_EDITOR
         /// <summary> Gets the name of all assemblies with a specific reference. Ignores editor assemblies. </summary>
         /// <param name="reference"> The reference. </param>
-        /// <returns>The name of all the assemblies. </returns>
-        public static IEnumerable<string> GetAllAssemblyNamesWithReference(Assembly reference)
+        /// <returns> The name of all the assemblies. </returns>
+        public static IEnumerable<string> GetAllAssemblyNamesWithReference(System.Reflection.Assembly reference)
         {
             return GetAllUnityAssembliesWithReference(reference).Select(a => a.name);
         }
@@ -133,15 +168,15 @@ namespace BovineLabs.Core.Utility
         /// <param name="assembly"> The assembly to check. </param>
         /// <param name="reference"> The reference to check if the assembly has. </param>
         /// <returns> True if referencing. </returns>
-        public static bool IsAssemblyReferencingAssembly(this UnityEditor.Compilation.Assembly assembly, UnityEditor.Compilation.Assembly reference)
+        public static bool IsAssemblyReferencingAssembly(this Assembly assembly, Assembly reference)
         {
-            return assembly == reference || assembly.assemblyReferences.Any(referenced => referenced.name == reference.name);
+            return (assembly == reference) || assembly.assemblyReferences.Any(referenced => referenced.name == reference.name);
         }
 
         /// <summary> Gets the name of all assemblies with a specific reference. Ignores editor assemblies. </summary>
         /// <param name="reference"> The reference. </param>
-        /// <returns>The name of all the assemblies. </returns>
-        public static IEnumerable<UnityEditor.Compilation.Assembly> GetAllUnityAssembliesWithReference(Assembly reference)
+        /// <returns> The name of all the assemblies. </returns>
+        public static IEnumerable<Assembly> GetAllUnityAssembliesWithReference(System.Reflection.Assembly reference)
         {
             var refName = reference.GetName().Name;
             var refAsm = AssembliesMap[refName];
@@ -151,27 +186,31 @@ namespace BovineLabs.Core.Utility
 
         /// <summary> Gets the name of all assemblies with a specific reference. Ignores editor assemblies. </summary>
         /// <param name="reference"> The reference. </param>
-        /// <returns>The name of all the assemblies. </returns>
-        public static IEnumerable<UnityEditor.Compilation.Assembly> GetAllUnityAssembliesWithReference(UnityEditor.Compilation.Assembly reference)
+        /// <returns> The name of all the assemblies. </returns>
+        public static IEnumerable<Assembly> GetAllUnityAssembliesWithReference(Assembly reference)
         {
             return AssembliesMap.Values
-                .Where(asm => (asm.flags & UnityEditor.Compilation.AssemblyFlags.EditorAssembly) == 0)
+                .Where(asm => (asm.flags & AssemblyFlags.EditorAssembly) == 0)
                 .Where(asm => IsAssemblyReferencingAssembly(asm, reference));
         }
 
         /// <summary> Checks if an assembly is an editor only assembly. </summary>
         /// <param name="asm"> The assembly to check. </param>
         /// <returns> True if editor assembly. </returns>
-        public static bool IsAssemblyEditorAssembly(this Assembly asm)
+        public static bool IsAssemblyEditorAssembly(this System.Reflection.Assembly asm)
         {
-            var uAssembly = AssembliesMap[asm.GetName().Name];
-            return (uAssembly.flags & UnityEditor.Compilation.AssemblyFlags.EditorAssembly) != 0;
+            if (!AssembliesMap.TryGetValue(asm.GetName().Name, out var uAssembly))
+            {
+                return false; // this happens in sub scene conversion process if a new assembly is added after loading unity...
+            }
+
+            return (uAssembly.flags & AssemblyFlags.EditorAssembly) != 0;
         }
 #else
         /// <summary> Gets the name of all assemblies with a specific reference. </summary>
         /// <param name="reference"> The reference. </param>
-        /// <returns>The name of all the assemblies. </returns>
-        public static IEnumerable<string> GetAllAssemblyNamesWithReference(Assembly reference)
+        /// <returns> The name of all the assemblies. </returns>
+        public static IEnumerable<string> GetAllAssemblyNamesWithReference(System.Reflection.Assembly reference)
         {
             return GetAllAssemblyWithReference(reference).Select(a => a.GetName().Name);
         }
@@ -179,8 +218,8 @@ namespace BovineLabs.Core.Utility
 
         /// <summary> Gets the name of all assemblies with a specific reference. </summary>
         /// <param name="reference"> The reference. </param>
-        /// <returns>The name of all the assemblies. </returns>
-        public static IEnumerable<Assembly> GetAllAssemblyWithReference(Assembly reference)
+        /// <returns> The name of all the assemblies. </returns>
+        public static IEnumerable<System.Reflection.Assembly> GetAllAssemblyWithReference(System.Reflection.Assembly reference)
         {
             return AppDomain.CurrentDomain.GetAssemblies().Where(a => IsAssemblyReferencingAssembly(a, reference));
         }

@@ -5,7 +5,6 @@
 namespace BovineLabs.Core.Collections
 {
     using System;
-    using System.Diagnostics;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -18,7 +17,6 @@ namespace BovineLabs.Core.Collections
     /// https://en.wikipedia.org/wiki/Linear_congruential_generator#c_%E2%89%A0_0
     /// </remarks>
     [NativeContainer]
-    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
     public unsafe struct NativeLinearCongruentialGenerator : IDisposable
     {
         private const int Multiplier = 134775813;
@@ -30,13 +28,7 @@ namespace BovineLabs.Core.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         private AtomicSafetyHandle m_Safety;
-        private static readonly SharedStatic<int> s_SafetyId = SharedStatic<int>.GetOrCreate<NativeLinearCongruentialGenerator>();
-
-#if REMOVE_DISPOSE_SENTINEL
-#else
-        [NativeSetClassTypeToNullOnSchedule]
-        DisposeSentinel m_DisposeSentinel;
-#endif
+        private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeLinearCongruentialGenerator>();
 #endif
 
         private AllocatorManager.AllocatorHandle allocatorLabel;
@@ -56,21 +48,10 @@ namespace BovineLabs.Core.Collections
             reference.allocatorLabel = allocator;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
             reference.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
-#else
-            if (allocator.IsCustomAllocator)
-            {
-                reference.m_Safety = AtomicSafetyHandle.Create();
-                reference.m_DisposeSentinel = null;
-            }
-            else
-            {
-                DisposeSentinel.Create(out reference.m_Safety, out reference.m_DisposeSentinel, 1, allocator.ToAllocator);
-            }
-#endif
 
-            CollectionHelper.SetStaticSafetyId<NativeLinearCongruentialGenerator>(ref reference.m_Safety, ref s_SafetyId.Data);
+            CollectionHelper.SetStaticSafetyId<NativeLinearCongruentialGenerator>(ref reference.m_Safety, ref s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(reference.m_Safety, true);
 #endif
         }
 
@@ -79,21 +60,10 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         public void Dispose()
         {
-            this.CheckNotDisposed();
-
-            if (CollectionHelper.ShouldDeallocate(this.allocatorLabel))
-            {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-
-#if REMOVE_DISPOSE_SENTINEL
-                CollectionHelper.DisposeSafetyHandle(ref m_Safety);
-#else
-                DisposeSentinel.Dispose(ref this.m_Safety, ref this.m_DisposeSentinel);
+            CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
 #endif
-#endif
-                Memory.Unmanaged.Free(this.current, this.allocatorLabel);
-                this.allocatorLabel = Allocator.Invalid;
-            }
+            Memory.Unmanaged.Free(this.current, this.allocatorLabel);
 
             this.current = null;
         }
@@ -109,15 +79,6 @@ namespace BovineLabs.Core.Collections
             *this.current = x1;
 
             return *this.current;
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckNotDisposed()
-        {
-            if (this.current == null)
-            {
-                throw new ObjectDisposedException("The NativeLinearCongruentialGenerator is already disposed.");
-            }
         }
     }
 }

@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
+    using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
@@ -25,8 +26,8 @@ namespace BovineLabs.Core.Extensions
         {
             CheckWriteAccess(buffer);
 
-            int elemSize = UnsafeUtility.SizeOf<T>();
-            int oldLength = buffer.Length;
+            var elemSize = UnsafeUtility.SizeOf<T>();
+            var oldLength = buffer.Length;
             buffer.ResizeUninitialized(oldLength + length);
 
             var basePtr = (byte*)buffer.GetUnsafePtr();
@@ -37,15 +38,35 @@ namespace BovineLabs.Core.Extensions
             where T : unmanaged
         {
             CheckWriteAccess(buffer);
-            int length = buffer.Length;
+            var length = buffer.Length;
             buffer.ResizeUninitialized(length + elementCount);
             CheckBounds(buffer, index); // CheckBounds after ResizeUninitialized since index == length is allowed
-            int elemSize = UnsafeUtility.SizeOf<T>();
-            byte* basePtr = (byte*)buffer.GetUnsafePtr();
+            var elemSize = UnsafeUtility.SizeOf<T>();
+            var basePtr = (byte*)buffer.GetUnsafePtr();
             UnsafeUtility.MemMove(basePtr + ((index + elementCount) * elemSize), basePtr + (index * elemSize), (long)elemSize * (length - index));
             return basePtr + (index * elemSize);
         }
 
+        public static NativeArray<T>.ReadOnly AsNativeArrayRO<T>(this in DynamicBuffer<T> buffer)
+            where T : unmanaged
+        {
+            // CheckReadAccess(buffer);
+            // TODO implement properly
+            return buffer.AsNativeArray().AsReadOnly();
+        }
+
+        // return buffer.AsNativeArray().AsReadOnly();
+        // fixed (void* ptr = &buffer)
+        // {
+        //                 var shadow = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(BufferHeader.GetElementPointer((BufferHeader*)ptr), buffer.Length, Allocator.None);
+        // #if ENABLE_UNITY_COLLECTIONS_CHECKS
+        //                 var handle = buffer.m_Safety1;
+        //                 AtomicSafetyHandle.UseSecondaryVersion(ref handle);
+        //                 NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref shadow, handle);
+        //
+        // #endif
+        //                 return shadow.AsReadOnly();
+        // }
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
         private static void CheckBounds<T>(DynamicBuffer<T> buffer, int index)
@@ -58,7 +79,17 @@ namespace BovineLabs.Core.Extensions
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckWriteAccess<T>(DynamicBuffer<T> buffer)
+        private static void CheckReadAccess<T>(in DynamicBuffer<T> buffer)
+            where T : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(buffer.m_Safety0);
+            AtomicSafetyHandle.CheckReadAndThrow(buffer.m_Safety1);
+#endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckWriteAccess<T>(in DynamicBuffer<T> buffer)
             where T : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

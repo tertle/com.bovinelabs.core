@@ -16,9 +16,9 @@ namespace BovineLabs.Core.Utility
         private static Action<object, int> resizeListDelegates;
 
         /// <summary> Extract the internal array from a list. </summary>
-        /// <typeparam name="T"><see cref="List{T}" />.</typeparam>
-        /// <param name="list">The <see cref="List{T}" /> to extract from.</param>
-        /// <returns>The internal array of the list.</returns>
+        /// <typeparam name="T"> <see cref="List{T}" />. </typeparam>
+        /// <param name="list"> The <see cref="List{T}" /> to extract from. </param>
+        /// <returns> The internal array of the list. </returns>
         public static T[] ExtractArrayFromListT<T>(List<T> list)
         {
             if (extractArrayFromListTDelegates == null)
@@ -39,10 +39,10 @@ namespace BovineLabs.Core.Utility
             return (T[])extractArrayFromListTDelegates.Invoke(list);
         }
 
-        /// <summary> Resize a list.  </summary>
-        /// <typeparam name="T"><see cref="List{T}" />.</typeparam>
-        /// <param name="list">The <see cref="List{T}" /> to resize.</param>
-        /// <param name="size">The new length of the <see cref="List{T}" />.</param>
+        /// <summary> Resize a list. </summary>
+        /// <typeparam name="T"> <see cref="List{T}" />. </typeparam>
+        /// <param name="list"> The <see cref="List{T}" /> to resize. </param>
+        /// <param name="size"> The new length of the <see cref="List{T}" />. </param>
         public static void ResizeList<T>(List<T> list, int size)
         {
             if (list == null)
@@ -50,7 +50,7 @@ namespace BovineLabs.Core.Utility
                 throw new ArgumentNullException(nameof(list));
             }
 
-            if (size < 0 || size > list.Capacity)
+            if ((size < 0) || (size > list.Capacity))
             {
                 throw new ArgumentException("Invalid size to resize.", nameof(list));
             }

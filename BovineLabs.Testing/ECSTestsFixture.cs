@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-// Stripped down version of the Entities.Tests.ECSTextsFixture
 namespace BovineLabs.Testing
 {
     using NUnit.Framework;
@@ -12,11 +11,13 @@ namespace BovineLabs.Testing
 
     public abstract class ECSTestsFixture : ECSTestsCommonBase
     {
-        private World previousWorld;
-        private PlayerLoopSystem previousPlayerLoop;
         private bool jobsDebuggerWasEnabled;
+        private PlayerLoopSystem previousPlayerLoop;
+        private World previousWorld;
 
         protected World World { get; private set; }
+
+        protected WorldUnmanaged WorldUnmanaged => this.World.Unmanaged;
 
         protected EntityManager Manager { get; private set; }
 
@@ -33,6 +34,7 @@ namespace BovineLabs.Testing
 
             this.previousWorld = World.DefaultGameObjectInjectionWorld;
             this.World = World.DefaultGameObjectInjectionWorld = new World("Test World");
+            this.World.UpdateAllocatorEnableBlockFree = true;
             this.Manager = this.World.EntityManager;
             this.ManagerDebug = new EntityManager.EntityManagerDebug(this.Manager);
 
@@ -40,18 +42,25 @@ namespace BovineLabs.Testing
             // force it enabled for all tests, and restore the original value at teardown.
             this.jobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
             JobsUtility.JobDebuggerEnabled = true;
+
+            // JobsUtility.ClearSystemIds();
+
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+            // In case entities journaling is initialized, clear it
+            EntitiesJournaling.Clear();
+#endif
         }
 
         [TearDown]
         public override void TearDown()
         {
-            if (this.World != null && this.World.IsCreated)
+            if ((this.World != null) && this.World.IsCreated)
             {
                 // Clean up systems before calling CheckInternalConsistency because we might have filters etc
                 // holding on SharedComponentData making checks fail
                 while (this.World.Systems.Count > 0)
                 {
-                    this.World.DestroySystem(this.World.Systems[0]);
+                    this.World.DestroySystemManaged(this.World.Systems[0]);
                 }
 
                 this.ManagerDebug.CheckInternalConsistency();
@@ -66,54 +75,13 @@ namespace BovineLabs.Testing
 
             JobsUtility.JobDebuggerEnabled = this.jobsDebuggerWasEnabled;
 
+            // JobsUtility.ClearSystemIds();
+
+#if !UNITY_DOTSRUNTIME
             PlayerLoop.SetPlayerLoop(this.previousPlayerLoop);
+#endif
 
             base.TearDown();
-        }
-
-        public void AssertSameChunk(Entity e0, Entity e1)
-        {
-            Assert.AreEqual(this.Manager.GetChunk(e0), this.Manager.GetChunk(e1));
-        }
-
-        public void AssetHasChangeVersion<T>(Entity e, uint version)
-            where T :
-#if UNITY_DISABLE_MANAGED_COMPONENTS
-        struct,
-#endif
-        IComponentData
-        {
-            var type = this.Manager.GetComponentTypeHandle<T>(true);
-            var chunk = this.Manager.GetChunk(e);
-            Assert.AreEqual(version, chunk.GetChangeVersion(type));
-            Assert.IsFalse(chunk.DidChange(type, version));
-            Assert.IsTrue(chunk.DidChange(type, version - 1));
-        }
-
-        public void AssetHasChunkOrderVersion(Entity e, uint version)
-        {
-            var chunk = this.Manager.GetChunk(e);
-            Assert.AreEqual(version, chunk.GetOrderVersion());
-        }
-
-        public void AssetHasBufferChangeVersion<T>(Entity e, uint version)
-            where T : struct, IBufferElementData
-        {
-            var type = this.Manager.GetBufferTypeHandle<T>(true);
-            var chunk = this.Manager.GetChunk(e);
-            Assert.AreEqual(version, chunk.GetChangeVersion(type));
-            Assert.IsFalse(chunk.DidChange(type, version));
-            Assert.IsTrue(chunk.DidChange(type, version - 1));
-        }
-
-        public void AssetHasSharedChangeVersion<T>(Entity e, uint version)
-            where T : struct, ISharedComponentData
-        {
-            var type = this.Manager.GetSharedComponentTypeHandle<T>();
-            var chunk = this.Manager.GetChunk(e);
-            Assert.AreEqual(version, chunk.GetChangeVersion(type));
-            Assert.IsFalse(chunk.DidChange(type, version));
-            Assert.IsTrue(chunk.DidChange(type, version - 1));
         }
     }
 }

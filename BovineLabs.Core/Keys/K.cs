@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core
+namespace BovineLabs.Core.Keys
 {
     using Unity.Burst;
     using Unity.Collections;
@@ -20,7 +20,6 @@ namespace BovineLabs.Core
         /// <summary> Given a name, returns the user defined value. </summary>
         /// <param name="name"> The name. </param>
         /// <returns> The value. </returns>
-        [BurstCompatible]
         public static byte NameToKey(FixedString32Bytes name)
         {
             if (!Map.Data.TryGetValue(name, out var key))
@@ -31,6 +30,21 @@ namespace BovineLabs.Core
             }
 
             return key;
+        }
+
+        /// <summary> Given a key, returns the name that's associated with it. Mostly used for debugging. </summary>
+        /// <param name="key"> The key. </param>
+        /// <returns> The value. </returns>
+        public static FixedString32Bytes KeyToName(byte key)
+        {
+            if (!Map.Data.TryGetValue(key, out var name))
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                Debug.LogError($"{key} does not exist");
+#endif
+            }
+
+            return name;
         }
 
         /// <summary> Initialize this generic with a set of values. </summary>

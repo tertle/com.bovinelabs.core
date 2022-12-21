@@ -1,24 +1,31 @@
-﻿namespace BovineLabs.Core.Editor.Inspectors
+﻿// <copyright file="BaseFieldInspector.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Editor.Inspectors
 {
-    using Unity.Properties.UI;
+    using Unity.Entities.Editor;
+    using Unity.Entities.UI;
     using UnityEngine.UIElements;
 
     // Copy from Unity.Entities.Editor.Inspectors
-    public abstract class BaseFieldInspector<TField, TFieldValue, TValue> : Inspector<TValue>
+    internal abstract class BaseFieldInspector<TField, TFieldValue, TValue> : PropertyInspector<TValue>
         where TField : BaseField<TFieldValue>, new()
     {
-        protected TField m_Field;
+        private TField field;
 
         public override VisualElement Build()
         {
-            this.m_Field = new TField
+            this.field = new TField
             {
                 name = this.Name,
                 label = this.DisplayName,
                 tooltip = this.Tooltip,
-                bindingPath = "."
+                bindingPath = ".",
             };
-            return this.m_Field;
+
+            InspectorUtility.AddRuntimeBar(this.field);
+            return this.field;
         }
     }
 }

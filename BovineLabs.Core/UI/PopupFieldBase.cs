@@ -21,9 +21,9 @@ namespace BovineLabs.Core.UI
         private const string ArrowUssClassName = UssClassName + "__arrow";
         private const string MenuUssClassName = UssClassName + "__menu";
         private readonly List<string> displayNames = new();
+        private readonly TextElement textElement;
 
         private readonly VisualElement visualInput;
-        private readonly TextElement textElement;
 
         private string noneText = "[None]";
 
@@ -131,7 +131,7 @@ namespace BovineLabs.Core.UI
             var hideMenu = false;
             if (evt is KeyDownEvent kde)
             {
-                if (kde.keyCode == KeyCode.Space || kde.keyCode == KeyCode.KeypadEnter || kde.keyCode == KeyCode.Return)
+                if ((kde.keyCode == KeyCode.Space) || (kde.keyCode == KeyCode.KeypadEnter) || (kde.keyCode == KeyCode.Return))
                 {
                     showMenu = true;
                 }
@@ -310,9 +310,11 @@ namespace BovineLabs.Core.UI
             this.Menu.style.left = this.worldBound.xMin;
             this.Menu.style.top = this.worldBound.yMax;
             this.Menu.fixedItemHeight = ItemHeight;
-            this.Menu.style.height = this.DisplayNames.Count * ItemHeight;
+            this.Menu.style.height = (this.DisplayNames.Count * ItemHeight) + 1;
 
             this.Menu.styleSheets.Clear();
+            this.Menu.Rebuild();
+
             CopyStylesTo(this, this.Menu);
 
             root.Add(this.Menu);

@@ -57,4 +57,3 @@ namespace BovineLabs.Core.Tests.Collections
         }
     }
 }
-

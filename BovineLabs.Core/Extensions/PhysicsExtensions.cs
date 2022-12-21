@@ -14,8 +14,8 @@ namespace BovineLabs.Core.Extensions
         {
             var direction = math.normalize(ray.Displacement);
 
-            float a = math.dot(direction, plane.Normal);
-            float num = -math.dot(ray.Origin, plane.Normal) - plane.Distance;
+            var a = math.dot(direction, plane.Normal);
+            var num = -math.dot(ray.Origin, plane.Normal) - plane.Distance;
 
             if (a == 0.0f)
             {
@@ -27,7 +27,10 @@ namespace BovineLabs.Core.Extensions
             return enter > 0.0;
         }
 
-        public static float3 GetPoint(this Ray ray, float distance) => ray.Origin + (math.normalize(ray.Displacement) * distance);
+        public static float3 GetPoint(this Ray ray, float distance)
+        {
+            return ray.Origin + (math.normalize(ray.Displacement) * distance);
+        }
     }
 }
 #endif

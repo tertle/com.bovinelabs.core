@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Tests.ConfigVars
     using NUnit.Framework;
     using Assert = Unity.Assertions.Assert;
 
-    /// <summary> Tests for <see cref="ConfigVarAttribute"/>. </summary>
+    /// <summary> Tests for <see cref="ConfigVarAttribute" />. </summary>
     public class ConfigVarAttributeTests
     {
         /// <summary> Tests implicit conversion of string to config var. </summary>
@@ -22,7 +22,7 @@ namespace BovineLabs.Core.Tests.ConfigVars
             Assert.AreEqual(attribute, attribute2);
         }
 
-        /// <summary> Tests hash is based off the <see cref="ConfigVarAttribute.Name"/> field only. </summary>
+        /// <summary> Tests hash is based off the <see cref="ConfigVarAttribute.Name" /> field only. </summary>
         [Test]
         public void StringHashEquals()
         {

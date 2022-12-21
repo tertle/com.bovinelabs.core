@@ -6,7 +6,7 @@ namespace BovineLabs.Core.Editor.Settings
 {
     using UnityEngine.UIElements;
 
-    /// <summary> The panel interface for <see cref="SettingsBaseWindow{T}"/>. </summary>
+    /// <summary> The panel interface for <see cref="SettingsBaseWindow{T}" />. </summary>
     public interface ISettingsPanel
     {
         /// <summary> Gets the display name for the panel. </summary>

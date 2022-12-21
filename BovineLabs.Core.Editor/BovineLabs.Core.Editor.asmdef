@@ -8,9 +8,9 @@
         "Unity.Entities",
         "Unity.Entities.Editor",
         "Unity.Entities.Hybrid",
+        "Unity.Entities.UI.Editor",
+        "Unity.Logging",
         "Unity.Mathematics",
-        "Unity.Properties",
-        "Unity.Properties.UI.Editor",
         "Unity.Scenes",
         "Unity.Scenes.Editor",
         "Unity.Physics"
@@ -28,7 +28,7 @@
         {
             "name": "com.bovinelabs.game",
             "expression": "0",
-            "define": "BL_BOOTSTRAP"
+            "define": "BL_GAME"
         },
         {
             "name": "com.unity.ui",
@@ -36,9 +36,9 @@
             "define": "UNITY_UI_TOOLKIT"
         },
         {
-            "name": "com.unity.rendering.hybrid",
+            "name": "com.unity.entities.graphics",
             "expression": "0",
-            "define": "UNITY_RENDERER"
+            "define": "UNITY_GRAPHICS"
         },
         {
             "name": "com.unity.physics",

@@ -13,11 +13,20 @@ namespace BovineLabs.Core.Editor.UI
 
     public class ReorderableListView<T> : VisualElement
     {
+        // callback when the list is reordered
+        public delegate void ListReorderedDelegate(ReorderableList reorderableList, List<T> reorderedList);
+
+        // callback when the list is reordered
+        public delegate void ListSelectedDelegate(ReorderableList reorderableList, int index);
+
+        // callback to override how an item is removed from the list
+        public delegate void RemoveItemDelegate(ReorderableList reorderableList, List<T> list, int itemIndex);
+
         private readonly bool allowReorder;
         private readonly string headerLabel;
+        private GUIStyle labelStyle;
 
         private ReorderableList reorderableList;
-        private GUIStyle labelStyle;
         private int selectedIndex = -1;
 
         public ReorderableListView(List<T> dataList, string header, bool allowReorder = true)
@@ -29,15 +38,6 @@ namespace BovineLabs.Core.Editor.UI
             var container = new IMGUIContainer(this.OnGUIHandler) { name = "ListContainer" };
             this.Add(container);
         }
-
-        // callback to override how an item is removed from the list
-        public delegate void RemoveItemDelegate(ReorderableList reorderableList, List<T> list, int itemIndex);
-
-        // callback when the list is reordered
-        public delegate void ListReorderedDelegate(ReorderableList reorderableList, List<T> reorderedList);
-
-        // callback when the list is reordered
-        public delegate void ListSelectedDelegate(ReorderableList reorderableList, int index);
 
         public ReorderableList.AddDropdownCallbackDelegate AddDropdown { get; set; }
 
@@ -72,11 +72,11 @@ namespace BovineLabs.Core.Editor.UI
             // Create reorderable list from data list
             this.reorderableList = new ReorderableList(
                 dataList,
-                typeof(T),          // the type of the elements in dataList
-                this.allowReorder,     // draggable (to reorder)
-                true,               // displayHeader
-                true,               // displayAddButton
-                true);              // displayRemoveButton
+                typeof(T), // the type of the elements in dataList
+                this.allowReorder, // draggable (to reorder)
+                true, // displayHeader
+                true, // displayAddButton
+                true); // displayRemoveButton
         }
 
         private void OnGUIHandler()
@@ -127,7 +127,7 @@ namespace BovineLabs.Core.Editor.UI
             this.reorderableList.elementHeightCallback = this.GetHeight ?? (_ => this.reorderableList.elementHeight);
 
             // Add callback delegates
-            this.reorderableList.onSelectCallback += this.SelectEntry;              // should we propagate this up if user wants to do something with selection?
+            this.reorderableList.onSelectCallback += this.SelectEntry; // should we propagate this up if user wants to do something with selection?
             this.reorderableList.onReorderCallback += this.ReorderEntries;
             this.reorderableList.onAddDropdownCallback += this.AddDropdown;
             this.reorderableList.onRemoveCallback += this.OnRemove;
@@ -146,7 +146,7 @@ namespace BovineLabs.Core.Editor.UI
 
         private void OnRemove(ReorderableList list)
         {
-            int indexToRemove = list.index;
+            var indexToRemove = list.index;
             if (indexToRemove < 0)
             {
                 indexToRemove = this.DataList.Count - 1;

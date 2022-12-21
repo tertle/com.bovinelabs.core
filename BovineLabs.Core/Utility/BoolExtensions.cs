@@ -25,7 +25,7 @@ namespace BovineLabs.Core.Utility
             public bool Condition;
 
             [FieldOffset(0)]
-            public byte Value;
+            public readonly byte Value;
         }
     }
 }

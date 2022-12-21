@@ -5,7 +5,6 @@
 namespace BovineLabs.Core.Utility
 {
     using System.Collections.Generic;
-    using BovineLabs.Core.Extensions;
     using Unity.Entities;
 
     /// <summary> Utility for worlds. </summary>
@@ -15,9 +14,7 @@ namespace BovineLabs.Core.Utility
         {
             foreach (var world in World.All)
             {
-                var flags = world.GetMainFlag();
-
-                if (flags == WorldFlags.Live)
+                if ((world.Flags & WorldFlags.Live) == WorldFlags.Live)
                 {
                     yield return world;
                 }

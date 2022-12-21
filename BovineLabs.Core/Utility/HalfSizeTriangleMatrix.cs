@@ -24,7 +24,7 @@ namespace BovineLabs.Core.Utility
         /// <returns> The index in the triangle matrix. </returns>
         public static int GetIndex(int row, int column, int n)
         {
-            #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (row >= n)
             {
                 throw new ArgumentException($"row {row} >= n {n}", nameof(row));
@@ -34,11 +34,11 @@ namespace BovineLabs.Core.Utility
             {
                 throw new ArgumentException($"column {column} >= n {n}", nameof(column));
             }
-            #endif
+#endif
 
             return row <= column
-                ? (row * n) - ((row - 1) * row / 2) + column - row
-                : (column * n) - ((column - 1) * column / 2) + row - column;
+                ? (((row * n) - (((row - 1) * row) / 2)) + column) - row
+                : (((column * n) - (((column - 1) * column) / 2)) + row) - column;
         }
     }
 }

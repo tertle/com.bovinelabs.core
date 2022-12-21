@@ -11,28 +11,27 @@ namespace BovineLabs.Core.Editor.ConfigVars
     using BovineLabs.Core.Editor.Settings;
     using Unity.Collections;
     using UnityEditor;
-    using UnityEditor.UIElements;
     using UnityEngine;
     using UnityEngine.UIElements;
 
     /// <summary> A panel that draws a collection of config vars. </summary>
     public sealed class ConfigVarPanel : ISettingsPanel
     {
-        /// <summary> Initializes a new instance of the <see cref="ConfigVarPanel"/> class. </summary>
+        /// <summary> Initializes a new instance of the <see cref="ConfigVarPanel" /> class. </summary>
         /// <param name="displayName"> The display name of the panel. </param>
         public ConfigVarPanel(string displayName)
         {
             this.DisplayName = displayName;
         }
 
-        /// <inheritdoc/>
-        public string DisplayName { get; }
-
         /// <summary> Gets a list of all the config vars this panel draws. </summary>
         internal List<(ConfigVarAttribute ConfigVar, IConfigVarContainer Container)> ConfigVars { get; }
             = new();
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
+        public string DisplayName { get; }
+
+        /// <inheritdoc />
         void ISettingsPanel.OnActivate(string searchContext, VisualElement rootElement)
         {
             // Matching the display name should show everything
@@ -61,12 +60,12 @@ namespace BovineLabs.Core.Editor.ConfigVars
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         void ISettingsPanel.OnDeactivate()
         {
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         bool ISettingsPanel.MatchesFilter(string searchContext)
         {
             return this.ConfigVars.Any(s => MatchesSearchContext(s.ConfigVar.Name, searchContext));
@@ -116,7 +115,9 @@ namespace BovineLabs.Core.Editor.ConfigVars
             return field;
         }
 
-        private static BaseField<string> SetupTextField<T>(TextInputBaseField<string> field, ConfigVarAttribute configVar, ConfigVarSharedStaticStringContainer<T> container)
+        private static BaseField<string> SetupTextField<T>(TextInputBaseField<string> field,
+            ConfigVarAttribute configVar,
+            ConfigVarSharedStaticStringContainer<T> container)
             where T : struct
         {
             field.binding = new SharedStaticTextFieldBind<T>(field, container);

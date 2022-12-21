@@ -42,12 +42,12 @@ namespace BovineLabs.Core.UI
             this.rawValue = null;
             this.defaultValue = defaultValue ?? new int[0];
 
-            if (this.DisplayNames != null && this.DisplayNames.Count > 0)
+            if ((this.DisplayNames != null) && (this.DisplayNames.Count > 0))
             {
                 this.SetValueWithoutNotify(this.defaultValue);
             }
 
-            this.Menu.onSelectionChange += this.MenuOnSelectionChange;
+            this.Menu.selectionChanged += this.MenuOnSelectionChange;
         }
 
         /// <inheritdoc />
@@ -81,12 +81,12 @@ namespace BovineLabs.Core.UI
         /// <inheritdoc />
         protected override bool AreEquals(IReadOnlyList<int> t1, IReadOnlyList<int> t2)
         {
-            if (t1 == null && t2 == null)
+            if ((t1 == null) && (t2 == null))
             {
                 return true;
             }
 
-            if (t1 == null || t2 == null)
+            if ((t1 == null) || (t2 == null))
             {
                 return false;
             }

@@ -22,8 +22,8 @@ namespace BovineLabs.Core.Internal
 
         public static void GetEdgeFromFace(this ref ConvexCollider collider, int faceIndex, int edgeIndex, out float3 from, out float3 to)
         {
-            byte fromIndex = collider.ConvexHull.FaceVertexIndices[collider.ConvexHull.Faces[faceIndex].FirstIndex + edgeIndex];
-            byte toIndex = collider.ConvexHull.FaceVertexIndices[
+            var fromIndex = collider.ConvexHull.FaceVertexIndices[collider.ConvexHull.Faces[faceIndex].FirstIndex + edgeIndex];
+            var toIndex = collider.ConvexHull.FaceVertexIndices[
                 collider.ConvexHull.Faces[faceIndex].FirstIndex + ((edgeIndex + 1) % collider.ConvexHull.Faces[faceIndex].NumVertices)];
 
             from = collider.ConvexHull.Vertices[fromIndex];

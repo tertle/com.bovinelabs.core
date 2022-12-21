@@ -10,13 +10,13 @@ namespace BovineLabs.Core.ConfigVars
 
     /// <summary> Container for setting config var static fields. </summary>
     /// <remarks> This should only be used in debugging tools. </remarks>
-    /// <typeparam name="T">The type of shared static.</typeparam>
+    /// <typeparam name="T"> The type of shared static. </typeparam>
     internal class ConfigVarSharedStaticContainer<T> : IConfigVarContainer
         where T : struct
     {
         private readonly SharedStatic<T> field;
 
-        /// <summary> Initializes a new instance of the <see cref="ConfigVarSharedStaticContainer{T}"/> class. </summary>
+        /// <summary> Initializes a new instance of the <see cref="ConfigVarSharedStaticContainer{T}" /> class. </summary>
         /// <param name="field"> The field associated with the config var. </param>
         public ConfigVarSharedStaticContainer(SharedStatic<T> field)
         {
@@ -30,7 +30,7 @@ namespace BovineLabs.Core.ConfigVars
             set => this.field.Data = value;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         string IConfigVarContainer.Value
         {
             get => this.DirectValue.ToString();

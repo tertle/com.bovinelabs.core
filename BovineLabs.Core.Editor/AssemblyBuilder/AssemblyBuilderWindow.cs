@@ -31,32 +31,10 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private readonly Dictionary<string, string> assemblyNameToGUID = new();
 
-        [MenuItem("BovineLabs/Tools/Assembly Builder", priority = 1007)]
-        private static void ShowWindow()
+        private void Update()
         {
-            // Get existing open window or if none, make a new one:
-            AssemblyBuilderWindow window = (AssemblyBuilderWindow)GetWindow(typeof(AssemblyBuilderWindow));
-            window.titleContent = new GUIContent("Assembly Builder");
-            window.Show();
+            this.rootVisualElement.Q<TextField>("directory").value = GetActiveFolderPath();
         }
-
-        private static string GetActiveFolderPath()
-        {
-            if (getActiveFolderPath == null)
-            {
-                var projectWindowUtilType = typeof(ProjectWindowUtil);
-                var methodInfo = projectWindowUtilType.GetMethod("GetActiveFolderPath", BindingFlags.Static | BindingFlags.NonPublic);
-                Assert.IsNotNull(methodInfo);
-                getActiveFolderPath = (Func<string>)Delegate.CreateDelegate(typeof(Func<string>), methodInfo);
-                Assert.IsNotNull(getActiveFolderPath);
-            }
-
-            return getActiveFolderPath.Invoke();
-        }
-
-        private static string GetAssemblyInfoPath(string folder) => $"{System.IO.Directory.GetCurrentDirectory()}/{folder}/AssemblyInfo.cs";
-
-        private static string GetAssemblyInfoHeader() => string.Format(AssemblyInfoTemplate, PlayerSettings.companyName);
 
         private void OnEnable()
         {
@@ -80,9 +58,37 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             this.rootVisualElement.Q<TextField>("directory").SetEnabled(false);
         }
 
-        private void Update()
+        [MenuItem("BovineLabs/Tools/Assembly Builder", priority = 1007)]
+        private static void ShowWindow()
         {
-            this.rootVisualElement.Q<TextField>("directory").value = GetActiveFolderPath();
+            // Get existing open window or if none, make a new one:
+            var window = (AssemblyBuilderWindow)GetWindow(typeof(AssemblyBuilderWindow));
+            window.titleContent = new GUIContent("Assembly Builder");
+            window.Show();
+        }
+
+        private static string GetActiveFolderPath()
+        {
+            if (getActiveFolderPath == null)
+            {
+                var projectWindowUtilType = typeof(ProjectWindowUtil);
+                var methodInfo = projectWindowUtilType.GetMethod("GetActiveFolderPath", BindingFlags.Static | BindingFlags.NonPublic);
+                Assert.IsNotNull(methodInfo);
+                getActiveFolderPath = (Func<string>)Delegate.CreateDelegate(typeof(Func<string>), methodInfo);
+                Assert.IsNotNull(getActiveFolderPath);
+            }
+
+            return getActiveFolderPath.Invoke();
+        }
+
+        private static string GetAssemblyInfoPath(string folder)
+        {
+            return $"{Directory.GetCurrentDirectory()}/{folder}/AssemblyInfo.cs";
+        }
+
+        private static string GetAssemblyInfoHeader()
+        {
+            return string.Format(AssemblyInfoTemplate, PlayerSettings.companyName);
         }
 
         private void BindAssemblyToggle(Toggle toggle)
@@ -230,7 +236,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
                 // ReSharper disable once StringLiteralTypo
                 var path = $"{folder}/{assemblyName}.asmdef";
-                var asmPath = $"{System.IO.Directory.GetCurrentDirectory()}/{path}";
+                var asmPath = $"{Directory.GetCurrentDirectory()}/{path}";
                 File.WriteAllText(asmPath, json);
 
                 AssetDatabase.Refresh();
@@ -240,8 +246,14 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             AssetDatabase.Refresh();
         }
 
-        private IEnumerable<string> GetCommonReferences() => this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().Select(t => t.label);
+        private IEnumerable<string> GetCommonReferences()
+        {
+            return this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().Select(t => t.label);
+        }
 
-        private bool GetToggleValue(string toggleName) => this.rootVisualElement.Q<Toggle>(toggleName).value;
+        private bool GetToggleValue(string toggleName)
+        {
+            return this.rootVisualElement.Q<Toggle>(toggleName).value;
+        }
     }
 }

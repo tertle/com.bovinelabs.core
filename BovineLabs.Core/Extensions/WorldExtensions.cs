@@ -8,39 +8,64 @@ namespace BovineLabs.Core.Extensions
 
     public static class WorldExtensions
     {
-        public static WorldFlags GetMainFlag(this World world)
+        /// <summary>
+        /// Check if a world is a thin client.
+        /// </summary>
+        /// <param name="world"> A <see cref="World" /> instance </param>
+        /// <returns> </returns>
+        public static bool IsThinClientWorld(this World world)
         {
-            return world.Unmanaged.GetMainFlag();
+            return (world.Flags & WorldFlags.GameThinClient) == WorldFlags.GameThinClient;
         }
 
-        public static WorldFlags GetMainFlag(this WorldUnmanaged world)
+        /// <summary>
+        /// Check if an unmanaged world is a thin client.
+        /// </summary>
+        /// <param name="world"> A <see cref="WorldUnmanaged" /> instance </param>
+        /// <returns> </returns>
+        public static bool IsThinClientWorld(this WorldUnmanaged world)
         {
-            if ((world.Flags & WorldFlags.Shadow) != 0)
-            {
-                return WorldFlags.Shadow;
-            }
+            return (world.Flags & WorldFlags.GameThinClient) == WorldFlags.GameThinClient;
+        }
 
-            if ((world.Flags & WorldFlags.Conversion) != 0)
-            {
-                return WorldFlags.Conversion;
-            }
+        /// <summary>
+        /// Check if a world is a client, will also return true for thin clients.
+        /// </summary>
+        /// <param name="world"> A <see cref="World" /> instance </param>
+        /// <returns> </returns>
+        public static bool IsClientWorld(this World world)
+        {
+            return ((world.Flags & WorldFlags.GameClient) == WorldFlags.GameClient) || world.IsThinClientWorld();
+        }
 
-            if ((world.Flags & WorldFlags.Live) != 0)
-            {
-                return WorldFlags.Live;
-            }
+        /// <summary>
+        /// Check if an unmanaged world is a client, will also return true for thin clients.
+        /// </summary>
+        /// <param name="world"> A <see cref="WorldUnmanaged" /> instance </param>
+        /// <returns> </returns>
+        public static bool IsClientWorld(this WorldUnmanaged world)
+        {
+            return ((world.Flags & WorldFlags.GameClient) == WorldFlags.GameClient) || world.IsThinClientWorld();
+        }
 
-            if ((world.Flags & WorldFlags.Streaming) != 0)
-            {
-                return WorldFlags.Streaming;
-            }
+        /// <summary>
+        /// Check if a world is a server.
+        /// </summary>
+        /// <param name="world"> A <see cref="World" /> instance </param>
+        /// <returns> </returns>
+        public static bool IsServerWorld(this World world)
+        {
+            return (world.Flags & WorldFlags.GameServer) == WorldFlags.GameServer;
+        }
 
-            if ((world.Flags & WorldFlags.Staging) != 0)
-            {
-                return WorldFlags.Staging;
-            }
-
-            return WorldFlags.None;
+        /// <summary>
+        /// Check if an unmanaged world is a server.
+        /// </summary>
+        /// <param name="world"> A <see cref="WorldUnmanaged" /> instance </param>
+        /// <returns> </returns>
+        public static bool IsServerWorld(this WorldUnmanaged world)
+        {
+            return (world.Flags & WorldFlags.GameServer) == WorldFlags.GameServer;
         }
     }
 }

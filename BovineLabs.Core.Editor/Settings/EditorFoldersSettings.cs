@@ -49,6 +49,7 @@ namespace BovineLabs.Core.Editor.Settings
         {
             [ReadOnly]
             public string Key;
+
             public string Path;
         }
     }

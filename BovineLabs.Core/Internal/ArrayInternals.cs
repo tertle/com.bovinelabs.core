@@ -10,6 +10,7 @@ namespace BovineLabs.Core.Internal
     {
         [NativeDisableUnsafePtrRestriction]
         public void* Buffer;
+
         public int Length;
     }
 }

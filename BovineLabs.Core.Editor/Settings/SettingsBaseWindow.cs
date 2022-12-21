@@ -7,12 +7,9 @@ namespace BovineLabs.Core.Editor.Settings
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Unity.Scenes;
-    using Unity.Scenes.Editor;
     using UnityEditor;
     using UnityEditor.UIElements;
     using UnityEngine;
-    using UnityEngine.Assertions;
     using UnityEngine.UIElements;
 
     /// <summary> The base settings window that can be used to implement custom drawers. </summary>
@@ -22,20 +19,20 @@ namespace BovineLabs.Core.Editor.Settings
     {
         private const string UxmlPath = "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/Settings/SettingsWindow.uxml";
         private const string DarkSkinKey = "settings-title-darkmode";
-
-        private readonly List<ISettingsPanel> settingPanels = new();
         private readonly List<ISettingsPanel> filteredSettingsPanel = new();
 
+        private readonly List<ISettingsPanel> settingPanels = new();
+
         private ToolbarButton applyButton;
-        private ToolbarSearchField searchField;
-        private VisualElement splitter;
-        private ListView list;
         private VisualElement contents;
         private Label contentTitle;
 
-        private float splitterFlex = 0.2f;
-
         private ISettingsPanel currentSelection;
+        private ListView list;
+        private ToolbarSearchField searchField;
+        private VisualElement splitter;
+
+        private float splitterFlex = 0.2f;
         private VisualElement toolbar;
 
         /// <summary> Gets the title text for the unity window tab. </summary>
@@ -98,7 +95,10 @@ namespace BovineLabs.Core.Editor.Settings
 
         /// <summary> Gets the title texture that'll appear in the Unity window tab. </summary>
         /// <returns> The texture icon. </returns>
-        protected virtual Texture GetTitleTexture() => EditorGUIUtility.IconContent("Settings").image;
+        protected virtual Texture GetTitleTexture()
+        {
+            return EditorGUIUtility.IconContent("Settings").image;
+        }
 
         /// <summary> Implement this to add custom elements to the toolbar. </summary>
         /// <param name="rootElement"> The toolbar root element. </param>
@@ -106,9 +106,15 @@ namespace BovineLabs.Core.Editor.Settings
         {
         }
 
-        private static T FindWindowByScope() => Resources.FindObjectsOfTypeAll<T>().FirstOrDefault();
+        private static T FindWindowByScope()
+        {
+            return Resources.FindObjectsOfTypeAll<T>().FirstOrDefault();
+        }
 
-        private static T Create() => CreateInstance<T>();
+        private static T Create()
+        {
+            return CreateInstance<T>();
+        }
 
         private void Init()
         {
@@ -137,7 +143,7 @@ namespace BovineLabs.Core.Editor.Settings
             this.list.itemsSource = this.filteredSettingsPanel;
             this.list.makeItem = () => new Label();
             this.list.bindItem = (element, i) => ((Label)element).text = this.filteredSettingsPanel[i].DisplayName;
-            this.list.onSelectionChange += this.SelectionChanged;
+            this.list.selectionChanged += this.SelectionChanged;
             this.list.style.flexGrow = this.splitterFlex;
             this.list.fixedItemHeight = 16;
 
@@ -173,7 +179,7 @@ namespace BovineLabs.Core.Editor.Settings
             this.contents.Clear();
             this.contentTitle.text = string.Empty;
 
-            if (this.list.selectedIndex < 0 || this.list.selectedIndex >= this.filteredSettingsPanel.Count)
+            if ((this.list.selectedIndex < 0) || (this.list.selectedIndex >= this.filteredSettingsPanel.Count))
             {
                 this.currentSelection = null;
                 return;
@@ -187,7 +193,7 @@ namespace BovineLabs.Core.Editor.Settings
         private void CleanupUI()
         {
             this.searchField.UnregisterValueChangedCallback(this.SearchFiltering);
-            this.list.onSelectionChange -= this.SelectionChanged;
+            this.list.selectionChanged -= this.SelectionChanged;
             this.toolbar.Clear();
         }
 

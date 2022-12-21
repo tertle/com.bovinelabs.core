@@ -9,7 +9,6 @@ namespace BovineLabs.Core.Memory
     using Unity.Collections.LowLevel.Unsafe;
     using UnityEngine;
 
-    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
     public unsafe struct UnsafePoolAllocator<T> : IDisposable
         where T : unmanaged
     {
@@ -26,7 +25,7 @@ namespace BovineLabs.Core.Memory
 
         public bool IsCreated => this.slabAllocator.IsCreated;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void Dispose()
         {
             this.slabAllocator.Dispose();
@@ -52,6 +51,11 @@ namespace BovineLabs.Core.Memory
         public void Free(T* p)
         {
             this.free.Add(new Ptr(p));
+        }
+
+        public int Allocated()
+        {
+            return this.slabAllocator.Allocated();
         }
     }
 }

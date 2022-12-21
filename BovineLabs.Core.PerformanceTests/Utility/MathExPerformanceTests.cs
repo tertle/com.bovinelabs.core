@@ -1,3 +1,7 @@
+// <copyright file="MathExPerformanceTests.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
 namespace BovineLabs.Core.PerformanceTests.Utility
 {
     using BovineLabs.Core.Utility;

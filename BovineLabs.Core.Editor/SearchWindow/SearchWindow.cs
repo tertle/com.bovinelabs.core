@@ -1,55 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.UIElements;
+﻿// <copyright file="SearchWindow.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
 
-namespace UnityEngine.UIExtras
+namespace BovineLabs.Core.Editor.SearchWindow
 {
+    using System;
+    using System.Collections.Generic;
+    using UnityEditor;
+    using UnityEngine;
+    using UnityEngine.UIElements;
+
+    /// <summary> Copy of com.unity.platforms\Editor\Unity.Build.Editor\SearchWindow\SearchWindow.cs. </summary>
     public class SearchWindow : EditorWindow
     {
-        SearchView m_SearchView;
-        public List<SearchView.Item> Items {
-            get => m_SearchView.Items;
-            set {
-                m_SearchView.Items = value;
-            }
+        private SearchView searchView;
+
+        public List<SearchView.Item> Items
+        {
+            get => this.searchView.Items;
+            set => this.searchView.Items = value;
         }
-        public event Action<SearchView.Item> OnSelection;
-        public string Title {
-            get => m_SearchView.Title;
-            set {
-                m_SearchView.Title = value;
-            }
+
+        public string Title
+        {
+            get => this.searchView.Title;
+            set => this.searchView.Title = value;
         }
 
         private void OnEnable()
         {
-            m_SearchView = new SearchView();
-            rootVisualElement.Add(m_SearchView);
-            rootVisualElement.style.color = Color.white;
-            m_SearchView.OnSelection += (e) =>
+            this.searchView = new SearchView();
+            this.rootVisualElement.Add(this.searchView);
+            this.rootVisualElement.style.color = Color.white;
+            this.searchView.OnSelection += e =>
             {
-                OnSelection?.Invoke(e);
-                Close();
+                this.OnSelection?.Invoke(e);
+                this.Close();
             };
         }
 
-        public static SearchWindow Create()
-        {
-            SearchWindow window = EditorWindow.CreateInstance<SearchWindow>();
-            return window;
-        }
-
-
         private void OnFocus()
         {
-            m_SearchView.Q<SearchField>().Q("unity-text-input").Focus();
+            if (this.searchView == null)
+            {
+                return;
+            }
+
+            var searchField = this.searchView.Q<SearchView>();
+            var input = searchField.Q("unity-text-input");
+            input.Focus();
         }
 
         private void OnLostFocus()
         {
-            Close();
+            this.Close();
+        }
+
+        public event Action<SearchView.Item> OnSelection;
+
+        public static SearchWindow Create()
+        {
+            var window = CreateInstance<SearchWindow>();
+            return window;
         }
     }
 }

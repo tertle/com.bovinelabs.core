@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Model
 {
     using Unity.Assertions;
     using Unity.Burst;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -62,14 +63,14 @@ namespace BovineLabs.Core.Model
             job.RemainingHandle = this.remainingHandle;
             job.ActiveHandle = this.activeHandle;
             job.Duration = this.duration;
-            job.DeltaTime = state.Time.DeltaTime;
+            job.DeltaTime = state.WorldUnmanaged.Time.DeltaTime;
             job.SystemVersion = state.LastSystemVersion;
 
             state.Dependency = job.ScheduleParallel(this.query, state.Dependency);
         }
 
         [BurstCompile]
-        public unsafe struct UpdateTimeJob : IJobEntityBatch
+        public unsafe struct UpdateTimeJob : IJobChunk
         {
             public ComponentTypeHandle<TOn> OnHandle;
             public ComponentTypeHandle<TRemaining> RemainingHandle;
@@ -85,18 +86,18 @@ namespace BovineLabs.Core.Model
             [NativeDisableContainerSafetyRestriction] // Only initialized in the job
             private NativeList<bool> onBuffer;
 
-            /// <inheritdoc/>
-            public void Execute(ArchetypeChunk batchInChunk, int batchIndex)
+            /// <inheritdoc />
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var activeChanged = batchInChunk.DidChange(this.ActiveHandle, this.SystemVersion);
+                var activeChanged = chunk.DidChange(ref this.ActiveHandle, this.SystemVersion);
 
                 if (activeChanged)
                 {
-                    var remainings = batchInChunk.GetNativeArray(this.RemainingHandle).Reinterpret<float>();
-                    var triggers = batchInChunk.GetNativeArray(this.ActiveHandle).Reinterpret<bool>();
-                    var durationOns = (bool*)batchInChunk.GetComponentDataPtrRO(ref this.OnHandle);
+                    var remainings = chunk.GetNativeArray(ref this.RemainingHandle).Reinterpret<float>();
+                    var triggers = chunk.GetNativeArray(ref this.ActiveHandle).Reinterpret<bool>();
+                    var durationOns = (bool*)chunk.GetComponentDataPtrRO(ref this.OnHandle);
 
-                    for (var i = 0; i < batchInChunk.Count; i++)
+                    for (var i = 0; i < chunk.Count; i++)
                     {
                         if (triggers[i] && !durationOns[i])
                         {
@@ -105,9 +106,9 @@ namespace BovineLabs.Core.Model
                     }
                 }
 
-                if (activeChanged || batchInChunk.DidChange(this.RemainingHandle, this.SystemVersion))
+                if (activeChanged || chunk.DidChange(ref this.RemainingHandle, this.SystemVersion))
                 {
-                    var remainings = batchInChunk.GetNativeArray(this.RemainingHandle).Reinterpret<float>();
+                    var remainings = chunk.GetNativeArray(ref this.RemainingHandle).Reinterpret<float>();
 
                     if (!this.onBuffer.IsCreated)
                     {
@@ -122,13 +123,13 @@ namespace BovineLabs.Core.Model
                         this.onBuffer[i] = remainings[i] != 0;
                     }
 
-                    var original = batchInChunk.GetComponentDataPtrRO(ref this.OnHandle);
+                    var original = chunk.GetComponentDataPtrRO(ref this.OnHandle);
                     var updated = this.onBuffer.GetUnsafeReadOnlyPtr();
                     var hasChanged = UnsafeUtility.MemCmp(original, updated, UnsafeUtility.SizeOf<bool>() * this.onBuffer.Length) != 0;
 
                     if (hasChanged)
                     {
-                        var ons = batchInChunk.GetNativeArray(this.OnHandle);
+                        var ons = chunk.GetNativeArray(ref this.OnHandle);
                         ons.Reinterpret<bool>().CopyFrom(this.onBuffer.AsArray());
                     }
                 }

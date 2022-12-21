@@ -12,8 +12,8 @@ namespace BovineLabs.Core.Internal
     {
         // NativeHashMap
         public static UnsafeParallelHashMap<TKey, TValue> GetUnsafeHashMap<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> hashMap)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
@@ -22,8 +22,8 @@ namespace BovineLabs.Core.Internal
         }
 
         public static UnsafeParallelHashMap<TKey, TValue> GetReadOnlyUnsafeHashMap<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> hashMap)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
@@ -33,24 +33,23 @@ namespace BovineLabs.Core.Internal
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         public static void SetSafety<TKey, TValue>(this ref NativeParallelHashMap<TKey, TValue> hashMap, AtomicSafetyHandle safetyHandle)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
             hashMap.m_Safety = safetyHandle;
         }
 #endif
 
         public static NativeParallelHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeParallelHashMap<TKey, TValue> hashMapData)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TKey : unmanaged, IEquatable<TKey> where TValue : unmanaged
         {
             return new NativeParallelHashMap<TKey, TValue> { m_HashMapData = hashMapData };
         }
 
         // NativeMultiHashMap
-        public static UnsafeParallelMultiHashMap<TKey, TValue> GetUnsafeMultiHashMap<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> hashMap)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+        public static UnsafeMultiHashMap<TKey, TValue> GetUnsafeMultiHashMap<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
@@ -58,9 +57,9 @@ namespace BovineLabs.Core.Internal
             return hashMap.m_MultiHashMapData;
         }
 
-        public static UnsafeParallelMultiHashMap<TKey, TValue> GetReadOnlyUnsafeMultiHashMap<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> hashMap)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+        public static UnsafeMultiHashMap<TKey, TValue> GetReadOnlyUnsafeMultiHashMap<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
@@ -69,35 +68,49 @@ namespace BovineLabs.Core.Internal
         }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        public static void SetSafety<TKey, TValue>(this ref NativeParallelMultiHashMap<TKey, TValue> hashMap, AtomicSafetyHandle safetyHandle)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+        public static void SetSafety<TKey, TValue>(this ref NativeMultiHashMap<TKey, TValue> hashMap, AtomicSafetyHandle safetyHandle)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
             hashMap.m_Safety = safetyHandle;
         }
 #endif
 
-        public static NativeParallelMultiHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeParallelMultiHashMap<TKey, TValue> hashMapData)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+        public static NativeMultiHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> hashMapData)
+            where TKey : unmanaged, IEquatable<TKey> where TValue : unmanaged
         {
-            return new NativeParallelMultiHashMap<TKey, TValue> { m_MultiHashMapData = hashMapData };
+            return new NativeMultiHashMap<TKey, TValue> { m_MultiHashMapData = hashMapData };
         }
 
         public static unsafe byte* Buffer<T>(this FixedList32Bytes<T> list)
-            where T : unmanaged => list.Buffer;
+            where T : unmanaged
+        {
+            return list.Buffer;
+        }
 
         public static unsafe byte* Buffer<T>(this FixedList64Bytes<T> list)
-            where T : unmanaged => list.Buffer;
+            where T : unmanaged
+        {
+            return list.Buffer;
+        }
 
         public static unsafe byte* Buffer<T>(this FixedList128Bytes<T> list)
-            where T : unmanaged => list.Buffer;
+            where T : unmanaged
+        {
+            return list.Buffer;
+        }
 
         public static unsafe byte* Buffer<T>(this FixedList512Bytes<T> list)
-            where T : unmanaged => list.Buffer;
+            where T : unmanaged
+        {
+            return list.Buffer;
+        }
 
         public static unsafe byte* Buffer<T>(this FixedList4096Bytes<T> list)
-            where T : unmanaged => list.Buffer;
+            where T : unmanaged
+        {
+            return list.Buffer;
+        }
 
         // NativeReference
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

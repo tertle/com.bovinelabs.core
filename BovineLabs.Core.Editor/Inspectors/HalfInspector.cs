@@ -7,15 +7,15 @@ namespace BovineLabs.Core.Editor.Inspectors
     using JetBrains.Annotations;
     using Unity.Mathematics;
     using Unity.Properties;
-    using UnityEditor.UIElements;
+    using UnityEngine.UIElements;
 
     [UsedImplicitly]
     internal class HalfInspector : BaseFieldInspector<FloatField, float, half>
     {
         static HalfInspector()
         {
-            TypeConversion.Register<half, float>(v => v);
-            TypeConversion.Register<float, half>(v => new half(v));
+            TypeConversion.Register((ref half v) => (float)v);
+            TypeConversion.Register((ref float v) => new half(v));
         }
     }
 }

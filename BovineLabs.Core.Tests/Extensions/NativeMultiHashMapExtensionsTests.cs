@@ -10,16 +10,15 @@ namespace BovineLabs.Core.Tests.Extensions
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Mathematics;
-    using UnityEngine;
 
     public class NativeMultiHashMapExtensionsTests
     {
         [Test]
         public void ClearAndAddBatchTest()
         {
-            int length = 9;
+            var length = 9;
 
-            var hashMap = new NativeParallelMultiHashMap<int, short>(4, Allocator.Temp);
+            var hashMap = new NativeMultiHashMap<int, short>(4, Allocator.Temp);
 
             var keys = new NativeArray<int>(length, Allocator.Temp);
             var values = new NativeArray<short>(length, Allocator.Temp);
@@ -42,10 +41,10 @@ namespace BovineLabs.Core.Tests.Extensions
         [Test]
         public void AddBatchTest()
         {
-            int length = 9;
-            int split = 3;
+            var length = 9;
+            var split = 3;
 
-            var hashMap = new NativeParallelMultiHashMap<int, short>(4, Allocator.Temp);
+            var hashMap = new NativeMultiHashMap<int, short>(4, Allocator.Temp);
 
             var keys = new NativeArray<int>(length, Allocator.Temp);
             var values = new NativeArray<short>(length, Allocator.Temp);
@@ -77,32 +76,29 @@ namespace BovineLabs.Core.Tests.Extensions
                 array[i] = new float2(i);
             }
 
-            var hashMap = new NativeParallelMultiHashMap<float, float2>(32, Allocator.Temp);
+            var hashMap = new NativeMultiHashMap<float, float2>(32, Allocator.Temp);
 
             var v0 = array.Slice().SliceWithStride<float>();
             var v1 = array.Slice().SliceWithStride<float>(UnsafeUtility.SizeOf<float>());
             hashMap.AddBatchUnsafe(v0, array);
 
-            var keys = hashMap.GetKeyArray(Allocator.Temp);
-
             hashMap.AddBatchUnsafe(v1, array);
 
-            keys = hashMap.GetKeyArray(Allocator.Temp);
-            var values = hashMap.GetValueArray(Allocator.Temp);
+            var keys = hashMap.GetKeyArray(Allocator.Temp);
 
             for (var i = 0; i < keys.Length; i++)
             {
-                Assert.AreEqual(i % 16, keys[i]);
+                Assert.AreEqual((31 - i) % 16, keys[i]);
             }
         }
 
         [Test]
         public void AddBatchSingleKeyTest()
         {
-            int length = 9;
-            int split = 3;
+            var length = 9;
+            var split = 3;
 
-            var hashMap = new NativeParallelMultiHashMap<int, short>(4, Allocator.Temp);
+            var hashMap = new NativeMultiHashMap<int, short>(4, Allocator.Temp);
             var values = new NativeArray<short>(length, Allocator.Temp);
 
             var key = 23;
@@ -128,6 +124,7 @@ namespace BovineLabs.Core.Tests.Extensions
                 Assert.IsTrue(results.Remove(value));
             }
             while (hashMap.TryGetNextValue(out value, ref it));
+
             Assert.AreEqual(0, results.Count);
         }
     }

@@ -13,12 +13,12 @@ namespace BovineLabs.Core.Memory
         where T : unmanaged
     {
         private readonly int maxItems;
-        private readonly Allocator allocator;
+        private readonly AllocatorManager.AllocatorHandle allocator;
 
         private Ptr buffer;
         private UnsafeParallelHashSet<Ptr> freeIndex;
 
-        public UnsafeFixedPoolAllocator(int maxItems, Unity.Collections.Allocator allocator)
+        public UnsafeFixedPoolAllocator(int maxItems, Allocator allocator)
         {
             ValidateSize(maxItems);
 
@@ -26,9 +26,9 @@ namespace BovineLabs.Core.Memory
             this.allocator = allocator;
             this.freeIndex = new UnsafeParallelHashSet<Ptr>(maxItems, allocator);
 
-            this.buffer = UnsafeUtility.Malloc(UnsafeUtility.SizeOf<T>() * maxItems, UnsafeUtility.AlignOf<T>(), allocator);
+            this.buffer = Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<T>() * maxItems, UnsafeUtility.AlignOf<T>(), allocator);
 
-            for (int i = 0; i < maxItems; i++)
+            for (var i = 0; i < maxItems; i++)
             {
                 this.freeIndex.Add((T*)this.buffer + i);
             }
@@ -63,7 +63,7 @@ namespace BovineLabs.Core.Memory
 
         public void Dispose()
         {
-            UnsafeUtility.Free(this.buffer, this.allocator);
+            Memory.Unmanaged.Free(this.buffer, this.allocator);
             this.freeIndex.Dispose();
             this.buffer = Ptr.Zero;
             this.freeIndex = default;
@@ -89,7 +89,7 @@ namespace BovineLabs.Core.Memory
                 throw new ArgumentException("Null pointer");
             }
 
-            if (p < this.buffer || p >= ((T*)this.buffer + this.maxItems))
+            if ((p < this.buffer) || (p >= (T*)this.buffer + this.maxItems))
             {
                 throw new ArgumentException("Ptr not from this allocator");
             }

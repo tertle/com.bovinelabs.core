@@ -9,13 +9,13 @@ namespace BovineLabs.Core.Tests.Extensions
     using Unity.Mathematics;
     using Assert = UnityEngine.Assertions.Assert;
 
-    /// <summary> Tests for <see cref="MathematicsExtensions"/>. </summary>
+    /// <summary> Tests for <see cref="MathematicsExtensions" />. </summary>
     public class MathematicsExtensionsTests
     {
         /// <summary> Tests for the AABB extension methods. </summary>
         public class AABBTests
         {
-            /// <summary> Tests <see cref="MathematicsExtensions.Expand"/>. </summary>
+            /// <summary> Tests <see cref="MathematicsExtensions.Expand" />. </summary>
             [Test]
             public void Expand()
             {
@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Tests.Extensions
                 Assert.AreEqual(aabb.Size + new float3(2), aabb2.Size);
             }
 
-            /// <summary> Tests <see cref="MathematicsExtensions.IsDefault"/>. </summary>
+            /// <summary> Tests <see cref="MathematicsExtensions.IsDefault" />. </summary>
             [Test]
             public void IsDefault()
             {
@@ -54,7 +54,7 @@ namespace BovineLabs.Core.Tests.Extensions
                 Assert.IsFalse(aabb.IsDefault());
             }
 
-            /// <summary> Tests <see cref="MathematicsExtensions.Encapsulate"/>. </summary>
+            /// <summary> Tests <see cref="MathematicsExtensions.Encapsulate" />. </summary>
             [Test]
             public void Encapsulate()
             {

@@ -22,7 +22,7 @@ namespace BovineLabs.Core.PerformanceTests.Extensions
         {
             NativeStream stream = default;
 
-            NativeArray<byte> sourceData = new NativeArray<byte>(size, Allocator.TempJob);
+            var sourceData = new NativeArray<byte>(size, Allocator.TempJob);
             for (var i = 0; i < size; i++)
             {
                 sourceData[i] = (byte)(i % 255);
@@ -30,7 +30,7 @@ namespace BovineLabs.Core.PerformanceTests.Extensions
 
             Measure.Method(() =>
                 {
-                    NativeStream.Writer writer = stream.AsWriter();
+                    var writer = stream.AsWriter();
                     writer.BeginForEachIndex(0);
                     writer.WriteLarge((byte*)sourceData.GetUnsafeReadOnlyPtr(), size);
                     writer.EndForEachIndex();
@@ -50,7 +50,7 @@ namespace BovineLabs.Core.PerformanceTests.Extensions
         {
             NativeStream stream = default;
 
-            NativeArray<byte> sourceData = new NativeArray<byte>(size, Allocator.TempJob);
+            var sourceData = new NativeArray<byte>(size, Allocator.TempJob);
             for (var i = 0; i < size; i++)
             {
                 sourceData[i] = (byte)(i % 255);

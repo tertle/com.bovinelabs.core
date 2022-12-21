@@ -19,7 +19,7 @@ namespace BovineLabs.Core.Utility
     {
         public const float Radians90 = math.PI / 2f;
         public const float Radians180 = math.PI;
-        public const float Radians270 = math.PI * 3f / 2f;
+        public const float Radians270 = (math.PI * 3f) / 2f;
         public const float Radians360 = math.PI * 2f;
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace BovineLabs.Core.Utility
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void add([NoAlias]int* dst, [ReadOnly]int* src, [AssumeRange(0, int.MaxValue)] int length, int value)
+        public static unsafe void add([NoAlias] int* dst, [ReadOnly] int* src, [AssumeRange(0, int.MaxValue)] int length, int value)
         {
             var dst4 = (int4*)dst;
             var src4 = (int4*)src;
@@ -273,7 +273,7 @@ namespace BovineLabs.Core.Utility
             var d3 = qv * qv;
             var euler = new float3(0.0f);
 
-            const float CUTOFF = (1.0f - 2.0f * epsilon) * (1.0f - 2.0f * epsilon);
+            const float CUTOFF = (1.0f - (2.0f * epsilon)) * (1.0f - (2.0f * epsilon));
 
             switch (order)
             {
@@ -283,16 +283,17 @@ namespace BovineLabs.Core.Utility
                     if (y1 * y1 < CUTOFF)
                     {
                         var x1 = -d2.x + d1.z;
-                        var x2 = d3.x + d3.w - d3.y - d3.z;
+                        var x2 = (d3.x + d3.w) - d3.y - d3.z;
                         var z1 = -d2.y + d1.x;
-                        var z2 = d3.z + d3.w - d3.y - d3.x;
+                        var z2 = (d3.z + d3.w) - d3.y - d3.x;
                         euler = new float3(math.atan2(x1, x2), math.asin(y1), math.atan2(z1, z2));
                     }
-                    else //zxz
+                    else
                     {
+                        // zxz
                         y1 = math.clamp(y1, -1.0f, 1.0f);
                         var abcd = new float4(d2.z, d1.y, d2.y, d1.x);
-                        var x1 = 2.0f * (abcd.x * abcd.w + abcd.y * abcd.z); //2(ad+bc)
+                        var x1 = 2.0f * ((abcd.x * abcd.w) + (abcd.y * abcd.z)); // 2(ad+bc)
                         var x2 = math.csum(abcd * abcd * new float4(-1.0f, 1.0f, -1.0f, 1.0f));
                         euler = new float3(math.atan2(x1, x2), math.asin(y1), 0.0f);
                     }
@@ -306,16 +307,17 @@ namespace BovineLabs.Core.Utility
                     if (y1 * y1 < CUTOFF)
                     {
                         var x1 = d2.x + d1.z;
-                        var x2 = d3.y + d3.w - d3.x - d3.z;
+                        var x2 = (d3.y + d3.w) - d3.x - d3.z;
                         var z1 = d2.z + d1.y;
-                        var z2 = d3.z + d3.w - d3.x - d3.y;
+                        var z2 = (d3.z + d3.w) - d3.x - d3.y;
                         euler = new float3(math.atan2(x1, x2), -math.asin(y1), math.atan2(z1, z2));
                     }
-                    else //zxz
+                    else
                     {
+                        // zxz
                         y1 = math.clamp(y1, -1.0f, 1.0f);
                         var abcd = new float4(d2.z, d1.y, d2.y, d1.x);
-                        var x1 = 2.0f * (abcd.x * abcd.w + abcd.y * abcd.z); //2(ad+bc)
+                        var x1 = 2.0f * ((abcd.x * abcd.w) + (abcd.y * abcd.z)); // 2(ad+bc)
                         var x2 = math.csum(abcd * abcd * new float4(-1.0f, 1.0f, -1.0f, 1.0f));
                         euler = new float3(math.atan2(x1, x2), -math.asin(y1), 0.0f);
                     }
@@ -329,16 +331,17 @@ namespace BovineLabs.Core.Utility
                     if (y1 * y1 < CUTOFF)
                     {
                         var x1 = -d2.z + d1.y;
-                        var x2 = d3.z + d3.w - d3.x - d3.y;
+                        var x2 = (d3.z + d3.w) - d3.x - d3.y;
                         var z1 = -d2.x + d1.z;
-                        var z2 = d3.y + d3.w - d3.z - d3.x;
+                        var z2 = (d3.y + d3.w) - d3.z - d3.x;
                         euler = new float3(math.atan2(x1, x2), math.asin(y1), math.atan2(z1, z2));
                     }
-                    else //yzy
+                    else
                     {
+                        // yzy
                         y1 = math.clamp(y1, -1.0f, 1.0f);
                         var abcd = new float4(d2.x, d1.z, d2.y, d1.x);
-                        var x1 = 2.0f * (abcd.x * abcd.w + abcd.y * abcd.z); //2(ad+bc)
+                        var x1 = 2.0f * ((abcd.x * abcd.w) + (abcd.y * abcd.z)); // 2(ad+bc)
                         var x2 = math.csum(abcd * abcd * new float4(-1.0f, 1.0f, -1.0f, 1.0f));
                         euler = new float3(math.atan2(x1, x2), math.asin(y1), 0.0f);
                     }
@@ -352,16 +355,17 @@ namespace BovineLabs.Core.Utility
                     if (y1 * y1 < CUTOFF)
                     {
                         var x1 = d2.z + d1.y;
-                        var x2 = d3.x + d3.w - d3.z - d3.y;
+                        var x2 = (d3.x + d3.w) - d3.z - d3.y;
                         var z1 = d2.y + d1.x;
-                        var z2 = d3.y + d3.w - d3.x - d3.z;
+                        var z2 = (d3.y + d3.w) - d3.x - d3.z;
                         euler = new float3(math.atan2(x1, x2), -math.asin(y1), math.atan2(z1, z2));
                     }
-                    else //yxy
+                    else
                     {
+                        // yxy
                         y1 = math.clamp(y1, -1.0f, 1.0f);
                         var abcd = new float4(d2.x, d1.z, d2.y, d1.x);
-                        var x1 = 2.0f * (abcd.x * abcd.w + abcd.y * abcd.z); //2(ad+bc)
+                        var x1 = 2.0f * ((abcd.x * abcd.w) + (abcd.y * abcd.z)); // 2(ad+bc)
                         var x2 = math.csum(abcd * abcd * new float4(-1.0f, 1.0f, -1.0f, 1.0f));
                         euler = new float3(math.atan2(x1, x2), -math.asin(y1), 0.0f);
                     }
@@ -375,16 +379,17 @@ namespace BovineLabs.Core.Utility
                     if (y1 * y1 < CUTOFF)
                     {
                         var x1 = -d2.y + d1.x;
-                        var x2 = d3.y + d3.w - d3.z - d3.x;
+                        var x2 = (d3.y + d3.w) - d3.z - d3.x;
                         var z1 = -d2.z + d1.y;
-                        var z2 = d3.x + d3.w - d3.y - d3.z;
+                        var z2 = (d3.x + d3.w) - d3.y - d3.z;
                         euler = new float3(math.atan2(x1, x2), math.asin(y1), math.atan2(z1, z2));
                     }
-                    else //xyx
+                    else
                     {
+                        // xyx
                         y1 = math.clamp(y1, -1.0f, 1.0f);
                         var abcd = new float4(d2.x, d1.z, d2.z, d1.y);
-                        var x1 = 2.0f * (abcd.x * abcd.w + abcd.y * abcd.z); //2(ad+bc)
+                        var x1 = 2.0f * ((abcd.x * abcd.w) + (abcd.y * abcd.z)); // 2(ad+bc)
                         var x2 = math.csum(abcd * abcd * new float4(-1.0f, 1.0f, -1.0f, 1.0f));
                         euler = new float3(math.atan2(x1, x2), math.asin(y1), 0.0f);
                     }
@@ -398,15 +403,17 @@ namespace BovineLabs.Core.Utility
                     if (y1 * y1 < CUTOFF)
                     {
                         var x1 = d2.y + d1.x;
-                        var x2 = d3.z + d3.w - d3.y - d3.x;
+                        var x2 = (d3.z + d3.w) - d3.y - d3.x;
                         var z1 = d2.x + d1.z;
-                        var z2 = d3.x + d3.w - d3.y - d3.z;
+                        var z2 = (d3.x + d3.w) - d3.y - d3.z;
                         euler = new float3(math.atan2(x1, x2), -math.asin(y1), math.atan2(z1, z2));
-                    } else //xzx
+                    }
+                    else
                     {
+                        // xzx
                         y1 = math.clamp(y1, -1.0f, 1.0f);
                         var abcd = new float4(d2.z, d1.y, d2.x, d1.z);
-                        var x1 = 2.0f * (abcd.x * abcd.w + abcd.y * abcd.z); //2(ad+bc)
+                        var x1 = 2.0f * ((abcd.x * abcd.w) + (abcd.y * abcd.z)); // 2(ad+bc)
                         var x2 = math.csum(abcd * abcd * new float4(-1.0f, 1.0f, -1.0f, 1.0f));
                         euler = new float3(math.atan2(x1, x2), -math.asin(y1), 0.0f);
                     }
@@ -431,21 +438,21 @@ namespace BovineLabs.Core.Utility
         {
             // Based on Game Programming Gems 4 Chapter 1.10
             smoothTime = math.max(0.0001F, smoothTime);
-            float omega = 2F / smoothTime;
+            var omega = 2F / smoothTime;
 
-            float x = omega * deltaTime;
-            float exp = 1F / (1F + x + 0.48F * x * x + 0.235F * x * x * x);
-            float change = current - target;
-            float originalTo = target;
+            var x = omega * deltaTime;
+            var exp = 1F / (1F + x + (0.48F * x * x) + (0.235F * x * x * x));
+            var change = current - target;
+            var originalTo = target;
 
             // Clamp maximum speed
-            float maxChange = maxSpeed * smoothTime;
+            var maxChange = maxSpeed * smoothTime;
             change = math.clamp(change, -maxChange, maxChange);
             target = current - change;
 
-            float temp = (currentVelocity + omega * change) * deltaTime;
-            currentVelocity = (currentVelocity - omega * temp) * exp;
-            float result = target + (change + temp) * exp;
+            var temp = (currentVelocity + (omega * change)) * deltaTime;
+            currentVelocity = (currentVelocity - (omega * temp)) * exp;
+            var result = target + ((change + temp) * exp);
 
             // Prevent overshooting
             if (originalTo - current > 0.0F == result > originalTo)
@@ -460,7 +467,7 @@ namespace BovineLabs.Core.Utility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float DeltaAngle(float current, float target)
         {
-            float delta = Repeat((target - current), 360.0F);
+            var delta = Repeat(target - current, 360.0F);
             if (delta > 180.0F)
             {
                 delta -= 360.0F;
@@ -474,7 +481,7 @@ namespace BovineLabs.Core.Utility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Repeat(float t, float length)
         {
-            return math.clamp(t - math.floor(t / length) * length, 0.0f, length);
+            return math.clamp(t - (math.floor(t / length) * length), 0.0f, length);
         }
 
         // https://answers.unity.com/questions/47115/vector3-rotate-around.html
@@ -482,7 +489,7 @@ namespace BovineLabs.Core.Utility
         public static float3 RotateAround(float3 point, float3 pivot, quaternion angle)
         {
             // Center the point around the origin
-            float3 finalPos = point - pivot;
+            var finalPos = point - pivot;
 
             // Rotate the point.
             finalPos = math.mul(angle, finalPos);
@@ -496,13 +503,13 @@ namespace BovineLabs.Core.Utility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool AreApproximatelyEqual(float2 f1, float2 f2, float delta = 0.01f)
         {
-            return math.abs(f1.x - f2.x) < delta && math.abs(f1.y - f2.y) < delta;
+            return (math.abs(f1.x - f2.x) < delta) && (math.abs(f1.y - f2.y) < delta);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool AreApproximatelyEqual(float3 f1, float3 f2, float delta = 0.01f)
         {
-            return math.abs(f1.x - f2.x) < delta && math.abs(f1.y - f2.y) < delta && math.abs(f1.z - f2.z) < delta;
+            return (math.abs(f1.x - f2.x) < delta) && (math.abs(f1.y - f2.y) < delta) && (math.abs(f1.z - f2.z) < delta);
         }
 
         // fisher-yates-shuffle
@@ -521,14 +528,14 @@ namespace BovineLabs.Core.Utility
         /// The result is always rotated 90-degrees in a counter-clockwise direction for a 2D coordinate system where the positive Y axis goes up.
         /// </summary>
         /// <remarks> This is a copy of Vector2.Perpendicular. </remarks>
-        /// <param name="inDirection">The input direction.</param>
+        /// <param name="inDirection"> The input direction. </param>
         /// <returns> The perpendicular direction. </returns>
         public static float2 Perpendicular(float2 inDirection)
         {
             return new float2(-inDirection.y, inDirection.x);
         }
 
-        static float3 eulerReorderBack(float3 euler, math.RotationOrder order)
+        private static float3 eulerReorderBack(float3 euler, math.RotationOrder order)
         {
             switch (order)
             {

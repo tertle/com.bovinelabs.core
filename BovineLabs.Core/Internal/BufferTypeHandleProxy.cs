@@ -8,7 +8,7 @@ namespace BovineLabs.Core.Internal
     using Unity.Entities;
 
     public readonly struct BufferTypeHandleProxy<T>
-        where T : struct, IBufferElementData
+        where T : unmanaged, IBufferElementData
     {
         internal readonly bool m_IsReadOnly;
         internal readonly uint m_GlobalSystemVersion;
@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Internal
         public BufferTypeHandleProxy(BufferTypeHandle<T> typeHandle)
         {
             this.m_GlobalSystemVersion = typeHandle.m_GlobalSystemVersion;
-            this.m_IsReadOnly = typeHandle.m_IsReadOnly;
+            this.m_IsReadOnly = typeHandle.IsReadOnly;
         }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -36,10 +36,16 @@ namespace BovineLabs.Core.Internal
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         public static AtomicSafetyHandle GetSafety0<T>(this BufferTypeHandle<T> componentTypeHandle)
-            where T : struct, IBufferElementData => componentTypeHandle.m_Safety0;
+            where T : unmanaged, IBufferElementData
+        {
+            return componentTypeHandle.m_Safety0;
+        }
 
         public static AtomicSafetyHandle GetSafety1<T>(this BufferTypeHandle<T> componentTypeHandle)
-            where T : struct, IBufferElementData => componentTypeHandle.m_Safety1;
+            where T : unmanaged, IBufferElementData
+        {
+            return componentTypeHandle.m_Safety1;
+        }
 #endif
     }
 }

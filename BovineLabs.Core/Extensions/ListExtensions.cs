@@ -18,9 +18,9 @@ namespace BovineLabs.Core.Extensions
         /// <summary>
         /// Adds a native version of <see cref="List{T}.AddRange(IEnumerable{T})" />.
         /// </summary>
-        /// <typeparam name="T">The type.</typeparam>
-        /// <param name="list">The <see cref="List{T}" /> to add to.</param>
-        /// <param name="array">The native array to add to the list.</param>
+        /// <typeparam name="T"> The type. </typeparam>
+        /// <param name="list"> The <see cref="List{T}" /> to add to. </param>
+        /// <param name="array"> The native array to add to the list. </param>
         public static void AddRangeNative<T>(this List<T> list, NativeArray<T> array)
             where T : struct
         {
@@ -30,10 +30,10 @@ namespace BovineLabs.Core.Extensions
         /// <summary>
         /// Adds a native version of <see cref="List{T}.AddRange(IEnumerable{T})" />.
         /// </summary>
-        /// <typeparam name="T">The type.</typeparam>
-        /// <param name="list">The <see cref="List{T}" /> to add to.</param>
-        /// <param name="array">The array to add to the list.</param>
-        /// <param name="length">The length of the array to add to the list.</param>
+        /// <typeparam name="T"> The type. </typeparam>
+        /// <param name="list"> The <see cref="List{T}" /> to add to. </param>
+        /// <param name="array"> The array to add to the list. </param>
+        /// <param name="length"> The length of the array to add to the list. </param>
         public static unsafe void AddRangeNative<T>(this List<T> list, NativeArray<T> array, int length)
             where T : struct
         {
@@ -43,9 +43,9 @@ namespace BovineLabs.Core.Extensions
         /// <summary>
         /// Adds a native version of <see cref="List{T}.AddRange(IEnumerable{T})" />.
         /// </summary>
-        /// <typeparam name="T">The type.</typeparam>
-        /// <param name="list">The <see cref="List{T}" /> to add to.</param>
-        /// <param name="nativeSlice">The array to add to the list.</param>
+        /// <typeparam name="T"> The type. </typeparam>
+        /// <param name="list"> The <see cref="List{T}" /> to add to. </param>
+        /// <param name="nativeSlice"> The array to add to the list. </param>
         public static unsafe void AddRangeNative<T>(this List<T> list, NativeSlice<T> nativeSlice)
             where T : struct
         {
@@ -55,10 +55,10 @@ namespace BovineLabs.Core.Extensions
         /// <summary>
         /// Adds a range of values to a list using a Buffer.
         /// </summary>
-        /// <typeparam name="T">The type.</typeparam>
-        /// <param name="list">The list to add the values to.</param>
-        /// <param name="arrayBuffer">The Buffer to add from.</param>
-        /// <param name="length">The length of the Buffer.</param>
+        /// <typeparam name="T"> The type. </typeparam>
+        /// <param name="list"> The list to add the values to. </param>
+        /// <param name="arrayBuffer"> The Buffer to add from. </param>
+        /// <param name="length"> The length of the Buffer. </param>
         public static unsafe void AddRangeNative<T>(this List<T> list, void* arrayBuffer, int length)
             where T : struct
         {

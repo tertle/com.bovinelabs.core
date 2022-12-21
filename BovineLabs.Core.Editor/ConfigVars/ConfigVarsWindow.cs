@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
     {
         private readonly Dictionary<string, ConfigVarPanel> panels = new();
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override string TitleText { get; } = "ConfigVars";
 
         [MenuItem("BovineLabs/ConfigVars", priority = 10)]
@@ -27,7 +27,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
             Open();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void GetPanels(List<ISettingsPanel> settingPanels)
         {
             this.panels.Clear();
@@ -54,7 +54,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void InitializeToolbar(VisualElement rootElement)
         {
             var resetButton = new ToolbarButton(this.ResetToDefault) { text = "Reset To Default" };

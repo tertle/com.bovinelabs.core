@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core
+namespace BovineLabs.Core.Keys
 {
     using System;
     using UnityEngine;
@@ -16,7 +16,7 @@ namespace BovineLabs.Core
         [SerializeField]
         private byte value;
 
-        /// <summary> Initializes a new instance of the <see cref="NameValue"/> struct. </summary>
+        /// <summary> Initializes a new instance of the <see cref="NameValue" /> struct. </summary>
         /// <param name="name"> They name. </param>
         /// <param name="value"> The value. </param>
         public NameValue(string name, byte value)

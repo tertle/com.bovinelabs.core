@@ -13,7 +13,7 @@ namespace BovineLabs.Core.Editor.PropertyDrawers
     [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
     public class ReadOnlyAttributeDrawer : PropertyDrawer
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             var propertyField = new PropertyField(property);
@@ -22,7 +22,7 @@ namespace BovineLabs.Core.Editor.PropertyDrawers
             return propertyField;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             GUI.enabled = false;

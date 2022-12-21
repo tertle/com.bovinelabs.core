@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Utility
 
         public float V { get; }
 
-        public HSV(float h, float s, float v)
+        public HSV(float h, float s = 1, float v = 1)
         {
             // TODO validate
             this.H = math.clamp(h, 0, 360);
@@ -28,11 +28,6 @@ namespace BovineLabs.Core.Utility
             this.V = math.clamp(v, 0, 1);
         }
 
-        public HSV(float h)
-            : this(h, 1, 1)
-        {
-        }
-
         public Color ToColor()
         {
             var c = this.V * this.S;
@@ -40,15 +35,14 @@ namespace BovineLabs.Core.Utility
             var x = c * (1 - math.abs((hh % 2) - 1));
             var m = this.V - c;
 
-            if (this.H < 60)
-                return new Color(c + m, x + m, m);
-            if (this.H < 120)
-                return new Color(x + m, c + m, m);
-            if (this.H < 180)
-                return new Color(m, c + m, x + m);
-            if (this.H < 240)
-                return new Color(m, x + m, c + m);
-            return new Color(x + m, m, c + m);
+            return this.H switch
+            {
+                < 60 => new Color(c + m, x + m, m),
+                < 120 => new Color(x + m, c + m, m),
+                < 180 => new Color(m, c + m, x + m),
+                < 240 => new Color(m, x + m, c + m),
+                _ => new Color(x + m, m, c + m),
+            };
         }
     }
 }

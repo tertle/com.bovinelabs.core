@@ -2,13 +2,14 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_RENDERER
+#if UNITY_GRAPHICS
 namespace BovineLabs.Core.Utility
 {
     using System;
     using System.Collections.Generic;
     using BovineLabs.Core.Extensions;
     using Unity.Burst;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -23,19 +24,19 @@ namespace BovineLabs.Core.Utility
 
     public unsafe class EntityPicker : IDisposable
     {
-        private readonly List<Matrix4x4> matrices = new();
-        private readonly List<Vector4> colors = new();
         private readonly int colorPropertyID = Shader.PropertyToID("_SelectionColor");
+        private readonly List<Vector4> colors = new();
         private readonly int colorSpaceID = Shader.PropertyToID("_ColorSpace");
-
-        private readonly MaterialPropertyBlock propertyBlock;
         private readonly CommandBuffer commandBuffer;
         private readonly Material material;
         private readonly Material materialSkinned;
+        private readonly List<Matrix4x4> matrices = new();
+
+        private readonly MaterialPropertyBlock propertyBlock;
         private readonly SystemBase system;
-        private Texture2D texture;
         private EntityQuery renderMeshQuery;
         private EntityQuery skinnedMeshQuery;
+        private Texture2D texture;
 
         public EntityPicker(SystemBase system)
         {
@@ -51,13 +52,7 @@ namespace BovineLabs.Core.Utility
             this.skinnedMeshQuery = system.GetEntityQuery(ComponentType.ReadOnly<SkinnedMeshRenderer>());
         }
 
-        public void CompleteDependency()
-        {
-            this.renderMeshQuery.CompleteDependency();
-            this.skinnedMeshQuery.CompleteDependency();
-        }
-
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void Dispose()
         {
             this.commandBuffer.Dispose();
@@ -78,6 +73,12 @@ namespace BovineLabs.Core.Utility
             }
         }
 
+        public void CompleteDependency()
+        {
+            this.renderMeshQuery.CompleteDependency();
+            this.skinnedMeshQuery.CompleteDependency();
+        }
+
         public Entity Pick(float2 screenPosition, Camera camera, JobHandle jobHandle)
         {
             if (this.texture == null)
@@ -87,7 +88,7 @@ namespace BovineLabs.Core.Utility
             }
 
             var renderTexture = RenderTexture.GetTemporary(
-            camera.pixelWidth, camera.pixelHeight, 24, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
+                camera.pixelWidth, camera.pixelHeight, 24, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
 
             renderTexture.antiAliasing = 1;
             renderTexture.filterMode = FilterMode.Point;
@@ -154,7 +155,7 @@ namespace BovineLabs.Core.Utility
                 this.matrices.AddRangeNative(chunk.Transforms.Ptr, chunk.Transforms.Length);
                 var matrixArray = NoAllocHelpers.ExtractArrayFromListT(this.matrices);
 
-                var mesh = this.system.World.EntityManager.GetSharedComponentData<RenderMesh>(chunk.Mesh);
+                var mesh = this.system.World.EntityManager.GetSharedComponentManaged<RenderMesh>(chunk.Mesh);
 
                 this.commandBuffer.DrawMeshInstanced(mesh.mesh, mesh.subMesh, this.material, -1, matrixArray, this.matrices.Count, this.propertyBlock);
             }
@@ -188,7 +189,7 @@ namespace BovineLabs.Core.Utility
         }
 
         [BurstCompile]
-        private struct GatherRenderMeshJob : IJobEntityBatch
+        private struct GatherRenderMeshJob : IJobChunk
         {
             [ReadOnly]
             public EntityTypeHandle EntityType;
@@ -203,14 +204,14 @@ namespace BovineLabs.Core.Utility
 
             public NativeParallelHashMap<Color, Entity>.ParallelWriter Map;
 
-            public void Execute(ArchetypeChunk batchInChunk, int batchIndex)
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var colors = new UnsafeList<Vector4>(batchInChunk.Count, Allocator.Persistent);
-                var transforms = new UnsafeList<Matrix4x4>(batchInChunk.Count, Allocator.Persistent);
+                var colors = new UnsafeList<Vector4>(chunk.Count, Allocator.Persistent);
+                var transforms = new UnsafeList<Matrix4x4>(chunk.Count, Allocator.Persistent);
 
-                var entities = batchInChunk.GetNativeArray(this.EntityType);
-                var localToWorlds = batchInChunk.GetNativeArray(this.LocalToWorldType);
-                var mesh = batchInChunk.GetSharedComponentIndex(this.RenderMeshType);
+                var entities = chunk.GetNativeArray(this.EntityType);
+                var localToWorlds = chunk.GetNativeArray(ref this.LocalToWorldType);
+                var mesh = chunk.GetSharedComponentIndex(this.RenderMeshType);
 
                 for (var index = 0; index < entities.Length; index++)
                 {
