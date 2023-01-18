@@ -49,29 +49,8 @@ namespace BovineLabs.Core.Editor.Settings
         /// <param name="rootElement"> The UI root element. </param>
         public virtual void OnActivate(string searchContext, VisualElement rootElement)
         {
-            var iterator = this.SerializedObject.GetIterator();
-            if (iterator.NextVisible(true))
-            {
-                do
-                {
-                    if (iterator.propertyPath == "m_Script")
-                    {
-                        continue;
-                    }
-
-                    var child = new PropertyField(iterator)
-                    {
-                        name = "PropertyField:" + iterator.propertyPath,
-                    };
-                    child.BindProperty(this.SerializedObject.FindProperty(iterator.propertyPath));
-                    rootElement.Add(child);
-                }
-                while (iterator.NextVisible(false));
-            }
-
-            rootElement.AddToClassList(InspectorElement.ussClassName);
-            rootElement.AddToClassList(InspectorElement.uIEDefaultVariantUssClassName);
-            rootElement.AddToClassList(InspectorElement.uIEInspectorVariantUssClassName);
+            var inspectorElement = new InspectorElement(this.SerializedObject);
+            rootElement.Add(inspectorElement);
         }
 
         /// <summary> Executed when deactivate is called from teh settings window. </summary>

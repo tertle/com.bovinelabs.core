@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.States
 {
     using BovineLabs.Core.Extensions;
+    using BovineLabs.Core.Iterators;
     using Unity.Assertions;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
@@ -14,16 +15,25 @@ namespace BovineLabs.Core.States
     using UnityEngine;
 
     /// <summary> A generic general purpose state system that ensures only a single state component exists on an entity but driven from a byte field. </summary>
-    public struct StateModel
+    public struct StateModelEnableable
     {
         private StateImpl impl;
 
-        public StateModel(ref SystemState state, ComponentType stateComponent, ComponentType previousStateComponent)
+        public StateModelEnableable(ref SystemState state, ComponentType stateComponent, ComponentType previousStateComponent)
         {
             Assert.AreEqual(UnsafeUtility.SizeOf<byte>(), TypeManager.GetTypeInfo(stateComponent.TypeIndex).ElementSize);
             Assert.AreEqual(UnsafeUtility.SizeOf<byte>(), TypeManager.GetTypeInfo(previousStateComponent.TypeIndex).ElementSize);
 
             this.impl = new StateImpl(ref state, stateComponent, previousStateComponent);
+
+            using var e = this.impl.RegisteredStatesMap.GetEnumerator();
+            while (e.MoveNext())
+            {
+                Assert.IsTrue(TypeManager.GetTypeInfo(e.Current.Value.TypeIndex).EnableableType, $"Non EnableableType {e.Current.Value} trying to be assigned to {stateComponent}");
+
+                // Add all component dependencies to this system
+                state.AddSystemDependency(e.Current.Value.TypeIndex);
+            }
         }
 
         public void Dispose()
@@ -31,26 +41,24 @@ namespace BovineLabs.Core.States
             this.impl.Dispose();
         }
 
-        public void Run(ref SystemState state, EntityCommandBuffer commandBuffer)
+        public void Run(ref SystemState state)
         {
             state.Dependency.Complete();
-            var job = this.UpdateInternal(ref state, commandBuffer.AsParallelWriter());
-            job.RunByRef(this.impl.Query);
+            this.UpdateInternal(ref state).Run(this.impl.Query);
         }
 
-        public void Update(ref SystemState state, EntityCommandBuffer commandBuffer)
+        public void Update(ref SystemState state)
         {
-            var job = this.UpdateInternal(ref state, commandBuffer.AsParallelWriter());
-            state.Dependency = job.ScheduleByRef(this.impl.Query, state.Dependency);
+            var job = this.UpdateInternal(ref state);
+            state.Dependency = this.UpdateInternal(ref state).Schedule(this.impl.Query, state.Dependency);
         }
 
-        public void UpdateParallel(ref SystemState state, EntityCommandBuffer.ParallelWriter commandBuffer)
+        public void UpdateParallel(ref SystemState state)
         {
-            var job = this.UpdateInternal(ref state, commandBuffer);
-            state.Dependency = job.ScheduleParallelByRef(this.impl.Query, state.Dependency);
+            state.Dependency = this.UpdateInternal(ref state).ScheduleParallel(this.impl.Query, state.Dependency);
         }
 
-        private StateJob UpdateInternal(ref SystemState state, EntityCommandBuffer.ParallelWriter commandBuffer)
+        private StateJob UpdateInternal(ref SystemState state)
         {
             this.impl.Update(ref state);
 
@@ -60,7 +68,7 @@ namespace BovineLabs.Core.States
                 EntityType = this.impl.EntityType,
                 StateType = this.impl.StateType,
                 PreviousStateType = this.impl.PreviousStateType,
-                CommandBuffer = commandBuffer,
+                UnsafeEnableableLookup = state.GetUnsafeEnableableLookup(),
             };
         }
 
@@ -78,7 +86,7 @@ namespace BovineLabs.Core.States
 
             public DynamicComponentTypeHandle PreviousStateType;
 
-            public EntityCommandBuffer.ParallelWriter CommandBuffer;
+            public UnsafeEnableableLookup UnsafeEnableableLookup;
 
             /// <inheritdoc />
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
@@ -102,7 +110,7 @@ namespace BovineLabs.Core.States
                     {
                         if (this.RegisteredStates.TryGetValue(previous, out var stateComponent))
                         {
-                            this.CommandBuffer.RemoveComponent(unfilteredChunkIndex, entity, stateComponent);
+                            this.UnsafeEnableableLookup.SetComponentEnabled(entity, stateComponent, false);
                         }
                     }
 
@@ -110,7 +118,7 @@ namespace BovineLabs.Core.States
                     {
                         if (this.RegisteredStates.TryGetValue(state, out var stateComponent))
                         {
-                            this.CommandBuffer.AddComponent(unfilteredChunkIndex, entity, stateComponent);
+                            this.UnsafeEnableableLookup.SetComponentEnabled(entity, stateComponent, true);
                         }
                         else
                         {

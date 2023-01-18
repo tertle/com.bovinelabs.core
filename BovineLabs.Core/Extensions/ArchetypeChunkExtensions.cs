@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
+    using System.Runtime.CompilerServices;
     using BovineLabs.Core.Collections;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -135,6 +136,46 @@ namespace BovineLabs.Core.Extensions
             return new DynamicBufferAccessor(ptr, length, stride, elementSize, internalCapacity);
 #endif
         }
+
+
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+        public static void JournalAddRecordGetComponentDataRW<T>(
+            this ArchetypeChunk archetypeChunk,
+            ref ComponentTypeHandle<T> typeHandle,
+            void* data,
+            int dataLength)
+            where T : unmanaged, IComponentData
+        {
+            archetypeChunk.JournalAddRecord(
+                EntitiesJournaling.RecordType.GetComponentDataRW, typeHandle.m_TypeIndex, typeHandle.m_GlobalSystemVersion, data, dataLength);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void JournalAddRecord(
+            this ref ArchetypeChunk chunk,
+            EntitiesJournaling.RecordType recordType,
+            TypeIndex typeIndex,
+            uint globalSystemVersion,
+            void* data = null,
+            int dataLength = 0)
+        {
+            fixed (ArchetypeChunk* archetypeChunk = &chunk)
+            {
+                EntitiesJournaling.AddRecord(
+                    recordType: recordType,
+                    entityComponentStore: archetypeChunk->m_EntityComponentStore,
+                    globalSystemVersion: globalSystemVersion,
+                    chunks: archetypeChunk,
+                    chunkCount: 1,
+                    types: &typeIndex,
+                    typeCount: 1,
+                    data: data,
+                    dataLength: dataLength);
+            }
+        }
+
+        // JournalAddRecordGetComponentDataRW(ref chunkComponentTypeHandle, ptr, chunkComponentTypeHandle.m_LookupCache.ComponentSizeOf * Count);
+#endif
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]

@@ -11,8 +11,8 @@ namespace BovineLabs.Core.ConfigVars
     /// <summary> Container for setting config var static fields that use FixedString. </summary>
     /// <remarks> This should only be used in debugging tools. </remarks>
     /// <typeparam name="T"> The type of shared static. Must be one of the FixedString types. </typeparam>
-    internal class ConfigVarSharedStaticStringContainer<T> : IConfigVarContainer
-        where T : struct
+    internal class ConfigVarSharedStaticStringContainer<T> : IConfigVarContainer<T>
+        where T : unmanaged
     {
         private readonly SharedStatic<T> field;
 
@@ -23,8 +23,14 @@ namespace BovineLabs.Core.ConfigVars
             this.field = field;
         }
 
+        T IConfigVarContainer<T>.Value
+        {
+            get => this.field.Data;
+            set => this.field.Data = value;
+        }
+
         /// <inheritdoc />
-        public string Value
+        string IConfigVarContainer.StringValue
         {
             get =>
                 this.field switch

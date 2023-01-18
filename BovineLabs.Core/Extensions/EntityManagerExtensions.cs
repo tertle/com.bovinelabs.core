@@ -11,6 +11,8 @@ namespace BovineLabs.Core.Extensions
     /// <summary> Extensions for <see cref="EntityManager" />. </summary>
     public static class EntityManagerExtensions
     {
+        private const EntityQueryOptions QueryOptions = EntityQueryOptions.IncludeSystems;
+
         public static unsafe SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
             where T : struct, ISharedComponentData
         {
@@ -49,8 +51,7 @@ namespace BovineLabs.Core.Extensions
         /// <returns> The entity. </returns>
         public static Entity GetOrCreateSingletonEntity<T>(this EntityManager em)
         {
-            using var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(EntityQueryOptions.IncludeSystems);
-            var query = em.CreateEntityQuery(builder);
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
             if (!query.IsEmptyIgnoreFilter)
             {
                 return query.GetSingletonEntity();
@@ -63,25 +64,14 @@ namespace BovineLabs.Core.Extensions
 
         public static Entity GetSingletonEntity<T>(this EntityManager em)
         {
-            using var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(EntityQueryOptions.IncludeSystems);
-            var query = em.CreateEntityQuery(builder);
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
             query.CompleteDependency();
             return query.GetSingletonEntity();
         }
 
-        public static void SetSingleton<T>(this EntityManager em, T value)
-            where T : unmanaged, IComponentData
-        {
-            using var builder = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(EntityQueryOptions.IncludeSystems);
-            var query = em.CreateEntityQuery(builder);
-            query.CompleteDependency();
-            query.SetSingleton(value);
-        }
-
         public static bool TryGetSingletonEntity<T>(this EntityManager em, out Entity entity)
         {
-            using var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(EntityQueryOptions.IncludeSystems);
-            var query = em.CreateEntityQuery(builder);
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
 
             if (query.CalculateChunkCount() != 1)
             {
@@ -89,40 +79,67 @@ namespace BovineLabs.Core.Extensions
                 return false;
             }
 
-            query.CompleteDependency();
             entity = query.GetSingletonEntity();
             return true;
         }
 
         public static bool HasSingleton<T>(this EntityManager em)
         {
-            using var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(EntityQueryOptions.IncludeSystems);
-            var query = em.CreateEntityQuery(builder);
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
             return query.CalculateChunkCount() == 1;
         }
 
-        public static T GetSingleton<T>(this EntityManager em)
+        public static T GetSingleton<T>(this EntityManager em, bool completeDependency = true)
             where T : unmanaged, IComponentData
         {
-            using var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(EntityQueryOptions.IncludeSystems);
-            var query = em.CreateEntityQuery(builder);
-            query.CompleteDependency();
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            if (completeDependency)
+            {
+                query.CompleteDependency();
+            }
+
             return query.GetSingleton<T>();
         }
 
-        public static T GetSingletonObject<T>(this EntityManager em)
+        public static void SetSingleton<T>(this EntityManager em, T value, bool completeDependency = true)
+            where T : unmanaged, IComponentData
         {
-            using var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(EntityQueryOptions.IncludeSystems);
-            var query = em.CreateEntityQuery(builder);
-            query.CompleteDependency();
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
+            if (completeDependency)
+            {
+                query.CompleteDependency();
+            }
+
+            query.SetSingleton(value);
+        }
+
+        public static RefRW<T> GetSingletonRW<T>(this EntityManager em, bool completeDependency = true)
+            where T : unmanaged, IComponentData
+        {
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
+            if (completeDependency)
+            {
+                query.CompleteDependency();
+            }
+
+            return query.GetSingletonRW<T>();
+        }
+
+        public static T GetSingletonObject<T>(this EntityManager em, bool completeDependency = true)
+        {
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            if (completeDependency)
+            {
+                query.CompleteDependency();
+            }
+
             return em.GetComponentObject<T>(query.GetSingletonEntity());
         }
 
-        public static bool TryGetSingleton<T>(this EntityManager em, out T component)
+        public static bool TryGetSingleton<T>(this EntityManager em, out T component, bool completeDependency = true)
             where T : unmanaged, IComponentData
         {
-            using var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(EntityQueryOptions.IncludeSystems);
-            var query = em.CreateEntityQuery(builder);
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
 
             if (query.CalculateEntityCount() != 1)
             {
@@ -130,52 +147,64 @@ namespace BovineLabs.Core.Extensions
                 return false;
             }
 
-            query.CompleteDependency();
+            if (completeDependency)
+            {
+                query.CompleteDependency();
+            }
+
             component = query.GetSingleton<T>();
             return true;
         }
 
-        public static DynamicBuffer<T> GetSingletonBuffer<T>(this EntityManager em, bool isReadOnly = false)
+        public static DynamicBuffer<T> GetSingletonBuffer<T>(this EntityManager em, bool isReadOnly = false, bool completeDependency = true)
             where T : unmanaged, IBufferElementData
         {
-            using var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(EntityQueryOptions.IncludeSystems);
-            var query = em.CreateEntityQuery(builder);
-            query.CompleteDependency();
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            if (completeDependency)
+            {
+                query.CompleteDependency();
+            }
+
             return query.GetSingletonBuffer<T>(isReadOnly);
         }
 
-        public static bool TryGetSingletonBuffer<T>(this EntityManager em, out DynamicBuffer<T> buffer, bool isReadOnly = false)
+        public static bool TryGetSingletonBuffer<T>(this EntityManager em, out DynamicBuffer<T> buffer, bool isReadOnly = false, bool completeDependency = true)
             where T : unmanaged, IBufferElementData
         {
-            using var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(EntityQueryOptions.IncludeSystems);
-            var query = em.CreateEntityQuery(builder);
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
 
-            if (query.CalculateEntityCount() == 0)
+            if (query.CalculateEntityCount() != 1)
             {
                 buffer = default;
                 return false;
             }
 
-            query.CompleteDependency();
+            if (completeDependency)
+            {
+                query.CompleteDependency();
+            }
+
             buffer = query.GetSingletonBuffer<T>(isReadOnly);
             return true;
         }
 
 #if !UNITY_DISABLE_MANAGED_COMPONENTS
-        public static T GetManagedSingleton<T>(this EntityManager em)
+        public static T GetManagedSingleton<T>(this EntityManager em, bool completeDependency = true)
             where T : class, IComponentData
         {
-            using var builder = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(EntityQueryOptions.IncludeSystems);
-            var query = em.CreateEntityQuery(builder);
-            query.CompleteDependency();
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
+            if (completeDependency)
+            {
+                query.CompleteDependency();
+            }
+
             return query.GetSingleton<T>();
         }
 
-        public static bool TryGetManagedSingleton<T>(this EntityManager em, out T component)
+        public static bool TryGetManagedSingleton<T>(this EntityManager em, out T component, bool completeDependency = true)
             where T : class, IComponentData
         {
-            using var builder = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(EntityQueryOptions.IncludeSystems);
-            var query = em.CreateEntityQuery(builder);
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
 
             if (query.CalculateEntityCount() != 1)
             {
@@ -183,7 +212,11 @@ namespace BovineLabs.Core.Extensions
                 return false;
             }
 
-            query.CompleteDependency();
+            if (completeDependency)
+            {
+                query.CompleteDependency();
+            }
+
             component = query.GetSingleton<T>();
             return true;
         }

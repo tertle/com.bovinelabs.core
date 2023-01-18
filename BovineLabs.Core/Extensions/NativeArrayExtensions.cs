@@ -41,13 +41,13 @@ namespace BovineLabs.Core.Extensions
     public static unsafe class NativeArrayExtensions
     {
         public static ref T ElementAt<T>(this NativeArray<T> array, int index)
-            where T : struct
+            where T : unmanaged
         {
             return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafePtr(), index);
         }
 
         public static ref readonly T ElementAtRO<T>(this NativeArray<T> array, int index)
-            where T : struct
+            where T : unmanaged
         {
             return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafeReadOnlyPtr(), index);
         }

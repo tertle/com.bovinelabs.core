@@ -32,20 +32,38 @@ namespace BovineLabs.Core.States
             this.impl.Dispose();
         }
 
-        public void Update(ref SystemState state, EntityCommandBuffer.ParallelWriter commandBuffer)
+        public void Run(ref SystemState state, EntityCommandBuffer commandBuffer)
+        {
+            // state.Dependency.Complete();
+            var job = this.UpdateInternal(ref state, commandBuffer.AsParallelWriter());
+            job.Run(this.impl.Query);
+        }
+
+        public void Update(ref SystemState state, EntityCommandBuffer commandBuffer)
+        {
+            var job = this.UpdateInternal(ref state, commandBuffer.AsParallelWriter());
+            state.Dependency = job.ScheduleByRef(this.impl.Query, state.Dependency);
+        }
+
+        public void UpdateParallel(ref SystemState state, EntityCommandBuffer.ParallelWriter commandBuffer)
+        {
+            var job = this.UpdateInternal(ref state, commandBuffer);
+            state.Dependency = job.ScheduleParallelByRef(this.impl.Query, state.Dependency);
+        }
+
+        private StateJob UpdateInternal(ref SystemState state, EntityCommandBuffer.ParallelWriter commandBuffer)
         {
             this.impl.Update(ref state);
 
-            state.Dependency = new StateJob
-                {
-                    RegisteredStates = this.impl.RegisteredStatesMap,
-                    EntityType = this.impl.EntityType,
-                    StateType = this.impl.StateType,
-                    PreviousStateType = this.impl.PreviousStateType,
-                    CommandBuffer = commandBuffer,
-                    StateSize = this.stateSize,
-                }
-                .ScheduleParallel(this.impl.Query, state.Dependency);
+            return new StateJob
+            {
+                RegisteredStates = this.impl.RegisteredStatesMap,
+                EntityType = this.impl.EntityType,
+                StateType = this.impl.StateType,
+                PreviousStateType = this.impl.PreviousStateType,
+                CommandBuffer = commandBuffer,
+                StateSize = this.stateSize,
+            };
         }
 
         [BurstCompile]
@@ -117,7 +135,7 @@ namespace BovineLabs.Core.States
                                 }
                                 else
                                 {
-                                    Debug.LogWarning($"State {bit} not setup");
+                                    Debug.LogWarning($"State {bit} not setup for type index {this.StateType.m_TypeIndex.Value}");
                                 }
                             }
                         }

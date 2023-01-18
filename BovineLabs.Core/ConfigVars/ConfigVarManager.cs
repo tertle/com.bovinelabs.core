@@ -12,81 +12,18 @@ namespace BovineLabs.Core.ConfigVars
     using Unity.Burst;
     using Unity.Collections;
     using UnityEngine;
+#if UNITY_EDITOR
+    using UnityEditor;
+#endif
 
     /// <summary> The manager for the config vars. Is pretty automated. </summary>
-    public static class ConfigVarManager
+    internal static class ConfigVarManager
     {
-        private static readonly Regex ValidateNameRe = new(@"^[a-z_+-][a-z0-9_+.-]*$");
-
-        private static readonly Dictionary<ConfigVarAttribute, IConfigVarContainer> NameConfigVars = new();
-
+        private static readonly Regex ValidateNameRegex = new(@"^[a-z_+-][a-z0-9_+.-]*$");
+        private static readonly Dictionary<ConfigVarAttribute, IConfigVarContainer> All = new();
         private static bool isInitialized;
 
-        /// <summary> Gets a readonly collection of all the configuration variables in the assembly. </summary>
-        public static IReadOnlyDictionary<ConfigVarAttribute, IConfigVarContainer> All => NameConfigVars;
-
-        /// <summary> Initializes the <see cref="ConfigVarAttribute" />s throughout the project. </summary>
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        internal static void Init()
-        {
-            if (isInitialized)
-            {
-                return;
-            }
-
-            Application.quitting += Shutdown;
-
-            isInitialized = true;
-
-            foreach (var (configVar, field) in FindAllConfigVars())
-            {
-                var fieldValue = field.GetValue(null);
-
-                var container = GetContainer(fieldValue);
-
-                if (container == null)
-                {
-                    Debug.LogError($"ConfigVar on field ({field.Name} in {field.DeclaringType?.Name}) of type ({field.FieldType}) is not a supported type");
-                    continue;
-                }
-
-                RegisterConfigVar(configVar, container);
-
-                if (CommandLineArgs.TryGetArgument(configVar.Name, out var value))
-                {
-                    container.Value = value;
-                }
-                else
-                {
-                    // always load in editor
-                    if (Application.isEditor || configVar.Flags.HasFlag(ConfigVarFlags.Save))
-                    {
-                        container.Value = PlayerPrefs.GetString(configVar.Name, configVar.DefaultValue);
-                    }
-                    else
-                    {
-                        container.Value = configVar.DefaultValue;
-                    }
-                }
-            }
-        }
-
-        private static void Shutdown()
-        {
-            foreach (var (configVar, container) in NameConfigVars)
-            {
-                // always save in editor
-                if (Application.isEditor || configVar.Flags.HasFlag(ConfigVarFlags.Save))
-                {
-                    PlayerPrefs.SetString(configVar.Name, container.Value);
-                }
-            }
-
-            NameConfigVars.Clear();
-            isInitialized = false;
-        }
-
-        private static IEnumerable<(ConfigVarAttribute ConfigVar, FieldInfo Field)> FindAllConfigVars()
+        internal static IEnumerable<(ConfigVarAttribute ConfigVar, FieldInfo Field)> FindAllConfigVars()
         {
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
@@ -125,21 +62,76 @@ namespace BovineLabs.Core.ConfigVars
             }
         }
 
+        /// <summary> Initializes the <see cref="ConfigVarAttribute" />s throughout the project. </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void Init()
+        {
+            if (isInitialized)
+            {
+                return;
+            }
+
+            Application.quitting += Shutdown;
+
+            isInitialized = true;
+
+            foreach (var (configVar, field) in FindAllConfigVars())
+            {
+                var fieldValue = field.GetValue(null);
+
+                var container = GetContainer(fieldValue);
+
+                if (container == null)
+                {
+                    Debug.LogError($"ConfigVar on field ({field.Name} in {field.DeclaringType?.Name}) of type ({field.FieldType}) is not a supported type");
+                    continue;
+                }
+
+                RegisterConfigVar(configVar, container);
+
+                container.StringValue = CommandLineArgs.TryGetArgument(configVar.Name, out var value)
+                    ? value
+#if UNITY_EDITOR
+                    : EditorPrefs.GetString(configVar.Name, configVar.DefaultValue);
+#else
+                    : configVar.DefaultValue;
+#endif
+            }
+        }
+
+        private static void Shutdown()
+        {
+            if (!isInitialized)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            foreach (var (configVar, container) in All)
+            {
+                EditorPrefs.SetString(configVar.Name, container.StringValue);
+            }
+#endif
+
+            All.Clear();
+            isInitialized = false;
+        }
+
         private static void RegisterConfigVar(ConfigVarAttribute configVar, IConfigVarContainer container)
         {
-            if (NameConfigVars.ContainsKey(configVar))
+            if (All.ContainsKey(configVar))
             {
                 Debug.LogError($"Trying to register ConfigVar {configVar.Name} twice");
                 return;
             }
 
-            if (!ValidateNameRe.IsMatch(configVar.Name))
+            if (!ValidateNameRegex.IsMatch(configVar.Name))
             {
                 Debug.LogError($"Trying to register ConfigVar with invalid name: {configVar.Name}");
                 return;
             }
 
-            NameConfigVars.Add(configVar, container);
+            All.Add(configVar, container);
         }
 
         private static IConfigVarContainer GetContainer(object obj)

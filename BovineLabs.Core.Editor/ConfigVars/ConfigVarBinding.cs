@@ -1,23 +1,27 @@
-﻿// <copyright file="SharedStaticTextFieldBind.cs" company="BovineLabs">
+﻿// <copyright file="ConfigVarBinding.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.ConfigVars
+namespace BovineLabs.Core.Editor.ConfigVars
 {
+    using System;
+    using BovineLabs.Core.ConfigVars;
+    using UnityEditor;
     using UnityEngine.UIElements;
 
-    internal class SharedStaticTextFieldBind<T> : IBinding
-        where T : struct
+    internal class ConfigVarBinding<T> : IConfigVarBinding<T>
+        where T : struct, IEquatable<T>
     {
-        private readonly BaseField<string> baseField;
-        private readonly ConfigVarSharedStaticStringContainer<T> sharedStatic;
+        private readonly BaseField<T> baseField;
+        private readonly ConfigVarAttribute attribute;
 
         private bool hasFocus;
 
-        public SharedStaticTextFieldBind(BaseField<string> baseField, ConfigVarSharedStaticStringContainer<T> sharedStatic)
+        public ConfigVarBinding(BaseField<T> baseField, ConfigVarAttribute attribute)
         {
-            this.sharedStatic = sharedStatic;
             this.baseField = baseField;
+            this.attribute = attribute;
+
             this.baseField.RegisterCallback<FocusInEvent>(this.GainFocus);
             this.baseField.RegisterCallback<FocusOutEvent>(this.LoseFocus);
         }
@@ -30,12 +34,15 @@ namespace BovineLabs.Core.ConfigVars
         {
             if (!this.hasFocus)
             {
-                if (!this.baseField.value.Equals(this.sharedStatic.Value))
+                var v = this.Value;
+                if (!this.baseField.value.Equals(v))
                 {
-                    this.baseField.SetValueWithoutNotify(this.sharedStatic.Value);
+                    this.baseField.SetValueWithoutNotify(v);
                 }
             }
         }
+
+        public T Value => (T)Convert.ChangeType(EditorPrefs.GetString(this.attribute.Name, this.attribute.DefaultValue), typeof(T));
 
         public void Release()
         {

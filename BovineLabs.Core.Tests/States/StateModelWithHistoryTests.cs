@@ -174,11 +174,10 @@ namespace BovineLabs.Core.Tests.States
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var commandBuffer = new EntityCommandBuffer(Allocator.TempJob);
-            this.impl.Update(ref state, commandBuffer.AsParallelWriter());
+            var commandBuffer = new EntityCommandBuffer(state.WorldUpdateAllocator);
+            this.impl.UpdateParallel(ref state, commandBuffer.AsParallelWriter());
             state.Dependency.Complete();
             commandBuffer.Playback(state.EntityManager);
-            commandBuffer.Dispose();
         }
     }
 

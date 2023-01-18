@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Authoring
 {
+    using System.Linq;
     using Unity.Entities;
     using UnityEngine;
 
@@ -24,7 +25,7 @@ namespace BovineLabs.Core.Authoring
                 return;
             }
 
-            foreach (var setting in authoring.Settings)
+            foreach (var setting in authoring.Settings.Distinct())
             {
                 if (setting == null)
                 {

@@ -13,16 +13,16 @@ namespace BovineLabs.Core.Extensions
 
     public static class TransformAspectExtensions
     {
-        public static bool Has(ref this TransformAspect.Lookup transformAspectLookup, Entity entity)
+        public static bool Has(this TransformAspect.Lookup transformAspectLookup, Entity entity)
         {
             Check.Assume(UnsafeUtility.SizeOf<TransformAspect.Lookup>() == UnsafeUtility.SizeOf<TransformAspectLookup>());
             ref var ta = ref UnsafeUtility.As<TransformAspect.Lookup, TransformAspectLookup>(ref transformAspectLookup);
             return ta.LocalTransformComponentLookup.HasComponent(entity);
         }
 
-        public static bool TryGetAspect(ref this TransformAspect.Lookup transformAspectLookup, Entity entity, out TransformAspect transformAspect)
+        public static bool TryGetAspect(this TransformAspect.Lookup transformAspectLookup, Entity entity, out TransformAspect transformAspect)
         {
-            if (!Has(ref transformAspectLookup, entity))
+            if (!Has(transformAspectLookup, entity))
             {
                 transformAspect = default;
                 return false;

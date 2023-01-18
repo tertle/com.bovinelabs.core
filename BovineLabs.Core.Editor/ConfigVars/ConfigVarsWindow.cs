@@ -19,7 +19,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
         private readonly Dictionary<string, ConfigVarPanel> panels = new();
 
         /// <inheritdoc />
-        protected override string TitleText { get; } = "ConfigVars";
+        protected override string TitleText => "ConfigVars";
 
         [MenuItem("BovineLabs/ConfigVars", priority = 10)]
         internal static void OpenSettings()
@@ -30,13 +30,18 @@ namespace BovineLabs.Core.Editor.ConfigVars
         /// <inheritdoc />
         protected override void GetPanels(List<ISettingsPanel> settingPanels)
         {
+            foreach (var p in this.panels)
+            {
+                p.Value.OnDeactivate();
+            }
+
             this.panels.Clear();
 
-            ConfigVarManager.Init();
+            var configVars = ConfigVarManager.FindAllConfigVars();
 
-            foreach (var variable in ConfigVarManager.All)
+            foreach (var variable in configVars)
             {
-                var key = variable.Key.Name.Split('.');
+                var key = variable.ConfigVar.Name.Split('.');
                 var menu = key.Length < 2 ? "[null]" : key[0];
 
                 if (!this.panels.TryGetValue(menu, out var panel))
@@ -45,7 +50,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
                     settingPanels.Add(panel);
                 }
 
-                panel.ConfigVars.Add((variable.Key, variable.Value));
+                panel.ConfigVars.Add((variable.ConfigVar, variable.Field.FieldType));
             }
 
             foreach (var p in this.panels)
@@ -67,12 +72,13 @@ namespace BovineLabs.Core.Editor.ConfigVars
             {
                 foreach (var panel in this.panels)
                 {
-                    foreach (var (configVar, _) in panel.Value.ConfigVars)
+                    foreach (var configVar in panel.Value.ConfigVars)
                     {
-                        ConfigVarManager.All[configVar].Value = configVar.DefaultValue;
-                        PlayerPrefs.DeleteKey(configVar.Name);
+                        EditorPrefs.DeleteKey(configVar.ConfigVar.Name);
                     }
                 }
+
+                // TODO REFRESG
             }
         }
     }

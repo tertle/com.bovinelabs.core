@@ -17,8 +17,6 @@ namespace BovineLabs.Core.States
     /// <summary> A generic general purpose state system that ensures only a single state component exists on an entity but driven from a byte field. </summary>
     public struct StateFlagModelWithHistory
     {
-        // private const int ExtraBytes = 1; // 1 byte to store popup state
-
         private readonly int stateSize;
         private readonly int historySize;
         private readonly int maxHistorySize;
@@ -55,27 +53,45 @@ namespace BovineLabs.Core.States
             this.impl.Dispose();
         }
 
-        public void Update(ref SystemState state, EntityCommandBuffer.ParallelWriter commandBuffer)
+        public void Run(ref SystemState state, EntityCommandBuffer commandBuffer)
+        {
+            state.Dependency.Complete();
+            var job = this.UpdateInternal(ref state, commandBuffer.AsParallelWriter());
+            job.RunByRef(this.impl.Query);
+        }
+
+        public void Update(ref SystemState state, EntityCommandBuffer commandBuffer)
+        {
+            var job = this.UpdateInternal(ref state, commandBuffer.AsParallelWriter());
+            state.Dependency = job.ScheduleByRef(this.impl.Query, state.Dependency);
+        }
+
+        public void UpdateParallel(ref SystemState state, EntityCommandBuffer.ParallelWriter commandBuffer)
+        {
+            var job = this.UpdateInternal(ref state, commandBuffer);
+            state.Dependency = job.ScheduleParallelByRef(this.impl.Query, state.Dependency);
+        }
+
+        private StateJob UpdateInternal(ref SystemState state, EntityCommandBuffer.ParallelWriter commandBuffer)
         {
             this.impl.Update(ref state);
 
             this.historyBackType.Update(ref state);
             this.historyForwardType.Update(ref state);
 
-            state.Dependency = new StateJob
-                {
-                    RegisteredStates = this.impl.RegisteredStatesMap,
-                    EntityType = this.impl.EntityType,
-                    StateType = this.impl.StateType,
-                    PreviousStateType = this.impl.PreviousStateType,
-                    HistoryBackType = this.historyBackType,
-                    HistoryForwardType = this.historyForwardType,
-                    CommandBuffer = commandBuffer,
-                    StateSize = this.stateSize,
-                    HistorySize = this.historySize,
-                    MaxHistory = this.maxHistorySize,
-                }
-                .ScheduleParallel(this.impl.Query, state.Dependency);
+            return new StateJob
+            {
+                RegisteredStates = this.impl.RegisteredStatesMap,
+                EntityType = this.impl.EntityType,
+                StateType = this.impl.StateType,
+                PreviousStateType = this.impl.PreviousStateType,
+                HistoryBackType = this.historyBackType,
+                HistoryForwardType = this.historyForwardType,
+                CommandBuffer = commandBuffer,
+                StateSize = this.stateSize,
+                HistorySize = this.historySize,
+                MaxHistory = this.maxHistorySize,
+            };
         }
 
         [BurstCompile]
@@ -177,6 +193,12 @@ namespace BovineLabs.Core.States
 
                     var back = historyBack.GetUntypedBuffer(i);
                     var forward = historyForward.GetUntypedBuffer(i);
+
+                    // First element, never mark it addition
+                    if (back.Length == 0)
+                    {
+                        isAdditionOnly = false;
+                    }
 
                     // Write the state bit
                     UnsafeUtility.MemCpy(previousWithState, previousI, this.StateSize);

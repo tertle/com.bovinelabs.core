@@ -7,10 +7,20 @@ namespace BovineLabs.Core.Utility
     using System.Runtime.InteropServices;
     using Unity.Collections;
 
-    /// <remarks> Based off com.unity.entities@0.50.0-preview.24\Unity.Core\Compression\Codec.cs </remarks>
+    /// <remarks> Based off com.unity.entities@0.50.0-preview.24\Unity.Core\Compression\Codec.cs . </remarks>
     public static unsafe class CodecService
     {
         private const string DllName = "liblz4";
+
+        public static int GetBoundedSize(int srcSize)
+        {
+            return CompressBoundLZ4(srcSize);
+        }
+
+        public static int Compress(in byte* src, int srcSize, in byte* dst, int boundedSize, Allocator allocator = Allocator.Temp)
+        {
+            return CompressLZ4(src, dst, srcSize, boundedSize);
+        }
 
         public static int Compress(in byte* src, int srcSize, out byte* dst, Allocator allocator = Allocator.Temp)
         {

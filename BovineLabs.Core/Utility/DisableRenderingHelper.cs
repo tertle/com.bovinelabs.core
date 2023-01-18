@@ -17,19 +17,19 @@ namespace BovineLabs.Core.Utility
         private ComponentLookup<DisableRendering> disableRenderings;
 
         [ReadOnly]
-        private BufferLookup<Child> childrens;
+        private BufferLookup<Child> childs;
 
         [ReadOnly]
-        private ComponentLookup<RenderBounds> renderBounds;
+        private ComponentLookup<MaterialMeshInfo> materialMeshInfos;
 
         public DisableRenderingHelper(
             ComponentLookup<DisableRendering> disableRenderings,
-            BufferLookup<Child> childrens,
-            ComponentLookup<RenderBounds> renderBounds)
+            BufferLookup<Child> childs,
+            ComponentLookup<MaterialMeshInfo> materialMeshInfos)
         {
             this.disableRenderings = disableRenderings;
-            this.childrens = childrens;
-            this.renderBounds = renderBounds;
+            this.childs = childs;
+            this.materialMeshInfos = materialMeshInfos;
         }
 
         /// <summary> Toggles the <see cref="DisableRendering" /> component for all entities in a hierarchy. </summary>
@@ -39,7 +39,7 @@ namespace BovineLabs.Core.Utility
         public void SetWholeHierarchy(EntityCommandBuffer commandBuffer, Entity entity, bool enabled)
         {
             // We traverse the whole hierarchy and set all the rendering states using RenderBounds to determine if it's a rendering component
-            if (this.renderBounds.HasComponent(entity))
+            if (this.materialMeshInfos.HasComponent(entity))
             {
                 var renderingDisabled = this.disableRenderings.HasComponent(entity);
                 if (enabled && renderingDisabled)
@@ -52,12 +52,12 @@ namespace BovineLabs.Core.Utility
                 }
             }
 
-            if (!this.childrens.HasBuffer(entity))
+            if (!this.childs.HasBuffer(entity))
             {
                 return;
             }
 
-            var children = this.childrens[entity];
+            var children = this.childs[entity];
             for (var i = 0; i < children.Length; i++)
             {
                 this.SetWholeHierarchy(commandBuffer, children[i].Value, enabled);
@@ -72,7 +72,7 @@ namespace BovineLabs.Core.Utility
         public void SetWholeHierarchy(EntityCommandBuffer.ParallelWriter commandBuffer, int sortIndex, Entity entity, bool enabled)
         {
             // We traverse the whole hierarchy and set all the rendering states using RenderBounds to determine if it's a rendering component
-            if (this.renderBounds.HasComponent(entity))
+            if (this.materialMeshInfos.HasComponent(entity))
             {
                 var renderingDisabled = this.disableRenderings.HasComponent(entity);
                 if (enabled && renderingDisabled)
@@ -85,12 +85,12 @@ namespace BovineLabs.Core.Utility
                 }
             }
 
-            if (!this.childrens.HasBuffer(entity))
+            if (!this.childs.HasBuffer(entity))
             {
                 return;
             }
 
-            var children = this.childrens[entity];
+            var children = this.childs[entity];
             for (var i = 0; i < children.Length; i++)
             {
                 this.SetWholeHierarchy(commandBuffer, sortIndex, children[i].Value, enabled);

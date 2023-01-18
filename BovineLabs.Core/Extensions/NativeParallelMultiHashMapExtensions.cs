@@ -11,7 +11,7 @@ namespace BovineLabs.Core.Extensions
     using Unity.Collections.LowLevel.Unsafe;
 
     /// <summary> Extensions for <see cref="NativeMultiHashMap{TKey,TValue}" />. </summary>
-    public static class NativeMultiHashMapExtensions
+    public static unsafe class NativeMultiHashMapExtensions
     {
         /// <summary>
         /// Clear a <see cref="NativeMultiHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
@@ -22,7 +22,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="values"> Collection of values, the length should match the length of keys. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
-        public static unsafe void ClearAndAddBatch<TKey, TValue>(
+        public static void ClearAndAddBatch<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeArray<TKey> keys,
             [NoAlias] NativeArray<TValue> values)
@@ -68,7 +68,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="values"> Collection of values, the length should match the length of keys. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
-        public static unsafe void ClearAndAddBatch<TKey, TValue>(
+        public static void ClearAndAddBatch<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeSlice<TKey> keys,
             [NoAlias] NativeSlice<TValue> values)
@@ -90,10 +90,11 @@ namespace BovineLabs.Core.Extensions
 
             var data = hashMap.GetUnsafeBucketData();
 
-            UnsafeUtility.MemCpyStride(data.keys, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(),
-                keys.Length);
-            UnsafeUtility.MemCpyStride(data.values, UnsafeUtility.SizeOf<TValue>(), values.GetUnsafeReadOnlyPtr(), values.Stride,
-                UnsafeUtility.SizeOf<TValue>(), values.Length);
+            UnsafeUtility.MemCpyStride(
+                data.keys, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), keys.Length);
+
+            UnsafeUtility.MemCpyStride(
+                data.values, UnsafeUtility.SizeOf<TValue>(), values.GetUnsafeReadOnlyPtr(), values.Stride, UnsafeUtility.SizeOf<TValue>(), values.Length);
 
             var buckets = (int*)data.buckets;
             var nextPtrs = (int*)data.next;
@@ -118,7 +119,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="values"> Collection of values, the length should match the length of keys. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
-        public static unsafe void AddBatchUnsafe<TKey, TValue>(
+        public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeArray<TKey> keys,
             [NoAlias] NativeArray<TValue> values)
@@ -129,7 +130,7 @@ namespace BovineLabs.Core.Extensions
             AddBatchUnsafe(hashMap, (TKey*)keys.GetUnsafeReadOnlyPtr(), (TValue*)values.GetUnsafeReadOnlyPtr(), keys.Length);
         }
 
-        public static unsafe void AddBatchUnsafe<TKey, TValue>(
+        public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] TKey* keys,
             [NoAlias] TValue* values,
@@ -179,7 +180,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="values"> Collection of values, the length should match the length of keys. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
-        public static unsafe void AddBatchUnsafe<TKey, TValue>(
+        public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeSlice<TKey> keys,
             [NoAlias] NativeSlice<TValue> values)
@@ -205,9 +206,10 @@ namespace BovineLabs.Core.Extensions
             var keyPtr = (TKey*)data.keys + oldLength;
             var valuePtr = (TValue*)data.values + oldLength;
 
-            UnsafeUtility.MemCpyStride(keyPtr, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), length);
-            UnsafeUtility.MemCpyStride(valuePtr, UnsafeUtility.SizeOf<TValue>(), values.GetUnsafeReadOnlyPtr(), values.Stride, UnsafeUtility.SizeOf<TValue>(),
-                length);
+            UnsafeUtility.MemCpyStride(
+                keyPtr, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), length);
+            UnsafeUtility.MemCpyStride(
+                valuePtr, UnsafeUtility.SizeOf<TValue>(), values.GetUnsafeReadOnlyPtr(), values.Stride, UnsafeUtility.SizeOf<TValue>(), length);
 
             var buckets = (int*)data.buckets;
             var nextPtrs = (int*)data.next + oldLength;
@@ -231,7 +233,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="values"> Collection of values, the length should match the length of keys. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
-        public static unsafe void AddBatchUnsafe<TKey, TValue>(
+        public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeSlice<TKey> keys,
             [NoAlias] NativeArray<TValue> values)
@@ -285,7 +287,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="length"> The length of the values. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
-        public static unsafe void AddBatchUnsafe<TKey, TValue>(
+        public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
             TKey key,
             [NoAlias] TValue* values,
@@ -337,7 +339,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="values"> Collection of values. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
-        public static unsafe void AddBatchUnsafe<TKey, TValue>(
+        public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] TKey key,
             [NoAlias] NativeArray<TValue> values)
@@ -378,7 +380,7 @@ namespace BovineLabs.Core.Extensions
             hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength += values.Length;
         }
 
-        public static unsafe void AddBatchUnsafe<TKey, TValue>(
+        public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
             [NoAlias] NativeArray<TKey> keys,
             [NoAlias] NativeArray<TValue> values)
@@ -389,7 +391,7 @@ namespace BovineLabs.Core.Extensions
             AddBatchUnsafe(hashMap, (TKey*)keys.GetUnsafeReadOnlyPtr(), (TValue*)values.GetUnsafeReadOnlyPtr(), keys.Length);
         }
 
-        public static unsafe void AddBatchUnsafe<TKey, TValue>(
+        public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
             [NoAlias] TKey* keys,
             [NoAlias] TValue* values,
@@ -400,7 +402,7 @@ namespace BovineLabs.Core.Extensions
             hashMap.m_Writer.m_Buffer->AddBatchUnsafe(keys, values, length);
         }
 
-        public static unsafe void AddBatchUnsafe<TKey, TValue>(
+        public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
             [NoAlias] NativeArray<TKey> keys)
             where TKey : unmanaged, IEquatable<TKey>
@@ -409,7 +411,7 @@ namespace BovineLabs.Core.Extensions
             AddBatchUnsafe(hashMap, (TKey*)keys.GetUnsafeReadOnlyPtr(), keys.Length);
         }
 
-        public static unsafe void AddBatchUnsafe<TKey, TValue>(
+        public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
             [NoAlias] TKey* keys,
             int length)
@@ -419,7 +421,7 @@ namespace BovineLabs.Core.Extensions
             hashMap.m_Writer.m_Buffer->AddBatchUnsafe(keys, length);
         }
 
-        public static unsafe void RecalculateBuckets<TKey, TValue>(
+        public static void RecalculateBuckets<TKey, TValue>(
             [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -442,18 +444,107 @@ namespace BovineLabs.Core.Extensions
             }
         }
 
-        public static unsafe void SetAllocatedIndexLength<TKey, TValue>([NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap, int length)
+        public static void SetAllocatedIndexLength<TKey, TValue>([NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap, int length)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
             hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength = length;
         }
 
-        public static unsafe TKey FirstKey<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> map)
+        public static TKey FirstKey<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> map)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
             return map.m_MultiHashMapData.m_Buffer->FirstKey<TKey>();
+        }
+
+        public static bool TryGetFirstKeyValue<TKey, TValue>(
+            this NativeMultiHashMap<TKey, TValue> map,
+            TKey key,
+            out TKey storedKey,
+            out TValue item,
+            out NativeMultiHashMapIterator<TKey> it)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            CheckRead(map);
+            return TryGetFirstKeyValueAtomic(map.m_MultiHashMapData.m_Buffer, key, out storedKey, out item, out it);
+        }
+
+        public static bool TryGetNextKeyValue<TKey, TValue>(
+            this NativeMultiHashMap<TKey, TValue> map,
+            out TKey storedKey,
+            out TValue item,
+            ref NativeMultiHashMapIterator<TKey> it)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            CheckRead(map);
+            return TryGetNextKeyValueAtomic(map.m_MultiHashMapData.m_Buffer, out storedKey, out item, ref it);
+        }
+
+        private static bool TryGetFirstKeyValueAtomic<TKey, TValue>(
+            UnsafeParallelHashMapData* data,
+            TKey key,
+            out TKey storedKey,
+            out TValue item,
+            out NativeMultiHashMapIterator<TKey> it)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            it.key = key;
+
+            if (data->allocatedIndexLength <= 0)
+            {
+                it.EntryIndex = it.NextEntryIndex = -1;
+                storedKey = default;
+                item = default;
+                return false;
+            }
+
+            // First find the slot based on the hash
+            var buckets = (int*)data->buckets;
+            var bucket = key.GetHashCode() & data->bucketCapacityMask;
+            it.EntryIndex = it.NextEntryIndex = buckets[bucket];
+            return TryGetNextKeyValueAtomic(data, out storedKey, out item, ref it);
+        }
+
+        private static bool TryGetNextKeyValueAtomic<TKey, TValue>(
+            UnsafeParallelHashMapData* data,
+            out TKey storedKey,
+            out TValue item,
+            ref NativeMultiHashMapIterator<TKey> it)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            var entryIdx = it.NextEntryIndex;
+            it.NextEntryIndex = -1;
+            it.EntryIndex = -1;
+            storedKey = default;
+            item = default;
+            if ((entryIdx < 0) || (entryIdx >= data->keyCapacity))
+            {
+                return false;
+            }
+
+            var nextPtrs = (int*)data->next;
+            while (!UnsafeUtility.ReadArrayElement<TKey>(data->keys, entryIdx).Equals(it.key))
+            {
+                entryIdx = nextPtrs[entryIdx];
+                if ((entryIdx < 0) || (entryIdx >= data->keyCapacity))
+                {
+                    return false;
+                }
+            }
+
+            it.NextEntryIndex = nextPtrs[entryIdx];
+            it.EntryIndex = entryIdx;
+
+            // Read the value
+            storedKey = UnsafeUtility.ReadArrayElement<TKey>(data->keys, entryIdx);
+            item = UnsafeUtility.ReadArrayElement<TValue>(data->values, entryIdx);
+
+            return true;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -477,6 +568,16 @@ namespace BovineLabs.Core.Extensions
             {
                 throw new ArgumentException("Key and value array don't match");
             }
+#endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckRead<TKey, TValue>(NativeMultiHashMap<TKey, TValue> map)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(map.m_Safety);
 #endif
         }
     }

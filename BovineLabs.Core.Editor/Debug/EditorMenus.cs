@@ -1,8 +1,9 @@
 ﻿// <copyright file="EditorMenus.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
+#pragma warning disable 0436 // Type 'Log' conflicts with another one in case of InternalVisibleTo
 
-namespace BovineLabs.Core.Editor
+namespace BovineLabs.Core.Editor.Debug
 {
     using Unity.Logging;
     using UnityEditor;
@@ -10,7 +11,7 @@ namespace BovineLabs.Core.Editor
 
     public static class EditorMenus
     {
-        public const string DebugMenu = "BovineLabs/Debug/";
+        private const string DebugMenu = "BovineLabs/Debug/";
 
         private const int DisableValue = byte.MaxValue;
 
@@ -22,8 +23,16 @@ namespace BovineLabs.Core.Editor
         private const string DebugLevelWarningMenuEnabled = LogLevelMenu + "Warning";
         private const string DebugLevelErrorMenuEnabled = LogLevelMenu + "Error";
         private const string DebugLevelFatalMenuEnabled = LogLevelMenu + "Fatal";
-        public static readonly string EditorPrefKey = $"BovineLabs_{Application.productName}_";
 
+        private const string LogLevelBLMenu = DebugMenu + "Log Level BovineLabs/";
+        private const string DebugLevelVerboseBLMenuEnabled = LogLevelBLMenu + "Verbose";
+        private const string DebugLevelDebugBLMenuEnabled = LogLevelBLMenu + "Debug";
+        private const string DebugLevelInfoBLMenuEnabled = LogLevelBLMenu + "Info";
+        private const string DebugLevelWarningBLMenuEnabled = LogLevelBLMenu + "Warning";
+        private const string DebugLevelErrorBLMenuEnabled = LogLevelBLMenu + "Error";
+        private const string DebugLevelFatalBLMenuEnabled = LogLevelBLMenu + "Fatal";
+
+        private static readonly string EditorPrefKey = $"BovineLabs_{Application.productName}_";
         private static readonly string LogLevelKey = EditorPrefKey + "LogLevel";
         private static LogLevel defaultLevel;
 
@@ -37,10 +46,40 @@ namespace BovineLabs.Core.Editor
             }
         }
 
+        private static LogLevel BLLogLevel
+        {
+            get
+            {
+                if (Application.isPlaying)
+                {
+                    return (LogLevel)BLDebugSystem.LogLevel.Data;
+                }
+
+                if (!int.TryParse(EditorPrefs.GetString(BLDebugSystem.LogLevelName, BLDebugSystem.LogLevelDefaultValue.ToString()), out var value))
+                {
+                    return (LogLevel)BLDebugSystem.LogLevelDefaultValue;
+                }
+
+                return (LogLevel)value;
+            }
+
+            set
+            {
+                if (Application.isPlaying)
+                {
+                    BLDebugSystem.LogLevel.Data = (int)value;
+                }
+                else
+                {
+                    EditorPrefs.SetString(BLDebugSystem.LogLevelName, ((int)value).ToString());
+                }
+            }
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Initialize()
         {
-            defaultLevel = Log.Logger.MinimalLogLevelAcrossAllSystems;
+            defaultLevel = Unity.Logging.Log.Logger.MinimalLogLevelAcrossAllSystems;
             UpdateLogLevel(LogLevel);
         }
 
@@ -56,8 +95,86 @@ namespace BovineLabs.Core.Editor
                 logLevel = defaultLevel;
             }
 
-            Log.Logger.SetMinimalLogLevelAcrossAllSinks(logLevel);
-            Log.Logger.UpdateMinimalLogLevelAcrossAllSinks();
+            Unity.Logging.Log.Logger.SetMinimalLogLevelAcrossAllSinks(logLevel);
+            Unity.Logging.Log.Logger.UpdateMinimalLogLevelAcrossAllSinks();
+        }
+
+        [MenuItem(DebugLevelVerboseBLMenuEnabled, false)]
+        private static void DebugLevelVerboseBLMenu()
+        {
+            BLLogLevel = LogLevel.Verbose;
+        }
+
+        [MenuItem(DebugLevelVerboseBLMenuEnabled, true)]
+        private static bool DebugLevelVerboseBLMenuValidate()
+        {
+            Menu.SetChecked(DebugLevelVerboseBLMenuEnabled, BLLogLevel == LogLevel.Verbose);
+            return true;
+        }
+
+        [MenuItem(DebugLevelDebugBLMenuEnabled, false)]
+        private static void DebugLevelDebugBLMenu()
+        {
+            BLLogLevel = LogLevel.Debug;
+        }
+
+        [MenuItem(DebugLevelDebugBLMenuEnabled, true)]
+        private static bool DebugLevelDebugBLMenuValidate()
+        {
+            Menu.SetChecked(DebugLevelDebugBLMenuEnabled, BLLogLevel == LogLevel.Debug);
+            return true;
+        }
+
+        [MenuItem(DebugLevelInfoBLMenuEnabled, false)]
+        private static void InfoLevelInfoBLMenu()
+        {
+            BLLogLevel = LogLevel.Info;
+        }
+
+        [MenuItem(DebugLevelInfoBLMenuEnabled, true)]
+        private static bool InfoLevelInfoBLMenuValidate()
+        {
+            Menu.SetChecked(DebugLevelInfoBLMenuEnabled, BLLogLevel == LogLevel.Info);
+            return true;
+        }
+
+        [MenuItem(DebugLevelWarningBLMenuEnabled, false)]
+        private static void WarningLevelWarningBLMenu()
+        {
+            BLLogLevel = LogLevel.Warning;
+        }
+
+        [MenuItem(DebugLevelWarningBLMenuEnabled, true)]
+        private static bool WarningLevelWarningBLMenuValidate()
+        {
+            Menu.SetChecked(DebugLevelWarningBLMenuEnabled, BLLogLevel == LogLevel.Warning);
+            return true;
+        }
+
+        [MenuItem(DebugLevelErrorBLMenuEnabled, false)]
+        private static void ErrorLevelErrorBLMenu()
+        {
+            BLLogLevel = LogLevel.Error;
+        }
+
+        [MenuItem(DebugLevelErrorBLMenuEnabled, true)]
+        private static bool ErrorLevelErrorBLMenuValidate()
+        {
+            Menu.SetChecked(DebugLevelErrorBLMenuEnabled, BLLogLevel == LogLevel.Error);
+            return true;
+        }
+
+        [MenuItem(DebugLevelFatalBLMenuEnabled, false)]
+        private static void FatalLevelFatalBLMenu()
+        {
+            BLLogLevel = LogLevel.Fatal;
+        }
+
+        [MenuItem(DebugLevelFatalBLMenuEnabled, true)]
+        private static bool FatalLevelFatalBLMenuValidate()
+        {
+            Menu.SetChecked(DebugLevelFatalBLMenuEnabled, BLLogLevel == LogLevel.Fatal);
+            return true;
         }
 
         [MenuItem(DebugLevelDisableMenuEnabled, false)]

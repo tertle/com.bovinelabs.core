@@ -1,28 +1,29 @@
-﻿// <copyright file="ConfigVarBinding.cs" company="BovineLabs">
+﻿// <copyright file="ConfigVarStringBinding.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.ConfigVars
+namespace BovineLabs.Core.Editor.ConfigVars
 {
-    using System;
+    using BovineLabs.Core.ConfigVars;
+    using UnityEditor;
     using UnityEngine.UIElements;
 
-    internal class ConfigVarBinding<T> : IBinding
-        where T : struct, IEquatable<T>
+    internal class ConfigVarStringBinding : IConfigVarBinding<string>
     {
-        private readonly BaseField<T> baseField;
-        private readonly ConfigVarSharedStaticContainer<T> container;
+        private readonly BaseField<string> baseField;
+        private readonly ConfigVarAttribute attribute;
 
         private bool hasFocus;
 
-        public ConfigVarBinding(BaseField<T> baseField, ConfigVarSharedStaticContainer<T> container)
+        public ConfigVarStringBinding(BaseField<string> baseField, ConfigVarAttribute attribute)
         {
-            this.container = container;
+            this.attribute = attribute;
             this.baseField = baseField;
-
             this.baseField.RegisterCallback<FocusInEvent>(this.GainFocus);
             this.baseField.RegisterCallback<FocusOutEvent>(this.LoseFocus);
         }
+
+        public string Value => EditorPrefs.GetString(this.attribute.Name, this.attribute.DefaultValue);
 
         public void PreUpdate()
         {
@@ -32,9 +33,10 @@ namespace BovineLabs.Core.ConfigVars
         {
             if (!this.hasFocus)
             {
-                if (!this.baseField.value.Equals(this.container.DirectValue))
+                var v = this.Value;
+                if (!this.baseField.value.Equals(v))
                 {
-                    this.baseField.SetValueWithoutNotify(this.container.DirectValue);
+                    this.baseField.SetValueWithoutNotify(v);
                 }
             }
         }

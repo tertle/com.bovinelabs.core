@@ -5,7 +5,6 @@
 namespace BovineLabs.Core.ConfigVars
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using Unity.Burst;
 
@@ -17,11 +16,9 @@ namespace BovineLabs.Core.ConfigVars
         /// <param name="defaultValue"> The default value. </param>
         /// <param name="description"> A description of the variable. </param>
         /// <param name="isReadOnly"> Is the variable readonly. </param>
-        /// <param name="flags"> Property flags for the variable. </param>
-        public ConfigVarAttribute(string name, string defaultValue, string description, bool isReadOnly = false, ConfigVarFlags flags = ConfigVarFlags.None)
+        public ConfigVarAttribute(string name, string defaultValue, string description, bool isReadOnly = false)
         {
             this.Name = name;
-            this.Flags = flags;
             this.Description = description;
             this.DefaultValue = defaultValue;
             this.IsReadOnly = isReadOnly;
@@ -32,9 +29,8 @@ namespace BovineLabs.Core.ConfigVars
         /// <param name="defaultValue"> The default value. </param>
         /// <param name="description"> A description of the variable. </param>
         /// <param name="isReadOnly"> Is the variable readonly. </param>
-        /// <param name="flags"> Property flags for the variable. </param>
-        public ConfigVarAttribute(string name, float defaultValue, string description, bool isReadOnly = false, ConfigVarFlags flags = ConfigVarFlags.None)
-            : this(name, defaultValue.ToString(CultureInfo.InvariantCulture), description, isReadOnly, flags)
+        public ConfigVarAttribute(string name, float defaultValue, string description, bool isReadOnly = false)
+            : this(name, defaultValue.ToString(CultureInfo.InvariantCulture), description, isReadOnly)
         {
         }
 
@@ -43,9 +39,8 @@ namespace BovineLabs.Core.ConfigVars
         /// <param name="defaultValue"> The default value. </param>
         /// <param name="description"> A description of the variable. </param>
         /// <param name="isReadOnly"> Is the variable readonly. </param>
-        /// <param name="flags"> Property flags for the variable. </param>
-        public ConfigVarAttribute(string name, int defaultValue, string description, bool isReadOnly = false, ConfigVarFlags flags = ConfigVarFlags.None)
-            : this(name, defaultValue.ToString(CultureInfo.InvariantCulture), description, isReadOnly, flags)
+        public ConfigVarAttribute(string name, int defaultValue, string description, bool isReadOnly = false)
+            : this(name, defaultValue.ToString(CultureInfo.InvariantCulture), description, isReadOnly)
         {
         }
 
@@ -54,9 +49,8 @@ namespace BovineLabs.Core.ConfigVars
         /// <param name="defaultValue"> The default value. </param>
         /// <param name="description"> A description of the variable. </param>
         /// <param name="isReadOnly"> Is the variable readonly. </param>
-        /// <param name="flags"> Property flags for the variable. </param>
-        public ConfigVarAttribute(string name, bool defaultValue, string description, bool isReadOnly = false, ConfigVarFlags flags = ConfigVarFlags.None)
-            : this(name, defaultValue.ToString(CultureInfo.InvariantCulture), description, isReadOnly, flags)
+        public ConfigVarAttribute(string name, bool defaultValue, string description, bool isReadOnly = false)
+            : this(name, defaultValue.ToString(CultureInfo.InvariantCulture), description, isReadOnly)
         {
         }
 
@@ -72,9 +66,10 @@ namespace BovineLabs.Core.ConfigVars
         /// <summary> Gets a value indicating whether the config var read only. </summary>
         public bool IsReadOnly { get; }
 
-        /// <summary> Gets the flags of the config var. </summary>
-        [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global", Justification = "Used in build.")]
-        public ConfigVarFlags Flags { get; }
+        public static implicit operator ConfigVarAttribute(string s)
+        {
+            return new ConfigVarAttribute(s, 0, string.Empty);
+        }
 
         /// <inheritdoc />
         public bool Equals(ConfigVarAttribute other)
@@ -85,11 +80,6 @@ namespace BovineLabs.Core.ConfigVars
             }
 
             return this.Name == other.Name;
-        }
-
-        public static implicit operator ConfigVarAttribute(string s)
-        {
-            return new ConfigVarAttribute(s, 0, string.Empty);
         }
 
         /// <inheritdoc />

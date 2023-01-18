@@ -59,13 +59,18 @@ namespace BovineLabs.Core.Spatial
             this.map.Dispose(dependency);
         }
 
+        public JobHandle Build(NativeList<T> positions, JobHandle dependency, ResizeNativeKeyedMapJob resizeStub = default, QuantizeJob quantizeStub = default)
+        {
+            return this.Build(positions.AsDeferredJobArray(), dependency, resizeStub, quantizeStub);
+        }
+
         [SuppressMessage("ReSharper", "UnusedParameter.Global", Justification = "Sneaky way to allow this to run in bursted ISystem")]
-        public JobHandle Build(NativeArray<T> positions, JobHandle dependency, QuantizeJob job = default)
+        public JobHandle Build(NativeArray<T> positions, JobHandle dependency, ResizeNativeKeyedMapJob resizeStub = default, QuantizeJob quantizeStub = default)
         {
             // Deferred native arrays are supported so we must part it into the job to get the length
-            dependency = new SpatialMap.ResizeNativeKeyedMapJob
+            dependency = new ResizeNativeKeyedMapJob
                 {
-                    Length = positions.Length,
+                    Length = positions,
                     Map = this.map,
                 }
                 .Schedule(dependency);
@@ -100,6 +105,27 @@ namespace BovineLabs.Core.Spatial
         public SpatialMap.ReadOnly AsReadOnly()
         {
             return new SpatialMap.ReadOnly(this.quantizeStep, this.quantizeSize, this.halfSize, this.map);
+        }
+
+        // Jobs outside to avoid generic issues
+        [BurstCompile]
+        public struct ResizeNativeKeyedMapJob : IJob
+        {
+            public NativeKeyedMap<int> Map;
+
+            [ReadOnly]
+            public NativeArray<T> Length;
+
+            public void Execute()
+            {
+                if (this.Map.Capacity < this.Length.Length)
+                {
+                    this.Map.Capacity = this.Length.Length;
+                }
+
+                this.Map.Clear();
+                this.Map.SetLength(this.Length.Length);
+            }
         }
 
         [BurstCompile]
@@ -204,26 +230,6 @@ namespace BovineLabs.Core.Spatial
             public int Hash(int2 quantized)
             {
                 return SpatialMap.Hash(quantized, this.quantizeWidth);
-            }
-        }
-
-        // Jobs outside to avoid generic issues
-        [BurstCompile]
-        internal struct ResizeNativeKeyedMapJob : IJob
-        {
-            public NativeKeyedMap<int> Map;
-
-            public int Length;
-
-            public void Execute()
-            {
-                if (this.Map.Capacity < this.Length)
-                {
-                    this.Map.Capacity = this.Length;
-                }
-
-                this.Map.Clear();
-                this.Map.SetLength(this.Length);
             }
         }
 
