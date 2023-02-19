@@ -4,15 +4,16 @@
 
 namespace BovineLabs.Core.Assertions
 {
-    using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
+    using JetBrains.Annotations;
     using Unity.Burst.CompilerServices;
     using Debug = UnityEngine.Debug;
 
     [DebuggerStepThrough]
     public static class Check
     {
+        [AssertionMethod]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Assume(bool assumption)
         {
@@ -20,6 +21,7 @@ namespace BovineLabs.Core.Assertions
             Hint.Assume(assumption);
         }
 
+        [AssertionMethod]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Assume(bool assumption, string message)
         {
@@ -27,54 +29,18 @@ namespace BovineLabs.Core.Assertions
             Hint.Assume(assumption);
         }
 
+        [AssertionMethod]
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        public static void IsTrue(bool condition)
+        private static void IsTrue(bool condition)
         {
             Debug.Assert(condition);
         }
 
+        [AssertionMethod]
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        public static void IsTrue(bool condition, string message)
+        private static void IsTrue(bool condition, string message)
         {
             Debug.Assert(condition, message);
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        public static void IsFalse(bool condition)
-        {
-            Debug.Assert(!condition);
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        public static void IsFalse(bool condition, string message)
-        {
-            Debug.Assert(!condition, message);
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        public static void AreEqual<T>(T expected, T actual)
-            where T : IEquatable<T>
-        {
-            Debug.Assert(expected.Equals(actual));
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        public static void AreEqual<T>(T expected, T actual, string message)
-            where T : IEquatable<T>
-        {
-            Debug.Assert(expected.Equals(actual), message);
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        public static void AreNotEqual<T>(T expected, T actual)
-        {
-            Debug.Assert(!expected.Equals(actual));
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        public static void AreNotEqual<T>(T expected, T actual, string message)
-        {
-            Debug.Assert(!expected.Equals(actual), message);
         }
     }
 }

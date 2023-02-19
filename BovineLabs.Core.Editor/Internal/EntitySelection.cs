@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Editor.Internal
 
         public static void UnSelect()
         {
-            if (IsSelected)
+            if (Selection.activeObject is EntitySelectionProxy)
             {
                 Selection.activeObject = null;
             }

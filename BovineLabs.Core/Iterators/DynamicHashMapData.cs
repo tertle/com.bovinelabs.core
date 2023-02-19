@@ -60,7 +60,6 @@ namespace BovineLabs.Core.Iterators
             return capacity * 2;
         }
 
-
         internal static void AllocateHashMap<TKey, TValue>(
             DynamicBuffer<byte> buffer,
             int length,
@@ -94,7 +93,6 @@ namespace BovineLabs.Core.Iterators
 
             outBuf = data;
         }
-
 
         internal static void ReallocateHashMap<TKey, TValue>(
             DynamicBuffer<byte> buffer,
@@ -227,7 +225,6 @@ namespace BovineLabs.Core.Iterators
             return math.min(data->KeyCapacity, data->AllocatedIndexLength) - freeListSize;
         }
 
-
         internal static void GetKeyArray<TKey>(DynamicHashMapData* data, NativeArray<TKey> result)
             where TKey : struct
         {
@@ -246,7 +243,6 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-
         internal static void GetValueArray<TValue>(DynamicHashMapData* data, NativeArray<TValue> result)
             where TValue : struct
         {
@@ -264,7 +260,6 @@ namespace BovineLabs.Core.Iterators
                 }
             }
         }
-
 
         internal static void GetKeyValueArrays<TKey, TValue>(DynamicHashMapData* data, NativeKeyValueArrays<TKey, TValue> result)
             where TKey : unmanaged
@@ -286,7 +281,6 @@ namespace BovineLabs.Core.Iterators
                 }
             }
         }
-
 
         private static int CalculateDataSize<TKey, TValue>(int length, int bucketLength, out int keyOffset, out int nextOffset, out int bucketOffset)
             where TKey : struct, IEquatable<TKey>

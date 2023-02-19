@@ -8,12 +8,32 @@ namespace BovineLabs.Core.Extensions
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Collections;
+    using Unity.Burst.CompilerServices;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
+    public struct FakeDynamicTypeHandle // TODO remove huge hack/workaround
+    {
+        public TypeIndex TypeIndex;
+        public short TypeLookupCache;
+
+        public static implicit operator FakeDynamicTypeHandle(DynamicComponentTypeHandle typeHandle)
+        {
+            return new FakeDynamicTypeHandle { TypeIndex = typeHandle.m_TypeIndex, TypeLookupCache = typeHandle.m_TypeLookupCache };
+        }
+    }
+
     public static unsafe class ArchetypeChunkExtensions
     {
+        public static bool DidChange(this ArchetypeChunk chunk, TypeIndex typeIndex, ref short typeLookupCache, uint version)
+        {
+            ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, typeIndex, ref typeLookupCache);
+            int typeIndexInArchetype = typeLookupCache;
+            var changeVersion = Hint.Unlikely(typeIndexInArchetype == -1) ? 0 : chunk.m_Chunk->GetChangeVersion(typeIndexInArchetype);
+            return ChangeVersionUtility.DidChange(changeVersion, version);
+        }
+
         /// <summary> Gets a read copy from the ComponentTypeHandle that doesn't trigger Change version. </summary>
         /// <param name="archetypeChunk"> The ArchetypeChunk. </param>
         /// <param name="typeHandle"> The components <see cref="ComponentTypeHandle{T}" />. THis can be read or write permission. </param>
@@ -137,17 +157,19 @@ namespace BovineLabs.Core.Extensions
 #endif
         }
 
-
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
         public static void JournalAddRecordGetComponentDataRW<T>(
-            this ArchetypeChunk archetypeChunk,
+            this ref ArchetypeChunk archetypeChunk,
             ref ComponentTypeHandle<T> typeHandle,
             void* data,
             int dataLength)
             where T : unmanaged, IComponentData
         {
-            archetypeChunk.JournalAddRecord(
-                EntitiesJournaling.RecordType.GetComponentDataRW, typeHandle.m_TypeIndex, typeHandle.m_GlobalSystemVersion, data, dataLength);
+            if (Hint.Unlikely(archetypeChunk.m_EntityComponentStore->m_RecordToJournal != 0))
+            {
+                archetypeChunk.JournalAddRecord(
+                    EntitiesJournaling.RecordType.GetComponentDataRW, typeHandle.m_TypeIndex, typeHandle.m_GlobalSystemVersion, data, dataLength);
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -173,8 +195,6 @@ namespace BovineLabs.Core.Extensions
                     dataLength: dataLength);
             }
         }
-
-        // JournalAddRecordGetComponentDataRW(ref chunkComponentTypeHandle, ptr, chunkComponentTypeHandle.m_LookupCache.ComponentSizeOf * Count);
 #endif
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

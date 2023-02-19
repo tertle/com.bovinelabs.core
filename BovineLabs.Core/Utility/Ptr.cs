@@ -5,10 +5,12 @@
 namespace BovineLabs.Core.Utility
 {
     using System;
+    using Unity.Collections.LowLevel.Unsafe;
 
-    public unsafe struct Ptr<T> : IEquatable<Ptr<T>>
+    public readonly unsafe struct Ptr<T> : IEquatable<Ptr<T>>
         where T : unmanaged
     {
+        [NativeDisableUnsafePtrRestriction]
         public readonly T* Value;
 
         /// <summary> Initializes a new instance of the <see cref="Ptr{T}" /> struct. </summary>
@@ -28,6 +30,22 @@ namespace BovineLabs.Core.Utility
         public static implicit operator Ptr<T>(T* ptr)
         {
             return new Ptr<T>(ptr);
+        }
+
+        public static bool operator ==(Ptr<T> left, Ptr<T> right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Ptr<T> left, Ptr<T> right)
+        {
+            return !left.Equals(right);
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            throw new NotSupportedException();
         }
 
         /// <inheritdoc />

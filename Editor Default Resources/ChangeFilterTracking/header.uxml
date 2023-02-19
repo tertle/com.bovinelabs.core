@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <uie:Toolbar class="change-filter-header">
+        <ui:Label name="ComponentName" text="Component" class="change-filter-header__component-label" />
+        <ui:Label name="ShortFrames" text="60 Frames" tooltip="The world on which this system operates." class="change-filter-header__short-label" />
+        <ui:Label name="LongFrames" text="600 Frames" tooltip="Namespace to which this system belongs." class="change-filter-header__long-label" />
+    </uie:Toolbar>
+    <ui:ListView focusable="true" name="ListView" class="change-filter__list-view" />
+</ui:UXML>

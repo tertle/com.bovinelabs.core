@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+#if UNITY_EDITOR || BL_DEBUG
 #define BL_DEBUG_UPDATE
 #endif
 
@@ -20,6 +20,7 @@ namespace BovineLabs.Core
     using UnityEngine;
 
     [BurstCompile]
+    [UpdateInGroup(typeof(InitializationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation)]
     public partial class BLDebugSystem : SystemBase
     {
@@ -28,9 +29,9 @@ namespace BovineLabs.Core
         internal const int LogLevelDefaultValue = (int)Unity.Logging.LogLevel.Error;
 
         [ConfigVar(LogLevelName, LogLevelDefaultValue, LogLevelDesc)]
-        internal static readonly SharedStatic<int> LogLevel = SharedStatic<int>.GetOrCreate<BLDebug>();
+        internal static readonly SharedStatic<int> LogLevel = SharedStatic<int>.GetOrCreate<BLDebugSystem>();
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+#if UNITY_EDITOR || BL_DEBUG
         private const LogLevel MinLogLevel = Unity.Logging.LogLevel.Debug;
 #else
         private const LogLevel MinLogLevel = Unity.Logging.LogLevel.Warning;
@@ -48,7 +49,13 @@ namespace BovineLabs.Core
             this.currentLogLevel = ToLogLevel(LogLevel.Data);
             var logDir = GetCurrentAbsoluteLogDirectory();
 
-            var world = this.World.Name.TrimEnd("World");
+            var world = this.World.Name.TrimEnd("World").TrimEnd();
+
+            var managerParameters = LogMemoryManagerParameters.Default;
+#if UNITY_EDITOR
+            // In editor we increase the default (64) capacity to allow verbose spamming
+            managerParameters.InitialBufferCapacity = 1024 * 512;
+#endif
 
             var logger = new LoggerConfig()
                 .SyncMode.FatalIsSync()
@@ -59,7 +66,7 @@ namespace BovineLabs.Core
                 .WriteTo.UnityDebugLog(
                     minLevel: this.currentLogLevel,
                     outputTemplate: $"{{Level}} | {world} | {{Message}}")
-                .CreateLogger(LogMemoryManagerParameters.Default);
+                .CreateLogger(managerParameters);
 
             this.loggerHandle = logger.Handle;
             var netDebug = new BLDebug { LoggerHandle = this.loggerHandle };

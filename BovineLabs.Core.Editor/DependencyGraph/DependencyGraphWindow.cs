@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Editor.DependencyGraph
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using BovineLabs.Core.Editor.UI;
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.UIElements;
@@ -15,28 +16,13 @@ namespace BovineLabs.Core.Editor.DependencyGraph
     /// <summary> Based off the Dependency Graph for units DOTS shooter. </summary>
     public class DependencyGraphWindow : EditorWindow
     {
-        private const string Directory = "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/DependencyGraph/";
+        private const string RootUIPath = "Packages/com.bovinelabs.core/Editor Default Resources/DependencyGraphWindow/";
+        private static readonly UITemplate DependencyGraphWindowTemplate = new(RootUIPath + "DependencyGraphWindow");
 
         private readonly List<DependencyData> dependencyData = new();
         private ScrollView content;
 
         private DropdownField mode;
-
-        private void OnEnable()
-        {
-            this.rootVisualElement.Clear();
-
-            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{Directory}DependencyGraph.uxml");
-            asset.CloneTree(this.rootVisualElement);
-
-            var findButton = this.rootVisualElement.Q<Button>("Find");
-            findButton.clicked += this.Find;
-
-            this.mode = this.rootVisualElement.Q<DropdownField>("Mode");
-            this.mode.RegisterValueChangedCallback(_ => this.Clear());
-
-            this.content = this.rootVisualElement.Q<ScrollView>("Content");
-        }
 
         [MenuItem("BovineLabs/Tools/Dependency Graph", priority = 1011)]
         private static void Execute()
@@ -55,8 +41,7 @@ namespace BovineLabs.Core.Editor.DependencyGraph
             thumbnail.AddToClassList("thumbnail");
             parent.Add(thumbnail);
 
-            var button = new Button(() => Selection.activeObject = asset);
-            button.text = label;
+            var button = new Button(() => Selection.activeObject = asset) { text = label };
             button.AddToClassList("asset-button");
             parent.Add(button);
 
@@ -76,6 +61,20 @@ namespace BovineLabs.Core.Editor.DependencyGraph
             parent.Add(assetButton);
 
             return parent;
+        }
+
+        private void OnEnable()
+        {
+            this.rootVisualElement.Clear();
+            DependencyGraphWindowTemplate.Clone(this.rootVisualElement);
+
+            var findButton = this.rootVisualElement.Q<Button>("Find");
+            findButton.clicked += this.Find;
+
+            this.mode = this.rootVisualElement.Q<DropdownField>("Mode");
+            this.mode.RegisterValueChangedCallback(_ => this.Clear());
+
+            this.content = this.rootVisualElement.Q<ScrollView>("Content");
         }
 
         private void Find()

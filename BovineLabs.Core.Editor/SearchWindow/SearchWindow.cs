@@ -13,7 +13,11 @@ namespace BovineLabs.Core.Editor.SearchWindow
     /// <summary> Copy of com.unity.platforms\Editor\Unity.Build.Editor\SearchWindow\SearchWindow.cs. </summary>
     public class SearchWindow : EditorWindow
     {
+        public const string RootUIPath = "Packages/com.bovinelabs.core/Editor Default Resources/SearchWindow/";
+
         private SearchView searchView;
+
+        public event Action<SearchView.Item> OnSelection;
 
         public List<SearchView.Item> Items
         {
@@ -25,6 +29,12 @@ namespace BovineLabs.Core.Editor.SearchWindow
         {
             get => this.searchView.Title;
             set => this.searchView.Title = value;
+        }
+
+        public static SearchWindow Create()
+        {
+            var window = CreateInstance<SearchWindow>();
+            return window;
         }
 
         private void OnEnable()
@@ -54,14 +64,6 @@ namespace BovineLabs.Core.Editor.SearchWindow
         private void OnLostFocus()
         {
             this.Close();
-        }
-
-        public event Action<SearchView.Item> OnSelection;
-
-        public static SearchWindow Create()
-        {
-            var window = CreateInstance<SearchWindow>();
-            return window;
         }
     }
 }

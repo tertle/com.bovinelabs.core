@@ -4,11 +4,13 @@
 
 namespace BovineLabs.Core.Editor.SearchWindow
 {
-    using UnityEngine;
+    using BovineLabs.Core.Editor.UI;
     using UnityEngine.UIElements;
 
     internal class SearchField : TextField
     {
+        private static readonly UITemplate SearchFieldTemplate = new(SearchWindow.RootUIPath + "SearchField");
+
         private VisualElement searchContainer;
 
         public SearchField()
@@ -36,9 +38,7 @@ namespace BovineLabs.Core.Editor.SearchWindow
 
         private void LoadLayout()
         {
-            this.styleSheets.Add(Resources.Load("UI/SearchFieldStyles") as StyleSheet);
-            var visualTree = (VisualTreeAsset)Resources.Load("UI/SearchFieldLayout");
-            visualTree.CloneTree(this);
+            SearchFieldTemplate.Clone(this);
 
             this.searchContainer = this.Q<VisualElement>(null, "search-field__container");
 

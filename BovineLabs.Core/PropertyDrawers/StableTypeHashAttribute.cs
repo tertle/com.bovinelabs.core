@@ -9,6 +9,22 @@ namespace BovineLabs.Core.PropertyDrawers
 
     public class StableTypeHashAttribute : PropertyAttribute, IEquatable<StableTypeHashAttribute>
     {
+        public StableTypeHashAttribute(
+            TypeCategory category,
+            bool onlyZeroSize = false,
+            bool onlyEnableable = false,
+            bool allowUnityNamespace = true,
+            bool allowEditorAssemblies = false,
+            Type[] baseType = null)
+        {
+            this.Category = category;
+            this.OnlyZeroSize = onlyZeroSize;
+            this.OnlyEnableable = onlyEnableable;
+            this.AllowUnityNamespace = allowUnityNamespace;
+            this.AllowEditorAssemblies = allowEditorAssemblies;
+            this.BaseType = baseType;
+        }
+
         [Flags]
         public enum TypeCategory : byte
         {
@@ -17,25 +33,11 @@ namespace BovineLabs.Core.PropertyDrawers
             /// <summary> Implements IComponentData (can be either a struct or a class). </summary>
             ComponentData = 1 << 0,
 
-            /// <summary> Implements IBufferElementData (struct only) </summary>
+            /// <summary> Implements IBufferElementData (struct only). </summary>
             BufferData = 1 << 1,
 
             /// <summary> Implement ISharedComponentData (struct only). </summary>
             SharedComponentData = 1 << 2,
-        }
-
-        public StableTypeHashAttribute(
-            TypeCategory category,
-            bool onlyZeroSize = false,
-            bool onlyEnableable = false,
-            bool allowUnityNamespace = true,
-            bool allowEditorAssemblies = false)
-        {
-            this.Category = category;
-            this.OnlyZeroSize = onlyZeroSize;
-            this.OnlyEnableable = onlyEnableable;
-            this.AllowUnityNamespace = allowUnityNamespace;
-            this.AllowEditorAssemblies = allowEditorAssemblies;
         }
 
         public TypeCategory Category { get; }
@@ -47,6 +49,8 @@ namespace BovineLabs.Core.PropertyDrawers
         public bool AllowUnityNamespace { get; }
 
         public bool AllowEditorAssemblies { get; }
+
+        public Type[] BaseType { get; }
 
         public bool Equals(StableTypeHashAttribute other)
         {

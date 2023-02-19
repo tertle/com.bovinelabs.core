@@ -7,7 +7,7 @@ namespace BovineLabs.Core
     using Unity.Entities;
     using WorldFlag = Unity.Entities.WorldSystemFilterFlags;
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+#if UNITY_EDITOR || BL_DEBUG
     [UpdateInGroup(typeof(PresentationSystemGroup))]
     [WorldSystemFilter(
         WorldFlag.LocalSimulation | WorldFlag.ClientSimulation | WorldFlag.ServerSimulation | WorldFlag.ThinClientSimulation | WorldFlag.Editor,

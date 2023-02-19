@@ -4,12 +4,13 @@
 
 namespace BovineLabs.Core.Editor.SearchWindow
 {
-    using UnityEngine;
+    using BovineLabs.Core.Editor.UI;
     using UnityEngine.UIElements;
-    using UnityEngine.UIExtras;
 
     internal class SearchViewItem : VisualElement
     {
+        private static readonly UITemplate SearchItemTemplate = new(SearchWindow.RootUIPath + "SearchItem");
+
         private readonly VisualElement icon;
         private readonly Label label;
         private readonly VisualElement nextIcon;
@@ -17,9 +18,8 @@ namespace BovineLabs.Core.Editor.SearchWindow
         public SearchViewItem()
         {
             this.AddToClassList("SearchItem");
-            this.styleSheets.Add(Resources.Load<StyleSheet>("UI/SearchItemStyle"));
-            var visualTree = Resources.Load<VisualTreeAsset>("UI/SearchItem");
-            visualTree.CloneTree(this);
+
+            SearchItemTemplate.Clone(this);
 
             this.label = this.Q<Label>("Label");
             this.icon = this.Q("Icon");

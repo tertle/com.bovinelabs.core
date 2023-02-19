@@ -1,0 +1,28 @@
+
+.change-filter-header {
+    justify-content: flex-start;
+    align-items: center;
+    padding-right: 10px;
+}
+
+.change-filter-header__component-label {
+    padding-left: 25px;
+    flex-grow: 1;
+    width: 200px;
+}
+
+.change-filter-header__short-label {
+    width: 100px;
+    border-left-width: 1px;
+    -unity-text-align: middle-left;
+    padding-left: 6px;
+    border-left-color: #202020;
+}
+
+.change-filter-header__long-label {
+    width: 100px;
+    border-left-width: 1px;
+    -unity-text-align: middle-left;
+    padding-left: 6px;
+    border-left-color: #202020;
+}

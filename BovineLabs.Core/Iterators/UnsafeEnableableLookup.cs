@@ -25,9 +25,9 @@ namespace BovineLabs.Core.Iterators
         /// <param name="entity"> The entity whose component should be checked. </param>
         /// <returns> True if the specified component is enabled, or false if it is disabled. </returns>
         /// <seealso cref="SetComponentEnabled" />
-        public bool IsComponentEnabled(Entity entity, ComponentType typeIndex)
+        public bool IsComponentEnabled(Entity entity, ComponentType componentType)
         {
-            return this.access->IsComponentEnabled(entity, typeIndex.TypeIndex);
+            return this.access->IsComponentEnabled(entity, componentType.TypeIndex);
         }
 
         /// <summary>
@@ -40,9 +40,9 @@ namespace BovineLabs.Core.Iterators
         /// <param name="entity"> The entity whose component should be enabled or disabled. </param>
         /// <param name="value"> True if the specified component should be enabled, or false if it should be disabled. </param>
         /// <seealso cref="IsComponentEnabled" />
-        public void SetComponentEnabled(Entity entity, ComponentType typeIndex, bool value)
+        public void SetComponentEnabled(Entity entity, ComponentType componentType, bool value)
         {
-            this.access->SetComponentEnabled(entity, typeIndex.TypeIndex, value);
+            this.access->SetComponentEnabled(entity, componentType.TypeIndex, value);
         }
     }
 }

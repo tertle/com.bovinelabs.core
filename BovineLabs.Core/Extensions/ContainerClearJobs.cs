@@ -47,11 +47,11 @@ namespace BovineLabs.Core.Extensions
     }
 
     [BurstCompile]
-    public struct ClearNativeMultiHashMapJob<TKey, TValue> : IJob
+    public struct ClearNativeParallelMultiHashMapJob<TKey, TValue> : IJob
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-        public NativeMultiHashMap<TKey, TValue> HashMap;
+        public NativeParallelMultiHashMap<TKey, TValue> HashMap;
 
         public void Execute()
         {

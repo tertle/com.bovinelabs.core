@@ -2,41 +2,46 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#pragma warning disable CS0436
+
 namespace BovineLabs.Core
 {
     using System.Diagnostics;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Logging;
+    using Unity.Logging.Internal;
 
     public struct BLDebug : IComponentData
     {
+        public static readonly BLDebug Default = new() { LoggerHandle = LoggerManager.Logger.Handle };
+
         internal LoggerHandle LoggerHandle;
 
         [Conditional("UNITY_EDITOR")]
-        public void Verbose(in FixedString32Bytes msg)
+        public readonly void Verbose(in FixedString32Bytes msg)
         {
             Unity.Logging.Log.To(this.LoggerHandle).Verbose(msg);
         }
 
         [Conditional("UNITY_EDITOR")]
-        [Conditional("DEVELOPMENT_BUILD")]
-        public void Debug(in FixedString512Bytes msg)
+        [Conditional("BL_DEBUG")]
+        public readonly void Debug(in FixedString512Bytes msg)
         {
             Unity.Logging.Log.To(this.LoggerHandle).Debug(msg);
         }
 
-        public void Info(in FixedString512Bytes msg)
+        public readonly void Info(in FixedString512Bytes msg)
         {
             Unity.Logging.Log.To(this.LoggerHandle).Info(msg);
         }
 
-        public void Warning(in FixedString512Bytes msg)
+        public readonly void Warning(in FixedString512Bytes msg)
         {
             Unity.Logging.Log.To(this.LoggerHandle).Warning(msg);
         }
 
-        public void Error(in FixedString512Bytes msg)
+        public readonly void Error(in FixedString512Bytes msg)
         {
             Unity.Logging.Log.To(this.LoggerHandle).Error(msg);
         }

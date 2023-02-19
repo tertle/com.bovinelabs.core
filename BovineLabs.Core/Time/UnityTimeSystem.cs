@@ -18,11 +18,6 @@ namespace BovineLabs.Core.Time
             Set(ref state);
         }
 
-        /// <inheritdoc/>
-        public void OnDestroy(ref SystemState state)
-        {
-        }
-
         public void OnUpdate(ref SystemState state)
         {
             Set(ref state);

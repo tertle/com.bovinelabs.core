@@ -47,7 +47,7 @@ namespace BovineLabs.Core.Editor.Settings
         [Serializable]
         public class KeyPath
         {
-            [ReadOnly]
+            [InspectorReadOnly]
             public string Key;
 
             public string Path;

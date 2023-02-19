@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Extensions
         public static unsafe SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
             where T : struct, ISharedComponentData
         {
-            var access = entityManager.GetCheckedEntityDataAccess();
+            EntityDataAccess* access = entityManager.GetCheckedEntityDataAccess();
             var typeIndex = TypeManager.GetTypeIndex<T>();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -39,10 +39,17 @@ namespace BovineLabs.Core.Extensions
 #endif
         }
 
-        public static unsafe UnsafeEnableableLookup GetUnsafeEnableableLookup(this EntityManager entityManager)
+        internal static unsafe UnsafeEnableableLookup GetUnsafeEnableableLookup(this EntityManager entityManager)
         {
             var access = entityManager.GetCheckedEntityDataAccess();
             return new UnsafeEnableableLookup(access);
+        }
+
+        internal static unsafe DidChangeLookup<T> DidChangeLookup<T>(this EntityManager entityManager)
+            where T : unmanaged
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+            return new DidChangeLookup<T>(ComponentType.ReadOnly<T>().TypeIndex, access);
         }
 
         /// <summary> Gets or creates the <see cref="T" /> singleton entity. </summary>

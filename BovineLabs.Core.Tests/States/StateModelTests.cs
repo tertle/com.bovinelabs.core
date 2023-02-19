@@ -65,16 +65,6 @@ namespace BovineLabs.Core.Tests.States
         private StateModel impl;
 
         /// <inheritdoc />
-        public void OnCreate(ref SystemState state)
-        {
-        }
-
-        /// <inheritdoc />
-        public void OnDestroy(ref SystemState state)
-        {
-        }
-
-        /// <inheritdoc />
         [BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
@@ -111,14 +101,6 @@ namespace BovineLabs.Core.Tests.States
                 StateKey = 1,
                 StateInstanceComponent = TypeManager.GetTypeIndex<State>(),
             });
-        }
-
-        public void OnDestroy(ref SystemState state)
-        {
-        }
-
-        public void OnUpdate(ref SystemState state)
-        {
         }
 
         public struct State : IComponentData

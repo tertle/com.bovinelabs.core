@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Editor.Settings
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using BovineLabs.Core.Editor.Helpers;
@@ -15,6 +16,8 @@ namespace BovineLabs.Core.Editor.Settings
     /// <summary> Utility for setting up and getting settings. </summary>
     public static class EditorSettingsUtility
     {
+        private static Dictionary<Type, ISettings> cachedSettings = new();
+
         /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
         /// <typeparam name="T"> The type. </typeparam>
         /// <returns> The settings instance. </returns>
@@ -24,6 +27,19 @@ namespace BovineLabs.Core.Editor.Settings
         {
             var type = typeof(T);
 
+            if (cachedSettings.TryGetValue(type, out var cached))
+            {
+                return (T)cached;
+            }
+
+            var settings = GetOrCreateSettings<T>(type);
+            cachedSettings.Add(type, settings);
+            return settings;
+        }
+
+        private static T GetOrCreateSettings<T>(Type type)
+            where T : ScriptableObject, ISettings
+        {
             var filter = type.Namespace == null ? type.Name : $"{type.Namespace}.{type.Name}";
             var assets = AssetDatabase.FindAssets($"t:{filter}");
 

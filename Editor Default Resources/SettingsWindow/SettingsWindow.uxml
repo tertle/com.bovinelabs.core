@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <uie:Toolbar class="settings-toolbar-root">
+        <ui:VisualElement name="toolbar" class="settings-toolbar" />
+        <uie:ToolbarSpacer style="flex-grow: 1;" />
+        <uie:ToolbarSearchField name="search" />
+    </uie:Toolbar>
+    <uie:VisualSplitter name="splitter" class="unity-visual-splitter settings-splitter">
+        <ui:ListView name="list" item-height="16" class="settings-list" style="width: initial;" />
+        <ui:ScrollView name="scroll" class="settings-scrollview">
+            <ui:Label name="title" class="settings-title" style="padding-bottom: 0; margin-bottom: 8px;" />
+            <ui:VisualElement name="contents" class="settings-content" />
+        </ui:ScrollView>
+    </uie:VisualSplitter>
+</ui:UXML>

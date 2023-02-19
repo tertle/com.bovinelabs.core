@@ -3,7 +3,7 @@
 // </copyright>
 #pragma warning disable 0436 // Type 'Log' conflicts with another one in case of InternalVisibleTo
 
-namespace BovineLabs.Core.Editor.Debug
+namespace BovineLabs.Core.Editor
 {
     using Unity.Logging;
     using UnityEditor;

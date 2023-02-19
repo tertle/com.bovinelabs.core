@@ -9,21 +9,10 @@ namespace BovineLabs.Core.Authoring
     using Unity.Entities;
     using Unity.NetCode;
 
-    [BurstCompile]
     [UpdateInGroup(typeof(PostBakingSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
     public partial struct RemoveLinkedEntityGroupSystem : ISystem
     {
-        /// <inheritdoc />
-        public void OnCreate(ref SystemState state)
-        {
-        }
-
-        /// <inheritdoc />
-        public void OnDestroy(ref SystemState state)
-        {
-        }
-
         /// <inheritdoc />
         [BurstCompile]
         public void OnUpdate(ref SystemState state)

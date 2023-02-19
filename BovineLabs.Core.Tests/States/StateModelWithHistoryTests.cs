@@ -136,20 +136,9 @@ namespace BovineLabs.Core.Tests.States
         }
     }
 
-    [BurstCompile]
     internal partial struct StateModelWithHistoryTestSystem : ISystem, ISystemStartStop
     {
         private StateModelWithHistory impl;
-
-        /// <inheritdoc />
-        public void OnCreate(ref SystemState state)
-        {
-        }
-
-        /// <inheritdoc />
-        public void OnDestroy(ref SystemState state)
-        {
-        }
 
         /// <inheritdoc />
         [BurstCompile]
@@ -191,14 +180,6 @@ namespace BovineLabs.Core.Tests.States
                 StateKey = 1,
                 StateInstanceComponent = TypeManager.GetTypeIndex<State>(),
             });
-        }
-
-        public void OnDestroy(ref SystemState state)
-        {
-        }
-
-        public void OnUpdate(ref SystemState state)
-        {
         }
 
         public struct State : IComponentData

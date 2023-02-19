@@ -28,23 +28,15 @@ namespace BovineLabs.Core.Authoring
         }
     }
 
-    [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
     public partial struct RemovePhysicsVelocityConversionSystem : ISystem
     {
-        public void OnCreate(ref SystemState state)
-        {
-        }
-
-        public void OnDestroy(ref SystemState state)
-        {
-        }
-
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
-            foreach (var (_, entity) in SystemAPI.Query<RemovePhysicsVelocityBaking>().WithAll<PhysicsVelocity>().WithEntityAccess())
+            foreach (var (_, entity) in SystemAPI.Query<RemovePhysicsVelocityBaking>().WithAll<PhysicsVelocity>().WithEntityAccess()
+                         .WithOptions(EntityQueryOptions.IncludePrefab))
             {
                 ecb.RemoveComponent<PhysicsVelocity>(entity);
             }

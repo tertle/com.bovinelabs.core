@@ -425,6 +425,7 @@ namespace BovineLabs.Core.Utility
             return eulerReorderBack(euler, order);
         }
 
+        // Radians
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float SmoothDampAngle(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
         {
@@ -464,18 +465,29 @@ namespace BovineLabs.Core.Utility
             return result;
         }
 
+        /// <summary>
+        /// Radians
+        /// </summary>
+        /// <param name="current"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float DeltaAngle(float current, float target)
         {
-            var delta = Repeat(target - current, 360.0F);
-            if (delta > 180.0F)
+            var delta = Repeat(target - current, Radians360);
+            return delta > Radians180 ? delta - Radians360 : delta;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float LerpAngle(float a, float b, float t)
+        {
+            var num = Repeat(b - a, Radians360);
+            if (num > Radians180)
             {
-                delta -= 360.0F;
+                num -= Radians360;
             }
 
-            var result = delta;
-
-            return result;
+            return a + (num * math.clamp(t, 0, 1));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -8,7 +8,6 @@ namespace BovineLabs.Core.States
     using BovineLabs.Core.Extensions;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Logging;
 
     public struct StateImpl : IDisposable
     {
@@ -23,7 +22,7 @@ namespace BovineLabs.Core.States
         public StateImpl(ref SystemState state, ComponentType stateComponent, ComponentType previousStateComponent)
         {
             this.Query = new EntityQueryBuilder(Allocator.Temp).WithAll(stateComponent).WithAllRW(previousStateComponent).Build(ref state);
-            this.Query.AddChangedVersionFilter(stateComponent);
+            this.Query.SetChangedVersionFilter(stateComponent);
 
             this.EntityType = state.GetEntityTypeHandle();
             this.StateType = state.GetDynamicComponentTypeHandle(stateComponent);
@@ -44,7 +43,7 @@ namespace BovineLabs.Core.States
 
                 if (!this.RegisteredStatesMap.TryAdd(component.Value.StateKey, stateInstanceComponent))
                 {
-                    Log.Error($"Key {component.Value.StateKey} has already been registered");
+                    state.EntityManager.GetSingleton<BLDebug>().Error($"Key {component.Value.StateKey} has already been registered");
                 }
             }
         }

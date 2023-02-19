@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace UnityEngine.UIExtras
+namespace BovineLabs.Core.Editor.SearchWindow
 {
     using System;
     using System.Collections.Generic;
@@ -11,27 +11,33 @@ namespace UnityEngine.UIExtras
 
     internal class TreeNode<T>
     {
-        internal List<TreeNode<T>> m_Children = new();
+        private readonly List<TreeNode<T>> children;
 
         public TreeNode(T value)
+            : this(value, new List<TreeNode<T>>())
+        {
+        }
+
+        public TreeNode(T value,  List<TreeNode<T>> children)
         {
             this.Value = value;
+            this.children = children;
         }
 
         public T Value { get; set; }
 
-        public ReadOnlyCollection<TreeNode<T>> Children => this.m_Children.AsReadOnly();
+        public ReadOnlyCollection<TreeNode<T>> Children => this.children.AsReadOnly();
 
-        public int ChildCount => this.m_Children.Count;
-
-        public TreeNode<T> this[int i] => this.m_Children[i];
+        public int ChildCount => this.children.Count;
 
         public TreeNode<T> Parent { get; internal set; }
+
+        public TreeNode<T> this[int i] => this.children[i];
 
         public TreeNode<T> AddChild(T value)
         {
             var node = new TreeNode<T>(value) { Parent = this };
-            this.m_Children.Add(node);
+            this.children.Add(node);
             return node;
         }
 
@@ -42,13 +48,13 @@ namespace UnityEngine.UIExtras
 
         public bool RemoveChild(TreeNode<T> node)
         {
-            return this.m_Children.Remove(node);
+            return this.children.Remove(node);
         }
 
         public void Traverse(Action<T> action)
         {
             action(this.Value);
-            foreach (var child in this.m_Children)
+            foreach (var child in this.children)
             {
                 child.Traverse(action);
             }
@@ -57,7 +63,7 @@ namespace UnityEngine.UIExtras
         public void Traverse(Action<TreeNode<T>> action)
         {
             action(this);
-            foreach (var child in this.m_Children)
+            foreach (var child in this.children)
             {
                 child.Traverse(action);
             }
@@ -65,7 +71,7 @@ namespace UnityEngine.UIExtras
 
         public IEnumerable<T> Flatten()
         {
-            return new[] { this.Value }.Concat(this.m_Children.SelectMany(x => x.Flatten()));
+            return new[] { this.Value }.Concat(this.children.SelectMany(x => x.Flatten()));
         }
     }
 }

@@ -4,9 +4,12 @@
 
 namespace BovineLabs.Core.Extensions
 {
+    using System.Diagnostics;
     using BovineLabs.Core.Iterators;
+    using Unity.Burst.CompilerServices;
     using Unity.Collections;
     using Unity.Entities;
+    using UnityEngine;
 
     public static class SystemStateExtensions
     {
@@ -35,6 +38,13 @@ namespace BovineLabs.Core.Extensions
         public static UnsafeEnableableLookup GetUnsafeEnableableLookup(ref this SystemState system)
         {
             return system.EntityManager.GetUnsafeEnableableLookup();
+        }
+
+        public static DidChangeLookup<T> GetDidChangeLookup<T>(ref this SystemState system)
+            where T : unmanaged
+        {
+            system.AddReaderWriter(ComponentType.ReadOnly<T>());
+            return system.EntityManager.DidChangeLookup<T>();
         }
 
         public static void AddSystemDependency(ref this SystemState state, TypeIndex typeIndex, bool isReadOnly = false)

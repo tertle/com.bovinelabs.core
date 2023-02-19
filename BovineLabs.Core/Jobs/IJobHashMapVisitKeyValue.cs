@@ -27,7 +27,7 @@ namespace BovineLabs.Core.Jobs
     {
         public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
             this TJob jobData,
-            NativeMultiHashMap<TKey, TValue> hashMap,
+            NativeParallelMultiHashMap<TKey, TValue> hashMap,
             int minIndicesPerJobCount,
             JobHandle dependsOn = default)
             where TJob : unmanaged, IJobHashMapVisitKeyValue
@@ -106,7 +106,7 @@ namespace BovineLabs.Core.Jobs
         internal unsafe struct JobHashMapVisitKeyValueProducer<T>
             where T : struct, IJobHashMapVisitKeyValue
         {
-            /// <summary> The <see cref="NativeMultiHashMap{TKey,TValue}" />. </summary>
+            /// <summary> The <see cref="NativeParallelMultiHashMap{TKey,TValue}" />. </summary>
             [ReadOnly]
             [NativeDisableUnsafePtrRestriction]
             public UnsafeParallelHashMapData* HashMap;

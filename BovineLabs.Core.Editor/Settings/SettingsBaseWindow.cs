@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Editor.Settings
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using BovineLabs.Core.Editor.UI;
     using UnityEditor;
     using UnityEditor.UIElements;
     using UnityEngine;
@@ -17,8 +18,10 @@ namespace BovineLabs.Core.Editor.Settings
     public abstract class SettingsBaseWindow<T> : EditorWindow
         where T : SettingsBaseWindow<T>
     {
-        private const string UxmlPath = "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/Settings/SettingsWindow.uxml";
         private const string DarkSkinKey = "settings-title-darkmode";
+        private const string RootUIPath = "Packages/com.bovinelabs.core/Editor Default Resources/SettingsWindow/";
+        private readonly UITemplate settingsWindowTemplate = new(RootUIPath + "SettingsWindow");
+
         private readonly List<ISettingsPanel> filteredSettingsPanel = new();
 
         private readonly List<ISettingsPanel> settingPanels = new();
@@ -39,6 +42,17 @@ namespace BovineLabs.Core.Editor.Settings
         protected abstract string TitleText { get; }
 
         private string SplitterKey => $"bl-{this.TitleText}-splitter";
+
+        /// <summary> Call this to create and/or open a new settings window. </summary>
+        /// <returns> The window instance. </returns>
+        public static T Open()
+        {
+            var window = FindWindowByScope() ?? Create();
+            window.Show();
+            window.Focus();
+            window.minSize = new Vector2(350, 100);
+            return window;
+        }
 
         internal void OnEnable()
         {
@@ -66,17 +80,6 @@ namespace BovineLabs.Core.Editor.Settings
             EditorPrefs.SetFloat(this.SplitterKey, flexGrow);
 
             EditorApplication.playModeStateChanged -= this.EditorApplicationOnplayModeStateChanged;
-        }
-
-        /// <summary> Call this to create and/or open a new settings window. </summary>
-        /// <returns> The window instance. </returns>
-        public static T Open()
-        {
-            var window = FindWindowByScope() ?? Create();
-            window.Show();
-            window.Focus();
-            window.minSize = new Vector2(350, 100);
-            return window;
         }
 
         /// <summary> Called after the window is setup. Use this instead of Unity's OnEnabled. </summary>
@@ -131,8 +134,9 @@ namespace BovineLabs.Core.Editor.Settings
             // Reference to the root of the window.
             var root = this.rootVisualElement;
 
-            var uxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(UxmlPath);
-            uxml.CloneTree(root);
+            // var uxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(UxmlPath);
+            // uxml.CloneTree(root);
+            this.settingsWindowTemplate.Clone(root);
 
             this.searchField = root.Q<ToolbarSearchField>("search");
             this.searchField.RegisterValueChangedCallback(this.SearchFiltering);

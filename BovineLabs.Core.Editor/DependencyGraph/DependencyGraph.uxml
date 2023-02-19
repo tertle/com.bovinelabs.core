@@ -1,8 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
-    <Style src="project://database/Packages/com.bovinelabs.core/BovineLabs.Core.Editor/DependencyGraph/DependencyGraph.uss?fileID=7433441132597879392&amp;guid=493a43a6a7b2cbc4d843e09556eee0cd&amp;type=3#DependencyGraph" />
-    <ui:VisualElement class="horizontal">
-        <ui:DropdownField label="Mode" index="0" choices="Find Asset Dependencies, Find Assets That Depend On" name="Mode" class="grow" />
-        <ui:Button text="Find" display-tooltip-when-elided="true" name="Find" class="grow" />
-    </ui:VisualElement>
-    <ui:ScrollView name="Content" />
-</ui:UXML>

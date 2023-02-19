@@ -55,6 +55,19 @@ namespace BovineLabs.Core.Extensions
             return buffer.AsNativeArray().AsReadOnly();
         }
 
+        /// <summary> Gets a readonly reference to the element at the given index. </summary>
+        /// <param name="buffer"> The dynamic buffer to get the element from. </param>
+        /// <param name="index">The zero-based index.</param>
+        /// <typeparam name="T"> The buffer type. </typeparam>
+        /// <returns>Returns the reference to the element at the index.</returns>
+        public static ref readonly T ElementAtRO<T>(this in DynamicBuffer<T> buffer, int index)
+            where T : unmanaged
+        {
+            CheckReadAccess(buffer);
+            CheckBounds(buffer, index);
+            return ref UnsafeUtility.ArrayElementAsRef<T>(buffer.GetUnsafeReadOnlyPtr(), index);
+        }
+
         // return buffer.AsNativeArray().AsReadOnly();
         // fixed (void* ptr = &buffer)
         // {

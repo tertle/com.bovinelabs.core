@@ -46,8 +46,8 @@ namespace BovineLabs.Core.Internal
             return new NativeParallelHashMap<TKey, TValue> { m_HashMapData = hashMapData };
         }
 
-        // NativeMultiHashMap
-        public static UnsafeMultiHashMap<TKey, TValue> GetUnsafeMultiHashMap<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap)
+        // NativeParallelMultiHashMap
+        public static UnsafeParallelMultiHashMap<TKey, TValue> GetUnsafeMultiHashMap<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> hashMap)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -57,7 +57,7 @@ namespace BovineLabs.Core.Internal
             return hashMap.m_MultiHashMapData;
         }
 
-        public static UnsafeMultiHashMap<TKey, TValue> GetReadOnlyUnsafeMultiHashMap<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap)
+        public static UnsafeParallelMultiHashMap<TKey, TValue> GetReadOnlyUnsafeMultiHashMap<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> hashMap)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -68,7 +68,7 @@ namespace BovineLabs.Core.Internal
         }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        public static void SetSafety<TKey, TValue>(this ref NativeMultiHashMap<TKey, TValue> hashMap, AtomicSafetyHandle safetyHandle)
+        public static void SetSafety<TKey, TValue>(this ref NativeParallelMultiHashMap<TKey, TValue> hashMap, AtomicSafetyHandle safetyHandle)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -76,10 +76,10 @@ namespace BovineLabs.Core.Internal
         }
 #endif
 
-        public static NativeMultiHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> hashMapData)
+        public static NativeParallelMultiHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeParallelMultiHashMap<TKey, TValue> hashMapData)
             where TKey : unmanaged, IEquatable<TKey> where TValue : unmanaged
         {
-            return new NativeMultiHashMap<TKey, TValue> { m_MultiHashMapData = hashMapData };
+            return new NativeParallelMultiHashMap<TKey, TValue> { m_MultiHashMapData = hashMapData };
         }
 
         public static unsafe byte* Buffer<T>(this FixedList32Bytes<T> list)

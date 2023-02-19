@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
+    using System.Runtime.CompilerServices;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Mathematics;
@@ -40,13 +41,22 @@ namespace BovineLabs.Core.Extensions
 
     public static unsafe class NativeArrayExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref T ElementAt<T>(this NativeArray<T> array, int index)
             where T : unmanaged
         {
             return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafePtr(), index);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref readonly T ElementAtRO<T>(this NativeArray<T> array, int index)
+            where T : unmanaged
+        {
+            return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafeReadOnlyPtr(), index);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref readonly T ElementAtRO<T>(this NativeArray<T>.ReadOnly array, int index)
             where T : unmanaged
         {
             return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafeReadOnlyPtr(), index);
@@ -56,7 +66,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="array"> The array to fill. </param>
         /// <param name="value"> The value that the array elements will be set to. </param>
         /// <typeparam name="T"> The unmanaged type the array holds. </typeparam>
-        public static void SetAll<T>(this NativeArray<T> array, T value)
+        public static void Fill<T>(this NativeArray<T> array, T value)
             where T : unmanaged
         {
             UnsafeUtility.MemCpyReplicate(array.GetUnsafePtr(), &value, UnsafeUtility.SizeOf<T>(), array.Length);

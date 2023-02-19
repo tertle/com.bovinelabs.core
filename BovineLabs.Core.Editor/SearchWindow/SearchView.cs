@@ -7,13 +7,15 @@ namespace BovineLabs.Core.Editor.SearchWindow
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using BovineLabs.Core.Editor.UI;
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.UIElements;
-    using UnityEngine.UIExtras;
 
     public class SearchView : VisualElement
     {
+        private static readonly UITemplate SearchViewTemplate = new(SearchWindow.RootUIPath + "SearchView");
+
         private readonly ListView list;
         private readonly Button returnButton;
         private readonly VisualElement returnIcon;
@@ -29,9 +31,7 @@ namespace BovineLabs.Core.Editor.SearchWindow
             this.AddToClassList("SearchView");
             this.AddToClassList(EditorGUIUtility.isProSkin ? "UnityThemeDark" : "UnityThemeLight");
 
-            this.styleSheets.Add(Resources.Load<StyleSheet>("UI/SearchViewStyle"));
-            var visualTree = Resources.Load<VisualTreeAsset>("UI/SearchView");
-            visualTree.CloneTree(this);
+            SearchViewTemplate.Clone(this);
 
             var searchField = this.Q<SearchField>();
             this.returnButton = this.Q<Button>("ReturnButton");
@@ -39,7 +39,7 @@ namespace BovineLabs.Core.Editor.SearchWindow
             this.returnIcon = this.Q("ReturnIcon");
             this.list = this.Q<ListView>("SearchResults");
             this.list.selectionType = SelectionType.Single;
-            this.list.makeItem = () => { return new SearchViewItem(); };
+            this.list.makeItem = () => new SearchViewItem();
             this.list.bindItem = (element, index) =>
             {
                 var searchItem = (SearchViewItem)element;
@@ -53,6 +53,8 @@ namespace BovineLabs.Core.Editor.SearchWindow
 
             searchField.RegisterValueChangedCallback(this.OnSearchQueryChanged);
         }
+
+        public event Action<Item> OnSelection;
 
         public List<Item> Items
         {
@@ -79,8 +81,6 @@ namespace BovineLabs.Core.Editor.SearchWindow
             get => this.list.selectionType;
             set => this.list.selectionType = value;
         }
-
-        public event Action<Item> OnSelection;
 
         public void Reset()
         {
@@ -138,9 +138,8 @@ namespace BovineLabs.Core.Editor.SearchWindow
                 }
             });
 
-            this.searchNode = new TreeNode<Item>(new Item { Path = "Search" })
+            this.searchNode = new TreeNode<Item>(new Item { Path = "Search" }, searchResults)
             {
-                m_Children = searchResults,
                 Parent = this.currentNode,
             };
 
@@ -153,7 +152,6 @@ namespace BovineLabs.Core.Editor.SearchWindow
             {
                 this.OnItemsChosen(selection);
             }
-            // TBD.
         }
 
         private void OnItemsChosen(IEnumerable<object> selection)
@@ -233,11 +231,8 @@ namespace BovineLabs.Core.Editor.SearchWindow
                     currentPath += "/" + pathParts[i];
                 }
 
-                var node = FindNodeByPath(root, currentPath);
-                if (node == null)
-                {
-                    node = root.AddChild(new Item { Path = currentPath, Data = null, Icon = null });
-                }
+                var node = FindNodeByPath(root, currentPath)
+                           ?? root.AddChild(new Item { Path = currentPath, Data = null, Icon = null });
 
                 if (i == pathParts.Length - 1)
                 {

@@ -108,7 +108,7 @@ namespace BovineLabs.Core.Iterators
         /// <param name="item"> Output value. </param>
         /// <param name="it"> Iterator. </param>
         /// <returns> Returns true if the container contains the key. </returns>
-        public bool TryGetFirstValue(TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        public bool TryGetFirstValue(TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
         {
             return DynamicHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(this.BufferReadOnly, key, out item, out it);
         }
@@ -119,7 +119,7 @@ namespace BovineLabs.Core.Iterators
         /// <param name="item"> Output value. </param>
         /// <param name="it"> Iterator. </param>
         /// <returns> Returns true if next value for the key is found. </returns>
-        public bool TryGetNextValue(out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        public bool TryGetNextValue(out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
         {
             return DynamicHashMapBase<TKey, TValue>.TryGetNextValueAtomic(this.BufferReadOnly, out item, ref it);
         }

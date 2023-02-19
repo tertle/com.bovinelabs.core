@@ -34,13 +34,5 @@ namespace BovineLabs.Core.Utility
         {
             ResizeBufferCapacity.Initialize();
         }
-
-        public void OnDestroy(ref SystemState state)
-        {
-        }
-
-        public void OnUpdate(ref SystemState state)
-        {
-        }
     }
 }

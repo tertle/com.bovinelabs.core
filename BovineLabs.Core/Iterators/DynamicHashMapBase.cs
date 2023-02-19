@@ -127,7 +127,7 @@ namespace BovineLabs.Core.Iterators
             return removed;
         }
 
-        internal static bool SetValue(DynamicBuffer<byte> buffer, ref NativeMultiHashMapIterator<TKey> it, in TValue item)
+        internal static bool SetValue(DynamicBuffer<byte> buffer, ref NativeParallelMultiHashMapIterator<TKey> it, in TValue item)
         {
             var data = buffer.AsData<TKey, TValue>();
 
@@ -141,7 +141,7 @@ namespace BovineLabs.Core.Iterators
             return true;
         }
 
-        internal static bool TryGetFirstValueAtomic(DynamicHashMapData* data, TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        internal static bool TryGetFirstValueAtomic(DynamicHashMapData* data, TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
         {
             it.key = key;
 
@@ -159,7 +159,7 @@ namespace BovineLabs.Core.Iterators
             return TryGetNextValueAtomic(data, out item, ref it);
         }
 
-        internal static bool TryGetNextValueAtomic(DynamicHashMapData* data, out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        internal static bool TryGetNextValueAtomic(DynamicHashMapData* data, out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
         {
             var entryIdx = it.NextEntryIndex;
             it.NextEntryIndex = -1;

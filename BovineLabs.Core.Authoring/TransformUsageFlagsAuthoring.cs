@@ -25,7 +25,7 @@ namespace BovineLabs.Core.Authoring
 
                 foreach (var child in children)
                 {
-                    this.AddTransformUsageFlags(child, usageFlagsAuthoring.TransformUsageFlags);
+                    this.AddTransformUsageFlags(this.GetEntity(child), usageFlagsAuthoring.TransformUsageFlags);
                 }
             }
             else

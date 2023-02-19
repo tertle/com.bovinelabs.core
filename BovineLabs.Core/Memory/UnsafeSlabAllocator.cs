@@ -24,7 +24,7 @@ namespace BovineLabs.Core.Memory
         {
             Debug.Assert(countPerSlab > 0);
 
-            this.slabs = UnsafeList<Ptr>.Create(0, ref allocator);
+            this.slabs = UnsafeList<Ptr>.Create(0, allocator);
             this.allocator = allocator;
             this.countPerSlab = countPerSlab;
 

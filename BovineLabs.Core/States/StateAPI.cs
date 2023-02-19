@@ -4,11 +4,20 @@
 
 namespace BovineLabs.Core.States
 {
+    using BovineLabs.Core.Keys;
     using Unity.Collections;
     using Unity.Entities;
 
     public static class StateAPI
     {
+        public static void Register<TState, TInstance, TSettings>(ref SystemState systemState, string stateName, bool queryDependency = true)
+            where TState : unmanaged, IComponentData
+            where TInstance : unmanaged, IComponentData
+        {
+            var stateKey = K<TSettings>.NameToKey(stateName);
+            Register<TState, TInstance>(ref systemState, stateKey, queryDependency);
+        }
+
         public static void Register<TState, TInstance>(ref SystemState systemState, byte stateKey, bool queryDependency = true)
             where TState : unmanaged, IComponentData
             where TInstance : unmanaged, IComponentData

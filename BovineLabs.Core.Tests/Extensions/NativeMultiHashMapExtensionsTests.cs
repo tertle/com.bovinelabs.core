@@ -1,4 +1,4 @@
-﻿// <copyright file="NativeMultiHashMapExtensionsTests.cs" company="BovineLabs">
+﻿// <copyright file="NativeParallelMultiHashMapExtensionsTests.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -11,14 +11,14 @@ namespace BovineLabs.Core.Tests.Extensions
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Mathematics;
 
-    public class NativeMultiHashMapExtensionsTests
+    public class NativeParallelMultiHashMapExtensionsTests
     {
         [Test]
         public void ClearAndAddBatchTest()
         {
             var length = 9;
 
-            var hashMap = new NativeMultiHashMap<int, short>(4, Allocator.Temp);
+            var hashMap = new NativeParallelMultiHashMap<int, short>(4, Allocator.Temp);
 
             var keys = new NativeArray<int>(length, Allocator.Temp);
             var values = new NativeArray<short>(length, Allocator.Temp);
@@ -44,7 +44,7 @@ namespace BovineLabs.Core.Tests.Extensions
             var length = 9;
             var split = 3;
 
-            var hashMap = new NativeMultiHashMap<int, short>(4, Allocator.Temp);
+            var hashMap = new NativeParallelMultiHashMap<int, short>(4, Allocator.Temp);
 
             var keys = new NativeArray<int>(length, Allocator.Temp);
             var values = new NativeArray<short>(length, Allocator.Temp);
@@ -76,7 +76,7 @@ namespace BovineLabs.Core.Tests.Extensions
                 array[i] = new float2(i);
             }
 
-            var hashMap = new NativeMultiHashMap<float, float2>(32, Allocator.Temp);
+            var hashMap = new NativeParallelMultiHashMap<float, float2>(32, Allocator.Temp);
 
             var v0 = array.Slice().SliceWithStride<float>();
             var v1 = array.Slice().SliceWithStride<float>(UnsafeUtility.SizeOf<float>());
@@ -98,7 +98,7 @@ namespace BovineLabs.Core.Tests.Extensions
             var length = 9;
             var split = 3;
 
-            var hashMap = new NativeMultiHashMap<int, short>(4, Allocator.Temp);
+            var hashMap = new NativeParallelMultiHashMap<int, short>(4, Allocator.Temp);
             var values = new NativeArray<short>(length, Allocator.Temp);
 
             var key = 23;

@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Editor.PropertyDrawers
 {
     using System.Collections.Generic;
+    using System.Linq;
     using BovineLabs.Core.Editor.SearchWindow;
     using BovineLabs.Core.PropertyDrawers;
     using BovineLabs.Core.Utility;
@@ -146,6 +147,11 @@ namespace BovineLabs.Core.Editor.PropertyDrawers
                 }
 
                 if (!attribute.AllowUnityNamespace && (type.Namespace != null) && type.Namespace.StartsWith("Unity"))
+                {
+                    continue;
+                }
+
+                if (attribute.BaseType != null && attribute.BaseType.Any(baseType => !baseType.IsAssignableFrom(type)))
                 {
                     continue;
                 }

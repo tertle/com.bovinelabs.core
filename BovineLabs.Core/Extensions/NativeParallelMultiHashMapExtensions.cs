@@ -10,11 +10,11 @@ namespace BovineLabs.Core.Extensions
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Extensions for <see cref="NativeMultiHashMap{TKey,TValue}" />. </summary>
-    public static unsafe class NativeMultiHashMapExtensions
+    /// <summary> Extensions for <see cref="NativeParallelMultiHashMap{TKey,TValue}" />. </summary>
+    public static unsafe class NativeParallelMultiHashMapExtensions
     {
         /// <summary>
-        /// Clear a <see cref="NativeMultiHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
+        /// Clear a <see cref="NativeParallelMultiHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <param name="hashMap"> The hashmap to clear and add to. </param>
@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Extensions
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
         public static void ClearAndAddBatch<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeArray<TKey> keys,
             [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -60,7 +60,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Clear a <see cref="NativeMultiHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
+        /// Clear a <see cref="NativeParallelMultiHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <param name="hashMap"> The hashmap to clear and add to. </param>
@@ -69,7 +69,7 @@ namespace BovineLabs.Core.Extensions
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
         public static void ClearAndAddBatch<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeSlice<TKey> keys,
             [NoAlias] NativeSlice<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -110,7 +110,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Efficiently add a collection of keys and values to a <see cref="NativeMultiHashMap{TKey,TValue}" />.
+        /// Efficiently add a collection of keys and values to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
@@ -120,7 +120,7 @@ namespace BovineLabs.Core.Extensions
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeArray<TKey> keys,
             [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -131,7 +131,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] TKey* keys,
             [NoAlias] TValue* values,
             int length)
@@ -172,7 +172,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Efficiently add a collection of keys and values to a <see cref="NativeMultiHashMap{TKey,TValue}" />.
+        /// Efficiently add a collection of keys and values to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <param name="hashMap"> The hashmap to clear and add to. </param>
@@ -181,7 +181,7 @@ namespace BovineLabs.Core.Extensions
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeSlice<TKey> keys,
             [NoAlias] NativeSlice<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -225,7 +225,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Efficiently add a collection of keys and values to a <see cref="NativeMultiHashMap{TKey,TValue}" />.
+        /// Efficiently add a collection of keys and values to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <param name="hashMap"> The hashmap to clear and add to. </param>
@@ -234,7 +234,7 @@ namespace BovineLabs.Core.Extensions
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeSlice<TKey> keys,
             [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -277,7 +277,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Efficiently adds a collection of values for a single key and values to a <see cref="NativeMultiHashMap{TKey,TValue}" />.
+        /// Efficiently adds a collection of values for a single key and values to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
@@ -288,7 +288,7 @@ namespace BovineLabs.Core.Extensions
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap,
             TKey key,
             [NoAlias] TValue* values,
             int length)
@@ -330,7 +330,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Efficiently adds a collection of values for a single key and values to a <see cref="NativeMultiHashMap{TKey,TValue}" />.
+        /// Efficiently adds a collection of values for a single key and values to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
         /// This is much faster than iterating and using Add.
         /// </summary>
         /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
@@ -340,7 +340,7 @@ namespace BovineLabs.Core.Extensions
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap,
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap,
             [NoAlias] TKey key,
             [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -381,7 +381,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
             [NoAlias] NativeArray<TKey> keys,
             [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -392,7 +392,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
             [NoAlias] TKey* keys,
             [NoAlias] TValue* values,
             int length)
@@ -403,7 +403,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
             [NoAlias] NativeArray<TKey> keys)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -412,7 +412,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
             [NoAlias] TKey* keys,
             int length)
             where TKey : unmanaged, IEquatable<TKey>
@@ -422,7 +422,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static void RecalculateBuckets<TKey, TValue>(
-            [NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap)
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -444,14 +444,14 @@ namespace BovineLabs.Core.Extensions
             }
         }
 
-        public static void SetAllocatedIndexLength<TKey, TValue>([NoAlias] this NativeMultiHashMap<TKey, TValue> hashMap, int length)
+        public static void SetAllocatedIndexLength<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, int length)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
             hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength = length;
         }
 
-        public static TKey FirstKey<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> map)
+        public static TKey FirstKey<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> map)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -459,11 +459,11 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static bool TryGetFirstKeyValue<TKey, TValue>(
-            this NativeMultiHashMap<TKey, TValue> map,
+            this NativeParallelMultiHashMap<TKey, TValue> map,
             TKey key,
             out TKey storedKey,
             out TValue item,
-            out NativeMultiHashMapIterator<TKey> it)
+            out NativeParallelMultiHashMapIterator<TKey> it)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -472,10 +472,10 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static bool TryGetNextKeyValue<TKey, TValue>(
-            this NativeMultiHashMap<TKey, TValue> map,
+            this NativeParallelMultiHashMap<TKey, TValue> map,
             out TKey storedKey,
             out TValue item,
-            ref NativeMultiHashMapIterator<TKey> it)
+            ref NativeParallelMultiHashMapIterator<TKey> it)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -488,7 +488,7 @@ namespace BovineLabs.Core.Extensions
             TKey key,
             out TKey storedKey,
             out TValue item,
-            out NativeMultiHashMapIterator<TKey> it)
+            out NativeParallelMultiHashMapIterator<TKey> it)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -513,7 +513,7 @@ namespace BovineLabs.Core.Extensions
             UnsafeParallelHashMapData* data,
             out TKey storedKey,
             out TValue item,
-            ref NativeMultiHashMapIterator<TKey> it)
+            ref NativeParallelMultiHashMapIterator<TKey> it)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -572,7 +572,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckRead<TKey, TValue>(NativeMultiHashMap<TKey, TValue> map)
+        private static void CheckRead<TKey, TValue>(NativeParallelMultiHashMap<TKey, TValue> map)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
