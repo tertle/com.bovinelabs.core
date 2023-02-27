@@ -7,7 +7,9 @@ namespace BovineLabs.Core.Authoring
 {
     using Unity.Burst;
     using Unity.Entities;
+#if UNITY_NETCODE
     using Unity.NetCode;
+#endif
 
     [UpdateInGroup(typeof(PostBakingSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
@@ -22,7 +24,7 @@ namespace BovineLabs.Core.Authoring
             foreach (var (linkedEntityGroup, entity) in SystemAPI
                          .Query<DynamicBuffer<LinkedEntityGroup>>()
 #if UNITY_NETCODE
-                         .WithNone<GhostComponent>()
+                         .WithNone<GhostAuthoringComponentBakingData>()
 #endif
                          .WithEntityAccess()
                          .WithOptions(EntityQueryOptions.IncludePrefab | EntityQueryOptions.IncludeDisabledEntities))

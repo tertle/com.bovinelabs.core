@@ -14,21 +14,16 @@ namespace BovineLabs.Core.Editor.SubScenes
     [CustomEditor(typeof(SubSceneLoadConfig))]
     public class SubSceneLoadConfigEditor : Editor
     {
-        private VisualElement autoLoadInspector;
+        private Toggle autoLoadInspector;
         private VisualElement boundingVolumeInspector;
-
         private VisualElement customDrawers;
-
         private VisualElement inspector;
+
         private SerializedProperty isRequired;
         private SerializedProperty loadMaxDistanceOverride;
         private SerializedProperty loadMode;
-        private VisualElement onDemandInspector;
-        private SerializedProperty subSceneID;
         private SerializedProperty targetWorld;
         private SerializedProperty unloadMaxDistanceOverride;
-
-        private SubSceneLoadConfig SubSceneLoadConfig => (SubSceneLoadConfig)this.target;
 
         internal void OnEnable()
         {
@@ -37,7 +32,6 @@ namespace BovineLabs.Core.Editor.SubScenes
             this.isRequired = this.serializedObject.FindProperty("isRequired");
             this.loadMaxDistanceOverride = this.serializedObject.FindProperty("loadMaxDistanceOverride");
             this.unloadMaxDistanceOverride = this.serializedObject.FindProperty("unloadMaxDistanceOverride");
-            this.subSceneID = this.serializedObject.FindProperty("subSceneID");
         }
 
         public override VisualElement CreateInspectorGUI()
@@ -48,25 +42,42 @@ namespace BovineLabs.Core.Editor.SubScenes
             this.inspector.Add(new PropertyField(this.targetWorld));
             var loadModeProperty = new PropertyField(this.loadMode);
             this.inspector.Add(loadModeProperty);
-            loadModeProperty.RegisterValueChangeCallback(evt => this.Rebuild());
+            loadModeProperty.RegisterValueChangeCallback(_ => this.Rebuild());
 
             this.customDrawers = new VisualElement();
             this.inspector.Add(this.customDrawers);
 
-            this.autoLoadInspector = new VisualElement();
-            this.autoLoadInspector.Add(new PropertyField(this.isRequired));
+            // NOTE: can not for the life of me get UI Toolkit to render this properly if it isn't selected at start so just using regular fields
+            this.autoLoadInspector = new Toggle(this.isRequired.displayName) { value = this.isRequired.boolValue };
+            this.autoLoadInspector.RegisterValueChangedCallback(evt =>
+            {
+                this.isRequired.boolValue = evt.newValue;
+                this.serializedObject.ApplyModifiedProperties();
+            });
 
             var loadDistanceFoldout = new Foldout
             {
                 text = "Load Distance Override",
                 value = this.loadMaxDistanceOverride.floatValue > 0,
             };
-            loadDistanceFoldout.Add(new PropertyField(this.loadMaxDistanceOverride));
-            loadDistanceFoldout.Add(new PropertyField(this.unloadMaxDistanceOverride));
-            this.boundingVolumeInspector = loadDistanceFoldout;
 
-            this.onDemandInspector = new VisualElement();
-            this.onDemandInspector.Add(new PropertyField(this.subSceneID));
+            var load = new FloatField(this.loadMaxDistanceOverride.displayName) { value = this.loadMaxDistanceOverride.floatValue };
+            var unload = new FloatField(this.unloadMaxDistanceOverride.displayName) { value = this.unloadMaxDistanceOverride.floatValue };
+            load.RegisterValueChangedCallback(evt =>
+            {
+                this.loadMaxDistanceOverride.floatValue = evt.newValue;
+                this.serializedObject.ApplyModifiedProperties();
+            });
+            unload.RegisterValueChangedCallback(evt =>
+            {
+                this.unloadMaxDistanceOverride.floatValue = evt.newValue;
+                this.serializedObject.ApplyModifiedProperties();
+            });
+
+            loadDistanceFoldout.Add(load);
+            loadDistanceFoldout.Add(unload);
+
+            this.boundingVolumeInspector = loadDistanceFoldout;
 
             this.Rebuild();
 
@@ -85,11 +96,6 @@ namespace BovineLabs.Core.Editor.SubScenes
                 this.customDrawers.Remove(this.boundingVolumeInspector);
             }
 
-            if (this.onDemandInspector.parent != null)
-            {
-                this.customDrawers.Remove(this.onDemandInspector);
-            }
-
             var loadModeIndex = this.loadMode.enumValueIndex;
             switch ((SubSceneLoadMode)loadModeIndex)
             {
@@ -100,7 +106,6 @@ namespace BovineLabs.Core.Editor.SubScenes
                     this.customDrawers.Add(this.boundingVolumeInspector);
                     break;
                 case SubSceneLoadMode.OnDemand:
-                    this.customDrawers.Add(this.onDemandInspector);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

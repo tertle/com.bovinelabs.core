@@ -5,8 +5,10 @@
 namespace BovineLabs.Core.Editor.ChangeFilterTracking
 {
     using System.Collections.Generic;
+    using BovineLabs.Core.Extensions;
     using Unity.Entities;
     using Unity.Entities.Editor;
+    using Unity.Mathematics;
     using UnityEditor;
     using UnityEngine.UIElements;
     using UITemplate = BovineLabs.Core.Editor.UI.UITemplate;
@@ -22,11 +24,13 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
 
         private readonly List<ComponentData> sources = new();
 
-        private VisualElement root;
-        private ListView listView;
-        private World world;
+        private readonly List<VisualElement> elements = new();
 
         private double lastUpdateTime;
+        private ListView listView;
+
+        private VisualElement root;
+        private World world;
 
         public ChangeFilterTrackingWindow()
             : base(Analytics.Window.Unknown)
@@ -40,59 +44,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
             window.Show();
         }
 
-        protected override void OnUpdate()
-        {
-            if (this.world == null)
-            {
-                return;
-            }
-
-            if (EditorApplication.timeSinceStartup < this.lastUpdateTime + UpdateRate)
-            {
-                return;
-            }
-
-            var systemHandle = this.world.Unmanaged.GetExistingUnmanagedSystem<ChangeFilterTrackingSystem>();
-            if (systemHandle == SystemHandle.Null)
-            {
-                return;
-            }
-
-            ref var systemState = ref this.world.Unmanaged.GetExistingSystemState<ChangeFilterTrackingSystem>();
-            ref var system = ref this.world.Unmanaged.GetUnsafeSystemRef<ChangeFilterTrackingSystem>(systemHandle);
-            systemState.Dependency.Complete();
-
-            var typeTracks = system.TypeTracks;
-
-            if (this.sources.Count == 0)
-            {
-                // Initial setup
-                foreach (var t in typeTracks)
-                {
-                    this.sources.Add(new ComponentData { Name = t.TypeName.ToString() });
-                }
-            }
-
-            for (var index = 0; index < typeTracks.Length; index++)
-            {
-                var t = typeTracks[index];
-                var source = this.sources[index];
-                source.Short = t.Short.Value;
-                source.Long = t.Long.Value;
-            }
-
-            // TODO we could just write direct to the element instead of rebuilding
-            this.listView.Rebuild();
-        }
-
-        protected override void OnWorldSelected(World newWorld)
-        {
-            this.world = newWorld;
-            this.sources.Clear();
-            this.listView.Rebuild();
-        }
-
-        private void OnEnable()
+        public void OnEnable()
         {
             Resources.AddCommonVariables(this.rootVisualElement);
 
@@ -108,6 +60,83 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
 
             this.CreateToolBar(this.root);
             this.CreateListView(this.root);
+        }
+
+        protected override void OnUpdate()
+        {
+            if (this.world == null)
+            {
+                return;
+            }
+
+            if (EditorApplication.timeSinceStartup < this.lastUpdateTime + UpdateRate)
+            {
+                return;
+            }
+
+            this.lastUpdateTime = EditorApplication.timeSinceStartup;
+
+            var systemHandle = this.world.Unmanaged.GetExistingUnmanagedSystem<ChangeFilterTrackingSystem>();
+            if (systemHandle == SystemHandle.Null)
+            {
+                return;
+            }
+
+            ref var systemState = ref this.world.Unmanaged.GetExistingSystemState<ChangeFilterTrackingSystem>();
+            ref var system = ref this.world.Unmanaged.GetUnsafeSystemRef<ChangeFilterTrackingSystem>(systemHandle);
+            systemState.Dependency.Complete();
+
+            var typeTracks = system.TypeTracks;
+
+            var rebuild = this.sources.Count != typeTracks.Length;
+
+            if (rebuild)
+            {
+                this.sources.Clear();
+
+                // Initial setup
+                foreach (var t in typeTracks)
+                {
+                    this.sources.Add(new ComponentData
+                    {
+                        Name = t.TypeName.ToString(),
+                        Short = t.Short.Value,
+                        Long = t.Long.Value,
+                    });
+                }
+
+                this.listView.Rebuild();
+            }
+            else
+            {
+                for (var index = 0; index < typeTracks.Length; index++)
+                {
+                    var t = typeTracks[index];
+                    var source = this.sources[index];
+
+                    if (math.abs(source.Short - t.Short.Value) > float.Epsilon ||
+                        math.abs(source.Long - t.Long.Value) > float.Epsilon)
+                    {
+                        source.Short = t.Short.Value;
+                        source.Long = t.Long.Value;
+                        ApplyElement(this.elements[index], source);
+                    }
+                }
+            }
+        }
+
+        protected override void OnWorldSelected(World newWorld)
+        {
+            this.world = newWorld;
+            this.sources.Clear();
+            this.listView.Rebuild();
+        }
+
+        private static void ApplyElement(VisualElement element, ComponentData itemData)
+        {
+            element.Q<Label>("column1").text = itemData.Name;
+            element.Q<Label>("column2").text = $"{itemData.Short:0.00%}";
+            element.Q<Label>("column3").text = $"{itemData.Long:0.00%}";
         }
 
         private void CreateToolBar(VisualElement rootElement)
@@ -134,18 +163,21 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
             this.listView.makeItem = () => TreeViewItemTemplate.Clone();
             this.listView.bindItem = (element, item) =>
             {
-                var itemData = this.sources[item];
-                element.Q<Label>("column1").text = itemData.Name;
-                element.Q<Label>("column2").text = $"{itemData.Short:0.00%}";
-                element.Q<Label>("column3").text = $"{itemData.Long:0.00%}";
+                if (item >= this.elements.Count)
+                {
+                    this.elements.Resize(item + 1);
+                }
+
+                this.elements[item] = element;
+                ApplyElement(element, this.sources[item]);
             };
         }
 
         private class ComponentData
         {
+            public float Long;
             public string Name;
             public float Short;
-            public float Long;
         }
     }
 }

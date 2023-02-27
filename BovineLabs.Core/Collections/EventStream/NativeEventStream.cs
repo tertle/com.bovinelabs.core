@@ -19,6 +19,9 @@ namespace BovineLabs.Core.Collections
     [NativeContainer]
     public partial struct NativeEventStream : IDisposable, IEquatable<NativeEventStream>
     {
+        /// <summary> Gets the number of streams the list can use. </summary>
+        public const int ForEachCount = UnsafeEventStream.ForEachCount;
+
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Required by safety injection.")]
         private AtomicSafetyHandle m_Safety;

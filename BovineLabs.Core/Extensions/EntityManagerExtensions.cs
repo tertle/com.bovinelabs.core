@@ -9,11 +9,16 @@ namespace BovineLabs.Core.Extensions
     using Unity.Entities;
 
     /// <summary> Extensions for <see cref="EntityManager" />. </summary>
-    public static class EntityManagerExtensions
+    public static unsafe class EntityManagerExtensions
     {
         private const EntityQueryOptions QueryOptions = EntityQueryOptions.IncludeSystems;
 
-        public static unsafe SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
+        public static int NumberOfArchetype(this EntityManager entityManager)
+        {
+            return entityManager.GetCheckedEntityDataAccess()->EntityComponentStore->m_Archetypes.Length;
+        }
+
+        public static SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
             where T : struct, ISharedComponentData
         {
             EntityDataAccess* access = entityManager.GetCheckedEntityDataAccess();
@@ -26,7 +31,7 @@ namespace BovineLabs.Core.Extensions
 #endif
         }
 
-        public static unsafe SharedComponentLookup<T> GetSharedComponentLookup<T>(this EntityManager entityManager, bool isReadOnly = true)
+        public static SharedComponentLookup<T> GetSharedComponentLookup<T>(this EntityManager entityManager, bool isReadOnly = true)
             where T : unmanaged, ISharedComponentData
         {
             var access = entityManager.GetCheckedEntityDataAccess();
@@ -39,13 +44,13 @@ namespace BovineLabs.Core.Extensions
 #endif
         }
 
-        internal static unsafe UnsafeEnableableLookup GetUnsafeEnableableLookup(this EntityManager entityManager)
+        internal static UnsafeEnableableLookup GetUnsafeEnableableLookup(this EntityManager entityManager)
         {
             var access = entityManager.GetCheckedEntityDataAccess();
             return new UnsafeEnableableLookup(access);
         }
 
-        internal static unsafe DidChangeLookup<T> DidChangeLookup<T>(this EntityManager entityManager)
+        internal static DidChangeLookup<T> DidChangeLookup<T>(this EntityManager entityManager)
             where T : unmanaged
         {
             var access = entityManager.GetCheckedEntityDataAccess();
