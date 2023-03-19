@@ -8,7 +8,7 @@ namespace BovineLabs.Core.Destroy
 
     [UpdateAfter(typeof(EndSimulationEntityCommandBufferSystem))]
     [UpdateInGroup(typeof(SimulationSystemGroup), OrderLast = true)]
-    public class DestroySystemGroup : ComponentSystemGroup
+    public partial class DestroySystemGroup : ComponentSystemGroup
     {
     }
 }

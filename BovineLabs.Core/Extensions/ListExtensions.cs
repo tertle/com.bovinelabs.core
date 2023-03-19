@@ -89,7 +89,7 @@ namespace BovineLabs.Core.Extensions
             NoAllocHelpers.ResizeList(list, newLength);
         }
 
-        public static void Resize<T>(this List<T> list, int size, T element = default(T))
+        public static void Resize<T>(this List<T> list, int size, T element)
         {
             int count = list.Count;
 

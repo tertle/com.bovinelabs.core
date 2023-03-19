@@ -2,6 +2,8 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#pragma warning disable CS8632
+
 namespace BovineLabs.Core.UI
 {
     using System;
@@ -26,6 +28,8 @@ namespace BovineLabs.Core.UI
             this.activators.Add(new ManipulatorActivationFilter { button = MouseButton.LeftMouse });
             this.activators.Add(new ManipulatorActivationFilter { button = MouseButton.RightMouse });
             this.activators.Add(new ManipulatorActivationFilter { button = MouseButton.MiddleMouse });
+
+            this.scheduler = this.target.schedule.Execute(() => { });
         }
 
         /// <summary> Gets mouse events for any button. </summary>
@@ -71,7 +75,7 @@ namespace BovineLabs.Core.UI
 
             if (this.clickLimit > 0)
             {
-                if (this.scheduler == null)
+                if (!this.scheduler.isActive)
                 {
                     this.scheduler = this.target.schedule.Execute(() => this.delayElapsed = true).StartingIn(this.clickLimit);
                 }
@@ -150,7 +154,7 @@ namespace BovineLabs.Core.UI
             if (this.clickLimit > 0)
             {
                 // Repeatable button clicks are performed on the MouseDown and at timer events only
-                this.scheduler?.Pause();
+                this.scheduler.Pause();
             }
 
             if (!this.delayElapsed && this.target.ContainsPoint(evt.localMousePosition))
@@ -191,19 +195,19 @@ namespace BovineLabs.Core.UI
         public class Events
         {
             /// <summary> Fired when the mouse clicked. </summary>
-            public event Action<MouseUpEvent> Clicked;
+            public event Action<MouseUpEvent>? Clicked;
 
             /// <summary> Fired when the mouse button is pressed. </summary>
-            public event Action<MouseDownEvent> Down;
+            public event Action<MouseDownEvent>? Down;
 
             /// <summary> Fired when the mouse button is dragged and moves. </summary>
-            public event Action<MouseMoveEvent> Dragged;
+            public event Action<MouseMoveEvent>? Dragged;
 
             /// <summary> Fired when the mouse button is moved. </summary>
-            public event Action<MouseMoveEvent> Move;
+            public event Action<MouseMoveEvent>? Move;
 
             /// <summary> Fired when the mouse is released. </summary>
-            public event Action<MouseUpEvent> Up;
+            public event Action<MouseUpEvent>? Up;
 
             internal void OnClicked(MouseUpEvent evt)
             {

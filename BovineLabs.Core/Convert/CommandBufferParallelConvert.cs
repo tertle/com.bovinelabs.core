@@ -13,7 +13,8 @@ namespace BovineLabs.Core.Convert
         private EntityCommandBuffer.ParallelWriter commandBuffer;
         private BlobAssetStore blobAssetStore;
 
-        public CommandBufferParallelConvert(EntityCommandBuffer.ParallelWriter commandBuffer,
+        public CommandBufferParallelConvert(
+            EntityCommandBuffer.ParallelWriter commandBuffer,
             int sortKey,
             Entity entity,
             BlobAssetStore blobAssetStore = default)
@@ -56,6 +57,17 @@ namespace BovineLabs.Core.Convert
             where T : unmanaged, IComponentData
         {
             this.commandBuffer.AddComponent(this.sortKey, this.entity, component);
+        }
+
+        public void AddComponent(in ComponentTypeSet components)
+        {
+            this.commandBuffer.AddComponent(this.sortKey, this.entity, components);
+        }
+
+        public void SetComponent<T>(in T component)
+            where T : unmanaged, IComponentData
+        {
+            this.commandBuffer.SetComponent(this.sortKey, this.entity, component);
         }
 
         public DynamicBuffer<T> AddBuffer<T>()

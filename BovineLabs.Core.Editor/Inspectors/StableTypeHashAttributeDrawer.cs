@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Editor.PropertyDrawers
+namespace BovineLabs.Core.Editor.Inspectors
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -44,7 +44,7 @@ namespace BovineLabs.Core.Editor.PropertyDrawers
                 searchWindow.Items = items;
                 searchWindow.OnSelection += item =>
                 {
-                    var stableTypeHash = (ulong)item.Data;
+                    var stableTypeHash = (ulong)item.Data!;
                     property.longValue = (long)stableTypeHash;
                     property.serializedObject.ApplyModifiedProperties();
 

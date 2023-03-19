@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Authoring
 {
+    using System;
     using System.Linq;
     using Unity.Entities;
     using UnityEngine;
@@ -11,7 +12,7 @@ namespace BovineLabs.Core.Authoring
     public class SettingsAuthoring : MonoBehaviour
     {
         [SerializeField]
-        private Settings.Settings[] settings;
+        private Settings.Settings[] settings = Array.Empty<Settings.Settings>();
 
         public Settings.Settings[] Settings => this.settings;
     }
@@ -20,19 +21,13 @@ namespace BovineLabs.Core.Authoring
     {
         public override void Bake(SettingsAuthoring authoring)
         {
-            if (authoring.Settings == null)
-            {
-                return;
-            }
-
             foreach (var setting in authoring.Settings.Distinct())
             {
                 if (setting == null)
                 {
-                    Debug.LogWarning("Setting is null");
+                    Debug.LogWarning("Setting is not set");
                     continue;
                 }
-
 
                 this.DependsOn(setting);
                 setting.Bake(this);

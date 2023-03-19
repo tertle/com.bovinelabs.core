@@ -34,6 +34,17 @@ namespace BovineLabs.Core.Authoring
             this.baker.AddComponent(component);
         }
 
+        public void AddComponent(in ComponentTypeSet components)
+        {
+            this.baker.AddComponent(components);
+        }
+
+        public void SetComponent<T>(in T component)
+            where T : unmanaged, IComponentData
+        {
+            this.baker.SetComponent(component);
+        }
+
         public DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData
         {

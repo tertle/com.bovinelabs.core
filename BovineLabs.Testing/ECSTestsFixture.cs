@@ -9,25 +9,23 @@ namespace BovineLabs.Testing
     using Unity.Jobs.LowLevel.Unsafe;
     using UnityEngine.LowLevel;
 
-    public abstract class ECSTestsFixture : ECSTestsCommonBase
+    public abstract class ECSTestsFixture
     {
         private bool jobsDebuggerWasEnabled;
         private PlayerLoopSystem previousPlayerLoop;
-        private World previousWorld;
+        private World? previousWorld;
 
-        protected World World { get; private set; }
+        protected World? World { get; private set; }
 
-        protected WorldUnmanaged WorldUnmanaged => this.World.Unmanaged;
+        protected WorldUnmanaged WorldUnmanaged => this.World!.Unmanaged;
 
         protected EntityManager Manager { get; private set; }
 
         protected EntityManager.EntityManagerDebug ManagerDebug { get; private set; }
 
         [SetUp]
-        public override void Setup()
+        public virtual void Setup()
         {
-            base.Setup();
-
             // unit tests preserve the current player loop to restore later, and start from a blank slate.
             this.previousPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
             PlayerLoop.SetPlayerLoop(PlayerLoop.GetDefaultPlayerLoop());
@@ -43,8 +41,6 @@ namespace BovineLabs.Testing
             this.jobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
             JobsUtility.JobDebuggerEnabled = true;
 
-            // JobsUtility.ClearSystemIds();
-
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
             // In case entities journaling is initialized, clear it
             EntitiesJournaling.Clear();
@@ -52,36 +48,22 @@ namespace BovineLabs.Testing
         }
 
         [TearDown]
-        public override void TearDown()
+        public virtual void TearDown()
         {
-            if ((this.World != null) && this.World.IsCreated)
+            // Clean up systems before calling CheckInternalConsistency because we might have filters etc
+            // holding on SharedComponentData making checks fail
+            while (this.World!.Systems.Count > 0)
             {
-                // Clean up systems before calling CheckInternalConsistency because we might have filters etc
-                // holding on SharedComponentData making checks fail
-                while (this.World.Systems.Count > 0)
-                {
-                    this.World.DestroySystemManaged(this.World.Systems[0]);
-                }
-
-                this.ManagerDebug.CheckInternalConsistency();
-
-                this.World.Dispose();
-                this.World = null;
-
-                World.DefaultGameObjectInjectionWorld = this.previousWorld;
-                this.previousWorld = null;
-                this.Manager = default;
+                this.World.DestroySystemManaged(this.World.Systems[0]);
             }
+
+            this.ManagerDebug.CheckInternalConsistency();
+            this.World.Dispose();
+            World.DefaultGameObjectInjectionWorld = this.previousWorld!;
 
             JobsUtility.JobDebuggerEnabled = this.jobsDebuggerWasEnabled;
 
-            // JobsUtility.ClearSystemIds();
-
-#if !UNITY_DOTSRUNTIME
             PlayerLoop.SetPlayerLoop(this.previousPlayerLoop);
-#endif
-
-            base.TearDown();
         }
     }
 }

@@ -16,19 +16,19 @@ namespace BovineLabs.Core.AssetManagement
 
         [SerializeField]
         [UsedImplicitly]
-        private string description;
+        private string description = string.Empty;
 
         [SerializeField]
-        private string friendlyName;
+        private string friendlyName = string.Empty;
 
         [ObjectCategories]
         [SerializeField]
         private byte category;
 
         [SerializeField]
-        private GameObject prefab;
+        private GameObject? prefab;
 
-        public GameObject Prefab
+        public GameObject? Prefab
         {
             get => this.prefab;
             internal set => this.prefab = value;

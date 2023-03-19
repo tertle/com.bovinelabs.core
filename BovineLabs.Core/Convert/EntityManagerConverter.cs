@@ -52,6 +52,17 @@ namespace BovineLabs.Core.Convert
             this.entityManager.AddComponentData(this.entity, component);
         }
 
+        public void AddComponent(in ComponentTypeSet components)
+        {
+            this.entityManager.AddComponent(this.entity, components);
+        }
+
+        public void SetComponent<T>(in T component)
+            where T : unmanaged, IComponentData
+        {
+            this.entityManager.SetComponentData(this.entity, component);
+        }
+
         public DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData
         {

@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Utility
     using System.Collections.Generic;
     using System.Linq;
     using Unity.Collections;
+    using Unity.Entities;
 #if UNITY_EDITOR
     using UnityEditor.Compilation;
 #endif
@@ -16,10 +17,10 @@ namespace BovineLabs.Core.Utility
     public static class ReflectionUtility
     {
 #if UNITY_EDITOR
-        private static Dictionary<string, Assembly> assemblies;
+        // private static Dictionary<string, Assembly>? assemblies = CompilationPipeline.GetAssemblies().ToDictionary(r => r.name, r => r);
 
-        private static Dictionary<string, Assembly> AssembliesMap =>
-            assemblies ??= CompilationPipeline.GetAssemblies().ToDictionary(r => r.name, r => r);
+        private static Dictionary<string, Assembly> AssembliesMap { get; }
+            = CompilationPipeline.GetAssemblies().ToDictionary(r => r.name, r => r);
 #endif
 
         /// <summary> Searches all assemblies to find all types that implement a type. </summary>
@@ -39,7 +40,7 @@ namespace BovineLabs.Core.Utility
         /// <returns> The implementation found. null if default is not set and none were found. </returns>
         /// <exception cref="ArgumentException"> Type is valid. </exception>
         /// <exception cref="InvalidOperationException"> Implementation not found. </exception>
-        public static T GetCustomImplementation<T, TD>()
+        public static T? GetCustomImplementation<T, TD>()
             where TD : T
         {
             return GetCustomImplementation<T>(typeof(TD));
@@ -50,7 +51,7 @@ namespace BovineLabs.Core.Utility
         /// <returns> The implementation found. null if default is not set and none were found. </returns>
         /// <exception cref="ArgumentException"> Type is valid. </exception>
         /// <exception cref="InvalidOperationException"> Implementation not found. </exception>
-        public static T GetCustomImplementation<T>()
+        public static T? GetCustomImplementation<T>()
         {
             return GetCustomImplementation<T>(null);
         }
@@ -224,7 +225,7 @@ namespace BovineLabs.Core.Utility
             return AppDomain.CurrentDomain.GetAssemblies().Where(a => IsAssemblyReferencingAssembly(a, reference));
         }
 
-        private static T GetCustomImplementation<T>(Type defaultImplementation)
+        private static T? GetCustomImplementation<T>(Type? defaultImplementation)
         {
             var type = typeof(T);
             if (!type.IsInterface)

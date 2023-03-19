@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.UI
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Extensions;
@@ -19,16 +20,7 @@ namespace BovineLabs.Core.UI
 
         /// <summary> Initializes a new instance of the <see cref="PopupFlagField" /> class. </summary>
         public PopupFlagField()
-            : this(null, null)
-        {
-        }
-
-        /// <summary> Initializes a new instance of the <see cref="PopupFlagField" /> class. </summary>
-        /// ///
-        /// <param name="displayNames"> The display names. </param>
-        /// <param name="defaultValue"> The default value. </param>
-        public PopupFlagField(string[] displayNames, IReadOnlyList<int> defaultValue = null)
-            : this(null, displayNames, defaultValue)
+            : this(string.Empty, Array.Empty<string>(), Array.Empty<int>())
         {
         }
 
@@ -36,15 +28,20 @@ namespace BovineLabs.Core.UI
         /// <param name="label"> Label. </param>
         /// <param name="displayNames"> The display names. </param>
         /// <param name="defaultValue"> The default value. </param>
-        public PopupFlagField(string label, string[] displayNames = null, IReadOnlyList<int> defaultValue = null)
+        public PopupFlagField(string label, string[] displayNames, IReadOnlyList<int> defaultValue)
             : base(label, displayNames, true)
         {
-            this.rawValue = null;
-            this.defaultValue = defaultValue ?? new int[0];
+            this.rawValue = Array.Empty<int>();
+            this.defaultValue = defaultValue;
 
-            if ((this.DisplayNames != null) && (this.DisplayNames.Count > 0))
+            if (this.DisplayNames.Count > 0)
             {
                 this.SetValueWithoutNotify(this.defaultValue);
+            }
+
+            if (this.rawValue.Count == 0)
+            {
+
             }
 
             this.Menu.selectionChanged += this.MenuOnSelectionChange;
@@ -53,44 +50,24 @@ namespace BovineLabs.Core.UI
         /// <inheritdoc />
         protected override void OnDisplayNamesChanged()
         {
-            this.rawValue = new int[0];
+            this.rawValue = Array.Empty<int>();
             this.SetValueWithoutNotify(this.defaultValue);
         }
 
         /// <inheritdoc />
-        protected override void UpdateText(TextElement textElement)
+        protected override string GetText()
         {
-            if (this.rawValue.Count == 0)
+            return this.rawValue.Count switch
             {
-                textElement.text = this.NoneText;
-            }
-            else if (this.rawValue.Count == 1)
-            {
-                textElement.text = this.DisplayNames[this.rawValue[0]];
-            }
-            else if (this.rawValue.Count == this.DisplayNames.Count)
-            {
-                textElement.text = "[All]";
-            }
-            else
-            {
-                textElement.text = "[Multiple...]";
-            }
+                0 => this.NoneText,
+                1 => this.DisplayNames[this.rawValue[0]],
+                _ => this.rawValue.Count == this.DisplayNames.Count ? "[All]" : "[Multiple...]",
+            };
         }
 
         /// <inheritdoc />
         protected override bool AreEquals(IReadOnlyList<int> t1, IReadOnlyList<int> t2)
         {
-            if ((t1 == null) && (t2 == null))
-            {
-                return true;
-            }
-
-            if ((t1 == null) || (t2 == null))
-            {
-                return false;
-            }
-
             return t1.SequenceEqual(t2);
         }
 
@@ -110,9 +87,7 @@ namespace BovineLabs.Core.UI
 
                 this.selected.Clear();
 
-                var tmp = this.selected;
-                this.selected = this.selected1;
-                this.selected1 = tmp;
+                (this.selected, this.selected1) = (this.selected1, this.selected);
             }
         }
 

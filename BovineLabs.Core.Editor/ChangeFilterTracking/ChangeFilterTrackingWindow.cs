@@ -2,6 +2,8 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#pragma warning disable CS8632
+
 namespace BovineLabs.Core.Editor.ChangeFilterTracking
 {
     using System.Collections.Generic;
@@ -24,13 +26,13 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
 
         private readonly List<ComponentData> sources = new();
 
-        private readonly List<VisualElement> elements = new();
+        private readonly Dictionary<int, VisualElement> elements = new();
 
         private double lastUpdateTime;
-        private ListView listView;
 
-        private VisualElement root;
-        private World world;
+        private ListView? listView;
+        private VisualElement? root;
+        private World? world;
 
         public ChangeFilterTrackingWindow()
             : base(Analytics.Window.Unknown)
@@ -97,15 +99,10 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
                 // Initial setup
                 foreach (var t in typeTracks)
                 {
-                    this.sources.Add(new ComponentData
-                    {
-                        Name = t.TypeName.ToString(),
-                        Short = t.Short.Value,
-                        Long = t.Long.Value,
-                    });
+                    this.sources.Add(new ComponentData(t.TypeName.ToString(), t.Short.Value, t.Long.Value));
                 }
 
-                this.listView.Rebuild();
+                this.listView!.Rebuild();
             }
             else
             {
@@ -129,7 +126,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
         {
             this.world = newWorld;
             this.sources.Clear();
-            this.listView.Rebuild();
+            this.listView!.Rebuild();
         }
 
         private static void ApplyElement(VisualElement element, ComponentData itemData)
@@ -163,21 +160,18 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
             this.listView.makeItem = () => TreeViewItemTemplate.Clone();
             this.listView.bindItem = (element, item) =>
             {
-                if (item >= this.elements.Count)
-                {
-                    this.elements.Resize(item + 1);
-                }
-
                 this.elements[item] = element;
                 ApplyElement(element, this.sources[item]);
             };
         }
 
-        private class ComponentData
+        private record ComponentData(string Name, float Short, float Long)
         {
-            public float Long;
-            public string Name;
-            public float Short;
+            public string Name { get; } = Name;
+
+            public float Short { get; set; } = Short;
+
+            public float Long { get; set; } = Long;
         }
     }
 }

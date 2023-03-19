@@ -38,6 +38,19 @@ namespace BovineLabs.Core.Extensions
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
+        public NativeHashMap<TKey, TValue> HashMap;
+
+        public void Execute()
+        {
+            this.HashMap.Clear();
+        }
+    }
+
+    [BurstCompile]
+    public struct ClearNativeParallelHashMapJob<TKey, TValue> : IJob
+        where TKey : unmanaged, IEquatable<TKey>
+        where TValue : unmanaged
+    {
         public NativeParallelHashMap<TKey, TValue> HashMap;
 
         public void Execute()

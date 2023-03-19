@@ -4,12 +4,9 @@
 
 namespace BovineLabs.Core.Extensions
 {
-    using System.Diagnostics;
     using BovineLabs.Core.Iterators;
-    using Unity.Burst.CompilerServices;
     using Unity.Collections;
     using Unity.Entities;
-    using UnityEngine;
 
     public static class SystemStateExtensions
     {
@@ -30,11 +27,11 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
-        /// Get an <see cref="UnsafeEnableableLookup"/>.
+        /// Get an <see cref="UnsafeEnableableLookup" />.
         /// All components that use this must manually add a dependency to the system for safety.
         /// </summary>
         /// <param name="system"> The system owner. </param>
-        /// <returns>An <see cref="UnsafeEnableableLookup"/>.</returns>
+        /// <returns> An <see cref="UnsafeEnableableLookup" />. </returns>
         public static UnsafeEnableableLookup GetUnsafeEnableableLookup(ref this SystemState system)
         {
             return system.EntityManager.GetUnsafeEnableableLookup();
@@ -184,7 +181,7 @@ namespace BovineLabs.Core.Extensions
             return query.GetSingleton<T>();
         }
 
-        public static bool TryGetManagedSingleton<T>(ref this SystemState state, out T component, bool completeDependency = true)
+        public static bool TryGetManagedSingleton<T>(ref this SystemState state, out T? component, bool completeDependency = true)
             where T : class, IComponentData
         {
             var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(ref state);

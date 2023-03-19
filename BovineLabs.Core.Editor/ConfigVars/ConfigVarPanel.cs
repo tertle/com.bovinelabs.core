@@ -130,7 +130,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
             field.label = configVar.Name;
             field.tooltip = configVar.Description;
             field.value = binding.Value;
-            field.RegisterValueChangedCallback(evt => EditorPrefs.SetString(configVar.Name, evt.newValue.ToString()));
+            field.RegisterValueChangedCallback(evt => EditorPrefs.SetString(configVar.Name, evt.newValue!.ToString()));
             return field;
         }
 

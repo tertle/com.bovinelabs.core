@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Internal
 {
     using System;
     using System.Diagnostics;
+    using Unity.Burst.CompilerServices;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
@@ -17,7 +18,7 @@ namespace BovineLabs.Core.Internal
             SetChangeFilterCheckWriteAndThrow(handle);
 
             var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
-            if (typeIndexInArchetype == -1)
+            if (Hint.Unlikely(typeIndexInArchetype == -1))
             {
                 return;
             }
@@ -32,7 +33,7 @@ namespace BovineLabs.Core.Internal
             SetChangeFilterCheckWriteAndThrow(handle);
 
             var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
-            if (typeIndexInArchetype == -1)
+            if (Hint.Unlikely(typeIndexInArchetype == -1))
             {
                 return;
             }
@@ -47,7 +48,7 @@ namespace BovineLabs.Core.Internal
             SetChangeFilterCheckWriteAndThrow(handle);
 
             var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
-            if (typeIndexInArchetype == -1)
+            if (Hint.Unlikely(typeIndexInArchetype == -1))
             {
                 return;
             }
@@ -62,7 +63,7 @@ namespace BovineLabs.Core.Internal
             SetChangeFilterCheckWriteAndThrow(handle);
 
             var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
-            if (typeIndexInArchetype == -1)
+            if (Hint.Unlikely(typeIndexInArchetype == -1))
             {
                 return;
             }
@@ -76,7 +77,7 @@ namespace BovineLabs.Core.Internal
             SetChangeFilterCheckWriteAndThrow(handle);
 
             var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
-            if (typeIndexInArchetype == -1)
+            if (Hint.Unlikely(typeIndexInArchetype == -1))
             {
                 return;
             }

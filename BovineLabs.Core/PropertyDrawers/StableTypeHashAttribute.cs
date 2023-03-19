@@ -9,20 +9,9 @@ namespace BovineLabs.Core.PropertyDrawers
 
     public class StableTypeHashAttribute : PropertyAttribute, IEquatable<StableTypeHashAttribute>
     {
-        public StableTypeHashAttribute(
-            TypeCategory category,
-            bool onlyZeroSize = false,
-            bool onlyEnableable = false,
-            bool allowUnityNamespace = true,
-            bool allowEditorAssemblies = false,
-            Type[] baseType = null)
+        public StableTypeHashAttribute(TypeCategory category)
         {
             this.Category = category;
-            this.OnlyZeroSize = onlyZeroSize;
-            this.OnlyEnableable = onlyEnableable;
-            this.AllowUnityNamespace = allowUnityNamespace;
-            this.AllowEditorAssemblies = allowEditorAssemblies;
-            this.BaseType = baseType;
         }
 
         [Flags]
@@ -42,15 +31,15 @@ namespace BovineLabs.Core.PropertyDrawers
 
         public TypeCategory Category { get; }
 
-        public bool OnlyZeroSize { get; }
+        public bool OnlyZeroSize { get; set; }
 
-        public bool OnlyEnableable { get; }
+        public bool OnlyEnableable { get; set; }
 
-        public bool AllowUnityNamespace { get; }
+        public bool AllowUnityNamespace { get; set; } = true;
 
-        public bool AllowEditorAssemblies { get; }
+        public bool AllowEditorAssemblies { get; set; }
 
-        public Type[] BaseType { get; }
+        public Type[] BaseType { get; set; } = Type.EmptyTypes;
 
         public bool Equals(StableTypeHashAttribute other)
         {

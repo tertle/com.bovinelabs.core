@@ -10,6 +10,7 @@ namespace BovineLabs.Core.SubScenes
     using BovineLabs.Core.Extensions;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Entities.UniversalDelegates;
     using Unity.Mathematics;
     using Unity.Scenes;
     using UnityEngine;
@@ -22,7 +23,7 @@ namespace BovineLabs.Core.SubScenes
     public partial class SubSceneLoadingSystem : SystemBase
     {
         private readonly Dictionary<SubScene, Entity> requiredScenes = new();
-        private readonly Dictionary<SubSceneLoadConfig, Entity> volumes = new();
+        private readonly List<(SubSceneLoadConfig LoadConfig, Entity Entity)> volumes = new();
         private readonly HashSet<Entity> waitingForLoad = new();
 
         /// <inheritdoc />
@@ -63,7 +64,7 @@ namespace BovineLabs.Core.SubScenes
         private bool IsSceneLoad(Entity entity)
         {
 #if UNITY_EDITOR
-            return SceneSystem.IsSceneLoaded(this.World.Unmanaged, entity) && this.EntityManager.HasComponent<LinkedEntityGroup>(entity);
+            return SceneSystem.IsSceneLoaded(this.World.Unmanaged, entity);// && this.EntityManager.HasComponent<LinkedEntityGroup>(entity);
 #else
             return SceneSystem.IsSceneLoaded(this.World.Unmanaged, entity);
 #endif
@@ -112,7 +113,7 @@ namespace BovineLabs.Core.SubScenes
 
                 if (!isServer && loadingMode == SubSceneLoadMode.BoundingVolume)
                 {
-                    this.volumes.Add(subSceneLoadConfig, entity);
+                    this.volumes.Add((subSceneLoadConfig, entity));
                 }
             }
 
@@ -131,31 +132,26 @@ namespace BovineLabs.Core.SubScenes
 
             this.waitingForLoad.Clear();
 
-            foreach (var subScene in this.volumes)
+            for (var index = this.volumes.Count - 1; index >= 0; index--)
             {
-                var sections = this.EntityManager.GetBuffer<ResolvedSectionEntity>(subScene.Value).ToNativeArray(Allocator.Temp);
-                var bounds = MinMaxAABB.Empty;
-
-                foreach (var section in sections)
+                var subScene = this.volumes[index];
+                var sections = this.EntityManager.GetBuffer<ResolvedSectionEntity>(subScene.Entity).AsNativeArray();
+                var bounds = this.GetBounds(sections);
+                if (!bounds.Equals(MinMaxAABB.Empty))
                 {
-                    Assert.IsTrue(
-                        this.EntityManager.HasComponent<SceneSectionData>(section.SectionEntity),
-                        $"{section.SectionEntity} missing SceneSectionData");
+                    this.EntityManager.AddComponentData(subScene.Entity, new LoadWithBoundingVolume
+                    {
+                        Bounds = bounds,
+                        LoadMaxDistanceOverrideSq = subScene.LoadConfig.LoadMaxDistanceOverride * subScene.LoadConfig.LoadMaxDistanceOverride,
+                        UnloadMaxDistanceOverrideSq = subScene.LoadConfig.UnloadMaxDistanceOverride * subScene.LoadConfig.UnloadMaxDistanceOverride,
+                    });
 
-                    var sceneSectionData = this.EntityManager.GetComponentData<SceneSectionData>(section.SectionEntity);
-                    bounds.Encapsulate(sceneSectionData.BoundingVolume);
+                    this.volumes.RemoveAt(index);
                 }
-
-                this.EntityManager.AddComponentData(subScene.Value, new LoadWithBoundingVolume
-                {
-                    Bounds = bounds,
-                    LoadMaxDistanceOverrideSq = subScene.Key.LoadMaxDistanceOverride * subScene.Key.LoadMaxDistanceOverride,
-                    UnloadMaxDistanceOverrideSq = subScene.Key.UnloadMaxDistanceOverride * subScene.Key.UnloadMaxDistanceOverride,
-                });
             }
 
             // This only needs to be setup once
-            this.volumes.Clear();
+            // this.volumes.Clear();
 
             this.EntityManager.RemoveComponent<PauseGame>(this.SystemHandle);
 
@@ -164,6 +160,25 @@ namespace BovineLabs.Core.SubScenes
 #if !UNITY_EDITOR
             this.Enabled = false;
 #endif
+        }
+
+        private MinMaxAABB GetBounds(NativeArray<ResolvedSectionEntity> sections)
+        {
+            var bounds = MinMaxAABB.Empty;
+
+            foreach (var section in sections)
+            {
+                if (!this.EntityManager.HasComponent<SceneSectionData>(section.SectionEntity))
+                {
+                    // If we don't have a SceneSectionData it means subscene is open and we should always load it
+                    return MinMaxAABB.Empty;
+                }
+
+                var sceneSectionData = this.EntityManager.GetComponentData<SceneSectionData>(section.SectionEntity);
+                bounds.Encapsulate(sceneSectionData.BoundingVolume);
+            }
+
+            return bounds;
         }
     }
 }

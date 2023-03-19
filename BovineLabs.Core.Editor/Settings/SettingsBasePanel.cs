@@ -12,7 +12,6 @@ namespace BovineLabs.Core.Editor.Settings
     using UnityEditor.UIElements;
     using UnityEngine;
     using UnityEngine.UIElements;
-    using Object = UnityEngine.Object;
 
     /// <summary> Base class for implementing the settings UI. </summary>
     /// <typeparam name="T"> The settings type the panel draws. </typeparam>
@@ -20,7 +19,6 @@ namespace BovineLabs.Core.Editor.Settings
         where T : ScriptableObject, ISettings
     {
         private readonly List<string> keywordList = new();
-        private Editor editor;
 
         /// <summary> Initializes a new instance of the <see cref="SettingsBasePanel{T}" /> class. </summary>
         protected SettingsBasePanel()
@@ -32,14 +30,14 @@ namespace BovineLabs.Core.Editor.Settings
             this.GetKeyWords(this.keywordList);
         }
 
+        /// <inheritdoc />
+        public string DisplayName => this.Settings.DisplayName();
+
         /// <summary> Gets the settings that the panel is drawing. </summary>
         protected T Settings { get; }
 
         /// <summary> Gets the <see cref="SerializedObject" /> of the <see cref="Settings" />. </summary>
         protected SerializedObject SerializedObject { get; }
-
-        /// <inheritdoc />
-        public string DisplayName => this.Settings.DisplayName();
 
         /// <summary> Executed when activate is called from the settings window. Can be used to draw using UIElements. </summary>
         /// <remarks>
@@ -56,7 +54,6 @@ namespace BovineLabs.Core.Editor.Settings
         /// <summary> Executed when deactivate is called from teh settings window. </summary>
         public virtual void OnDeactivate()
         {
-            Object.DestroyImmediate(this.editor);
         }
 
         /// <inheritdoc />

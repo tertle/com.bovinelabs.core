@@ -20,9 +20,9 @@ namespace BovineLabs.Core.Editor.DependencyGraph
         private static readonly UITemplate DependencyGraphWindowTemplate = new(RootUIPath + "DependencyGraphWindow");
 
         private readonly List<DependencyData> dependencyData = new();
-        private ScrollView content;
 
-        private DropdownField mode;
+        private ScrollView? content;
+        private DropdownField? mode;
 
         [MenuItem("BovineLabs/Tools/Dependency Graph", priority = 1011)]
         private static void Execute()
@@ -81,7 +81,7 @@ namespace BovineLabs.Core.Editor.DependencyGraph
         {
             this.Clear();
 
-            switch (this.mode.index)
+            switch (this.mode!.index)
             {
                 case 0:
                     this.FindAssetDependencies();
@@ -97,7 +97,7 @@ namespace BovineLabs.Core.Editor.DependencyGraph
         private void Clear()
         {
             this.dependencyData.Clear();
-            this.content.Clear();
+            this.content!.Clear();
         }
 
         private void CreateContent()
@@ -110,11 +110,11 @@ namespace BovineLabs.Core.Editor.DependencyGraph
 
             foreach (var data in this.dependencyData)
             {
-                this.content.Add(CreateAssetButton(data.AssetPath, data.Asset));
+                this.content!.Add(CreateAssetButton(data.AssetPath, data.Asset));
 
                 foreach (var (asset, path) in data.Dependencies)
                 {
-                    this.content.Add(CreateDependencyButton(path, asset, this.mode.index == 0));
+                    this.content.Add(CreateDependencyButton(path, asset, this.mode!.index == 0));
                 }
             }
         }
@@ -133,11 +133,7 @@ namespace BovineLabs.Core.Editor.DependencyGraph
                 var dependencies = new List<string>(AssetDatabase.GetDependencies(path));
                 dependencies.Remove(path); // GetDependencies returns itself
 
-                var data = new DependencyData
-                {
-                    AssetPath = path,
-                    Asset = selected,
-                };
+                var data = new DependencyData(selected, path);
                 data.Dependencies.AddRange(dependencies.Select(s => (AssetDatabase.LoadAssetAtPath<Object>(s), s)));
 
                 this.dependencyData.Add(data);
@@ -160,11 +156,7 @@ namespace BovineLabs.Core.Editor.DependencyGraph
                     continue;
                 }
 
-                var data = new DependencyData
-                {
-                    AssetPath = path,
-                    Asset = selected,
-                };
+                var data = new DependencyData(selected, path);
 
                 this.dependencyData.Add(data);
 
@@ -203,13 +195,13 @@ namespace BovineLabs.Core.Editor.DependencyGraph
             EditorUtility.ClearProgressBar();
         }
 
-        private class DependencyData
+        private record DependencyData(Object Asset, string AssetPath)
         {
             public List<(Object Asset, string Path)> Dependencies { get; } = new();
 
-            public Object Asset { get; set; }
+            public Object Asset { get; } = Asset;
 
-            public string AssetPath { get; set; }
+            public string AssetPath { get; } = AssetPath;
         }
     }
 }

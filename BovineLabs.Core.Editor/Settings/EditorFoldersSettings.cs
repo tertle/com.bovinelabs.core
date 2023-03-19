@@ -48,9 +48,9 @@ namespace BovineLabs.Core.Editor.Settings
         public class KeyPath
         {
             [InspectorReadOnly]
-            public string Key;
+            public string Key = string.Empty;
 
-            public string Path;
+            public string Path = string.Empty;
         }
     }
 }

@@ -17,6 +17,11 @@ namespace BovineLabs.Core.Convert
         void AddComponent<T>(in T component)
             where T : unmanaged, IComponentData;
 
+        void AddComponent(in ComponentTypeSet components);
+
+        void SetComponent<T>(in T component)
+            where T : unmanaged, IComponentData;
+
         DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData;
     }

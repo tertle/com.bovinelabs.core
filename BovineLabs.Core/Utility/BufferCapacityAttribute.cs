@@ -28,7 +28,7 @@ namespace BovineLabs.Core.Utility
     [CreateBefore(typeof(LinkedEntityGroupBakingCleanUp))]
     [UpdateInGroup(typeof(PreBakingSystemGroup), OrderFirst = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
-    public struct ResizeBufferSystem : ISystem
+    public partial struct ResizeBufferSystem : ISystem
     {
         public void OnCreate(ref SystemState state)
         {

@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Packages/com.bovinelabs.core/BovineLabs.Core.Editor/AssemblyBuilder/AssemblyBuilder.uss?fileID=7433441132597879392&amp;guid=fa30cde714e0ef04d8ca4d94a1c56586&amp;type=3#AssemblyBuilder" />
+    <Style src="project://database/Packages/com.bovinelabs.core/Editor%20Default%20Resources/AssemblyBuilder/AssemblyBuilder.uss?fileID=7433441132597879392&amp;guid=fa30cde714e0ef04d8ca4d94a1c56586&amp;type=3#AssemblyBuilder" />
     <ui:VisualElement name="screen" class="screen" style="flex-grow: 1;">
         <ui:VisualElement style="flex-grow: 1;">
             <ui:Label text="Assembly Builder" style="font-size: 22px;" />
@@ -22,8 +22,8 @@
                 </ui:VisualElement>
                 <ui:Label text="Assemblies" style="font-size: 14px; -unity-font-style: bold;" />
                 <ui:VisualElement>
+                    <ui:Toggle label="Main" value="true" class="assembly" />
                     <ui:Toggle label="Data" value="true" class="assembly" />
-                    <ui:Toggle label="Systems" value="true" class="assembly" />
                     <ui:Toggle label="Authoring" value="true" class="assembly" />
                     <ui:Toggle label="Debug" value="false" class="assembly" />
                     <ui:Toggle label="Editor" value="false" class="assembly" />

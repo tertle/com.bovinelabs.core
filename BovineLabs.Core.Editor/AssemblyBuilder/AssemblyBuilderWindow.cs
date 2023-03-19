@@ -12,7 +12,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
     using BovineLabs.Core.Editor.UI;
     using UnityEditor;
     using UnityEngine;
-    using UnityEngine.Assertions;
     using UnityEngine.UIElements;
 
     /// <summary> An editor window that allows easy creation of new assembly definitions. </summary>
@@ -26,8 +25,14 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private const string RootUIPath = "Packages/com.bovinelabs.core/Editor Default Resources/AssemblyBuilder/";
         private static readonly UITemplate AssemblyBuilderTemplate = new(RootUIPath + "AssemblyBuilder");
+        private static readonly Func<string> GetActiveFolderPath;
 
-        private static Func<string> getActiveFolderPath;
+        static AssemblyBuilderWindow()
+        {
+            var projectWindowUtilType = typeof(ProjectWindowUtil);
+            var methodInfo = projectWindowUtilType.GetMethod("GetActiveFolderPath", BindingFlags.Static | BindingFlags.NonPublic);
+            GetActiveFolderPath = (Func<string>)Delegate.CreateDelegate(typeof(Func<string>), methodInfo!);
+        }
 
         [MenuItem("BovineLabs/Tools/Assembly Builder", priority = 1007)]
         private static void ShowWindow()
@@ -36,20 +41,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             var window = (AssemblyBuilderWindow)GetWindow(typeof(AssemblyBuilderWindow));
             window.titleContent = new GUIContent("Assembly Builder");
             window.Show();
-        }
-
-        private static string GetActiveFolderPath()
-        {
-            if (getActiveFolderPath == null)
-            {
-                var projectWindowUtilType = typeof(ProjectWindowUtil);
-                var methodInfo = projectWindowUtilType.GetMethod("GetActiveFolderPath", BindingFlags.Static | BindingFlags.NonPublic);
-                Assert.IsNotNull(methodInfo);
-                getActiveFolderPath = (Func<string>)Delegate.CreateDelegate(typeof(Func<string>), methodInfo);
-                Assert.IsNotNull(getActiveFolderPath);
-            }
-
-            return getActiveFolderPath.Invoke();
         }
 
         private static string GetAssemblyInfoPath(string folder)
@@ -103,8 +94,8 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             // Sort so Data is first, Systems is second, so it can be added to other packages
             assemblyToggles.Sort((t1, t2) => t1.label == "Data" ? -1
                 : t2.label == "Data" ? 1
-                : t1.label == "Systems" ? -1
-                : t2.label == "Systems" ? 1 : 0);
+                : t1.label == "Main" ? -1
+                : t2.label == "Main" ? 1 : 0);
 
             var nameField = this.rootVisualElement.Q<TextField>("name").value;
 
@@ -121,7 +112,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             foreach (var toggle in assemblyToggles)
             {
                 var label = toggle.label;
-                var assemblyName = $"{nameField}.{label}";
+                var assemblyName = label == "Main" ? nameField : $"{nameField}.{label}";
                 var folder = $"{activeFolderPath}/{assemblyName}";
 
                 if (AssetDatabase.IsValidFolder(folder))
@@ -156,28 +147,28 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                     references.Add($"{nameField}.Data");
 
                     // Add the systems reference to other assemblies that isn't authoring or itself
-                    if (label != "Systems" && label != "Authoring")
+                    if (label != "Main" && label != "Authoring")
                     {
-                        references.Add($"{nameField}.Systems");
+                        references.Add($"{nameField}");
                     }
                     else
                     {
                         if (internalAccess)
                         {
-                            if (label == "System")
+                            if (label == "Main")
                             {
-                                this.AddInternalAccess(nameField, folder, "Data", "Systems", "Authoring");
+                                this.AddInternalAccess(nameField, folder, "Data", "Main", "Authoring");
                             }
                             else if (label == "Authoring")
                             {
-                                this.AddInternalAccess(nameField, folder, "Data", "Systems", "Authoring", "Debug");
+                                this.AddInternalAccess(nameField, folder, "Data", "Main", "Authoring", "Debug");
                             }
                         }
                     }
 
                     switch (label)
                     {
-                        case "Systems":
+                        case "Main":
                             break;
 
                         case "Debug":
@@ -229,11 +220,9 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 // Sort alphabetical because it's nicer
                 references.Sort();
 
-                definition.references.AddRange(references/*.Where(r => this.assemblyNameToGUID.ContainsKey(r)).Select(r => this.assemblyNameToGUID[r])*/);
+                definition.references.AddRange(references);
 
                 var json = EditorJsonUtility.ToJson(definition, true);
-
-                // ReSharper disable once StringLiteralTypo
                 var path = $"{folder}/{assemblyName}.asmdef";
                 var asmPath = $"{Directory.GetCurrentDirectory()}/{path}";
                 File.WriteAllText(asmPath, json);
@@ -258,8 +247,8 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
         {
             var otherAssemblies = this.rootVisualElement.Query<Toggle>(className: "assembly")
                 .ToList()
-                .Where(t => ignore == null || !ignore.Contains(t.label))
-                .Select(t => (object)$"{nameField}.{t.label}")
+                .Where(t => !ignore.Contains(t.label))
+                .Select(t => (object)$"{(t.label == "Main" ? nameField : $"{nameField}.{t.label}")}")
                 .ToArray();
 
             var assemblyInfoPath = GetAssemblyInfoPath(folder);

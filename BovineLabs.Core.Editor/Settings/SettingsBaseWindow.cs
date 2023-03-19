@@ -23,20 +23,17 @@ namespace BovineLabs.Core.Editor.Settings
         private readonly UITemplate settingsWindowTemplate = new(RootUIPath + "SettingsWindow");
 
         private readonly List<ISettingsPanel> filteredSettingsPanel = new();
-
         private readonly List<ISettingsPanel> settingPanels = new();
 
-        private ToolbarButton applyButton;
-        private VisualElement contents;
-        private Label contentTitle;
-
-        private ISettingsPanel currentSelection;
-        private ListView list;
-        private ToolbarSearchField searchField;
-        private VisualElement splitter;
+        private VisualElement? contents;
+        private Label? contentTitle;
+        private ISettingsPanel? currentSelection;
+        private ListView? list;
+        private ToolbarSearchField? searchField;
+        private VisualElement? splitter;
+        private VisualElement? toolbar;
 
         private float splitterFlex = 0.2f;
-        private VisualElement toolbar;
 
         /// <summary> Gets the title text for the unity window tab. </summary>
         protected abstract string TitleText { get; }
@@ -76,7 +73,7 @@ namespace BovineLabs.Core.Editor.Settings
 
             this.CleanupUI();
 
-            var flexGrow = this.splitter.Children().First().resolvedStyle.flexGrow;
+            var flexGrow = this.splitter!.Children().First().resolvedStyle.flexGrow;
             EditorPrefs.SetFloat(this.SplitterKey, flexGrow);
 
             EditorApplication.playModeStateChanged -= this.EditorApplicationOnplayModeStateChanged;
@@ -109,7 +106,7 @@ namespace BovineLabs.Core.Editor.Settings
         {
         }
 
-        private static T FindWindowByScope()
+        private static T? FindWindowByScope()
         {
             return Resources.FindObjectsOfTypeAll<T>().FirstOrDefault();
         }
@@ -180,32 +177,32 @@ namespace BovineLabs.Core.Editor.Settings
         private void SelectionChanged()
         {
             this.currentSelection?.OnDeactivate();
-            this.contents.Clear();
-            this.contentTitle.text = string.Empty;
+            this.contents!.Clear();
+            this.contentTitle!.text = string.Empty;
 
-            if ((this.list.selectedIndex < 0) || (this.list.selectedIndex >= this.filteredSettingsPanel.Count))
+            if ((this.list!.selectedIndex < 0) || (this.list.selectedIndex >= this.filteredSettingsPanel.Count))
             {
                 this.currentSelection = null;
                 return;
             }
 
             this.currentSelection = this.filteredSettingsPanel[this.list.selectedIndex];
-            this.currentSelection.OnActivate(this.searchField.value, this.contents);
+            this.currentSelection.OnActivate(this.searchField!.value, this.contents);
             this.contentTitle.text = this.currentSelection.DisplayName;
         }
 
         private void CleanupUI()
         {
             this.searchField.UnregisterValueChangedCallback(this.SearchFiltering);
-            this.list.selectionChanged -= this.SelectionChanged;
-            this.toolbar.Clear();
+            this.list!.selectionChanged -= this.SelectionChanged;
+            this.toolbar!.Clear();
         }
 
         private void SearchFiltering(ChangeEvent<string> evt)
         {
             this.filteredSettingsPanel.Clear();
 
-            var selected = this.list.selectedItem;
+            var selected = this.list!.selectedItem;
 
             if (string.IsNullOrWhiteSpace(evt.newValue))
             {
@@ -217,11 +214,7 @@ namespace BovineLabs.Core.Editor.Settings
                 this.filteredSettingsPanel.AddRange(filtered);
             }
 
-#if UNITY_2021_2_OR_NEWER
             this.list.Rebuild();
-#else
-            this.list.Refresh();
-#endif
 
             // Keep selecting the same panel if possible
             var index = this.filteredSettingsPanel.IndexOf((ISettingsPanel)selected);

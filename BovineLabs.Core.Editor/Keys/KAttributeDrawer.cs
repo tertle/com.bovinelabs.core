@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Editor.Keys
     {
         private static readonly Dictionary<string, KSettings> SettingsMap = new(StringComparer.OrdinalIgnoreCase);
 
-        public static KSettings GetSettingsFile(KAttribute attr)
+        public static KSettings? GetSettingsFile(KAttribute attr)
         {
             if (!SettingsMap.TryGetValue(attr.Settings, out var k))
             {

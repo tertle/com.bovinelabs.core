@@ -12,11 +12,9 @@ namespace BovineLabs.Core.Editor.Inspectors
     internal abstract class BaseFieldInspector<TField, TFieldValue, TValue> : PropertyInspector<TValue>
         where TField : BaseField<TFieldValue>, new()
     {
-        private TField field;
-
         public override VisualElement Build()
         {
-            this.field = new TField
+            var field = new TField
             {
                 name = this.Name,
                 label = this.DisplayName,
@@ -24,8 +22,8 @@ namespace BovineLabs.Core.Editor.Inspectors
                 bindingPath = ".",
             };
 
-            InspectorUtility.AddRuntimeBar(this.field);
-            return this.field;
+            InspectorUtility.AddRuntimeBar(field);
+            return field;
         }
     }
 }

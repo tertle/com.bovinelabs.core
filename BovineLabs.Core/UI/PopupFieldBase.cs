@@ -47,15 +47,13 @@ namespace BovineLabs.Core.UI
             SetInputStyle(this.visualInput);
 
             this.textElement = CreateText();
+            this.textElement.text = this.noneText;
             this.visualInput.Add(this.textElement);
 
             var arrow = CreateArrow();
             this.visualInput.Add(arrow);
 
-            if (displayNames != null)
-            {
-                this.displayNames.AddRange(displayNames);
-            }
+            this.displayNames.AddRange(displayNames);
 
             this.Menu = CreateMenu(this.displayNames, multiSelect);
         }
@@ -75,7 +73,7 @@ namespace BovineLabs.Core.UI
                 }
 
                 this.noneText = value;
-                this.UpdateText(this.textElement);
+                this.textElement.text = this.GetText();
             }
         }
 
@@ -100,7 +98,7 @@ namespace BovineLabs.Core.UI
             if (!this.AreEquals(this.rawValue, newValue))
             {
                 base.SetValueWithoutNotify(newValue);
-                this.UpdateText(this.textElement);
+                this.textElement.text = this.GetText();
             }
         }
 
@@ -108,8 +106,7 @@ namespace BovineLabs.Core.UI
         protected abstract void OnDisplayNamesChanged();
 
         /// <summary> Updating of text requested. </summary>
-        /// <param name="textElement"> The text element. </param>
-        protected abstract void UpdateText(TextElement textElement);
+        protected abstract string GetText();
 
         /// <summary> Implement how equality should be handled. </summary>
         /// <param name="t1"> The first value to compare. </param>

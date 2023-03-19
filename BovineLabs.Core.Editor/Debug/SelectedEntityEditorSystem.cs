@@ -25,9 +25,13 @@ namespace BovineLabs.Core.Editor
         {
             var selectedEntity = default(SelectedEntity);
 
-            if (EntitySelection.IsSelected && EntitySelection.World == this.World)
+            foreach (var proxy in EntitySelection.GetAllSelections())
             {
-                selectedEntity.Value = EntitySelection.Entity;
+                if (proxy.World == this.World)
+                {
+                    selectedEntity.Value = proxy.Entity;
+                    break; // TODO support multiple selections
+                }
             }
 
             SystemAPI.SetSingleton(selectedEntity);

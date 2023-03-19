@@ -14,16 +14,16 @@ namespace BovineLabs.Core.Editor.SubScenes
     [CustomEditor(typeof(SubSceneLoadConfig))]
     public class SubSceneLoadConfigEditor : Editor
     {
-        private Toggle autoLoadInspector;
-        private VisualElement boundingVolumeInspector;
-        private VisualElement customDrawers;
-        private VisualElement inspector;
+        private Toggle? autoLoadInspector;
+        private VisualElement? boundingVolumeInspector;
+        private VisualElement? customDrawers;
+        private VisualElement? inspector;
 
-        private SerializedProperty isRequired;
-        private SerializedProperty loadMaxDistanceOverride;
-        private SerializedProperty loadMode;
-        private SerializedProperty targetWorld;
-        private SerializedProperty unloadMaxDistanceOverride;
+        private SerializedProperty? isRequired;
+        private SerializedProperty? loadMaxDistanceOverride;
+        private SerializedProperty? loadMode;
+        private SerializedProperty? targetWorld;
+        private SerializedProperty? unloadMaxDistanceOverride;
 
         internal void OnEnable()
         {
@@ -48,7 +48,7 @@ namespace BovineLabs.Core.Editor.SubScenes
             this.inspector.Add(this.customDrawers);
 
             // NOTE: can not for the life of me get UI Toolkit to render this properly if it isn't selected at start so just using regular fields
-            this.autoLoadInspector = new Toggle(this.isRequired.displayName) { value = this.isRequired.boolValue };
+            this.autoLoadInspector = new Toggle(this.isRequired!.displayName) { value = this.isRequired.boolValue };
             this.autoLoadInspector.RegisterValueChangedCallback(evt =>
             {
                 this.isRequired.boolValue = evt.newValue;
@@ -58,11 +58,11 @@ namespace BovineLabs.Core.Editor.SubScenes
             var loadDistanceFoldout = new Foldout
             {
                 text = "Load Distance Override",
-                value = this.loadMaxDistanceOverride.floatValue > 0,
+                value = this.loadMaxDistanceOverride!.floatValue > 0,
             };
 
             var load = new FloatField(this.loadMaxDistanceOverride.displayName) { value = this.loadMaxDistanceOverride.floatValue };
-            var unload = new FloatField(this.unloadMaxDistanceOverride.displayName) { value = this.unloadMaxDistanceOverride.floatValue };
+            var unload = new FloatField(this.unloadMaxDistanceOverride!.displayName) { value = this.unloadMaxDistanceOverride.floatValue };
             load.RegisterValueChangedCallback(evt =>
             {
                 this.loadMaxDistanceOverride.floatValue = evt.newValue;
@@ -86,24 +86,24 @@ namespace BovineLabs.Core.Editor.SubScenes
 
         private void Rebuild()
         {
-            if (this.autoLoadInspector.parent != null)
+            if (this.autoLoadInspector!.parent != null)
             {
-                this.customDrawers.Remove(this.autoLoadInspector);
+                this.customDrawers!.Remove(this.autoLoadInspector);
             }
 
-            if (this.boundingVolumeInspector.parent != null)
+            if (this.boundingVolumeInspector!.parent != null)
             {
-                this.customDrawers.Remove(this.boundingVolumeInspector);
+                this.customDrawers!.Remove(this.boundingVolumeInspector);
             }
 
-            var loadModeIndex = this.loadMode.enumValueIndex;
+            var loadModeIndex = this.loadMode!.enumValueIndex;
             switch ((SubSceneLoadMode)loadModeIndex)
             {
                 case SubSceneLoadMode.AutoLoad:
-                    this.customDrawers.Add(this.autoLoadInspector);
+                    this.customDrawers!.Add(this.autoLoadInspector);
                     break;
                 case SubSceneLoadMode.BoundingVolume:
-                    this.customDrawers.Add(this.boundingVolumeInspector);
+                    this.customDrawers!.Add(this.boundingVolumeInspector);
                     break;
                 case SubSceneLoadMode.OnDemand:
                     break;

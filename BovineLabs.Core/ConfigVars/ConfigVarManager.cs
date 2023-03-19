@@ -81,7 +81,7 @@ namespace BovineLabs.Core.ConfigVars
 
                 var container = GetContainer(fieldValue);
 
-                if (container == null)
+                if (container is NullConfigVarContainer)
                 {
                     Debug.LogError($"ConfigVar on field ({field.Name} in {field.DeclaringType?.Name}) of type ({field.FieldType}) is not a supported type");
                     continue;
@@ -146,7 +146,7 @@ namespace BovineLabs.Core.ConfigVars
                 SharedStatic<FixedString128Bytes> stringField128 => new ConfigVarSharedStaticStringContainer<FixedString128Bytes>(stringField128),
                 SharedStatic<FixedString512Bytes> stringField512 => new ConfigVarSharedStaticStringContainer<FixedString512Bytes>(stringField512),
                 SharedStatic<FixedString4096Bytes> stringField4096 => new ConfigVarSharedStaticStringContainer<FixedString4096Bytes>(stringField4096),
-                _ => null,
+                _ => new NullConfigVarContainer(),
             };
         }
     }

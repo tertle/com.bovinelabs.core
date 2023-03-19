@@ -13,7 +13,7 @@ namespace BovineLabs.Core.Utility
     public class BufferCapacitySettings : ScriptableObject, ISettings
     {
         [SerializeField]
-        private NewBufferCapacity[] bufferCapacities;
+        private NewBufferCapacity[] bufferCapacities = Array.Empty<NewBufferCapacity>();
 
         public IReadOnlyList<NewBufferCapacity> BufferCapacities => this.bufferCapacities;
 

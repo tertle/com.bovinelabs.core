@@ -2,6 +2,8 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#nullable disable
+
 namespace BovineLabs.Core.Editor.SearchWindow
 {
     using System;
@@ -19,8 +21,8 @@ namespace BovineLabs.Core.Editor.SearchWindow
         private readonly ListView list;
         private readonly Button returnButton;
         private readonly VisualElement returnIcon;
-        private TreeNode<Item> currentNode;
 
+        private TreeNode<Item> currentNode;
         private List<Item> items;
         private TreeNode<Item> rootNode;
         private TreeNode<Item> searchNode;

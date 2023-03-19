@@ -70,7 +70,7 @@ namespace BovineLabs.Core.Editor.Settings
                 ISettingsPanel panel;
                 try
                 {
-                    panel = Activator.CreateInstance(s.Value) as ISettingsPanel;
+                    panel = (ISettingsPanel)Activator.CreateInstance(s.Value);
                 }
                 catch (Exception ex)
                 {

@@ -40,7 +40,7 @@ namespace BovineLabs.Core
         private LoggerHandle loggerHandle;
         private LogLevel currentLogLevel;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnCreate()
         {
             var netDebugEntity = this.EntityManager.CreateEntity(ComponentType.ReadWrite<BLDebug>());
@@ -60,7 +60,7 @@ namespace BovineLabs.Core
             var logger = new LoggerConfig()
                 .SyncMode.FatalIsSync()
                 .WriteTo.JsonFile(
-                    absFileName: Path.Combine(logDir, "Output.log.json"),
+                    Path.Combine(logDir, "Output.log.json"),
                     minLevel: MinLogLevel,
                     outputTemplate: $"[{{Timestamp}}] {{Level}} | {world} | {{Message}}")
                 .WriteTo.UnityDebugLog(
@@ -69,18 +69,19 @@ namespace BovineLabs.Core
                 .CreateLogger(managerParameters);
 
             this.loggerHandle = logger.Handle;
-            var netDebug = new BLDebug { LoggerHandle = this.loggerHandle };
-
-            this.EntityManager.SetComponentData(netDebugEntity, netDebug);
+            var blDebug = new BLDebug { LoggerHandle = this.loggerHandle };
+            this.EntityManager.SetComponentData(netDebugEntity, blDebug);
 
 #if !BL_DEBUG_UPDATE
             this.Enabled = false;
 #endif
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnDestroy()
         {
+            this.Dependency.Complete();
+
             var debug = SystemAPI.GetSingletonRW<BLDebug>().ValueRW;
 
             var logger = LoggerManager.GetLogger(debug.LoggerHandle);
@@ -88,7 +89,7 @@ namespace BovineLabs.Core
             debug.LoggerHandle = default;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
 #if BL_DEBUG_UPDATE
@@ -107,7 +108,7 @@ namespace BovineLabs.Core
             return (LogLevel)math.clamp(level, 0, (int)Unity.Logging.LogLevel.Fatal);
         }
 
-        /// <summary> <see cref="Unity.Logging.DefaultSettings.GetCurrentAbsoluteLogDirectory"/>. </summary>
+        /// <summary> <see cref="Unity.Logging.DefaultSettings.GetCurrentAbsoluteLogDirectory" />. </summary>
         private static string GetCurrentAbsoluteLogDirectory()
         {
 #if UNITY_DOTSRUNTIME

@@ -40,24 +40,7 @@ namespace BovineLabs.Core.Editor.Settings
         {
             var filter = type.Namespace == null ? type.Name : $"{type.Namespace}.{type.Name}";
             var assets = AssetDatabase.FindAssets($"t:{filter}");
-
-            string asset;
-
-            switch (assets.Length)
-            {
-                case 0:
-                    return null;
-                case 1:
-                    // Return
-                    asset = assets.First();
-                    break;
-                default:
-                    // Error
-                    asset = assets.First();
-                    break;
-            }
-
-            return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(asset));
+            return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(assets.First()));
         }
     }
 }

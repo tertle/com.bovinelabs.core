@@ -44,13 +44,11 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
             int count,
             [Values(1, 3, 10, 128)] int batchSize)
         {
-            var stream = new NativeEventStream(Allocator.TempJob);
+            using var stream = new NativeEventStream(Allocator.TempJob);
             var fillInts = new WriteIntsJob { Writer = stream.AsWriter() };
             fillInts.ScheduleParallel(count, batchSize, default).Complete();
 
             Assert.AreEqual((count * (count - 1)) / 2, stream.Count());
-
-            stream.Dispose();
         }
 
         /// <summary> Tests that writing from job then reading in multiple jobs works. </summary>
@@ -62,7 +60,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
             int count,
             [Values(1, 3, 10)] int batchSize)
         {
-            var stream = new NativeEventStream(Allocator.TempJob);
+            using var stream = new NativeEventStream(Allocator.TempJob);
             var fillInts = new WriteIntsJob { Writer = stream.AsWriter() };
             var jobHandle = fillInts.ScheduleParallel(count, batchSize, default);
 
@@ -72,8 +70,6 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
 
             res0.Complete();
             res1.Complete();
-
-            stream.Dispose();
         }
 
         /// <summary> Tests the container working in an Entities.ForEach in SystemBase. </summary>
@@ -138,16 +134,14 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
             {
                 var arch = this.EntityManager.CreateArchetype(typeof(TestComponent));
 
-                using (var entities = new NativeArray<Entity>(this.count, Allocator.TempJob))
+                using var entities = new NativeArray<Entity>(this.count, Allocator.Temp);
+                this.EntityManager.CreateEntity(arch, entities);
+
+                for (var index = 0; index < entities.Length; index++)
                 {
-                    this.EntityManager.CreateEntity(arch, entities);
+                    var entity = entities[index];
 
-                    for (var index = 0; index < entities.Length; index++)
-                    {
-                        var entity = entities[index];
-
-                        this.EntityManager.SetComponentData(entity, new TestComponent { Value = index });
-                    }
+                    this.EntityManager.SetComponentData(entity, new TestComponent { Value = index });
                 }
 
                 this.hashmap = new NativeParallelHashMap<int, byte>(this.count, Allocator.Persistent);

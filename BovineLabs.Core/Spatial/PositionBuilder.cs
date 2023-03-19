@@ -43,7 +43,7 @@ namespace BovineLabs.Core.Spatial
 
             positions = state.WorldRewindableAllocator.AllocateNativeArray<SpatialPosition>(this.query.CalculateEntityCount());
 
-            var firstEntityIndices = this.query.CalculateBaseEntityIndexArrayAsync(Allocator.TempJob, dependency, out var dependency1);
+            var firstEntityIndices = this.query.CalculateBaseEntityIndexArrayAsync(state.WorldUpdateAllocator, dependency, out var dependency1);
             dependency = JobHandle.CombineDependencies(dependency, dependency1);
 
             dependency = new GatherPositionsJob

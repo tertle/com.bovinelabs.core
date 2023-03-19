@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Editor.AssetManagement
 
             var didChange = false;
 
-            Dictionary<int, int> map = null;
+            Dictionary<int, int>? map = null;
 
             foreach (var importedAsset in importedAssets)
             {

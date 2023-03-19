@@ -28,11 +28,14 @@ namespace BovineLabs.Core.States
                 systemState.RequireForUpdate(query);
             }
 
+            var stateTypeIndex = TypeManager.GetTypeIndex<TState>();
+            var instanceTypeIndex = TypeManager.GetTypeIndex<TInstance>();
+
             systemState.EntityManager.AddComponentData(systemState.SystemHandle, new StateInstance
             {
-                State = TypeManager.GetTypeIndex<TState>(),
+                State = stateTypeIndex,
                 StateKey = stateKey,
-                StateInstanceComponent = ComponentType.ReadOnly<TInstance>().TypeIndex,
+                StateInstanceComponent = instanceTypeIndex,
             });
         }
     }

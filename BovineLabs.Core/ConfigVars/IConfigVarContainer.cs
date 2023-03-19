@@ -16,4 +16,9 @@ namespace BovineLabs.Core.ConfigVars
         /// <summary> Gets or sets the value of the config var. </summary>
         public T Value { get; set; }
     }
+
+    public class NullConfigVarContainer : IConfigVarContainer
+    {
+        public string StringValue { get; set; } = string.Empty;
+    }
 }

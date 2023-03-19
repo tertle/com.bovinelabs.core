@@ -31,21 +31,16 @@ namespace BovineLabs.Core.Keys
         [Multiline]
         [UsedImplicitly]
         [SerializeField]
-        private string description;
+        private string description = string.Empty;
 
         [SerializeField]
-        private NameValue[] keys;
+        private NameValue[] keys = Array.Empty<NameValue>();
 
         public NameValue[] Keys => this.keys;
 
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if (this.Keys == null)
-            {
-                return;
-            }
-
             if (this.keys.Length > KMap.MaxCapacity)
             {
                 var keysOld = this.keys;

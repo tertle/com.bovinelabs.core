@@ -35,13 +35,11 @@ namespace BovineLabs.Core.Tests.Keys
         [Test]
         public void StringWorksInBurst()
         {
-            var result = new NativeReference<uint>(Allocator.TempJob);
+            using var result = new NativeReference<uint>(Allocator.TempJob);
 
             new BurstTest { Result = result }.Schedule().Complete();
 
             Assert.AreEqual(result.Value, 4);
-
-            result.Dispose();
         }
 
         [BurstCompile(CompileSynchronously = true)]

@@ -12,15 +12,17 @@ namespace BovineLabs.Core.Editor.Inspectors
     /// <summary> Provides an editor with custom element but will fall back to PropertyField if not overriden. </summary>
     public abstract class ElementEditor : Editor
     {
-        protected VisualElement Parent { get; private set; }
+        private VisualElement? parent;
+
+        protected VisualElement Parent => this.parent!;
 
         public override VisualElement CreateInspectorGUI()
         {
-            this.Parent = new VisualElement();
+            this.parent = new VisualElement();
 
             foreach (var property in SerializedHelper.IterateAllChildren(this.serializedObject))
             {
-                var element = this.CreateElement(property) ?? CreatePropertyField(property, this.serializedObject);
+                var element = this.CreateElement(property);
                 this.Parent.Add(element);
             }
 
@@ -38,10 +40,10 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         protected virtual VisualElement CreateElement(SerializedProperty property)
         {
-            return null;
+            return CreatePropertyField(property, this.serializedObject);
         }
 
-        protected virtual void PostElementCreation(VisualElement parent)
+        protected virtual void PostElementCreation(VisualElement root)
         {
         }
     }

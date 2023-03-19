@@ -23,27 +23,22 @@ namespace BovineLabs.Core.Editor.UI
             this.ussPath = $"{path}.uss";
         }
 
-        private VisualTreeAsset Template => EditorGUIUtility.Load(this.uxmlPath) as VisualTreeAsset;
+        private VisualTreeAsset Template => (VisualTreeAsset)EditorGUIUtility.Load(this.uxmlPath);
 
         private StyleSheet StyleSheet => AssetDatabase.LoadAssetAtPath<StyleSheet>(this.ussPath);
 
         /// <summary> Clones the template into the given root element and applies the style sheets from the template. </summary>
         /// <param name="root">The element that will serve as the root for cloning the template.</param>
         /// <returns> Returns the updated root for convenience. </returns>
-        public VisualElement Clone(VisualElement root = null)
+        public VisualElement Clone(VisualElement? root = null)
         {
             root = this.CloneTemplate(root);
             this.AddStyleSheetSkinVariant(root);
             return root;
         }
 
-        private VisualElement CloneTemplate(VisualElement element = null)
+        private VisualElement CloneTemplate(VisualElement? element = null)
         {
-            if (this.Template == null)
-            {
-                return element;
-            }
-
             if (element == null)
             {
                 return this.Template.CloneTree();
@@ -53,7 +48,7 @@ namespace BovineLabs.Core.Editor.UI
             return element;
         }
 
-        private void AddStyleSheetSkinVariant(VisualElement element)
+        private void AddStyleSheetSkinVariant(VisualElement? element)
         {
             if (this.StyleSheet == null)
             {

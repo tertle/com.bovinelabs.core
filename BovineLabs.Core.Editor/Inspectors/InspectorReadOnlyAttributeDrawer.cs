@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Editor.PropertyDrawers
+namespace BovineLabs.Core.Editor.Inspectors
 {
     using BovineLabs.Core.PropertyDrawers;
     using UnityEditor;

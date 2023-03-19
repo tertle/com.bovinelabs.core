@@ -21,9 +21,8 @@ namespace BovineLabs.Core.Editor.DependencyGraph
         private static readonly UITemplate AssemblyGraphWindowTemplate = new(RootUIPath + "AssemblyGraphWindow");
 
         private readonly List<DependencyData> dependencyData = new();
-        private ScrollView content;
-
-        private DropdownField mode;
+        private ScrollView? content;
+        private DropdownField? mode;
 
         [MenuItem("BovineLabs/Tools/Assembly Graph", priority = 1011)]
         private static void Execute()
@@ -82,7 +81,7 @@ namespace BovineLabs.Core.Editor.DependencyGraph
         {
             this.Clear();
 
-            switch (this.mode.index)
+            switch (this.mode!.index)
             {
                 case 0:
                     this.FindAssetDependencies();
@@ -98,7 +97,7 @@ namespace BovineLabs.Core.Editor.DependencyGraph
         private void Clear()
         {
             this.dependencyData.Clear();
-            this.content.Clear();
+            this.content!.Clear();
         }
 
         private void CreateContent()
@@ -111,11 +110,11 @@ namespace BovineLabs.Core.Editor.DependencyGraph
 
             foreach (var data in this.dependencyData)
             {
-                this.content.Add(CreateAssetButton(data.AssetPath, data.Asset));
+                this.content!.Add(CreateAssetButton(data.AssetPath, data.Asset));
 
                 foreach (var (asset, path) in data.Dependencies)
                 {
-                    this.content.Add(CreateDependencyButton(path, asset, this.mode.index == 0));
+                    this.content.Add(CreateDependencyButton(path, asset, this.mode!.index == 0));
                 }
             }
         }
@@ -168,11 +167,7 @@ namespace BovineLabs.Core.Editor.DependencyGraph
                     continue;
                 }
 
-                var data = new DependencyData
-                {
-                    AssetPath = path,
-                    Asset = assemblyDefinitionAsset,
-                };
+                var data = new DependencyData(assemblyDefinitionAsset, path);
 
                 this.dependencyData.Add(data);
 
@@ -195,12 +190,8 @@ namespace BovineLabs.Core.Editor.DependencyGraph
 
                 var assemblyDefinition = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>(path);
 
-                var json = JsonUtility.FromJson<AssemblyDefinitionTemplate>(assemblyDefinition.text);
-
-                if (json.references == null)
-                {
-                    continue;
-                }
+                var json = AssemblyDefinitionTemplate.New();
+                JsonUtility.FromJsonOverwrite(assemblyDefinition.text, json);
 
                 foreach (var dependency in json.references)
                 {
@@ -223,13 +214,13 @@ namespace BovineLabs.Core.Editor.DependencyGraph
             EditorUtility.ClearProgressBar();
         }
 
-        private class DependencyData
+        private record DependencyData(AssemblyDefinitionAsset Asset, string AssetPath)
         {
             public List<(AssemblyDefinitionAsset Asset, string Path)> Dependencies { get; } = new();
 
-            public AssemblyDefinitionAsset Asset { get; set; }
+            public AssemblyDefinitionAsset Asset { get; } = Asset;
 
-            public string AssetPath { get; set; }
+            public string AssetPath { get; } = AssetPath;
         }
     }
 }

@@ -2,6 +2,8 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#nullable disable
+
 namespace BovineLabs.Core.Editor.SearchWindow
 {
     using BovineLabs.Core.Editor.UI;

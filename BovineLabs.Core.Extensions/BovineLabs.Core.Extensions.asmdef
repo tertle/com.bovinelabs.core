@@ -22,18 +22,23 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "BL_CORE_EXTENSIONS || BL_GAME"
+        "BL_CORE_EXTENSIONS"
     ],
     "versionDefines": [
-        {
-            "name": "com.bovinelabs.game",
-            "expression": "",
-            "define": "BL_GAME"
-        },
         {
             "name": "com.unity.netcode",
             "expression": "",
             "define": "UNITY_NETCODE"
+        },
+        {
+            "name": "com.bovinelabs.game",
+            "expression": "",
+            "define": "BL_CORE_EXTENSIONS"
+        },
+        {
+            "name": "com.bovinelabs.camera",
+            "expression": "",
+            "define": "BL_CORE_EXTENSIONS"
         }
     ],
     "noEngineReferences": false

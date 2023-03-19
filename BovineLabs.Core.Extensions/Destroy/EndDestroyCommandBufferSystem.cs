@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Destroy
     using Unity.Entities;
 
     [UpdateInGroup(typeof(DestroySystemGroup), OrderLast = true)]
-    public unsafe class EndDestroyCommandBufferSystem : EntityCommandBufferSystem
+    public unsafe partial class EndDestroyCommandBufferSystem : EntityCommandBufferSystem
     {
         protected override void OnCreate()
         {

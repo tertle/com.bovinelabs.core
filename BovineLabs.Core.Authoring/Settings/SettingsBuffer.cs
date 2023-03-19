@@ -13,18 +13,13 @@ namespace BovineLabs.Core.Authoring.Settings
         where T : unmanaged, IBufferElementData
     {
         [SerializeField]
-        private T[] buffer;
+        private T[] buffer = Array.Empty<T>();
 
         /// <summary> Gets or sets the component. </summary>
         public T[] Buffer
         {
             get => this.buffer;
             protected internal set => this.buffer = value;
-        }
-
-        private void Reset()
-        {
-            this.buffer = this.GetDefaults();
         }
 
         /// <inheritdoc />
@@ -49,7 +44,12 @@ namespace BovineLabs.Core.Authoring.Settings
         /// <returns> The default values for the component. </returns>
         protected virtual T[] GetDefaults()
         {
-            return default;
+            return Array.Empty<T>();
+        }
+
+        private void Reset()
+        {
+            this.buffer = this.GetDefaults();
         }
     }
 }

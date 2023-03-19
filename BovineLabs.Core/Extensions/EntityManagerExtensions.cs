@@ -202,7 +202,7 @@ namespace BovineLabs.Core.Extensions
 
 #if !UNITY_DISABLE_MANAGED_COMPONENTS
         public static T GetManagedSingleton<T>(this EntityManager em, bool completeDependency = true)
-            where T : class, IComponentData
+            where T : class
         {
             var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
             if (completeDependency)
@@ -213,8 +213,8 @@ namespace BovineLabs.Core.Extensions
             return query.GetSingleton<T>();
         }
 
-        public static bool TryGetManagedSingleton<T>(this EntityManager em, out T component, bool completeDependency = true)
-            where T : class, IComponentData
+        public static bool TryGetManagedSingleton<T>(this EntityManager em, out T? component, bool completeDependency = true)
+            where T : class
         {
             var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
 

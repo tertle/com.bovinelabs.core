@@ -28,7 +28,7 @@ namespace BovineLabs.Core.Editor.Hierarchy
             @$"\b(?<token>[nN]{Constants.ComponentSearch.Op})\s*(?<componentType>(\S)*)",
             RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.ExplicitCapture);
 
-        private static HierarchyWindow currentWindow;
+        private static HierarchyWindow? currentWindow;
 
         static CustomHierarchy()
         {
@@ -113,12 +113,7 @@ namespace BovineLabs.Core.Editor.Hierarchy
                 }
 
                 desc.Options = options;
-
-                var none = FilterNone(node.SearchString);
-                if (none != null)
-                {
-                    desc.None = none;
-                }
+                desc.None = FilterNone(node.SearchString);
             });
 
             // Remove the existing delegate events so we can replace the subscription with our own
@@ -150,13 +145,13 @@ namespace BovineLabs.Core.Editor.Hierarchy
         {
             if (string.IsNullOrWhiteSpace(input))
             {
-                return null;
+                return Array.Empty<ComponentType>();
             }
 
             var matches = Regex.Matches(input);
             if (matches.Count == 0)
             {
-                return null;
+                return Array.Empty<ComponentType>();
             }
 
             using var componentTypes = PooledHashSet<ComponentType>.Make();
@@ -181,13 +176,13 @@ namespace BovineLabs.Core.Editor.Hierarchy
 
                 if (!resultFound)
                 {
-                    return null;
+                    return Array.Empty<ComponentType>();
                 }
             }
 
             if (componentTypes.Set.Count == 0)
             {
-                return null;
+                return Array.Empty<ComponentType>();
             }
 
             // Entity type is legal in UI, but not allowed in EntityQuery, so remove it.
@@ -220,7 +215,7 @@ namespace BovineLabs.Core.Editor.Hierarchy
                 this.choices = this.Q<VisualElement>("search-element-filter-popup-choices");
             }
 
-            public void AddPopupItem(string filterText, string state, string filterTooltip = "", Action action = null)
+            public void AddPopupItem(string filterText, string state, string filterTooltip, Action action)
             {
                 this.elementCount++;
 
@@ -244,12 +239,12 @@ namespace BovineLabs.Core.Editor.Hierarchy
                 choiceButton.clickable.clicked += () =>
                 {
                     // Close the window.
-                    action?.Invoke();
+                    action.Invoke();
                     this.Close();
                 };
             }
 
-            public void AddPopupItem(string filterText, bool state, string filterTooltip = "", Action action = null)
+            public void AddPopupItem(string filterText, bool state, string filterTooltip, Action action)
             {
                 this.AddPopupItem(filterText, state ? "true" : "false", filterTooltip, action);
             }

@@ -4,7 +4,6 @@
 
 namespace BovineLabs.Core.Editor.Inspectors
 {
-
     using BovineLabs.Core.Editor.Helpers;
     using UnityEditor;
     using UnityEditor.UIElements;
@@ -13,19 +12,34 @@ namespace BovineLabs.Core.Editor.Inspectors
     /// <summary> Provides an editor with custom element but will fall back to PropertyField if not overriden. </summary>
     public abstract class ElementProperty : PropertyDrawer
     {
-        protected VisualElement Parent { get; private set; }
+        private SerializedObject? serializedObject;
+        private VisualElement? parent;
 
-        protected SerializedObject SerializedObject { get; private set; }
+        protected virtual bool Inline { get; }
+
+        protected VisualElement Parent => this.parent!;
+
+        protected SerializedObject SerializedObject => this.serializedObject!;
 
         public override VisualElement CreatePropertyGUI(SerializedProperty rootProperty)
         {
-            this.Parent = new VisualElement();
+            if (this.Inline)
+            {
+                this.parent = new VisualElement();
+                var label = new Label(rootProperty.displayName);
+                this.Parent.Add(label);
+                // TODO indent?
+            }
+            else
+            {
+                this.parent = new Foldout { text = rootProperty.displayName };
+            }
 
-            this.SerializedObject = rootProperty.serializedObject;
+            this.serializedObject = rootProperty.serializedObject;
 
             foreach (var property in SerializedHelper.GetChildren(rootProperty))
             {
-                var element = this.CreateElement(property) ?? CreatePropertyField(property, this.SerializedObject);
+                var element = this.CreateElement(property);
                 this.Parent.Add(element);
             }
 
@@ -43,10 +57,10 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         protected virtual VisualElement CreateElement(SerializedProperty property)
         {
-            return null;
+            return CreatePropertyField(property, this.SerializedObject);
         }
 
-        protected virtual void PostElementCreation(VisualElement parent)
+        protected virtual void PostElementCreation(VisualElement root)
         {
         }
     }

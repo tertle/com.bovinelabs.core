@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Utility
             var idx = Args.IndexOf(arg);
             if (idx < 0)
             {
-                value = null;
+                value = string.Empty;
                 return false;
             }
 
