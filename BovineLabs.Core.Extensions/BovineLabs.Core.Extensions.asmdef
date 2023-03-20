@@ -8,10 +8,12 @@
         "GUID:734d92eba21c94caba915361bd5ac177",
         "GUID:8819f35a0fc84499b990e90a4ca1911f",
         "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:eec0964c48f6f4e40bc3ec2257ccf8c5",
         "GUID:fd228c28e14f1a34cbe508676c914dd7",
         "GUID:d8b63aba1907145bea998dd612889d6b",
         "GUID:e04e6c86a9f3947eb95fded39f9e60cc",
         "GUID:63afb046c8423dd448ae7aba042ea63d",
+        "GUID:84651a3751eca9349aac36a66bba901b",
         "GUID:5f3cf485eb0554709a8abbeace890c86",
         "GUID:a5baed0c9693541a5bd947d336ec7659"
     ],
@@ -39,6 +41,11 @@
             "name": "com.bovinelabs.camera",
             "expression": "",
             "define": "BL_CORE_EXTENSIONS"
+        },
+        {
+            "name": "com.unity.localization",
+            "expression": "",
+            "define": "UNITY_LOCALIZATION"
         }
     ],
     "noEngineReferences": false

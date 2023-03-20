@@ -30,20 +30,20 @@ namespace BovineLabs.Core.States
 
             this.RegisteredStatesMap = new NativeParallelHashMap<byte, ComponentType>(256, Allocator.Persistent);
 
-            var stateSystems = StateInstanceCache.GetAllStateSystems(ref state);
+            var stateSystems = StateInstanceUtil.GetAllStateSystems(ref state);
 
             foreach (var component in stateSystems)
             {
-                if (component.Value.State != this.StateType.m_TypeIndex)
+                if (component.State != this.StateType.m_TypeIndex)
                 {
                     continue;
                 }
 
-                var stateInstanceComponent = ComponentType.FromTypeIndex(component.Value.StateInstanceComponent);
+                var stateInstanceComponent = ComponentType.FromTypeIndex(component.StateInstanceComponent);
 
-                if (!this.RegisteredStatesMap.TryAdd(component.Value.StateKey, stateInstanceComponent))
+                if (!this.RegisteredStatesMap.TryAdd(component.StateKey, stateInstanceComponent))
                 {
-                    state.EntityManager.GetSingleton<BLDebug>().Error($"Key {component.Value.StateKey} has already been registered");
+                    state.EntityManager.GetSingleton<BLDebug>().Error($"Key {component.StateKey} has already been registered");
                 }
             }
         }

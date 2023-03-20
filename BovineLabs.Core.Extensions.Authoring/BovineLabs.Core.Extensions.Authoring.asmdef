@@ -10,6 +10,7 @@
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.InputSystem",
+        "Unity.Localization",
         "Unity.Logging",
         "Unity.Mathematics",
         "Unity.Physics",
@@ -35,6 +36,11 @@
             "name": "com.bovinelabs.camera",
             "expression": "",
             "define": "BL_CORE_EXTENSIONS"
+        },
+        {
+            "name": "com.unity.localization",
+            "expression": "",
+            "define": "UNITY_LOCALIZATION"
         }
     ],
     "noEngineReferences": false
