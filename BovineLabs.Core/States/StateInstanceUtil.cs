@@ -9,7 +9,7 @@ namespace BovineLabs.Core.States
 
     public static class StateInstanceUtil
     {
-        public static NativeArray<StateInstance> GetAllStateSystems(ref SystemState state, Allocator allocator = Allocator.Temp)
+        public static NativeArray<StateInstance> GetAllStateInstances(ref SystemState state, Allocator allocator = Allocator.Temp)
         {
             using var query = new EntityQueryBuilder(Allocator.Temp)
                 .WithAll<StateInstance>()

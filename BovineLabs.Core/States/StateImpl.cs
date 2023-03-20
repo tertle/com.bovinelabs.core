@@ -30,11 +30,11 @@ namespace BovineLabs.Core.States
 
             this.RegisteredStatesMap = new NativeParallelHashMap<byte, ComponentType>(256, Allocator.Persistent);
 
-            var stateSystems = StateInstanceUtil.GetAllStateSystems(ref state);
+            var stateSystems = StateInstanceUtil.GetAllStateInstances(ref state);
 
             foreach (var component in stateSystems)
             {
-                if (component.State != this.StateType.m_TypeIndex)
+                if (component.State.Index != this.StateType.m_TypeIndex.Index)
                 {
                     continue;
                 }
