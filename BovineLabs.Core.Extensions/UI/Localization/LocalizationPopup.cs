@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_LOCALIZATION
+#if !BL_DISABLE_UI && UNITY_LOCALIZATION
 namespace BovineLabs.Core.UI.Localization
 {
     using System.Linq;

@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.App
 {
     using System.Diagnostics.CodeAnalysis;
@@ -46,3 +47,4 @@ namespace BovineLabs.Core.App
         }
     }
 }
+#endif

@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
     using System;
@@ -14,3 +15,4 @@ namespace BovineLabs.Core.SubScenes
         ThinClient = 1 << 2,
     }
 }
+#endif

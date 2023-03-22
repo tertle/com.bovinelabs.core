@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
     using Unity.Entities;
@@ -12,3 +13,4 @@ namespace BovineLabs.Core.SubScenes
         public float UnloadMaxDistance;
     }
 }
+#endif

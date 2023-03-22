@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_UI
 namespace BovineLabs.Core.UI
 {
     /// <summary> Static priorities for panel ordering. </summary>
@@ -17,3 +18,4 @@ namespace BovineLabs.Core.UI
         public const int Popup = 1000;
     }
 }
+#endif

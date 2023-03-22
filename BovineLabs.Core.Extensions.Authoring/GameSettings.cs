@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.Authoring
 {
     using BovineLabs.Core.SubScenes;
@@ -35,3 +36,4 @@ namespace BovineLabs.Core.Authoring
         }
     }
 }
+#endif

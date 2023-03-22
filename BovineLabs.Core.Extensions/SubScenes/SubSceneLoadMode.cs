@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
     using Unity.Scenes;
@@ -24,3 +25,4 @@ namespace BovineLabs.Core.SubScenes
         OnDemand,
     }
 }
+#endif

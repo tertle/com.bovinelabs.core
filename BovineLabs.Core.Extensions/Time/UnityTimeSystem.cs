@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_TIME
 namespace BovineLabs.Core.Time
 {
     using Unity.Entities;
@@ -40,3 +41,4 @@ namespace BovineLabs.Core.Time
         }
     }
 }
+#endif

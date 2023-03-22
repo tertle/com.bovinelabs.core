@@ -1,6 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:VisualElement class="feature-group">
-        <ui:Label tabindex="-1" text="Asset Management" display-tooltip-when-elided="true" name="Label" />
-        <ui:Button text="Disabled" display-tooltip-when-elided="true" />
-    </ui:VisualElement>
-</ui:UXML>

@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.AssetManagement
 {
     using BovineLabs.Core.Keys;
@@ -11,3 +12,4 @@ namespace BovineLabs.Core.AssetManagement
     {
     }
 }
+#endif

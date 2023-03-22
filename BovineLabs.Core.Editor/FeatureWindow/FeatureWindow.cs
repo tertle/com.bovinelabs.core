@@ -18,11 +18,16 @@ namespace BovineLabs.Core.Editor.FeatureWindow
         private const string ExtensionsDisabledStyle = "enable-extensions-disabled";
         private const string ExtensionsEnabledStyle = "enable-extensions-enabled";
 
+        private const string FeatureDisabledStyle = "feature-disabled";
+        private const string FeatureEnabledStyle = "feature-enabled";
+
         private const string RootUIPath = "Packages/com.bovinelabs.core/Editor Default Resources/FeatureWindow/";
         private static readonly UITemplate Window = new(RootUIPath + "FeatureWindow");
-        private static readonly UITemplate FeatureTemplate = new(RootUIPath + "FeatureTemplate");
 
-        [MenuItem("BovineLabs/Extensions", priority = -5)]
+        private readonly List<string> defines = new();
+        private UQueryBuilder<VisualElement> features;
+
+        [MenuItem("BovineLabs/Toggle Features", priority = -5)]
         private static void ShowWindow()
         {
             // Get existing open window or if none, make a new one:
@@ -33,49 +38,82 @@ namespace BovineLabs.Core.Editor.FeatureWindow
 
         private void OnEnable()
         {
+            this.defines.Clear();
+            this.defines.AddRange(GetDefines());
+
             var root = this.rootVisualElement;
             Window.Clone(root);
 
-            this.SetupEnableExtensionsButton();
-
             var view = this.rootVisualElement.Q<ScrollView>();
+            this.features = view.Query<VisualElement>(className: "feature-group");
 
-
-
-
-            // this.rootVisualElement.Query<Toggle>(className: "assembly").ForEach(this.BindAssemblyToggle);
-            // this.rootVisualElement.Q<Button>("create").clickable.clicked += this.Create;
-            // this.rootVisualElement.Q<TextField>("name").value = $"{PlayerSettings.companyName}.";
-            // this.rootVisualElement.Q<TextField>("directory").SetEnabled(false);
+            this.SetupEnableExtensionsButton();
+            this.SetupApplyButton();
+            this.features.ForEach(this.SetupFeature);
         }
 
         private void SetupEnableExtensionsButton()
         {
             var enableExtensions = this.rootVisualElement.Q<Button>("EnableExtensions");
 
-            SetEnabledExtensionState(enableExtensions);
+            SetEnabledExtensionState(enableExtensions, this.defines.Contains(ExtensionsEnableKey));
 
             enableExtensions.clicked += () =>
             {
-                var enable = !HasDefines(ExtensionsEnableKey);
+                var enable = !this.defines.Contains(ExtensionsEnableKey);
                 if (enable)
                 {
-                    AddDefine(ExtensionsEnableKey);
+                    this.defines.Add(ExtensionsEnableKey);
                 }
                 else
                 {
-                    RemoveDefine(ExtensionsEnableKey);
+                    this.defines.Remove(ExtensionsEnableKey);
                 }
 
-                SetEnabledExtensionState(enableExtensions);
+                SetEnabledExtensionState(enableExtensions, enable);
             };
         }
 
-        private static void SetEnabledExtensionState(Button button)
+        private void SetupApplyButton()
         {
-            var enabled = HasDefines(ExtensionsEnableKey);
+            this.rootVisualElement.Q<Button>("ApplyChanges").clicked += () => ApplyDefines(this.defines.ToArray());
+        }
+
+        private void SetupFeature(VisualElement e)
+        {
+            var extensionDisabledKey = e.Q<Label>().name;
+            var button = e.Q<Button>();
+
+            SetEnabledFeatureState(button, !this.defines.Contains(extensionDisabledKey));
+
+            e.Q<Button>().clicked += () =>
+            {
+                var enable = this.defines.Contains(extensionDisabledKey);
+                if (enable)
+                {
+                    this.defines.Remove(extensionDisabledKey);
+                }
+                else
+                {
+                    this.defines.Add(extensionDisabledKey);
+                }
+
+                SetEnabledFeatureState(button, enable);
+            };
+        }
+
+        private void SetEnabledExtensionState(Button button, bool enabled)
+        {
             SetState(button, enabled, ExtensionsEnabledStyle, ExtensionsDisabledStyle);
             button.text = enabled ? "Extensions Enabled" : "Extensions Disabled";
+
+            this.features.ForEach(e => e.SetEnabled(enabled));
+        }
+
+        private static void SetEnabledFeatureState(Button button, bool enabled)
+        {
+            SetState(button, enabled, FeatureEnabledStyle, FeatureDisabledStyle);
+            button.text = enabled ? "Enabled" : "Disabled";
         }
 
         private static void SetState(VisualElement button, bool isEnabled, string enabledStyle, string disabledStyle)
@@ -97,29 +135,9 @@ namespace BovineLabs.Core.Editor.FeatureWindow
             return defines;
         }
 
-        private static bool HasDefines(string define)
+        private static void ApplyDefines(string[] defines)
         {
-            return GetDefines().Contains(define);
-        }
-
-        private static void AddDefine(string define)
-        {
-            var target = GetTarget();
-            PlayerSettings.GetScriptingDefineSymbols(target, out var defines);
-            var list = new List<string>();
-            list.AddRange(defines);
-            list.Add(define);
-            PlayerSettings.SetScriptingDefineSymbols(target, list.ToArray());
-        }
-
-        private static void RemoveDefine(string define)
-        {
-            var target = GetTarget();
-            PlayerSettings.GetScriptingDefineSymbols(target, out var defines);
-            var list = new List<string>();
-            list.AddRange(defines);
-            list.Remove(define);
-            PlayerSettings.SetScriptingDefineSymbols(target, list.ToArray());
+            PlayerSettings.SetScriptingDefineSymbols(GetTarget(), defines);
         }
     }
 }

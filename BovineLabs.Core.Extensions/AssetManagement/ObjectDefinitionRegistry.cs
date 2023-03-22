@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.AssetManagement
 {
     using Unity.Entities;
@@ -13,3 +14,4 @@ namespace BovineLabs.Core.AssetManagement
         public Entity Prefab;
     }
 }
+#endif

@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_COPY_TRANSFORM
 namespace BovineLabs.Core.Authoring.Hybrid
 {
     using BovineLabs.Core.Hybrid;
@@ -20,3 +21,4 @@ namespace BovineLabs.Core.Authoring.Hybrid
         }
     }
 }
+#endif

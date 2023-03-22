@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_UI
 #if UNITY_LOCALIZATION && BL_LOCALIZATION
 #define LOCALIZATION_ENABLED
 #endif
@@ -189,3 +190,4 @@ namespace BovineLabs.Core.UI
 #endif
     }
 }
+#endif

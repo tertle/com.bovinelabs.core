@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_UI
 namespace BovineLabs.Core.UI
 {
     using System;
@@ -33,3 +34,4 @@ namespace BovineLabs.Core.UI
         public void RemovePanel(VisualElement visualElement);
     }
 }
+#endif

@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_TOOLBAR
 namespace BovineLabs.Core.Debug.Toolbar
 {
     using System;
@@ -10,7 +11,6 @@ namespace BovineLabs.Core.Debug.Toolbar
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.UI;
     using BovineLabs.Core.Utility;
-    using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
     using UnityEngine.UIElements;
@@ -288,3 +288,4 @@ namespace BovineLabs.Core.Debug.Toolbar
         }
     }
 }
+#endif

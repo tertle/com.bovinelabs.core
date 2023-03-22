@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
     using System.Collections.Generic;
@@ -182,3 +183,4 @@ namespace BovineLabs.Core.SubScenes
         }
     }
 }
+#endif
