@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Button text="Extensions Disabled" display-tooltip-when-elided="true" name="EnableExtensions" class="enable-extensions main-button" />
+    <ui:ScrollView class="feature-view" />
+    <ui:Button text="Apply" display-tooltip-when-elided="true" name="EnableExtensions" class="main-button" />
+</ui:UXML>

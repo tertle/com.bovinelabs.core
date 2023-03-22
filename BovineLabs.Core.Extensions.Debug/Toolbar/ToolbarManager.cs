@@ -40,31 +40,6 @@ namespace BovineLabs.Core.Debug.Toolbar
         private static Button showButton;
         private static bool showRibbon;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void AfterSceneLoad()
-        {
-            // TODO
-            var asset = Resources.Load<VisualTreeAsset>("Toolbar");
-
-            panelElement = asset.CloneTree();
-            panelElement.name = "Toolbar";
-
-            OnLoad(panelElement);
-
-            UIDocumentManager.Instance.AddRoot(panelElement, -1000);
-#if UNITY_EDITOR
-            UIDocumentManager.Instance.EditorRebuild += () =>
-            {
-                UIDocumentManager.Instance.RemoveRoot(panelElement);
-                UIDocumentManager.Instance.AddRoot(panelElement, -1000);
-            };
-#endif
-
-            default(EntityCommandBuffer).DestroyEntity(default(EntityQuery));
-
-            UIDocumentManager.Instance.Root.RegisterCallback<GeometryChangedEvent>(OnRootContentChanged);
-        }
-
         public static void AddGroup(string tabName, ToolbarTab.Group group)
         {
             if (!ToolbarTabs.TryGetValue(tabName, out var tabs))
@@ -121,6 +96,29 @@ namespace BovineLabs.Core.Debug.Toolbar
         public static bool IsTabVisible(string tabName)
         {
             return activeTab.Name == tabName;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void AfterSceneLoad()
+        {
+            // TODO
+            var asset = Resources.Load<VisualTreeAsset>("BLToolbar");
+
+            panelElement = asset.CloneTree();
+            panelElement.name = "Toolbar";
+
+            OnLoad(panelElement);
+
+            UIDocumentManager.Instance.AddRoot(panelElement, -1000);
+#if UNITY_EDITOR
+            UIDocumentManager.Instance.EditorRebuild += () =>
+            {
+                UIDocumentManager.Instance.RemoveRoot(panelElement);
+                UIDocumentManager.Instance.AddRoot(panelElement, -1000);
+            };
+#endif
+
+            UIDocumentManager.Instance.Root.RegisterCallback<GeometryChangedEvent>(OnRootContentChanged);
         }
 
         private static void OnLoad(VisualElement panel)
