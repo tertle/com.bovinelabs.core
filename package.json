@@ -6,7 +6,7 @@
   "unityRelease": "11f1",
   "displayName": "BovineLabs Core",
   "dependencies": {
-    "com.unity.entities": "1.0.0-pre.47",
+    "com.unity.entities": "1.0.0-pre.65",
     "com.unity.logging": "1.0.0-pre.21"
   },
   "type": "library"

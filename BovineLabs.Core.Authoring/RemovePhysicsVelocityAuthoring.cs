@@ -24,7 +24,8 @@ namespace BovineLabs.Core.Authoring
     {
         public override void Bake(RemovePhysicsVelocityAuthoring authoring)
         {
-            this.AddComponent<RemovePhysicsVelocityBaking>();
+            var entity = this.GetEntity(TransformUsageFlags.None);
+            this.AddComponent<RemovePhysicsVelocityBaking>(entity);
         }
     }
 

@@ -2,6 +2,7 @@
     "name": "BovineLabs.Testing",
     "rootNamespace": "",
     "references": [
+        "Unity.Collections",
         "Unity.Entities",
         "Unity.Mathematics"
     ],
