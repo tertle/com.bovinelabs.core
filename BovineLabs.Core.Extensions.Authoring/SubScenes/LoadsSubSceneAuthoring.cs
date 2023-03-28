@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.Authoring.SubScenes
 {
     using BovineLabs.Core.SubScenes;
@@ -16,7 +17,8 @@ namespace BovineLabs.Core.Authoring.SubScenes
     {
         public override void Bake(LoadsSubSceneAuthoring authoring)
         {
-            this.AddComponent<LoadsSubScene>();
+            this.AddComponent<LoadsSubScene>(this.GetEntity(TransformUsageFlags.None));
         }
     }
 }
+#endif

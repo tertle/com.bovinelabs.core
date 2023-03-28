@@ -18,9 +18,6 @@ namespace BovineLabs.Core.Collections
         private readonly TCapacity data;
         private readonly int sizeOfValueT;
 
-        public int Capacity { get; }
-        public int Count { get; private set; }
-
         public FixedHashMap(TCapacity data)
         {
             this.data = data;
@@ -32,13 +29,9 @@ namespace BovineLabs.Core.Collections
             UnsafeUtility.MemSet(this.Ptr, 0xff, totalHashesSizeInBytes);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int CalcCapacity()
-        {
-            var sizeOfElement = sizeof(uint) + sizeof(uint) + sizeof(TValue) + sizeof(TKey);
-            var capacity = sizeof(TCapacity) / sizeOfElement;
-            return capacity;
-        }
+        public int Capacity { get; }
+
+        public int Count { get; private set; }
 
         private uint* Ptr
         {
@@ -58,7 +51,7 @@ namespace BovineLabs.Core.Collections
         public bool TryAdd(TKey key, TValue item)
         {
             var idx = this.TryAdd(key);
-            if (-1 != idx)
+            if (idx != -1)
             {
                 this.GetElementAt(idx) = item;
                 return true;
@@ -80,6 +73,14 @@ namespace BovineLabs.Core.Collections
 
             item = default;
             return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int CalcCapacity()
+        {
+            var sizeOfElement = sizeof(uint) + sizeof(uint) + sizeof(TValue) + sizeof(TKey);
+            var capacity = sizeof(TCapacity) / sizeOfElement;
+            return capacity;
         }
 
         private int TryAdd(in TKey key)

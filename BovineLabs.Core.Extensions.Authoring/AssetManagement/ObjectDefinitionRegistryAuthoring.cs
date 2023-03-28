@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.Authoring.AssetManagement
 {
     using System.Linq;
@@ -19,7 +20,7 @@ namespace BovineLabs.Core.Authoring.AssetManagement
     {
         public override void Bake(ObjectDefinitionRegistryAuthoring authoring)
         {
-            var registry = this.AddBuffer<ObjectDefinitionRegistry>();
+            var registry = this.AddBuffer<ObjectDefinitionRegistry>(this.GetEntity(TransformUsageFlags.None));
 
             var definitions = AssetDatabase.FindAssets($"t:{nameof(ObjectDefinition)}")
                 .Select(AssetDatabase.GUIDToAssetPath)
@@ -52,3 +53,4 @@ namespace BovineLabs.Core.Authoring.AssetManagement
         }
     }
 }
+#endif

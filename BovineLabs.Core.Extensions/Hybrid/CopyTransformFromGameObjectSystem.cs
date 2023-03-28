@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_COPY_TRANSFORM
 namespace BovineLabs.Core.Hybrid
 {
     using Unity.Burst;
@@ -66,3 +67,4 @@ namespace BovineLabs.Core.Hybrid
         }
     }
 }
+#endif

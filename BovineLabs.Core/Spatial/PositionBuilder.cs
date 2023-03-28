@@ -2,10 +2,8 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !ENABLE_TRANSFORM_V1
 namespace BovineLabs.Core.Spatial
 {
-    using BovineLabs.Core.Extensions;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -25,7 +23,7 @@ namespace BovineLabs.Core.Spatial
     public struct PositionBuilder
     {
         private EntityQuery query;
-        private TransformAspect.TypeHandle transformHandle;
+        private ComponentTypeHandle<LocalTransform> transformHandle;
 
         /// <summary> Initializes a new instance of the <see cref="PositionBuilder" /> struct. </summary>
         /// <param name="state"> The owning state. </param>
@@ -34,7 +32,7 @@ namespace BovineLabs.Core.Spatial
         {
             this.query = query;
 
-            this.transformHandle = new TransformAspect.TypeHandle(ref state, true);
+            this.transformHandle = state.GetComponentTypeHandle<LocalTransform>(true);
         }
 
         public JobHandle Gather(ref SystemState state, JobHandle dependency, out NativeArray<SpatialPosition> positions)
@@ -61,7 +59,7 @@ namespace BovineLabs.Core.Spatial
         private unsafe struct GatherPositionsJob : IJobChunk
         {
             [ReadOnly]
-            public TransformAspect.TypeHandle TransformHandle;
+            public ComponentTypeHandle<LocalTransform> TransformHandle;
 
             [NativeDisableParallelForRestriction]
             public NativeArray<SpatialPosition> Positions;
@@ -75,15 +73,10 @@ namespace BovineLabs.Core.Spatial
                 var dst = ptr + this.FirstEntityIndices[unfilteredChunkIndex];
 
                 var size = UnsafeUtility.SizeOf<float3>();
-
-                var transforms = this.TransformHandle.Resolve(chunk);
-                var positions = transforms.HasWorldTransforms()
-                    ? transforms.WorldTransforms().Slice().SliceWithStride<float3>(0)
-                    : transforms.LocalTransforms().Slice().SliceWithStride<float3>(0);
+                var positions = chunk.GetNativeArray(ref this.TransformHandle).Slice().SliceWithStride<float3>(0);
 
                 UnsafeUtility.MemCpyStride(dst, size, positions.GetUnsafeReadOnlyPtr(), positions.Stride, size, positions.Length);
             }
         }
     }
 }
-#endif

@@ -10,10 +10,12 @@ namespace BovineLabs.Core.Authoring
     public readonly struct BakerConverter : IConvert
     {
         private readonly IBaker baker;
+        private readonly Entity entity;
 
-        public BakerConverter(IBaker baker)
+        public BakerConverter(IBaker baker, Entity entity)
         {
             this.baker = baker;
+            this.entity = entity;
         }
 
         public void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)
@@ -25,30 +27,30 @@ namespace BovineLabs.Core.Authoring
         public void AddComponent<T>()
             where T : unmanaged, IComponentData
         {
-            this.baker.AddComponent<T>();
+            this.baker.AddComponent<T>(this.entity);
         }
 
         public void AddComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            this.baker.AddComponent(component);
+            this.baker.AddComponent(this.entity, component);
         }
 
         public void AddComponent(in ComponentTypeSet components)
         {
-            this.baker.AddComponent(components);
+            this.baker.AddComponent(this.entity, components);
         }
 
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            this.baker.SetComponent(component);
+            this.baker.SetComponent(this.entity, component);
         }
 
         public DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            return this.baker.AddBuffer<T>();
+            return this.baker.AddBuffer<T>(this.entity);
         }
     }
 }

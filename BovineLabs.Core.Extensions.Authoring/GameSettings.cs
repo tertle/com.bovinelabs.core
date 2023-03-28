@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.Authoring
 {
     using BovineLabs.Core.SubScenes;
@@ -9,7 +10,7 @@ namespace BovineLabs.Core.Authoring
     using Unity.Mathematics;
     using UnityEngine;
 
-    public class GameSettings : Settings.Settings
+    public class GameSettings : Settings.SettingsBase
     {
         [Min(0)]
         [SerializeField]
@@ -22,11 +23,13 @@ namespace BovineLabs.Core.Authoring
         /// <inheritdoc />
         public override void Bake(IBaker baker)
         {
-            baker.AddComponent(new LoadWithBoundingVolumeConfig
-            {
-                LoadMaxDistance = this.loadMaxDistance,
-                UnloadMaxDistance = this.unloadMaxDistance,
-            });
+            baker.AddComponent(
+                baker.GetEntity(TransformUsageFlags.None),
+                new LoadWithBoundingVolumeConfig
+                {
+                    LoadMaxDistance = this.loadMaxDistance,
+                    UnloadMaxDistance = this.unloadMaxDistance,
+                });
         }
 
         private void OnValidate()
@@ -35,3 +38,4 @@ namespace BovineLabs.Core.Authoring
         }
     }
 }
+#endif

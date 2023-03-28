@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Editor.Settings
     using System.IO;
     using System.Linq;
     using BovineLabs.Core.Editor.Helpers;
+    using BovineLabs.Core.Keys;
     using BovineLabs.Core.Settings;
     using UnityEditor;
     using UnityEngine;
@@ -48,7 +49,11 @@ namespace BovineLabs.Core.Editor.Settings
             switch (assets.Length)
             {
                 case 0:
-                    var directory = GetAssetDirectory(EditorFoldersSettings.SettingsKey, EditorFoldersSettings.DefaultSettingsDirectory);
+
+                    var directory = typeof(KSettings).IsAssignableFrom(typeof(T))
+                        ? GetAssetDirectory(EditorFoldersSettings.KSettingsKey, EditorFoldersSettings.DefaultKSettingsDirectory)
+                        : GetAssetDirectory(EditorFoldersSettings.SettingsKey, EditorFoldersSettings.DefaultSettingsDirectory);
+
                     var path = Path.Combine(directory, $"{typeof(T).Name}.asset");
 
                     // Search didn't work, for some reason this seems to fail sometimes due to library state

@@ -31,7 +31,9 @@ namespace BovineLabs.Core.States
             var stateTypeIndex = TypeManager.GetTypeIndex<TState>();
             var instanceTypeIndex = TypeManager.GetTypeIndex<TInstance>();
 
-            systemState.EntityManager.AddComponentData(systemState.SystemHandle, new StateInstance
+            // This used to be SystemHandle but doesn't work on ComponentSystemGroups
+            var entity = systemState.EntityManager.CreateEntity();
+            systemState.EntityManager.AddComponentData(entity, new StateInstance
             {
                 State = stateTypeIndex,
                 StateKey = stateKey,

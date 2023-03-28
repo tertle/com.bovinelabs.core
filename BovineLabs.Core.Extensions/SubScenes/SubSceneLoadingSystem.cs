@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
     using System.Collections.Generic;
@@ -63,11 +64,7 @@ namespace BovineLabs.Core.SubScenes
 
         private bool IsSceneLoad(Entity entity)
         {
-#if UNITY_EDITOR
-            return SceneSystem.IsSceneLoaded(this.World.Unmanaged, entity);// && this.EntityManager.HasComponent<LinkedEntityGroup>(entity);
-#else
             return SceneSystem.IsSceneLoaded(this.World.Unmanaged, entity);
-#endif
         }
 
         private void LoadSubScenes()
@@ -130,6 +127,9 @@ namespace BovineLabs.Core.SubScenes
                 return;
             }
 
+            var debug = SystemAPI.GetSingleton<BLDebug>();
+            debug.Debug("All required subscenes loaded.");
+
             this.waitingForLoad.Clear();
 
             for (var index = this.volumes.Count - 1; index >= 0; index--)
@@ -182,3 +182,4 @@ namespace BovineLabs.Core.SubScenes
         }
     }
 }
+#endif

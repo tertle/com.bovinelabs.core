@@ -22,6 +22,14 @@ namespace BovineLabs.Core.Keys
         /// <returns> The value. </returns>
         public static byte NameToKey(FixedString32Bytes name)
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (Map.Data.Capacity == 0)
+            {
+                Debug.LogError("Trying to read from an uninitialized K");
+                return default;
+            }
+#endif
+
             if (!Map.Data.TryGetValue(name, out var key))
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -37,6 +45,14 @@ namespace BovineLabs.Core.Keys
         /// <returns> The value. </returns>
         public static FixedString32Bytes KeyToName(byte key)
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (Map.Data.Capacity == 0)
+            {
+                Debug.LogError("Trying to read from an uninitialized K");
+                return default;
+            }
+#endif
+
             if (!Map.Data.TryGetValue(key, out var name))
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

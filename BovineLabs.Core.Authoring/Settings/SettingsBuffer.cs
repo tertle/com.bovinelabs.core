@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Authoring.Settings
     using UnityEngine;
 
     [Serializable]
-    public abstract class SettingsBuffer<T> : Settings
+    public abstract class SettingsBuffer<T> : SettingsBase
         where T : unmanaged, IBufferElementData
     {
         [SerializeField]
@@ -25,7 +25,7 @@ namespace BovineLabs.Core.Authoring.Settings
         /// <inheritdoc />
         public sealed override void Bake(IBaker baker)
         {
-            var entityBuffer = baker.AddBuffer<T>();
+            var entityBuffer = baker.AddBuffer<T>(baker.GetEntity(TransformUsageFlags.None));
             foreach (var b in this.buffer)
             {
                 entityBuffer.Add(b);

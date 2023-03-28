@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_DESTROY
 namespace BovineLabs.Core.Destroy
 {
     using BovineLabs.Core.Extensions;
@@ -100,3 +101,4 @@ namespace BovineLabs.Core.Destroy
         }
     }
 }
+#endif

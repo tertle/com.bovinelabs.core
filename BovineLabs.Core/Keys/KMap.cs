@@ -35,6 +35,8 @@ namespace BovineLabs.Core.Keys
             }
         }
 
+        public int Capacity => this.map.Capacity;
+
         public bool TryGetValue(MiniString key, out byte value)
         {
             return this.map.TryGetValue(key, out value);

@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_DESTROY
 namespace BovineLabs.Core.Authoring.Destroy
 {
     using BovineLabs.Core.Destroy;
@@ -16,7 +17,8 @@ namespace BovineLabs.Core.Authoring.Destroy
     {
         public override void Bake(EntityDestroyAuthoring authoring)
         {
-            this.AddComponent<EntityDestroy>();
+            this.AddComponent<EntityDestroy>(this.GetEntity(TransformUsageFlags.None));
         }
     }
 }
+#endif

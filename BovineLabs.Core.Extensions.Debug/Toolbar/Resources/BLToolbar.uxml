@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="BLToolbar.uss" />
+    <ui:VisualElement name="root">
+        <ui:VisualElement name="toolbartab" class="bl-toolbar-tab">
+            <ui:Button name="show" />
+            <ui:VisualElement name="menu" class="toolbar-menu" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

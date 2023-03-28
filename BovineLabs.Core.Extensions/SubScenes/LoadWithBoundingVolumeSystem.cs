@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
     using Unity.Burst;
@@ -19,8 +20,8 @@ namespace BovineLabs.Core.SubScenes
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var loadingQuery = SystemAPI.QueryBuilder().WithAll<WorldTransform, LoadsSubScene>().Build();
-            var loaderPositions = loadingQuery.ToComponentDataArray<WorldTransform>(state.WorldUpdateAllocator);
+            var loadingQuery = SystemAPI.QueryBuilder().WithAll<LocalTransform, LoadsSubScene>().Build();
+            var loaderPositions = loadingQuery.ToComponentDataArray<LocalTransform>(state.WorldUpdateAllocator);
 
             if (!SystemAPI.TryGetSingleton<LoadWithBoundingVolumeConfig>(out var config))
             {
@@ -89,3 +90,4 @@ namespace BovineLabs.Core.SubScenes
         }
     }
 }
+#endif

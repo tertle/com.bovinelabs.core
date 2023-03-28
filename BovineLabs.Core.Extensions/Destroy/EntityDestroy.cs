@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_DESTROY
 namespace BovineLabs.Core.Destroy
 {
     using Unity.Entities;
@@ -21,3 +22,4 @@ namespace BovineLabs.Core.Destroy
         public bool IsDestroyed => this.Value != 0;
     }
 }
+#endif

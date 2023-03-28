@@ -14,7 +14,7 @@ namespace BovineLabs.Core.Authoring.Settings
     /// <typeparam name="T"> The component setting. </typeparam>
     [Serializable]
     [SuppressMessage("ReSharper", "Unity.RedundantSerializeFieldAttribute", Justification = "Required.")]
-    public abstract class Settings<T> : Settings
+    public abstract class Settings<T> : SettingsBase
         where T : unmanaged, IComponentData
     {
         [SerializeField]
@@ -32,15 +32,10 @@ namespace BovineLabs.Core.Authoring.Settings
         private string ComponentLabel => typeof(T).Name;
 #endif
 
-        private void Reset()
-        {
-            this.component = this.GetDefaults();
-        }
-
         /// <inheritdoc />
         public sealed override void Bake(IBaker baker)
         {
-            baker.AddComponent(this.component);
+            baker.AddComponent(baker.GetEntity(TransformUsageFlags.None), this.component);
 
             this.CustomBake(baker);
         }
@@ -56,6 +51,11 @@ namespace BovineLabs.Core.Authoring.Settings
         protected virtual T GetDefaults()
         {
             return default;
+        }
+
+        private void Reset()
+        {
+            this.component = this.GetDefaults();
         }
     }
 }

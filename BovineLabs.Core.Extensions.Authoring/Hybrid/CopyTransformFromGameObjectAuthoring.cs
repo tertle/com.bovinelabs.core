@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_COPY_TRANSFORM
 namespace BovineLabs.Core.Authoring.Hybrid
 {
     using BovineLabs.Core.Hybrid;
@@ -16,7 +17,8 @@ namespace BovineLabs.Core.Authoring.Hybrid
     {
         public override void Bake(CopyTransformFromGameObjectAuthoring authoring)
         {
-            this.AddComponent<CopyTransformFromGameObject>();
+            this.AddComponent<CopyTransformFromGameObject>(this.GetEntity(TransformUsageFlags.Dynamic));
         }
     }
 }
+#endif

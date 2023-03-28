@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_COPY_TRANSFORM
 namespace BovineLabs.Core.Hybrid
 {
     using Unity.Burst;
@@ -21,32 +22,8 @@ namespace BovineLabs.Core.Hybrid
         /// <inheritdoc />
         protected override void OnUpdate()
         {
-            this.WorldTransform();
-            this.LocalTransform();
-        }
-
-        private void WorldTransform()
-        {
-            var worldTransformQuery = SystemAPI.QueryBuilder()
-                .WithAllRW<Transform>().WithAll<CopyTransformToGameObject, WorldTransform>()
-                .Build();
-
-            if (worldTransformQuery.IsEmptyIgnoreFilter)
-            {
-                return;
-            }
-
-            var worldTransformAccess = worldTransformQuery.GetTransformAccessArray();
-            var worldTransforms = worldTransformQuery.ToComponentDataListAsync<WorldTransform>(this.WorldUpdateAllocator, out var dependency);
-            this.Dependency = JobHandle.CombineDependencies(this.Dependency, dependency);
-            this.Dependency = new CopyWorldTransformsJob { WorldTransforms = worldTransforms.AsDeferredJobArray() }
-                .Schedule(worldTransformAccess, this.Dependency);
-        }
-
-        private void LocalTransform()
-        {
             var localTransformQuery = SystemAPI.QueryBuilder()
-                .WithAllRW<Transform>().WithAll<CopyTransformToGameObject, LocalTransform>().WithNone<WorldTransform>()
+                .WithAllRW<Transform>().WithAll<CopyTransformToGameObject, LocalTransform>()
                 .Build();
 
             if (localTransformQuery.IsEmptyIgnoreFilter)
@@ -59,20 +36,6 @@ namespace BovineLabs.Core.Hybrid
             this.Dependency = JobHandle.CombineDependencies(this.Dependency, dependency);
             this.Dependency = new CopyLocalTransformsJob { LocalTransforms = localTransforms.AsDeferredJobArray() }
                 .Schedule(localTransformAccess, this.Dependency);
-        }
-
-        [BurstCompile]
-        private struct CopyWorldTransformsJob : IJobParallelForTransform
-        {
-            [ReadOnly]
-            public NativeArray<WorldTransform> WorldTransforms;
-
-            public void Execute(int index, TransformAccess transform)
-            {
-                var value = this.WorldTransforms[index];
-                transform.position = value.Position;
-                transform.rotation = value.Rotation;
-            }
         }
 
         [BurstCompile]
@@ -90,3 +53,4 @@ namespace BovineLabs.Core.Hybrid
         }
     }
 }
+#endif
