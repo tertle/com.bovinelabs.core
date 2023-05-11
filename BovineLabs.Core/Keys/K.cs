@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Keys
 {
+    using System.Collections.Generic;
     using Unity.Burst;
     using Unity.Collections;
     using UnityEngine;
@@ -65,7 +66,7 @@ namespace BovineLabs.Core.Keys
 
         /// <summary> Initialize this generic with a set of values. </summary>
         /// <param name="kvp"> The key values to assign. </param>
-        public static void Initialize(NameValue[] kvp)
+        public static void Initialize(IReadOnlyList<NameValue> kvp)
         {
             Map.Data = new KMap(kvp);
         }

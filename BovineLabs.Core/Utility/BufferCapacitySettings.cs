@@ -10,6 +10,7 @@ namespace BovineLabs.Core.Utility
     using BovineLabs.Core.Settings;
     using UnityEngine;
 
+    [ResourceSettings]
     public class BufferCapacitySettings : ScriptableObject, ISettings
     {
         [SerializeField]

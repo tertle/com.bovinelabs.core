@@ -4,9 +4,11 @@
 
 namespace BovineLabs.Core.Utility
 {
-    using System;
+    using Unity.Collections;
     using Unity.Entities;
+#if UNITY_EDITOR
     using UnityEditor;
+#endif
     using UnityEngine;
 
 #if UNITY_EDITOR
@@ -44,30 +46,15 @@ namespace BovineLabs.Core.Utility
                 var t = TypeManager.GetTypeIndexFromStableTypeHash(s.StableHash);
                 if (t == default)
                 {
+                    Debug.LogWarning($"Trying to remap stable hash {s.StableHash} but could not find type index from TypeManager");
                     continue;
                 }
 
-                var type = TypeManager.GetType(t);
-                SetBufferCapacity(type, s.Capacity);
+                SetBufferCapacity(t.Index, s.Capacity);
             }
 
-            foreach (var attr in ReflectionUtility.GetAllAssemblyAttributes<BufferCapacityAttribute>())
-            {
-                SetBufferCapacity(attr.Type, attr.Capacity);
-            }
-        }
-
-        public static void SetBufferCapacity(Type type, int bufferCapacity)
-        {
-            TypeManager.Initialize();
-            SetBufferCapacity(TypeManager.GetTypeIndex(type).Index, bufferCapacity);
-        }
-
-        public static void SetBufferCapacity<T>(int bufferCapacity)
-            where T : unmanaged, IBufferElementData
-        {
-            TypeManager.Initialize();
-            SetBufferCapacity(TypeManager.GetTypeIndex<T>().Index, bufferCapacity);
+            // TODO might be needed in future
+            // typeof(BindingRegistry).GetMethod("Initialize", BindingFlags.Static | BindingFlags.NonPublic)!.Invoke(null, null);
         }
 
         private static void SetBufferCapacity(int index, int bufferCapacity)

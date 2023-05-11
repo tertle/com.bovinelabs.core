@@ -13,14 +13,14 @@ namespace BovineLabs.Core.Extensions
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
-    public struct FakeDynamicTypeHandle // TODO remove huge hack/workaround
+    public struct FakeDynamicComponentTypeHandle // TODO remove huge hack/workaround
     {
         public TypeIndex TypeIndex;
         public short TypeLookupCache;
 
-        public static implicit operator FakeDynamicTypeHandle(DynamicComponentTypeHandle typeHandle)
+        public static implicit operator FakeDynamicComponentTypeHandle(DynamicComponentTypeHandle typeHandle)
         {
-            return new FakeDynamicTypeHandle { TypeIndex = typeHandle.m_TypeIndex, TypeLookupCache = typeHandle.m_TypeLookupCache };
+            return new FakeDynamicComponentTypeHandle { TypeIndex = typeHandle.m_TypeIndex, TypeLookupCache = typeHandle.m_TypeLookupCache };
         }
     }
 
@@ -137,9 +137,10 @@ namespace BovineLabs.Core.Extensions
             var elementSize = typeInfo.ElementSize;
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
-            // TODO
-            // if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0) && !chunkBufferTypeHandle.IsReadOnly)
-            // chunk.JournalAddRecord(EntitiesJournaling.RecordType.GetBufferRW, chunkBufferTypeHandle.m_TypeIndex, chunkBufferTypeHandle.m_GlobalSystemVersion)
+            if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0) && !chunkBufferTypeHandle.IsReadOnly)
+            {
+                chunk.JournalAddRecord(EntitiesJournaling.RecordType.GetBufferRW, chunkBufferTypeHandle.m_TypeIndex, chunkBufferTypeHandle.m_GlobalSystemVersion);
+            }
 #endif
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -158,22 +159,8 @@ namespace BovineLabs.Core.Extensions
         }
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
-        public static void JournalAddRecordGetComponentDataRW<T>(
-            this ref ArchetypeChunk archetypeChunk,
-            ref ComponentTypeHandle<T> typeHandle,
-            void* data,
-            int dataLength)
-            where T : unmanaged, IComponentData
-        {
-            if (Hint.Unlikely(archetypeChunk.m_EntityComponentStore->m_RecordToJournal != 0))
-            {
-                archetypeChunk.JournalAddRecord(
-                    EntitiesJournaling.RecordType.GetComponentDataRW, typeHandle.m_TypeIndex, typeHandle.m_GlobalSystemVersion, data, dataLength);
-            }
-        }
-
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void JournalAddRecord(
+        public static void JournalAddRecord(
             this ref ArchetypeChunk chunk,
             EntitiesJournaling.RecordType recordType,
             TypeIndex typeIndex,

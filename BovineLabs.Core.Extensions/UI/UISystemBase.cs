@@ -23,7 +23,7 @@ namespace BovineLabs.Core.UI
     [UpdateInGroup(typeof(UISystemGroup))]
     public abstract partial class UISystemBase : SystemBase
     {
-        private const string RootClassName = "root";
+        private const string PanelClassName = "panel";
 
 #if LOCALIZATION_ENABLED
         private UILocalization? localization;
@@ -83,7 +83,7 @@ namespace BovineLabs.Core.UI
                 this.panelElement = asset.CloneTree();
                 this.panelElement.name = this.StateInstanceComponent.ToString();
                 this.panelElement.pickingMode = PickingMode.Ignore;
-                this.panelElement.AddToClassList(RootClassName);
+                this.panelElement.AddToClassList(PanelClassName);
                 this.OnLoad(this.panelElement);
 
 #if LOCALIZATION_ENABLED

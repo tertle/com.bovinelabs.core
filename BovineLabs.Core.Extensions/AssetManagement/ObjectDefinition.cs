@@ -15,16 +15,16 @@ namespace BovineLabs.Core.AssetManagement
         [SerializeField]
         private ObjectId id;
 
+        [ObjectCategories]
+        [SerializeField]
+        private ObjectCategory categories;
+
         [SerializeField]
         [UsedImplicitly]
         private string description = string.Empty;
 
         [SerializeField]
         private string friendlyName = string.Empty;
-
-        [ObjectCategories]
-        [SerializeField]
-        private byte category;
 
         [SerializeField]
         private GameObject? prefab;
@@ -35,9 +35,9 @@ namespace BovineLabs.Core.AssetManagement
             internal set => this.prefab = value;
         }
 
-        public string FriendlyName => this.friendlyName;
+        public ObjectCategory Categories => this.categories;
 
-        public byte Category => this.category;
+        public string FriendlyName => this.friendlyName;
 
         internal ObjectId ID
         {

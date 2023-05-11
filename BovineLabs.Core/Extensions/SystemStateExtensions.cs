@@ -37,11 +37,11 @@ namespace BovineLabs.Core.Extensions
             return system.EntityManager.GetUnsafeEnableableLookup();
         }
 
-        public static DidChangeLookup<T> GetDidChangeLookup<T>(ref this SystemState system)
+        public static ChangeFilterLookup<T> GetChangeFilterLookup<T>(ref this SystemState system, bool isReadOnly)
             where T : unmanaged
         {
-            system.AddReaderWriter(ComponentType.ReadOnly<T>());
-            return system.EntityManager.DidChangeLookup<T>();
+            system.AddReaderWriter(isReadOnly ? ComponentType.ReadOnly<T>() : ComponentType.ReadWrite<T>());
+            return system.EntityManager.GetChangeFilterLookup<T>(isReadOnly);
         }
 
         public static void AddSystemDependency(ref this SystemState state, TypeIndex typeIndex, bool isReadOnly = false)

@@ -10,8 +10,8 @@ namespace BovineLabs.Core.AssetManagement
     /// <summary> An attribute to mark a byte field is an object category to provide a convenient drop down drawer. </summary>
     public class ObjectCategoriesAttribute : KAttribute
     {
-        public ObjectCategoriesAttribute()
-            : base(nameof(ObjectCategories))
+        public ObjectCategoriesAttribute(bool flag = true)
+            : base(nameof(ObjectCategories), flag)
         {
         }
     }

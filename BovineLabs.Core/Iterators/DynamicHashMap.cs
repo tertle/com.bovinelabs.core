@@ -121,6 +121,17 @@ namespace BovineLabs.Core.Iterators
             this.TryAdd(key, item);
         }
 
+        public void AddBatchUnsafe(NativeArray<TKey> keys, NativeArray<TValue> values)
+        {
+            CheckLengthsMatch(keys.Length, values.Length);
+            this.AddBatchUnsafe((TKey*)keys.GetUnsafeReadOnlyPtr(), (TValue*)values.GetUnsafeReadOnlyPtr(), keys.Length);
+        }
+
+        public void AddBatchUnsafe(TKey* keys, TValue* values, int length)
+        {
+            DynamicHashMapBase<TKey, TValue>.AddBatchUnsafe(this.data, keys, values, length);
+        }
+
         /// <summary>
         /// Removes the element with the specified key from the container.
         /// </summary>
@@ -209,6 +220,17 @@ namespace BovineLabs.Core.Iterators
         private static void ThrowKeyNotPresent(TKey key)
         {
             throw new ArgumentException($"Key: {key} is not present in the NativeHashMap.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckLengthsMatch(int keys, int values)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (keys != values)
+            {
+                throw new ArgumentException("Key and value array don't match");
+            }
+#endif
         }
 
         private void Allocate()

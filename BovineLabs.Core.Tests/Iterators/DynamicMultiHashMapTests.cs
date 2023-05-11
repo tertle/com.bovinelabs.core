@@ -7,6 +7,8 @@ namespace BovineLabs.Core.Tests.Iterators
     using BovineLabs.Core.Iterators;
     using BovineLabs.Testing;
     using NUnit.Framework;
+    using Unity.Collections;
+    using UnityEngine;
 
     public class DynamicMultiHashMapTests : ECSTestsFixture
     {
@@ -44,6 +46,33 @@ namespace BovineLabs.Core.Tests.Iterators
             }
 
             Assert.AreEqual(0, hashMap.Count());
+        }
+
+        [Test]
+        public void AddBatchUnsafe()
+        {
+            const int count = 1027;
+            const int keyLimit = 89;
+
+            var hashMap = this.CreateHashMap();
+
+            var keys = new NativeArray<int>(count, Allocator.Temp);
+            var values = new NativeArray<byte>(count, Allocator.Temp);
+
+            for (var i = 0; i < count; i++)
+            {
+                keys[i] = i % keyLimit;
+                values[i] = (byte)(i % byte.MaxValue);
+            }
+
+            hashMap.AddBatchUnsafe(keys, values);
+
+            Assert.AreEqual(count, hashMap.Count());
+
+            for (var i = 0; i < keyLimit; i++)
+            {
+                Assert.IsTrue(hashMap.ContainsKey(i));
+            }
         }
 
         [Test]

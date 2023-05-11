@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_COPY_TRANSFORM
+#if !BL_DISABLE_COPY_TRANSFORM
 namespace BovineLabs.Core.Authoring.Hybrid
 {
     using BovineLabs.Core.Hybrid;

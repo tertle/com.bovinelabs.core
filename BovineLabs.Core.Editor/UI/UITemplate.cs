@@ -17,6 +17,11 @@ namespace BovineLabs.Core.Editor.UI
         private readonly string uxmlPath;
         private readonly string ussPath;
 
+        const string k_ProSuffix = "_dark";
+        const string k_PersonalSuffix = "_light";
+
+        public static string SkinSuffix => EditorGUIUtility.isProSkin ? k_ProSuffix : k_PersonalSuffix;
+
         public UITemplate(string path)
         {
             this.uxmlPath = $"{path}.uxml";
@@ -62,7 +67,7 @@ namespace BovineLabs.Core.Editor.UI
 
             element.styleSheets.Add(this.StyleSheet);
             var assetPath = AssetDatabase.GetAssetPath(this.StyleSheet);
-            assetPath = assetPath.Insert(assetPath.LastIndexOf('.'), Resources.SkinSuffix);
+            assetPath = assetPath.Insert(assetPath.LastIndexOf('.'), SkinSuffix);
             if (string.IsNullOrEmpty(assetPath))
             {
                 return;

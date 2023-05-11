@@ -15,7 +15,9 @@ namespace BovineLabs.Testing
         private PlayerLoopSystem previousPlayerLoop;
         private World? previousWorld;
 
-        protected World? World { get; private set; }
+        private World? world;
+
+        protected World World => this.world!;
 
         protected WorldUnmanaged WorldUnmanaged => this.World!.Unmanaged;
 
@@ -31,7 +33,7 @@ namespace BovineLabs.Testing
             PlayerLoop.SetPlayerLoop(PlayerLoop.GetDefaultPlayerLoop());
 
             this.previousWorld = World.DefaultGameObjectInjectionWorld;
-            this.World = World.DefaultGameObjectInjectionWorld = new World("Test World");
+            this.world = World.DefaultGameObjectInjectionWorld = new World("Test World");
             this.World.UpdateAllocatorEnableBlockFree = true;
             this.Manager = this.World.EntityManager;
             this.ManagerDebug = new EntityManager.EntityManagerDebug(this.Manager);
@@ -52,7 +54,7 @@ namespace BovineLabs.Testing
         {
             // Clean up systems before calling CheckInternalConsistency because we might have filters etc
             // holding on SharedComponentData making checks fail
-            while (this.World!.Systems.Count > 0)
+            while (this.World.Systems.Count > 0)
             {
                 this.World.DestroySystemManaged(this.World.Systems[0]);
             }

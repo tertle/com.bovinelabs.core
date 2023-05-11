@@ -30,6 +30,8 @@ namespace BovineLabs.Core.Editor.Inspectors
             }
 
             var parent = new VisualElement { style = { flexDirection = FlexDirection.Row } };
+            parent.AddToClassList("unity-base-field");
+            parent.AddToClassList("unity-base-field__inspector-field");
 
             var label = new Label { text = property.displayName };
             label.AddToClassList("unity-base-field__label");
@@ -110,7 +112,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         private static List<SearchView.Item> GenerateItems(StableTypeHashAttribute attribute)
         {
-            var componentTypes = new List<SearchView.Item>();
+            var componentTypes = new List<SearchView.Item> { new() { Path = "None", Data = 0UL } };
 
             foreach (var t in TypeManager.AllTypes)
             {

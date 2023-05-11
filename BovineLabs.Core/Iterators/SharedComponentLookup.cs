@@ -61,6 +61,31 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
+        public bool HasComponent(Entity entity)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+#endif
+            return m_Access->EntityComponentStore->HasComponent(entity, this.m_TypeIndex);
+        }
+
+        public bool TryGetComponent(Entity entity, out T sharedComponentData)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+#endif
+
+            // Not efficient yet, just convenient
+            if (!this.HasComponent(entity))
+            {
+                sharedComponentData = default;
+                return false;
+            }
+
+            sharedComponentData = this[entity];
+            return true;
+        }
+
         /// <summary>
         /// When a ComponentLookup is cached by a system across multiple system updates, calling this function
         /// inside the system's Update() method performs the minimal incremental updates necessary to make the

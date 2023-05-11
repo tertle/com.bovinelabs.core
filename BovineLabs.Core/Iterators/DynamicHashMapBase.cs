@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Iterators
 {
     using System;
     using System.Diagnostics;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -69,6 +70,37 @@ namespace BovineLabs.Core.Iterators
             buckets[bucket] = idx;
 
             return true;
+        }
+
+        internal static void AddBatchUnsafe(DynamicBuffer<byte> buffer, [NoAlias] TKey* keys, [NoAlias] TValue* values, int length)
+        {
+            var data = buffer.AsData<TKey, TValue>();
+
+            var oldLength = DynamicHashMapData.GetCount(data);
+            var newLength = oldLength + length;
+
+            if (data->KeyCapacity < newLength)
+            {
+                DynamicHashMapData.ReallocateHashMap<TKey, TValue>(buffer, newLength, DynamicHashMapData.GetBucketSize(newLength), out data);
+            }
+
+            var keyPtr = (TKey*)data->Keys + oldLength;
+            var valuePtr = (TValue*)data->Values + oldLength;
+
+            UnsafeUtility.MemCpy(keyPtr, keys, length * UnsafeUtility.SizeOf<TKey>());
+            UnsafeUtility.MemCpy(valuePtr, values, length * UnsafeUtility.SizeOf<TValue>());
+
+            var buckets = (int*)data->Buckets;
+            var nextPtrs = (int*)data->Next + oldLength;
+
+            for (var idx = 0; idx < length; idx++)
+            {
+                var bucket = keys[idx].GetHashCode() & data->BucketCapacityMask;
+                nextPtrs[idx] = buckets[bucket];
+                buckets[bucket] = oldLength + idx;
+            }
+
+            data->AllocatedIndexLength += length;
         }
 
         internal static int Remove(DynamicBuffer<byte> buffer, TKey key, bool isMultiHashMap)

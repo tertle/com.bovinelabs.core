@@ -64,7 +64,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
                 this.typeTracks[i] = new TypeTrack
                 {
                     TypeName = TypeManager.GetTypeNameFixed(componentType.TypeIndex),
-                    TypeHandle = state.GetDynamicComponentTypeHandle(componentType),
+                    DynamicTypeHandle = state.GetDynamicComponentTypeHandle(componentType),
                     Query = state.GetEntityQuery(componentType),
                     Changed = new NativeArray<int>(FramesToTrack, Allocator.Persistent),
                     Chunks = new NativeArray<int>(FramesToTrack, Allocator.Persistent),
@@ -110,11 +110,11 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
             for (var index = 0; index < this.typeTracks.Length; index++)
             {
                 var track = this.typeTracks[index];
-                track.TypeHandle.Update(ref state);
+                track.DynamicTypeHandle.Update(ref state);
 
                 this.jobHandles[index] = new DidChangeJob
                     {
-                        TypeHandle = track.TypeHandle,
+                        DynamicTypeHandle = track.DynamicTypeHandle,
                         Changed = track.Changed,
                         Chunks = track.Chunks,
                         Index = currentFrameIndex,
@@ -145,7 +145,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
         public struct TypeTrack
         {
             public FixedString128Bytes TypeName;
-            public DynamicComponentTypeHandle TypeHandle;
+            public DynamicComponentTypeHandle DynamicTypeHandle;
             public EntityQuery Query;
             public NativeArray<int> Changed;
             public NativeArray<int> Chunks;
@@ -159,7 +159,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
         private struct DidChangeJob : IJobChunk
         {
             [ReadOnly]
-            public FakeDynamicTypeHandle TypeHandle;
+            public FakeDynamicComponentTypeHandle DynamicTypeHandle;
 
             public NativeArray<int> Changed;
 
@@ -170,7 +170,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var changed = chunk.DidChange(this.TypeHandle.TypeIndex, ref this.TypeHandle.TypeLookupCache, this.LastSystemVersion);
+                var changed = chunk.DidChange(this.DynamicTypeHandle.TypeIndex, ref this.DynamicTypeHandle.TypeLookupCache, this.LastSystemVersion);
                 this.Changed[this.Index] += changed ? 1 : 0;
                 this.Chunks[this.Index] += 1;
             }

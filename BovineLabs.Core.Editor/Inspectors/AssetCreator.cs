@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             this.Element.Bind(this.serializedObject);
             this.Element.RegisterCallback<GeometryChangedEvent>(this.Init);
 
-            var directory = EditorSettingsUtility.GetAssetDirectory(directoryKey, defaultDirectory);
+            var directory = EditorSettingsUtility.GetAssetDirectory<T>(directoryKey, defaultDirectory);
             this.path = Path.Combine(directory, defaultFileName);
         }
 

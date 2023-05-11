@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Editor.Settings
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using BovineLabs.Core.Editor.Helpers;
     using BovineLabs.Core.Keys;
     using BovineLabs.Core.Settings;
@@ -50,10 +51,7 @@ namespace BovineLabs.Core.Editor.Settings
             {
                 case 0:
 
-                    var directory = typeof(KSettings).IsAssignableFrom(typeof(T))
-                        ? GetAssetDirectory(EditorFoldersSettings.KSettingsKey, EditorFoldersSettings.DefaultKSettingsDirectory)
-                        : GetAssetDirectory(EditorFoldersSettings.SettingsKey, EditorFoldersSettings.DefaultSettingsDirectory);
-
+                    var directory = GetAssetDirectory<T>(EditorFoldersSettings.SettingsKey, EditorFoldersSettings.DefaultSettingsDirectory);
                     var path = Path.Combine(directory, $"{typeof(T).Name}.asset");
 
                     // Search didn't work, for some reason this seems to fail sometimes due to library state
@@ -84,7 +82,8 @@ namespace BovineLabs.Core.Editor.Settings
             return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(asset));
         }
 
-        public static string GetAssetDirectory(string key, string defaultDirectory)
+        public static string GetAssetDirectory<T>(string key, string defaultDirectory)
+            where T : ScriptableObject
         {
             var assets = AssetDatabase.FindAssets($"t:{nameof(EditorFoldersSettings)}");
 
@@ -99,6 +98,11 @@ namespace BovineLabs.Core.Editor.Settings
                 var settings = AssetDatabase.LoadAssetAtPath<EditorFoldersSettings>(AssetDatabase.GUIDToAssetPath(assets[0]));
 
                 settings.GetOrAddPath(key, ref defaultDirectory);
+            }
+
+            if (typeof(T).GetCustomAttribute<ResourceSettingsAttribute>() != null)
+            {
+                defaultDirectory = Path.Combine(defaultDirectory, "Resources");
             }
 
             AssetDatabaseHelper.CreateDirectories(defaultDirectory);

@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="values"> Collection of values, the length should match the length of keys. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
-        public static unsafe void ClearAndAddKeyBatchUnsafe<TKey, TValue>(
+        public static unsafe void ClearAndAddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeArray<TKey> keys,
             [NoAlias] NativeArray<TValue> values)
@@ -31,10 +31,10 @@ namespace BovineLabs.Core.Extensions
             where TValue : unmanaged
         {
             CheckLengthsMatch(keys.Length, values.Length);
-            ClearAndAddKeyBatchUnsafe(hashMap, (TKey*)keys.GetUnsafeReadOnlyPtr(), (TValue*)values.GetUnsafeReadOnlyPtr(), keys.Length);
+            ClearAndAddBatchUnsafe(hashMap, (TKey*)keys.GetUnsafeReadOnlyPtr(), (TValue*)values.GetUnsafeReadOnlyPtr(), keys.Length);
         }
 
-        public static unsafe void ClearAndAddKeyBatchUnsafe<TKey, TValue>(
+        public static unsafe void ClearAndAddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap,
             TKey[] keys,
             TValue[] values,
@@ -47,7 +47,7 @@ namespace BovineLabs.Core.Extensions
             var handle1 = GCHandle.Alloc(keys, GCHandleType.Pinned);
             var handle2 = GCHandle.Alloc(values, GCHandleType.Pinned);
 
-            ClearAndAddKeyBatchUnsafe(hashMap, (TKey*)handle1.AddrOfPinnedObject(), (TValue*)handle2.AddrOfPinnedObject(), length);
+            ClearAndAddBatchUnsafe(hashMap, (TKey*)handle1.AddrOfPinnedObject(), (TValue*)handle2.AddrOfPinnedObject(), length);
 
             handle1.Free();
             handle2.Free();
@@ -64,7 +64,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="length"> The length of the buffers. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
-        public static unsafe void ClearAndAddKeyBatchUnsafe<TKey, TValue>(
+        public static unsafe void ClearAndAddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap,
             [NoAlias] TKey* keys,
             [NoAlias] TValue* values,
@@ -111,7 +111,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="length"> The length of the buffers. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
-        public static unsafe void ClearAndAddKeyBatchUnsafe<TKey, TValue>(
+        public static unsafe void ClearAndAddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeSlice<TKey> keys,
             [NoAlias] NativeArray<TValue> values)
@@ -362,6 +362,40 @@ namespace BovineLabs.Core.Extensions
             where TValue : unmanaged
         {
             hashMap.m_Writer.m_Buffer->AddBatchUnsafe(keys, values, length);
+        }
+
+        public static unsafe void RecalculateBuckets<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> hashMap)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            var length = hashMap.m_HashMapData.m_Buffer->allocatedIndexLength;
+
+            var data = hashMap.GetUnsafeBucketData();
+
+            var buckets = (int*)data.buckets;
+            var nextPtrs = (int*)data.next;
+            var keys = (int*)data.keys;
+
+            for (var idx = 0; idx < length; idx++)
+            {
+                var bucket = keys[idx].GetHashCode() & data.bucketCapacityMask;
+                nextPtrs[idx] = buckets[bucket];
+                buckets[bucket] = idx;
+            }
+        }
+
+        public static unsafe void SetLengthUnsafe<TKey, TValue>([NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap, int length)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            hashMap.m_HashMapData.m_Buffer->allocatedIndexLength = length;
+        }
+
+        public static unsafe int GetLengthUnsafe<TKey, TValue>([NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            return hashMap.m_HashMapData.m_Buffer->allocatedIndexLength;
         }
 
         public static unsafe ref TValue GetValueByRef<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> map, TKey key)

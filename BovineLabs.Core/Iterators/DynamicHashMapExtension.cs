@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Iterators
 {
     using System;
+    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using Unity.Assertions;
     using Unity.Collections.LowLevel.Unsafe;
@@ -39,6 +40,7 @@ namespace BovineLabs.Core.Iterators
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
+            CheckSize(buffer);
             return (DynamicHashMapData*)buffer.GetUnsafePtr();
         }
 
@@ -47,7 +49,17 @@ namespace BovineLabs.Core.Iterators
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
+            CheckSize(buffer);
             return (DynamicHashMapData*)buffer.GetUnsafeReadOnlyPtr();
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckSize(DynamicBuffer<byte> buffer)
+        {
+            if (buffer.Length < UnsafeUtility.SizeOf<DynamicHashMapData>())
+            {
+                throw new InvalidOperationException("Buffer not initialized before use.");
+            }
         }
     }
 }

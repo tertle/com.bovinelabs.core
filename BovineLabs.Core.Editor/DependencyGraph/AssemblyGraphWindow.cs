@@ -172,7 +172,7 @@ namespace BovineLabs.Core.Editor.DependencyGraph
                 this.dependencyData.Add(data);
 
                 selectedObjectNames.Add(assemblyDefinitionAsset.name);
-                selectedObjectGUIDs.Add(AssetDatabase.GUIDFromAssetPath(path).ToString());
+                selectedObjectGUIDs.Add($"GUID:{AssetDatabase.GUIDFromAssetPath(path)}");
             }
 
             // Iterate all assets

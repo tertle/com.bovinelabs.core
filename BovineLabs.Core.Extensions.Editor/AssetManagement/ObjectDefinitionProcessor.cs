@@ -17,11 +17,7 @@ namespace BovineLabs.Core.Editor.AssetManagement
         [UsedImplicitly(ImplicitUseKindFlags.Access)]
         [SuppressMessage("ReSharper", "Unity.IncorrectMethodSignature", Justification = "Changed in 2021")]
         private static void OnPostprocessAllAssets(
-            string[] importedAssets,
-            string[] deletedAssets,
-            string[] movedAssets,
-            string[] movedFromAssetPaths,
-            bool didDomainReload)
+            string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths, bool didDomainReload)
         {
             if (didDomainReload)
             {

@@ -13,12 +13,17 @@ namespace BovineLabs.Core.Keys
     {
         /// <summary> Initializes a new instance of the <see cref="KAttribute" /> class. </summary>
         /// <param name="settings"> The name of the settings file. </param>
-        public KAttribute(string settings)
+        /// <param name="flags"> Is K used as flags. </param>
+        public KAttribute(string settings, bool flags = false)
         {
             this.Settings = settings;
+            this.Flags = flags;
         }
 
-        /// <summary> Gets or sets the name of the settings file. </summary>
-        public string Settings { get; set; }
+        /// <summary> Gets the name of the settings file. </summary>
+        public string Settings { get; }
+
+        /// <summary> Gets a value indicating whether it should be drawn as flags or not. </summary>
+        public bool Flags { get; }
     }
 }

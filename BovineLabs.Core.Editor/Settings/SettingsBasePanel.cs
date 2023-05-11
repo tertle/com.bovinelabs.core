@@ -6,7 +6,9 @@ namespace BovineLabs.Core.Editor.Settings
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
+    using System.Reflection;
     using BovineLabs.Core.Settings;
     using UnityEditor;
     using UnityEditor.UIElements;
@@ -125,6 +127,14 @@ namespace BovineLabs.Core.Editor.Settings
         {
             public SerializedProperty Parent;
             public SerializedProperty[] Children;
+        }
+    }
+
+    public class Test
+    {
+        public enum Mode
+        {
+
         }
     }
 }

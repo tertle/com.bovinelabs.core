@@ -122,14 +122,14 @@ namespace BovineLabs.Core.UI
 
             if (document.rootVisualElement == null)
             {
-                Log.Error($"{nameof(UIDocument)} root not found.");
+                Debug.LogError($"{nameof(UIDocument)} root not found.");
                 return new VisualElement();
             }
 
             var documentRoot = document.rootVisualElement.Q(rootName);
             if (documentRoot == null)
             {
-                Log.Error($"{rootName} not found.");
+                Debug.LogError($"{rootName} not found.");
                 return new VisualElement();
             }
 

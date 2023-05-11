@@ -4,70 +4,67 @@
 
 namespace BovineLabs.Core.Editor.Keys
 {
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Keys;
     using UnityEditor;
+    using UnityEditor.UIElements;
     using UnityEngine;
+    using UnityEngine.UIElements;
 
     [CustomPropertyDrawer(typeof(KAttribute), true)]
     public class KAttributeDrawer : PropertyDrawer
     {
-        private static readonly Dictionary<string, KSettings> SettingsMap = new(StringComparer.OrdinalIgnoreCase);
-
-        public static KSettings? GetSettingsFile(KAttribute attr)
+        /// <inheritdoc/>
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            if (!SettingsMap.TryGetValue(attr.Settings, out var k))
-            {
-                k = Resources.Load<KSettings>(attr.Settings);
-
-                if (k != null)
-                {
-                    SettingsMap[attr.Settings] = k;
-                }
-            }
-
-            return k;
-        }
-
-        /// <inheritdoc />
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-        {
-            var attr = (KAttribute)this.attribute;
-
             if (property.propertyType != SerializedPropertyType.Integer)
             {
-                EditorGUI.LabelField(position, "KAttribute can only be applied to integer fields.");
-                return;
+                return new Label("KAttribute can only be applied to integer fields.");
             }
 
-            var k = GetSettingsFile(attr);
+            var attr = (KAttribute)this.attribute;
+            var k = Resources.Load<KSettings>(attr.Settings);
 
             if (k == null)
             {
-                EditorGUI.LabelField(position, $"Settings file {attr.Settings} not found");
-                return;
+                return new Label($"Settings file {attr.Settings} not found");
             }
 
-            var current = property.intValue;
-            int index;
-            for (index = 0; index < k.Keys.Length; index++)
+            if (attr.Flags)
             {
-                if (k.Keys[index].Value == current)
+                var choices = k.Keys.Select(s => s.Name).ToList();
+                var popup = new MaskField(property.displayName, choices, property.intValue);
+                popup.RegisterValueChangedCallback(evt =>
                 {
-                    break;
-                }
+                    property.intValue = evt.newValue;
+                    property.serializedObject.ApplyModifiedProperties();
+                });
+                return popup;
             }
-
-            EditorGUI.BeginProperty(position, label, property);
-            var newIndex = EditorGUI.Popup(position, label, index, k.Keys.Select(s => new GUIContent(s.Name)).ToArray());
-            if (newIndex != index)
+            else
             {
-                property.intValue = k.Keys[newIndex].Value;
-            }
+                var current = property.intValue;
+                int index;
+                for (index = 0; index < k.Keys.Count; index++)
+                {
+                    if (k.Keys[index].Value == current)
+                    {
+                        break;
+                    }
+                }
 
-            EditorGUI.EndProperty();
+                var choices = k.Keys.Select(s => s.Value).ToList();
+
+                var popup = new PopupField<byte>(property.displayName, choices, index, FormatCallback, FormatCallback);
+                string FormatCallback(byte value) => k.Keys.First(key => key.Value == value).Name;
+                popup.RegisterValueChangedCallback(evt =>
+                {
+                    property.intValue = evt.newValue;
+                    property.serializedObject.ApplyModifiedProperties();
+                });
+
+                return popup;
+            }
         }
     }
 }

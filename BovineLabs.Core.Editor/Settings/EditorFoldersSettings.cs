@@ -17,9 +17,6 @@ namespace BovineLabs.Core.Editor.Settings
         public const string SettingsKey = "settings";
         public const string DefaultSettingsDirectory = "Assets/Configs/Settings/";
 
-        public const string KSettingsKey = "ksettings";
-        public const string DefaultKSettingsDirectory = "Assets/Configs/Settings/Resources";
-
         [SerializeField]
         private List<KeyPath> paths = new();
 

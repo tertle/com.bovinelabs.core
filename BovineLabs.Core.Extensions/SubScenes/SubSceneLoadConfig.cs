@@ -12,6 +12,7 @@ namespace BovineLabs.Core.SubScenes
 
     /// <summary> Marks a <see cref="SubScene" /> as only loading in a specific world type. </summary>
     [RequireComponent(typeof(SubScene))]
+    [DisallowMultipleComponent]
     public class SubSceneLoadConfig : MonoBehaviour
     {
 #if UNITY_NETCODE

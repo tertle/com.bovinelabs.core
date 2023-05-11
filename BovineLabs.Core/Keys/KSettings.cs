@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Keys
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using BovineLabs.Core.Settings;
     using JetBrains.Annotations;
@@ -16,30 +17,19 @@ namespace BovineLabs.Core.Keys
     public abstract class KSettings<T> : KSettings
         where T : KSettings<T>
     {
-        internal sealed override void Init()
-        {
-            K<T>.Initialize(this.Keys);
-        }
-    }
-
-    /// <summary>
-    /// The base KSettings file for defining custom enums, layers, keys. Do not implement this directly, implement <see cref="KSettings{T}" />.
-    /// </summary>
-    [Serializable]
-    public abstract class KSettings : ScriptableObject, ISettings
-    {
-        [Multiline]
-        [UsedImplicitly]
-        [SerializeField]
-        private string description = string.Empty;
-
         [SerializeField]
         private NameValue[] keys = Array.Empty<NameValue>();
 
-        public NameValue[] Keys => this.keys;
+        public override IReadOnlyList<NameValue> Keys => this.keys;
+
+        /// <inheritdoc />
+        internal sealed override void Init()
+        {
+            K<T>.Initialize(this.keys);
+        }
 
 #if UNITY_EDITOR
-        private void OnValidate()
+        protected virtual void OnValidate()
         {
             if (this.keys.Length > KMap.MaxCapacity)
             {
@@ -56,6 +46,21 @@ namespace BovineLabs.Core.Keys
             }
         }
 #endif
+    }
+
+    /// <summary>
+    /// The base KSettings file for defining custom enums, layers, keys. Do not implement this directly, implement <see cref="KSettings{T}" />.
+    /// </summary>
+    [Serializable]
+    [ResourceSettings]
+    public abstract class KSettings : ScriptableObject, ISettings
+    {
+        [Multiline]
+        [UsedImplicitly]
+        [SerializeField]
+        private string description = string.Empty;
+
+        public abstract IReadOnlyList<NameValue> Keys { get; }
 
         internal abstract void Init();
 

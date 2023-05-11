@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Editor.AssetManagement
                 return;
             }
 
-            var directory = EditorSettingsUtility.GetAssetDirectory("definitions", DefaultDirectory);
+            var directory = EditorSettingsUtility.GetAssetDirectory<ObjectDefinition>("definitions", DefaultDirectory);
 
             foreach (var select in Selection.gameObjects)
             {

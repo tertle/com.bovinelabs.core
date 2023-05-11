@@ -96,7 +96,7 @@ namespace BovineLabs.Core.SubScenes
                 requiredForLoading |= isServer && loadingMode == SubSceneLoadMode.BoundingVolume;
 
                 var loadingParams = default(SceneSystem.LoadParameters);
-                loadingParams.AutoLoad = (this.World.IsServerWorld() && loadingMode != SubSceneLoadMode.OnDemand) || loadingMode == SubSceneLoadMode.AutoLoad;
+                loadingParams.AutoLoad = (isServer && loadingMode != SubSceneLoadMode.OnDemand) || loadingMode == SubSceneLoadMode.AutoLoad;
                 var entity = SceneSystem.LoadSceneAsync(this.World.Unmanaged, subScene.SceneGUID, loadingParams);
                 this.EntityManager.AddComponentObject(entity, subScene);
 

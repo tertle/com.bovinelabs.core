@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Iterators
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -76,6 +77,17 @@ namespace BovineLabs.Core.Iterators
         public void Add(TKey key, TValue item)
         {
             DynamicHashMapBase<TKey, TValue>.TryAdd(this.data, key, item, true);
+        }
+
+        public void AddBatchUnsafe(NativeArray<TKey> keys, NativeArray<TValue> values)
+        {
+            CheckLengthsMatch(keys.Length, values.Length);
+            this.AddBatchUnsafe((TKey*)keys.GetUnsafeReadOnlyPtr(), (TValue*)values.GetUnsafeReadOnlyPtr(), keys.Length);
+        }
+
+        public void AddBatchUnsafe(TKey* keys, TValue* values, int length)
+        {
+            DynamicHashMapBase<TKey, TValue>.AddBatchUnsafe(this.data, keys, values, length);
         }
 
         /// <summary>
@@ -206,6 +218,17 @@ namespace BovineLabs.Core.Iterators
             {
                 throw new InvalidOperationException("Buffer has data but is too small to be a header.");
             }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckLengthsMatch(int keys, int values)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (keys != values)
+            {
+                throw new ArgumentException("Key and value array don't match");
+            }
+#endif
         }
 
         private void Allocate()

@@ -50,11 +50,18 @@ namespace BovineLabs.Core.Extensions
             return new UnsafeEnableableLookup(access);
         }
 
-        internal static DidChangeLookup<T> DidChangeLookup<T>(this EntityManager entityManager)
+        // Internal because this is not safe called directly form EntityManager
+        internal static ChangeFilterLookup<T> GetChangeFilterLookup<T>(this EntityManager entityManager, bool isReadOnly)
             where T : unmanaged
         {
             var access = entityManager.GetCheckedEntityDataAccess();
-            return new DidChangeLookup<T>(ComponentType.ReadOnly<T>().TypeIndex, access);
+            var typeIndex = TypeManager.GetTypeIndex<T>();
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            return new ChangeFilterLookup<T>(typeIndex, access, isReadOnly);
+#else
+            return new ChangeFilterLookup<T>(typeIndex, access);
+#endif
         }
 
         /// <summary> Gets or creates the <see cref="T" /> singleton entity. </summary>
