@@ -88,6 +88,11 @@ namespace BovineLabs.Core.Editor.Inspectors
 
             this.Element.UnregisterCallback<GeometryChangedEvent>(this.Init);
 
+            var removeButton = listView.Q<Button>("unity-list-view__remove-button");
+            removeButton.parent.Remove(removeButton);
+
+            listView.showBoundCollectionSize = false;
+
             listView.itemsAdded += ints =>
             {
                 this.serializedObject.Update();

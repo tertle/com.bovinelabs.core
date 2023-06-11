@@ -4,9 +4,11 @@
 
 namespace BovineLabs.Core.Extensions
 {
+    using BovineLabs.Core.Collections;
     using BovineLabs.Core.Iterators;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Jobs.LowLevel.Unsafe;
 
     /// <summary> Extensions for <see cref="EntityManager" />. </summary>
     public static unsafe class EntityManagerExtensions
@@ -50,6 +52,36 @@ namespace BovineLabs.Core.Extensions
             return new UnsafeEnableableLookup(access);
         }
 
+        public static UntypedDynamicBuffer GetUntypedBuffer(
+            this EntityManager entityManager,
+            Entity entity,
+            ComponentType componentType,
+            bool isReadOnly = false)
+        {
+            EntityDataAccess* access = entityManager.GetCheckedEntityDataAccess();
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var safetyHandles = &access->DependencyManager->Safety;
+#endif
+
+            var typeIndex = componentType.TypeIndex;
+
+            return access->GetUntypedBuffer(
+                componentType,
+                entity,
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                safetyHandles->GetSafetyHandle(typeIndex, isReadOnly),
+                safetyHandles->GetBufferSafetyHandle(typeIndex),
+#endif
+                isReadOnly);
+        }
+
+        public static void* GetComponentDataRaw(this EntityManager entityManager, Entity entity, ComponentType componentType)
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+            return access->GetComponentDataRawRW(entity, componentType.TypeIndex);
+        }
+
         // Internal because this is not safe called directly form EntityManager
         internal static ChangeFilterLookup<T> GetChangeFilterLookup<T>(this EntityManager entityManager, bool isReadOnly)
             where T : unmanaged
@@ -70,7 +102,7 @@ namespace BovineLabs.Core.Extensions
         /// <returns> The entity. </returns>
         public static Entity GetOrCreateSingletonEntity<T>(this EntityManager em)
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
             if (!query.IsEmptyIgnoreFilter)
             {
                 return query.GetSingletonEntity();
@@ -83,14 +115,14 @@ namespace BovineLabs.Core.Extensions
 
         public static Entity GetSingletonEntity<T>(this EntityManager em)
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
             query.CompleteDependency();
             return query.GetSingletonEntity();
         }
 
         public static bool TryGetSingletonEntity<T>(this EntityManager em, out Entity entity)
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
 
             if (query.CalculateChunkCount() != 1)
             {
@@ -104,14 +136,14 @@ namespace BovineLabs.Core.Extensions
 
         public static bool HasSingleton<T>(this EntityManager em)
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
             return query.CalculateChunkCount() == 1;
         }
 
         public static T GetSingleton<T>(this EntityManager em, bool completeDependency = true)
             where T : unmanaged, IComponentData
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
             if (completeDependency)
             {
                 query.CompleteDependency();
@@ -123,7 +155,7 @@ namespace BovineLabs.Core.Extensions
         public static void SetSingleton<T>(this EntityManager em, T value, bool completeDependency = true)
             where T : unmanaged, IComponentData
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
             if (completeDependency)
             {
                 query.CompleteDependency();
@@ -135,7 +167,7 @@ namespace BovineLabs.Core.Extensions
         public static RefRW<T> GetSingletonRW<T>(this EntityManager em, bool completeDependency = true)
             where T : unmanaged, IComponentData
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
             if (completeDependency)
             {
                 query.CompleteDependency();
@@ -146,7 +178,7 @@ namespace BovineLabs.Core.Extensions
 
         public static T GetSingletonObject<T>(this EntityManager em, bool completeDependency = true)
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
             if (completeDependency)
             {
                 query.CompleteDependency();
@@ -158,7 +190,7 @@ namespace BovineLabs.Core.Extensions
         public static bool TryGetSingleton<T>(this EntityManager em, out T component, bool completeDependency = true)
             where T : unmanaged, IComponentData
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
 
             if (query.CalculateEntityCount() != 1)
             {
@@ -178,7 +210,7 @@ namespace BovineLabs.Core.Extensions
         public static DynamicBuffer<T> GetSingletonBuffer<T>(this EntityManager em, bool isReadOnly = false, bool completeDependency = true)
             where T : unmanaged, IBufferElementData
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
             if (completeDependency)
             {
                 query.CompleteDependency();
@@ -190,7 +222,7 @@ namespace BovineLabs.Core.Extensions
         public static bool TryGetSingletonBuffer<T>(this EntityManager em, out DynamicBuffer<T> buffer, bool isReadOnly = false, bool completeDependency = true)
             where T : unmanaged, IBufferElementData
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
 
             if (query.CalculateEntityCount() != 1)
             {
@@ -211,7 +243,7 @@ namespace BovineLabs.Core.Extensions
         public static T GetManagedSingleton<T>(this EntityManager em, bool completeDependency = true)
             where T : class
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
             if (completeDependency)
             {
                 query.CompleteDependency();
@@ -223,7 +255,7 @@ namespace BovineLabs.Core.Extensions
         public static bool TryGetManagedSingleton<T>(this EntityManager em, out T? component, bool completeDependency = true)
             where T : class
         {
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
 
             if (query.CalculateEntityCount() != 1)
             {

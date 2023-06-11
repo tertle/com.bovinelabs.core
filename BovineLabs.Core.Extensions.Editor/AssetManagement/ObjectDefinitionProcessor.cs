@@ -7,13 +7,21 @@ namespace BovineLabs.Core.Editor.AssetManagement
 {
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using BovineLabs.Core.AssetManagement;
+    using BovineLabs.Core.ObjectManagement;
     using JetBrains.Annotations;
     using UnityEditor;
+    using UnityEngine;
 
-    /// <summary> Ensures <see cref="ObjectDefinition" /> always have a unique ID even if 2 branches merge. </summary>
+    /// <summary> An <see cref="AssetPostprocessor"/> that ensures <see cref="IID" /> types always have a unique ID even if 2 branches merge. </summary>
     public class ObjectDefinitionProcessor : AssetPostprocessor
     {
+        private interface IProcessor
+        {
+            bool DidChange { get; }
+
+            bool TryProcess(string importedAsset);
+        }
+
         [UsedImplicitly(ImplicitUseKindFlags.Access)]
         [SuppressMessage("ReSharper", "Unity.IncorrectMethodSignature", Justification = "Changed in 2021")]
         private static void OnPostprocessAllAssets(
@@ -24,72 +32,99 @@ namespace BovineLabs.Core.Editor.AssetManagement
                 return;
             }
 
-            var didChange = false;
-
-            Dictionary<int, int>? map = null;
-
-            foreach (var importedAsset in importedAssets)
+            var processors = new IProcessor[]
             {
-                var asset = AssetDatabase.LoadAssetAtPath<ObjectDefinition>(importedAsset);
+                new Processor<ObjectDefinition>(),
+                new Processor<ObjectGroup>(),
+            };
+
+            foreach (var asset in importedAssets)
+            {
+                foreach (var p in processors)
+                {
+                    if (p.TryProcess(asset))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            foreach (var p in processors)
+            {
+                if (p.DidChange)
+                {
+                    // TODO dirty subscenes?
+                }
+            }
+        }
+
+        private class Processor<T> : IProcessor
+            where T : ScriptableObject, IID
+        {
+            private Dictionary<int, int>? map;
+
+            public bool DidChange { get; private set; }
+
+            public bool TryProcess(string importedAsset)
+            {
+                var asset = AssetDatabase.LoadAssetAtPath<T>(importedAsset);
 
                 if (asset == null)
                 {
-                    continue;
+                    return false;
                 }
 
-                map ??= GetIDMap();
-                map.TryGetValue(asset.ID, out var count);
+                this.map ??= GetIDMap();
+                this.map.TryGetValue(asset.ID, out var count);
 
                 if (count > 1)
                 {
-                    var newId = GetFirstFreeID(map);
-                    map[asset.ID] = count - 1; // update the old ID
+                    var newId = GetFirstFreeID(this.map);
+                    this.map[asset.ID] = count - 1; // update the old ID
                     asset.ID = new ObjectId { ID = newId };
-                    map[newId] = 1;
+                    this.map[newId] = 1;
                     EditorUtility.SetDirty(asset);
                     AssetDatabase.SaveAssetIfDirty(asset);
 
-                    didChange = true;
+                    this.DidChange = true;
                 }
+
+                return true;
             }
 
-            if (didChange)
+            private static Dictionary<int, int> GetIDMap()
             {
-                // TODO figure out how to re-import the correct subscene
-            }
-        }
+                var idMap = new Dictionary<int, int>();
 
-        private static Dictionary<int, int> GetIDMap()
-        {
-            var idMap = new Dictionary<int, int>();
+                var guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
 
-            var guids = AssetDatabase.FindAssets($"t:{nameof(ObjectDefinition)}");
-
-            foreach (var guid in guids)
-            {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var asset = AssetDatabase.LoadAssetAtPath<ObjectDefinition>(path);
-
-                idMap.TryGetValue(asset.ID, out var count);
-                count++;
-                idMap[asset.ID] = count;
-            }
-
-            return idMap;
-        }
-
-        private static int GetFirstFreeID(IReadOnlyDictionary<int, int> map)
-        {
-            for (var i = 0; i < int.MaxValue; i++)
-            {
-                if (!map.ContainsKey(i))
+                foreach (var guid in guids)
                 {
-                    return i;
+                    var path = AssetDatabase.GUIDToAssetPath(guid);
+                    var asset = AssetDatabase.LoadAssetAtPath<T>(path);
+
+                    idMap.TryGetValue(asset.ID, out var count);
+                    count++;
+                    idMap[asset.ID] = count;
                 }
+
+                return idMap;
             }
 
-            return -1; // You'd have to hit int.MaxValue ids to ever hit this case
+            private static int GetFirstFreeID(IReadOnlyDictionary<int, int> map)
+            {
+                for (var i = 0; i < int.MaxValue; i++)
+                {
+                    if (!map.ContainsKey(i))
+                    {
+                        return i;
+                    }
+                }
+
+                return -1; // You'd have to hit int.MaxValue ids to ever hit this case
+            }
         }
+
     }
 }
 #endif

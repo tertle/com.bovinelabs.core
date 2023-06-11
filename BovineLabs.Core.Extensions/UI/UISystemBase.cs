@@ -50,7 +50,7 @@ namespace BovineLabs.Core.UI
             this.RequireForUpdate(query);
             this.RequireForUpdate<UIAssets>();
 
-            this.stateKey = K<UIStates>.NameToKey(this.StateName);
+            this.stateKey = (byte)K<UIStates>.NameToKey(this.StateName);
 
             this.EntityManager.AddComponentData(this.SystemHandle, new StateInstance
             {

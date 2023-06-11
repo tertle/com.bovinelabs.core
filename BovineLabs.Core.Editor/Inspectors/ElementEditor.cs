@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         protected VisualElement Parent => this.parent!;
 
-        public override VisualElement CreateInspectorGUI()
+        public sealed override VisualElement CreateInspectorGUI()
         {
             this.parent = new VisualElement();
 

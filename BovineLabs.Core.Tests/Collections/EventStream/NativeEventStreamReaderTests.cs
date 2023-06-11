@@ -37,7 +37,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
                 var reader = stream.AsReader();
                 Assert.Throws<ArgumentOutOfRangeException>(() => reader.BeginForEachIndex(-1));
                 Assert.Throws<ArgumentOutOfRangeException>(() =>
-                    reader.BeginForEachIndex(JobsUtility.MaxJobThreadCount + 1));
+                    reader.BeginForEachIndex(JobsUtility.ThreadIndexCount + 1));
             }
 
             /// <summary> Ensures reading past the end throws an exception. </summary>

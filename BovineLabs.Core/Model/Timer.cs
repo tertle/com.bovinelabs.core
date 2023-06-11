@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Model
 {
     using Unity.Assertions;
     using Unity.Burst;
+    using Unity.Burst.CompilerServices;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -56,6 +57,7 @@ namespace BovineLabs.Core.Model
             state.Dependency = job.ScheduleParallel(this.query, state.Dependency);
         }
 
+        [NoAlias]
         [BurstCompile]
         public unsafe struct UpdateTimeJob : IJobChunk
         {
@@ -74,16 +76,17 @@ namespace BovineLabs.Core.Model
             [NativeDisableContainerSafetyRestriction] // Only initialized in the job
             private NativeList<bool> onBuffer;
 
+            /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 var activeChanged = chunk.DidChange(ref this.ActiveHandle, this.SystemVersion);
 
                 if (activeChanged)
                 {
-                    var remainings = chunk.GetNativeArray(ref this.RemainingHandle).Reinterpret<float>();
-                    var triggers = chunk.GetNativeArray(ref this.ActiveHandle).Reinterpret<bool>();
-                    var durations = chunk.GetNativeArray(ref this.DurationHandle).Reinterpret<float>();
-                    var durationOns = (bool*)chunk.GetComponentDataPtrRO(ref this.OnHandle);
+                    var remainings = (float*)chunk.GetRequiredComponentDataPtrRW(ref this.RemainingHandle);
+                    var triggers = (bool*)chunk.GetRequiredComponentDataPtrRO(ref this.ActiveHandle);
+                    var durations = (float*)chunk.GetRequiredComponentDataPtrRO(ref this.DurationHandle);
+                    var durationOns = (bool*)chunk.GetRequiredComponentDataPtrRO(ref this.OnHandle);
 
                     for (var i = 0; i < chunk.Count; i++)
                     {
@@ -96,30 +99,38 @@ namespace BovineLabs.Core.Model
 
                 if (activeChanged || chunk.DidChange(ref this.RemainingHandle, this.SystemVersion))
                 {
-                    var remainings = chunk.GetNativeArray(ref this.RemainingHandle).Reinterpret<float>();
+                    var remainings = (float*)chunk.GetRequiredComponentDataPtrRW(ref this.RemainingHandle);
 
                     if (!this.onBuffer.IsCreated)
                     {
-                        this.onBuffer = new NativeList<bool>(remainings.Length, Allocator.Temp);
+                        this.onBuffer = new NativeList<bool>(chunk.Count, Allocator.Temp);
                     }
 
-                    this.onBuffer.ResizeUninitialized(remainings.Length);
+                    this.onBuffer.ResizeUninitialized(chunk.Count);
+                    CalculateOnVectorized(remainings, this.onBuffer.GetUnsafeReadOnlyPtr(), this.onBuffer.Length, this.DeltaTime);
 
-                    for (var i = 0; i < remainings.Length; i++)
-                    {
-                        remainings[i] = math.max(0, remainings[i] - this.DeltaTime);
-                        this.onBuffer[i] = remainings[i] != 0;
-                    }
-
-                    var original = chunk.GetComponentDataPtrRO(ref this.OnHandle);
+                    // We open RO to avoid change filter trigger unless it has changed
+                    var original = chunk.GetRequiredComponentDataPtrRO(ref this.OnHandle);
                     var updated = this.onBuffer.GetUnsafeReadOnlyPtr();
                     var hasChanged = UnsafeUtility.MemCmp(original, updated, UnsafeUtility.SizeOf<bool>() * this.onBuffer.Length) != 0;
 
                     if (hasChanged)
                     {
-                        var ons = chunk.GetNativeArray(ref this.OnHandle);
-                        ons.Reinterpret<bool>().CopyFrom(this.onBuffer.AsArray());
+                        var ons = chunk.GetNativeArray(ref this.OnHandle).Reinterpret<bool>();
+                        ons.CopyFrom(this.onBuffer.AsArray());
                     }
+                }
+            }
+
+            private static void CalculateOnVectorized([NoAlias] float* remainings, [NoAlias] bool* isOn, int length, float deltaTime)
+            {
+                for (var i = 0; i < length; i++)
+                {
+#if UNITY_BURST_EXPERIMENTAL_LOOP_INTRINSICS
+                    Loop.ExpectVectorized();
+#endif
+                    remainings[i] = math.max(0, remainings[i] - deltaTime);
+                    isOn[i] = remainings[i] != 0;
                 }
             }
         }

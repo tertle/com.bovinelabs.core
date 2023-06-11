@@ -3,7 +3,7 @@
 // </copyright>
 
 #if !BL_DISABLE_OBJECT_DEFINITION
-namespace BovineLabs.Core.AssetManagement
+namespace BovineLabs.Core.ObjectManagement
 {
     using BovineLabs.Core.Keys;
 

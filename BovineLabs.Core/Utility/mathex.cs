@@ -15,6 +15,7 @@ namespace BovineLabs.Core.Utility
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "matching mathematics package")]
     [SuppressMessage("ReSharper", "SA1300", Justification = "matching mathematics package")]
+    [SuppressMessage("ReSharper", "IdentifierTypo", Justification = "lower case causes issues")]
     public static class mathex
     {
         public const float Radians90 = math.PI / 2f;
@@ -33,6 +34,12 @@ namespace BovineLabs.Core.Utility
         public static int mod(int x, int m)
         {
             return ((x % m) + m) % m;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool isodd(int x)
+        {
+            return (x % 2) != 0;
         }
 
         /// <summary> Calculates the maximum value. </summary>
@@ -545,6 +552,34 @@ namespace BovineLabs.Core.Utility
         public static float2 Perpendicular(float2 inDirection)
         {
             return new float2(-inDirection.y, inDirection.x);
+        }
+
+        public static float NormalizeWithLength(float3 v, out float3 n)
+        {
+            var lengthSq = math.lengthsq(v);
+            var invLength = math.rsqrt(lengthSq);
+            n = v * invLength;
+            return lengthSq * invLength;
+        }
+
+        /// <summary>  Return two normals perpendicular to the input vector. </summary>
+        public static void CalculatePerpendicularNormalized(float3 v, out float3 p, out float3 q)
+        {
+            var vSquared = v * v;
+            var lengthsSquared = vSquared + vSquared.xxx; // y = ||j x v||^2, z = ||k x v||^2
+            var invLengths = math.rsqrt(lengthsSquared);
+
+            // select first direction, j x v or k x v, whichever has greater magnitude
+            var dir0 = new float3(-v.y, v.x, 0.0f);
+            var dir1 = new float3(-v.z, 0.0f, v.x);
+            var cmp = lengthsSquared.y > lengthsSquared.z;
+            var dir = math.select(dir1, dir0, cmp);
+
+            // normalize and get the other direction
+            var invLength = math.select(invLengths.z, invLengths.y, cmp);
+            p = dir * invLength;
+            var cross = math.cross(v, dir);
+            q = cross * invLength;
         }
 
         private static float3 eulerReorderBack(float3 euler, math.RotationOrder order)

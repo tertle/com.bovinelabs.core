@@ -16,12 +16,20 @@ namespace BovineLabs.Core.SubScenes
     [WorldSystemFilter(WorldSystemFilterFlags.LocalSimulation | WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
     public partial struct LoadWithBoundingVolumeSystem : ISystem
     {
+        private EntityQuery loadingQuery;
+
+        /// <inheritdoc/>
+        public void OnCreate(ref SystemState state)
+        {
+            this.loadingQuery = SystemAPI.QueryBuilder().WithAll<LocalTransform, LoadsSubScene>().Build();
+            state.RequireForUpdate(this.loadingQuery);
+        }
+
         /// <inheritdoc />
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var loadingQuery = SystemAPI.QueryBuilder().WithAll<LocalTransform, LoadsSubScene>().Build();
-            var loaderPositions = loadingQuery.ToComponentDataArray<LocalTransform>(state.WorldUpdateAllocator);
+            var loaderPositions = this.loadingQuery.ToComponentDataArray<LocalTransform>(state.WorldUpdateAllocator);
 
             if (!SystemAPI.TryGetSingleton<LoadWithBoundingVolumeConfig>(out var config))
             {

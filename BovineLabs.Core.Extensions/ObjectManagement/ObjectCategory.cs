@@ -3,20 +3,21 @@
 // </copyright>
 
 #if !BL_DISABLE_OBJECT_DEFINITION
-namespace BovineLabs.Core.AssetManagement
+namespace BovineLabs.Core.ObjectManagement
 {
     using System;
-    using Unity.Collections;
     using Unity.Entities;
 
+    // TODO is this needed?
+    [Serializable]
     public struct ObjectCategory : IComponentData, IEquatable<ObjectCategory>, IComparable<ObjectCategory>
     {
-        public const int MaxBits = 64;
+        public const int MaxBits = 32;
 
         // Flags
-        public ulong Value;
+        public uint Value;
 
-        public static implicit operator ulong(ObjectCategory category)
+        public static implicit operator uint(ObjectCategory category)
         {
             return category.Value;
         }

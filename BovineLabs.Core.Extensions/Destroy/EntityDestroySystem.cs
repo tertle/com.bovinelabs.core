@@ -5,13 +5,11 @@
 #if !BL_DISABLE_DESTROY
 namespace BovineLabs.Core.Destroy
 {
-    using BovineLabs.Core.Extensions;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
 
-    [UpdateBefore(typeof(EndDestroyCommandBufferSystem))]
     [UpdateInGroup(typeof(DestroySystemGroup), OrderLast = true)]
     public partial struct EntityDestroySystem : ISystem
     {
@@ -37,7 +35,7 @@ namespace BovineLabs.Core.Destroy
             this.entityTypeHandle.Update(ref state);
             this.entityDestroyHandle.Update(ref state);
 
-            var bufferSingleton = SystemAPI.GetSingleton<EndDestroyCommandBufferSystem.Singleton>();
+            var bufferSingleton = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
 
             state.Dependency = new DestroyJob
                 {
@@ -60,10 +58,10 @@ namespace BovineLabs.Core.Destroy
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var entities = chunk.GetNativeArray(this.EntityHandle);
+                var entities = chunk.GetEntityDataPtrRO(this.EntityHandle);
 
                 // The destroy system opens with RO even though it writes to avoid bumping change filters as we only want to react to external updates
-                var entityDestroys = chunk.GetComponentDataPtrRO(ref this.EntityDestroyHandle);
+                var entityDestroys = (EntityDestroy*)chunk.GetRequiredComponentDataPtrRO(ref this.EntityDestroyHandle);
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
                 var anyWrite = false;

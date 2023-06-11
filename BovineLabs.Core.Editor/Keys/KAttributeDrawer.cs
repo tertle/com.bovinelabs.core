@@ -44,19 +44,25 @@ namespace BovineLabs.Core.Editor.Keys
             else
             {
                 var current = property.intValue;
-                int index;
-                for (index = 0; index < k.Keys.Count; index++)
+                int index = 0;
+                if (current != -1)
                 {
-                    if (k.Keys[index].Value == current)
+                    for (; index < k.Keys.Count; index++)
                     {
-                        break;
+                        if (current == 1 << k.Keys[index].Value)
+                        {
+                            break;
+                        }
                     }
+
+                    // We insert a None option at 0 so index is offset by 1
+                    index += 1;
                 }
 
-                var choices = k.Keys.Select(s => s.Value).ToList();
+                var choices = k.Keys.Select(s => 1 << s.Value).ToList();
+                choices.Insert(0, 0);
 
-                var popup = new PopupField<byte>(property.displayName, choices, index, FormatCallback, FormatCallback);
-                string FormatCallback(byte value) => k.Keys.First(key => key.Value == value).Name;
+                var popup = new PopupField<int>(property.displayName, choices, index, FormatCallback, FormatCallback);
                 popup.RegisterValueChangedCallback(evt =>
                 {
                     property.intValue = evt.newValue;
@@ -64,6 +70,8 @@ namespace BovineLabs.Core.Editor.Keys
                 });
 
                 return popup;
+
+                string FormatCallback(int value) => value == 0 ? "[None]" : k.Keys.First(key => value == 1 << key.Value).Name;
             }
         }
     }

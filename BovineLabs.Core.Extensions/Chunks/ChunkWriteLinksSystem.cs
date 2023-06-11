@@ -6,6 +6,7 @@
 namespace BovineLabs.Core.Chunks
 {
     using BovineLabs.Core.Assertions;
+    using BovineLabs.Core.Chunks.Data;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Iterators;
     using Unity.Burst;
@@ -15,8 +16,9 @@ namespace BovineLabs.Core.Chunks
     using UnityEngine;
 
     /// <summary> Writes the linked chunks to the parent. </summary>
-    [UpdateInGroup(typeof(InitializationSystemGroup), OrderLast = true)]
     [UpdateAfter(typeof(ChunkLinkOrderSystem))]
+    [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
+    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     public partial struct ChunkWriteLinksSystem : ISystem
     {
         private EntityQuery changedQuery;
@@ -26,14 +28,14 @@ namespace BovineLabs.Core.Chunks
         {
             this.chunkGroupIDs = state.GetSharedComponentLookup<ChunkGroupID>();
 
-            this.changedQuery = SystemAPI.QueryBuilder().WithAll<ChunkParent, LinkedEntityGroup>().WithAllChunkComponentRW<ChunkLinks>().Build();
+            this.changedQuery = SystemAPI.QueryBuilder().WithAll<VirtualChunkMask, LinkedEntityGroup>().WithAllChunkComponentRW<ChunkLinks>().Build();
             this.changedQuery.SetOrderVersionFilter();
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var missingLinksQuery = SystemAPI.QueryBuilder().WithAny<ChunkParent, ChunkChild>().WithNoneChunkComponent<ChunkLinks>().Build();
+            var missingLinksQuery = SystemAPI.QueryBuilder().WithAny<VirtualChunkMask, ChunkChild>().WithNoneChunkComponent<ChunkLinks>().Build();
             state.EntityManager.AddChunkComponentData(missingLinksQuery, default(ChunkLinks));
 
             if (this.changedQuery.IsEmpty)

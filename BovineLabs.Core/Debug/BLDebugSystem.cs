@@ -81,12 +81,10 @@ namespace BovineLabs.Core
         protected override void OnDestroy()
         {
             this.Dependency.Complete();
-
-            var debug = SystemAPI.GetSingletonRW<BLDebug>().ValueRW;
+            ref var debug = ref SystemAPI.GetSingletonRW<BLDebug>().ValueRW;
 
             var logger = LoggerManager.GetLogger(debug.LoggerHandle);
             logger?.Dispose();
-            debug.LoggerHandle = default;
         }
 
         /// <inheritdoc />

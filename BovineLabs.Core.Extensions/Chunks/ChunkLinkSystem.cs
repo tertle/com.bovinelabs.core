@@ -5,17 +5,18 @@
 #if !BL_DISABLE_LINKED_CHUNKS
 namespace BovineLabs.Core.Chunks
 {
+    using BovineLabs.Core.Chunks.Data;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Iterators;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Scenes;
 
     /// <summary> Iterates parent chunks on OrderVersion change and updates any linked chunk. </summary>
-    [UpdateAfter(typeof(SceneSystemGroup))]
-    [UpdateInGroup(typeof(InitializationSystemGroup))]
+    // [UpdateAfter(typeof(SceneSystemGroup))]
+    [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
+    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     public partial struct ChunkLinkSystem : ISystem
     {
         private EntityQuery changedQuery;
@@ -25,7 +26,7 @@ namespace BovineLabs.Core.Chunks
         {
             this.linkedChunks = state.GetSharedComponentLookup<ChunkChild>();
 
-            this.changedQuery = SystemAPI.QueryBuilder().WithAll<ChunkParent, LinkedEntityGroup>().Build();
+            this.changedQuery = SystemAPI.QueryBuilder().WithAll<VirtualChunkMask, LinkedEntityGroup>().Build();
             this.changedQuery.SetOrderVersionFilter();
         }
 
@@ -34,15 +35,18 @@ namespace BovineLabs.Core.Chunks
         {
             this.linkedChunks.Update(ref state);
 
-            var ecb = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+            // var ecb = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
-            state.Dependency = new CalculateChunkJob
+            new CalculateChunkJob
                 {
                     LinkedEntityGroupHandle = SystemAPI.GetBufferTypeHandle<LinkedEntityGroup>(true),
                     LinkedChunks = this.linkedChunks,
                     CommandBuffer = ecb.AsParallelWriter(),
                 }
-                .Schedule(this.changedQuery, state.Dependency); // TODO parallel
+                .Run(this.changedQuery); // TODO parallel
+
+            ecb.Playback(state.EntityManager);
         }
 
         [BurstCompile]
@@ -59,7 +63,6 @@ namespace BovineLabs.Core.Chunks
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 var linkedEntityGroupAccessor = chunk.GetBufferAccessor(ref this.LinkedEntityGroupHandle);
-
 
                 for (var index = 0; index < linkedEntityGroupAccessor.Length; index++)
                 {

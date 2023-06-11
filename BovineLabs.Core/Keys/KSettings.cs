@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Keys
         public override IReadOnlyList<NameValue> Keys => this.keys;
 
         /// <inheritdoc />
-        internal sealed override void Init()
+        protected internal sealed override void Init()
         {
             K<T>.Initialize(this.keys);
         }
@@ -31,19 +31,7 @@ namespace BovineLabs.Core.Keys
 #if UNITY_EDITOR
         protected virtual void OnValidate()
         {
-            if (this.keys.Length > KMap.MaxCapacity)
-            {
-                var keysOld = this.keys;
-                this.keys = new NameValue[KMap.MaxCapacity];
-                Array.Copy(keysOld, this.keys, KMap.MaxCapacity);
-            }
-
-            for (var i = 0; i < this.keys.Length; i++)
-            {
-                var k = this.keys[i];
-                k.Name = k.Name.ToLower();
-                this.keys[i] = k;
-            }
+            Validate(ref this.keys);
         }
 #endif
     }
@@ -62,7 +50,27 @@ namespace BovineLabs.Core.Keys
 
         public abstract IReadOnlyList<NameValue> Keys { get; }
 
-        internal abstract void Init();
+        protected internal abstract void Init();
+
+#if UNITY_EDITOR
+        protected static void Validate<T>(ref T[] keys)
+            where T : IKKey
+        {
+            if (keys.Length > KMap.MaxCapacity)
+            {
+                var keysOld = keys;
+                keys = new T[KMap.MaxCapacity];
+                Array.Copy(keysOld, keys, KMap.MaxCapacity);
+            }
+
+            for (var i = 0; i < keys.Length; i++)
+            {
+                var k = keys[i];
+                k.Name = k.Name.ToLower();
+                keys[i] = k;
+            }
+        }
+#endif
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void LoadAll()

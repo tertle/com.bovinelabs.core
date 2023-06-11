@@ -18,6 +18,8 @@ namespace BovineLabs.Core.Collections
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
     public unsafe struct UntypedDynamicBuffer
     {
+        public const int AlignOf = 4;
+
         [NativeDisableUnsafePtrRestriction]
         [NoAlias]
         private readonly BufferHeader* buffer;
@@ -300,6 +302,16 @@ namespace BovineLabs.Core.Collections
             this.ResizeUninitialized(length + 1);
             this[length] = elem;
             return length;
+        }
+
+        public void AddRange(void* elem, int count)
+        {
+            this.CheckWriteAccess();
+            var oldLength = this.Length;
+            this.ResizeUninitialized(oldLength + count);
+
+            void* basePtr = BufferHeader.GetElementPointer(this.buffer) + (oldLength * this.elementSize);
+            UnsafeUtility.MemCpy(basePtr, elem, (long)this.elementSize * count);
         }
 
         /// <summary>

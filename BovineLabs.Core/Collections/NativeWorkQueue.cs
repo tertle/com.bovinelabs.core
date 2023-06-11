@@ -40,9 +40,9 @@ namespace BovineLabs.Core.Collections
         {
             this.allocator = allocator.Handle;
             this.queue = (T*)allocator.Allocate(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), maxQueueSize);
-            this.queueWriteHead = (int*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator); // TODO allocator?
-            this.queueReadHead = (int*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator);
-            this.currentRef = (int*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator);
+            this.queueWriteHead = (int*)UnsafeUtility.MallocTracked(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator, 0); // TODO allocator?
+            this.queueReadHead = (int*)UnsafeUtility.MallocTracked(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator, 0);
+            this.currentRef = (int*)UnsafeUtility.MallocTracked(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator, 0);
 
             this.Capacity = maxQueueSize;
 
@@ -85,9 +85,9 @@ namespace BovineLabs.Core.Collections
 #endif
 
             AllocatorManager.Free(this.allocator, this.queue, this.Capacity);
-            UnsafeUtility.Free(this.queueWriteHead, this.allocator.ToAllocator);
-            UnsafeUtility.Free(this.queueReadHead, this.allocator.ToAllocator);
-            UnsafeUtility.Free(this.currentRef, this.allocator.ToAllocator);
+            UnsafeUtility.FreeTracked(this.queueWriteHead, this.allocator.ToAllocator);
+            UnsafeUtility.FreeTracked(this.queueReadHead, this.allocator.ToAllocator);
+            UnsafeUtility.FreeTracked(this.currentRef, this.allocator.ToAllocator);
         }
 
         public void Update()

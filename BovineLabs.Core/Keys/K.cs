@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Keys
         /// <summary> Given a name, returns the user defined value. </summary>
         /// <param name="name"> The name. </param>
         /// <returns> The value. </returns>
-        public static byte NameToKey(FixedString32Bytes name)
+        public static int NameToKey(FixedString32Bytes name)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (Map.Data.Capacity == 0)
@@ -44,7 +44,7 @@ namespace BovineLabs.Core.Keys
         /// <summary> Given a key, returns the name that's associated with it. Mostly used for debugging. </summary>
         /// <param name="key"> The key. </param>
         /// <returns> The value. </returns>
-        public static FixedString32Bytes KeyToName(byte key)
+        public static FixedString32Bytes KeyToName(int key)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (Map.Data.Capacity == 0)

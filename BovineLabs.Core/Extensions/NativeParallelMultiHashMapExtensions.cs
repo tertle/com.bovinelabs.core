@@ -399,7 +399,7 @@ namespace BovineLabs.Core.Extensions
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            hashMap.m_Writer.m_Buffer->AddBatchUnsafe(keys, values, length);
+            hashMap.m_Writer.m_Buffer->AddBatchUnsafeParallel(keys, values, length);
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
@@ -418,7 +418,7 @@ namespace BovineLabs.Core.Extensions
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            hashMap.m_Writer.m_Buffer->AddBatchUnsafe(keys, length);
+            hashMap.m_Writer.m_Buffer->AddBatchUnsafeParallel(keys, length);
         }
 
         public static void RecalculateBuckets<TKey, TValue>(

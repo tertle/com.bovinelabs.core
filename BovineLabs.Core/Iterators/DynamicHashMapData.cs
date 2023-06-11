@@ -6,7 +6,8 @@ namespace BovineLabs.Core.Iterators
 {
     using System;
     using System.Diagnostics;
-    using System.Runtime.InteropServices;
+    using System.Runtime.CompilerServices;
+    using BovineLabs.Core.Assertions;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -14,36 +15,28 @@ namespace BovineLabs.Core.Iterators
     using Unity.Mathematics;
     using Debug = UnityEngine.Debug;
 
-    [StructLayout(LayoutKind.Explicit)]
     internal unsafe struct DynamicHashMapData
     {
-        [FieldOffset(0)]
-        internal byte* Values;
-
-        // 4-byte padding on 32-bit architectures here
-        [FieldOffset(8)]
-        internal byte* Keys;
-
-        // 4-byte padding on 32-bit architectures here
-        [FieldOffset(16)]
-        internal byte* Next;
-
-        // 4-byte padding on 32-bit architectures here
-        [FieldOffset(24)]
-        internal byte* Buckets;
-
-        // 4-byte padding on 32-bit architectures here
-        [FieldOffset(32)]
+        internal int ValuesOffset;
+        internal int KeysOffset;
+        internal int NextOffset;
+        internal int BucketsOffset;
         internal int KeyCapacity;
-
-        [FieldOffset(36)]
         internal int BucketCapacityMask; // = bucket capacity - 1
-
-        [FieldOffset(40)]
         internal int AllocatedIndexLength;
-
-        [FieldOffset(44)]
         internal int FirstFreeIDX;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static byte* GetValues(DynamicHashMapData* data) => (byte*)data + data->ValuesOffset;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static byte* GetKeys(DynamicHashMapData* data) => (byte*)data + data->KeysOffset;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static byte* GetBuckets(DynamicHashMapData* data) => (byte*)data + data->BucketsOffset;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static byte* GetNexts(DynamicHashMapData* data) => (byte*)data + data->NextOffset;
 
         internal static int GetBucketSize(int capacity)
         {
@@ -63,14 +56,11 @@ namespace BovineLabs.Core.Iterators
         internal static void AllocateHashMap<TKey, TValue>(
             DynamicBuffer<byte> buffer,
             int length,
-            int bucketLength,
-            out DynamicHashMapData* outBuf)
+            int bucketLength)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            Debug.Assert(buffer.Length == 0, "Buffer already assigned");
-
-            IsBlittableAndThrow<TKey, TValue>();
+            Check.Assume(buffer.Length == 0, "Buffer already assigned");
 
             var hashMapDataSize = UnsafeUtility.SizeOf<DynamicHashMapData>();
 
@@ -81,17 +71,14 @@ namespace BovineLabs.Core.Iterators
             buffer.ResizeUninitialized(hashMapDataSize + totalSize);
 
             var data = buffer.AsData<TKey, TValue>();
-            var ptr = (byte*)data;
 
             data->KeyCapacity = length;
             data->BucketCapacityMask = bucketLength - 1;
 
-            data->Values = ptr + hashMapDataSize;
-            data->Keys = data->Values + keyOffset;
-            data->Next = data->Values + nextOffset;
-            data->Buckets = data->Values + bucketOffset;
-
-            outBuf = data;
+            data->ValuesOffset = hashMapDataSize;
+            data->KeysOffset = hashMapDataSize + keyOffset;
+            data->NextOffset = hashMapDataSize + nextOffset;
+            data->BucketsOffset = hashMapDataSize + bucketOffset;
         }
 
         internal static void ReallocateHashMap<TKey, TValue>(
@@ -106,7 +93,7 @@ namespace BovineLabs.Core.Iterators
 
             newBucketCapacity = math.ceilpow2(newBucketCapacity);
 
-            if ((data->KeyCapacity == newCapacity) && (data->BucketCapacityMask + 1 == newBucketCapacity))
+            if (data->KeyCapacity == newCapacity && (data->BucketCapacityMask + 1) == newBucketCapacity)
             {
                 return;
             }
@@ -114,17 +101,17 @@ namespace BovineLabs.Core.Iterators
             CheckHashMapReallocateDoesNotShrink(data, newCapacity);
 
             var hashMapDataSize = UnsafeUtility.SizeOf<DynamicHashMapData>();
-            var totalSize = CalculateDataSize<TKey, TValue>(newCapacity, newBucketCapacity, out var keyOffset, out var nextOffset, out var bucketOffset);
+            int totalSize = CalculateDataSize<TKey, TValue>(newCapacity, newBucketCapacity, out var keyOffset, out var nextOffset, out var bucketOffset);
 
             var oldValue = new NativeArray<TValue>(data->KeyCapacity, Allocator.Temp);
             var oldKeys = new NativeArray<TKey>(data->KeyCapacity, Allocator.Temp);
             var oldNext = new NativeArray<int>(data->KeyCapacity, Allocator.Temp);
             var oldBuckets = new NativeArray<int>(data->BucketCapacityMask + 1, Allocator.Temp);
 
-            UnsafeUtility.MemCpy(oldValue.GetUnsafePtr(), data->Values, data->KeyCapacity * UnsafeUtility.SizeOf<TValue>());
-            UnsafeUtility.MemCpy(oldKeys.GetUnsafePtr(), data->Keys, data->KeyCapacity * UnsafeUtility.SizeOf<TKey>());
-            UnsafeUtility.MemCpy(oldNext.GetUnsafePtr(), data->Next, data->KeyCapacity * UnsafeUtility.SizeOf<int>());
-            UnsafeUtility.MemCpy(oldBuckets.GetUnsafePtr(), data->Buckets, (data->BucketCapacityMask + 1) * UnsafeUtility.SizeOf<int>());
+            UnsafeUtility.MemCpy(oldValue.GetUnsafePtr(), GetValues(data), data->KeyCapacity * UnsafeUtility.SizeOf<TValue>());
+            UnsafeUtility.MemCpy(oldKeys.GetUnsafePtr(), GetKeys(data), data->KeyCapacity * UnsafeUtility.SizeOf<TKey>());
+            UnsafeUtility.MemCpy(oldNext.GetUnsafePtr(), GetNexts(data), data->KeyCapacity * UnsafeUtility.SizeOf<int>());
+            UnsafeUtility.MemCpy(oldBuckets.GetUnsafePtr(), GetBuckets(data), (data->BucketCapacityMask + 1) * UnsafeUtility.SizeOf<int>());
 
             var oldAllocatedIndexLength = data->AllocatedIndexLength;
 
@@ -133,35 +120,38 @@ namespace BovineLabs.Core.Iterators
             data = buffer.AsData<TKey, TValue>();
             var ptr = (byte*)data;
 
-            var newValues = ptr + hashMapDataSize;
-            var newKeys = newValues + keyOffset;
-            var newNext = newValues + nextOffset;
-            var newBuckets = newValues + bucketOffset;
+            byte* newValues = ptr + hashMapDataSize;
+            byte* newKeys = newValues + keyOffset;
+            byte* newNext = newValues + nextOffset;
+            byte* newBuckets = newValues + bucketOffset;
 
             // The items are taken from a free-list and might not be tightly packed, copy all of the old capacity
             UnsafeUtility.MemCpy(newValues, oldValue.GetUnsafePtr(), oldValue.Length * UnsafeUtility.SizeOf<TValue>());
             UnsafeUtility.MemCpy(newKeys, oldKeys.GetUnsafePtr(), oldKeys.Length * UnsafeUtility.SizeOf<TKey>());
             UnsafeUtility.MemCpy(newNext, oldNext.GetUnsafePtr(), oldNext.Length * UnsafeUtility.SizeOf<int>());
 
-            for (var emptyNext = oldValue.Length; emptyNext < newCapacity; ++emptyNext)
+            for (int emptyNext = oldValue.Length; emptyNext < newCapacity; ++emptyNext)
             {
                 ((int*)newNext)[emptyNext] = -1;
             }
 
             // re-hash the buckets, first clear the new bucket list, then insert all values from the old list
-            for (var bucket = 0; bucket < newBucketCapacity; ++bucket)
+            for (int bucket = 0; bucket < newBucketCapacity; ++bucket)
             {
                 ((int*)newBuckets)[bucket] = -1;
             }
 
-            for (var bucket = 0; bucket <= oldBuckets.Length - 1; ++bucket)
+            // TODO ?
+            // UnsafeUtility.MemSet(newBuckets, 0xff, newBucketCapacity * 4);
+
+            for (int bucket = 0; bucket <= oldBuckets.Length - 1; ++bucket)
             {
-                var nextPtrs = (int*)newNext;
+                int* nextPtrs = (int*)newNext;
                 while (oldBuckets[bucket] >= 0)
                 {
-                    var curEntry = oldBuckets[bucket];
+                    int curEntry = oldBuckets[bucket];
                     oldBuckets[bucket] = nextPtrs[curEntry];
-                    var newBucket = oldKeys[curEntry].GetHashCode() & (newBucketCapacity - 1);
+                    int newBucket = oldKeys[curEntry].GetHashCode() & (newBucketCapacity - 1);
                     nextPtrs[curEntry] = ((int*)newBuckets)[newBucket];
                     ((int*)newBuckets)[newBucket] = curEntry;
                 }
@@ -176,10 +166,10 @@ namespace BovineLabs.Core.Iterators
                 data->AllocatedIndexLength = oldAllocatedIndexLength;
             }
 
-            data->Values = newValues;
-            data->Keys = newKeys;
-            data->Next = newNext;
-            data->Buckets = newBuckets;
+            data->ValuesOffset = hashMapDataSize;
+            data->KeysOffset = hashMapDataSize + keyOffset;
+            data->NextOffset = hashMapDataSize + nextOffset;
+            data->BucketsOffset = hashMapDataSize + bucketOffset;
             data->KeyCapacity = newCapacity;
             data->BucketCapacityMask = newBucketCapacity - 1;
         }
@@ -191,12 +181,12 @@ namespace BovineLabs.Core.Iterators
                 return true;
             }
 
-            var bucketArray = (int*)data->Buckets;
+            var bucketArray = (int*)GetBuckets(data);
             var capacityMask = data->BucketCapacityMask;
 
-            for (var i = 0; i <= capacityMask; ++i)
+            for (int i = 0; i <= capacityMask; ++i)
             {
-                var bucket = bucketArray[i];
+                int bucket = bucketArray[i];
 
                 if (bucket != -1)
                 {
@@ -214,7 +204,7 @@ namespace BovineLabs.Core.Iterators
                 return 0;
             }
 
-            var bucketNext = (int*)data->Next;
+            var bucketNext = (int*)GetNexts(data);
             var freeListSize = 0;
 
             for (var freeIdx = data->FirstFreeIDX; freeIdx >= 0; freeIdx = bucketNext[freeIdx])
@@ -226,36 +216,37 @@ namespace BovineLabs.Core.Iterators
         }
 
         internal static void GetKeyArray<TKey>(DynamicHashMapData* data, NativeArray<TKey> result)
-            where TKey : struct
-        {
-            var bucketArray = (int*)data->Buckets;
-            var bucketNext = (int*)data->Next;
+            where TKey : unmanaged {
+            var bucketArray = (int*)GetBuckets(data);
+            var bucketNext = (int*)GetNexts(data);
+            var keys = GetKeys(data);
 
-            for (int i = 0, count = 0, max = result.Length; (i <= data->BucketCapacityMask) && (count < max); ++i)
+            for (int i = 0, count = 0, max = result.Length; i <= data->BucketCapacityMask && count < max; ++i)
             {
-                var bucket = bucketArray[i];
+                int bucket = bucketArray[i];
 
                 while (bucket != -1)
                 {
-                    result[count++] = UnsafeUtility.ReadArrayElement<TKey>(data->Keys, bucket);
+                    result[count++] = UnsafeUtility.ReadArrayElement<TKey>(keys, bucket);
                     bucket = bucketNext[bucket];
                 }
             }
         }
 
         internal static void GetValueArray<TValue>(DynamicHashMapData* data, NativeArray<TValue> result)
-            where TValue : struct
+            where TValue : unmanaged
         {
-            var bucketArray = (int*)data->Buckets;
-            var bucketNext = (int*)data->Next;
+            var bucketArray = (int*)GetBuckets(data);
+            var bucketNext = (int*)GetNexts(data);
+            var values = GetValues(data);
 
-            for (int i = 0, count = 0, max = result.Length, capacityMask = data->BucketCapacityMask; (i <= capacityMask) && (count < max); ++i)
+            for (int i = 0, count = 0, max = result.Length, capacityMask = data->BucketCapacityMask; i <= capacityMask && count < max; ++i)
             {
-                var bucket = bucketArray[i];
+                int bucket = bucketArray[i];
 
                 while (bucket != -1)
                 {
-                    result[count++] = UnsafeUtility.ReadArrayElement<TValue>(data->Values, bucket);
+                    result[count++] = UnsafeUtility.ReadArrayElement<TValue>(values, bucket);
                     bucket = bucketNext[bucket];
                 }
             }
@@ -265,17 +256,19 @@ namespace BovineLabs.Core.Iterators
             where TKey : unmanaged
             where TValue : unmanaged
         {
-            var bucketArray = (int*)data->Buckets;
-            var bucketNext = (int*)data->Next;
+            var bucketArray = (int*)GetBuckets(data);
+            var bucketNext = (int*)GetNexts(data);
+            var values = GetValues(data);
+            var keys = GetKeys(data);
 
-            for (int i = 0, count = 0, max = result.Length, capacityMask = data->BucketCapacityMask; (i <= capacityMask) && (count < max); ++i)
+            for (int i = 0, count = 0, max = result.Length, capacityMask = data->BucketCapacityMask; i <= capacityMask && count < max; ++i)
             {
-                var bucket = bucketArray[i];
+                int bucket = bucketArray[i];
 
                 while (bucket != -1)
                 {
-                    result.Keys[count] = UnsafeUtility.ReadArrayElement<TKey>(data->Keys, bucket);
-                    result.Values[count] = UnsafeUtility.ReadArrayElement<TValue>(data->Values, bucket);
+                    result.Keys[count] = UnsafeUtility.ReadArrayElement<TKey>(keys, bucket);
+                    result.Values[count] = UnsafeUtility.ReadArrayElement<TValue>(values, bucket);
                     count++;
                     bucket = bucketNext[bucket];
                 }
@@ -283,8 +276,8 @@ namespace BovineLabs.Core.Iterators
         }
 
         private static int CalculateDataSize<TKey, TValue>(int length, int bucketLength, out int keyOffset, out int nextOffset, out int bucketOffset)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
             var sizeOfTValue = UnsafeUtility.SizeOf<TValue>();
             var sizeOfTKey = UnsafeUtility.SizeOf<TKey>();
@@ -296,18 +289,11 @@ namespace BovineLabs.Core.Iterators
             var bucketSize = CollectionHelper.Align(sizeOfInt * bucketLength, JobsUtility.CacheLineSize);
             var totalSize = valuesSize + keysSize + nextSize + bucketSize;
 
-            keyOffset = 0 + valuesSize;
+            keyOffset = valuesSize;
             nextOffset = keyOffset + keysSize;
             bucketOffset = nextOffset + nextSize;
 
             return totalSize;
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void IsBlittableAndThrow<TKey, TValue>()
-        {
-            CollectionHelper.CheckIsUnmanaged<TKey>();
-            CollectionHelper.CheckIsUnmanaged<TValue>();
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

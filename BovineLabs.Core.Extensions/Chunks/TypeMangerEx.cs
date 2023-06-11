@@ -6,12 +6,16 @@
 namespace BovineLabs.Core.Chunks
 {
     using System;
+    using System.Collections.Generic;
     using System.Reflection;
     using Unity.Assertions;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+#if UNITY_EDITOR
+    using UnityEditor;
+#endif
     using UnityEngine;
 
     public static unsafe class TypeMangerEx
@@ -30,13 +34,35 @@ namespace BovineLabs.Core.Chunks
 
             TypeManager.Initialize();
 
+            var chunkMap = new Dictionary<string, byte>();
+
+            var chunkSettings = Resources.Load<VirtualChunkSettings>("BufferCapacitySettings");
+            if (chunkSettings == null)
+            {
+#if UNITY_EDITOR
+                // this is required because bakers don't like resource loading sometimes
+                // TODO configurable
+                chunkSettings = AssetDatabase.LoadAssetAtPath<VirtualChunkSettings>("Assets/Configs/Settings/Resources/VirtualChunkSettings.asset");
+#endif
+            }
+
+            if (chunkSettings != null)
+            {
+                foreach (var map in chunkSettings.Mappings)
+                {
+                    chunkMap.Add(map.Label.ToLower(), map.Chunk);
+                }
+            }
+
             initialized = true;
 
             try
             {
 #if UNITY_EDITOR
                 if (!UnityEditorInternal.InternalEditorUtility.CurrentThreadIsMainThread())
+                {
                     throw new InvalidOperationException("Must be called from the main thread");
+                }
 #endif
 
                 if (!appDomainUnloadRegistered)
@@ -45,7 +71,9 @@ namespace BovineLabs.Core.Chunks
                     AppDomain.CurrentDomain.DomainUnload += (_, _) =>
                     {
                         if (initialized)
+                        {
                             Shutdown();
+                        }
                     };
 
                     // There is no domain unload in player builds, so we must be sure to shutdown when the process exits.
@@ -71,12 +99,13 @@ namespace BovineLabs.Core.Chunks
 
                     byte group = 0;
 
+
                     var virtualChunkAttribute = typeInfo.Type.GetCustomAttribute<VirtualChunkAttribute>() ??
                                                 typeInfo.Type.Assembly.GetCustomAttribute<VirtualChunkAttribute>();
 
-                    if (virtualChunkAttribute != null)
+                    if (virtualChunkAttribute is { Group: not null })
                     {
-                        group = virtualChunkAttribute.Group;
+                        chunkMap.TryGetValue(virtualChunkAttribute.Group.ToLower(), out group);
                     }
 
                     Assert.IsTrue(group < ChunkLinks.MaxGroupIDs);

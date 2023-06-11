@@ -49,7 +49,7 @@ namespace BovineLabs.Core.Tests.Keys
 
             public void Execute()
             {
-                this.Result.Value = K<KTests>.NameToKey("test4");
+                this.Result.Value = (byte)K<KTests>.NameToKey("test4");
             }
         }
     }

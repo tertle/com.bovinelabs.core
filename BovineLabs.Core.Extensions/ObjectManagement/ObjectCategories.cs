@@ -3,7 +3,7 @@
 // </copyright>
 
 #if !BL_DISABLE_OBJECT_DEFINITION
-namespace BovineLabs.Core.AssetManagement
+namespace BovineLabs.Core.ObjectManagement
 {
     using System;
     using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace BovineLabs.Core.AssetManagement
 
         public override IReadOnlyList<NameValue> Keys => this.keys.Select(k => new NameValue() { Name = k.Name, Value = k.Value }).ToArray();
 
-        internal override void Init()
+        protected internal override void Init()
         {
             K<ObjectCategories>.Initialize(this.Keys);
         }
@@ -56,6 +56,9 @@ namespace BovineLabs.Core.AssetManagement
             private byte value;
 
             [SerializeField]
+            private ObjectGroup? objectGroup;
+
+            [SerializeField]
             [StableTypeHash(StableTypeHashAttribute.TypeCategory.ComponentData, OnlyZeroSize = true, AllowUnityNamespace = false)]
             private ulong component;
 
@@ -68,6 +71,8 @@ namespace BovineLabs.Core.AssetManagement
             public byte Value => this.value;
 
             public ulong ComponentType => this.component;
+
+            public ObjectGroup? ObjectGroup => this.objectGroup;
         }
     }
 }

@@ -5,6 +5,7 @@
 #if !BL_DISABLE_LINKED_CHUNKS
 namespace BovineLabs.Core.Chunks
 {
+    using BovineLabs.Core.Chunks.Data;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -16,8 +17,10 @@ namespace BovineLabs.Core.Chunks
     /// setting each entity in order to the correct shared component.
     /// This is obviously costly and effort should be made to avoid order breaking structural changes in the parent.
     /// </remarks>
-    [UpdateInGroup(typeof(InitializationSystemGroup), OrderLast = true)]
-    [UpdateAfter(typeof(EndInitializationEntityCommandBufferSystem))]
+    // [UpdateInGroup(typeof(InitializationSystemGroup), OrderLast = true)]
+    [UpdateAfter(typeof(ChunkLinkSystem))]
+    [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
+    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     public partial struct ChunkLinkOrderSystem : ISystem
     {
         private EntityQuery changedQuery;
@@ -28,7 +31,7 @@ namespace BovineLabs.Core.Chunks
         {
             this.entityList = new NativeList<Entity>(Allocator.Persistent);
 
-            this.changedQuery = SystemAPI.QueryBuilder().WithAll<ChunkParent, LinkedEntityGroup>().Build();
+            this.changedQuery = SystemAPI.QueryBuilder().WithAll<VirtualChunkMask, LinkedEntityGroup>().Build();
             this.changedQuery.SetOrderVersionFilter();
         }
 

@@ -11,8 +11,9 @@ namespace BovineLabs.Core.Chunks.Iterators
     using Unity.Burst.CompilerServices;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+    using UnityEngine;
 
-    public static unsafe class ArchetypeChunkExtensions
+    public static unsafe class ArchetypeVirtualChunkExtensions
     {
         public static Entity* GetEntityDataPtrRO(this ArchetypeChunk archetypeChunk, ref VirtualEntityTypeHandle entityHandle)
         {
@@ -41,6 +42,27 @@ namespace BovineLabs.Core.Chunks.Iterators
             void* ptr = ChunkDataUtility.GetOptionalComponentDataWithTypeRO(
                 chunk.m_Chunk, chunk.m_Chunk->Archetype, 0, typeHandle.TypeIndex, ref typeHandle.LookupCache);
 
+            return (T*)ptr;
+        }
+
+        public static T* GetRequiredComponentDataPtrRO<T>(this ArchetypeChunk archetypeChunk, ref VirtualComponentTypeHandle<T> typeHandle)
+            where T : unmanaged, IComponentData
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
+#endif
+            var chunk = GetChunk(archetypeChunk, ref typeHandle);
+
+            var ptr = ChunkDataUtility.GetComponentDataWithTypeRO(
+                chunk.m_Chunk, chunk.m_Chunk->Archetype, 0, typeHandle.TypeIndex, ref typeHandle.LookupCache);
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+            // Must check this after computing the pointer, to make sure the cache is up to date
+            if (Hint.Unlikely(typeHandle.LookupCache.IndexInArchetype == -1))
+            {
+                throw new ArgumentException($"Required component {typeHandle.TypeIndex.ToFixedString()} not found in archetype.");
+            }
+#endif
             return (T*)ptr;
         }
 
@@ -212,6 +234,18 @@ namespace BovineLabs.Core.Chunks.Iterators
 #endif
         }
 
+        public static bool DidChange<T>(this ArchetypeChunk chunk, ref VirtualComponentTypeHandle<T> typeHandle, uint version)
+            where T : unmanaged, IComponentData
+        {
+            return ChangeVersionUtility.DidChange(GetChangeVersion(ref chunk, ref typeHandle.LookupCache, typeHandle.TypeIndex), version);
+        }
+
+        public static bool DidChange<T>(this ArchetypeChunk chunk, ref VirtualBufferTypeHandle<T> typeHandle, uint version)
+            where T : unmanaged, IBufferElementData
+        {
+            return ChangeVersionUtility.DidChange(GetChangeVersion(ref chunk, ref typeHandle.LookupCache, typeHandle.TypeIndex), version);
+        }
+
         private static ArchetypeChunk GetChunk(ArchetypeChunk chunk, ref VirtualEntityTypeHandle typeHandle)
         {
             return VirtualChunkDataUtility.GetChunk(ref chunk, 0, typeHandle.ChunkLinksTypeIndex, ref typeHandle.ChunkLinksLookupCache);
@@ -227,6 +261,17 @@ namespace BovineLabs.Core.Chunks.Iterators
             where T : unmanaged, IBufferElementData
         {
             return VirtualChunkDataUtility.GetChunk(ref chunk, typeHandle.GroupIndex, typeHandle.ChunkLinksTypeIndex, ref typeHandle.ChunkLinksLookupCache);
+        }
+
+        private static uint GetChangeVersion(ref ArchetypeChunk chunk, ref LookupCache cache, TypeIndex typeIndex)
+        {
+            if (Hint.Unlikely(cache.Archetype != chunk.m_Chunk->Archetype))
+            {
+                cache.Update(chunk.m_Chunk->Archetype, typeIndex);
+            }
+
+            var typeIndexInArchetype = cache.IndexInArchetype;
+            return Hint.Unlikely(typeIndexInArchetype == -1) ? 0 : chunk.m_Chunk->GetChangeVersion(typeIndexInArchetype);
         }
     }
 }

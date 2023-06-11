@@ -24,11 +24,11 @@ namespace BovineLabs.Core.Memory
         {
             this.allocator = allocator;
             this.pools = (UnsafePoolAllocator<T>*)Memory.Unmanaged.Allocate(
-                UnsafeUtility.SizeOf<UnsafePoolAllocator<T>>() * JobsUtility.MaxJobThreadCount,
+                UnsafeUtility.SizeOf<UnsafePoolAllocator<T>>() * JobsUtility.ThreadIndexCount,
                 UnsafeUtility.AlignOf<UnsafePoolAllocator<T>>(),
                 allocator);
 
-            for (var i = 0; i < JobsUtility.MaxJobThreadCount; i++)
+            for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
             {
                 this.pools[i] = new UnsafePoolAllocator<T>(countPerChunk, allocator);
             }
@@ -41,7 +41,7 @@ namespace BovineLabs.Core.Memory
         /// <inheritdoc />
         public void Dispose()
         {
-            for (var i = 0; i < JobsUtility.MaxJobThreadCount; i++)
+            for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
             {
                 this.pools[i].Dispose();
             }
@@ -64,7 +64,7 @@ namespace BovineLabs.Core.Memory
         {
             var allocated = 0;
 
-            for (var i = 0; i < JobsUtility.MaxJobThreadCount; i++)
+            for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
             {
                 allocated += this.pools[i].Allocated();
             }

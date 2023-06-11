@@ -1,26 +1,26 @@
-﻿// <copyright file="ObjectId.cs" company="BovineLabs">
+﻿// <copyright file="GroupId.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 #if !BL_DISABLE_OBJECT_DEFINITION
-namespace BovineLabs.Core.AssetManagement
+namespace BovineLabs.Core.ObjectManagement
 {
     using System;
     using Unity.Entities;
 
     /// <summary> The ID of an object. </summary>
     [Serializable]
-    public struct ObjectId : IComponentData, IEquatable<ObjectId>, IComparable<ObjectId>
+    public struct GroupId : IComponentData, IEquatable<GroupId>, IComparable<GroupId>
     {
-        public int ID;
+        public short ID;
 
-        public static implicit operator int(ObjectId id)
+        public static implicit operator short(GroupId id)
         {
             return id.ID;
         }
 
         /// <inheritdoc />
-        public bool Equals(ObjectId other)
+        public bool Equals(GroupId other)
         {
             return this.ID == other.ID;
         }
@@ -31,7 +31,7 @@ namespace BovineLabs.Core.AssetManagement
             return this.ID;
         }
 
-        public int CompareTo(ObjectId other)
+        public int CompareTo(GroupId other)
         {
             return this.ID.CompareTo(other.ID);
         }

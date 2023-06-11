@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if UNITY_PERFORMANCE
 namespace BovineLabs.Core.PerformanceTests.Extensions
 {
     using BovineLabs.Core.Extensions;
@@ -331,3 +332,4 @@ namespace BovineLabs.Core.PerformanceTests.Extensions
         }
     }
 }
+#endif

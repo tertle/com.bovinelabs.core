@@ -13,8 +13,11 @@ namespace BovineLabs.Core.Editor.Chunk
     using Unity.Entities;
     using UnityEngine;
 
-    [UpdateInGroup(typeof(InitializationSystemGroup), OrderLast = true)]
+    // [UpdateInGroup(typeof(InitializationSystemGroup), OrderLast = true)]
+    [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
+    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     [UpdateAfter(typeof(ChunkWriteLinksSystem))]
+
     public partial struct ChunkLinkValidateSystem : ISystem
     {
         /// <inheritdoc/>

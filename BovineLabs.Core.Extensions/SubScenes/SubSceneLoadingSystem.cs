@@ -106,6 +106,12 @@ namespace BovineLabs.Core.SubScenes
                     this.requiredScenes.Add(subScene, entity);
                 }
 
+                // We want to create the subscene entity but not request scene loading for volumes
+                if (!loadingParams.AutoLoad)
+                {
+                    this.EntityManager.RemoveComponent<RequestSceneLoaded>(entity);
+                }
+
                 debug.Debug($"Loading SubScene {subScene.name}\nrequiredForLoading: {requiredForLoading}, loadingMode: {loadingMode}");
 
                 if (!isServer && loadingMode == SubSceneLoadMode.BoundingVolume)

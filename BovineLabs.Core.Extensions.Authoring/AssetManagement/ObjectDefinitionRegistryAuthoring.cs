@@ -3,13 +3,14 @@
 // </copyright>
 
 #if !BL_DISABLE_OBJECT_DEFINITION
-namespace BovineLabs.Core.Authoring.AssetManagement
+namespace BovineLabs.Core.Authoring.ObjectManagement
 {
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
-    using BovineLabs.Core.AssetManagement;
+    using BovineLabs.Core.Assertions;
     using BovineLabs.Core.Extensions;
+    using BovineLabs.Core.ObjectManagement;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
@@ -26,48 +27,7 @@ namespace BovineLabs.Core.Authoring.AssetManagement
             {
                 this.SetupRegistry();
                 this.SetupCategories();
-            }
-
-            private void SetupCategories()
-            {
-                var objectCategories = Resources.Load<ObjectCategories>("ObjectCategories");
-                if (objectCategories == null)
-                {
-                    Debug.LogWarning("Categories missing");
-                    return;
-                }
-
-                var entity = this.GetEntity(TransformUsageFlags.None);
-                var components = this.AddBuffer<ObjectCategoryComponents>(entity);
-
-                var unique = new HashSet<byte>();
-
-                foreach (var c in objectCategories.Components)
-                {
-                    var typeIndex = TypeManager.GetTypeIndexFromStableTypeHash(c.ComponentType);
-                    if (typeIndex == TypeIndex.Null)
-                    {
-                        continue;
-                    }
-
-                    if (!unique.Add(c.Value))
-                    {
-                        Debug.LogWarning($"Duplicate entries for {c.Value}");
-                        continue;
-                    }
-
-                    if (c.Value > ObjectCategory.MaxBits)
-                    {
-                        Debug.LogWarning($"Value outside bit field range {c.Value}");
-                        continue;
-                    }
-
-                    components.Add(new ObjectCategoryComponents
-                    {
-                        CategoryBit = c.Value,
-                        StableTypeHash = c.ComponentType,
-                    });
-                }
+                this.SetupGroups();
             }
 
             private void SetupRegistry()
@@ -109,8 +69,80 @@ namespace BovineLabs.Core.Authoring.AssetManagement
                     };
                 }
             }
+
+            private void SetupCategories()
+            {
+                var objectCategories = Resources.Load<ObjectCategories>(nameof(ObjectCategories));
+                if (objectCategories == null)
+                {
+                    Debug.LogWarning("Categories missing");
+                    return;
+                }
+
+                var entity = this.GetEntity(TransformUsageFlags.None);
+                var components = this.AddBuffer<ObjectCategoryComponents>(entity);
+
+                var unique = new HashSet<byte>();
+
+                foreach (var c in objectCategories.Components)
+                {
+                    var typeIndex = TypeManager.GetTypeIndexFromStableTypeHash(c.ComponentType);
+                    if (typeIndex == TypeIndex.Null)
+                    {
+                        continue;
+                    }
+
+                    if (!unique.Add(c.Value))
+                    {
+                        Debug.LogWarning($"Duplicate entries for {c.Value}");
+                        continue;
+                    }
+
+                    if (c.Value > ObjectCategory.MaxBits)
+                    {
+                        Debug.LogWarning($"Value outside bit field range {c.Value}");
+                        continue;
+                    }
+
+                    components.Add(new ObjectCategoryComponents
+                    {
+                        CategoryBit = c.Value,
+                        StableTypeHash = c.ComponentType,
+                    });
+                }
+            }
+
+            private void SetupGroups()
+            {
+                var entity = this.GetEntity(TransformUsageFlags.None);
+
+                var groups = AssetDatabase.FindAssets($"t:{nameof(ObjectGroup)}")
+                    .Select(AssetDatabase.GUIDToAssetPath)
+                    .Select(AssetDatabase.LoadAssetAtPath<ObjectGroup>);
+
+                var objectGroupRegistry = this.AddBuffer<ObjectGroupMatcher>(entity).AsHashSet();
+
+                foreach (var group in groups)
+                {
+                    if (group == null)
+                    {
+                        continue;
+                    }
+
+                    this.DependsOn(group);
+                    var definitions = group.GetAllDefinitions();
+
+                    foreach (var definition in definitions)
+                    {
+                        objectGroupRegistry.Add((group.ID, definition.ID));
+
+                        Check.Assume(objectGroupRegistry.Contains((group.ID, definition.ID)));
+                    }
+                }
+            }
         }
 
+        /// <summary> Applies the ObjectID component as well as any category components that have been defined. </summary>
         [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
         [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:Elements should appear in the correct order", Justification = "Baking")]
         public partial struct System : ISystem
@@ -122,7 +154,7 @@ namespace BovineLabs.Core.Authoring.AssetManagement
             {
                 this.categoryToComponentTypes = new NativeHashMap<byte, ComponentType>(0, Allocator.Persistent);
 
-                var objectCategories = Resources.Load<ObjectCategories>("ObjectCategories");
+                var objectCategories = Resources.Load<ObjectCategories>(nameof(ObjectCategories));
                 if (objectCategories == null)
                 {
                     Debug.LogWarning("Categories missing");
@@ -171,13 +203,12 @@ namespace BovineLabs.Core.Authoring.AssetManagement
                         }
 
                         ecb.AddComponent(definition.Prefab, definition.ObjectId);
-                        // ecb.AddComponent(definition.Prefab, definition.ObjectCategory);
 
                         var categories = definition.ObjectCategory.Value;
                         while (categories != 0)
                         {
                             var categoryIndex = (byte)math.tzcnt(categories);
-                            categories ^= 1UL << categoryIndex;
+                            categories ^= 1U << categoryIndex;
 
                             if (!this.categoryToComponentTypes.TryGetValue(categoryIndex, out var component))
                             {

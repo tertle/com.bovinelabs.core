@@ -20,17 +20,17 @@ namespace BovineLabs.Core.Authoring.Entities
         public bool IsKinematic => this.isKinematic;
 
         public bool SetVelocityToZero => this.setVelocityToZero;
-    }
 
-    public class PhysicsMassOverrideBaker : Baker<PhysicsMassOverrideAuthoring>
-    {
-        public override void Bake(PhysicsMassOverrideAuthoring authoring)
+        public class Baker : Baker<PhysicsMassOverrideAuthoring>
         {
-            this.AddComponent(this.GetEntity(TransformUsageFlags.None), new PhysicsMassOverride
+            public override void Bake(PhysicsMassOverrideAuthoring authoring)
             {
-                IsKinematic = (byte)(authoring.IsKinematic ? 1 : 0),
-                SetVelocityToZero = (byte)(authoring.SetVelocityToZero ? 1 : 0),
-            });
+                this.AddComponent(this.GetEntity(TransformUsageFlags.None), new PhysicsMassOverride
+                {
+                    IsKinematic = (byte)(authoring.IsKinematic ? 1 : 0),
+                    SetVelocityToZero = (byte)(authoring.SetVelocityToZero ? 1 : 0),
+                });
+            }
         }
     }
 }

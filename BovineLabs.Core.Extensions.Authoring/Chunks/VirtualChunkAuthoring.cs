@@ -1,4 +1,4 @@
-﻿// <copyright file="ChunkOwnerAuthoring.cs" company="BovineLabs">
+﻿// <copyright file="VirtualChunkAuthoring.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -11,7 +11,7 @@ namespace BovineLabs.Core.Authoring.Chunks
     using UnityEngine;
 
     [TemporaryBakingType]
-    public struct ChunkOwnerBaking : IComponentData
+    public struct VirtualChunkRootBaking : IComponentData
     {
     }
 
@@ -20,6 +20,7 @@ namespace BovineLabs.Core.Authoring.Chunks
     {
     }
 
+    [DisallowMultipleComponent]
     [RequireComponent(typeof(LinkedEntityGroupAuthoring))]
     public class VirtualChunkAuthoring : MonoBehaviour
     {
@@ -29,7 +30,7 @@ namespace BovineLabs.Core.Authoring.Chunks
             {
                 var entity = this.GetEntity(TransformUsageFlags.None);
 
-                this.AddComponent<ChunkOwnerBaking>(entity);
+                this.AddComponent<VirtualChunkRootBaking>(entity);
 
                 for (var i = 0; i < ChunkLinks.MaxGroupIDs - 1; i++)
                 {

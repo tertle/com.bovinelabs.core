@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Testing
 {
+    using BovineLabs.Core;
     using NUnit.Framework;
     using Unity.Entities;
     using Unity.Jobs.LowLevel.Unsafe;
@@ -42,6 +43,9 @@ namespace BovineLabs.Testing
             // force it enabled for all tests, and restore the original value at teardown.
             this.jobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
             JobsUtility.JobDebuggerEnabled = true;
+
+            var entity = this.Manager.CreateEntity(typeof(BLDebug));
+            this.Manager.SetComponentData(entity, BLDebug.Default);
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
             // In case entities journaling is initialized, clear it

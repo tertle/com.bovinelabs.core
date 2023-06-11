@@ -6,6 +6,7 @@
 namespace BovineLabs.Core.Authoring.Chunks
 {
     using BovineLabs.Core.Chunks;
+    using BovineLabs.Core.Chunks.Data;
     using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
@@ -13,8 +14,12 @@ namespace BovineLabs.Core.Authoring.Chunks
     using Unity.Mathematics;
     using UnityEngine;
 
+    /// <summary>
+    /// Provides post processing operations after virtual chunks have been setup.
+    /// Responsible for things like adding required padding to owner if chunks don't have enough space.
+    /// </summary>
     [UpdateInGroup(typeof(PostBakingSystemGroup))]
-    [UpdateAfter(typeof(ChunkOwnerBakingSystem))]
+    [UpdateAfter(typeof(VirtualChunkRootBakingSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
     public unsafe partial struct ChunkLinkPostBakingSystem : ISystem
     {
@@ -23,7 +28,7 @@ namespace BovineLabs.Core.Authoring.Chunks
         public void OnUpdate(ref SystemState state)
         {
             var chunkOwnerQuery = SystemAPI.QueryBuilder()
-                .WithAll<LinkedEntityGroup, ChunkParent>()
+                .WithAll<LinkedEntityGroup, VirtualChunkMask>()
                 .WithOptions(EntityQueryOptions.IncludePrefab | EntityQueryOptions.IncludeDisabledEntities).Build();
 
             this.AddPaddingIfRequired(ref state, chunkOwnerQuery);

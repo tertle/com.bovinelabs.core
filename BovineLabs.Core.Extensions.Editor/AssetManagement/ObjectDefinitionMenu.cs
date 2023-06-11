@@ -6,8 +6,8 @@
 namespace BovineLabs.Core.Editor.AssetManagement
 {
     using System.IO;
-    using BovineLabs.Core.AssetManagement;
     using BovineLabs.Core.Editor.Settings;
+    using BovineLabs.Core.ObjectManagement;
     using UnityEditor;
     using UnityEngine;
 
@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Editor.AssetManagement
     {
         private const string DefaultDirectory = "Assets/Configs/Definitions";
 
-        [MenuItem("BovineLabs/Utility/Create Definitions From Assets")]
+        [MenuItem("BovineLabs/Utility/Create Definitions from Assets")]
         public static void CreateDefinitionsFromAssets()
         {
             if (Selection.gameObjects == null)

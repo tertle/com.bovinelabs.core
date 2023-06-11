@@ -2,8 +2,11 @@
     "name": "BovineLabs.Testing",
     "rootNamespace": "",
     "references": [
+        "BovineLabs.Core",
+        "Unity.Burst",
         "Unity.Collections",
         "Unity.Entities",
+        "Unity.Logging",
         "Unity.Mathematics"
     ],
     "includePlatforms": [

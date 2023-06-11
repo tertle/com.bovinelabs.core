@@ -7,7 +7,9 @@ namespace BovineLabs.Core.Authoring.Entities
 {
     using Unity.Burst;
     using Unity.Entities;
+#if UNITY_NETCODE
     using Unity.NetCode;
+#endif
 
     [UpdateInGroup(typeof(PostBakingSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]

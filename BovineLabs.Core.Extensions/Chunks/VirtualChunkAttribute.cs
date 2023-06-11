@@ -10,9 +10,9 @@ namespace BovineLabs.Core.Chunks
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Assembly)]
     public class VirtualChunkAttribute : Attribute
     {
-        public byte Group;
+        public string? Group;
 
-        public VirtualChunkAttribute(byte group)
+        public VirtualChunkAttribute(string group)
         {
             this.Group = group;
         }

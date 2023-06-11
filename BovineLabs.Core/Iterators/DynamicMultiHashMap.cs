@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Iterators
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -233,10 +232,7 @@ namespace BovineLabs.Core.Iterators
 
         private void Allocate()
         {
-            CollectionHelper.CheckIsUnmanaged<TKey>();
-            CollectionHelper.CheckIsUnmanaged<TValue>();
-
-            DynamicHashMapData.AllocateHashMap<TKey, TValue>(this.data, 0, 0, out _);
+            DynamicHashMapData.AllocateHashMap<TKey, TValue>(this.data, 0, 0);
             this.Clear();
         }
     }

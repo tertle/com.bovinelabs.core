@@ -2,7 +2,8 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.AssetManagement
+#if !BL_DISABLE_OBJECT_DEFINITION
+namespace BovineLabs.Core.ObjectManagement
 {
     using Unity.Entities;
 
@@ -13,3 +14,4 @@ namespace BovineLabs.Core.AssetManagement
         public ulong StableTypeHash;
     }
 }
+#endif

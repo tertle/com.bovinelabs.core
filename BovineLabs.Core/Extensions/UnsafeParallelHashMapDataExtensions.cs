@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Extensions
 
     public static unsafe class UnsafeParallelHashMapDataExtensions
     {
-        internal static void AddBatchUnsafe<TKey, TValue>(
+        internal static void AddBatchUnsafeParallel<TKey, TValue>(
             [NoAlias] this ref UnsafeParallelHashMapData data,
             [NoAlias] TKey* keys,
             [NoAlias] TValue* values,
@@ -41,7 +41,7 @@ namespace BovineLabs.Core.Extensions
             }
         }
 
-        internal static void AddBatchUnsafe<TKey>(
+        internal static void AddBatchUnsafeParallel<TKey>(
             [NoAlias] this ref UnsafeParallelHashMapData data,
             [NoAlias] TKey* keys,
             int length)

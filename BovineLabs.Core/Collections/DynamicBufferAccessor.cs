@@ -86,9 +86,9 @@ namespace BovineLabs.Core.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             return new UntypedDynamicBuffer(header, this.safety0, this.arrayInvalidationSafety, this.isReadOnly, false, 0, this.internalCapacity,
-                this.ElementSize, 4);
+                this.ElementSize, UntypedDynamicBuffer.AlignOf);
 #else
-            return new UntypedDynamicBuffer(header, this.internalCapacity, this.ElementSize, 4);
+            return new UntypedDynamicBuffer(header, this.internalCapacity, this.ElementSize, UntypedDynamicBuffer.AlignOf);
 #endif
         }
 

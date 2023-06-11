@@ -11,32 +11,31 @@ namespace BovineLabs.Core.Authoring.Entities
     using Unity.Physics;
     using UnityEngine;
 
-    public class RemovePhysicsVelocityAuthoring : MonoBehaviour
+    public partial class RemovePhysicsVelocityAuthoring : MonoBehaviour
     {
-    }
-
-    [TemporaryBakingType]
-    internal struct RemovePhysicsVelocityBaking : IComponentData
-    {
-    }
-
-    public class RemovePhysicsVelocityBaker : Baker<RemovePhysicsVelocityAuthoring>
-    {
-        public override void Bake(RemovePhysicsVelocityAuthoring authoring)
+        [TemporaryBakingType]
+        internal struct RemovePhysicsVelocityBaking : IComponentData
         {
-            var entity = this.GetEntity(TransformUsageFlags.None);
-            this.AddComponent<RemovePhysicsVelocityBaking>(entity);
         }
-    }
 
-    [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
-    public partial struct RemovePhysicsVelocityConversionSystem : ISystem
-    {
-        [BurstCompile]
-        public void OnUpdate(ref SystemState state)
+        public class Baker : Baker<RemovePhysicsVelocityAuthoring>
         {
-            var query = SystemAPI.QueryBuilder().WithAll<RemovePhysicsVelocityBaking, PhysicsVelocity>().WithOptions(EntityQueryOptions.IncludePrefab).Build();
-            state.EntityManager.RemoveComponent<PhysicsVelocity>(query);
+            public override void Bake(RemovePhysicsVelocityAuthoring authoring)
+            {
+                var entity = this.GetEntity(TransformUsageFlags.None);
+                this.AddComponent<RemovePhysicsVelocityBaking>(entity);
+            }
+        }
+
+        [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
+        public partial struct RemovePhysicsVelocityConversionSystem : ISystem
+        {
+            [BurstCompile]
+            public void OnUpdate(ref SystemState state)
+            {
+                var query = SystemAPI.QueryBuilder().WithAll<RemovePhysicsVelocityBaking, PhysicsVelocity>().WithOptions(EntityQueryOptions.IncludePrefab).Build();
+                state.EntityManager.RemoveComponent<PhysicsVelocity>(query);
+            }
         }
     }
 }

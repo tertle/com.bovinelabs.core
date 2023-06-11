@@ -76,28 +76,7 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
 #endif
 
-            hashMap.Clear();
-
-            if (hashMap.Capacity < length)
-            {
-                hashMap.Capacity = length;
-            }
-
-            var data = hashMap.GetUnsafeBucketData();
-            UnsafeUtility.MemCpy(data.keys, keys, length * UnsafeUtility.SizeOf<TKey>());
-            UnsafeUtility.MemCpy(data.values, values, length * UnsafeUtility.SizeOf<TValue>());
-
-            var buckets = (int*)data.buckets;
-            var nextPtrs = (int*)data.next;
-
-            for (var idx = 0; idx < length; idx++)
-            {
-                var bucket = keys[idx].GetHashCode() & data.bucketCapacityMask;
-                nextPtrs[idx] = buckets[bucket];
-                buckets[bucket] = idx;
-            }
-
-            hashMap.m_HashMapData.m_Buffer->allocatedIndexLength = length;
+            hashMap.m_HashMapData.ClearAndAddBatchUnsafe(keys, values, length);
         }
 
         /// <summary>
@@ -111,43 +90,17 @@ namespace BovineLabs.Core.Extensions
         /// <param name="length"> The length of the buffers. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
-        public static unsafe void ClearAndAddBatchUnsafe<TKey, TValue>(
+        public static void ClearAndAddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap,
             [NoAlias] NativeSlice<TKey> keys,
             [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            CheckLengthsMatch(keys.Length, values.Length);
-
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
 #endif
-
-            var length = keys.Length;
-
-            hashMap.Clear();
-
-            if (hashMap.Capacity < length)
-            {
-                hashMap.Capacity = length;
-            }
-
-            var data = hashMap.GetUnsafeBucketData();
-            UnsafeUtility.MemCpyStride(data.keys, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), length);
-            UnsafeUtility.MemCpy(data.values, values.GetUnsafeReadOnlyPtr(), length * UnsafeUtility.SizeOf<TValue>());
-
-            var buckets = (int*)data.buckets;
-            var nextPtrs = (int*)data.next;
-
-            for (var idx = 0; idx < length; idx++)
-            {
-                var bucket = keys[idx].GetHashCode() & data.bucketCapacityMask;
-                nextPtrs[idx] = buckets[bucket];
-                buckets[bucket] = idx;
-            }
-
-            hashMap.m_HashMapData.m_Buffer->allocatedIndexLength = length;
+            hashMap.m_HashMapData.ClearAndAddBatchUnsafe(keys, values);
         }
 
         public static unsafe void AddBatchUnsafe<TKey, TValue>(
@@ -361,7 +314,7 @@ namespace BovineLabs.Core.Extensions
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            hashMap.m_Writer.m_Buffer->AddBatchUnsafe(keys, values, length);
+            hashMap.m_Writer.m_Buffer->AddBatchUnsafeParallel(keys, values, length);
         }
 
         public static unsafe void RecalculateBuckets<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> hashMap)
@@ -420,11 +373,11 @@ namespace BovineLabs.Core.Extensions
             return map.m_HashMapData.m_Buffer->TryGetFirstKeyValue<TKey, TValue>(out key, out value, ref startIndex);
         }
 
-        public static unsafe bool TryGetFirstKeyValue<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> map, out TKey key, out TValue value, ref int index)
+        public static bool TryGetFirstKeyValue<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> map, out TKey key, out TValue value, ref int index)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            return map.m_HashMapData.m_Buffer->TryGetFirstKeyValue<TKey, TValue>(out key, out value, ref index);
+            return map.m_HashMapData.TryGetFirstKeyValue(out key, out value, ref index);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

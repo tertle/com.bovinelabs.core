@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Collections
     public unsafe partial struct UnsafeEventStream : INativeDisposable, IEquatable<UnsafeEventStream>
     {
         /// <summary> Gets the number of streams the list can use. </summary>
-        public const int ForEachCount = JobsUtility.MaxJobThreadCount;
+        public static int ForEachCount => JobsUtility.ThreadIndexCount;
 
         [NativeDisableUnsafePtrRestriction]
         private UnsafeEventStreamBlockData* blockData;

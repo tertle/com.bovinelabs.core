@@ -18,7 +18,7 @@ namespace BovineLabs.Core
 
         internal LoggerHandle LoggerHandle;
 
-        public bool IsValid => LoggerHandle.IsValid;
+        public bool IsValid => this.LoggerHandle.IsValid;
 
         [Conditional("UNITY_EDITOR")]
         public readonly void Verbose(in FixedString32Bytes msg)
