@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.15.4] - 2023-06-13
+
+### Fixed
+* Compile error when Extensions enabled but not ObjectDefinitions
+
 ## [0.15.3] - 2023-06-12
 
 ### Added
