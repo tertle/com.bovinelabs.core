@@ -15,9 +15,12 @@ namespace BovineLabs.Core.Authoring.Destroy
 
     public class EntityDestroyBaker : Baker<EntityDestroyAuthoring>
     {
+        /// <inheritdoc/>
         public override void Bake(EntityDestroyAuthoring authoring)
         {
-            this.AddComponent<EntityDestroy>(this.GetEntity(TransformUsageFlags.None));
+            var entity = this.GetEntity(TransformUsageFlags.None);
+            this.AddComponent<EntityDestroy>(entity);
+            this.SetComponentEnabled<EntityDestroy>(entity, false);
         }
     }
 }

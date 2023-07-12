@@ -34,7 +34,7 @@ namespace BovineLabs.Core.Collections
             /// <typeparam name="T"> The type of value. </typeparam>
             /// <param name="value"> Value to write. </param>
             [GenerateTestsForBurstCompatibility]
-            public void Write<T>(T value)
+            public readonly void Write<T>(T value)
                 where T : struct
             {
                 ref var dst = ref this.Allocate<T>();
@@ -45,7 +45,7 @@ namespace BovineLabs.Core.Collections
             /// <typeparam name="T"> The type of value. </typeparam>
             /// <returns> Reference to allocated space for data. </returns>
             [GenerateTestsForBurstCompatibility]
-            public ref T Allocate<T>()
+            public readonly ref T Allocate<T>()
                 where T : struct
             {
                 var size = UnsafeUtility.SizeOf<T>();
@@ -55,7 +55,7 @@ namespace BovineLabs.Core.Collections
             /// <summary> Allocate space for data. </summary>
             /// <param name="size"> Size in bytes. </param>
             /// <returns> Pointer to allocated space for data. </returns>
-            public byte* Allocate(int size)
+            public readonly byte* Allocate(int size)
             {
                 var threadIndex = AssumeThreadRange(this.m_ThreadIndex);
 

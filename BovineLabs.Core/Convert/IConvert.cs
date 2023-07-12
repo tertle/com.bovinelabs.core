@@ -24,5 +24,8 @@ namespace BovineLabs.Core.Convert
 
         DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData;
+
+        void SetComponentEnabled<T>(bool enabled)
+            where T : unmanaged, IEnableableComponent;
     }
 }

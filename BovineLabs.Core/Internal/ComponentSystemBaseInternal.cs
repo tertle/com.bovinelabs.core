@@ -1,4 +1,4 @@
-// <copyright file="ComponentSystemBaseInternals.cs" company="BovineLabs">
+// <copyright file="ComponentSystemBaseInternal.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -6,7 +6,7 @@ namespace BovineLabs.Core.Internal
 {
     using Unity.Entities;
 
-    public static class ComponentSystemBaseInternals
+    public static class ComponentSystemBaseInternal
     {
         public static EntityQuery GetEntityQuery(this ComponentSystemBase system, params ComponentType[] componentTypes)
         {

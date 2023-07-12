@@ -1,20 +1,20 @@
-﻿// <copyright file="KeyedAssetAttribute.cs" company="BovineLabs">
+﻿// <copyright file="UIDAttribute.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Settings
+namespace BovineLabs.Core.ObjectManagement
 {
     using System;
     using UnityEngine;
 
-    public class KeyedAssetAttribute : PropertyAttribute
+    public class UIDAttribute : PropertyAttribute
     {
-        public KeyedAssetAttribute(string type)
+        public UIDAttribute(string type)
         {
             this.Type = type;
         }
 
-        public KeyedAssetAttribute(Type type)
+        public UIDAttribute(Type type)
         {
             this.Type = type.Name;
         }

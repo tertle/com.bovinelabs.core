@@ -42,16 +42,15 @@ namespace BovineLabs.Core.Utility
             return !left.Equals(right);
         }
 
-        /// <inheritdoc/>
-        public override bool Equals(object obj)
-        {
-            throw new NotSupportedException();
-        }
-
         /// <inheritdoc />
         public bool Equals(Ptr<T> other)
         {
             return this.Value == other.Value;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Ptr<T> other && this.Equals(other);
         }
 
         /// <inheritdoc />

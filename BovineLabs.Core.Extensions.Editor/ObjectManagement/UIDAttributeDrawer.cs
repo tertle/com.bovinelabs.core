@@ -1,30 +1,31 @@
-﻿// <copyright file="KeyedAssetAttributeDrawer.cs" company="BovineLabs">
+﻿// <copyright file="UIDAttributeDrawer.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Editor.Settings
+#if !BL_DISABLE_OBJECT_DEFINITION
+namespace BovineLabs.Core.Editor.ObjectManagement
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using BovineLabs.Core.Settings;
+    using BovineLabs.Core.ObjectManagement;
     using UnityEditor;
     using UnityEditor.UIElements;
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    [CustomPropertyDrawer(typeof(KeyedAssetAttribute))]
-    public class KeyedAssetAttributeDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(UIDAttribute))]
+    public class UIDAttributeDrawer : PropertyDrawer
     {
         /// <inheritdoc/>
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             if (property.propertyType != SerializedPropertyType.Integer)
             {
-                return new Label($"{nameof(KeyedAssetAttribute)} on non int field");
+                return new Label($"{nameof(UIDAttribute)} on non int field");
             }
 
-            var keyedAsset = (KeyedAssetAttribute)this.attribute;
+            var keyedAsset = (UIDAttribute)this.attribute;
             var assets = GetBestType(keyedAsset.Type);
 
             if (assets.Count == 0)
@@ -45,7 +46,7 @@ namespace BovineLabs.Core.Editor.Settings
 
             objectField.RegisterValueChangedCallback(evt =>
             {
-                var value = evt.newValue is not IKeyedAsset keyed ? 0 : keyed.Key;
+                var value = evt.newValue is not IUID keyed ? 0 : keyed.ID;
                 property.intValue = value;
                 property.serializedObject.ApplyModifiedProperties();
             });
@@ -53,15 +54,15 @@ namespace BovineLabs.Core.Editor.Settings
             return objectField;
         }
 
-        private static Dictionary<int, IKeyedAsset> GetBestType(string name)
+        private static Dictionary<int, IUID> GetBestType(string name)
         {
-            var keyedAssets = new Dictionary<int, IKeyedAsset>();
+            var keyedAssets = new Dictionary<int, IUID>();
 
             var assets = AssetDatabase.FindAssets($"t:{name}");
             foreach (var guid in assets)
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
-                if (AssetDatabase.LoadAssetAtPath<ScriptableObject>(path) is not IKeyedAsset asset)
+                if (AssetDatabase.LoadAssetAtPath<ScriptableObject>(path) is not IUID asset)
                 {
                     Debug.Log("Not all assets");
                     continue;
@@ -69,7 +70,7 @@ namespace BovineLabs.Core.Editor.Settings
 
                 try
                 {
-                    keyedAssets.Add(asset.Key, asset);
+                    keyedAssets.Add(asset.ID, asset);
                 }
                 catch (Exception ex)
                 {
@@ -81,3 +82,4 @@ namespace BovineLabs.Core.Editor.Settings
         }
     }
 }
+#endif

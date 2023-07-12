@@ -75,5 +75,11 @@ namespace BovineLabs.Core.Convert
         {
             return this.commandBuffer.AddBuffer<T>(this.sortKey, this.entity);
         }
+
+        public void SetComponentEnabled<T>(bool enabled)
+            where T : unmanaged, IEnableableComponent
+        {
+            this.commandBuffer.SetComponentEnabled<T>(this.sortKey, this.entity, enabled);
+        }
     }
 }

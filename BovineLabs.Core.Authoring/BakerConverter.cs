@@ -52,5 +52,11 @@ namespace BovineLabs.Core.Authoring
         {
             return this.baker.AddBuffer<T>(this.entity);
         }
+
+        public void SetComponentEnabled<T>(bool enabled)
+            where T : unmanaged, IEnableableComponent
+        {
+            this.baker.SetComponentEnabled<T>(this.entity, enabled);
+        }
     }
 }

@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Extensions
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Collections;
     using Unity.Burst.CompilerServices;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -156,6 +157,152 @@ namespace BovineLabs.Core.Extensions
 #else
             return new DynamicBufferAccessor(ptr, length, stride, elementSize, internalCapacity);
 #endif
+        }
+
+        public static void CopyEnableMaskFrom<TD, TS>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<TD> destination, ref ComponentTypeHandle<TS> source)
+            where TD : unmanaged, IComponentData, IEnableableComponent
+            where TS : unmanaged, IComponentData, IEnableableComponent
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(destination.m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(source.m_Safety);
+#endif
+            if (Hint.Unlikely(destination.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            {
+                destination.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, destination.m_TypeIndex);
+            }
+
+            if (Hint.Unlikely(source.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            {
+                source.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, source.m_TypeIndex);
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (Hint.Unlikely(destination.m_LookupCache.IndexInArchetype == -1))
+            {
+                throw new InvalidOperationException(); // TODO
+            }
+
+            if (Hint.Unlikely(source.m_LookupCache.IndexInArchetype == -1))
+            {
+                throw new InvalidOperationException(); // TODO
+            }
+#endif
+            var dst = ChunkDataUtility.GetEnabledRefRW(
+                archetypeChunk.m_Chunk, destination.m_LookupCache.IndexInArchetype, destination.GlobalSystemVersion, out var dstPtrChunkDisabledCount).Ptr;
+
+            var src = ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, source.m_LookupCache.IndexInArchetype).Ptr;
+
+            var archetype = archetypeChunk.m_Chunk->Archetype;
+            var chunks = archetype->Chunks;
+            int memoryOrderIndexInArchetype = archetype->TypeIndexInArchetypeToMemoryOrderIndex[source.m_LookupCache.IndexInArchetype];
+            var srcPtrChunkDisabledCount = chunks.GetPointerToChunkDisabledCountForType(memoryOrderIndexInArchetype, archetypeChunk.m_Chunk->ListIndex);
+
+            // UnsafeUtility.MemCpy(dst, src, sizeof(ulong) * 2);
+            dst[0] = src[0];
+            dst[1] = src[1];
+            *dstPtrChunkDisabledCount = *srcPtrChunkDisabledCount;
+        }
+
+        public static v128* GetEnabledBitsRO<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle)
+            where T : unmanaged, IComponentData, IEnableableComponent
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
+#endif
+            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            {
+                typeHandle.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, typeHandle.m_TypeIndex);
+            }
+
+            if (Hint.Unlikely(typeHandle.m_LookupCache.IndexInArchetype == -1))
+            {
+                return null;
+            }
+
+            return (v128*)ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, typeHandle.m_LookupCache.IndexInArchetype).Ptr;
+        }
+
+        public static v128* GetEnabledBitsRW<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle, out int* ptrChunkDisabledCount)
+            where T : unmanaged, IComponentData, IEnableableComponent
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
+#endif
+            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            {
+                typeHandle.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, typeHandle.m_TypeIndex);
+            }
+
+            if (Hint.Unlikely(typeHandle.m_LookupCache.IndexInArchetype == -1))
+            {
+                ptrChunkDisabledCount = null;
+                return null;
+            }
+
+            return (v128*)ChunkDataUtility.GetEnabledRefRW(
+                archetypeChunk.m_Chunk,
+                typeHandle.m_LookupCache.IndexInArchetype,
+                typeHandle.GlobalSystemVersion,
+                out ptrChunkDisabledCount).Ptr;
+        }
+
+        public static ref readonly v128 GetRequiredEnabledBitsRO<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle)
+            where T : unmanaged, IComponentData, IEnableableComponent
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
+#endif
+            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            {
+                typeHandle.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, typeHandle.m_TypeIndex);
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+            // Must check this after computing the pointer, to make sure the cache is up to date
+            if (Hint.Unlikely(typeHandle.m_LookupCache.IndexInArchetype == -1))
+            {
+                var typeName = typeHandle.m_TypeIndex.ToFixedString();
+                throw new ArgumentException($"Required component {typeName} not found in archetype.");
+            }
+#endif
+
+            var ptr = ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, typeHandle.m_LookupCache.IndexInArchetype).Ptr;
+            return ref UnsafeUtility.AsRef<v128>(ptr);
+        }
+
+        public static ref v128 GetRequiredEnabledBitsRW<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle, out int* ptrChunkDisabledCount)
+            where T : unmanaged, IComponentData, IEnableableComponent
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(typeHandle.m_Safety);
+#endif
+            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            {
+                typeHandle.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, typeHandle.m_TypeIndex);
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+            if (Hint.Unlikely(typeHandle.IsReadOnly))
+            {
+                throw new InvalidOperationException("Provided ComponentTypeHandle is read-only; can't get a read/write pointer to component data");
+            }
+
+            // Must check this after computing the pointer, to make sure the cache is up to date
+            if (Hint.Unlikely(typeHandle.m_LookupCache.IndexInArchetype == -1))
+            {
+                var typeName = typeHandle.m_TypeIndex.ToFixedString();
+                throw new ArgumentException($"Required component {typeName} not found in archetype.");
+            }
+#endif
+
+            var ptr = ChunkDataUtility.GetEnabledRefRW(
+                archetypeChunk.m_Chunk,
+                typeHandle.m_LookupCache.IndexInArchetype,
+                typeHandle.GlobalSystemVersion,
+                out ptrChunkDisabledCount).Ptr;
+
+            return ref UnsafeUtility.AsRef<v128>(ptr);
         }
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING

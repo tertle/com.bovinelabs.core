@@ -16,8 +16,8 @@ namespace BovineLabs.Core.ObjectManagement
     /// This mapping is stored in <see cref="ObjectDefinitionRegistry"/> where the key is the index in the dynamic buffer.
     /// It provides a way to give high definition <see cref="ObjectCategories"/> which can auto place into <see cref="ObjectGroup"/> for you.
     /// </summary>
-    [CreateAssetMenu(menuName = "BovineLabs/Object Definition", fileName = "Definition", order = -1000)]
-    public sealed class ObjectDefinition : ScriptableObject, IID
+    [UIDManager("ObjectManagementSettings", "objectDefinitions")]
+    public sealed class ObjectDefinition : ScriptableObject, IUID
     {
         [HideInInspector] // So the field is not editable even in debug mode.
         [SerializeField]
@@ -49,7 +49,7 @@ namespace BovineLabs.Core.ObjectManagement
 
         public ObjectId ID => this.id;
 
-        int IID.ID
+        int IUID.ID
         {
             get => this.id;
             set => this.id = new ObjectId { ID = value };

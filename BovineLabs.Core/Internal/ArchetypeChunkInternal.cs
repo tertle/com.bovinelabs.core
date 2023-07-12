@@ -1,4 +1,4 @@
-﻿// <copyright file="ArchetypeChunkInternals.cs" company="BovineLabs">
+﻿// <copyright file="ArchetypeChunkInternal.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Internal
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
-    public static class ArchetypeChunkInternals
+    public static class ArchetypeChunkInternal
     {
         public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ComponentTypeHandle<T> handle)
             where T : unmanaged, IComponentData

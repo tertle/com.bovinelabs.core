@@ -48,6 +48,18 @@ namespace BovineLabs.Core.Iterators
             return capacity * 2;
         }
 
+        internal static void Clear<TKey>(DynamicBuffer<byte> buffer)
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+            var data = buffer.AsSetData<TKey>();
+
+            UnsafeUtility.MemSet(GetBuckets(data), 0xff, (data->BucketCapacityMask + 1) * 4);
+            UnsafeUtility.MemSet(GetNexts(data), 0xff, data->KeyCapacity * 4);
+
+            data->FirstFreeIDX = -1;
+            data->AllocatedIndexLength = 0;
+        }
+
         internal static void AllocateHashSet<TKey>(DynamicBuffer<byte> buffer, int length, int bucketLength)
             where TKey : unmanaged, IEquatable<TKey>
         {

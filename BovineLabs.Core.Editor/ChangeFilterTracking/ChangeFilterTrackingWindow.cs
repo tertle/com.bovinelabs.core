@@ -64,6 +64,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
             this.CreateListView(this.root);
         }
 
+        /// <inheritdoc/>
         protected override void OnUpdate()
         {
             if (this.world == null)
@@ -122,6 +123,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnWorldSelected(World newWorld)
         {
             this.world = newWorld;
@@ -138,24 +140,19 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
 
         private void CreateToolBar(VisualElement rootElement)
         {
-            var toolbar = new VisualElement();
-            Resources.Templates.SystemScheduleToolbar.Clone(toolbar);
-            var leftSide = toolbar.Q(className: UssClasses.SystemScheduleWindow.Toolbar.LeftSide);
+            Resources.Templates.SystemScheduleToolbar.Clone(rootElement);
+            var leftSide = rootElement.Q(className: UssClasses.SystemScheduleWindow.Toolbar.LeftSide);
 
             var worldSelector = this.CreateWorldSelector();
             leftSide.Add(worldSelector);
             worldSelector.SetVisibility(true);
-
-            rootElement.Add(toolbar);
         }
 
         private void CreateListView(VisualElement rootElement)
         {
-            var headerRoot = new VisualElement();
-            TreeViewHeader.Clone(headerRoot);
-            rootElement.Add(headerRoot);
+            TreeViewHeader.Clone(rootElement);
 
-            this.listView = headerRoot.Q<ListView>("ListView");
+            this.listView = rootElement.Q<ListView>("ListView");
             this.listView.itemsSource = this.sources;
             this.listView.makeItem = () => TreeViewItemTemplate.Clone();
             this.listView.bindItem = (element, item) =>

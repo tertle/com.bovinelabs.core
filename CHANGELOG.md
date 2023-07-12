@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.15.5] - 2023-07-12
+
+### Added
+* NativeThreadRandom
+* Entropy feature singleton which maintains a NativeThreadRandom
+* SetComponentEnabled to IConvert
+* Extensions for IEnablebale - CopyEnableMaskFrom, GetEnabledBitsRO, GetRequiredEnabledBitsRO, GetEnabledBitsRW, GetRequiredEnabledBitsRW
+* AddUntypedBuffer and a new variation of UnsafeAddComponent to ECB
+* UnityBakingSettings component that can be read in BakingSystems to expose baking info
+
+### Changed
+* DynamicHashMaps now need to be initialized explicitly (using during baking) with Initialize instead of checking in AsHashMap
+* Reworked ObjectManagementSettings to ensure bakers detect changes and fixed some lingering UI issues
+* EntityDestroy is now IEnableableComponent instead
+* IJobHashMapVisitKeyValue now also passes in jobIndex
+
+### Fixed
+* KMap at max capacity infinite looping
+
 ## [0.15.4] - 2023-06-13
 
 ### Fixed

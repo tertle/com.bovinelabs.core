@@ -1,5 +1,5 @@
 ﻿// <copyright file="IJobHashMapVisitKeyValue.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
+// Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 namespace BovineLabs.Core.Jobs
@@ -20,14 +20,14 @@ namespace BovineLabs.Core.Jobs
     [JobProducerType(typeof(JobHashMapVisitKeyValue.JobHashMapVisitKeyValueProducer<>))]
     public unsafe interface IJobHashMapVisitKeyValue
     {
-        void ExecuteNext(byte* keys, byte* values, int entryIndex);
+        void ExecuteNext(byte* keys, byte* values, int entryIndex, int jobIndex);
     }
 
     public static class JobHashMapVisitKeyValue
     {
         public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
             this TJob jobData,
-            NativeParallelMultiHashMap<TKey, TValue> hashMap,
+            NativeHashMap<TKey, TValue> hashMap,
             int minIndicesPerJobCount,
             JobHandle dependsOn = default)
             where TJob : unmanaged, IJobHashMapVisitKeyValue
@@ -36,7 +36,7 @@ namespace BovineLabs.Core.Jobs
         {
             var jobProducer = new JobHashMapVisitKeyValueProducer<TJob>
             {
-                HashMap = hashMap.m_MultiHashMapData.m_Buffer,
+                HashMap = (HashMapWrapper*)hashMap.m_Data,
                 JobData = jobData,
             };
 
@@ -50,35 +50,7 @@ namespace BovineLabs.Core.Jobs
                 dependsOn,
                 ScheduleMode.Parallel);
 
-            return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.GetUnsafeBucketData().bucketCapacityMask + 1, minIndicesPerJobCount);
-        }
-
-        public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
-            this TJob jobData,
-            NativeParallelHashMap<TKey, TValue> hashMap,
-            int minIndicesPerJobCount,
-            JobHandle dependsOn = default)
-            where TJob : unmanaged, IJobHashMapVisitKeyValue
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            var jobProducer = new JobHashMapVisitKeyValueProducer<TJob>
-            {
-                HashMap = hashMap.m_HashMapData.m_Buffer,
-                JobData = jobData,
-            };
-
-            JobHashMapVisitKeyValueProducer<TJob>.Initialize();
-            var reflectionData = JobHashMapVisitKeyValueProducer<TJob>.ReflectionData.Data;
-            CollectionHelper.CheckReflectionDataCorrect<TJob>(reflectionData);
-
-            var scheduleParams = new JobsUtility.JobScheduleParameters(
-                UnsafeUtility.AddressOf(ref jobProducer),
-                reflectionData,
-                dependsOn,
-                ScheduleMode.Parallel);
-
-            return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.GetUnsafeBucketData().bucketCapacityMask + 1, minIndicesPerJobCount);
+            return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.m_Data->BucketCapacity, minIndicesPerJobCount);
         }
 
         /// <summary>
@@ -109,7 +81,7 @@ namespace BovineLabs.Core.Jobs
             /// <summary> The <see cref="NativeParallelMultiHashMap{TKey,TValue}" />. </summary>
             [ReadOnly]
             [NativeDisableUnsafePtrRestriction]
-            public UnsafeParallelHashMapData* HashMap;
+            public HashMapWrapper* HashMap;
 
             // ReSharper disable once StaticMemberInGenericType
             internal static readonly SharedStatic<IntPtr> ReflectionData = SharedStatic<IntPtr>.GetOrCreate<JobHashMapVisitKeyValueProducer<T>>();
@@ -157,10 +129,10 @@ namespace BovineLabs.Core.Jobs
                         return;
                     }
 
-                    var buckets = (int*)fullData.HashMap->buckets;
-                    var nextPtrs = (int*)fullData.HashMap->next;
-                    var keys = fullData.HashMap->keys;
-                    var values = fullData.HashMap->values;
+                    var buckets = fullData.HashMap->Buckets;
+                    var nextPtrs = fullData.HashMap->Next;
+                    var keys = fullData.HashMap->Keys;
+                    var values = fullData.HashMap->Ptr;
 
                     for (var i = begin; i < end; i++)
                     {
@@ -168,12 +140,36 @@ namespace BovineLabs.Core.Jobs
 
                         while (entryIndex != -1)
                         {
-                            fullData.JobData.ExecuteNext(keys, values, entryIndex);
+                            fullData.JobData.ExecuteNext(keys, values, entryIndex, jobIndex);
                             entryIndex = nextPtrs[entryIndex];
                         }
                     }
                 }
             }
+        }
+
+        internal unsafe struct HashMapWrapper
+        {
+            [NativeDisableUnsafePtrRestriction]
+            internal byte* Ptr;
+
+            [NativeDisableUnsafePtrRestriction]
+            internal byte* Keys;
+
+            [NativeDisableUnsafePtrRestriction]
+            internal int* Next;
+
+            [NativeDisableUnsafePtrRestriction]
+            internal int* Buckets;
+
+            private int Count;
+            private int Capacity;
+            private int Log2MinGrowth;
+            private int BucketCapacity;
+            private int AllocatedIndex;
+            private int FirstFreeIdx;
+            private int SizeOfTValue;
+            private AllocatorManager.AllocatorHandle Allocator;
         }
     }
 }

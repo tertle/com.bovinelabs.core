@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Tests.Keys
         {
             var kvp = new NameValue[KMap.MaxCapacity];
 
-            for (byte i = 0; i < kvp.Length; i++)
+            for (var i = 0; i < kvp.Length; i++)
             {
                 kvp[i] = new NameValue
                 {

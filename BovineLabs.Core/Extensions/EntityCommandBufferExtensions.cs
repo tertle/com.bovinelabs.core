@@ -12,16 +12,32 @@ namespace BovineLabs.Core.Extensions
     {
         private const int Align64BIT = 8;
 
-        public static UntypedDynamicBuffer AddUntypedBuffer(ref this EntityCommandBuffer ecb, Entity e, ComponentType componentType)
+        public static UntypedDynamicBuffer AddUntypedBuffer(this EntityCommandBuffer ecb, Entity e, ComponentType componentType)
         {
             ecb.EnforceSingleThreadOwnership();
             ecb.AssertDidNotPlayback();
             return ecb.m_Data->CreateUntypedBufferCommand(ECBCommand.AddBuffer, &ecb.m_Data->m_MainThreadChain, ecb.MainThreadSortKey, e, componentType);
         }
 
-        public static void UnsafeAddComponent(ref this EntityCommandBuffer ecb, Entity e, TypeIndex typeIndex, int typeSize, void* componentDataPtr)
+        public static UntypedDynamicBuffer AddUntypedBuffer(this EntityCommandBuffer.ParallelWriter ecb, int sortKey, Entity e, ComponentType componentType)
+        {
+            return ecb.m_Data->CreateUntypedBufferCommand(ECBCommand.AddBuffer, &ecb.m_Data->m_MainThreadChain, sortKey, e, componentType);
+        }
+
+        public static void UnsafeAddComponent(this EntityCommandBuffer ecb, Entity e, TypeIndex typeIndex, int typeSize, void* componentDataPtr)
         {
             ecb.UnsafeAddComponent(e, typeIndex, typeSize, componentDataPtr);
+        }
+
+        public static void UnsafeAddComponent(this EntityCommandBuffer.ParallelWriter ecb, int sortIndex, Entity e, ComponentType componentType, void* componentDataPtr)
+        {
+            ref readonly var type = ref TypeManager.GetTypeInfo(componentType.TypeIndex);
+            UnsafeAddComponent(ecb, sortIndex, e, componentType.TypeIndex, type.ElementSize, componentDataPtr);
+        }
+
+        public static void UnsafeAddComponent(this EntityCommandBuffer.ParallelWriter ecb, int sortIndex, Entity e, TypeIndex typeIndex, int typeSize, void* componentDataPtr)
+        {
+            ecb.UnsafeAddComponent(sortIndex, e, typeIndex, typeSize, componentDataPtr);
         }
 
         private static UntypedDynamicBuffer CreateUntypedBufferCommand(

@@ -29,7 +29,6 @@ namespace BovineLabs.Core.Model
         {
             Assert.AreEqual(UnsafeUtility.SizeOf<bool>(), UnsafeUtility.SizeOf<TOn>());
             Assert.AreEqual(UnsafeUtility.SizeOf<float>(), UnsafeUtility.SizeOf<TRemaining>());
-            Assert.AreEqual(UnsafeUtility.SizeOf<bool>(), UnsafeUtility.SizeOf<TActive>());
             Assert.AreEqual(UnsafeUtility.SizeOf<float>(), UnsafeUtility.SizeOf<TRemaining>());
 
             this.onHandle = state.GetComponentTypeHandle<TOn>();
@@ -37,7 +36,8 @@ namespace BovineLabs.Core.Model
             this.activeHandle = state.GetComponentTypeHandle<TActive>(true);
             this.durationHandle = state.GetComponentTypeHandle<TDuration>(true);
 
-            this.query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<TRemaining, TOn>().WithAll<TActive, TDuration>().Build(ref state);
+            this.query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<TRemaining, TOn>().WithAll<TActive, TDuration>()
+                .Build(ref state);
         }
 
         public void OnUpdate(ref SystemState state, UpdateTimeJob job = default)

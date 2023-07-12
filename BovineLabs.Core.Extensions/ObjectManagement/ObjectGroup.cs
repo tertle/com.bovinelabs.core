@@ -9,8 +9,8 @@ namespace BovineLabs.Core.ObjectManagement
     using System.Collections.Generic;
     using UnityEngine;
 
-    [CreateAssetMenu(menuName = "BovineLabs/Object Group", fileName = "Group", order = -999)]
-    public class ObjectGroup : ScriptableObject, IID
+    [UIDManager("ObjectManagementSettings", "objectGroups")]
+    public class ObjectGroup : ScriptableObject, IUID
     {
         [HideInInspector] // So the field is not editable even in debug mode.
         [SerializeField]
@@ -31,7 +31,7 @@ namespace BovineLabs.Core.ObjectManagement
         public GroupId ID => this.id;
 
         /// <inheritdoc />
-        int IID.ID
+        int IUID.ID
         {
             get => this.id;
             set => this.id = new GroupId { ID = (short)value };

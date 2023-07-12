@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Keys
 
             Check.Assume(this.map.Capacity >= MaxCapacity);
 
-            for (byte index = 0; index < kvp.Count; index++)
+            for (var index = 0; index < kvp.Count; index++)
             {
                 var key = (MiniString)kvp[index].Name;
 

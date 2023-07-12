@@ -92,7 +92,7 @@ namespace BovineLabs.Core.Tests.Iterators
         private DynamicMultiHashMap<int, byte> CreateHashMap()
         {
             var entity = this.Manager.CreateEntity(typeof(TestHashMap));
-            return this.Manager.GetBuffer<TestHashMap>(entity).AsMultiHashMap<TestHashMap, int, byte>();
+            return this.Manager.GetBuffer<TestHashMap>(entity).Initialize<TestHashMap, int, byte>().AsMultiHashMap<TestHashMap, int, byte>();
         }
 
         private struct TestHashMap : IDynamicMultiHashMap<int, byte>

@@ -19,12 +19,6 @@ namespace BovineLabs.Core.Iterators
             CheckSize(buffer);
 
             this.buffer = buffer;
-
-            // First time, need to setup
-            if (buffer.Length == 0)
-            {
-                this.Allocate();
-            }
         }
 
         /// <summary>
@@ -33,13 +27,7 @@ namespace BovineLabs.Core.Iterators
         /// <remarks> Containers capacity remains unchanged. </remarks>
         public void Clear()
         {
-            var data = this.buffer.AsSetData<TKey>();
-
-            UnsafeUtility.MemSet(DynamicHashSetData.GetBuckets(data), 0xff, (data->BucketCapacityMask + 1) * 4);
-            UnsafeUtility.MemSet(DynamicHashSetData.GetNexts(data), 0xff, data->KeyCapacity * 4);
-
-            data->FirstFreeIDX = -1;
-            data->AllocatedIndexLength = 0;
+            DynamicHashSetData.Clear<TKey>(this.buffer);
         }
 
         /// <summary> Try adding an element with the specified key into the container. </summary>
@@ -58,7 +46,7 @@ namespace BovineLabs.Core.Iterators
             if (data->AllocatedIndexLength >= data->KeyCapacity && data->FirstFreeIDX < 0)
             {
                 var newCap = DynamicHashSetData.GrowCapacity(data->KeyCapacity);
-                DynamicHashSetData.ReallocateHashSet<TKey>(this.buffer, newCap, DynamicHashMapData.GetBucketSize(newCap), out data);
+                DynamicHashSetData.ReallocateHashSet<TKey>(this.buffer, newCap, DynamicHashSetData.GetBucketSize(newCap), out data);
             }
 
             var idx = data->FirstFreeIDX;
@@ -145,7 +133,12 @@ namespace BovineLabs.Core.Iterators
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckSize(DynamicBuffer<byte> buffer)
         {
-            if ((buffer.Length != 0) && (buffer.Length < UnsafeUtility.SizeOf<DynamicHashSetData>()))
+            if (buffer.Length == 0)
+            {
+                throw new InvalidOperationException("Buffer not initialized");
+            }
+
+            if (buffer.Length < UnsafeUtility.SizeOf<DynamicHashSetData>())
             {
                 throw new InvalidOperationException("Buffer has data but is too small to be a header.");
             }

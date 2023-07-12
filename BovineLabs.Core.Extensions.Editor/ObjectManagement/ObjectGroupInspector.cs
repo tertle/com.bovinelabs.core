@@ -3,7 +3,7 @@
 // </copyright>
 
 #if !BL_DISABLE_OBJECT_DEFINITION
-namespace BovineLabs.Core.Editor.AssetManagement
+namespace BovineLabs.Core.Editor.ObjectManagement
 {
     using BovineLabs.Core.Editor.Inspectors;
     using BovineLabs.Core.ObjectManagement;

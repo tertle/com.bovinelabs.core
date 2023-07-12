@@ -1,4 +1,4 @@
-﻿// <copyright file="BakingSystemInternals.cs" company="BovineLabs">
+﻿// <copyright file="BakingSystemInternal.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 

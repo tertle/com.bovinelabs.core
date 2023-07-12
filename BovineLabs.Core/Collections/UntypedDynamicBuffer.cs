@@ -140,6 +140,8 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         public bool IsCreated => this.buffer != null;
 
+        public int ElementSize => this.elementSize;
+
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
         private void CheckBounds(int index)

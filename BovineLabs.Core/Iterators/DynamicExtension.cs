@@ -13,6 +13,37 @@ namespace BovineLabs.Core.Iterators
 
     public static class DynamicExtension
     {
+        public static DynamicBuffer<TBuffer> Initialize<TBuffer, TKey, TValue>(this DynamicBuffer<TBuffer> buffer, int capacity = 0)
+            where TBuffer : unmanaged, IDynamicHashMapBase<TKey, TValue>
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            Assert.AreEqual(1, UnsafeUtility.SizeOf<TBuffer>());
+#endif
+
+            var bytes = buffer.Reinterpret<byte>();
+            var bucketCapacity = UnsafeParallelHashMapData.GetBucketSize(capacity);
+            DynamicHashMapData.AllocateHashMap<TKey, TValue>(bytes, capacity, bucketCapacity);
+            DynamicHashMapBase<TKey, TValue>.Clear(bytes);
+            return buffer;
+        }
+
+        public static DynamicBuffer<TBuffer> Initialize<TBuffer, TKey>(this DynamicBuffer<TBuffer> buffer, int capacity = 0)
+            where TBuffer : unmanaged, IDynamicHashSet<TKey>
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            Assert.AreEqual(1, UnsafeUtility.SizeOf<TBuffer>());
+#endif
+
+            var bytes = buffer.Reinterpret<byte>();
+            var bucketCapacity = UnsafeParallelHashMapData.GetBucketSize(capacity);
+            DynamicHashSetData.AllocateHashSet<TKey>(bytes, capacity, bucketCapacity);
+            DynamicHashSetData.Clear<TKey>(bytes);
+            return buffer;
+        }
+
         public static DynamicHashMap<TKey, TValue> AsHashMap<TBuffer, TKey, TValue>(this DynamicBuffer<TBuffer> buffer)
             where TBuffer : unmanaged, IDynamicHashMap<TKey, TValue>
             where TKey : unmanaged, IEquatable<TKey>
@@ -35,16 +66,6 @@ namespace BovineLabs.Core.Iterators
             return new DynamicMultiHashMap<TKey, TValue>(buffer.Reinterpret<byte>());
         }
 
-        public static DynamicIndexMap<TValue> AsIndexMap<TBuffer, TValue>(this DynamicBuffer<TBuffer> buffer)
-            where TBuffer : unmanaged, IDynamicIndexMap<TValue>
-            where TValue : unmanaged
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            Assert.AreEqual(1, UnsafeUtility.SizeOf<TBuffer>());
-#endif
-            return new DynamicIndexMap<TValue>(buffer.Reinterpret<byte>());
-        }
-
         public static DynamicHashSet<TKey> AsHashSet<TBuffer, TKey>(this DynamicBuffer<TBuffer> buffer)
             where TBuffer : unmanaged, IDynamicHashSet<TKey>
             where TKey : unmanaged, IEquatable<TKey>
@@ -55,15 +76,27 @@ namespace BovineLabs.Core.Iterators
             return new DynamicHashSet<TKey>(buffer.Reinterpret<byte>());
         }
 
-        public static DynamicIndexMap<TValue> AsIndexMapAndInitialize<TBuffer, TValue>(this DynamicBuffer<TBuffer> buffer, int bucketLength, int length = 0)
-            where TBuffer : unmanaged, IDynamicIndexMap<TValue>
-            where TValue : unmanaged
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            Assert.AreEqual(1, UnsafeUtility.SizeOf<TBuffer>());
-#endif
-            return new DynamicIndexMap<TValue>(buffer.Reinterpret<byte>(), bucketLength, length);
-        }
+
+//         public static DynamicIndexMap<TValue> AsIndexMap<TBuffer, TValue>(this DynamicBuffer<TBuffer> buffer)
+//             where TBuffer : unmanaged, IDynamicIndexMap<TValue>
+//             where TValue : unmanaged
+//         {
+// #if ENABLE_UNITY_COLLECTIONS_CHECKS
+//             Assert.AreEqual(1, UnsafeUtility.SizeOf<TBuffer>());
+// #endif
+//             return new DynamicIndexMap<TValue>(buffer.Reinterpret<byte>());
+//         }
+
+
+//         public static DynamicIndexMap<TValue> AsIndexMapAndInitialize<TBuffer, TValue>(this DynamicBuffer<TBuffer> buffer, int bucketLength, int length = 0)
+//             where TBuffer : unmanaged, IDynamicIndexMap<TValue>
+//             where TValue : unmanaged
+//         {
+// #if ENABLE_UNITY_COLLECTIONS_CHECKS
+//             Assert.AreEqual(1, UnsafeUtility.SizeOf<TBuffer>());
+// #endif
+//             return new DynamicIndexMap<TValue>(buffer.Reinterpret<byte>(), bucketLength, length);
+//         }
 
         [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Consistency")]
         internal static unsafe DynamicHashMapData* AsData<TKey, TValue>(this DynamicBuffer<byte> buffer)

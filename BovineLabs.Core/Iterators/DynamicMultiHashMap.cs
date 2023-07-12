@@ -23,12 +23,6 @@ namespace BovineLabs.Core.Iterators
             CheckSize(buffer);
 
             this.data = buffer;
-
-            // First time, need to setup
-            if (buffer.Length == 0)
-            {
-                this.Allocate();
-            }
         }
 
         /// <summary> Gets a value indicating whether container is empty. </summary>
@@ -213,7 +207,12 @@ namespace BovineLabs.Core.Iterators
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckSize(DynamicBuffer<byte> buffer)
         {
-            if ((buffer.Length != 0) && (buffer.Length < UnsafeUtility.SizeOf<DynamicHashMapData>()))
+            if (buffer.Length == 0)
+            {
+                throw new InvalidOperationException("Buffer not initialized");
+            }
+
+            if (buffer.Length < UnsafeUtility.SizeOf<DynamicHashMapData>())
             {
                 throw new InvalidOperationException("Buffer has data but is too small to be a header.");
             }
