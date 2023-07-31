@@ -195,7 +195,7 @@ namespace BovineLabs.Core.Editor.Settings
         {
             this.searchField.UnregisterValueChangedCallback(this.SearchFiltering);
             this.list!.selectionChanged -= this.SelectionChanged;
-            this.toolbar!.Clear();
+            this.toolbar?.Clear();
         }
 
         private void SearchFiltering(ChangeEvent<string> evt)

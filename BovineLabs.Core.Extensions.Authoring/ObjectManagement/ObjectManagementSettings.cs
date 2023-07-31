@@ -118,7 +118,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         private void SetupGroups(IBaker baker)
         {
             var entity = baker.GetEntity(TransformUsageFlags.None);
-            var objectGroupRegistry = baker.AddBuffer<ObjectGroupMatcher>(entity).AsHashSet();
+            var objectGroupRegistry = baker.AddBuffer<ObjectGroupMatcher>(entity).Initialize().AsHashSet();
 
             foreach (var group in this.objectGroups)
             {

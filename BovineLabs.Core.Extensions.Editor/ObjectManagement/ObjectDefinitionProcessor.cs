@@ -14,6 +14,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     using JetBrains.Annotations;
     using UnityEditor;
     using UnityEngine;
+    using Object = UnityEngine.Object;
 
     /// <summary> An <see cref="AssetPostprocessor"/> that ensures <see cref="IUID" /> types always have a unique ID even if 2 branches merge. </summary>
     public class ObjectDefinitionProcessor : AssetPostprocessor
@@ -23,7 +24,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         private static void OnPostprocessAllAssets(
             string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths, bool didDomainReload)
         {
-            if (didDomainReload)
+            if (didDomainReload || importedAssets.Length == 0)
             {
                 return;
             }
@@ -33,18 +34,18 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             foreach (var assetPath in importedAssets)
             {
                 var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
-                if (asset is not IUID)
+
+                // Instead of just doing a LoadAssetsAtPath tHis helps us early out for all other type of assets
+                if (asset == null)
                 {
                     continue;
                 }
 
-                var assetType = asset.GetType();
-                if (!processors.TryGetValue(assetType, out var processor))
+                ProcessAsset(asset, processors);
+                foreach (var subAsset in AssetDatabase.LoadAllAssetRepresentationsAtPath(assetPath))
                 {
-                    processor = processors[assetType] = new Processor(assetType);
+                    ProcessAsset(subAsset, processors);
                 }
-
-                processor.Process(asset);
             }
 
             foreach (var p in processors)
@@ -53,9 +54,25 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             }
         }
 
+        private static void ProcessAsset(Object asset, Dictionary<Type, Processor> processors)
+        {
+            if (asset is not IUID)
+            {
+                return;
+            }
+
+            var assetType = asset.GetType();
+            if (!processors.TryGetValue(assetType, out var processor))
+            {
+                processor = processors[assetType] = new Processor(assetType);
+            }
+
+            processor.Process(asset);
+        }
+
         private static void UpdateManager(Type type)
         {
-            var attribute = type.GetCustomAttribute<UIDManager>();
+            var attribute = type.GetCustomAttribute<UIDManagerAttribute>();
             if (attribute == null)
             {
                 return;
@@ -103,7 +120,9 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
             var objects = AssetDatabase.FindAssets($"t:{type.Name}")
                 .Select(AssetDatabase.GUIDToAssetPath)
-                .Select(AssetDatabase.LoadAssetAtPath<ScriptableObject>)
+                .Distinct() // In case multi of same type on same path
+                .SelectMany(AssetDatabase.LoadAllAssetsAtPath)
+                .Where(s => s.GetType() == type)
                 .ToList();
 
             sp.arraySize = objects.Count;
@@ -128,9 +147,9 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
             public Type Type { get; }
 
-            public void Process(ScriptableObject scriptableObject)
+            public void Process(Object obj)
             {
-                var asset = (IUID)scriptableObject;
+                var asset = (IUID)obj;
 
                 this.map ??= this.GetIDMap();
                 this.map.TryGetValue(asset.ID, out var count);
@@ -141,8 +160,8 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                     this.map[asset.ID] = count - 1; // update the old ID
                     asset.ID = new ObjectId { ID = newId };
                     this.map[newId] = 1;
-                    EditorUtility.SetDirty(scriptableObject);
-                    AssetDatabase.SaveAssetIfDirty(scriptableObject);
+                    EditorUtility.SetDirty(obj);
+                    AssetDatabase.SaveAssetIfDirty(obj);
                 }
             }
 
@@ -150,16 +169,24 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             {
                 var idMap = new Dictionary<int, int>();
 
-                var guids = AssetDatabase.FindAssets(this.filter);
+                var paths = AssetDatabase.FindAssets(this.filter).Select(AssetDatabase.GUIDToAssetPath).Distinct();
 
-                foreach (var guid in guids)
+                foreach (var path in paths)
                 {
-                    var path = AssetDatabase.GUIDToAssetPath(guid);
-                    var asset = (IUID)AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
+                    var assets = AssetDatabase.LoadAllAssetsAtPath(path);
 
-                    idMap.TryGetValue(asset.ID, out var count);
-                    count++;
-                    idMap[asset.ID] = count;
+                    foreach (var asset in assets)
+                    {
+                        if (asset.GetType() != this.Type)
+                        {
+                            continue;
+                        }
+
+                        var uid = (IUID)asset;
+                        idMap.TryGetValue(uid.ID, out var count);
+                        count++;
+                        idMap[uid.ID] = count;
+                    }
                 }
 
                 return idMap;

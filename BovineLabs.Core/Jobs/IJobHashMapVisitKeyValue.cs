@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Jobs
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.CompilerServices;
     using JetBrains.Annotations;
     using Unity.Burst;
     using Unity.Collections;
@@ -64,6 +65,7 @@ namespace BovineLabs.Core.Jobs
             JobHashMapVisitKeyValueProducer<T>.Initialize();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void Read<TJob, TKey, TValue>(this ref TJob job, int entryIndex, byte* keys, byte* values, out TKey key, out TValue value)
             where TJob : unmanaged, IJobHashMapVisitKeyValue
             where TKey : unmanaged, IEquatable<TKey>
@@ -81,7 +83,7 @@ namespace BovineLabs.Core.Jobs
             /// <summary> The <see cref="NativeParallelMultiHashMap{TKey,TValue}" />. </summary>
             [ReadOnly]
             [NativeDisableUnsafePtrRestriction]
-            public HashMapWrapper* HashMap;
+            internal HashMapWrapper* HashMap;
 
             // ReSharper disable once StaticMemberInGenericType
             internal static readonly SharedStatic<IntPtr> ReflectionData = SharedStatic<IntPtr>.GetOrCreate<JobHashMapVisitKeyValueProducer<T>>();

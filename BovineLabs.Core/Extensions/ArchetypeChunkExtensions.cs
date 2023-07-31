@@ -13,6 +13,7 @@ namespace BovineLabs.Core.Extensions
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+    using Unity.Mathematics;
 
     public struct FakeDynamicComponentTypeHandle // TODO remove huge hack/workaround
     {
@@ -303,6 +304,53 @@ namespace BovineLabs.Core.Extensions
                 out ptrChunkDisabledCount).Ptr;
 
             return ref UnsafeUtility.AsRef<v128>(ptr);
+        }
+
+        public static void GetEnableableActiveMasks(this ArchetypeChunk archetypeChunk, out ulong mask0, out ulong mask1)
+        {
+            var i0 = math.min(archetypeChunk.Count, 64);
+            mask0 = ulong.MaxValue >> (64 - i0); // can never have no elements
+            var i1 = math.max(archetypeChunk.Count - 64, 0);
+            mask1 = math.select(ulong.MaxValue >> (64 - i1), 0, i1 == 0); // >> 64 does nothing by c# specification
+        }
+
+        /// <summary> Provides a ComponentEnabledMask to the component enabled bits in this chunk. </summary>
+        /// <typeparam name="T">The component type</typeparam>
+        /// <param name="archetypeChunk">The archetype chunk where to get the data from.</param>
+        /// <param name="typeHandle">Type handle for the component type <typeparamref name="T"/>.</param>
+        /// <returns>An <see cref="EnabledMask"/> instance for component <typeparamref name="T"/> in this chunk.</returns>
+        public static EnabledMask GetEnabledMaskNoCheck<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle)
+            where T : unmanaged, IComponentData
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
+#endif
+            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            {
+                typeHandle.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, typeHandle.m_TypeIndex);
+            }
+            // In case the chunk does not contains the component type (or the internal TypeIndex lookup fails to find a
+            // match), the LookupCache.Update will invalidate the IndexInArchetype.
+            // In such a case, we return an empty EnabledMask.
+            if (Hint.Unlikely(typeHandle.m_LookupCache.IndexInArchetype == -1))
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                return new EnabledMask(new SafeBitRef(null, 0, typeHandle.m_Safety), null);
+#else
+                return new EnabledMask(SafeBitRef.Null, null);
+#endif
+            }
+            int* ptrChunkDisabledCount = default;
+            var ptr = (typeHandle.IsReadOnly)
+                ? ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, typeHandle.m_LookupCache.IndexInArchetype).Ptr
+                : ChunkDataUtility.GetEnabledRefRW(archetypeChunk.m_Chunk, typeHandle.m_LookupCache.IndexInArchetype,
+                    typeHandle.GlobalSystemVersion, out ptrChunkDisabledCount).Ptr;
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var result = new EnabledMask(new SafeBitRef(ptr, 0, typeHandle.m_Safety), ptrChunkDisabledCount);
+#else
+            var result = new EnabledMask(new SafeBitRef(ptr, 0), ptrChunkDisabledCount);
+#endif
+            return result;
         }
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING

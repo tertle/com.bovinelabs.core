@@ -5,6 +5,7 @@
 #if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.ObjectManagement
 {
+    using BovineLabs.Core.PropertyDrawers;
     using JetBrains.Annotations;
 #if UNITY_EDITOR
     using UnityEditor;
@@ -17,9 +18,10 @@ namespace BovineLabs.Core.ObjectManagement
     /// It provides a way to give high definition <see cref="ObjectCategories"/> which can auto place into <see cref="ObjectGroup"/> for you.
     /// </summary>
     [UIDManager("ObjectManagementSettings", "objectDefinitions")]
+    [AssetCreator("object.definitions", "Assets/Configs/Definitions", "Definition.asset")]
     public sealed class ObjectDefinition : ScriptableObject, IUID
     {
-        [HideInInspector] // So the field is not editable even in debug mode.
+        [InspectorReadOnly]
         [SerializeField]
         private ObjectId id;
 
@@ -61,7 +63,6 @@ namespace BovineLabs.Core.ObjectManagement
         }
 
 #if UNITY_EDITOR
-
         private ObjectCategories? objectCategories;
 
         private void OnValidate()
@@ -78,12 +79,13 @@ namespace BovineLabs.Core.ObjectManagement
 
             foreach (var c in this.objectCategories.Components)
             {
-                if (c.ObjectGroup == null)
+                if (!c.ObjectGroup.Id.IsValid)
                 {
                     continue;
                 }
 
-                var serializedObject = new SerializedObject(c.ObjectGroup);
+                var objectGroup = AssetDatabase.LoadAssetAtPath<ObjectGroup>(AssetDatabase.GUIDToAssetPath(c.ObjectGroup.Id.GlobalId.AssetGUID));
+                var serializedObject = new SerializedObject(objectGroup);
                 var serializedProperty = serializedObject.FindProperty("definitions");
 
                 var index = IndexOf(serializedProperty, this);
@@ -111,6 +113,7 @@ namespace BovineLabs.Core.ObjectManagement
                 if (changed)
                 {
                     serializedObject.ApplyModifiedPropertiesWithoutUndo();
+                    AssetDatabase.SaveAssetIfDirty(c.ObjectGroup.Id.GlobalId.AssetGUID);
                 }
             }
         }

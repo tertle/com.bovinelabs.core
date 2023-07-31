@@ -56,6 +56,11 @@ namespace BovineLabs.Core.ObjectManagement
     /// <summary> Convenient extensions for <see cref="ObjectGroupMatcher"/>. </summary>
     public static class ObjectGroupMatcherExtensions
     {
+        internal static DynamicBuffer<ObjectGroupMatcher> Initialize(this DynamicBuffer<ObjectGroupMatcher> buffer)
+        {
+            return buffer.Initialize<ObjectGroupMatcher, ObjectGroupKey>();
+        }
+
         public static DynamicHashSet<ObjectGroupKey> AsHashSet(this DynamicBuffer<ObjectGroupMatcher> buffer)
         {
             return buffer.AsHashSet<ObjectGroupMatcher, ObjectGroupKey>();

@@ -10,6 +10,7 @@ namespace BovineLabs.Core.ObjectManagement
     using System.Linq;
     using BovineLabs.Core.Keys;
     using BovineLabs.Core.PropertyDrawers;
+    using Unity.Entities.Content;
     using UnityEngine;
 
     /// <summary> Object categories dynamically implement using <see cref="K{T}" />. </summary>
@@ -56,7 +57,7 @@ namespace BovineLabs.Core.ObjectManagement
             private byte value;
 
             [SerializeField]
-            private ObjectGroup? objectGroup;
+            private WeakObjectReference<ObjectGroup> objectGroup;
 
             [SerializeField]
             [StableTypeHash(StableTypeHashAttribute.TypeCategory.ComponentData, OnlyZeroSize = true, AllowUnityNamespace = false)]
@@ -72,7 +73,7 @@ namespace BovineLabs.Core.ObjectManagement
 
             public ulong ComponentType => this.component;
 
-            public ObjectGroup? ObjectGroup => this.objectGroup;
+            public WeakObjectReference<ObjectGroup> ObjectGroup => this.objectGroup;
         }
     }
 }

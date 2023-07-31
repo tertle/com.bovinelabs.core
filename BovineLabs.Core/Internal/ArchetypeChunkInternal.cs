@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Internal
 
     public static class ArchetypeChunkInternal
     {
-        public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ComponentTypeHandle<T> handle)
+        public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ref ComponentTypeHandle<T> handle)
             where T : unmanaged, IComponentData
         {
             SetChangeFilterCheckWriteAndThrow(handle);
@@ -27,7 +27,7 @@ namespace BovineLabs.Core.Internal
             chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, handle.GlobalSystemVersion);
         }
 
-        public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ComponentTypeHandle<T> handle, uint version)
+        public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ref ComponentTypeHandle<T> handle, uint version)
             where T : unmanaged, IComponentData
         {
             SetChangeFilterCheckWriteAndThrow(handle);
@@ -42,7 +42,7 @@ namespace BovineLabs.Core.Internal
             chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, version);
         }
 
-        public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, BufferTypeHandle<T> handle)
+        public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ref BufferTypeHandle<T> handle)
             where T : unmanaged, IBufferElementData
         {
             SetChangeFilterCheckWriteAndThrow(handle);
@@ -57,7 +57,7 @@ namespace BovineLabs.Core.Internal
             chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, handle.GlobalSystemVersion);
         }
 
-        public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, BufferTypeHandle<T> handle, uint version)
+        public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ref BufferTypeHandle<T> handle, uint version)
             where T : unmanaged, IBufferElementData
         {
             SetChangeFilterCheckWriteAndThrow(handle);
@@ -72,7 +72,7 @@ namespace BovineLabs.Core.Internal
             chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, version);
         }
 
-        public static unsafe void SetChangeFilter(this ArchetypeChunk chunk, DynamicComponentTypeHandle handle)
+        public static unsafe void SetChangeFilter(this ArchetypeChunk chunk, ref DynamicComponentTypeHandle handle)
         {
             SetChangeFilterCheckWriteAndThrow(handle);
 

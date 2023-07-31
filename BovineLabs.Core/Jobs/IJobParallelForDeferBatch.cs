@@ -156,6 +156,17 @@ namespace BovineLabs.Core.Jobs
             return ScheduleParallelBatchInternal(ref jobData, innerloopBatchCount, forEachListPtr, null, dependsOn);
         }
 
+        public static unsafe JobHandle ScheduleParallelBatch<T>(
+            this T jobData,
+            NativeReference<int> forEachCount,
+            int innerloopBatchCount,
+            JobHandle dependsOn = default)
+            where T : unmanaged, IJobParallelForDeferBatch
+        {
+            var forEachListPtr = (byte*)forEachCount.GetUnsafePtrWithoutChecks() - sizeof(void*);
+            return ScheduleParallelBatchInternal(ref jobData, innerloopBatchCount, forEachListPtr, null, dependsOn);
+        }
+
         /// <summary>
         /// Schedule the job for execution on worker threads.
         /// forEachCount is a pointer to the number of iterations, when dependsOn has completed.

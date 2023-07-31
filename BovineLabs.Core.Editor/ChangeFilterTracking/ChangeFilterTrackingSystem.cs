@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
 {
     using System.Collections.Generic;
     using System.Reflection;
+    using BovineLabs.Core.ConfigVars;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Utility;
     using Unity.Burst;
@@ -19,6 +20,9 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
         private const int ShortUpdateTime = 60; // must be multiple of FramesToTrack
         private const int FramesToTrack = 600;
         private const float WarningLevel = 0.85f;
+
+        [ConfigVar("debug.changefiltertracking", false, "Enable change filter tracking.")]
+        internal static readonly SharedStatic<bool> IsEnabled = SharedStatic<bool>.GetOrCreate<ChangeFilterTrackingSystem>();
 
         private NativeArray<JobHandle> jobHandles;
         private NativeArray<TypeTrack> typeTracks;
@@ -104,6 +108,11 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            if (!IsEnabled.Data)
+            {
+                return;
+            }
+
             var currentFrameIndex = this.frameIndex;
             var debug = SystemAPI.GetSingleton<BLDebug>();
 

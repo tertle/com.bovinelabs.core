@@ -12,13 +12,15 @@ namespace BovineLabs.Core.Tests.Iterators
 
     public class DynamicMultiHashMapTests : ECSTestsFixture
     {
+        private const int MinGrowth = 64;
+
         [Test]
         public void Capacity()
         {
             const int newCapacity = 128;
 
             var hashMap = this.CreateHashMap();
-            Assert.AreEqual(0, hashMap.Capacity);
+            Assert.AreEqual(MinGrowth, hashMap.Capacity);
 
             hashMap.Capacity = newCapacity;
 
@@ -38,14 +40,14 @@ namespace BovineLabs.Core.Tests.Iterators
                 hashMap.Add(i + i, (byte)i);
             }
 
-            Assert.AreEqual(count * 2, hashMap.Count());
+            Assert.AreEqual(count * 2, hashMap.Count);
 
             for (var i = 0; i < count; i++)
             {
-                Assert.IsTrue(hashMap.Remove(i + i));
+                Assert.AreEqual(2, hashMap.Remove(i + i));
             }
 
-            Assert.AreEqual(0, hashMap.Count());
+            Assert.AreEqual(0, hashMap.Count);
         }
 
         [Test]
@@ -67,7 +69,7 @@ namespace BovineLabs.Core.Tests.Iterators
 
             hashMap.AddBatchUnsafe(keys, values);
 
-            Assert.AreEqual(count, hashMap.Count());
+            Assert.AreEqual(count, hashMap.Count);
 
             for (var i = 0; i < keyLimit; i++)
             {
@@ -79,25 +81,25 @@ namespace BovineLabs.Core.Tests.Iterators
         public void TryGetValue()
         {
             var hashMap = this.CreateHashMap();
-            Assert.IsFalse(hashMap.TryGetValue(47, out _));
+            Assert.IsFalse(hashMap.TryGetFirstValue(47, out _, out _));
 
             hashMap.Add(47, 123);
-            Assert.IsTrue(hashMap.TryGetValue(47, out var result));
+            Assert.IsTrue(hashMap.TryGetFirstValue(47, out var result, out _));
             Assert.AreEqual(123, result);
 
             hashMap.Remove(47);
-            Assert.IsFalse(hashMap.TryGetValue(47, out _));
+            Assert.IsFalse(hashMap.TryGetFirstValue(47, out _, out _));
         }
 
         private DynamicMultiHashMap<int, byte> CreateHashMap()
         {
             var entity = this.Manager.CreateEntity(typeof(TestHashMap));
-            return this.Manager.GetBuffer<TestHashMap>(entity).Initialize<TestHashMap, int, byte>().AsMultiHashMap<TestHashMap, int, byte>();
+            return this.Manager.GetBuffer<TestHashMap>(entity).InitializeMultiHashMap<TestHashMap, int, byte>(0, MinGrowth).AsMultiHashMap<TestHashMap, int, byte>();
         }
 
         private struct TestHashMap : IDynamicMultiHashMap<int, byte>
         {
-            byte IDynamicHashMapBase<int, byte>.Value { get; }
+            byte IDynamicMultiHashMap<int, byte>.Value { get; }
         }
     }
 }

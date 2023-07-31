@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Model
     using BovineLabs.Core.Assertions;
     using BovineLabs.Core.Extensions;
     using Unity.Burst;
-    using Unity.Burst.CompilerServices;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;

@@ -1,5 +1,5 @@
-// <copyright file="Entropy.cs" company="PlaceholderCompany">
-//     Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="Entropy.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 #if !BL_DISABLE_ENTROPY

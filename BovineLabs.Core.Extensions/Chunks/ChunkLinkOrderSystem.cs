@@ -17,9 +17,7 @@ namespace BovineLabs.Core.Chunks
     /// setting each entity in order to the correct shared component.
     /// This is obviously costly and effort should be made to avoid order breaking structural changes in the parent.
     /// </remarks>
-    // [UpdateInGroup(typeof(InitializationSystemGroup), OrderLast = true)]
     [UpdateAfter(typeof(ChunkLinkSystem))]
-    [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
     [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     public partial struct ChunkLinkOrderSystem : ISystem
     {

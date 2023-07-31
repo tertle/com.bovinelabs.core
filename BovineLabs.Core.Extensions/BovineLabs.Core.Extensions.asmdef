@@ -34,6 +34,11 @@
             "define": "UNITY_NETCODE"
         },
         {
+            "name": "com.unity.physics",
+            "expression": "",
+            "define": "UNITY_PHYSICS"
+        },
+        {
             "name": "com.bovinelabs.game",
             "expression": "",
             "define": "BL_CORE_EXTENSIONS"

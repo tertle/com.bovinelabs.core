@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Model
             var length = UnsafeUtility.SizeOf<float>() * chunk.Count;
             if (UnsafeUtility.MemCmp(remainings, this.Zeros, length) != 0)
             {
-                chunk.SetChangeFilter(this.RemainingHandle);
+                chunk.SetChangeFilter(ref this.RemainingHandle);
             }
         }
     }

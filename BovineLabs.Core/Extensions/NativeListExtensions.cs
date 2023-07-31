@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Extensions
 {
     using System;
+    using System.Diagnostics;
     using System.Runtime.InteropServices;
     using System.Threading;
     using Unity.Collections;
@@ -23,7 +24,9 @@ namespace BovineLabs.Core.Extensions
         public static void ReserveNoResize<T>(this NativeList<T>.ParallelWriter nativeList, int length, out T* ptr, out int idx)
             where T : unmanaged
         {
-            idx = Interlocked.Add(ref nativeList.ListData->m_length, length) - length;
+            var newLength = Interlocked.Add(ref nativeList.ListData->m_length, length);
+            CheckSufficientCapacity(nativeList.ListData->Capacity, newLength);
+            idx = newLength - length;
             ptr = (T*)((byte*)nativeList.Ptr + (idx * UnsafeUtility.SizeOf<T>()));
         }
 
@@ -66,6 +69,15 @@ namespace BovineLabs.Core.Extensions
             var gcHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
             list.AddRange((void*)gcHandle.AddrOfPinnedObject(), array.Length);
             gcHandle.Free();
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        static void CheckSufficientCapacity(int capacity, int length)
+        {
+            if (capacity < length)
+            {
+                throw new InvalidOperationException($"Length {length} exceeds Capacity {capacity}");
+            }
         }
     }
 }

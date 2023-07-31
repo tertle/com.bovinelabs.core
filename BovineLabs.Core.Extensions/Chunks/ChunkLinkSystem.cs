@@ -12,9 +12,14 @@ namespace BovineLabs.Core.Chunks
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+#if UNITY_NETCODE
+    using Unity.NetCode;
+#endif
 
     /// <summary> Iterates parent chunks on OrderVersion change and updates any linked chunk. </summary>
-    // [UpdateAfter(typeof(SceneSystemGroup))]
+#if UNITY_NETCODE
+    [UpdateAfter(typeof(NetworkReceiveSystemGroup))]
+#endif
     [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
     [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     public partial struct ChunkLinkSystem : ISystem

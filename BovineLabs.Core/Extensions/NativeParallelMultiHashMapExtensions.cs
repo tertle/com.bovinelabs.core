@@ -9,10 +9,34 @@ namespace BovineLabs.Core.Extensions
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
+    using Unity.Jobs.LowLevel.Unsafe;
 
     /// <summary> Extensions for <see cref="NativeParallelMultiHashMap{TKey,TValue}" />. </summary>
     public static unsafe class NativeParallelMultiHashMapExtensions
     {
+        public static int Reserve<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap, int length)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            return hashMap.m_Writer.m_Buffer->ReserveParallel(length);
+        }
+
+        public static UnsafeParallelHashMapBucketData GetUnsafeBucketData<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            return hashMap.m_Writer.m_Buffer->GetBucketData();
+        }
+
+        public static void ClearLengthBuckets<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            var data = hashMap.m_MultiHashMapData.m_Buffer;
+            UnsafeUtility.MemSet(data->buckets, 0xff, (data->bucketCapacityMask + 1) * 4);
+            data->allocatedIndexLength = 0;
+        }
+
         /// <summary>
         /// Clear a <see cref="NativeParallelMultiHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
         /// This is much faster than iterating and using Add.
@@ -381,9 +405,9 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
-            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
-            [NoAlias] NativeArray<TKey> keys,
-            [NoAlias] NativeArray<TValue> values)
+            this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
+            NativeArray<TKey> keys,
+            NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {

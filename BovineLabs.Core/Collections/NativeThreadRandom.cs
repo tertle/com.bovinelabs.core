@@ -46,7 +46,7 @@ namespace BovineLabs.Core.Collections
 
             for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
             {
-                this.buffer[i].Random = Random.CreateFromIndex(seed);
+                this.buffer[i].Random = Random.CreateFromIndex((uint)(seed + i));
             }
 
             this.threadIndex = 0;

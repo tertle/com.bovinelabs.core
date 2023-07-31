@@ -5,6 +5,7 @@
 
 namespace BovineLabs.Core.Editor
 {
+    using BovineLabs.Core.Editor.ChangeFilterTracking;
     using Unity.Logging;
     using UnityEditor;
     using UnityEngine;
@@ -31,6 +32,8 @@ namespace BovineLabs.Core.Editor
         private const string DebugLevelWarningBLMenuEnabled = LogLevelBLMenu + "Warning";
         private const string DebugLevelErrorBLMenuEnabled = LogLevelBLMenu + "Error";
         private const string DebugLevelFatalBLMenuEnabled = LogLevelBLMenu + "Fatal";
+
+        private const string ChangeFilterTracking = DebugMenu + "Change Filter Tracking";
 
         private static readonly string EditorPrefKey = $"BovineLabs_{Application.productName}_";
         private static readonly string LogLevelKey = EditorPrefKey + "LogLevel";
@@ -97,6 +100,19 @@ namespace BovineLabs.Core.Editor
 
             Unity.Logging.Log.Logger.SetMinimalLogLevelAcrossAllSinks(logLevel);
             Unity.Logging.Log.Logger.UpdateMinimalLogLevelAcrossAllSinks();
+        }
+
+        [MenuItem(ChangeFilterTracking, false)]
+        private static void ChangeFilterTrackingMenu()
+        {
+            ChangeFilterTrackingSystem.IsEnabled.Data = !ChangeFilterTrackingSystem.IsEnabled.Data;
+        }
+
+        [MenuItem(ChangeFilterTracking, true)]
+        private static bool ChangeFilterTrackingValidate()
+        {
+            Menu.SetChecked(ChangeFilterTracking, ChangeFilterTrackingSystem.IsEnabled.Data);
+            return true;
         }
 
         [MenuItem(DebugLevelVerboseBLMenuEnabled, false)]

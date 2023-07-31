@@ -12,6 +12,12 @@ namespace BovineLabs.Core.Extensions
 
     public static unsafe class UnsafeParallelHashMapDataExtensions
     {
+        internal static int ReserveParallel([NoAlias] this ref UnsafeParallelHashMapData data, int length)
+        {
+            var newLength = Interlocked.Add(ref data.allocatedIndexLength, length);
+            return newLength - length;
+        }
+
         internal static void AddBatchUnsafeParallel<TKey, TValue>(
             [NoAlias] this ref UnsafeParallelHashMapData data,
             [NoAlias] TKey* keys,
@@ -20,8 +26,12 @@ namespace BovineLabs.Core.Extensions
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var newLength = Interlocked.Add(ref data.allocatedIndexLength, length);
-            var oldLength = newLength - length;
+            if (length == 0)
+            {
+                return;
+            }
+
+            var oldLength = data.ReserveParallel(length);
 
             var keyPtr = (TKey*)data.keys + oldLength;
             var valuePtr = (TValue*)data.values + oldLength;
@@ -47,8 +57,12 @@ namespace BovineLabs.Core.Extensions
             int length)
             where TKey : unmanaged, IEquatable<TKey>
         {
-            var newLength = Interlocked.Add(ref data.allocatedIndexLength, length);
-            var oldLength = newLength - length;
+            if (length == 0)
+            {
+                return;
+            }
+
+            var oldLength = data.ReserveParallel(length);
 
             var keyPtr = (TKey*)data.keys + oldLength;
 

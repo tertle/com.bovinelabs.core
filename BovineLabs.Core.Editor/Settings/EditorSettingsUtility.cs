@@ -10,7 +10,6 @@ namespace BovineLabs.Core.Editor.Settings
     using System.Linq;
     using System.Reflection;
     using BovineLabs.Core.Editor.Helpers;
-    using BovineLabs.Core.Keys;
     using BovineLabs.Core.Settings;
     using UnityEditor;
     using UnityEngine;
@@ -85,6 +84,11 @@ namespace BovineLabs.Core.Editor.Settings
         public static string GetAssetDirectory<T>(string key, string defaultDirectory)
             where T : ScriptableObject
         {
+            return GetAssetDirectory(typeof(T), key, defaultDirectory);
+        }
+
+        public static string GetAssetDirectory(Type type, string key, string defaultDirectory)
+        {
             var assets = AssetDatabase.FindAssets($"t:{nameof(EditorFoldersSettings)}");
 
             // No editor settings, use the default
@@ -100,7 +104,7 @@ namespace BovineLabs.Core.Editor.Settings
                 settings.GetOrAddPath(key, ref defaultDirectory);
             }
 
-            if (typeof(T).GetCustomAttribute<ResourceSettingsAttribute>() != null)
+            if (type.GetCustomAttribute<ResourceSettingsAttribute>() != null)
             {
                 defaultDirectory = Path.Combine(defaultDirectory, "Resources");
             }

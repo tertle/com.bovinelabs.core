@@ -36,15 +36,15 @@ namespace BovineLabs.Core.Chunks
 
             var chunkMap = new Dictionary<string, byte>();
 
-            var chunkSettings = Resources.Load<VirtualChunkSettings>("BufferCapacitySettings");
+            var chunkSettings = Resources.Load<VirtualChunkSettings>("VirtualChunkSettings");
+#if UNITY_EDITOR
             if (chunkSettings == null)
             {
-#if UNITY_EDITOR
                 // this is required because bakers don't like resource loading sometimes
                 // TODO configurable
                 chunkSettings = AssetDatabase.LoadAssetAtPath<VirtualChunkSettings>("Assets/Configs/Settings/Resources/VirtualChunkSettings.asset");
-#endif
             }
+#endif
 
             if (chunkSettings != null)
             {

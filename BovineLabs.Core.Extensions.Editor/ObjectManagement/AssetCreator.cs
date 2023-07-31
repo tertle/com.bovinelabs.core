@@ -5,8 +5,10 @@
 #if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.Editor.ObjectManagement
 {
+    using System;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using BovineLabs.Core.Editor.Settings;
     using BovineLabs.Core.ObjectManagement;
     using UnityEditor;
@@ -14,7 +16,40 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    public abstract class AssetCreator<T>
+    public static class AssetCreator
+    {
+        public static bool TryGetDirectory(Type type, out string path)
+        {
+            var assetCreatorAttribute = type.GetCustomAttribute<AssetCreatorAttribute>();
+            if (assetCreatorAttribute == null)
+            {
+                path = string.Empty;
+                Debug.LogError($"Type {type} does not have {nameof(AssetCreatorAttribute)} but is being created via AssetCreator");
+                return false;
+            }
+
+            var directory = EditorSettingsUtility.GetAssetDirectory(type, assetCreatorAttribute.DirectoryKey, assetCreatorAttribute.DefaultDirectory);
+            path = Path.Combine(directory, assetCreatorAttribute.DefaultFileName);
+            return true;
+        }
+
+        public static bool TryGetDirectory(Type type, string defaultFileName, out string path)
+        {
+            var assetCreatorAttribute = type.GetCustomAttribute<AssetCreatorAttribute>();
+            if (assetCreatorAttribute == null)
+            {
+                path = string.Empty;
+                Debug.LogError($"Type {type} does not have {nameof(AssetCreatorAttribute)} but is being created via AssetCreator");
+                return false;
+            }
+
+            var directory = EditorSettingsUtility.GetAssetDirectory(type, assetCreatorAttribute.DirectoryKey, assetCreatorAttribute.DefaultDirectory);
+            path = Path.Combine(directory, defaultFileName);
+            return true;
+        }
+    }
+
+    public class AssetCreator<T>
         where T : ScriptableObject, IUID
     {
         private readonly string path;
@@ -22,26 +57,22 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         private readonly SerializedProperty serializedProperty;
         private ListView? listView;
 
-        protected AssetCreator(
-            SerializedObject serializedObject,
-            SerializedProperty serializedProperty,
-            string directoryKey,
-            string defaultDirectory,
-            string defaultFileName)
+        public AssetCreator(SerializedObject serializedObject, SerializedProperty serializedProperty)
         {
             this.serializedObject = serializedObject;
             this.serializedProperty = serializedProperty;
+            this.serializedProperty.isExpanded = false;
 
             this.Element = new PropertyField(serializedProperty);
             this.Element.Bind(this.serializedObject);
+
+            if (!AssetCreator.TryGetDirectory(typeof(T), out this.path))
+            {
+                return;
+            }
+
             this.Element.RegisterCallback<GeometryChangedEvent>(this.Init);
-
             this.Element.AddManipulator(new ContextualMenuManipulator(this.MenuBuilder));
-
-            var directory = EditorSettingsUtility.GetAssetDirectory<T>(directoryKey, defaultDirectory);
-            this.path = Path.Combine(directory, defaultFileName);
-
-            this.serializedProperty.isExpanded = false;
         }
 
         public PropertyField Element { get; }
@@ -59,8 +90,6 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             }
 
             this.Element.UnregisterCallback<GeometryChangedEvent>(this.Init);
-
-            // this.listView.RegisterCallback<ChangeEvent<string>>(this.Callback);
 
             var removeButton = this.listView.Q<Button>("unity-list-view__remove-button");
             removeButton.parent.Remove(removeButton);
@@ -81,26 +110,6 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             };
 
             this.listView.Q<VisualElement>("unity-content-container").SetEnabled(false);
-        }
-
-        private void Callback(ChangeEvent<string> evt)
-        {
-            this.listView!.Query<PropertyField>().ForEach(f =>
-            {
-                Debug.Log("Set");
-                f.SetEnabled(false);
-                f.MarkDirtyRepaint();
-            });
-            this.listView!.MarkDirtyRepaint();
-
-            // if (this.initialized)
-            // {
-            //     listView.schedule.Execute(() =>
-            //     {
-            //
-            //     }).ExecuteLater(100);
-            //     return;
-            // }
         }
 
         private void MenuBuilder(ContextualMenuPopulateEvent evt)

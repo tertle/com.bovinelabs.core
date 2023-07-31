@@ -29,6 +29,10 @@
             <ui:Label tabindex="-1" text="Object Definitions" display-tooltip-when-elided="true" name="BL_DISABLE_OBJECT_DEFINITION" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
         </ui:VisualElement>
+        <ui:VisualElement tooltip="A more performant parallel version of Unity's physics states." class="feature-group">
+            <ui:Label tabindex="-1" text="Physics States" display-tooltip-when-elided="true" name="BL_DISABLE_PHYSICS_STATES" />
+            <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
+        </ui:VisualElement>
         <ui:VisualElement tooltip="Adds support for ensuring certain subscenes have loaded before the simulation starts running. Also provides a volume based runtime scene loading and a general purpose Pause system." class="feature-group">
             <ui:Label tabindex="-1" text="Subscene Loading" display-tooltip-when-elided="true" name="BL_DISABLE_SUBSCENE" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />

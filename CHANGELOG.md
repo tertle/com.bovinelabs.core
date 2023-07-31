@@ -1,12 +1,44 @@
 # Changelog
 
+## [1.0.0-pre.1] - 2023-08-01
+
+### Added 
+* Added GetEnableablMask to archetype extensions for IEnableabale extensions
+* Support for ObjectDefinition to support child ScriptableObjects
+* Added support to edit other package components to make them IEnableabale
+* Added WorldSafeShutdown to extensions that ensures a deterministic shutdown and systems are stopped before subscenes are unloaded
+* Added StatefulTriggerEvent and StatefulCollisionEvent to extensions. They provide the same functionality as Unity's implementation except rewritten to be parallel providing 5x+ performance gains
+* Added NativeMultiHashMap
+* Added UIDCreateAttribute to adding an easy right click create menu for ObjectManagement
+
+### Changed
+* Renamed CopyEnablable to CopyEnableable
+* Renamed BufferCapacitySettings to TypeManagerOverrideSettings. You'll need to update the file if you use this.
+* Rewrote DynamicHashMap back end for performance improvements
+* Reworked asset creator to now now require inheritances, instead looks for the AssetCreatorAttribute
+
+### Fixed
+* Fixed NativeThreadRandom seeds all being the same
+* Added a workaround for unity disposing log handle before world shutdown
+* Fixed missing define in Core.Tests causing unit tests to incorrectly appear in runner
+* Fixed ObjectGroupMatcher not being initialized
+* NetCode breaking VirtualChunks if systems landed out of order
+* ObjectCategories incorrectly bringing in baking GameObjects into the build
+* TypeMangerEx loading wrong file in builds
+
+### Documentation
+* Added documentation for K
+* Added documentation for States
+* Added documentation for Jobs
+* Updated outdated setup documentation for Object Definitions
+
 ## [0.15.5] - 2023-07-12
 
 ### Added
 * NativeThreadRandom
 * Entropy feature singleton which maintains a NativeThreadRandom
 * SetComponentEnabled to IConvert
-* Extensions for IEnablebale - CopyEnableMaskFrom, GetEnabledBitsRO, GetRequiredEnabledBitsRO, GetEnabledBitsRW, GetRequiredEnabledBitsRW
+* Extensions for IEnableabale - CopyEnableMaskFrom, GetEnabledBitsRO, GetRequiredEnabledBitsRO, GetEnabledBitsRW, GetRequiredEnabledBitsRW
 * AddUntypedBuffer and a new variation of UnsafeAddComponent to ECB
 * UnityBakingSettings component that can be read in BakingSystems to expose baking info
 

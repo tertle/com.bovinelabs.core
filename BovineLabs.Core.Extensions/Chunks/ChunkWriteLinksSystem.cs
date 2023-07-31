@@ -17,7 +17,6 @@ namespace BovineLabs.Core.Chunks
 
     /// <summary> Writes the linked chunks to the parent. </summary>
     [UpdateAfter(typeof(ChunkLinkOrderSystem))]
-    [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
     [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     public partial struct ChunkWriteLinksSystem : ISystem
     {

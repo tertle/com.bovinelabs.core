@@ -19,26 +19,10 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         {
             return property.name switch
             {
-                "objectDefinitions" => new ObjectDefinitionAssetCreator(this.serializedObject, property).Element,
-                "objectGroups" => new ObjectGroupAssetCreator(this.serializedObject, property).Element,
+                "objectDefinitions" => new AssetCreator<ObjectDefinition>(this.serializedObject, property).Element,
+                "objectGroups" => new AssetCreator<ObjectGroup>(this.serializedObject, property).Element,
                 _ => base.CreateElement(property),
             };
-        }
-
-        private class ObjectDefinitionAssetCreator : AssetCreator<ObjectDefinition>
-        {
-            public ObjectDefinitionAssetCreator(SerializedObject serializedObject, SerializedProperty serializedProperty)
-                : base(serializedObject, serializedProperty, "object.definitions", "Assets/Configs/Definitions", "Definition.asset")
-            {
-            }
-        }
-
-        private class ObjectGroupAssetCreator : AssetCreator<ObjectGroup>
-        {
-            public ObjectGroupAssetCreator(SerializedObject serializedObject, SerializedProperty serializedProperty)
-                : base(serializedObject, serializedProperty, "object.groups", "Assets/Configs/Groups", "Group.asset")
-            {
-            }
         }
     }
 }

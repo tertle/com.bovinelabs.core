@@ -16,6 +16,7 @@ namespace BovineLabs.Core
     {
         public static readonly BLDebug Default = new() { LoggerHandle = LoggerManager.Logger.Handle };
 
+        internal bool Enabled;
         internal LoggerHandle LoggerHandle;
 
         public bool IsValid => this.LoggerHandle.IsValid;
@@ -23,29 +24,44 @@ namespace BovineLabs.Core
         [Conditional("UNITY_EDITOR")]
         public readonly void Verbose(in FixedString32Bytes msg)
         {
-            Log.To(this.LoggerHandle).Verbose(msg);
+            if (this.Enabled)
+            {
+                Log.To(this.LoggerHandle).Verbose(msg);
+            }
         }
 
         [Conditional("UNITY_EDITOR")]
         [Conditional("BL_DEBUG")]
         public readonly void Debug(in FixedString512Bytes msg)
         {
-            Log.To(this.LoggerHandle).Debug(msg);
+            if (this.Enabled)
+            {
+                Log.To(this.LoggerHandle).Debug(msg);
+            }
         }
 
         public readonly void Info(in FixedString512Bytes msg)
         {
-            Log.To(this.LoggerHandle).Info(msg);
+            if (this.Enabled)
+            {
+                Log.To(this.LoggerHandle).Info(msg);
+            }
         }
 
         public readonly void Warning(in FixedString512Bytes msg)
         {
-            Log.To(this.LoggerHandle).Warning(msg);
+            if (this.Enabled)
+            {
+                Log.To(this.LoggerHandle).Warning(msg);
+            }
         }
 
         public readonly void Error(in FixedString512Bytes msg)
         {
-            Log.To(this.LoggerHandle).Error(msg);
+            if (this.Enabled)
+            {
+                Log.To(this.LoggerHandle).Error(msg);
+            }
         }
     }
 }
