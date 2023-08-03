@@ -6,15 +6,14 @@ namespace BovineLabs.Core.SingletonCollection
 {
     using System;
     using BovineLabs.Core.Collections;
-    using BovineLabs.Core.Events;
     using Unity.Collections;
 
     public static class SingletonCollectionExtensions
     {
-        public static unsafe NativeEventStream.Writer CreateWriter<TS>(this TS eventSingleton)
-            where TS : unmanaged, ISingletonCollection<NativeEventStream>
+        public static unsafe NativeThreadStream.Writer CreateThreadStream<TS>(this TS eventSingleton)
+            where TS : unmanaged, ISingletonCollection<NativeThreadStream>
         {
-            var stream = new NativeEventStream(eventSingleton.Allocator);
+            var stream = new NativeThreadStream(eventSingleton.Allocator);
             eventSingleton.Collections->Add(stream);
             return stream.AsWriter();
         }
@@ -52,6 +51,16 @@ namespace BovineLabs.Core.SingletonCollection
             where TValue : unmanaged
         {
             var collection = new NativeHashMap<TKey, TValue>(capacity, eventSingleton.Allocator);
+            eventSingleton.Collections->Add(collection);
+            return collection;
+        }
+
+        public static unsafe NativeMultiHashMap<TKey, TValue> CreateMultiHashMap<TS, TKey, TValue>(this TS eventSingleton, int capacity)
+            where TS : unmanaged, ISingletonCollection<NativeMultiHashMap<TKey, TValue>>
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            var collection = new NativeMultiHashMap<TKey, TValue>(capacity, eventSingleton.Allocator);
             eventSingleton.Collections->Add(collection);
             return collection;
         }

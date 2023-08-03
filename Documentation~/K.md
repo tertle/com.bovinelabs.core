@@ -15,7 +15,7 @@ Define your Settings file.
 
 In Unity, open `BovineLabs -> Settings` to automatically create the associated asset.
 
-![Object Definition](../../Images~/K.png)
+![Object Definition](Images/K.png)
 
 Then simply assign key-value (string, int) pairs. The maximum key length is a UTF8 string of length 15, and the maximum number of elements is 256.
 

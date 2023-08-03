@@ -14,7 +14,7 @@ There are 5 models currently available:
 |StateModelEnableable|Same as StateModel but instead uses IEnableable for states.|
 
 ### StateAPI
-Provides a convenient way for a system to register a state. It also has an overload that supports [K](../Keys/README.md).
+Provides a convenient way for a system to register a state. It also has an overload that supports [K](K.md).
 By default, `StateAPI.Register` will add a `RequireForUpdate` on the component to the system. You can override this behavior by setting the ``queryDependency` parameter to false.
 
 ## Example

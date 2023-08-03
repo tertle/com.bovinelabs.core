@@ -5,6 +5,7 @@
 #if !BL_DISABLE_PHYSICS_STATES
 namespace BovineLabs.Core.PhysicsStates
 {
+    using BovineLabs.Core.Assertions;
     using Unity.Entities;
     using Unity.Physics;
 
@@ -21,9 +22,32 @@ namespace BovineLabs.Core.PhysicsStates
 
         public Entity EntityB => this.TriggerEvent.EntityB;
 
-        public StatefulTriggerEvent Create(StatefulEventState state)
+        public StatefulTriggerEvent Create(Entity entity, StatefulEventState state)
         {
-            return new StatefulTriggerEvent(this, state);
+            if (this.TriggerEvent.EntityA.Equals(entity))
+            {
+                return new StatefulTriggerEvent
+                {
+                    EntityB = this.TriggerEvent.EntityB,
+                    BodyIndexA = this.TriggerEvent.BodyIndexA,
+                    BodyIndexB = this.TriggerEvent.BodyIndexB,
+                    ColliderKeyA = this.TriggerEvent.ColliderKeyA,
+                    ColliderKeyB = this.TriggerEvent.ColliderKeyB,
+                    State = state,
+                };
+            }
+
+            Check.Assume(this.TriggerEvent.EntityB.Equals(entity));
+
+            return new StatefulTriggerEvent
+            {
+                EntityB = this.TriggerEvent.EntityA,
+                BodyIndexA = this.TriggerEvent.BodyIndexB,
+                BodyIndexB = this.TriggerEvent.BodyIndexA,
+                ColliderKeyA = this.TriggerEvent.ColliderKeyB,
+                ColliderKeyB = this.TriggerEvent.ColliderKeyA,
+                State = state,
+            };
         }
 
         public bool Equals(StatefulTriggerEventContainer other)

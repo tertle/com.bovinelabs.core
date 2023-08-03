@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0-pre.2] - 2023-08-04
+
+### Added 
+* Instantiate and create methods to IEntityCommands
+* DestroyTimer
+* GetOrAddRef to NativeHashMap
+
+### Changed
+* NativeThreadRandom renamed ThreadRandom as NativeContainer and safety has been removed (always thread safe within job context)
+* IConvert renamed to IEntityCommands
+* NativeEventStream renamed to NativeThreadStream
+* Various namespaces updates
+* Updated Stateful events not to include EntityA. EntityB is now always be the other entity.
+
+### Documentation
+* Added documentation for Singleton Collections
+* Added documentation for EntityCommands
+* Added documentation for DynamicHashMap
+
 ## [1.0.0-pre.1] - 2023-08-01
 
 ### Added 
@@ -15,7 +34,7 @@
 * Renamed CopyEnablable to CopyEnableable
 * Renamed BufferCapacitySettings to TypeManagerOverrideSettings. You'll need to update the file if you use this.
 * Rewrote DynamicHashMap back end for performance improvements
-* Reworked asset creator to now now require inheritances, instead looks for the AssetCreatorAttribute
+* Reworked asset creator to now not require inheritances, instead looks for the AssetCreatorAttribute
 
 ### Fixed
 * Fixed NativeThreadRandom seeds all being the same

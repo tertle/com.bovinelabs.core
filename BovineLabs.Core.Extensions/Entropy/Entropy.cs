@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Entropy
 
     public struct Entropy : IComponentData
     {
-        public NativeThreadRandom Random;
+        public ThreadRandom Random;
     }
 }
 #endif

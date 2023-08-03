@@ -7,7 +7,7 @@ namespace BovineLabs.Core.Extensions
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Extensions for NativeEventStream. </summary>
+    /// <summary> Extensions for NativeThreadStream. </summary>
     public static unsafe class NativeStreamExtensions
     {
         private static readonly int MaxSize = UnsafeStreamBlockData.AllocationSize - sizeof(void*);

@@ -1,4 +1,4 @@
-// <copyright file="UnsafeEventStream.Writer.cs" company="BovineLabs">
+// <copyright file="UnsafeThreadStream.Writer.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -10,13 +10,13 @@ namespace BovineLabs.Core.Collections
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
 
-    public unsafe partial struct UnsafeEventStream
+    public unsafe partial struct UnsafeThreadStream
     {
         /// <summary> The writer instance. </summary>
         public struct Writer
         {
             [NativeDisableUnsafePtrRestriction]
-            private readonly UnsafeEventStreamBlockData* blockStream;
+            private readonly UnsafeThreadStreamBlockData* blockStream;
 
 #pragma warning disable SA1308
             [NativeSetThreadIndex]
@@ -24,7 +24,7 @@ namespace BovineLabs.Core.Collections
             private int m_ThreadIndex;
 #pragma warning restore SA1308
 
-            internal Writer(ref UnsafeEventStream stream)
+            internal Writer(ref UnsafeThreadStream stream)
             {
                 this.blockStream = stream.blockData;
                 this.m_ThreadIndex = 0; // 0 so main thread works
@@ -84,7 +84,7 @@ namespace BovineLabs.Core.Collections
                         ranges->NumberOfBlocks++;
                     }
 
-                    ranges->CurrentBlockEnd = (byte*)newBlock + UnsafeEventStreamBlockData.AllocationSize;
+                    ranges->CurrentBlockEnd = (byte*)newBlock + UnsafeThreadStreamBlockData.AllocationSize;
 
                     ptr = newBlock->Data;
                     ranges->CurrentPtr = newBlock->Data + size;

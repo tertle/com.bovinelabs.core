@@ -1,13 +1,19 @@
-﻿// <copyright file="IConvert.cs" company="BovineLabs">
+﻿// <copyright file="IEntityCommands.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Convert
+namespace BovineLabs.Core.EntityCommands
 {
     using Unity.Entities;
 
-    public interface IConvert
+    public interface IEntityCommands
     {
+        /// <summary> Creates a new entity and replaces any internal stored one so other commands will now affect this. </summary>
+        /// <returns> The new entity. </returns>
+        Entity Create();
+
+        Entity Instantiate(Entity prefab);
+
         void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)
             where T : unmanaged;
 
@@ -23,6 +29,9 @@ namespace BovineLabs.Core.Convert
             where T : unmanaged, IComponentData;
 
         DynamicBuffer<T> AddBuffer<T>()
+            where T : unmanaged, IBufferElementData;
+
+        DynamicBuffer<T> SetBuffer<T>()
             where T : unmanaged, IBufferElementData;
 
         void SetComponentEnabled<T>(bool enabled)

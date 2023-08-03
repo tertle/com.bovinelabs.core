@@ -11,10 +11,8 @@ namespace BovineLabs.Core.PhysicsStates
 
     public interface IEventContainer<T, TC> : IEquatable<TC>
         where TC : unmanaged, IEventContainer<T, TC>
-        where T : unmanaged, IBufferElementData, ISimulationEvent<T>
+        where T : unmanaged, IBufferElementData
     {
-        T Create(StatefulEventState state);
-
         Entity EntityA { get; }
 
         Entity EntityB { get; }

@@ -1,30 +1,42 @@
-﻿// <copyright file="CommandBufferBuildHelper.cs" company="BovineLabs">
+﻿// <copyright file="CommandBufferCommands.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Convert
+namespace BovineLabs.Core.EntityCommands
 {
     using Unity.Entities;
 
-    public struct CommandBufferBuildHelper : IConvert
+    public struct CommandBufferCommands : IEntityCommands
     {
-        private readonly Entity entity;
+        private Entity entity;
         private EntityCommandBuffer commandBuffer;
         private BlobAssetStore blobAssetStore;
 
-        public CommandBufferBuildHelper(EntityCommandBuffer commandBuffer, Entity entity, BlobAssetStore blobAssetStore = default)
+        public CommandBufferCommands(EntityCommandBuffer commandBuffer, Entity entity, BlobAssetStore blobAssetStore = default)
         {
             this.commandBuffer = commandBuffer;
             this.entity = entity;
             this.blobAssetStore = blobAssetStore;
         }
 
-        public CommandBufferBuildHelper(EntityCommandBuffer commandBuffer, BlobAssetStore blobAssetStore = default)
+        public CommandBufferCommands(EntityCommandBuffer commandBuffer, BlobAssetStore blobAssetStore = default)
         {
             this.commandBuffer = commandBuffer;
             this.blobAssetStore = blobAssetStore;
 
             this.entity = commandBuffer.CreateEntity();
+        }
+
+        public Entity Create()
+        {
+            this.entity = this.commandBuffer.CreateEntity();
+            return this.entity;
+        }
+
+        public Entity Instantiate(Entity prefab)
+        {
+            this.entity = this.commandBuffer.Instantiate(prefab);
+            return this.entity;
         }
 
         public void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)
@@ -67,6 +79,12 @@ namespace BovineLabs.Core.Convert
             where T : unmanaged, IBufferElementData
         {
             return this.commandBuffer.AddBuffer<T>(this.entity);
+        }
+
+        public DynamicBuffer<T> SetBuffer<T>()
+            where T : unmanaged, IBufferElementData
+        {
+            return this.commandBuffer.SetBuffer<T>(this.entity);
         }
 
         public void SetComponentEnabled<T>(bool enabled)

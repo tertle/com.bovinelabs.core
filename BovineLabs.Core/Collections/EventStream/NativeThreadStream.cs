@@ -1,4 +1,4 @@
-﻿// <copyright file="NativeEventStream.cs" company="BovineLabs">
+﻿// <copyright file="NativeThreadStream.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -17,24 +17,24 @@ namespace BovineLabs.Core.Collections
     /// Allows you to write different types or arrays into a single stream.
     /// </summary>
     [NativeContainer]
-    public partial struct NativeEventStream : IDisposable, IEquatable<NativeEventStream>
+    public partial struct NativeThreadStream : IDisposable, IEquatable<NativeThreadStream>
     {
         /// <summary> Gets the number of streams the list can use. </summary>
-        public static int ForEachCount => UnsafeEventStream.ForEachCount;
+        public static int ForEachCount => UnsafeThreadStream.ForEachCount;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Required by safety injection.")]
         private AtomicSafetyHandle m_Safety;
 
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Required by safety injection.")]
-        private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeEventStream>();
+        private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeThreadStream>();
 #endif
 
-        private UnsafeEventStream stream;
+        private UnsafeThreadStream stream;
 
-        /// <summary> Initializes a new instance of the <see cref="NativeEventStream" /> struct. </summary>
+        /// <summary> Initializes a new instance of the <see cref="NativeThreadStream" /> struct. </summary>
         /// <param name="allocator"> The specified type of memory allocation. </param>
-        public NativeEventStream(AllocatorManager.AllocatorHandle allocator)
+        public NativeThreadStream(AllocatorManager.AllocatorHandle allocator)
         {
             Allocate(out this, allocator);
             this.stream.AllocateForEach();
@@ -134,7 +134,7 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <inheritdoc />
-        public bool Equals(NativeEventStream other)
+        public bool Equals(NativeThreadStream other)
         {
             return this.stream.Equals(other.stream);
         }
@@ -146,15 +146,15 @@ namespace BovineLabs.Core.Collections
             return this.stream.GetHashCode();
         }
 
-        private static void Allocate(out NativeEventStream stream, AllocatorManager.AllocatorHandle allocator)
+        private static void Allocate(out NativeThreadStream stream, AllocatorManager.AllocatorHandle allocator)
         {
-            UnsafeEventStream.AllocateBlock(out stream.stream, allocator);
+            UnsafeThreadStream.AllocateBlock(out stream.stream, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.CheckAllocator(allocator);
             stream.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
 
-            CollectionHelper.SetStaticSafetyId<NativeEventStream>(ref stream.m_Safety, ref s_staticSafetyId.Data);
+            CollectionHelper.SetStaticSafetyId<NativeThreadStream>(ref stream.m_Safety, ref s_staticSafetyId.Data);
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(stream.m_Safety, true);
 #endif
         }

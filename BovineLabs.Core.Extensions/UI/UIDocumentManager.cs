@@ -8,7 +8,6 @@ namespace BovineLabs.Core.UI
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using Unity.Logging;
     using UnityEngine;
     using UnityEngine.UIElements;
 

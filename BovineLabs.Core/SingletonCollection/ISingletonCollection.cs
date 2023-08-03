@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Events
+namespace BovineLabs.Core.SingletonCollection
 {
     using System;
     using Unity.Collections;

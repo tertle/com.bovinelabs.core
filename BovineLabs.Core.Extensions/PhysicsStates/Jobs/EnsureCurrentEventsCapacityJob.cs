@@ -14,7 +14,7 @@ namespace BovineLabs.Core.PhysicsStates
 
     [BurstCompile]
     internal struct EnsureCurrentEventsCapacityJob<T, TC> : IJob
-        where T : unmanaged, IBufferElementData, ISimulationEvent<T>
+        where T : unmanaged, IBufferElementData
         where TC : unmanaged, IEventContainer<T, TC>
     {
         [ReadOnly]

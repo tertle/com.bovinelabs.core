@@ -8,80 +8,26 @@ namespace BovineLabs.Core.PhysicsStates
     using Unity.Entities;
     using Unity.Mathematics;
     using Unity.Physics;
-    using Unity.Properties;
 
     [InternalBufferCapacity(0)]
-    public struct StatefulCollisionEvent : IBufferElementData, ISimulationEvent<StatefulCollisionEvent>
+    public struct StatefulCollisionEvent : IBufferElementData
     {
-        internal StatefulCollisionEvent(StatefulCollisionEventContainer collisionEvent, StatefulEventState state)
-        {
-            this.EntityA = collisionEvent.CollisionEventData.Entities.EntityA;
-            this.EntityB = collisionEvent.CollisionEventData.Entities.EntityB;
-            this.BodyIndexA = collisionEvent.CollisionEventData.BodyIndices.BodyIndexA;
-            this.BodyIndexB = collisionEvent.CollisionEventData.BodyIndices.BodyIndexB;
-            this.ColliderKeyA = collisionEvent.CollisionEventData.ColliderKeys.ColliderKeyA;
-            this.ColliderKeyB = collisionEvent.CollisionEventData.ColliderKeys.ColliderKeyB;
-            this.Normal = collisionEvent.CollisionEventData.Normal;
-            this.State = state;
-            this.CollisionDetails = default;
-        }
-
-        [CreateProperty]
-        public Entity EntityA { get; }
-
-        [CreateProperty]
-        public Entity EntityB { get; }
-
-        [CreateProperty]
-        public int BodyIndexA { get; }
-
-        [CreateProperty]
-        public int BodyIndexB { get; }
-
-        [CreateProperty]
-        public ColliderKey ColliderKeyA { get; }
-
-        [CreateProperty]
-        public ColliderKey ColliderKeyB { get; }
-
-        [CreateProperty]
-        public StatefulEventState State { get; }
-
-        [CreateProperty]
-        public float3 Normal { get; set; }
+        public Entity EntityB;
+        public int BodyIndexA;
+        public int BodyIndexB;
+        public ColliderKey ColliderKeyA;
+        public ColliderKey ColliderKeyB;
+        public StatefulEventState State;
+        public float3 Normal;
 
         // Only if CalculateDetails is checked on PhysicsCollisionEventBuffer of selected entity,
         // this field will have valid value, otherwise it will be zero initialized
-        [CreateProperty]
-        internal Details CollisionDetails { get; set;  }
+        public Details CollisionDetails;
 
         public bool TryGetDetails(out Details details)
         {
             details = this.CollisionDetails;
             return this.CollisionDetails.IsValid;
-        }
-
-        public bool Equals(StatefulCollisionEvent other)
-        {
-            return this.EntityA.Equals(other.EntityA) &&
-                   this.EntityB.Equals(other.EntityB) &&
-                   this.ColliderKeyA.Equals(other.ColliderKeyA) &&
-                   this.ColliderKeyB.Equals(other.ColliderKeyB);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = this.EntityA.GetHashCode();
-                hashCode = (hashCode * 397) ^ this.EntityB.GetHashCode();
-                return hashCode;
-            }
-        }
-
-        public int CompareTo(StatefulCollisionEvent other)
-        {
-            return ISimulationEventUtilities.CompareEvents(this, other);
         }
 
         // This struct describes additional, optional, details about collision of 2 bodies

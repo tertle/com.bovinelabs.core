@@ -1,4 +1,4 @@
-// <copyright file="NativeEventStreamThreadWriterTests.cs" company="BovineLabs">
+// <copyright file="NativeThreadStreamThreadWriterTests.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
         // [Test]
         // public void DisposeJob()
         // {
-        //     var stream = NativeEventStream.Create(ref this.World.Unmanaged.UpdateAllocator);
+        //     var stream = NativeThreadStream.Create(ref this.World.Unmanaged.UpdateAllocator);
         //     Assert.IsTrue(stream.IsCreated);
         //
         //     var fillInts = new WriteIntsJob { Writer = stream.AsWriter() };
@@ -44,7 +44,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
             int count,
             [Values(1, 3, 10, 128)] int batchSize)
         {
-            using var stream = new NativeEventStream(Allocator.TempJob);
+            using var stream = new NativeThreadStream(Allocator.TempJob);
             var fillInts = new WriteIntsJob { Writer = stream.AsWriter() };
             fillInts.ScheduleParallel(count, batchSize, default).Complete();
 
@@ -60,13 +60,13 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
             int count,
             [Values(1, 3, 10)] int batchSize)
         {
-            using var stream = new NativeEventStream(Allocator.TempJob);
+            using var stream = new NativeThreadStream(Allocator.TempJob);
             var fillInts = new WriteIntsJob { Writer = stream.AsWriter() };
             var jobHandle = fillInts.ScheduleParallel(count, batchSize, default);
 
             var compareInts = new ReadIntsJob { JobReader = stream.AsReader() };
-            var res0 = compareInts.ScheduleParallel(UnsafeEventStream.ForEachCount, batchSize, jobHandle);
-            var res1 = compareInts.ScheduleParallel(UnsafeEventStream.ForEachCount, batchSize, jobHandle);
+            var res0 = compareInts.ScheduleParallel(UnsafeThreadStream.ForEachCount, batchSize, jobHandle);
+            var res1 = compareInts.ScheduleParallel(UnsafeThreadStream.ForEachCount, batchSize, jobHandle);
 
             res0.Complete();
             res1.Complete();
@@ -84,7 +84,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
         [BurstCompile(CompileSynchronously = true)]
         private struct WriteIntsJob : IJobFor
         {
-            public NativeEventStream.Writer Writer;
+            public NativeThreadStream.Writer Writer;
 
 #pragma warning disable 649
             [NativeSetThreadIndex]
@@ -104,7 +104,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
         private struct ReadIntsJob : IJobFor
         {
             [ReadOnly]
-            public NativeEventStream.Reader JobReader;
+            public NativeThreadStream.Reader JobReader;
 
             public void Execute(int index)
             {
@@ -160,7 +160,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
 
             private void EntitiesForEach()
             {
-                var stream = new NativeEventStream(Allocator.TempJob);
+                var stream = new NativeThreadStream(Allocator.TempJob);
                 var writer = stream.AsWriter();
 
                 this.Entities
@@ -172,7 +172,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
                         JobReader = stream.AsReader(),
                         HashMap = this.hashmap.AsParallelWriter(),
                     }
-                    .ScheduleParallel(UnsafeEventStream.ForEachCount, 1, this.Dependency);
+                    .ScheduleParallel(UnsafeThreadStream.ForEachCount, 1, this.Dependency);
 
                 // this.Dependency = stream.Dispose(this.Dependency);
                 this.Dependency.Complete();
@@ -189,7 +189,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
 
             private void JobWithCode()
             {
-                var stream = new NativeEventStream(Allocator.TempJob);
+                var stream = new NativeThreadStream(Allocator.TempJob);
                 var writer = stream.AsWriter();
 
                 var c = this.count;
@@ -208,7 +208,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
                         JobReader = stream.AsReader(),
                         HashMap = this.hashmap.AsParallelWriter(),
                     }
-                    .ScheduleParallel(UnsafeEventStream.ForEachCount, 1, this.Dependency);
+                    .ScheduleParallel(UnsafeThreadStream.ForEachCount, 1, this.Dependency);
 
                 // this.Dependency = stream.Dispose(this.Dependency);
                 this.Dependency.Complete();
@@ -227,7 +227,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
             private struct ReadJob : IJobFor
             {
                 [ReadOnly]
-                public NativeEventStream.Reader JobReader;
+                public NativeThreadStream.Reader JobReader;
 
                 public NativeParallelHashMap<int, byte>.ParallelWriter HashMap;
 

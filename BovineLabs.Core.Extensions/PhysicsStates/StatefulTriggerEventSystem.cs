@@ -112,7 +112,7 @@ namespace BovineLabs.Core.PhysicsStates
                         do
                         {
                             var state = this.previousEvents.Contains(currentEvent) ? StatefulEventState.Stay : StatefulEventState.Enter;
-                            statefulNewEvents.Add(currentEvent.Create(state));
+                            statefulNewEvents.Add(currentEvent.Create(entity, state));
                         }
                         while (this.currentEventMap.TryGetNextValue(out currentEvent, ref it));
                     }
@@ -128,7 +128,7 @@ namespace BovineLabs.Core.PhysicsStates
                             }
 
                             changed = true;
-                            statefulNewEvents.Add(previousEvent.Create(StatefulEventState.Exit));
+                            statefulNewEvents.Add(previousEvent.Create(entity, StatefulEventState.Exit));
                         }
                         while (this.currentEventMap.TryGetNextValue(out previousEvent, ref it));
                     }

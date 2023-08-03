@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Events
+namespace BovineLabs.Core.SingletonCollection
 {
     using System;
     using BovineLabs.Core.Collections;
@@ -28,11 +28,11 @@ namespace BovineLabs.Core.Events
         /// <typeparam name="TValue"> The value type of the <see cref="NativeHashMap{TKey,TValue}"/> . </typeparam>
         /// <returns> The dependency handle. </returns>
         public static JobHandle EnsureHashMapCapacity<T, TKey, TValue>(this T util, ref SystemState state, JobHandle handle, NativeParallelHashMap<TKey, TValue> hashMap)
-            where T : unmanaged,  ISingletonCollectionUtil<NativeEventStream>
+            where T : unmanaged,  ISingletonCollectionUtil<NativeThreadStream>
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var streams = util.Streams;
+            var streams = util.Containers;
             if (streams.Length != 0)
             {
                 var counter = new NativeArray<int>(streams.Length, state.WorldUpdateAllocator);
@@ -57,11 +57,11 @@ namespace BovineLabs.Core.Events
         /// <typeparam name="TValue"> The value type of the <see cref="NativeHashMap{TKey,TValue}"/> . </typeparam>
         /// <returns> The dependency handle. </returns>
         public static JobHandle EnsureHashMapCapacity<T, TKey, TValue>(this T util, ref SystemState state, JobHandle handle, NativeParallelMultiHashMap<TKey, TValue> hashMap)
-            where T : unmanaged,  ISingletonCollectionUtil<NativeEventStream>
+            where T : unmanaged,  ISingletonCollectionUtil<NativeThreadStream>
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var streams = util.Streams;
+            var streams = util.Containers;
             if (streams.Length != 0)
             {
                 var counter = new NativeArray<int>(streams.Length, state.WorldUpdateAllocator);
@@ -79,7 +79,7 @@ namespace BovineLabs.Core.Events
             public NativeArray<int> Counter;
 
             [ReadOnly]
-            public UnsafeList<NativeEventStream>.ReadOnly Streams;
+            public UnsafeList<NativeThreadStream>.ReadOnly Streams;
 
             public void Execute(int index)
             {

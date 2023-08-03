@@ -1,4 +1,4 @@
-// <copyright file="NativeEventStream.Reader.cs" company="BovineLabs">
+// <copyright file="NativeThreadStream.Reader.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -10,14 +10,14 @@ namespace BovineLabs.Core.Collections
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    public unsafe partial struct NativeEventStream
+    public unsafe partial struct NativeThreadStream
     {
         /// <summary> The reader instance. </summary>
         [NativeContainer]
         [NativeContainerIsReadOnly]
         public struct Reader
         {
-            private UnsafeEventStream.Reader reader;
+            private UnsafeThreadStream.Reader reader;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             private int remainingBlocks;
@@ -26,7 +26,7 @@ namespace BovineLabs.Core.Collections
 #pragma warning restore SA1308
 #endif
 
-            internal Reader(ref NativeEventStream stream)
+            internal Reader(ref NativeThreadStream stream)
             {
                 this.reader = stream.stream.AsReader();
 
@@ -99,10 +99,10 @@ namespace BovineLabs.Core.Collections
                     }
                     else
                     {
-                        this.reader.m_CurrentBlockEnd = (byte*)this.reader.m_CurrentBlock + UnsafeEventStreamBlockData.AllocationSize;
+                        this.reader.m_CurrentBlockEnd = (byte*)this.reader.m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
                     }
 #else
-                    this.reader.m_CurrentBlockEnd = (byte*)this.reader.m_CurrentBlock + UnsafeEventStreamBlockData.AllocationSize;
+                    this.reader.m_CurrentBlockEnd = (byte*)this.reader.m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
 #endif
                     ptr = this.reader.m_CurrentPtr;
                     this.reader.m_CurrentPtr += size;
@@ -161,7 +161,7 @@ namespace BovineLabs.Core.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
 
-                Assert.IsTrue(size <= UnsafeEventStreamBlockData.AllocationSize - sizeof(void*));
+                Assert.IsTrue(size <= UnsafeThreadStreamBlockData.AllocationSize - sizeof(void*));
                 if (this.reader.m_RemainingItemCount < 1)
                 {
                     throw new ArgumentException("There are no more items left to be read.");

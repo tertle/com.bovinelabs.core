@@ -1,4 +1,4 @@
-// <copyright file="NativeEventStreamReaderTests.cs" company="BovineLabs">
+// <copyright file="NativeThreadStreamReaderTests.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
     using Unity.Collections;
     using Unity.Jobs.LowLevel.Unsafe;
 
-    internal partial class NativeEventStreamTests
+    internal partial class NativeThreadStreamTests
     {
         internal class Reader : ECSTestsFixture
         {
@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
             [Test]
             public void ReadWithoutBeginThrows()
             {
-                var stream = new NativeEventStream(Allocator.Temp);
+                var stream = new NativeThreadStream(Allocator.Temp);
                 stream.AsWriter().Write(0);
 
                 var reader = stream.AsReader();
@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
             [Test]
             public void BeginOutOfRangeThrows()
             {
-                var stream = new NativeEventStream(Allocator.Temp);
+                var stream = new NativeThreadStream(Allocator.Temp);
 
                 var reader = stream.AsReader();
                 Assert.Throws<ArgumentOutOfRangeException>(() => reader.BeginForEachIndex(-1));
@@ -44,7 +44,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
             [Test]
             public void TooManyReadsThrows()
             {
-                var stream = new NativeEventStream(Allocator.Temp);
+                var stream = new NativeThreadStream(Allocator.Temp);
                 stream.AsWriter().Write(0);
 
                 var reader = stream.AsReader();

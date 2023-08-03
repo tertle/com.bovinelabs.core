@@ -1,4 +1,4 @@
-// <copyright file="UnsafeEventStream.Reader.cs" company="BovineLabs">
+// <copyright file="UnsafeThreadStream.Reader.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -7,7 +7,7 @@ namespace BovineLabs.Core.Collections
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    public unsafe partial struct UnsafeEventStream
+    public unsafe partial struct UnsafeThreadStream
     {
         /// <summary>
         /// </summary>
@@ -15,10 +15,10 @@ namespace BovineLabs.Core.Collections
         public struct Reader
         {
             [NativeDisableUnsafePtrRestriction]
-            internal UnsafeEventStreamBlockData* m_BlockStream;
+            internal UnsafeThreadStreamBlockData* m_BlockStream;
 
             [NativeDisableUnsafePtrRestriction]
-            internal UnsafeEventStreamBlock* m_CurrentBlock;
+            internal UnsafeThreadStreamBlock* m_CurrentBlock;
 
             [NativeDisableUnsafePtrRestriction]
             internal byte* m_CurrentPtr;
@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Collections
             internal int m_RemainingItemCount;
             internal int m_LastBlockSize;
 
-            internal Reader(ref UnsafeEventStream stream)
+            internal Reader(ref UnsafeThreadStream stream)
             {
                 this.m_BlockStream = stream.blockData;
                 this.m_CurrentBlock = null;
@@ -50,7 +50,7 @@ namespace BovineLabs.Core.Collections
 
                 this.m_CurrentBlock = this.m_BlockStream->Ranges[foreachIndex].Block;
                 this.m_CurrentPtr = (byte*)this.m_CurrentBlock + this.m_BlockStream->Ranges[foreachIndex].OffsetInFirstBlock;
-                this.m_CurrentBlockEnd = (byte*)this.m_CurrentBlock + UnsafeEventStreamBlockData.AllocationSize;
+                this.m_CurrentBlockEnd = (byte*)this.m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
 
                 return this.m_RemainingItemCount;
             }
@@ -66,7 +66,7 @@ namespace BovineLabs.Core.Collections
             /// <summary>
             /// Returns for each count.
             /// </summary>
-            public int ForEachCount => UnsafeEventStream.ForEachCount;
+            public int ForEachCount => UnsafeThreadStream.ForEachCount;
 
             /// <summary>
             /// Returns remaining item count.
@@ -90,7 +90,7 @@ namespace BovineLabs.Core.Collections
                     this.m_CurrentBlock = this.m_CurrentBlock->Next;
                     this.m_CurrentPtr = this.m_CurrentBlock->Data;
 
-                    this.m_CurrentBlockEnd = (byte*)this.m_CurrentBlock + UnsafeEventStreamBlockData.AllocationSize;
+                    this.m_CurrentBlockEnd = (byte*)this.m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
 
                     ptr = this.m_CurrentPtr;
                     this.m_CurrentPtr += size;
@@ -139,7 +139,7 @@ namespace BovineLabs.Core.Collections
             public int Count()
             {
                 var itemCount = 0;
-                for (var i = 0; i != UnsafeEventStream.ForEachCount; i++)
+                for (var i = 0; i != UnsafeThreadStream.ForEachCount; i++)
                 {
                     itemCount += this.m_BlockStream->Ranges[i].ElementCount;
                 }

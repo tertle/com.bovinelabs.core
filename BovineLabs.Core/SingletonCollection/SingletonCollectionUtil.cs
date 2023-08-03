@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Events
+namespace BovineLabs.Core.SingletonCollection
 {
     using System;
     using Unity.Collections;
@@ -12,14 +12,14 @@ namespace BovineLabs.Core.Events
     public interface ISingletonCollectionUtil<TC>
         where TC : unmanaged, IDisposable
     {
-        UnsafeList<TC>.ReadOnly Streams { get; }
+        UnsafeList<TC>.ReadOnly Containers { get; }
     }
 
     public unsafe struct SingletonCollectionUtil<T, TC> : ISingletonCollectionUtil<TC>, IDisposable
         where T : unmanaged, ISingletonCollection<TC>
         where TC : unmanaged, IDisposable
     {
-        private readonly UnsafeList<TC>* streams;
+        private readonly UnsafeList<TC>* containers;
         private AllocatorHelper<RewindableAllocator> allocator;
         private AllocatorHelper<RewindableAllocator> allocator2;
         private EntityQuery query;
@@ -31,11 +31,11 @@ namespace BovineLabs.Core.Events
             this.allocator2 = new AllocatorHelper<RewindableAllocator>(allocator);
             this.allocator2.Allocator.Initialize(initialSizeInBytes);
 
-            this.streams = UnsafeList<TC>.Create(1, Allocator.Persistent);
+            this.containers = UnsafeList<TC>.Create(1, Allocator.Persistent);
 
             var singleton = new T
             {
-                Collections = this.streams,
+                Collections = this.containers,
                 Allocator = this.allocator.Allocator.ToAllocator,
             };
 
@@ -46,11 +46,11 @@ namespace BovineLabs.Core.Events
 
         public Allocator CurrentAllocator => this.allocator.Allocator.ToAllocator;
 
-        public UnsafeList<TC>.ReadOnly Streams => this.streams->AsReadOnly();
+        public UnsafeList<TC>.ReadOnly Containers => this.containers->AsReadOnly();
 
         public void ClearRewind()
         {
-            this.streams->Clear();
+            this.containers->Clear();
 
             (this.allocator, this.allocator2) = (this.allocator2, this.allocator);
             this.allocator.Allocator.Rewind();
@@ -61,8 +61,8 @@ namespace BovineLabs.Core.Events
 
         public void Dispose()
         {
-            this.streams->Dispose();
-            AllocatorManager.Free(Allocator.Persistent, this.streams);
+            this.containers->Dispose();
+            AllocatorManager.Free(Allocator.Persistent, this.containers);
 
             this.allocator.Allocator.Dispose();
             this.allocator.Dispose();

@@ -1,4 +1,4 @@
-﻿// <copyright file="IStatefulSimulationEvent.cs" company="BovineLabs">
+﻿// <copyright file="StatefulEventState.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -18,7 +18,7 @@ namespace BovineLabs.Core.PhysicsStates
         Undefined,
         Enter,
         Stay,
-        Exit
+        Exit,
     }
 }
 #endif

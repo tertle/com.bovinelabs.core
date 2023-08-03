@@ -1,4 +1,4 @@
-// <copyright file="NativeEventStreamEx.cs" company="BovineLabs">
+// <copyright file="NativeThreadStreamEx.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -7,16 +7,16 @@ namespace BovineLabs.Core.Collections
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Extensions for NativeEventStream. </summary>
-    public static unsafe class NativeEventStreamEx
+    /// <summary> Extensions for NativeThreadStream. </summary>
+    public static unsafe class NativeThreadStreamEx
     {
-        private static readonly int MaxSize = UnsafeEventStreamBlockData.AllocationSize - sizeof(void*);
+        private static readonly int MaxSize = UnsafeThreadStreamBlockData.AllocationSize - sizeof(void*);
 
         /// <summary> Allocate a chunk of memory that can be larger than the max allocation size. </summary>
         /// <param name="writer"> The writer. </param>
         /// <param name="array"> The array to write. </param>
         /// <typeparam name="T"> The type of the array. </typeparam>
-        public static void WriteLarge<T>(this ref NativeEventStream.Writer writer, NativeArray<T> array)
+        public static void WriteLarge<T>(this ref NativeThreadStream.Writer writer, NativeArray<T> array)
             where T : unmanaged
         {
             var byteArray = array.Reinterpret<byte>(UnsafeUtility.SizeOf<T>());
@@ -27,7 +27,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="writer"> The writer. </param>
         /// <param name="data"> The data to write. </param>
         /// <typeparam name="T"> The type of the slice. </typeparam>
-        public static void WriteLarge<T>(this ref NativeEventStream.Writer writer, NativeSlice<T> data)
+        public static void WriteLarge<T>(this ref NativeThreadStream.Writer writer, NativeSlice<T> data)
             where T : unmanaged
         {
             var num = UnsafeUtility.SizeOf<T>();
@@ -60,7 +60,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="writer"> The writer. </param>
         /// <param name="data"> The data to write. </param>
         /// <param name="size"> The size of the data. For an array, this is UnsafeUtility.SizeOf{T} * length. </param>
-        public static void WriteLarge(this ref NativeEventStream.Writer writer, byte* data, int size)
+        public static void WriteLarge(this ref NativeThreadStream.Writer writer, byte* data, int size)
         {
             var allocationCount = size / MaxSize;
             var allocationRemainder = size % MaxSize;
@@ -84,7 +84,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="reader"> The reader. </param>
         /// <param name="buffer"> A buffer to write back to. </param>
         /// <param name="size"> For an array, this is UnsafeUtility.SizeOf{T} * length. </param>
-        public static void ReadLarge(this ref NativeEventStream.Reader reader, byte* buffer, int size)
+        public static void ReadLarge(this ref NativeThreadStream.Reader reader, byte* buffer, int size)
         {
             var allocationCount = size / MaxSize;
             var allocationRemainder = size % MaxSize;

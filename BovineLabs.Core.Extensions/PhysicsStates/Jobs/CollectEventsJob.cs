@@ -13,7 +13,7 @@ namespace BovineLabs.Core.PhysicsStates
     using Unity.Physics;
 
     internal interface ICollectsEventsImpl<T, out TC>
-        where T : unmanaged, IBufferElementData, ISimulationEvent<T>
+        where T : unmanaged, IBufferElementData
         where TC : unmanaged, IEventContainer<T, TC>
     {
         TC Read(ref NativeStream.Reader reader);
@@ -21,7 +21,7 @@ namespace BovineLabs.Core.PhysicsStates
 
     [BurstCompile]
     internal unsafe struct CollectEventsJob<T, TC, TI> : IJobParallelForDeferBatch
-        where T : unmanaged, IBufferElementData, ISimulationEvent<T>
+        where T : unmanaged, IBufferElementData
         where TC : unmanaged, IEventContainer<T, TC>
         where TI : unmanaged, ICollectsEventsImpl<T, TC>
     {

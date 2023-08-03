@@ -11,12 +11,12 @@ namespace BovineLabs.Core.Entropy
 
     public partial struct EntropySystem : ISystem
     {
-        private NativeThreadRandom threadRandom;
+        private ThreadRandom threadRandom;
 
         public void OnCreate(ref SystemState state)
         {
             state.Enabled = false;
-            this.threadRandom = new NativeThreadRandom((uint)UnityEngine.Random.Range(0, int.MaxValue), Allocator.Persistent);
+            this.threadRandom = new ThreadRandom((uint)UnityEngine.Random.Range(0, int.MaxValue), Allocator.Persistent);
             state.EntityManager.AddComponentData(state.SystemHandle, new Entropy { Random = this.threadRandom });
         }
 

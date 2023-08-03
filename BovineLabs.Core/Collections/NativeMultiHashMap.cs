@@ -12,6 +12,7 @@ namespace Unity.Collections
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
+    using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections.LowLevel.Unsafe;
@@ -184,7 +185,7 @@ namespace Unity.Collections
         {
             this.CheckWrite();
 
-            var idx = this.data->Add(key);
+            var idx = this.data->AddNoFind(key);
             UnsafeUtility.WriteArrayElement(this.data->Ptr, idx, item);
         }
 
@@ -396,41 +397,6 @@ namespace Unity.Collections
 
     internal static unsafe class HashMapHelperExtensions
     {
-        internal static int Add<TKey>(this ref HashMapHelper<TKey> hashMapHelper, in TKey key)
-            where TKey : unmanaged, IEquatable<TKey>
-        {
-            // Allocate an entry from the free list
-            if (hashMapHelper.AllocatedIndex >= hashMapHelper.Capacity && hashMapHelper.FirstFreeIdx < 0)
-            {
-                int newCap = hashMapHelper.CalcCapacityCeilPow2(hashMapHelper.Capacity + (1 << hashMapHelper.Log2MinGrowth));
-                hashMapHelper.Resize(newCap);
-            }
-
-            var idx = hashMapHelper.FirstFreeIdx;
-
-            if (idx >= 0)
-            {
-                hashMapHelper.FirstFreeIdx = hashMapHelper.Next[idx];
-            }
-            else
-            {
-                idx = hashMapHelper.AllocatedIndex++;
-            }
-
-            CheckIndexOutOfBounds(idx, hashMapHelper.Capacity);
-
-            UnsafeUtility.WriteArrayElement(hashMapHelper.Keys, idx, key);
-            var bucket = hashMapHelper.GetBucket(key);
-
-            // Add the index to the hash-map
-            var next = hashMapHelper.Next;
-            next[idx] = hashMapHelper.Buckets[bucket];
-            hashMapHelper.Buckets[bucket] = idx;
-            hashMapHelper.Count++;
-
-            return idx;
-        }
-
         internal static int Remove<TKey>(this ref HashMapHelper<TKey> hashMapHelper, in TKey key)
             where TKey : unmanaged, IEquatable<TKey>
         {
@@ -527,24 +493,6 @@ namespace Unity.Collections
             it.EntryIndex = nextPtrs[entryIdx];
             item = UnsafeUtility.ReadArrayElement<TValue>(hashMapHelper.Ptr, entryIdx);
             return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetBucket<TKey>(this in HashMapHelper<TKey> hashMapHelper, in TKey key)
-            where TKey : unmanaged, IEquatable<TKey>
-        {
-            return (int)((uint)key.GetHashCode() & (hashMapHelper.BucketCapacity - 1));
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [Conditional("UNITY_DOTS_DEBUG")]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void CheckIndexOutOfBounds(int idx, int capacity)
-        {
-            if ((uint)idx >= (uint)capacity)
-            {
-                throw new InvalidOperationException($"Internal HashMap error. idx {idx}");
-            }
         }
     }
 

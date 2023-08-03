@@ -1,4 +1,4 @@
-// <copyright file="NativeEventStreamExTests.cs" company="BovineLabs">
+// <copyright file="NativeThreadStreamExTests.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -11,8 +11,8 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Tests for <see cref="NativeEventStreamEx" /> . </summary>
-    public class NativeEventStreamExTests : ECSTestsFixture
+    /// <summary> Tests for <see cref="NativeThreadStreamEx" /> . </summary>
+    public class NativeThreadStreamExTests : ECSTestsFixture
     {
         /// <summary> Tests the extensions AllocateLarge and ReadLarge. </summary>
         /// <param name="size"> The size of the allocation. </param>
@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
         [TestCase(8192)] // requires just more than 2 blocks
         public unsafe void WriteRead(int size)
         {
-            var stream = new NativeEventStream(Allocator.Temp);
+            var stream = new NativeThreadStream(Allocator.Temp);
 
             var sourceData = new NativeArray<byte>(size, Allocator.Temp);
             for (var i = 0; i < size; i++)

@@ -12,7 +12,7 @@ namespace BovineLabs.Core.PhysicsStates
     using Unity.Physics;
 
     internal interface IWriteJob<T, TC> : IJobChunk
-        where T : unmanaged, IBufferElementData, ISimulationEvent<T>
+        where T : unmanaged, IBufferElementData
         where TC : unmanaged, IEventContainer<T, TC>
     {
         BufferTypeHandle<T> StatefulNewEventHandle { set; }
@@ -29,7 +29,7 @@ namespace BovineLabs.Core.PhysicsStates
     }
 
     internal struct StatefulEventImpl<T, TC, TI, TW>
-        where T : unmanaged, IBufferElementData, ISimulationEvent<T>
+        where T : unmanaged, IBufferElementData
         where TC : unmanaged, IEventContainer<T, TC>
         where TI : unmanaged, ICollectsEventsImpl<T, TC>
         where TW : unmanaged, IWriteJob<T, TC>

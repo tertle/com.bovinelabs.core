@@ -1,19 +1,19 @@
-﻿// <copyright file="CommandBufferParallelConvert.cs" company="BovineLabs">
+﻿// <copyright file="CommandBufferParallelCommands.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Convert
+namespace BovineLabs.Core.EntityCommands
 {
     using Unity.Entities;
 
-    public struct CommandBufferParallelConvert : IConvert
+    public struct CommandBufferParallelCommands : IEntityCommands
     {
-        private readonly Entity entity;
         private readonly int sortKey;
+        private Entity entity;
         private EntityCommandBuffer.ParallelWriter commandBuffer;
         private BlobAssetStore blobAssetStore;
 
-        public CommandBufferParallelConvert(
+        public CommandBufferParallelCommands(
             EntityCommandBuffer.ParallelWriter commandBuffer,
             int sortKey,
             Entity entity,
@@ -25,13 +25,25 @@ namespace BovineLabs.Core.Convert
             this.blobAssetStore = blobAssetStore;
         }
 
-        public CommandBufferParallelConvert(EntityCommandBuffer.ParallelWriter commandBuffer, int sortKey, BlobAssetStore blobAssetStore = default)
+        public CommandBufferParallelCommands(EntityCommandBuffer.ParallelWriter commandBuffer, int sortKey, BlobAssetStore blobAssetStore = default)
         {
             this.commandBuffer = commandBuffer;
             this.sortKey = sortKey;
             this.blobAssetStore = blobAssetStore;
 
             this.entity = commandBuffer.CreateEntity(sortKey);
+        }
+
+        public Entity Create()
+        {
+            this.entity = this.commandBuffer.CreateEntity(this.sortKey);
+            return this.entity;
+        }
+
+        public Entity Instantiate(Entity prefab)
+        {
+            this.entity = this.commandBuffer.Instantiate(this.sortKey, prefab);
+            return this.entity;
         }
 
         public void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)
@@ -74,6 +86,12 @@ namespace BovineLabs.Core.Convert
             where T : unmanaged, IBufferElementData
         {
             return this.commandBuffer.AddBuffer<T>(this.sortKey, this.entity);
+        }
+
+        public DynamicBuffer<T> SetBuffer<T>()
+            where T : unmanaged, IBufferElementData
+        {
+            return this.commandBuffer.SetBuffer<T>(this.sortKey, this.entity);
         }
 
         public void SetComponentEnabled<T>(bool enabled)

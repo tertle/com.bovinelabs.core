@@ -1,4 +1,4 @@
-// <copyright file="NativeEventStream.Writer.cs" company="BovineLabs">
+// <copyright file="NativeThreadStream.Writer.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Collections
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    public unsafe partial struct NativeEventStream
+    public unsafe partial struct NativeThreadStream
     {
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
@@ -21,9 +21,9 @@ namespace BovineLabs.Core.Collections
 #pragma warning restore SA1308
 #endif
 
-            private UnsafeEventStream.Writer writer;
+            private UnsafeThreadStream.Writer writer;
 
-            internal Writer(ref NativeEventStream stream)
+            internal Writer(ref NativeThreadStream stream)
             {
                 this.writer = stream.stream.AsWriter();
 
@@ -68,7 +68,7 @@ namespace BovineLabs.Core.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
 
-                if (size > UnsafeEventStreamBlockData.AllocationSize - sizeof(void*))
+                if (size > UnsafeThreadStreamBlockData.AllocationSize - sizeof(void*))
                 {
                     throw new ArgumentException("Allocation size is too large");
                 }

@@ -5,7 +5,7 @@ Object Definition is a way of automatically mapping a unique ID to a specific ob
 
 The ID for an Object Definition is designed to automatically increment (not hash), fill holes and fix itself when multiple users create new definitions from different branches at the same time. If a definition is deleted a hole will exist but will be filled in when the next definition is created.
 
-![Object Definition](../../Images~/ObjectDefinition.png)
+![Object Definition](Images/ObjectDefinition.png)
 
 |Field|Description|
 |----|----|
@@ -83,7 +83,7 @@ Object groups are an easy way to group and manage a collection of objects. There
 
 They are a collection of Object Definitions and can be built from other groups as well as excluding objects.
 
-![Object Definition](../../Images~/ObjectGroups.png)
+![Object Definition](Images/ObjectGroups.png)
 
 ### Authoring
 They author the same as Object Definitions except instead of an ObjectId you store a GroupId.
@@ -114,7 +114,7 @@ In the future a map of GroupID to ObjectID will be provided.
 Object Categories are an easy way to automatically assign and organize objects into high-level groups. Categories are a flag, and so allowed values are 0-31 inclusive.
 They are managed via K in the Object Categories window under `BovineLabs -> Settings`.
 
-![Object Definition](../../Images~/ObjectCategories.png)
+![Object Definition](Images/ObjectCategories.png)
 
 ### Runtime
 While not usually needed for Object Categories, they can still be accessed at runtime via the standard K way (and as always with K, this works inside burst).

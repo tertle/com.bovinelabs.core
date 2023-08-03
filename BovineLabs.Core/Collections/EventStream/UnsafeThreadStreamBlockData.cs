@@ -1,4 +1,4 @@
-// <copyright file="UnsafeEventStreamBlockData.cs" company="BovineLabs">
+// <copyright file="UnsafeThreadStreamBlockData.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -10,16 +10,16 @@ namespace BovineLabs.Core.Collections
 
     [GenerateTestsForBurstCompatibility]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Convenience")]
-    internal unsafe struct UnsafeEventStreamBlock
+    internal unsafe struct UnsafeThreadStreamBlock
     {
-        internal UnsafeEventStreamBlock* Next;
+        internal UnsafeThreadStreamBlock* Next;
         internal fixed byte Data[1];
     }
 
     [GenerateTestsForBurstCompatibility]
-    internal unsafe struct UnsafeEventStreamRange
+    internal unsafe struct UnsafeThreadStreamRange
     {
-        internal UnsafeEventStreamBlock* Block;
+        internal UnsafeThreadStreamBlock* Block;
         internal int OffsetInFirstBlock;
         internal int ElementCount;
 
@@ -27,26 +27,26 @@ namespace BovineLabs.Core.Collections
         internal int LastOffset;
         internal int NumberOfBlocks;
 
-        internal UnsafeEventStreamBlock* CurrentBlock;
+        internal UnsafeThreadStreamBlock* CurrentBlock;
         internal byte* CurrentPtr;
         internal byte* CurrentBlockEnd;
     }
 
     [GenerateTestsForBurstCompatibility]
-    internal unsafe struct UnsafeEventStreamBlockData
+    internal unsafe struct UnsafeThreadStreamBlockData
     {
         internal const int AllocationSize = 4 * 1024;
         internal AllocatorManager.AllocatorHandle Allocator;
 
-        internal UnsafeEventStreamBlock** Blocks;
+        internal UnsafeThreadStreamBlock** Blocks;
 
-        internal UnsafeEventStreamRange* Ranges;
+        internal UnsafeThreadStreamRange* Ranges;
 
-        internal UnsafeEventStreamBlock* Allocate(UnsafeEventStreamBlock* oldBlock, int threadIndex)
+        internal UnsafeThreadStreamBlock* Allocate(UnsafeThreadStreamBlock* oldBlock, int threadIndex)
         {
-            Debug.Assert((threadIndex < UnsafeEventStream.ForEachCount) && (threadIndex >= 0));
+            Debug.Assert((threadIndex < UnsafeThreadStream.ForEachCount) && (threadIndex >= 0));
 
-            var block = (UnsafeEventStreamBlock*)Memory.Unmanaged.Allocate(AllocationSize, 16, this.Allocator);
+            var block = (UnsafeThreadStreamBlock*)Memory.Unmanaged.Allocate(AllocationSize, 16, this.Allocator);
             block->Next = null;
 
             if (oldBlock == null)

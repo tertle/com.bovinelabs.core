@@ -1,8 +1,8 @@
-﻿// <copyright file="EditorSettingsUtility.cs" company="BovineLabs">
+﻿// <copyright file="AuthoringSettingsUtility.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Editor.Settings
+namespace BovineLabs.Core.Authoring.Settings
 {
     using System;
     using System.Collections.Generic;

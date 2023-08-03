@@ -5,6 +5,7 @@
 #if !BL_DISABLE_PHYSICS_STATES
 namespace BovineLabs.Core.PhysicsStates
 {
+    using BovineLabs.Core.Assertions;
     using Unity.Entities;
     using Unity.Physics;
 
@@ -23,9 +24,36 @@ namespace BovineLabs.Core.PhysicsStates
 
         public Entity EntityB => this.CollisionEventData.Entities.EntityB;
 
-        public StatefulCollisionEvent Create(StatefulEventState state)
+        public StatefulCollisionEvent Create(Entity entity, StatefulEventState state)
         {
-            return new StatefulCollisionEvent(this, state);
+            if (this.CollisionEventData.Entities.EntityA.Equals(entity))
+            {
+                return new StatefulCollisionEvent
+                {
+                    EntityB = this.CollisionEventData.Entities.EntityB,
+                    BodyIndexA = this.CollisionEventData.BodyIndices.BodyIndexA,
+                    BodyIndexB = this.CollisionEventData.BodyIndices.BodyIndexB,
+                    ColliderKeyA = this.CollisionEventData.ColliderKeys.ColliderKeyA,
+                    ColliderKeyB = this.CollisionEventData.ColliderKeys.ColliderKeyB,
+                    Normal = this.CollisionEventData.Normal,
+                    State = state,
+                    CollisionDetails = default,
+                };
+            }
+
+            Check.Assume(this.CollisionEventData.Entities.EntityB.Equals(entity));
+
+            return new StatefulCollisionEvent
+            {
+                EntityB = this.CollisionEventData.Entities.EntityA,
+                BodyIndexA = this.CollisionEventData.BodyIndices.BodyIndexB,
+                BodyIndexB = this.CollisionEventData.BodyIndices.BodyIndexA,
+                ColliderKeyA = this.CollisionEventData.ColliderKeys.ColliderKeyB,
+                ColliderKeyB = this.CollisionEventData.ColliderKeys.ColliderKeyA,
+                Normal = this.CollisionEventData.Normal,
+                State = state,
+                CollisionDetails = default,
+            };
         }
 
         public bool Equals(StatefulCollisionEventContainer other)

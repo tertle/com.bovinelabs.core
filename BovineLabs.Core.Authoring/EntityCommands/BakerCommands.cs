@@ -1,21 +1,33 @@
-﻿// <copyright file="BakerConverter.cs" company="BovineLabs">
+﻿// <copyright file="BakerCommands.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Authoring
+namespace BovineLabs.Core.Authoring.EntityCommands
 {
-    using BovineLabs.Core.Convert;
+    using System;
+    using BovineLabs.Core.EntityCommands;
     using Unity.Entities;
 
-    public readonly struct BakerConverter : IConvert
+    public struct BakerCommands : IEntityCommands
     {
         private readonly IBaker baker;
-        private readonly Entity entity;
+        private Entity entity;
 
-        public BakerConverter(IBaker baker, Entity entity)
+        public BakerCommands(IBaker baker, Entity entity)
         {
             this.baker = baker;
             this.entity = entity;
+        }
+
+        public Entity Create()
+        {
+            this.entity = this.baker.CreateAdditionalEntity(TransformUsageFlags.None);
+            return this.entity;
+        }
+
+        public Entity Instantiate(Entity prefab)
+        {
+            throw new NotImplementedException("Can't instantiate from a baker");
         }
 
         public void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)
@@ -51,6 +63,12 @@ namespace BovineLabs.Core.Authoring
             where T : unmanaged, IBufferElementData
         {
             return this.baker.AddBuffer<T>(this.entity);
+        }
+
+        public DynamicBuffer<T> SetBuffer<T>()
+            where T : unmanaged, IBufferElementData
+        {
+            return this.baker.SetBuffer<T>(this.entity);
         }
 
         public void SetComponentEnabled<T>(bool enabled)

@@ -1,4 +1,4 @@
-// <copyright file="UnsafeEventStream.cs" company="BovineLabs">
+// <copyright file="UnsafeThreadStream.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -15,19 +15,19 @@ namespace BovineLabs.Core.Collections
     /// A data streaming supporting parallel reading and parallel writings, without any thread safety check features.
     /// Allows you to write different types or arrays into a single stream.
     /// </summary>
-    public unsafe partial struct UnsafeEventStream : INativeDisposable, IEquatable<UnsafeEventStream>
+    public unsafe partial struct UnsafeThreadStream : INativeDisposable, IEquatable<UnsafeThreadStream>
     {
         /// <summary> Gets the number of streams the list can use. </summary>
         public static int ForEachCount => JobsUtility.ThreadIndexCount;
 
         [NativeDisableUnsafePtrRestriction]
-        private UnsafeEventStreamBlockData* blockData;
+        private UnsafeThreadStreamBlockData* blockData;
 
         private AllocatorManager.AllocatorHandle allocator;
 
-        /// <summary> Initializes a new instance of the <see cref="UnsafeEventStream" /> struct. </summary>
+        /// <summary> Initializes a new instance of the <see cref="UnsafeThreadStream" /> struct. </summary>
         /// <param name="allocator"> The specified type of memory allocation. </param>
-        public UnsafeEventStream(Allocator allocator)
+        public UnsafeThreadStream(Allocator allocator)
         {
             AllocateBlock(out this, allocator);
             this.AllocateForEach();
@@ -131,7 +131,7 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <inheritdoc />
-        public bool Equals(UnsafeEventStream other)
+        public bool Equals(UnsafeThreadStream other)
         {
             return this.blockData == other.blockData;
         }
@@ -157,27 +157,27 @@ namespace BovineLabs.Core.Collections
             return jobHandle;
         }
 
-        internal static void AllocateBlock(out UnsafeEventStream stream, AllocatorManager.AllocatorHandle allocator)
+        internal static void AllocateBlock(out UnsafeThreadStream stream, AllocatorManager.AllocatorHandle allocator)
         {
-            var allocationSize = sizeof(UnsafeEventStreamBlockData) + (sizeof(UnsafeEventStreamBlock*) * ForEachCount);
+            var allocationSize = sizeof(UnsafeThreadStreamBlockData) + (sizeof(UnsafeThreadStreamBlock*) * ForEachCount);
             var buffer = (byte*)Memory.Unmanaged.Allocate(allocationSize, 16, allocator);
             UnsafeUtility.MemClear(buffer, allocationSize);
 
-            var block = (UnsafeEventStreamBlockData*)buffer;
+            var block = (UnsafeThreadStreamBlockData*)buffer;
 
             stream.blockData = block;
             stream.allocator = allocator;
 
             block->Allocator = allocator;
-            block->Blocks = (UnsafeEventStreamBlock**)(buffer + sizeof(UnsafeEventStreamBlockData));
+            block->Blocks = (UnsafeThreadStreamBlock**)(buffer + sizeof(UnsafeThreadStreamBlockData));
 
             block->Ranges = null;
         }
 
         internal void AllocateForEach()
         {
-            long allocationSize = sizeof(UnsafeEventStreamRange) * ForEachCount;
-            this.blockData->Ranges = (UnsafeEventStreamRange*)Memory.Unmanaged.Allocate(allocationSize, 16, this.allocator);
+            long allocationSize = sizeof(UnsafeThreadStreamRange) * ForEachCount;
+            this.blockData->Ranges = (UnsafeThreadStreamRange*)Memory.Unmanaged.Allocate(allocationSize, 16, this.allocator);
             UnsafeUtility.MemClear(this.blockData->Ranges, allocationSize);
         }
 
@@ -208,7 +208,7 @@ namespace BovineLabs.Core.Collections
         [BurstCompile]
         private struct DisposeJob : IJob
         {
-            public UnsafeEventStream Container;
+            public UnsafeThreadStream Container;
 
             public void Execute()
             {

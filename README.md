@@ -1,28 +1,31 @@
 # BovineLabs Core
-Core library that provides a lot of extensions, new containers and tools for building games with DOTS.
+BovineLabs Core is a library that provides numerous extensions, new containers, and tools for building games with DOTS (Data-Oriented Technology Stack).
 
-Support: https://discord.gg/RTsw6Cxvw3
+For support and discussions, join Discord: https://discord.gg/RTsw6Cxvw3
 
 ## Installation
 
-The latest version of the library is available from [gitlab](https://gitlab.com/tertle/com.bovinelabs.core) and is worked on daily in various branches.
+The latest version of the library is available on [GitLab](https://gitlab.com/tertle/com.bovinelabs.core). The project is actively worked on daily in various branches.
 
-Every month or so a new stable version is pushed to [github](https://github.com/tertle/com.bovinelabs.core) and [openupm](https://openupm.com/packages/com.bovinelabs.core/).
+Every month or so, a new stable version is pushed to [GitHub](https://github.com/tertle/com.bovinelabs.core) and [OpenUPM](https://openupm.com/packages/com.bovinelabs.core/).
 
-When installed the library includes a large core set of features and extensions that should have no but should make no obvious changes to your workflow by default. This will allow you access to various utility, custom containers and high performance extensions etc without changing your workflow.
+Once the library is installed, it grants you access to various utilities, custom containers, and high-performance extensions that should not cause any changes to your workflow. 
 
 ## Features
 Features I have documented are listed below. This is but a tiny fraction of the features however I'm going to try to start documenting more so this list should hopefully grow.
 
-| Feature | Description                                                                                            |
-|-------|--------------------------------------------------------------------------------------------------------|
-|[Jobs](BovineLabs.Core/Jobs/README.md)| Custom jobs (IJobParallelForDefer, IJobHashMapVisitKeyValue).                                          |
-|[K](BovineLabs.Core/Keys/README.md)| K is an Enum or LayerMask alternative that allows you to define your key-value pairs in setting files. |
-|[Object Management](BovineLabs.Core.Extensions/ObjectManagement/README.md)| Automatically ID, category and group management.                                                       |
-|[States](BovineLabs.Core/States/README.md)| Provides states on entities by mapping a bit field to components automatically.                        |
+| Feature                                                       | Description                                                                                                            |
+|---------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| [DynamicHashMap](Documentation~/DynamicHashMap.md)            | Adds HashMap support to entities.                                                                                      | 
+| [EntityCommands](Documentation~/EntityCommands.md)            | Provides a shared interface between EntityManager, EntityCommandBuffer, EntityCommandBuffer.ParallelWriter and IBaker. |
+| [Jobs](Documentation~/Jobs.md)                                | Custom jobs (IJobParallelForDefer, IJobHashMapVisitKeyValue).                                                          |
+| [K](Documentation~/K.md)                                      | K is an Enum or LayerMask alternative that allows you to define your key-value pairs in setting files.                 |
+| [Object Management](Documentation~/ObjectManagement.md)       | Automatic ID, category and group management.                                                                           |
+| [Singleton Collection](Documentation~/SingletonCollection.md) | Easily set up a Many-To-One container singleton with minimal boilerplate and syncless job support.                     | 
+| [States](Documentation~/States.md)                            | Provides states on entities by mapping a bit field to components automatically.                                        |
 
 ## Toggle Features
 
-Core strives to make no changes to your project by default however there are a collection of powerful features that can be manually enabled that may require changes to workflow that can be enabled via the `BovineLabs -> Toggle Features` menu.
+The Core library strives to maintain the status quo in your project by default. However, there is a collection of powerful features that can be manually enabled, which may require changes to your workflow. To enable these features, navigate to the `BovineLabs -> Toggle Features` menu.
 
-![Toggle Features](Images~/ToggleFeatures.png)
+![Toggle Features](Documentation~/Images/ToggleFeatures.png)
