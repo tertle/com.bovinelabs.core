@@ -7,10 +7,9 @@ namespace BovineLabs.Core.Editor.Inspectors
     using BovineLabs.Core.Editor.Helpers;
     using UnityEditor;
     using UnityEditor.UIElements;
-    using UnityEngine;
     using UnityEngine.UIElements;
 
-    /// <summary> Provides an editor with custom element but will fall back to PropertyField if not overriden. </summary>
+    /// <summary> Provides a custom editor ([CustomEditor(typeof(T))]) with custom element but will fall back to PropertyField if not overriden. </summary>
     public abstract class ElementEditor : Editor
     {
         private VisualElement? parent;

@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.EntityCommands
 {
+    using BovineLabs.Core.Assertions;
     using Unity.Entities;
 
     public struct CommandBufferCommands : IEntityCommands
@@ -12,22 +13,16 @@ namespace BovineLabs.Core.EntityCommands
         private EntityCommandBuffer commandBuffer;
         private BlobAssetStore blobAssetStore;
 
-        public CommandBufferCommands(EntityCommandBuffer commandBuffer, Entity entity, BlobAssetStore blobAssetStore = default)
+        public CommandBufferCommands(EntityCommandBuffer commandBuffer, Entity entity = default, BlobAssetStore blobAssetStore = default)
         {
             this.commandBuffer = commandBuffer;
             this.entity = entity;
             this.blobAssetStore = blobAssetStore;
         }
 
-        public CommandBufferCommands(EntityCommandBuffer commandBuffer, BlobAssetStore blobAssetStore = default)
-        {
-            this.commandBuffer = commandBuffer;
-            this.blobAssetStore = blobAssetStore;
+        public Entity Entity => this.entity;
 
-            this.entity = commandBuffer.CreateEntity();
-        }
-
-        public Entity Create()
+        public Entity CreateEntity()
         {
             this.entity = this.commandBuffer.CreateEntity();
             return this.entity;
@@ -55,41 +50,48 @@ namespace BovineLabs.Core.EntityCommands
         public void AddComponent<T>()
             where T : unmanaged, IComponentData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.commandBuffer.AddComponent<T>(this.entity);
         }
 
         public void AddComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.commandBuffer.AddComponent(this.entity, component);
         }
 
         public void AddComponent(in ComponentTypeSet components)
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.commandBuffer.AddComponent(this.entity, components);
         }
 
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.commandBuffer.SetComponent(this.entity, component);
         }
 
         public DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             return this.commandBuffer.AddBuffer<T>(this.entity);
         }
 
         public DynamicBuffer<T> SetBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             return this.commandBuffer.SetBuffer<T>(this.entity);
         }
 
         public void SetComponentEnabled<T>(bool enabled)
             where T : unmanaged, IEnableableComponent
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.commandBuffer.SetComponentEnabled<T>(this.entity, enabled);
         }
     }

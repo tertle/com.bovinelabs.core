@@ -46,7 +46,7 @@ namespace BovineLabs.Core.PhysicsStates
             }
 
             var triggerEvents = simulation.TriggerEvents;
-            var eventReader = UnsafeUtility.As<TriggerEvents, NativeStream>(ref triggerEvents);
+            ref var eventReader = ref UnsafeUtility.As<TriggerEvents, NativeStream>(ref triggerEvents);
 
             this.impl.OnUpdate(ref state, eventReader, default, default);
         }

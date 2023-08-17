@@ -8,9 +8,11 @@ namespace BovineLabs.Core.EntityCommands
 
     public interface IEntityCommands
     {
+        Entity Entity { get; }
+
         /// <summary> Creates a new entity and replaces any internal stored one so other commands will now affect this. </summary>
         /// <returns> The new entity. </returns>
-        Entity Create();
+        Entity CreateEntity();
 
         Entity Instantiate(Entity prefab);
 

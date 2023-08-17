@@ -7,7 +7,6 @@
 namespace BovineLabs.Core.Editor.ChangeFilterTracking
 {
     using System.Collections.Generic;
-    using BovineLabs.Core.Extensions;
     using Unity.Entities;
     using Unity.Entities.Editor;
     using Unity.Mathematics;
@@ -46,7 +45,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
             window.Show();
         }
 
-        public void OnEnable()
+        protected override void OnCreate()
         {
             Resources.AddCommonVariables(this.rootVisualElement);
 

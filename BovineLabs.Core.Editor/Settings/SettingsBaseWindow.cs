@@ -7,7 +7,9 @@ namespace BovineLabs.Core.Editor.Settings
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using BovineLabs.Core.Editor.UI;
+    using BovineLabs.Core.Settings;
     using UnityEditor;
     using UnityEditor.UIElements;
     using UnityEngine;
@@ -22,12 +24,13 @@ namespace BovineLabs.Core.Editor.Settings
         private const string RootUIPath = "Packages/com.bovinelabs.core/Editor Default Resources/SettingsWindow/";
         private readonly UITemplate settingsWindowTemplate = new(RootUIPath + "SettingsWindow");
 
-        private readonly List<ISettingsPanel> filteredSettingsPanel = new();
         private readonly List<ISettingsPanel> settingPanels = new();
+        private readonly List<SettingsPanelElement> settingPanelGroups = new();
+        private readonly List<SettingsPanelElement> filteredSettingsPanel = new();
 
         private VisualElement? contents;
         private Label? contentTitle;
-        private ISettingsPanel? currentSelection;
+        private SettingsPanelElement? currentSelection;
         private ListView? list;
         private ToolbarSearchField? searchField;
         private VisualElement? splitter;
@@ -70,6 +73,7 @@ namespace BovineLabs.Core.Editor.Settings
 
             this.settingPanels.Clear();
             this.filteredSettingsPanel.Clear();
+            this.settingPanelGroups.Clear();
 
             this.CleanupUI();
 
@@ -120,10 +124,41 @@ namespace BovineLabs.Core.Editor.Settings
         {
             this.splitterFlex = EditorPrefs.GetFloat(this.SplitterKey, this.splitterFlex);
 
+            this.settingPanels.Clear();
+            this.settingPanelGroups.Clear();
+
             this.GetPanels(this.settingPanels);
 
-            this.settingPanels.Sort((p1, p2) => string.Compare(p1.DisplayName, p2.DisplayName, StringComparison.Ordinal));
-            this.filteredSettingsPanel.AddRange(this.settingPanels);
+            var map = new Dictionary<string, List<ISettingsPanel>>();
+
+            foreach (var p in this.settingPanels)
+            {
+                if (!map.TryGetValue(p.GroupName, out var panelList))
+                {
+                    panelList = map[p.GroupName] = new List<ISettingsPanel>();
+                }
+
+                panelList.Add(p);
+            }
+
+            foreach (var (group, panelList) in map)
+            {
+                if (panelList.Count == 1)
+                {
+                    this.settingPanelGroups.Add(new SettingsPanelElement(panelList[0].DisplayName, panelList[0]));
+                }
+                else
+                {
+                    this.settingPanelGroups.Add(new SettingsPanelElement(group));
+                    foreach (var panel in panelList)
+                    {
+                        this.settingPanelGroups.Add(new SettingsPanelElement($"  {panel.DisplayName}", panel));
+                    }
+                }
+            }
+
+            this.settingPanelGroups.Sort();
+            this.filteredSettingsPanel.AddRange(this.settingPanelGroups);
         }
 
         private void SetupUI()
@@ -176,7 +211,7 @@ namespace BovineLabs.Core.Editor.Settings
 
         private void SelectionChanged()
         {
-            this.currentSelection?.OnDeactivate();
+            this.currentSelection?.Panel?.OnDeactivate();
             this.contents!.Clear();
             this.contentTitle!.text = string.Empty;
 
@@ -187,7 +222,7 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             this.currentSelection = this.filteredSettingsPanel[this.list.selectedIndex];
-            this.currentSelection.OnActivate(this.searchField!.value, this.contents);
+            this.currentSelection.Panel?.OnActivate(this.searchField!.value, this.contents);
             this.contentTitle.text = this.currentSelection.DisplayName;
         }
 
@@ -206,18 +241,18 @@ namespace BovineLabs.Core.Editor.Settings
 
             if (string.IsNullOrWhiteSpace(evt.newValue))
             {
-                this.filteredSettingsPanel.AddRange(this.settingPanels);
+                this.filteredSettingsPanel.AddRange(this.settingPanelGroups);
             }
             else
             {
-                var filtered = this.settingPanels.FindAll(p => p.MatchesFilter(evt.newValue));
+                var filtered = this.settingPanelGroups.FindAll(p => p.Panel?.MatchesFilter(evt.newValue) ?? false);
                 this.filteredSettingsPanel.AddRange(filtered);
             }
 
             this.list.Rebuild();
 
             // Keep selecting the same panel if possible
-            var index = this.filteredSettingsPanel.IndexOf((ISettingsPanel)selected);
+            var index = this.filteredSettingsPanel.IndexOf((SettingsPanelElement)selected);
 
             if (index >= 0)
             {
@@ -239,6 +274,60 @@ namespace BovineLabs.Core.Editor.Settings
                 case PlayModeStateChange.EnteredPlayMode:
                     this.SelectionChanged();
                     break;
+            }
+        }
+
+        private class SettingsPanelElement : IComparable<SettingsPanelElement>
+        {
+            private readonly string group;
+
+            public SettingsPanelElement(string group)
+            {
+                this.group = group;
+                this.DisplayName = group;
+                this.Panel = null;
+            }
+
+            public SettingsPanelElement(string displayName, ISettingsPanel panel)
+            {
+                this.group = panel.GroupName;
+                this.DisplayName = displayName;
+                this.Panel = panel;
+            }
+
+            public string DisplayName { get; }
+
+            public ISettingsPanel? Panel { get; }
+
+            public int CompareTo(SettingsPanelElement? other)
+            {
+                if (ReferenceEquals(this, other))
+                {
+                    return 0;
+                }
+
+                if (ReferenceEquals(null, other))
+                {
+                    return 1;
+                }
+
+                var groupComparison = string.Compare(this.group, other.group, StringComparison.Ordinal);
+                if (groupComparison != 0)
+                {
+                    return groupComparison;
+                }
+
+                if (ReferenceEquals(this.Panel, null))
+                {
+                    return -1;
+                }
+
+                if (ReferenceEquals(null, other.Panel))
+                {
+                    return 1;
+                }
+
+                return string.Compare(this.DisplayName, other.DisplayName, StringComparison.Ordinal);
             }
         }
     }

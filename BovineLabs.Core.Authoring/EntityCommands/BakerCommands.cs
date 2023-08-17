@@ -19,7 +19,9 @@ namespace BovineLabs.Core.Authoring.EntityCommands
             this.entity = entity;
         }
 
-        public Entity Create()
+        public Entity Entity => this.entity;
+
+        public Entity CreateEntity()
         {
             this.entity = this.baker.CreateAdditionalEntity(TransformUsageFlags.None);
             return this.entity;

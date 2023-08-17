@@ -277,10 +277,12 @@ namespace BovineLabs.Core.Iterators
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckWrite()
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (this.readOnly)
             {
                 throw new ArgumentException($"Trying to write to a readonly dynamicHashMap");
             }
+#endif
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

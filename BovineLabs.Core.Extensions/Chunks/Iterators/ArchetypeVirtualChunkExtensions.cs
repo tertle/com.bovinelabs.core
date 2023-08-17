@@ -1,4 +1,4 @@
-﻿// <copyright file="ArchetypeChunkExtensions.cs" company="BovineLabs">
+﻿// <copyright file="ArchetypeVirtualChunkExtensions.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 

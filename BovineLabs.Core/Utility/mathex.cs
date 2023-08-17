@@ -519,6 +519,18 @@ namespace BovineLabs.Core.Utility
             return finalPos;
         }
 
+        /// <summary> Rotates a vector by angle in radians. </summary>
+        /// <remarks>From https://matthew-brett.github.io/teaching/rotation_2d.html.</remarks>
+        /// <param name="direction"> The original vector to rotate. </param>
+        /// <param name="angle"> The angle to rotate by in radians. </param>
+        /// <returns> The rotated vector. </returns>
+        public static float2 Rotate(float2 direction, float angle)
+        {
+            var cos = math.cos(angle);
+            var sin = math.sin(angle);
+            return new float2((direction.x * cos) - (direction.y * sin), (direction.x * sin) + (direction.y * cos));
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool AreApproximatelyEqual(float2 f1, float2 f2, float delta = 0.01f)
         {

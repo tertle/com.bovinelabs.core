@@ -26,6 +26,8 @@ namespace BovineLabs.Core.Editor.Settings
         protected SettingsBasePanel()
         {
             this.Settings = EditorSettingsUtility.GetSettings<T>();
+            this.GroupName = typeof(T).GetCustomAttribute<SettingsGroupAttribute>()?.Group ?? this.Settings.DisplayName();
+
             this.SerializedObject = new SerializedObject(this.Settings);
 
             // ReSharper disable once VirtualMemberCallInConstructor, Justification: GetKeyWords marked with a warning
@@ -34,6 +36,8 @@ namespace BovineLabs.Core.Editor.Settings
 
         /// <inheritdoc />
         public string DisplayName => this.Settings.DisplayName();
+
+        public string GroupName { get; }
 
         /// <summary> Gets the settings that the panel is drawing. </summary>
         protected T Settings { get; }

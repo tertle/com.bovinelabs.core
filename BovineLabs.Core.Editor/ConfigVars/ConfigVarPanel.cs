@@ -27,6 +27,8 @@ namespace BovineLabs.Core.Editor.ConfigVars
         /// <inheritdoc />
         public string DisplayName { get; }
 
+        public string GroupName => this.DisplayName;
+
         /// <summary> Gets a list of all the config vars this panel draws. </summary>
         internal List<(ConfigVarAttribute ConfigVar, Type FieldType)> ConfigVars { get; } = new();
 

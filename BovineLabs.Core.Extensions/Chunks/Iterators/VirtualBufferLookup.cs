@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Chunks.Iterators
     using System;
     using System.Runtime.InteropServices;
     using BovineLabs.Core.Extensions;
-    using Unity.Assertions;
     using Unity.Burst.CompilerServices;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;

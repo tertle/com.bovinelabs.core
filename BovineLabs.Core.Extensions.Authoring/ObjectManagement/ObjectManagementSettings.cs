@@ -13,12 +13,14 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     using BovineLabs.Core.Authoring.Settings;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.ObjectManagement;
+    using BovineLabs.Core.Settings;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
 
+    [SettingsGroup("Objects")]
     public partial class ObjectManagementSettings : SettingsBase
     {
         [SerializeField]

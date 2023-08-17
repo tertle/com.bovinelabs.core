@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.EntityCommands
 {
+    using BovineLabs.Core.Assertions;
     using Unity.Entities;
 
     public struct CommandBufferParallelCommands : IEntityCommands
@@ -16,7 +17,7 @@ namespace BovineLabs.Core.EntityCommands
         public CommandBufferParallelCommands(
             EntityCommandBuffer.ParallelWriter commandBuffer,
             int sortKey,
-            Entity entity,
+            Entity entity = default,
             BlobAssetStore blobAssetStore = default)
         {
             this.commandBuffer = commandBuffer;
@@ -25,16 +26,9 @@ namespace BovineLabs.Core.EntityCommands
             this.blobAssetStore = blobAssetStore;
         }
 
-        public CommandBufferParallelCommands(EntityCommandBuffer.ParallelWriter commandBuffer, int sortKey, BlobAssetStore blobAssetStore = default)
-        {
-            this.commandBuffer = commandBuffer;
-            this.sortKey = sortKey;
-            this.blobAssetStore = blobAssetStore;
+        public Entity Entity => this.entity;
 
-            this.entity = commandBuffer.CreateEntity(sortKey);
-        }
-
-        public Entity Create()
+        public Entity CreateEntity()
         {
             this.entity = this.commandBuffer.CreateEntity(this.sortKey);
             return this.entity;
@@ -62,41 +56,48 @@ namespace BovineLabs.Core.EntityCommands
         public void AddComponent<T>()
             where T : unmanaged, IComponentData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.commandBuffer.AddComponent<T>(this.sortKey, this.entity);
         }
 
         public void AddComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.commandBuffer.AddComponent(this.sortKey, this.entity, component);
         }
 
         public void AddComponent(in ComponentTypeSet components)
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.commandBuffer.AddComponent(this.sortKey, this.entity, components);
         }
 
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.commandBuffer.SetComponent(this.sortKey, this.entity, component);
         }
 
         public DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             return this.commandBuffer.AddBuffer<T>(this.sortKey, this.entity);
         }
 
         public DynamicBuffer<T> SetBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             return this.commandBuffer.SetBuffer<T>(this.sortKey, this.entity);
         }
 
         public void SetComponentEnabled<T>(bool enabled)
             where T : unmanaged, IEnableableComponent
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.commandBuffer.SetComponentEnabled<T>(this.sortKey, this.entity, enabled);
         }
     }

@@ -80,8 +80,6 @@ namespace BovineLabs.Core.Editor.Settings
 
                 settingPanels.Add(panel);
             }
-
-            settingPanels.Sort((p1, p2) => string.Compare(p1.DisplayName, p2.DisplayName, StringComparison.Ordinal));
         }
 
         private static IEnumerable<(Type Settings, Type Panel)> GetAllSettingsBasePanels()

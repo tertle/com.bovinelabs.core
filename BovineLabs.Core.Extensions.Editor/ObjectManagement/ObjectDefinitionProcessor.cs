@@ -132,6 +132,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             }
 
             so.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.SaveAssetIfDirty(manager);
         }
 
         private class Processor

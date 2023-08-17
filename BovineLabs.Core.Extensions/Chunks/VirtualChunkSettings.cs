@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_LINKED_CHUNKS
 namespace BovineLabs.Core.Chunks
 {
     using System;
@@ -27,3 +28,4 @@ namespace BovineLabs.Core.Chunks
         }
     }
 }
+#endif

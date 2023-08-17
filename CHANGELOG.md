@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0-pre.3] - 2023-08-18
+
+### Added 
+* SettingsGroupAttribute for grouping in the SettingsWindow
+* float2 Rotate method to mathex
+* CollectionCreator for a easy UnsafeCollection*
+* Added Remove(key, out value) extension for NativeHashMap and UnsafeHashMaps
+
+### Changed
+* Updated to support Entities 1.0.14
+* PauseSystem now ticks simulation and presentation command buffers in case they were used previous frame
+
+### Fixed
+* Fixed building player issues
+* KAttributeDrawer was shifting non-flagged values
+
 ## [1.0.0-pre.2] - 2023-08-04
 
 ### Added 
@@ -12,10 +28,10 @@
 * IConvert renamed to IEntityCommands
 * NativeEventStream renamed to NativeThreadStream
 * Various namespaces updates
-* Updated Stateful events not to include EntityA. EntityB is now always be the other entity.
+* Updated Stateful events not to include EntityA. EntityB will now always be the other entity.
 
 ### Documentation
-* Added documentation for Singleton Collections
+* Added documentation for SingletonCollections
 * Added documentation for EntityCommands
 * Added documentation for DynamicHashMap
 

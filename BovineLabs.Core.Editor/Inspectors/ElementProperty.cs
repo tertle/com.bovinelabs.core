@@ -26,7 +26,10 @@ namespace BovineLabs.Core.Editor.Inspectors
             if (this.Inline)
             {
                 this.parent = new VisualElement();
+                this.parent.AddToClassList("unity-decorator-drawers-container");
+
                 var label = new Label(rootProperty.displayName);
+                label.AddToClassList("unity-header-drawer__label");
                 this.Parent.Add(label);
                 // TODO indent?
             }

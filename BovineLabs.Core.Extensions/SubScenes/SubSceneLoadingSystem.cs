@@ -134,7 +134,7 @@ namespace BovineLabs.Core.SubScenes
             }
 
             var debug = SystemAPI.GetSingleton<BLDebug>();
-            debug.Debug("All required subscenes loaded.");
+            debug.Debug("All required SubScenes loaded.");
 
             this.waitingForLoad.Clear();
 

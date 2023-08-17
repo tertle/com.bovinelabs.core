@@ -12,6 +12,8 @@ namespace BovineLabs.Core.Editor.Settings
         /// <summary> Gets the display name for the panel. </summary>
         string DisplayName { get; }
 
+        string GroupName { get; }
+
         /// <summary> Called when panel is activated. Use this to draw UI toolkit. </summary>
         /// <param name="searchContext"> The search context. </param>
         /// <param name="rootElement"> The root element that can be used to draw UI toolkit. </param>

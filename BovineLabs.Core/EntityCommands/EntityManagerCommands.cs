@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.EntityCommands
 {
+    using BovineLabs.Core.Assertions;
     using Unity.Entities;
 
     public struct EntityManagerCommands : IEntityCommands
@@ -12,22 +13,16 @@ namespace BovineLabs.Core.EntityCommands
         private EntityManager entityManager;
         private BlobAssetStore blobAssetStore;
 
-        public EntityManagerCommands(EntityManager entityManager, Entity entity, BlobAssetStore blobAssetStore = default)
+        public EntityManagerCommands(EntityManager entityManager, Entity entity = default, BlobAssetStore blobAssetStore = default)
         {
             this.entityManager = entityManager;
             this.entity = entity;
             this.blobAssetStore = blobAssetStore;
         }
 
-        public EntityManagerCommands(EntityManager entityManager, BlobAssetStore blobAssetStore = default)
-        {
-            this.entityManager = entityManager;
-            this.blobAssetStore = blobAssetStore;
+        public Entity Entity => this.entity;
 
-            this.entity = entityManager.CreateEntity();
-        }
-
-        public Entity Create()
+        public Entity CreateEntity()
         {
             this.entity = this.entityManager.CreateEntity();
             return this.entity;
@@ -36,7 +31,7 @@ namespace BovineLabs.Core.EntityCommands
         public Entity Instantiate(Entity prefab)
         {
             this.entity = this.entityManager.Instantiate(prefab);
-            return prefab;
+            return this.entity;
         }
 
         public void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)
@@ -55,35 +50,41 @@ namespace BovineLabs.Core.EntityCommands
         public void AddComponent<T>()
             where T : unmanaged, IComponentData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.entityManager.AddComponent<T>(this.entity);
         }
 
         public void AddComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.entityManager.AddComponentData(this.entity, component);
         }
 
         public void AddComponent(in ComponentTypeSet components)
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.entityManager.AddComponent(this.entity, components);
         }
 
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.entityManager.SetComponentData(this.entity, component);
         }
 
         public DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             return this.entityManager.AddBuffer<T>(this.entity);
         }
 
         public DynamicBuffer<T> SetBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             var buffer = this.entityManager.GetBuffer<T>(this.entity);
             buffer.Clear();
             return buffer;
@@ -92,6 +93,7 @@ namespace BovineLabs.Core.EntityCommands
         public void SetComponentEnabled<T>(bool enabled)
             where T : unmanaged, IEnableableComponent
         {
+            Check.Assume(!this.entity.Equals(Entity.Null));
             this.entityManager.SetComponentEnabled<T>(this.entity, enabled);
         }
     }

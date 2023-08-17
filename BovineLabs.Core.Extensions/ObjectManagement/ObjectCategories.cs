@@ -10,10 +10,12 @@ namespace BovineLabs.Core.ObjectManagement
     using System.Linq;
     using BovineLabs.Core.Keys;
     using BovineLabs.Core.PropertyDrawers;
+    using BovineLabs.Core.Settings;
     using Unity.Entities.Content;
     using UnityEngine;
 
     /// <summary> Object categories dynamically implement using <see cref="K{T}" />. </summary>
+    [SettingsGroup("Objects")]
     public class ObjectCategories : KSettings
     {
         [SerializeField]
