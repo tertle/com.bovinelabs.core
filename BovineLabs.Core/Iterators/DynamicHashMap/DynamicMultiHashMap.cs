@@ -131,6 +131,39 @@ namespace BovineLabs.Core.Iterators
         }
 
         /// <summary>
+        /// Returns true if a given key and value combination is present in this hash map.
+        /// </summary>
+        /// <param name="key">The key to look up.</param>
+        /// <param name="value">The value to look up.</param>
+        /// <returns>True if the key and value combination was present.</returns>
+        public bool Contains<T>(TKey key, T value)
+            where T : unmanaged, IEquatable<TValue>
+        {
+            var e = this.GetValuesForKey(key);
+            while (e.MoveNext())
+            {
+                if (value.Equals(e.Current))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public int CountValuesForKey(TKey key)
+        {
+            var count = 0;
+            var e = this.GetValuesForKey(key);
+            while (e.MoveNext())
+            {
+                count++;
+            }
+
+            return count;
+        }
+
+        /// <summary>
         /// Sets the capacity to match what it would be if it had been originally initialized with all its entries.
         /// </summary>
         public void TrimExcess()
@@ -174,6 +207,11 @@ namespace BovineLabs.Core.Iterators
         public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
             return this.helper->GetKeyValueArrays<TValue>(allocator);
+        }
+
+        public DynamicHashMapKeyEnumerator<TKey, TValue> GetValuesForKey(TKey key)
+        {
+            return new DynamicHashMapKeyEnumerator<TKey, TValue> { hashmap = this, key = key, isFirst = 1 };
         }
 
         /// <summary>

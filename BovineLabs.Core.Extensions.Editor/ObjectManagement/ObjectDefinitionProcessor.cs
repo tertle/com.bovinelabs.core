@@ -159,7 +159,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 {
                     var newId = GetFirstFreeID(this.map);
                     this.map[asset.ID] = count - 1; // update the old ID
-                    asset.ID = new ObjectId { ID = newId };
+                    asset.ID = newId;
                     this.map[newId] = 1;
                     EditorUtility.SetDirty(obj);
                     AssetDatabase.SaveAssetIfDirty(obj);

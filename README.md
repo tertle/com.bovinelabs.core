@@ -23,6 +23,7 @@ Features I have documented are listed below. This is but a tiny fraction of the 
 | [Object Management](Documentation~/ObjectManagement.md)       | Automatic ID, category and group management.                                                                           |
 | [Singleton Collection](Documentation~/SingletonCollection.md) | Easily set up a Many-To-One container singleton with minimal boilerplate and syncless job support.                     | 
 | [States](Documentation~/States.md)                            | Provides states on entities by mapping a bit field to components automatically.                                        |
+| [SubScenes](Documentation~/SubScenes.md)                         | Provides convenient features for SubScene loadin.                                                                      |
 
 ## Toggle Features
 

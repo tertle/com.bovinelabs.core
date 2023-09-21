@@ -26,6 +26,11 @@ namespace BovineLabs.Core.Extensions
             return system.EntityManager.GetSharedComponentLookup<T>(isReadOnly);
         }
 
+        public static UnsafeComponentHandle GetUnsafeComponentHandle(ref this SystemState system)
+        {
+            return system.EntityManager.GetUnsafeComponentHandle();
+        }
+
         /// <summary>
         /// Get an <see cref="UnsafeEnableableLookup" />.
         /// All components that use this must manually add a dependency to the system for safety.

@@ -3,8 +3,10 @@
     "rootNamespace": "BovineLabs.Core.Editor",
     "references": [
         "BovineLabs.Core",
+        "BovineLabs.Core.Authoring",
         "BovineLabs.Core.Editor",
         "BovineLabs.Core.Extensions",
+        "BovineLabs.Core.Extensions.Authoring",
         "Unity.Burst",
         "Unity.Collections",
         "Unity.Entities",
@@ -14,8 +16,7 @@
         "Unity.Mathematics",
         "Unity.Physics",
         "Unity.Scenes",
-        "Unity.Transforms",
-        "BovineLabs.Core.Extensions.Authoring"
+        "Unity.Transforms"
     ],
     "includePlatforms": [
         "Editor"

@@ -19,6 +19,11 @@ namespace BovineLabs.Core.ObjectManagement
             return id.ID;
         }
 
+        public static implicit operator GroupId(short id)
+        {
+            return new GroupId { ID = id };
+        }
+
         /// <inheritdoc />
         public bool Equals(GroupId other)
         {

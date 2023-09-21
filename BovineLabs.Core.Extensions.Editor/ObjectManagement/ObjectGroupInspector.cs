@@ -5,8 +5,9 @@
 #if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.Editor.ObjectManagement
 {
+    using BovineLabs.Core.Authoring.ObjectManagement;
     using BovineLabs.Core.Editor.Inspectors;
-    using BovineLabs.Core.ObjectManagement;
+    using BovineLabs.Core.Editor.Settings;
     using UnityEditor;
     using UnityEditor.UIElements;
     using UnityEngine.UIElements;
@@ -21,12 +22,28 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             var element = CreatePropertyField(property, this.serializedObject);
             element.RegisterCallback<SerializedPropertyChangeEvent>(_ => this.CreateSummary());
 
+            if (property.name == "autoGroups")
+            {
+                element.RegisterCallback<SerializedPropertyChangeEvent>(this.UpdateGroups);
+            }
+
             return element;
         }
 
         protected override void PostElementCreation(VisualElement root)
         {
             this.CreateSummary();
+        }
+
+        private void UpdateGroups(SerializedPropertyChangeEvent evt)
+        {
+            var settings = EditorSettingsUtility.GetSettings<ObjectManagementSettings>();
+
+            foreach (var objectDefinition in settings.ObjectDefinitions)
+            {
+                var definitionSo = new SerializedObject(objectDefinition);
+                ObjectGroupUtil.UpdateGroup(this.serializedObject, definitionSo);
+            }
         }
 
         private void CreateSummary()

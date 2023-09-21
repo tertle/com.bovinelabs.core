@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Iterators
     using Unity.Entities;
 
     [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Needed for safety.")]
-    [SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Defines memory layout")]
+    [SuppressMessage("ReSharper", "UnusedMemberInSuper.Global", Justification = "Defines memory layout")]
     public interface IDynamicHashSet<TKey> : IBufferElementData
         where TKey : unmanaged, IEquatable<TKey>
     {

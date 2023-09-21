@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Utility
     using System.Collections.Generic;
     using System.Linq;
     using Unity.Collections;
-    using Unity.Entities;
 #if UNITY_EDITOR
     using UnityEditor.Compilation;
 #endif

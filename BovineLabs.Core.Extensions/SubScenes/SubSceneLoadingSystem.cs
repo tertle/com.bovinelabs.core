@@ -9,13 +9,13 @@ namespace BovineLabs.Core.SubScenes
     using System.Linq;
     using BovineLabs.Core.App;
     using BovineLabs.Core.Extensions;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Entities.UniversalDelegates;
+    using Unity.Jobs;
     using Unity.Mathematics;
     using Unity.Scenes;
     using UnityEngine;
-    using UnityEngine.Assertions;
 
     /// <summary> System that loads our SubScenes depending on the world and the SubScene load mode. </summary>
     [UpdateInGroup(typeof(InitializationSystemGroup))]

@@ -41,7 +41,7 @@ namespace BovineLabs.Core.Tests.Utility
             [Test]
             public void ReturnsExpectedImplementation()
             {
-                var result = ReflectionUtility.GetCustomImplementation<ITestInterface1>();
+                var result = ReflectionUtility.GetCustomImplementation<ITestInterface1>()!;
                 Assert.AreSame(typeof(TestImplementation2), result.GetType());
             }
 
@@ -49,7 +49,7 @@ namespace BovineLabs.Core.Tests.Utility
             [Test]
             public void ReturnsExpectedImplementationWhenIgnoring()
             {
-                var result = ReflectionUtility.GetCustomImplementation<ITestInterface2, TestImplementation2>();
+                var result = ReflectionUtility.GetCustomImplementation<ITestInterface2, TestImplementation2>()!;
                 Assert.AreSame(typeof(TestImplementation1), result.GetType());
             }
 
@@ -57,7 +57,7 @@ namespace BovineLabs.Core.Tests.Utility
             [Test]
             public void NoImplementationReturnsDefaultImplementation()
             {
-                var result = ReflectionUtility.GetCustomImplementation<ITestInterface1, TestImplementation2>();
+                var result = ReflectionUtility.GetCustomImplementation<ITestInterface1, TestImplementation2>()!;
                 Assert.AreEqual(typeof(TestImplementation2), result.GetType());
             }
         }

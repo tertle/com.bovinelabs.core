@@ -46,6 +46,12 @@ namespace BovineLabs.Core.Extensions
 #endif
         }
 
+        public static UnsafeComponentHandle GetUnsafeComponentHandle(this EntityManager entityManager)
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+            return new UnsafeComponentHandle(access);
+        }
+
         internal static UnsafeEnableableLookup GetUnsafeEnableableLookup(this EntityManager entityManager)
         {
             var access = entityManager.GetCheckedEntityDataAccess();
@@ -82,6 +88,51 @@ namespace BovineLabs.Core.Extensions
             return access->GetComponentDataRawRW(entity, componentType.TypeIndex);
         }
 
+        public static void AddSharedComponentRaw(this EntityManager entityManager, EntityQuery entityQuery, ComponentType componentType, void* componentData)
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+            access->AssertMainThread();
+            access->AssertQueryIsValid(entityQuery);
+            var queryImpl = entityQuery._GetImpl();
+            if (queryImpl->IsEmptyIgnoreFilter)
+            {
+                return;
+            }
+
+            var size = TypeManager.GetTypeInfo(componentType.TypeIndex).ElementSize;
+            var defaultValue = stackalloc byte[size];
+
+            var changes = access->BeginStructuralChanges();
+            var newSharedComponentDataIndex = access->InsertSharedComponent_Unmanaged(componentType.TypeIndex, 0, componentData, defaultValue);
+            access->AddSharedComponentDataToQueryDuringStructuralChange_Unmanaged(queryImpl, newSharedComponentDataIndex, componentType, componentData);
+            access->EndStructuralChanges(ref changes);
+        }
+
+        public static void AddSharedComponentManaged(
+            this EntityManager entityManager, EntityQuery entityQuery, ComponentType componentType, object componentData)
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+            access->AssertQueryIsValid(entityQuery);
+            var queryImpl = entityQuery._GetImpl();
+            if (queryImpl->IsEmptyIgnoreFilter)
+            {
+                return;
+            }
+
+            var changes = access->BeginStructuralChanges();
+            var newSharedComponentDataIndex = access->InsertSharedComponent_Managed(componentType.TypeIndex, 0, componentData);
+            access->AddSharedComponentDataToQueryDuringStructuralChange(queryImpl, newSharedComponentDataIndex, componentType);
+
+            access->EndStructuralChanges(ref changes);
+        }
+
+        public static void* GetSharedComponentRaw(this EntityManager entityManager, Entity entity, ComponentType componentType)
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+            var sharedComponentIndex = access->EntityComponentStore->GetSharedComponentDataIndex(entity, componentType.TypeIndex);
+            return access->EntityComponentStore->GetSharedComponentDataAddr_Unmanaged(sharedComponentIndex, componentType.TypeIndex);
+        }
+
         // Internal because this is not safe called directly form EntityManager
         internal static ChangeFilterLookup<T> GetChangeFilterLookup<T>(this EntityManager entityManager, bool isReadOnly)
             where T : unmanaged
@@ -94,6 +145,13 @@ namespace BovineLabs.Core.Extensions
 #else
             return new ChangeFilterLookup<T>(typeIndex, access);
 #endif
+        }
+
+        public static object GetSharedComponentManagedBoxed(this EntityManager entityManager, Entity entity, ComponentType componentType)
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+            var sharedComponentIndex = access->EntityComponentStore->GetSharedComponentDataIndex(entity, componentType.TypeIndex);
+            return access->ManagedComponentStore.GetSharedComponentDataBoxed(sharedComponentIndex, componentType.TypeIndex);
         }
 
         /// <summary> Gets or creates the <see cref="T" /> singleton entity. </summary>
@@ -207,19 +265,14 @@ namespace BovineLabs.Core.Extensions
             return true;
         }
 
-        public static DynamicBuffer<T> GetSingletonBuffer<T>(this EntityManager em, bool isReadOnly = false, bool completeDependency = true)
+        public static DynamicBuffer<T> GetSingletonBuffer<T>(this EntityManager em, bool isReadOnly = false)
             where T : unmanaged, IBufferElementData
         {
             using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
-            if (completeDependency)
-            {
-                query.CompleteDependency();
-            }
-
             return query.GetSingletonBuffer<T>(isReadOnly);
         }
 
-        public static bool TryGetSingletonBuffer<T>(this EntityManager em, out DynamicBuffer<T> buffer, bool isReadOnly = false, bool completeDependency = true)
+        public static bool TryGetSingletonBuffer<T>(this EntityManager em, out DynamicBuffer<T> buffer, bool isReadOnly = false)
             where T : unmanaged, IBufferElementData
         {
             using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
@@ -228,11 +281,6 @@ namespace BovineLabs.Core.Extensions
             {
                 buffer = default;
                 return false;
-            }
-
-            if (completeDependency)
-            {
-                query.CompleteDependency();
             }
 
             buffer = query.GetSingletonBuffer<T>(isReadOnly);

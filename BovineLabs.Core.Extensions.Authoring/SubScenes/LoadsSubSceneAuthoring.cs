@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Authoring.SubScenes
     {
         public override void Bake(LoadsSubSceneAuthoring authoring)
         {
-            this.AddComponent<LoadsSubScene>(this.GetEntity(TransformUsageFlags.None));
+            this.AddComponent<LoadsSubScene>(this.GetEntity(TransformUsageFlags.Dynamic));
         }
     }
 }

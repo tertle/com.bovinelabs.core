@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Keys
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
     using BovineLabs.Core.Settings;
     using JetBrains.Annotations;
     using UnityEngine;
@@ -54,7 +55,7 @@ namespace BovineLabs.Core.Keys
 
 #if UNITY_EDITOR
         protected static void Validate<T>(ref T[] keys)
-            where T : IKKey
+            where T : IKKeyValue
         {
             if (keys.Length > KMap.MaxCapacity)
             {
@@ -63,10 +64,29 @@ namespace BovineLabs.Core.Keys
                 Array.Copy(keysOld, keys, KMap.MaxCapacity);
             }
 
+            var all = new HashSet<int>();
+            all.UnionWith(keys.Select(s => s.Value));
+
+            var duplicate = new HashSet<int>();
+
             for (var i = 0; i < keys.Length; i++)
             {
                 var k = keys[i];
                 k.Name = k.Name.ToLower();
+
+                if (!duplicate.Add(k.Value))
+                {
+                    var newKey = k.Value;
+                    do
+                    {
+                        newKey++;
+                    }
+                    while (!all.Add(newKey));
+
+                    k.Value = newKey;
+                    duplicate.Add(k.Value);
+                }
+
                 keys[i] = k;
             }
         }

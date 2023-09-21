@@ -6,11 +6,12 @@ Adds HashMap support to entities by reinterpreting a DynamicBuffer.
 
 Use the following interfaces depending on the type of container you want:
 
-| Type          | Interface                          |
-|---------------|------------------------------------|
-| HashMap       | IDynamicHashMap<TKey, TValue>      |
-| MultiHashMap  | IDynamicMultiHashMap<TKey, TValue> |
-| HashSet       | IDynamicHashSet<TKey, TValue>      | 
+| Type           | Interface                            |
+|----------------|--------------------------------------|
+| HashMap        | IDynamicHashMap<TKey, TValue>        |
+| MultiHashMap   | IDynamicMultiHashMap<TKey, TValue>   |
+| HashSet        | IDynamicHashSet<TKey, TValue>        |
+| PerfectHashMap | IDynamicPerfectHashMap<TKey, TValue> | 
 
 The following examples use IDynamicHashMap, but IDynamicMultiHashMap and IDynamicHashSet work in the same way.
 

@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.bovinelabs.core/BovineLabs.Core.Extensions/UI/Assets/RootStyle.uss?fileID=7433441132597879392&amp;guid=80dfec44dfc25c84eac503e1d6ad9234&amp;type=3#RootStyle" />
+    <ui:VisualElement name="Root" focusable="true" picking-mode="Ignore" class="root" style="justify-content: flex-start;" />
+</ui:UXML>

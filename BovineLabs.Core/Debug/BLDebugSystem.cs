@@ -84,10 +84,7 @@ namespace BovineLabs.Core
         /// <inheritdoc />
         protected override void OnDestroy()
         {
-            this.Dependency.Complete();
-            ref var debug = ref SystemAPI.GetSingletonRW<BLDebug>().ValueRW;
-
-            var logger = LoggerManager.GetLogger(debug.LoggerHandle);
+            var logger = LoggerManager.GetLogger(this.loggerHandle);
             logger?.Dispose();
 
             Quitting -= this.DisableLogger;

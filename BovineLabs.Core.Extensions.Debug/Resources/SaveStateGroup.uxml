@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:Label text="Save">
+    </ui:Label>
+    <ui:VisualElement class="horizontal">
+        <ui:Button text="1" class="save" />
+        <ui:Button text="2" class="save" />
+        <ui:Button text="3" class="save" />
+    </ui:VisualElement>
+    <ui:Label text="Restore">
+    </ui:Label>
+    <ui:VisualElement class="horizontal" style="flex-direction: row;">
+        <ui:Button text="1" class="restore" />
+        <ui:Button text="2" class="restore" />
+        <ui:Button text="3" class="restore" />
+    </ui:VisualElement>
+</ui:UXML>

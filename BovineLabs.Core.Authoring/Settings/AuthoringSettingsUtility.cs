@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Authoring.Settings
     {
         private static Dictionary<Type, ISettings> cachedSettings = new();
 
-        /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
+        /// <summary> Gets a settings file. </summary>
         /// <typeparam name="T"> The type. </typeparam>
         /// <returns> The settings instance. </returns>
         /// <exception cref="Exception"> Thrown if more than 1 instance found in project. </exception>
@@ -30,12 +30,12 @@ namespace BovineLabs.Core.Authoring.Settings
                 return (T)cached;
             }
 
-            var settings = GetOrCreateSettings<T>(type);
+            var settings = GetSettings<T>(type);
             cachedSettings.Add(type, settings);
             return settings;
         }
 
-        private static T GetOrCreateSettings<T>(Type type)
+        private static T GetSettings<T>(Type type)
             where T : ScriptableObject, ISettings
         {
             var filter = type.Namespace == null ? type.Name : $"{type.Namespace}.{type.Name}";

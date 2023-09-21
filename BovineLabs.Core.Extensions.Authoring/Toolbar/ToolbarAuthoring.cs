@@ -9,8 +9,6 @@ namespace BovineLabs.Core.Authoring.Toolbar
     using BovineLabs.Core.Toolbar;
     using Unity.Entities;
     using UnityEngine;
-    using UnityEngine.Serialization;
-    using UnityEngine.UIElements;
 
     public class ToolbarAuthoring : MonoBehaviour
     {

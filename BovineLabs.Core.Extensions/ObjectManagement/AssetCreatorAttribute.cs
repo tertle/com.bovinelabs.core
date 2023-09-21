@@ -7,7 +7,7 @@ namespace BovineLabs.Core.ObjectManagement
 {
     using System;
 
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class AssetCreatorAttribute : Attribute
     {
         public AssetCreatorAttribute(string directoryKey, string defaultDirectory, string defaultFileName)

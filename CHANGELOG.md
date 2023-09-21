@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0-pre.4] - 2023-09-18
+
+### Added
+* A modified copy of Lieene blob curve
+* Contains(Key,Value) to DynamicMultiHashMap
+* CountValuesForKey to DynamicMultiHashMap
+* DynamicHashMapKeyEnumerator for DynamicMultiHashMap
+* DynamicPerfectHashMap
+* GetSingletonBufferNoSync extension for EntityQuery
+* Added a copy of pinLock from the Entities library
+
+### Changed
+* Reworked ObjectDefinition a little for modding support
+
+### Fixed
+* PauseSystem breaking with headless server
+* AssemblyBuilderWindow now correctly updates path when using one column layout
+
+### Documentation
+* Added documentation for SubScenes
+* Added IDynamicPerfectHashMap to DynamicHashMap
+
 ## [1.0.0-pre.3] - 2023-08-18
 
 ### Added 

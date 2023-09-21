@@ -48,7 +48,12 @@ namespace BovineLabs.Core.App
             // Flush command buffers in case someone is using them to avoid them leaking
             this.beginSimulationEntityCommandBufferSystem.Update(state.WorldUnmanaged);
             this.endSimulationEntityCommandBufferSystem.Update(state.WorldUnmanaged);
-            this.beginPresentationEntityCommandBufferSystem.Update(state.WorldUnmanaged);
+
+            // Server might not have presentation
+            if (this.beginPresentationEntityCommandBufferSystem != SystemHandle.Null)
+            {
+                this.beginPresentationEntityCommandBufferSystem.Update(state.WorldUnmanaged);
+            }
         }
 
         [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Local", Justification = "SystemAPI")]
@@ -59,8 +64,11 @@ namespace BovineLabs.Core.App
             ref var simulationSystemGroup = ref state.WorldUnmanaged.GetExistingSystemState<SimulationSystemGroup>();
             simulationSystemGroup.Enabled = !paused;
 
-            ref var presentationSystemGroup = ref state.WorldUnmanaged.GetExistingSystemState<PresentationSystemGroup>();
-            presentationSystemGroup.Enabled = !paused;
+            if (this.beginPresentationEntityCommandBufferSystem != SystemHandle.Null)
+            {
+                ref var presentationSystemGroup = ref state.WorldUnmanaged.GetExistingSystemState<PresentationSystemGroup>();
+                presentationSystemGroup.Enabled = !paused;
+            }
         }
     }
 }

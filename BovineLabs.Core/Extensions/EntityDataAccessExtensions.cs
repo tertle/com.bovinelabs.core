@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Extensions
     using System;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Collections;
+    using Unity.Assertions;
     using Unity.Burst.CompilerServices;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -94,6 +95,27 @@ namespace BovineLabs.Core.Extensions
             return new UntypedDynamicBuffer(header, internalCapacity, typeInfo.ElementSize, UntypedDynamicBuffer.AlignOf);
 #endif
         }
+
+        // internal static int InsertSharedComponent_Unmanaged(this EntityDataAccess access, ComponentType componentType, void* newData)
+        // {
+        //     var ti = componentType.TypeIndex;
+        //     int index;
+        //     // Assert.IsFalse(TypeManager.IsManagedSharedComponent(ti));
+        //     Assert.IsFalse(TypeManager.IsManagedSharedComponent(ti));
+        //
+        //     // var defaultData = default(T);
+        //
+        //     var defaultData = stackalloc byte[1];
+        //
+        //     index = access.EntityComponentStore->InsertSharedComponent_Unmanaged(
+        //         ti,
+        //         0,
+        //         newData,
+        //         defaultData);
+        //
+        //     access.m_ManagedReferenceIndexList.Add(index);
+        //     return index;
+        // }
 
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING

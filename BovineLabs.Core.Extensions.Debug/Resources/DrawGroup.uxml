@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.bovinelabs.game/BovineLabs.Game.Debug/Resources/Draw.uss?fileID=7433441132597879392&amp;guid=150c7618b025bfd4495284906d8fa1ce&amp;type=3#Draw" />
+    <ui:Toggle text="Enable" name="Enable" class="bl-toggle-button" />
+    <ui:VisualElement class="horizontal">
+        <ui:Label text="Categories" class="draw-label" />
+        <BovineLabs.Core.UI.PopupFlagField name="Categories" />
+    </ui:VisualElement>
+    <ui:VisualElement class="horizontal">
+        <ui:Label text="Systems" class="draw-label" />
+        <BovineLabs.Core.UI.PopupFlagField name="Systems" />
+    </ui:VisualElement>
+</ui:UXML>

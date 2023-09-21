@@ -7,19 +7,25 @@ namespace BovineLabs.Core.ObjectManagement
 {
     using System;
     using Unity.Entities;
+    using Unity.Properties;
 
     /// <summary>
     /// Wrapper for the ID of an object. This can be used to store weak references to entities
     /// that can be instantiated at runtime via <see cref="ObjectDefinitionRegistry"/>. </summary>
     [Serializable]
-    public struct ObjectId : IComponentData, IEquatable<ObjectId>, IComparable<ObjectId>
+    public readonly struct ObjectId : IComponentData, IEquatable<ObjectId>, IComparable<ObjectId>
     {
-        public int ID;
-
-        public static implicit operator int(ObjectId id)
+        public ObjectId(int mod, int id)
         {
-            return id.ID;
+            this.Mod = mod;
+            this.ID = id;
         }
+
+        [CreateProperty]
+        public int Mod { get; }
+
+        [CreateProperty]
+        public int ID { get; }
 
         /// <inheritdoc />
         public bool Equals(ObjectId other)
@@ -35,7 +41,13 @@ namespace BovineLabs.Core.ObjectManagement
 
         public int CompareTo(ObjectId other)
         {
-            return this.ID.CompareTo(other.ID);
+            var idComparison = this.ID.CompareTo(other.ID);
+            return idComparison != 0 ? idComparison : this.Mod.CompareTo(other.Mod);
+        }
+
+        public override string ToString()
+        {
+            return $"Mod:{this.Mod}, ID:{this.ID}";
         }
     }
 }

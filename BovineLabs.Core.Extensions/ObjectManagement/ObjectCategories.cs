@@ -33,24 +33,12 @@ namespace BovineLabs.Core.ObjectManagement
 #if UNITY_EDITOR
         protected virtual void OnValidate()
         {
-            if (this.keys.Length > KMap.MaxCapacity)
-            {
-                var keysOld = this.keys;
-                this.keys = new ComponentMap[KMap.MaxCapacity];
-                Array.Copy(keysOld, this.keys, KMap.MaxCapacity);
-            }
-
-            for (var i = 0; i < this.keys.Length; i++)
-            {
-                var k = this.keys[i];
-                k.Name = k.Name.ToLower();
-                this.keys[i] = k;
-            }
+            Validate(ref this.keys);
         }
 #endif
 
         [Serializable]
-        public struct ComponentMap
+        public struct ComponentMap : IKKeyValue
         {
             [SerializeField]
             private string name;
@@ -59,23 +47,25 @@ namespace BovineLabs.Core.ObjectManagement
             private byte value;
 
             [SerializeField]
-            private WeakObjectReference<ObjectGroup> objectGroup;
-
-            [SerializeField]
             [StableTypeHash(StableTypeHashAttribute.TypeCategory.ComponentData, OnlyZeroSize = true, AllowUnityNamespace = false)]
             private ulong component;
 
             public string Name
             {
                 get => this.name;
-                internal set => this.name = value;
+                set => this.name = value;
             }
 
             public byte Value => this.value;
 
-            public ulong ComponentType => this.component;
+            /// <inheritdoc/>
+            int IKKeyValue.Value
+            {
+                get => this.value;
+                set => this.value = (byte)value;
+            }
 
-            public WeakObjectReference<ObjectGroup> ObjectGroup => this.objectGroup;
+            public ulong ComponentType => this.component;
         }
     }
 }

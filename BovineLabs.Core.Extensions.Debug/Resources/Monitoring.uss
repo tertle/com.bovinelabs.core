@@ -1,0 +1,13 @@
+.bl-label-left {
+    -unity-text-align: upper-left;
+    margin-right: 2px;
+}
+
+.bl-label-right {
+    -unity-text-align: upper-right;
+    margin-left: 2px;
+}
+
+.bl-monitor-rightgroup {
+    min-width: 75px;
+}

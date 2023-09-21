@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.bovinelabs.game/BovineLabs.Game.Debug/Resources/Monitoring.uss?fileID=7433441132597879392&amp;guid=eb67d98a83d3a884aa3c004d4177c38a&amp;type=3#Monitoring" />
+    <ui:VisualElement class="horizontal">
+        <ui:VisualElement>
+            <ui:Label text="Ping" class="bl-label-left" />
+        </ui:VisualElement>
+        <ui:VisualElement class="bl-monitor-rightgroup">
+            <ui:Label text="13+8ms" name="ping" class="bl-label-right" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

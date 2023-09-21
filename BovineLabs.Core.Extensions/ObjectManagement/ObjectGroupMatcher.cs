@@ -58,7 +58,7 @@ namespace BovineLabs.Core.ObjectManagement
     {
         internal static DynamicBuffer<ObjectGroupMatcher> Initialize(this DynamicBuffer<ObjectGroupMatcher> buffer)
         {
-            return buffer.Initialize<ObjectGroupMatcher, ObjectGroupKey>();
+            return buffer.InitializeHashSet<ObjectGroupMatcher, ObjectGroupKey>();
         }
 
         public static DynamicHashSet<ObjectGroupKey> AsHashSet(this DynamicBuffer<ObjectGroupMatcher> buffer)

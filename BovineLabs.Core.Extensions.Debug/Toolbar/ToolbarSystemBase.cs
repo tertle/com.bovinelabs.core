@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Debug.Toolbar
     {
         protected const float DefaultUpdateRate = 1 / 4f;
 
-        private ToolbarTab.Group tabGroup;
+        private ToolbarTab.Group? tabGroup;
 
         /// <summary> Gets the key for loading the panel asset. </summary>
         protected abstract VisualTreeAsset Asset { get; }
@@ -31,7 +31,7 @@ namespace BovineLabs.Core.Debug.Toolbar
         protected abstract string Name { get; }
 
         /// <summary> Gets the toolbar panel. Invalid until <see cref="OnLoad" /> has been called. </summary>
-        protected TemplateContainer Panel { get; private set; }
+        protected TemplateContainer? Panel { get; private set; }
 
         /// <inheritdoc />
         protected sealed override void OnCreate()
@@ -53,14 +53,14 @@ namespace BovineLabs.Core.Debug.Toolbar
         /// <inheritdoc />
         protected sealed override void OnStartRunning()
         {
-            ToolbarManager.AddGroup(this.Tab, this.tabGroup);
+            ToolbarManager.AddGroup(this.Tab, this.tabGroup!);
             this.OnStartRunningSystem();
         }
 
         /// <inheritdoc />
         protected sealed override void OnStopRunning()
         {
-            ToolbarManager.RemoveGroup(this.Tab, this.tabGroup);
+            ToolbarManager.RemoveGroup(this.Tab, this.tabGroup!);
             this.OnStopRunningSystem();
         }
 

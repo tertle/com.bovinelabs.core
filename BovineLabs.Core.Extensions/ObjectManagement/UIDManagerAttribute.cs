@@ -1,4 +1,4 @@
-﻿// <copyright file="UIDManager.cs" company="BovineLabs">
+﻿// <copyright file="UIDManagerAttribute.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -7,6 +7,7 @@ namespace BovineLabs.Core.ObjectManagement
 {
     using System;
 
+    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class UIDManagerAttribute : Attribute
     {
         public UIDManagerAttribute(string manager, string property)

@@ -34,15 +34,15 @@ namespace BovineLabs.Core.Debug.Toolbar
 
         private static readonly Dictionary<string, ToolbarTab> ToolbarTabs = new();
 
-        private static TemplateContainer panelElement;
+        private static TemplateContainer? panelElement;
 
         private static (string Name, ToolbarTab Tab) activeTab;
 
         private static VisualElement menuElement = new();
-        private static VisualElement rootElement;
+        private static VisualElement? rootElement;
 
         private static float uiHeight;
-        private static Button showButton;
+        private static Button? showButton;
         private static bool showRibbon;
 
         public static void AddGroup(string tabName, ToolbarTab.Group group)
@@ -226,7 +226,7 @@ namespace BovineLabs.Core.Debug.Toolbar
             activeTab = (name, tab);
             tab.Button.AddToClassList(ButtonHighlightClass);
 
-            rootElement.Add(activeTab.Tab.Parent);
+            rootElement!.Add(activeTab.Tab.Parent);
             ShowRibbon(true);
         }
 
@@ -236,14 +236,14 @@ namespace BovineLabs.Core.Debug.Toolbar
             {
                 if (activeTab != default)
                 {
-                    rootElement.Add(activeTab.Tab.Parent);
+                    rootElement!.Add(activeTab.Tab.Parent);
                 }
             }
             else
             {
                 if (activeTab != default)
                 {
-                    rootElement.Remove(activeTab.Tab.Parent);
+                    rootElement!.Remove(activeTab.Tab.Parent);
                 }
             }
 
@@ -262,7 +262,7 @@ namespace BovineLabs.Core.Debug.Toolbar
             if (math.abs(uiHeight - height) > float.Epsilon)
             {
                 uiHeight = height;
-                ResizeViewRect(rootElement.contentRect);
+                ResizeViewRect(rootElement!.contentRect);
             }
         }
 
@@ -294,7 +294,9 @@ namespace BovineLabs.Core.Debug.Toolbar
             }
         }
 
-        private struct EnabledVar { }
+        private struct EnabledVar
+        {
+        }
     }
 }
 #endif

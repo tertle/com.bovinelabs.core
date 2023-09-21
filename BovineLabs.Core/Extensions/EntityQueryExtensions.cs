@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Extensions
     using System;
     using System.Diagnostics;
     using BovineLabs.Core.Internal;
+    using Unity.Burst.CompilerServices;
     using Unity.Entities;
 
     public static unsafe class EntityQueryExtensions
@@ -63,6 +64,38 @@ namespace BovineLabs.Core.Extensions
             // Replace with our new component - from AddSharedComponentFilter
             query._GetImpl()->_Filter.Shared.IndexInEntityQuery[index] = query.GetIndexInEntityQuery(TypeManager.GetTypeIndex<T>());
             query._GetImpl()->_Filter.Shared.SharedComponentIndex[index] = query._GetImpl()->_Access->InsertSharedComponent_Unmanaged(sharedComponent);
+        }
+
+        public static DynamicBuffer<T> GetSingletonBufferNoSync<T>(this EntityQuery query, bool isReadOnly = false)
+            where T : unmanaged, IBufferElementData
+        {
+            var impl = query._GetImpl();
+
+            var typeIndex = TypeManager.GetTypeIndex<T>();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+            if (TypeManager.IsEnableable(typeIndex))
+            {
+                var typeName = typeIndex.ToFixedString();
+                throw new InvalidOperationException(
+                    $"Can't call GetSingletonBuffer<{typeName}>() with enableable component type {typeName}.");
+            }
+#endif
+
+            impl->GetSingletonChunk(typeIndex, out var indexInArchetype, out var chunk);
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+            if (Hint.Unlikely(impl->_Access->EntityComponentStore->m_RecordToJournal != 0) && !isReadOnly)
+                impl->RecordSingletonJournalRW(chunk, typeIndex, EntitiesJournaling.RecordType.GetBufferRW);
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var safetyHandles = &impl->_Access->DependencyManager->Safety;
+            var bufferAccessor = ChunkIterationUtility.GetChunkBufferAccessor<T>(chunk, !isReadOnly, indexInArchetype,
+                impl->_Access->EntityComponentStore->GlobalSystemVersion, safetyHandles->GetSafetyHandle(typeIndex, isReadOnly),
+                safetyHandles->GetBufferSafetyHandle(typeIndex));
+#else
+            var bufferAccessor = ChunkIterationUtility.GetChunkBufferAccessor<T>(chunk, !isReadOnly, indexInArchetype,
+                impl->_Access->EntityComponentStore->GlobalSystemVersion);
+#endif
+            return bufferAccessor[0];
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

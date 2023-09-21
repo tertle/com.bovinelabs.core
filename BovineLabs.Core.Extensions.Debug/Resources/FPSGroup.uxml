@@ -1,0 +1,19 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="horizontal">
+        <Style src="Monitoring.uss" />
+        <ui:VisualElement>
+            <ui:Label text="Current" class="bl-label-left" />
+            <ui:Label text="Frame" class="bl-label-left" />
+            <ui:Label text="Average" class="bl-label-left" />
+            <ui:Label text="Min" class="bl-label-left" />
+            <ui:Label text="Max" class="bl-label-left" />
+        </ui:VisualElement>
+        <ui:VisualElement class="bl-monitor-rightgroup">
+            <ui:Label text="153 fps" name="fps" class="bl-label-right" />
+            <ui:Label text="6.3ms" name="frametime" class="bl-label-right" />
+            <ui:Label text="147" name="avg" class="bl-label-right" />
+            <ui:Label text="147" name="min" class="bl-label-right" />
+            <ui:Label text="147" name="max" class="bl-label-right" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
