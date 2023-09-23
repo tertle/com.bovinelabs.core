@@ -86,13 +86,15 @@ namespace BovineLabs.Core.Extensions
             if (Hint.Unlikely(impl->_Access->EntityComponentStore->m_RecordToJournal != 0) && !isReadOnly)
                 impl->RecordSingletonJournalRW(chunk, typeIndex, EntitiesJournaling.RecordType.GetBufferRW);
 #endif
+
+            var archetype = impl->_Access->EntityComponentStore->GetArchetype(chunk);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             var safetyHandles = &impl->_Access->DependencyManager->Safety;
-            var bufferAccessor = ChunkIterationUtility.GetChunkBufferAccessor<T>(chunk, !isReadOnly, indexInArchetype,
+            var bufferAccessor = ChunkIterationUtility.GetChunkBufferAccessor<T>(archetype, chunk, !isReadOnly, indexInArchetype,
                 impl->_Access->EntityComponentStore->GlobalSystemVersion, safetyHandles->GetSafetyHandle(typeIndex, isReadOnly),
                 safetyHandles->GetBufferSafetyHandle(typeIndex));
 #else
-            var bufferAccessor = ChunkIterationUtility.GetChunkBufferAccessor<T>(chunk, !isReadOnly, indexInArchetype,
+            var bufferAccessor = ChunkIterationUtility.GetChunkBufferAccessor<T>(archetype, chunk, !isReadOnly, indexInArchetype,
                 impl->_Access->EntityComponentStore->GlobalSystemVersion);
 #endif
             return bufferAccessor[0];

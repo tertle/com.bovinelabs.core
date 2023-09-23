@@ -8,13 +8,13 @@ namespace BovineLabs.Core.Chunks
     using BovineLabs.Core.Chunks.Data;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Iterators;
+#if UNITY_NETCODE
+    using Unity.NetCode;
+#endif
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
-#if UNITY_NETCODE
-    using Unity.NetCode;
-#endif
 
     /// <summary> Iterates parent chunks on OrderVersion change and updates any linked chunk. </summary>
 #if UNITY_NETCODE

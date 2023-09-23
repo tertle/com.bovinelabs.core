@@ -5,6 +5,8 @@ For support and discussions, join Discord: https://discord.gg/RTsw6Cxvw3
 
 ## Installation
 
+For users on Entities 1.0.X stick with Core 1.0.0
+
 The latest version of the library is available on [GitLab](https://gitlab.com/tertle/com.bovinelabs.core). The project is actively worked on daily in various branches.
 
 Every month or so, a new stable version is pushed to [GitHub](https://github.com/tertle/com.bovinelabs.core) and [OpenUPM](https://openupm.com/packages/com.bovinelabs.core/).

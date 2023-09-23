@@ -28,13 +28,15 @@ namespace BovineLabs.Core.Iterators
 
         public readonly void* GetComponentDataPtrRW(ArchetypeChunk archetypeChunk, ComponentType componentType)
         {
-            var indexInTypeArray = ChunkDataUtility.GetIndexInTypeArray(archetypeChunk.m_Chunk->Archetype, componentType.TypeIndex);
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
 
-            var offset = archetypeChunk.m_Chunk->Archetype->Offsets[indexInTypeArray];
+            var indexInTypeArray = ChunkDataUtility.GetIndexInTypeArray(archetype, componentType.TypeIndex);
 
-            archetypeChunk.m_Chunk->SetChangeVersion(indexInTypeArray, this.globalSystemVersion);
+            var offset = archetype->Offsets[indexInTypeArray];
 
-            return archetypeChunk.m_Chunk->Buffer + offset;
+            archetype->Chunks.SetChangeVersion(indexInTypeArray, archetypeChunk.m_Chunk.ListIndex, this.globalSystemVersion);
+
+            return archetypeChunk.m_Chunk.Buffer + offset;
         }
 
         public readonly void* GetComponentDataPtrRO(Entity entity, ComponentType componentType)
@@ -46,24 +48,26 @@ namespace BovineLabs.Core.Iterators
 
         public readonly void* GetChunkComponentDataPtrRW(ArchetypeChunk archetypeChunk, ComponentType componentType)
         {
-            access->EntityComponentStore->AssertEntityHasComponent(archetypeChunk.m_Chunk->metaChunkEntity, componentType.TypeIndex);
-            return access->EntityComponentStore->GetComponentDataWithTypeRW(archetypeChunk.m_Chunk->metaChunkEntity, componentType.TypeIndex, globalSystemVersion);
+            access->EntityComponentStore->AssertEntityHasComponent(archetypeChunk.m_Chunk.MetaChunkEntity, componentType.TypeIndex);
+            return access->EntityComponentStore->GetComponentDataWithTypeRW(archetypeChunk.m_Chunk.MetaChunkEntity, componentType.TypeIndex, globalSystemVersion);
         }
 
         public readonly void* GetChunkComponentDataPtrRO(ArchetypeChunk archetypeChunk, ComponentType componentType)
         {
-            access->EntityComponentStore->AssertEntityHasComponent(archetypeChunk.m_Chunk->metaChunkEntity, componentType.TypeIndex);
-            return access->EntityComponentStore->GetComponentDataWithTypeRO(archetypeChunk.m_Chunk->metaChunkEntity, componentType.TypeIndex);
+            access->EntityComponentStore->AssertEntityHasComponent(archetypeChunk.m_Chunk.MetaChunkEntity, componentType.TypeIndex);
+            return access->EntityComponentStore->GetComponentDataWithTypeRO(archetypeChunk.m_Chunk.MetaChunkEntity, componentType.TypeIndex);
         }
 
         public readonly UnsafeDynamicBufferAccessor GetDynamicBufferAccessor(ArchetypeChunk chunk, ComponentType componentType)
         {
-            var archetype = chunk.m_Chunk->Archetype;
-            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, componentType.TypeIndex);
+            var archetype = chunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
+
+            // var archetype = chunk.m_Chunk->Archetype;
+            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(archetype, componentType.TypeIndex);
 
             var internalCapacity = archetype->BufferCapacities[typeIndexInArchetype];
             var typeInfo = TypeManager.GetTypeInfo(componentType.TypeIndex);
-            var ptr = ChunkDataUtility.GetComponentDataRW(chunk.m_Chunk, 0, typeIndexInArchetype, this.globalSystemVersion);
+            var ptr = ChunkDataUtility.GetComponentDataRW(chunk.m_Chunk, archetype, 0, typeIndexInArchetype, this.globalSystemVersion);
 
             var length = chunk.Count;
             int stride = archetype->SizeOfs[typeIndexInArchetype];

@@ -30,9 +30,13 @@ namespace BovineLabs.Core.Extensions
     {
         public static bool DidChange(this ArchetypeChunk chunk, TypeIndex typeIndex, ref short typeLookupCache, uint version)
         {
-            ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, typeIndex, ref typeLookupCache);
+            ChunkDataUtility.GetIndexInTypeArray(chunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk), typeIndex, ref typeLookupCache);
             int typeIndexInArchetype = typeLookupCache;
-            var changeVersion = Hint.Unlikely(typeIndexInArchetype == -1) ? 0 : chunk.m_Chunk->GetChangeVersion(typeIndexInArchetype);
+
+            var changeVersion = Hint.Unlikely(typeIndexInArchetype == -1)
+                ? 0
+                : chunk.Archetype.Archetype->Chunks.GetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex);
+
             return ChangeVersionUtility.DidChange(changeVersion, version);
         }
 
@@ -46,26 +50,27 @@ namespace BovineLabs.Core.Extensions
             ref ComponentTypeHandle<T> typeHandle)
             where T : unmanaged, IComponentData
         {
-            CheckZeroSizedComponentData(typeHandle);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
 #endif
-            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(archetypeChunk.m_Chunk->Archetype, typeHandle.m_TypeIndex);
-            if (typeIndexInArchetype == -1)
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
+            byte* ptr = ChunkDataUtility.GetOptionalComponentDataWithTypeRO(archetypeChunk.m_Chunk, archetype, 0, typeHandle.m_TypeIndex, ref typeHandle.m_LookupCache);
+            if (Hint.Unlikely(ptr == null))
             {
-                var emptyResult =
-                    NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(null, 0, 0);
+                var emptyResult = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(null, 0, 0);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref emptyResult, typeHandle.m_Safety);
 #endif
                 return emptyResult.AsReadOnly();
             }
-
-            var ptr = ChunkDataUtility.GetComponentDataRO(archetypeChunk.m_Chunk, 0, typeIndexInArchetype);
-
             var result = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(ptr, archetypeChunk.Count, Allocator.None);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref result, typeHandle.m_Safety);
+#endif
+
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+            if (Hint.Unlikely(archetypeChunk.m_EntityComponentStore->m_RecordToJournal != 0) && !typeHandle.IsReadOnly)
+                archetypeChunk.JournalAddRecordGetComponentDataRW(ref typeHandle, ptr, typeHandle.m_SizeInChunk * archetypeChunk.Count);
 #endif
 
             return result.AsReadOnly();
@@ -77,10 +82,15 @@ namespace BovineLabs.Core.Extensions
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(bufferTypeHandle.m_Safety0);
 #endif
-            var archetype = archetypeChunk.m_Chunk->Archetype;
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
             var typeIndex = bufferTypeHandle.m_TypeIndex;
-            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(archetype, typeIndex);
-            if (typeIndexInArchetype == -1)
+            if (Hint.Unlikely(bufferTypeHandle.m_LookupCache.Archetype != archetype))
+            {
+                bufferTypeHandle.m_LookupCache.Update(archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk), typeIndex);
+            }
+
+            byte* ptr = ChunkDataUtility.GetOptionalComponentDataWithTypeRO(archetypeChunk.m_Chunk, archetype, 0, typeIndex, ref bufferTypeHandle.m_LookupCache);
+            if (Hint.Unlikely(ptr == null))
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 return new BufferAccessor<T>(null, 0, 0, true, bufferTypeHandle.m_Safety0, bufferTypeHandle.m_Safety1, 0);
@@ -88,17 +98,13 @@ namespace BovineLabs.Core.Extensions
                 return new BufferAccessor<T>(null, 0, 0, 0);
 #endif
             }
-
-            var internalCapacity = archetype->BufferCapacities[typeIndexInArchetype];
-
-            var ptr = ChunkDataUtility.GetComponentDataRO(archetypeChunk.m_Chunk, 0, typeIndexInArchetype);
-
+            int typeIndexInArchetype = bufferTypeHandle.m_LookupCache.IndexInArchetype;
+            int internalCapacity = archetype->BufferCapacities[typeIndexInArchetype];
             var length = archetypeChunk.Count;
-            int stride = archetype->SizeOfs[typeIndexInArchetype];
+            int stride = bufferTypeHandle.m_LookupCache.ComponentSizeOf;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            return new BufferAccessor<T>(
-                ptr, length, stride, bufferTypeHandle.IsReadOnly, bufferTypeHandle.m_Safety0, bufferTypeHandle.m_Safety1, internalCapacity);
+            return new BufferAccessor<T>(ptr, length, stride, bufferTypeHandle.IsReadOnly, bufferTypeHandle.m_Safety0, bufferTypeHandle.m_Safety1, internalCapacity);
 #else
             return new BufferAccessor<T>(ptr, length, stride, internalCapacity);
 #endif
@@ -106,37 +112,37 @@ namespace BovineLabs.Core.Extensions
 
         public static DynamicBufferAccessor GetDynamicBufferAccessor(this ArchetypeChunk chunk, ref DynamicComponentTypeHandle chunkBufferTypeHandle)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(chunkBufferTypeHandle.m_Safety0);
 #endif
-            var archetype = chunk.m_Chunk->Archetype;
-            var typeIndexInArchetype = chunkBufferTypeHandle.m_TypeLookupCache;
-            ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, chunkBufferTypeHandle.m_TypeIndex, ref typeIndexInArchetype);
-            chunkBufferTypeHandle.m_TypeLookupCache = typeIndexInArchetype;
-            if (typeIndexInArchetype == -1)
+            var archetype = chunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
+            short typeIndexInArchetype = chunkBufferTypeHandle.m_TypeLookupCache;
+            ChunkDataUtility.GetIndexInTypeArray(archetype, chunkBufferTypeHandle.m_TypeIndex, ref typeIndexInArchetype);
+            chunkBufferTypeHandle.m_TypeLookupCache = (short)typeIndexInArchetype;
+            if (Hint.Unlikely(typeIndexInArchetype == -1))
             {
                 return default;
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-            if (!archetype->Types[typeIndexInArchetype].IsBuffer)
-            {
-                throw new ArgumentException("ArchetypeChunk.GetUntypedBufferAccessor must be called only for IBufferElementData types");
-            }
+            if (Hint.Unlikely(!archetype->Types[typeIndexInArchetype].IsBuffer))
+                throw new ArgumentException($"ArchetypeChunk.GetUntypedBufferAccessor must be called only for IBufferElementData types");
 #endif
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            //Expect the safety to be set and valid
             AtomicSafetyHandle.CheckReadAndThrow(chunkBufferTypeHandle.m_Safety1);
 #endif
-            var internalCapacity = archetype->BufferCapacities[typeIndexInArchetype];
+            int internalCapacity = archetype->BufferCapacities[typeIndexInArchetype];
             var typeInfo = TypeManager.GetTypeInfo(chunkBufferTypeHandle.m_TypeIndex);
-            var ptr = chunkBufferTypeHandle.IsReadOnly
-                ? ChunkDataUtility.GetComponentDataRO(chunk.m_Chunk, 0, typeIndexInArchetype)
-                : ChunkDataUtility.GetComponentDataRW(chunk.m_Chunk, 0, typeIndexInArchetype, chunkBufferTypeHandle.GlobalSystemVersion);
+            byte* ptr = (chunkBufferTypeHandle.IsReadOnly)
+                ? ChunkDataUtility.GetComponentDataRO(chunk.m_Chunk, archetype, 0, typeIndexInArchetype)
+                : ChunkDataUtility.GetComponentDataRW(chunk.m_Chunk, archetype, 0, typeIndexInArchetype, chunkBufferTypeHandle.GlobalSystemVersion);
 
             var length = chunk.Count;
             int stride = archetype->SizeOfs[typeIndexInArchetype];
-            var elementSize = typeInfo.ElementSize;
+            int elementSize = typeInfo.ElementSize;
+            int elementAlign = typeInfo.AlignmentInBytes;
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0) && !chunkBufferTypeHandle.IsReadOnly)
@@ -151,12 +157,13 @@ namespace BovineLabs.Core.Extensions
                 length,
                 stride,
                 elementSize,
+                elementAlign,
                 internalCapacity,
                 chunkBufferTypeHandle.IsReadOnly,
                 chunkBufferTypeHandle.m_Safety0,
                 chunkBufferTypeHandle.m_Safety1);
 #else
-            return new DynamicBufferAccessor(ptr, length, stride, elementSize, internalCapacity);
+            return new DynamicBufferAccessor(ptr, length, stride, elementSize, elementAlign, internalCapacity);
 #endif
         }
 
@@ -168,14 +175,16 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(destination.m_Safety);
             AtomicSafetyHandle.CheckReadAndThrow(source.m_Safety);
 #endif
-            if (Hint.Unlikely(destination.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
+
+            if (Hint.Unlikely(destination.m_LookupCache.Archetype != archetype))
             {
-                destination.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, destination.m_TypeIndex);
+                destination.m_LookupCache.Update(archetype, destination.m_TypeIndex);
             }
 
-            if (Hint.Unlikely(source.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            if (Hint.Unlikely(source.m_LookupCache.Archetype != archetype))
             {
-                source.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, source.m_TypeIndex);
+                source.m_LookupCache.Update(archetype, source.m_TypeIndex);
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -190,14 +199,15 @@ namespace BovineLabs.Core.Extensions
             }
 #endif
             var dst = ChunkDataUtility.GetEnabledRefRW(
-                archetypeChunk.m_Chunk, destination.m_LookupCache.IndexInArchetype, destination.GlobalSystemVersion, out var dstPtrChunkDisabledCount).Ptr;
+                archetypeChunk.m_Chunk, archetypeChunk.Archetype.Archetype, destination.m_LookupCache.IndexInArchetype, destination.GlobalSystemVersion,
+                out var dstPtrChunkDisabledCount).Ptr;
 
-            var src = ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, source.m_LookupCache.IndexInArchetype).Ptr;
+            var src = ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, archetypeChunk.Archetype.Archetype, source.m_LookupCache.IndexInArchetype).Ptr;
 
-            var archetype = archetypeChunk.m_Chunk->Archetype;
+            // var archetype = archetypeChunk.m_Chunk->Archetype;
             var chunks = archetype->Chunks;
             int memoryOrderIndexInArchetype = archetype->TypeIndexInArchetypeToMemoryOrderIndex[source.m_LookupCache.IndexInArchetype];
-            var srcPtrChunkDisabledCount = chunks.GetPointerToChunkDisabledCountForType(memoryOrderIndexInArchetype, archetypeChunk.m_Chunk->ListIndex);
+            var srcPtrChunkDisabledCount = chunks.GetPointerToChunkDisabledCountForType(memoryOrderIndexInArchetype, archetypeChunk.m_Chunk.ListIndex);
 
             // UnsafeUtility.MemCpy(dst, src, sizeof(ulong) * 2);
             dst[0] = src[0];
@@ -211,9 +221,11 @@ namespace BovineLabs.Core.Extensions
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
 #endif
-            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
+
+            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetype))
             {
-                typeHandle.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, typeHandle.m_TypeIndex);
+                typeHandle.m_LookupCache.Update(archetype, typeHandle.m_TypeIndex);
             }
 
             if (Hint.Unlikely(typeHandle.m_LookupCache.IndexInArchetype == -1))
@@ -221,7 +233,7 @@ namespace BovineLabs.Core.Extensions
                 return null;
             }
 
-            return (v128*)ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, typeHandle.m_LookupCache.IndexInArchetype).Ptr;
+            return (v128*)ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, archetypeChunk.Archetype.Archetype, typeHandle.m_LookupCache.IndexInArchetype).Ptr;
         }
 
         public static v128* GetEnabledBitsRW<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle, out int* ptrChunkDisabledCount)
@@ -230,9 +242,11 @@ namespace BovineLabs.Core.Extensions
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
 #endif
-            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
+
+            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetype))
             {
-                typeHandle.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, typeHandle.m_TypeIndex);
+                typeHandle.m_LookupCache.Update(archetype, typeHandle.m_TypeIndex);
             }
 
             if (Hint.Unlikely(typeHandle.m_LookupCache.IndexInArchetype == -1))
@@ -243,6 +257,7 @@ namespace BovineLabs.Core.Extensions
 
             return (v128*)ChunkDataUtility.GetEnabledRefRW(
                 archetypeChunk.m_Chunk,
+                archetypeChunk.Archetype.Archetype,
                 typeHandle.m_LookupCache.IndexInArchetype,
                 typeHandle.GlobalSystemVersion,
                 out ptrChunkDisabledCount).Ptr;
@@ -254,9 +269,11 @@ namespace BovineLabs.Core.Extensions
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
 #endif
-            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
+
+            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetype))
             {
-                typeHandle.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, typeHandle.m_TypeIndex);
+                typeHandle.m_LookupCache.Update(archetype, typeHandle.m_TypeIndex);
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
@@ -268,7 +285,7 @@ namespace BovineLabs.Core.Extensions
             }
 #endif
 
-            var ptr = ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, typeHandle.m_LookupCache.IndexInArchetype).Ptr;
+            var ptr = ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, archetypeChunk.Archetype.Archetype, typeHandle.m_LookupCache.IndexInArchetype).Ptr;
             return ref UnsafeUtility.AsRef<v128>(ptr);
         }
 
@@ -278,9 +295,11 @@ namespace BovineLabs.Core.Extensions
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(typeHandle.m_Safety);
 #endif
-            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
+
+            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetype))
             {
-                typeHandle.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, typeHandle.m_TypeIndex);
+                typeHandle.m_LookupCache.Update(archetype, typeHandle.m_TypeIndex);
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
@@ -299,6 +318,7 @@ namespace BovineLabs.Core.Extensions
 
             var ptr = ChunkDataUtility.GetEnabledRefRW(
                 archetypeChunk.m_Chunk,
+                archetypeChunk.Archetype.Archetype,
                 typeHandle.m_LookupCache.IndexInArchetype,
                 typeHandle.GlobalSystemVersion,
                 out ptrChunkDisabledCount).Ptr;
@@ -325,9 +345,11 @@ namespace BovineLabs.Core.Extensions
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
 #endif
-            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetypeChunk.m_Chunk->Archetype))
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
+
+            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetype))
             {
-                typeHandle.m_LookupCache.Update(archetypeChunk.m_Chunk->Archetype, typeHandle.m_TypeIndex);
+                typeHandle.m_LookupCache.Update(archetype, typeHandle.m_TypeIndex);
             }
             // In case the chunk does not contains the component type (or the internal TypeIndex lookup fails to find a
             // match), the LookupCache.Update will invalidate the IndexInArchetype.
@@ -342,8 +364,8 @@ namespace BovineLabs.Core.Extensions
             }
             int* ptrChunkDisabledCount = default;
             var ptr = (typeHandle.IsReadOnly)
-                ? ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, typeHandle.m_LookupCache.IndexInArchetype).Ptr
-                : ChunkDataUtility.GetEnabledRefRW(archetypeChunk.m_Chunk, typeHandle.m_LookupCache.IndexInArchetype,
+                ? ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, archetypeChunk.Archetype.Archetype,typeHandle.m_LookupCache.IndexInArchetype).Ptr
+                : ChunkDataUtility.GetEnabledRefRW(archetypeChunk.m_Chunk, archetypeChunk.Archetype.Archetype,typeHandle.m_LookupCache.IndexInArchetype,
                     typeHandle.GlobalSystemVersion, out ptrChunkDisabledCount).Ptr;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             var result = new EnabledMask(new SafeBitRef(ptr, 0, typeHandle.m_Safety), ptrChunkDisabledCount);

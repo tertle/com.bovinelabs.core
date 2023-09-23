@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Chunks.Iterators
         public static ArchetypeChunk GetChunk(ref ArchetypeChunk chunk, int groupIndex, TypeIndex chunkLinksTypeIndex, ref LookupCache chunkLinksLookupCache)
         {
             var ptr = chunk.m_EntityComponentStore->GetOptionalComponentDataWithTypeRO(
-                chunk.m_Chunk->metaChunkEntity, chunkLinksTypeIndex, ref chunkLinksLookupCache);
+                chunk.m_Chunk.MetaChunkEntity, chunkLinksTypeIndex, ref chunkLinksLookupCache);
 
             if (Hint.Unlikely(ptr == null))
             {
@@ -26,10 +26,9 @@ namespace BovineLabs.Core.Chunks.Iterators
             return chunkLinks[groupIndex];
         }
 
-        public static Chunk* GetChunk(EntityComponentStore* entityComponentStore, Chunk* chunk, int groupIndex, TypeIndex chunkLinksTypeIndex, ref LookupCache chunkLinksLookupCache)
+        public static ChunkIndex GetChunk(EntityComponentStore* entityComponentStore, ChunkIndex chunk, int groupIndex, TypeIndex chunkLinksTypeIndex, ref LookupCache chunkLinksLookupCache)
         {
-            var ptr = entityComponentStore->GetOptionalComponentDataWithTypeRO(
-                chunk->metaChunkEntity, chunkLinksTypeIndex, ref chunkLinksLookupCache);
+            var ptr = entityComponentStore->GetOptionalComponentDataWithTypeRO(chunk.MetaChunkEntity, chunkLinksTypeIndex, ref chunkLinksLookupCache);
 
             if (Hint.Unlikely(ptr == null))
             {

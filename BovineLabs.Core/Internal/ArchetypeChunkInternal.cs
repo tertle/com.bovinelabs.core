@@ -17,14 +17,21 @@ namespace BovineLabs.Core.Internal
         {
             SetChangeFilterCheckWriteAndThrow(handle);
 
-            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
+            var archetype = chunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
+
+            if (Hint.Unlikely(archetype != handle.m_LookupCache.Archetype))
+            {
+                handle.m_LookupCache.Update(archetype, handle.m_TypeIndex);
+            }
+
+            var typeIndexInArchetype = handle.m_LookupCache.IndexInArchetype;
             if (Hint.Unlikely(typeIndexInArchetype == -1))
             {
                 return;
             }
 
             // This should (=S) be thread safe int writes are atomic in c#
-            chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, handle.GlobalSystemVersion);
+            archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, handle.GlobalSystemVersion);
         }
 
         public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ref ComponentTypeHandle<T> handle, uint version)
@@ -32,14 +39,21 @@ namespace BovineLabs.Core.Internal
         {
             SetChangeFilterCheckWriteAndThrow(handle);
 
-            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
+            var archetype = chunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
+
+            if (Hint.Unlikely(archetype != handle.m_LookupCache.Archetype))
+            {
+                handle.m_LookupCache.Update(archetype, handle.m_TypeIndex);
+            }
+
+            var typeIndexInArchetype = handle.m_LookupCache.IndexInArchetype;
             if (Hint.Unlikely(typeIndexInArchetype == -1))
             {
                 return;
             }
 
             // This should (=S) be thread safe int writes are atomic in c#
-            chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, version);
+            archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, version);
         }
 
         public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ref BufferTypeHandle<T> handle)
@@ -47,14 +61,21 @@ namespace BovineLabs.Core.Internal
         {
             SetChangeFilterCheckWriteAndThrow(handle);
 
-            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
+            var archetype = chunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
+
+            if (Hint.Unlikely(archetype != handle.m_LookupCache.Archetype))
+            {
+                handle.m_LookupCache.Update(archetype, handle.m_TypeIndex);
+            }
+
+            var typeIndexInArchetype = handle.m_LookupCache.IndexInArchetype;
             if (Hint.Unlikely(typeIndexInArchetype == -1))
             {
                 return;
             }
 
             // This should (=S) be thread safe int writes are atomic in c#
-            chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, handle.GlobalSystemVersion);
+            archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, handle.GlobalSystemVersion);
         }
 
         public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ref BufferTypeHandle<T> handle, uint version)
@@ -62,27 +83,36 @@ namespace BovineLabs.Core.Internal
         {
             SetChangeFilterCheckWriteAndThrow(handle);
 
-            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
+            var archetype = chunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
+
+            if (Hint.Unlikely(archetype != handle.m_LookupCache.Archetype))
+            {
+                handle.m_LookupCache.Update(archetype, handle.m_TypeIndex);
+            }
+
+            var typeIndexInArchetype = handle.m_LookupCache.IndexInArchetype;
             if (Hint.Unlikely(typeIndexInArchetype == -1))
             {
                 return;
             }
 
             // This should (=S) be thread safe int writes are atomic in c#
-            chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, version);
+            archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, version);
         }
 
         public static unsafe void SetChangeFilter(this ArchetypeChunk chunk, ref DynamicComponentTypeHandle handle)
         {
             SetChangeFilterCheckWriteAndThrow(handle);
 
-            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(chunk.m_Chunk->Archetype, handle.m_TypeIndex);
+            var archetype = chunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
+
+            var typeIndexInArchetype = ChunkDataUtility.GetIndexInTypeArray(archetype, handle.m_TypeIndex);
             if (Hint.Unlikely(typeIndexInArchetype == -1))
             {
                 return;
             }
 
-            chunk.m_Chunk->SetChangeVersion(typeIndexInArchetype, handle.GlobalSystemVersion);
+            archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, handle.GlobalSystemVersion);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

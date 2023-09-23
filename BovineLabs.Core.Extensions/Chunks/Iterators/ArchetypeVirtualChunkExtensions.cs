@@ -11,7 +11,6 @@ namespace BovineLabs.Core.Chunks.Iterators
     using Unity.Burst.CompilerServices;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-    using UnityEngine;
 
     public static unsafe class ArchetypeVirtualChunkExtensions
     {
@@ -22,8 +21,9 @@ namespace BovineLabs.Core.Chunks.Iterators
 #endif
             var chunk = GetChunk(archetypeChunk, ref entityHandle);
 
-            var archetype = chunk.m_Chunk->Archetype;
-            var buffer = chunk.m_Chunk->Buffer;
+            var archetype = chunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
+
+            var buffer = chunk.m_Chunk.Buffer;
             var startOffset = archetype->Offsets[0];
             var result = buffer + startOffset;
 
@@ -37,10 +37,11 @@ namespace BovineLabs.Core.Chunks.Iterators
             AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
 #endif
             var chunk = GetChunk(archetypeChunk, ref typeHandle);
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
 
             // This updates the type handle's cache as a side effect, which will tell us if the archetype has the component or not.
             void* ptr = ChunkDataUtility.GetOptionalComponentDataWithTypeRO(
-                chunk.m_Chunk, chunk.m_Chunk->Archetype, 0, typeHandle.TypeIndex, ref typeHandle.LookupCache);
+                chunk.m_Chunk, archetype, 0, typeHandle.TypeIndex, ref typeHandle.LookupCache);
 
             return (T*)ptr;
         }
@@ -52,9 +53,10 @@ namespace BovineLabs.Core.Chunks.Iterators
             AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
 #endif
             var chunk = GetChunk(archetypeChunk, ref typeHandle);
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
 
             var ptr = ChunkDataUtility.GetComponentDataWithTypeRO(
-                chunk.m_Chunk, chunk.m_Chunk->Archetype, 0, typeHandle.TypeIndex, ref typeHandle.LookupCache);
+                chunk.m_Chunk, archetype, 0, typeHandle.TypeIndex, ref typeHandle.LookupCache);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             // Must check this after computing the pointer, to make sure the cache is up to date
@@ -80,10 +82,11 @@ namespace BovineLabs.Core.Chunks.Iterators
             }
 #endif
             var chunk = GetChunk(archetypeChunk, ref typeHandle);
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
 
             // This updates the type handle's cache as a side effect, which will tell us if the archetype has the component or not.
             void* ptr = ChunkDataUtility.GetOptionalComponentDataWithTypeRW(
-                chunk.m_Chunk, chunk.m_Chunk->Archetype, 0, typeHandle.TypeIndex, typeHandle.GlobalSystemVersion, ref typeHandle.LookupCache);
+                chunk.m_Chunk, archetype, 0, typeHandle.TypeIndex, typeHandle.GlobalSystemVersion, ref typeHandle.LookupCache);
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
@@ -107,12 +110,12 @@ namespace BovineLabs.Core.Chunks.Iterators
             AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety0);
 #endif
             var chunk = GetChunk(archetypeChunk, ref typeHandle);
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
 
-            var archetype = chunk.m_Chunk->Archetype;
             var typeIndex = typeHandle.TypeIndex;
             if (Hint.Unlikely(typeHandle.LookupCache.Archetype != archetype))
             {
-                typeHandle.LookupCache.Update(chunk.m_Chunk->Archetype, typeIndex);
+                typeHandle.LookupCache.Update(archetype, typeIndex);
             }
 
             byte* ptr = typeHandle.IsReadOnly
@@ -157,11 +160,11 @@ namespace BovineLabs.Core.Chunks.Iterators
 #endif
             var chunk = GetChunk(archetypeChunk, ref typeHandle);
 
-            var archetype = chunk.m_Chunk->Archetype;
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
             var typeIndex = typeHandle.TypeIndex;
             if (Hint.Unlikely(typeHandle.LookupCache.Archetype != archetype))
             {
-                typeHandle.LookupCache.Update(chunk.m_Chunk->Archetype, typeIndex);
+                typeHandle.LookupCache.Update(archetype, typeIndex);
             }
 
             byte* ptr = ChunkDataUtility.GetOptionalComponentDataWithTypeRO(chunk.m_Chunk, archetype, 0, typeIndex, ref typeHandle.LookupCache);
@@ -196,11 +199,11 @@ namespace BovineLabs.Core.Chunks.Iterators
 #endif
             var chunk = GetChunk(archetypeChunk, ref typeHandle);
 
-            var archetype = chunk.m_Chunk->Archetype;
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
             var typeIndex = typeHandle.TypeIndex;
             if (Hint.Unlikely(typeHandle.LookupCache.Archetype != archetype))
             {
-                typeHandle.LookupCache.Update(chunk.m_Chunk->Archetype, typeIndex);
+                typeHandle.LookupCache.Update(archetype, typeIndex);
             }
 
             byte* ptr = ChunkDataUtility.GetOptionalComponentDataWithTypeRW(
@@ -257,6 +260,7 @@ namespace BovineLabs.Core.Chunks.Iterators
             return VirtualChunkDataUtility.GetChunk(ref chunk, typeHandle.GroupIndex, typeHandle.ChunkLinksTypeIndex, ref typeHandle.ChunkLinksLookupCache);
         }
 
+        // TODO i think this can just return ChunkIndex
         private static ArchetypeChunk GetChunk<T>(ArchetypeChunk chunk, ref VirtualBufferTypeHandle<T> typeHandle)
             where T : unmanaged, IBufferElementData
         {
@@ -265,13 +269,15 @@ namespace BovineLabs.Core.Chunks.Iterators
 
         private static uint GetChangeVersion(ref ArchetypeChunk chunk, ref LookupCache cache, TypeIndex typeIndex)
         {
-            if (Hint.Unlikely(cache.Archetype != chunk.m_Chunk->Archetype))
+            var archetype = chunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
+
+            if (Hint.Unlikely(cache.Archetype != archetype))
             {
-                cache.Update(chunk.m_Chunk->Archetype, typeIndex);
+                cache.Update(archetype, typeIndex);
             }
 
             var typeIndexInArchetype = cache.IndexInArchetype;
-            return Hint.Unlikely(typeIndexInArchetype == -1) ? 0 : chunk.m_Chunk->GetChangeVersion(typeIndexInArchetype);
+            return Hint.Unlikely(typeIndexInArchetype == -1) ? 0 : chunk.Archetype.Archetype->Chunks.GetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex);
         }
     }
 }

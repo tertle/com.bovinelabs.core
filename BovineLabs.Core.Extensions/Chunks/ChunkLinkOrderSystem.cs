@@ -64,7 +64,7 @@ namespace BovineLabs.Core.Chunks
                 var entities = chunk.GetEntityDataPtrRO(entityTypeHandle);
                 var linkedEntityGroupAccessor = chunk.GetBufferAccessor(ref linkedEntityGroupHandle);
 
-                var outOfOrder = CheckEntitiesOutOfOrder(ref state, chunk, entities, linkedEntityGroupAccessor, entityStorageInfoLookup, ref chunkOwnerHandle);
+                var outOfOrder = CheckEntitiesOutOfOrder(ref state, chunk, ref UnsafeUtility.AsRef<Entity>(entities), linkedEntityGroupAccessor, entityStorageInfoLookup, ref chunkOwnerHandle);
 
                 // We need to fix ordering
                 if (outOfOrder)
@@ -77,7 +77,7 @@ namespace BovineLabs.Core.Chunks
         private static unsafe bool CheckEntitiesOutOfOrder(
             ref SystemState state,
             ArchetypeChunk chunk,
-            Entity* entities,
+            ref Entity entities,
             BufferAccessor<LinkedEntityGroup> linkedEntityGroupAccessor,
             EntityStorageInfoLookup entityStorageInfoLookup,
             ref ComponentTypeHandle<ChunkLinkedEntity> chunkOwnerHandle)
@@ -103,7 +103,7 @@ namespace BovineLabs.Core.Chunks
 
                 var chunkLinkedEntities = linkedChunk.GetComponentDataPtrRO(ref chunkOwnerHandle);
 
-                var result = UnsafeUtility.MemCmp(entities, chunkLinkedEntities, chunk.Count * UnsafeUtility.SizeOf<Entity>());
+                var result = UnsafeUtility.MemCmp(UnsafeUtility.AddressOf(ref entities), chunkLinkedEntities, chunk.Count * UnsafeUtility.SizeOf<Entity>());
                 if (result != 0)
                 {
                     return true;

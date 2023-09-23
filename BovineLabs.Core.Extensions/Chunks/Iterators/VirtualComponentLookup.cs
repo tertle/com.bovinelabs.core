@@ -115,7 +115,9 @@ namespace BovineLabs.Core.Chunks.Iterators
             }
 
             this.GetChunkAndIndex(entity, out var chunk, out _);
-            return this.HasComponent(chunk->Archetype);
+
+            var archetype = ecs->GetArchetype(chunk);
+            return this.HasComponent(archetype);
         }
 
         /// <summary>
@@ -136,14 +138,17 @@ namespace BovineLabs.Core.Chunks.Iterators
 
             this.GetChunkAndIndex(entity, out var chunk, out var indexInChunk);
 
-            if (!this.HasComponent(chunk->Archetype))
+            var ecs = this.access->EntityComponentStore;
+            var archetype = ecs->GetArchetype(chunk);
+
+            if (!this.HasComponent(archetype))
             {
                 return default;
             }
 
             void* ptr = isReadOnly
-                    ? this.access->GetComponentDataWithTypeRO(chunk, indexInChunk, this.typeIndex, ref this.cache)
-                    : this.access->GetComponentDataWithTypeRW(chunk, indexInChunk, entity, this.typeIndex, this.globalSystemVersion, ref this.cache);
+                    ? this.access->GetComponentDataWithTypeRO(chunk, archetype, indexInChunk, this.typeIndex, ref this.cache)
+                    : this.access->GetComponentDataWithTypeRW(chunk, archetype, indexInChunk, entity, this.typeIndex, this.globalSystemVersion, ref this.cache);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             return new RefRW<T>(ptr, this.m_Safety);
@@ -170,12 +175,15 @@ namespace BovineLabs.Core.Chunks.Iterators
 
             this.GetChunkAndIndex(entity, out var chunk, out var indexInChunk);
 
-            if (!this.HasComponent(chunk->Archetype))
+            var ecs = this.access->EntityComponentStore;
+            var archetype = ecs->GetArchetype(chunk);
+
+            if (!this.HasComponent(archetype))
             {
                 return default;
             }
 
-            void* ptr = this.access->GetComponentDataWithTypeRO(chunk, indexInChunk, this.typeIndex, ref this.cache);
+            void* ptr = this.access->GetComponentDataWithTypeRO(chunk, archetype, indexInChunk, this.typeIndex, ref this.cache);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             return new RefRO<T>(ptr, this.m_Safety);
@@ -200,14 +208,17 @@ namespace BovineLabs.Core.Chunks.Iterators
 #endif
             this.GetChunkAndIndex(entity, out var chunk, out var indexInBitField);
 
-            if (!this.HasComponent(chunk->Archetype))
+            var ecs = this.access->EntityComponentStore;
+            var archetype = ecs->GetArchetype(chunk);
+
+            if (!this.HasComponent(archetype))
             {
                 return new EnabledRefRW<T2>(default, default);
             }
 
             var ptr = isReadOnly
-                    ? GetEnabledRawRO(chunk, this.typeIndex, ref this.cache, out var ptrChunkDisabledCount)
-                    : GetEnabledRawRW(chunk, this.typeIndex, ref this.cache, this.globalSystemVersion, out ptrChunkDisabledCount);
+                    ? GetEnabledRawRO(ecs, chunk, this.typeIndex, ref this.cache, out var ptrChunkDisabledCount)
+                    : GetEnabledRawRW(ecs, chunk, this.typeIndex, ref this.cache, this.globalSystemVersion, out ptrChunkDisabledCount);
 
             return new EnabledRefRW<T2>(this.MakeSafeBitRef(ptr, indexInBitField), ptrChunkDisabledCount);
         }
@@ -227,12 +238,15 @@ namespace BovineLabs.Core.Chunks.Iterators
 #endif
             this.GetChunkAndIndex(entity, out var chunk, out var indexInBitField);
 
-            if (!this.HasComponent(chunk->Archetype))
+            var ecs = this.access->EntityComponentStore;
+            var archetype = ecs->GetArchetype(chunk);
+
+            if (!this.HasComponent(archetype))
             {
                 return new EnabledRefRO<T2>(default);
             }
 
-            var ptr = GetEnabledRawRO(chunk, this.typeIndex, ref this.cache, out _);
+            var ptr = GetEnabledRawRO(ecs, chunk, this.typeIndex, ref this.cache, out _);
             return new EnabledRefRO<T2>(this.MakeSafeBitRef(ptr, indexInBitField));
         }
 
@@ -243,33 +257,33 @@ namespace BovineLabs.Core.Chunks.Iterators
             => new SafeBitRef(ptr, offsetInBits);
 #endif
 
-        private static ulong* GetEnabledRawRO(Chunk* chunk, TypeIndex typeIndex, ref LookupCache typeLookupCache, out int* ptrChunkDisabledCount)
+        private static ulong* GetEnabledRawRO(EntityComponentStore* ecs, ChunkIndex chunk, TypeIndex typeIndex, ref LookupCache typeLookupCache, out int* ptrChunkDisabledCount)
         {
             // TODO ASSERT HAS
-            var archetype = chunk->Archetype;
+            var archetype = ecs->GetArchetype(chunk);
             if (Hint.Unlikely(archetype != typeLookupCache.Archetype))
             {
                 typeLookupCache.Update(archetype, typeIndex);
             }
 
             var memoryOrderIndexInArchetype = archetype->TypeIndexInArchetypeToMemoryOrderIndex[typeLookupCache.IndexInArchetype];
-            ptrChunkDisabledCount = archetype->Chunks.GetPointerToChunkDisabledCountForType(memoryOrderIndexInArchetype, chunk->ListIndex);
-            return ChunkDataUtility.GetEnabledRefRO(chunk, typeLookupCache.IndexInArchetype).Ptr;
+            ptrChunkDisabledCount = archetype->Chunks.GetPointerToChunkDisabledCountForType(memoryOrderIndexInArchetype, chunk.ListIndex);
+            return ChunkDataUtility.GetEnabledRefRO(chunk, archetype, typeLookupCache.IndexInArchetype).Ptr;
         }
 
-        private static ulong* GetEnabledRawRW(Chunk* chunk, TypeIndex typeIndex, ref LookupCache typeLookupCache, uint globalSystemVersion, out int* ptrChunkDisabledCount)
+        private static ulong* GetEnabledRawRW(EntityComponentStore* ecs,  ChunkIndex chunk, TypeIndex typeIndex, ref LookupCache typeLookupCache, uint globalSystemVersion, out int* ptrChunkDisabledCount)
         {
             // TODO ASSERT HAS
-            var archetype = chunk->Archetype;
+            var archetype = ecs->GetArchetype(chunk);
             if (Hint.Unlikely(archetype != typeLookupCache.Archetype))
             {
                 typeLookupCache.Update(archetype, typeIndex);
             }
 
-            return ChunkDataUtility.GetEnabledRefRW(chunk, typeLookupCache.IndexInArchetype, globalSystemVersion, out ptrChunkDisabledCount).Ptr;
+            return ChunkDataUtility.GetEnabledRefRW(chunk, archetype, typeLookupCache.IndexInArchetype, globalSystemVersion, out ptrChunkDisabledCount).Ptr;
         }
 
-        private void GetChunkAndIndex(Entity entity, out Chunk* chunk, out int index)
+        private void GetChunkAndIndex(Entity entity, out ChunkIndex chunk, out int index)
         {
             var ecs = this.access->EntityComponentStore;
             var entityInChunk = ecs->GetEntityInChunk(entity);

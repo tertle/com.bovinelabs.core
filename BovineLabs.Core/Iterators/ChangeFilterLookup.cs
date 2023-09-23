@@ -57,7 +57,9 @@ namespace BovineLabs.Core.Iterators
         {
             var ecs = this.access->EntityComponentStore;
             var chunk = ecs->GetChunk(entity);
-            var archetype = chunk->Archetype;
+
+            var archetype = ecs->GetArchetype(chunk);
+
             if (Hint.Unlikely(archetype != this.cache.Archetype))
             {
                 this.cache.Update(archetype, this.typeIndex);
@@ -69,7 +71,7 @@ namespace BovineLabs.Core.Iterators
                 return false;
             }
 
-            var chunkVersion = chunk->GetChangeVersion(typeIndexInArchetype);
+            var chunkVersion = archetype->Chunks.GetChangeVersion(typeIndexInArchetype, chunk.ListIndex);
 
             return ChangeVersionUtility.DidChange(chunkVersion, version);
         }
@@ -81,7 +83,7 @@ namespace BovineLabs.Core.Iterators
             var ecs = this.access->EntityComponentStore;
             var chunk = ecs->GetChunk(entity);
 
-            var archetype = chunk->Archetype;
+            var archetype = ecs->GetArchetype(chunk);
             if (Hint.Unlikely(archetype != this.cache.Archetype))
             {
                 this.cache.Update(archetype, this.typeIndex);
@@ -93,7 +95,7 @@ namespace BovineLabs.Core.Iterators
                 return;
             }
 
-            chunk->SetChangeVersion(typeIndexInArchetype, this.globalSystemVersion);
+            archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.ListIndex, this.globalSystemVersion);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

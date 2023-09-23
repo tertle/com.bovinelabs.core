@@ -1,6 +1,17 @@
 # Changelog
 
-## [1.0.0-pre.4] - 2023-09-18
+## [1.1.0] - 2023-09-24
+
+### Changed
+* Updated for Entities 1.1.0 support. Stick to 1.0.0 if you are still on Entities 1.0.X
+* Removed unity version requirement
+
+### Deleted
+* ColliderInspector
+* SubSceneInspectorUtility
+* DisableRenderingHelper
+
+## [1.0.0] - 2023-09-21
 
 ### Added
 * A modified copy of Lieene blob curve

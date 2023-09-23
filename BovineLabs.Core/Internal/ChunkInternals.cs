@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Internal
     {
         public static int GetChunkBufferSize()
         {
-            return Chunk.GetChunkBufferSize();
+            return Chunk.kChunkBufferSize;
         }
     }
 }

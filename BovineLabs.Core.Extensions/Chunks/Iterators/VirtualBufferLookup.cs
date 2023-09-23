@@ -143,7 +143,9 @@ namespace BovineLabs.Core.Chunks.Iterators
             }
 
             this.GetChunkAndIndex(entity, out var chunk, out _);
-            return this.HasComponent(chunk->Archetype);
+
+            var archetype = ecs->GetArchetype(chunk);
+            return this.HasComponent(archetype);
         }
 
         /// <summary>
@@ -182,9 +184,12 @@ namespace BovineLabs.Core.Chunks.Iterators
                 }
 #endif
 
+                var ecs = this.access->EntityComponentStore;
+                var archetype = ecs->GetArchetype(chunk);
+
                 var header = (this.isReadOnly != 0) ?
-                    (BufferHeader*)this.access->GetComponentDataWithTypeRO(chunk, indexInChunk, this.typeIndex, ref this.cache) :
-                    (BufferHeader*)this.access->GetComponentDataWithTypeRW(chunk, indexInChunk, entity, this.typeIndex, this.globalSystemVersion, ref this.cache);
+                    (BufferHeader*)this.access->GetComponentDataWithTypeRO(chunk, archetype, indexInChunk, this.typeIndex, ref this.cache) :
+                    (BufferHeader*)this.access->GetComponentDataWithTypeRW(chunk, archetype,indexInChunk, entity, this.typeIndex, this.globalSystemVersion, ref this.cache);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 return new DynamicBuffer<T>(header, this.m_Safety0, this.m_ArrayInvalidationSafety, this.isReadOnly != 0, false, 0, this.internalCapacity);
@@ -220,9 +225,11 @@ namespace BovineLabs.Core.Chunks.Iterators
             }
 #endif
 
-            if (Hint.Unlikely(chunk->Archetype != this.cache.Archetype))
+            var archetype = this.access->EntityComponentStore->GetArchetype(chunk);
+
+            if (Hint.Unlikely(archetype != this.cache.Archetype))
             {
-                this.cache.Update(chunk->Archetype, this.typeIndex);
+                this.cache.Update(archetype, this.typeIndex);
             }
 
             return this.access->EntityComponentStore->IsComponentEnabled(chunk, indexInChunk, this.cache.IndexInArchetype);
@@ -255,9 +262,11 @@ namespace BovineLabs.Core.Chunks.Iterators
             }
 #endif
 
-            if (Hint.Unlikely(chunk->Archetype != this.cache.Archetype))
+            var archetype = this.access->EntityComponentStore->GetArchetype(chunk);
+
+            if (Hint.Unlikely(archetype != this.cache.Archetype))
             {
-                this.cache.Update(chunk->Archetype, this.typeIndex);
+                this.cache.Update(archetype, this.typeIndex);
             }
 
             this.access->EntityComponentStore->SetComponentEnabled(chunk, indexInChunk, this.cache.IndexInArchetype, value);
@@ -301,7 +310,7 @@ namespace BovineLabs.Core.Chunks.Iterators
 #endif
         }
 
-        private void GetChunkAndIndex(Entity entity, out Chunk* chunk, out int index)
+        private void GetChunkAndIndex(Entity entity, out ChunkIndex chunk, out int index)
         {
             var ecs = this.access->EntityComponentStore;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

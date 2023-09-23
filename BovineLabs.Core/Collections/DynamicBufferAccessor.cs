@@ -33,12 +33,15 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         public int ElementSize { get; }
 
+        public int ElementAlign { get; }
+
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal DynamicBufferAccessor(
             byte* basePointer,
             int length,
             int stride,
             int elementSize,
+            int elementAlign,
             int internalCapacity,
             bool readOnly,
             AtomicSafetyHandle safety0,
@@ -47,6 +50,7 @@ namespace BovineLabs.Core.Collections
             this.pointer = basePointer;
             this.internalCapacity = internalCapacity;
             this.ElementSize = elementSize;
+            this.ElementAlign = elementAlign;
             this.stride = stride;
             this.Length = length;
             this.safety0 = safety0;
@@ -54,11 +58,12 @@ namespace BovineLabs.Core.Collections
             this.isReadOnly = readOnly;
         }
 #else
-            internal DynamicBufferAccessor(byte* basePointer, int length, int stride, int elementSize, int internalCapacity)
+            internal DynamicBufferAccessor(byte* basePointer, int length, int stride, int elementSize, int elementAlign, int internalCapacity)
             {
                 this.pointer = basePointer;
                 this.internalCapacity = internalCapacity;
                 this.ElementSize = elementSize;
+                this.ElementAlign = elementAlign;
                 this.stride = stride;
                 this.Length = length;
             }

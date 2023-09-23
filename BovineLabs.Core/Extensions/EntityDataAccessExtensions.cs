@@ -7,21 +7,20 @@ namespace BovineLabs.Core.Extensions
     using System;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Collections;
-    using Unity.Assertions;
     using Unity.Burst.CompilerServices;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
     public static unsafe class EntityDataAccessExtensions
     {
-        internal static byte* GetComponentDataWithTypeRO(ref this EntityDataAccess access, Chunk* chunk, int indexInChunk, TypeIndex typeIndex, ref LookupCache cache)
+        internal static byte* GetComponentDataWithTypeRO(ref this EntityDataAccess access, ChunkIndex chunk, Archetype* archetype, int indexInChunk, TypeIndex typeIndex, ref LookupCache cache)
         {
-            return ChunkDataUtility.GetComponentDataWithTypeRO(chunk, chunk->Archetype, indexInChunk, typeIndex, ref cache);
+            return ChunkDataUtility.GetComponentDataWithTypeRO(chunk, archetype, indexInChunk, typeIndex, ref cache);
         }
 
-        internal static byte* GetComponentDataWithTypeRW(ref this EntityDataAccess access, Chunk* chunk, int indexInChunk, Entity entity, TypeIndex typeIndex, uint globalVersion, ref LookupCache cache)
+        internal static byte* GetComponentDataWithTypeRW(ref this EntityDataAccess access, ChunkIndex chunk, Archetype* archetype, int indexInChunk, Entity entity, TypeIndex typeIndex, uint globalVersion, ref LookupCache cache)
         {
-            var data = ChunkDataUtility.GetComponentDataWithTypeRW(chunk, chunk->Archetype, indexInChunk, typeIndex, globalVersion, ref cache);
+            var data = ChunkDataUtility.GetComponentDataWithTypeRW(chunk, archetype, indexInChunk, typeIndex, globalVersion, ref cache);
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(access.EntityComponentStore->m_RecordToJournal != 0))
