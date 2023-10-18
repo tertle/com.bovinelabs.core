@@ -41,7 +41,6 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
             var entity = baker.GetEntity(TransformUsageFlags.None);
             baker.AddComponent(entity, new Mod(this.Mod));
-            baker.AddComponent<ObjectDefinitionSetupRegistryInitialized>(entity);
             var registry = baker.AddBuffer<ObjectDefinitionSetupRegistry>(entity);
             var bakingData = baker.AddBuffer<ObjectDefinitionRegistryBakingData>(entity);
 

@@ -78,6 +78,11 @@ namespace BovineLabs.Core.Iterators
 
         public void SetChangeFilter(Entity entity)
         {
+            this.SetChangeFilter(entity, this.globalSystemVersion);
+        }
+
+        public void SetChangeFilter(Entity entity, uint systemVersion)
+        {
             this.SetChangeFilterCheckWriteAndThrow();
 
             var ecs = this.access->EntityComponentStore;
@@ -95,7 +100,7 @@ namespace BovineLabs.Core.Iterators
                 return;
             }
 
-            archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.ListIndex, this.globalSystemVersion);
+            archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.ListIndex, systemVersion);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

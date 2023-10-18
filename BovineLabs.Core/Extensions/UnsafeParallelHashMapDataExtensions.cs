@@ -80,6 +80,39 @@ namespace BovineLabs.Core.Extensions
             }
         }
 
+        internal static void AddBatchUnsafeParallel<TKey, TValue>(
+            [NoAlias] this ref UnsafeParallelHashMapData data,
+            [NoAlias] TKey* keys,
+            [NoAlias] TValue value,
+            int length)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            if (length == 0)
+            {
+                return;
+            }
+
+            var oldLength = data.ReserveParallel(length);
+
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
+
+            UnsafeUtility.MemCpy(keyPtr, keys, length * UnsafeUtility.SizeOf<TKey>());
+            UnsafeUtility.MemCpyReplicate(valuePtr, &value, UnsafeUtility.SizeOf<TValue>(), length);
+
+            var buckets = (int*)data.buckets;
+            var nextPtrs = (int*)data.next + oldLength;
+
+            for (var idx = 0; idx < length; idx++)
+            {
+                var hash = keys[idx].GetHashCode() & data.bucketCapacityMask;
+                var index = oldLength + idx;
+                var next = Interlocked.Exchange(ref UnsafeUtility.ArrayElementAsRef<int>(buckets, hash), index);
+                nextPtrs[idx] = next;
+            }
+        }
+
         internal static ref TValue GetValueByRef<TKey, TValue>(this ref UnsafeParallelHashMapData data, TKey key)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct

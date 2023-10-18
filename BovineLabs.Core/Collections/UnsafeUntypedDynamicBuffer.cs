@@ -18,7 +18,6 @@ namespace BovineLabs.Core.Collections
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
     public unsafe struct UnsafeUntypedDynamicBuffer
     {
-
         [NativeDisableUnsafePtrRestriction]
         [NoAlias]
         private readonly BufferHeader* buffer;
@@ -37,12 +36,7 @@ namespace BovineLabs.Core.Collections
             this.alignOf = alignOf;
         }
 
-        /// <summary>
-        /// The number of elements the buffer holds.
-        /// </summary>
-        /// <example>
-        /// <code source="../../DocCodeSamples.Tests/DynamicBufferExamples.cs" language="csharp" region="dynamicbuffer.length" />
-        /// </example>
+        /// <summary> The number of elements the buffer holds. </summary>
         public int Length
         {
             get
@@ -56,13 +50,6 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// The number of elements the buffer can hold.
         /// </summary>
-        /// <remarks>
-        /// <paramref name="Capacity" /> can not be set lower than <see cref="Length" /> - this will raise an exception.
-        /// If <paramref name="Capacity" /> grows greater than the internal capacity of the DynamicBuffer, memory external to the DynamicBuffer will be allocated.
-        /// If <paramref name="Capacity" /> shrinks to the internal capacity of the DynamicBuffer or smaller, memory external to the DynamicBuffer will be freed.
-        /// No effort is made to avoid costly reallocations when <paramref name="Capacity" /> changes slightly;
-        /// if <paramref name="Capacity" /> is incremented by 1, an array 1 element bigger is allocated.
-        /// </remarks>
         public int Capacity
         {
             get

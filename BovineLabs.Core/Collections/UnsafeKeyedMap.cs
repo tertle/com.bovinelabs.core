@@ -52,7 +52,6 @@ namespace BovineLabs.Core.Collections
         [FieldOffset(40)]
         internal int Length;
 
-
         internal static void AllocateHashMap<TValue>(int length, int bucketLength, AllocatorManager.AllocatorHandle label, out KeyedMapData* data)
             where TValue : unmanaged
         {
@@ -71,7 +70,6 @@ namespace BovineLabs.Core.Collections
             data->Next = data->Values + nextOffset;
             data->Buckets = data->Values + bucketOffset;
         }
-
 
         internal static void ReallocateHashMap<TValue>(KeyedMapData* data, int newCapacity, AllocatorManager.AllocatorHandle label)
             where TValue : unmanaged

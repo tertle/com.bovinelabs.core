@@ -14,8 +14,10 @@
         "Unity.InputSystem",
         "Unity.Logging",
         "Unity.Mathematics",
+        "Unity.Mathematics.Extensions",
         "Unity.Physics",
         "Unity.Scenes",
+        "Unity.Scenes.Editor",
         "Unity.Transforms"
     ],
     "includePlatforms": [

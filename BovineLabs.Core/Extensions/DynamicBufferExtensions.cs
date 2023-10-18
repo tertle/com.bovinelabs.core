@@ -50,8 +50,6 @@ namespace BovineLabs.Core.Extensions
         public static NativeArray<T>.ReadOnly AsNativeArrayRO<T>(this in DynamicBuffer<T> buffer)
             where T : unmanaged
         {
-            // CheckReadAccess(buffer);
-            // TODO implement properly
             return buffer.AsNativeArray().AsReadOnly();
         }
 

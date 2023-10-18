@@ -85,7 +85,7 @@ namespace BovineLabs.Core.Utility
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(t => t != type)
-                .Where(t => t.IsClass && !t.IsInterface && !t.IsAbstract)
+                .Where(t => !t.IsInterface && !t.IsAbstract)
                 .Where(t => type.IsAssignableFrom(t));
         }
 
@@ -103,7 +103,7 @@ namespace BovineLabs.Core.Utility
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(t => (t != type1) && (t != type2))
-                .Where(t => t.IsClass && !t.IsInterface && !t.IsAbstract)
+                .Where(t => !t.IsInterface && !t.IsAbstract)
                 .Where(t => !t.ContainsGenericParameters)
                 .Where(t => type1.IsAssignableFrom(t) && type2.IsAssignableFrom(t));
         }
@@ -122,7 +122,7 @@ namespace BovineLabs.Core.Utility
             var all = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(t => (t != type1) && (t != type2))
-                .Where(t => t.IsClass && !t.IsInterface && !t.IsAbstract)
+                .Where(t => !t.IsInterface && !t.IsAbstract)
                 .Where(t => !t.ContainsGenericParameters)
                 .Where(t => type1.IsAssignableFrom(t) && type2.IsAssignableFrom(t))
                 .ToList();

@@ -20,7 +20,7 @@ namespace BovineLabs.Core.Extensions
             return entityManager.GetCheckedEntityDataAccess()->EntityComponentStore->m_Archetypes.Length;
         }
 
-        public static SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
+        internal static SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
             where T : struct, ISharedComponentData
         {
             EntityDataAccess* access = entityManager.GetCheckedEntityDataAccess();
@@ -33,7 +33,7 @@ namespace BovineLabs.Core.Extensions
 #endif
         }
 
-        public static SharedComponentLookup<T> GetSharedComponentLookup<T>(this EntityManager entityManager, bool isReadOnly = true)
+        internal static SharedComponentLookup<T> GetSharedComponentLookup<T>(this EntityManager entityManager, bool isReadOnly = true)
             where T : unmanaged, ISharedComponentData
         {
             var access = entityManager.GetCheckedEntityDataAccess();
@@ -46,7 +46,7 @@ namespace BovineLabs.Core.Extensions
 #endif
         }
 
-        public static UnsafeComponentHandle GetUnsafeComponentHandle(this EntityManager entityManager)
+        internal static UnsafeComponentHandle GetUnsafeComponentHandle(this EntityManager entityManager)
         {
             var access = entityManager.GetCheckedEntityDataAccess();
             return new UnsafeComponentHandle(access);
@@ -56,6 +56,28 @@ namespace BovineLabs.Core.Extensions
         {
             var access = entityManager.GetCheckedEntityDataAccess();
             return new UnsafeEnableableLookup(access);
+        }
+
+        internal static UnsafeComponentLookup<T> GetUnsafeComponentLookup<T>(this EntityManager entityManager, bool isReadOnly)
+            where T : unmanaged, IComponentData
+        {
+            var typeIndex = TypeManager.GetTypeIndex<T>();
+            var access = entityManager.GetCheckedEntityDataAccess();
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            return new UnsafeComponentLookup<T>(typeIndex, access, isReadOnly);
+#else
+            return new UnsafeComponentLookup<T>(typeIndex, access);
+#endif
+        }
+
+        internal static UnsafeBufferLookup<T> GetUnsafeBufferLookup<T>(this EntityManager entityManager, bool isReadOnly)
+            where T : unmanaged, IBufferElementData
+        {
+            var typeIndex = TypeManager.GetTypeIndex<T>();
+            var access = entityManager.GetCheckedEntityDataAccess();
+
+            return new UnsafeBufferLookup<T>(typeIndex, access, isReadOnly);
         }
 
         public static UntypedDynamicBuffer GetUntypedBuffer(

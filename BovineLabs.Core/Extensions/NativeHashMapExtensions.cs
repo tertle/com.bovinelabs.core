@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Extensions
 
     public static unsafe class NativeHashMapExtensions
     {
-        public static ref TValue GetOrAddRef<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key)
+        public static ref TValue GetOrAddRef<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key, TValue defaultValue = default)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Extensions
             if (idx == -1)
             {
                 idx = hashMap.m_Data->AddNoFind(key);
-                UnsafeUtility.WriteArrayElement(hashMap.m_Data->Ptr, idx, default(TValue));
+                UnsafeUtility.WriteArrayElement(hashMap.m_Data->Ptr, idx, defaultValue);
             }
 
             return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data->Ptr, idx);

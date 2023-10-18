@@ -289,7 +289,7 @@ namespace BovineLabs.Core.Extensions
             return ref UnsafeUtility.AsRef<v128>(ptr);
         }
 
-        public static ref v128 GetRequiredEnabledBitsRW<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle, out int* ptrChunkDisabledCount)
+        public static ref v128 GetRequiredEnabledBitsRW<T>(this in ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle, out int* ptrChunkDisabledCount)
             where T : unmanaged, IComponentData, IEnableableComponent
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -324,6 +324,12 @@ namespace BovineLabs.Core.Extensions
                 out ptrChunkDisabledCount).Ptr;
 
             return ref UnsafeUtility.AsRef<v128>(ptr);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void UpdateChunkDisabledCount(this in ArchetypeChunk archetypeChunk, int* ptrChunkDisabledCount, in v128 bits)
+        {
+            *ptrChunkDisabledCount = archetypeChunk.Count - math.countbits(bits.ULong0) - math.countbits(bits.ULong1);
         }
 
         public static void GetEnableableActiveMasks(this ArchetypeChunk archetypeChunk, out ulong mask0, out ulong mask1)

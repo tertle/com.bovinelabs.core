@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.1.1] - 2023-10-18
+
+### Added
+* More batch operations for hash maps
+* AssemblyBuilder can now add Entities.Graphics
+* IJobHashMapDefer and IJobParallelHashMapDefer to replace removed jobs
+* FixedArray<T, TS>
+* FunctionBuilder to pass FunctionPointers with data into jobs to allow extended behaviour
+* UnsafeComponentLookup and UnsafeBufferLookup
+* SearchElement
+
+### Changed
+* AssemblyBuilder now sets auto reference false
+* Updated ObjectDefinitionSystem to handle closing SubScenes
+* Added a range check to ObjectDefinitionRegistry
+* ReflectionUtility now also returns structs
+* Renamed UnsafeDynamicBufferAccessor to UnsafeUntypedDynamicBufferAccessor to match what it returns
+* GetOrAddRef extension now has optional default value
+* Added override to ChangeFilterLookup to specify version
+
+### Removed
+* IJobHashMapVisitKeyValue and IJobParallelHashMapVisitKeyValue as these were unsafe when scheduling when a job was resizing capacity
+
+### Documentation
+* Added documentation for Functions
+
 ## [1.1.0] - 2023-09-24
 
 ### Changed

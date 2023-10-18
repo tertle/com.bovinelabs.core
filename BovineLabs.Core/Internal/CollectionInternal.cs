@@ -76,6 +76,16 @@ namespace BovineLabs.Core.Internal
         }
 #endif
 
+        internal static unsafe HashMapHelper<TKey>* GetReadOnlyHashMapHelper<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
+#endif
+            return hashMap.m_Data;
+        }
+
         public static NativeParallelMultiHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeParallelMultiHashMap<TKey, TValue> hashMapData)
             where TKey : unmanaged, IEquatable<TKey> where TValue : unmanaged
         {

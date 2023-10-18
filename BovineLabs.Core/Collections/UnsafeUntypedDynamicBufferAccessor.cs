@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Collections
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
-    public unsafe struct UnsafeDynamicBufferAccessor
+    public unsafe struct UnsafeUntypedDynamicBufferAccessor
     {
         [NativeDisableUnsafePtrRestriction]
         private readonly byte* pointer;
@@ -24,7 +24,7 @@ namespace BovineLabs.Core.Collections
         /// <summary> The size (in bytes) of a single buffer element. </summary>
         public int ElementSize { get; }
 
-        internal UnsafeDynamicBufferAccessor(byte* basePointer, int length, int stride, int elementSize, int internalCapacity)
+        internal UnsafeUntypedDynamicBufferAccessor(byte* basePointer, int length, int stride, int elementSize, int internalCapacity)
         {
             this.pointer = basePointer;
             this.internalCapacity = internalCapacity;

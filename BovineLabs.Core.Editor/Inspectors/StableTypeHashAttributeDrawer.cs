@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Editor.Inspectors
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Editor.SearchWindow;
+    using BovineLabs.Core.Editor.UI;
     using BovineLabs.Core.PropertyDrawers;
     using BovineLabs.Core.Utility;
     using Unity.Entities;
@@ -29,46 +30,23 @@ namespace BovineLabs.Core.Editor.Inspectors
                 items = Attributes[stableHashAttribute] = GenerateItems(stableHashAttribute);
             }
 
-            var parent = new VisualElement { style = { flexDirection = FlexDirection.Row } };
-            parent.AddToClassList("unity-base-field");
-            parent.AddToClassList("unity-base-field__inspector-field");
-
-            var label = new Label { text = property.displayName };
-            label.AddToClassList("unity-base-field__label");
-            parent.Add(label);
-
-            var componentButton = new Button { style = { flexGrow = 1 } };
-            componentButton.clicked += () =>
+            var searchElement = new SearchElement(items, string.Empty, property.displayName);
+            searchElement.OnSelection += item =>
             {
-                var searchWindow = SearchWindow.Create();
-
-                searchWindow.Title = "Components";
-                searchWindow.Items = items;
-                searchWindow.OnSelection += item =>
-                {
-                    var stableTypeHash = (ulong)item.Data!;
-                    property.longValue = (long)stableTypeHash;
-                    property.serializedObject.ApplyModifiedProperties();
-
-                    componentButton.text = HashToName(stableTypeHash, componentButton.worldBound.width);
-                };
-
-                var rect = EditorWindow.focusedWindow.position;
-                var worldBounds = label.worldBound;
-                var buttonBounds = componentButton.worldBound;
-
-                var size = new Rect(rect.x + worldBounds.x, rect.y + worldBounds.y + worldBounds.height, worldBounds.width + buttonBounds.width, 315);
-                searchWindow.position = size;
-                searchWindow.ShowPopup();
+                var stableTypeHash = (ulong)item.Data!;
+                property.longValue = (long)stableTypeHash;
+                property.serializedObject.ApplyModifiedProperties();
             };
 
-            componentButton.RegisterCallback<GeometryChangedEvent>(_ =>
+            var searchButton = searchElement.Q<Button>();
+            searchElement.SetText = item => HashToName((ulong)item.Data, searchButton.worldBound.width);
+
+            searchElement.RegisterCallback<GeometryChangedEvent>(_ =>
             {
-                componentButton.text = HashToName((ulong)property.longValue, componentButton.worldBound.width);
+                searchElement.Text = HashToName((ulong)property.longValue, searchButton.worldBound.width);
             });
 
-            parent.Add(componentButton);
-            return parent;
+            return searchElement;
         }
 
         /// <inheritdoc />
@@ -79,7 +57,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         private static string HashToName(ulong stableTypeHash, float width)
         {
-            var maxLength = width / 6.8f; // Just trial and error what fits best
+            var maxLength = width / 7.5f; // Just trial and error what fits best
 
             var typeIndex = TypeManager.GetTypeIndexFromStableTypeHash(stableTypeHash);
             var type = typeIndex != -1 ? TypeManager.GetType(typeIndex) : null;
@@ -158,7 +136,7 @@ namespace BovineLabs.Core.Editor.Inspectors
                     continue;
                 }
 
-                componentTypes.Add(new SearchView.Item { Path = t.DebugTypeName.ToString(), Data = t.StableTypeHash });
+                componentTypes.Add(new SearchView.Item { Path = t.DebugTypeName.ToString().Replace('.', '/'), Data = t.StableTypeHash });
             }
 
             return componentTypes;

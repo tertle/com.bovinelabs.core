@@ -81,14 +81,14 @@ namespace BovineLabs.Core.Iterators
         /// <exception cref="ArgumentException"> For getting, thrown if the key was not present. </exception>
         public TValue this[TKey key]
         {
-            get
+            readonly get
             {
                 if (this.TryGetValue(key, out var res))
                 {
                     return res;
                 }
 
-                this.ThrowKeyNotPresent(key);
+                ThrowKeyNotPresent(key);
 
                 return default;
             }
@@ -111,7 +111,7 @@ namespace BovineLabs.Core.Iterators
 
         /// <summary> Removes all key-value pairs. </summary>
         /// <remarks> Does not change the capacity. </remarks>
-        public void Clear()
+        public readonly void Clear()
         {
             this.CheckWrite();
             this.helper->Clear();
@@ -153,12 +153,26 @@ namespace BovineLabs.Core.Iterators
             UnsafeUtility.WriteArrayElement(this.helper->Values, idx, item);
         }
 
+        public ref TValue GetOrAddRef(TKey key, TValue defaultValue = default)
+        {
+            this.CheckWrite();
+
+            var idx = this.helper->Find(key);
+            if (idx == -1)
+            {
+                idx = DynamicHashMapHelper<TKey>.AddUnique(this.buffer, ref this.helper, key);
+                UnsafeUtility.WriteArrayElement(this.helper->Values, idx, defaultValue);
+            }
+
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(this.helper->Values, idx);
+        }
+
         /// <summary>
         /// Removes a key-value pair.
         /// </summary>
         /// <param name="key">The key to remove.</param>
         /// <returns>True if a key-value pair was removed.</returns>
-        public bool Remove(TKey key)
+        public readonly bool Remove(TKey key)
         {
             return this.helper->TryRemove(key) != -1;
         }
@@ -169,7 +183,7 @@ namespace BovineLabs.Core.Iterators
         /// <param name="key">The key to look up.</param>
         /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
         /// <returns>True if the key was present.</returns>
-        public bool TryGetValue(TKey key, out TValue item)
+        public readonly bool TryGetValue(TKey key, out TValue item)
         {
             return this.helper->TryGetValue(key, out item);
         }
@@ -179,7 +193,7 @@ namespace BovineLabs.Core.Iterators
         /// </summary>
         /// <param name="key">The key to look up.</param>
         /// <returns>True if the key was present.</returns>
-        public bool ContainsKey(TKey key)
+        public readonly bool ContainsKey(TKey key)
         {
             return this.helper->Find(key) != -1;
         }
@@ -208,7 +222,7 @@ namespace BovineLabs.Core.Iterators
         /// <summary> Returns an array with a copy of all this hash map's keys (in no particular order). </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
-        public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+        public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
             return this.helper->GetKeyArray(allocator);
         }
@@ -216,7 +230,7 @@ namespace BovineLabs.Core.Iterators
         /// <summary> Returns an array with a copy of all this hash map's values (in no particular order). </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
-        public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
+        public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
             return this.helper->GetValueArray<TValue>(allocator);
         }
@@ -225,7 +239,7 @@ namespace BovineLabs.Core.Iterators
         /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
-        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
+        public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
             return this.helper->GetKeyValueArrays<TValue>(allocator);
         }
@@ -234,7 +248,7 @@ namespace BovineLabs.Core.Iterators
         /// Returns an enumerator over the key-value pairs of this hash map.
         /// </summary>
         /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
-        public DynamicHashMapEnumerator<TKey, TValue> GetEnumerator()
+        public readonly DynamicHashMapEnumerator<TKey, TValue> GetEnumerator()
         {
             return new DynamicHashMapEnumerator<TKey, TValue>(this.helper);
         }
@@ -275,7 +289,7 @@ namespace BovineLabs.Core.Iterators
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CheckWrite()
+        private readonly void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (this.readOnly)
@@ -287,7 +301,7 @@ namespace BovineLabs.Core.Iterators
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
-        private void ThrowKeyNotPresent(TKey key)
+        private static void ThrowKeyNotPresent(TKey key)
         {
             throw new ArgumentException($"Key: {key} is not present.");
         }

@@ -58,7 +58,7 @@ namespace BovineLabs.Core.Iterators
             return access->EntityComponentStore->GetComponentDataWithTypeRO(archetypeChunk.m_Chunk.MetaChunkEntity, componentType.TypeIndex);
         }
 
-        public readonly UnsafeDynamicBufferAccessor GetDynamicBufferAccessor(ArchetypeChunk chunk, ComponentType componentType)
+        public readonly UnsafeUntypedDynamicBufferAccessor GetDynamicBufferAccessor(ArchetypeChunk chunk, ComponentType componentType)
         {
             var archetype = chunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk);
 
@@ -73,7 +73,7 @@ namespace BovineLabs.Core.Iterators
             int stride = archetype->SizeOfs[typeIndexInArchetype];
             var elementSize = typeInfo.ElementSize;
 
-            return new UnsafeDynamicBufferAccessor(ptr, length, stride, elementSize, internalCapacity);
+            return new UnsafeUntypedDynamicBufferAccessor(ptr, length, stride, elementSize, internalCapacity);
         }
 
         public readonly UnsafeUntypedDynamicBuffer GetUntypedBuffer(Entity entity, ComponentType componentType)

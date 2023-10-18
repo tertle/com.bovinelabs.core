@@ -21,6 +21,8 @@ namespace BovineLabs.Core.Editor.SearchWindow
 
         public event Action<SearchView.Item> OnSelection;
 
+        public event Action OnClose;
+
         public List<SearchView.Item> Items
         {
             get => this.searchView.Items;
@@ -47,7 +49,7 @@ namespace BovineLabs.Core.Editor.SearchWindow
             this.searchView.OnSelection += e =>
             {
                 this.OnSelection?.Invoke(e);
-                this.Close();
+                this.Close(false);
             };
         }
 
@@ -65,7 +67,17 @@ namespace BovineLabs.Core.Editor.SearchWindow
 
         private void OnLostFocus()
         {
+            this.Close(true);
+        }
+
+        private void Close(bool fireEvent)
+        {
             this.Close();
+
+            if (fireEvent)
+            {
+                this.OnClose?.Invoke();
+            }
         }
     }
 }

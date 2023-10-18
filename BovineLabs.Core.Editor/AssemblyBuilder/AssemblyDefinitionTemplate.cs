@@ -26,7 +26,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
         public bool allowUnsafeCode;
         public bool overrideReferences;
         public List<string> precompiledReferences;
-        public bool autoReferenced; // true;
+        public bool autoReferenced;
         public List<string> defineConstraints;
         public List<string> versionDefines;
         public bool noEngineReferences;
@@ -41,7 +41,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 allowUnsafeCode = false,
                 overrideReferences = false,
                 precompiledReferences = new List<string>(),
-                autoReferenced = true,
+                autoReferenced = false,
                 defineConstraints = new List<string>(),
                 versionDefines = new List<string>(),
                 noEngineReferences = false,

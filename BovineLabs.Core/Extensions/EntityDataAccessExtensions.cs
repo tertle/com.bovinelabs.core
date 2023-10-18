@@ -95,28 +95,6 @@ namespace BovineLabs.Core.Extensions
 #endif
         }
 
-        // internal static int InsertSharedComponent_Unmanaged(this EntityDataAccess access, ComponentType componentType, void* newData)
-        // {
-        //     var ti = componentType.TypeIndex;
-        //     int index;
-        //     // Assert.IsFalse(TypeManager.IsManagedSharedComponent(ti));
-        //     Assert.IsFalse(TypeManager.IsManagedSharedComponent(ti));
-        //
-        //     // var defaultData = default(T);
-        //
-        //     var defaultData = stackalloc byte[1];
-        //
-        //     index = access.EntityComponentStore->InsertSharedComponent_Unmanaged(
-        //         ti,
-        //         0,
-        //         newData,
-        //         defaultData);
-        //
-        //     access.m_ManagedReferenceIndexList.Add(index);
-        //     return index;
-        // }
-
-
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void JournalAddRecord(EntityComponentStore* store, Entity entity, TypeIndex typeIndex, uint version, void* data)

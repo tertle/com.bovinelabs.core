@@ -72,7 +72,7 @@ namespace BovineLabs.Core.SubScenes
             var debug = SystemAPI.GetSingleton<BLDebug>();
             var flags = this.World.Flags;
 
-            foreach (var subScene in Object.FindObjectsOfType<SubScene>())
+            foreach (var subScene in Object.FindObjectsByType<SubScene>(FindObjectsSortMode.None))
             {
                 var subSceneLoadConfig = subScene.GetComponent<SubSceneLoadConfig>();
 

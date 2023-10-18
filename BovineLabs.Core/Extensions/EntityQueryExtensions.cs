@@ -97,7 +97,8 @@ namespace BovineLabs.Core.Extensions
             var bufferAccessor = ChunkIterationUtility.GetChunkBufferAccessor<T>(archetype, chunk, !isReadOnly, indexInArchetype,
                 impl->_Access->EntityComponentStore->GlobalSystemVersion);
 #endif
-            return bufferAccessor[0];
+
+            return bufferAccessor.GetUnsafe(0);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

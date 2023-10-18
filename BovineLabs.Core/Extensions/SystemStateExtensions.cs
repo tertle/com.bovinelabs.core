@@ -31,6 +31,20 @@ namespace BovineLabs.Core.Extensions
             return system.EntityManager.GetUnsafeComponentHandle();
         }
 
+        public static UnsafeComponentLookup<T> GetUnsafeComponentLookup<T>(ref this SystemState system, bool isReadOnly = false)
+            where T : unmanaged, IComponentData
+        {
+            system.AddReaderWriter(isReadOnly ? ComponentType.ReadOnly<T>() : ComponentType.ReadWrite<T>());
+            return system.EntityManager.GetUnsafeComponentLookup<T>(isReadOnly);
+        }
+
+        public static UnsafeBufferLookup<T> GetUnsafeBufferLookup<T>(ref this SystemState system, bool isReadOnly = false)
+            where T : unmanaged, IBufferElementData
+        {
+            system.AddReaderWriter(isReadOnly ? ComponentType.ReadOnly<T>() : ComponentType.ReadWrite<T>());
+            return system.EntityManager.GetUnsafeBufferLookup<T>(isReadOnly);
+        }
+
         /// <summary>
         /// Get an <see cref="UnsafeEnableableLookup" />.
         /// All components that use this must manually add a dependency to the system for safety.

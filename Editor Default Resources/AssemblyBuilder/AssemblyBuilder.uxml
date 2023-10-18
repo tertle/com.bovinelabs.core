@@ -12,6 +12,7 @@
                     <ui:Toggle label="Unity.Collections" value="true" />
                     <ui:Toggle label="Unity.Entities" value="true" />
                     <ui:Toggle label="Unity.Entities.Hybrid" value="true" />
+                    <ui:Toggle label="Unity.Entities.Graphics" value="true" />
                     <ui:Toggle label="Unity.InputSystem" value="true" />
                     <ui:Toggle label="Unity.Logging" value="true" />
                     <ui:Toggle label="Unity.Mathematics" value="true" />

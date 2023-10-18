@@ -17,6 +17,7 @@ namespace BovineLabs.Core.ObjectManagement
         private NativeHashMap<int, int> objectDefinitionsOffsets;
         private NativeList<Entity> objectDefinitions;
         private EntityQuery newQuery;
+        private EntityQuery oldQuery;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -26,8 +27,14 @@ namespace BovineLabs.Core.ObjectManagement
 
             state.EntityManager.AddComponentData(state.SystemHandle, new ObjectDefinitionRegistry(this.objectDefinitions, this.objectDefinitionsOffsets));
 
-            this.newQuery = SystemAPI.QueryBuilder().WithAll<Mod, ObjectDefinitionSetupRegistry>().WithAll<ObjectDefinitionSetupRegistryInitialized>().Build();
-            state.RequireForUpdate(this.newQuery);
+            this.newQuery = SystemAPI.QueryBuilder().WithAll<Mod, ObjectDefinitionSetupRegistry>().WithNone<ObjectDefinitionSetupRegistryInitialized>().Build();
+            this.oldQuery = SystemAPI.QueryBuilder().WithNone<Mod, ObjectDefinitionSetupRegistry>().WithAll<ObjectDefinitionSetupRegistryInitialized>().Build();
+
+            var anyQueries = new NativeArray<EntityQuery>(2, Allocator.Temp);
+            anyQueries[0] = this.newQuery;
+            anyQueries[1] = this.oldQuery;
+
+            state.RequireAnyForUpdate(anyQueries);
         }
 
         public void OnDestroy(ref SystemState state)
@@ -39,6 +46,8 @@ namespace BovineLabs.Core.ObjectManagement
         public void OnUpdate(ref SystemState state)
         {
             state.CompleteDependency();
+            state.EntityManager.RemoveComponent<ObjectDefinitionSetupRegistryInitialized>(this.oldQuery);
+            state.EntityManager.AddComponent<ObjectDefinitionSetupRegistryInitialized>(this.newQuery);
 
             this.objectDefinitions.Clear();
             this.objectDefinitionsOffsets.Clear();
@@ -57,8 +66,6 @@ namespace BovineLabs.Core.ObjectManagement
                 offsets += odr.Length;
                 this.objectDefinitions.AddRange(odr.AsNativeArray().Reinterpret<Entity>());
             }
-
-            state.EntityManager.RemoveComponent<ObjectDefinitionSetupRegistryInitialized>(this.newQuery);
         }
     }
 }

@@ -307,7 +307,7 @@ namespace BovineLabs.Core.Extensions
         /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
         /// <param name="hashMap"> The hashmap to clear and add to. </param>
         /// <param name="key"> The key to use. </param>
-        /// <param name="values"> Pointer to the values. </param>
+        /// <param name="value"> Pointer to the values. </param>
         /// <param name="length"> The length of the values. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
@@ -351,6 +351,57 @@ namespace BovineLabs.Core.Extensions
             }
 
             hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength += length;
+        }
+
+        /// <summary>
+        /// Efficiently adds a collection of values for keys and single value to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
+        /// This is much faster than iterating and using Add.
+        /// </summary>
+        /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
+        /// <param name="hashMap"> The hashmap to clear and add to. </param>
+        /// <param name="keys"> Collection of keys </param>
+        /// <param name="value"> The single value. </param>
+        /// <param name="length"> The length of the values. </param>
+        /// <typeparam name="TKey"> The key type. </typeparam>
+        /// <typeparam name="TValue"> The value type. </typeparam>
+        public static void AddBatchUnsafe<TKey, TValue>(
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap,
+            NativeArray<TKey> keys,
+            TValue value)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+#endif
+
+            var oldLength = hashMap.Count();
+            var newLength = oldLength + keys.Length;
+
+            if (hashMap.Capacity < newLength)
+            {
+                hashMap.Capacity = newLength;
+            }
+
+            var data = hashMap.GetUnsafeBucketData();
+
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
+
+            UnsafeUtility.MemCpy(keyPtr, keys.GetUnsafeReadOnlyPtr(), keys.Length * UnsafeUtility.SizeOf<TKey>());
+            UnsafeUtility.MemCpyReplicate(valuePtr, &value, UnsafeUtility.SizeOf<TValue>(), keys.Length);
+
+            var buckets = (int*)data.buckets;
+            var nextPtrs = (int*)data.next + oldLength;
+
+            for (var idx = 0; idx < keys.Length; idx++)
+            {
+                var bucket = keyPtr[idx].GetHashCode() & data.bucketCapacityMask;
+                nextPtrs[idx] = buckets[bucket];
+                buckets[bucket] = oldLength + idx;
+            }
+
+            hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength += keys.Length;
         }
 
         /// <summary>
@@ -443,6 +494,16 @@ namespace BovineLabs.Core.Extensions
             where TValue : unmanaged
         {
             hashMap.m_Writer.m_Buffer->AddBatchUnsafeParallel(keys, length);
+        }
+
+        public static void AddBatchUnsafe<TKey, TValue>(
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
+            NativeArray<TKey> keys,
+            TValue value)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            hashMap.m_Writer.m_Buffer->AddBatchUnsafeParallel((TKey*)keys.GetUnsafeReadOnlyPtr(), value, keys.Length);
         }
 
         public static void RecalculateBuckets<TKey, TValue>(

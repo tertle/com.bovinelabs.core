@@ -1,4 +1,4 @@
-﻿// <copyright file="IJobParallelHashMapVisitKeyValue.cs" company="BovineLabs">
+﻿// <copyright file="IJobHashMapDefer.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -16,33 +16,33 @@ namespace BovineLabs.Core.Jobs
 
     /// <summary>
     /// A burst friendly low level hash map enumerating job.
-    /// You can use <see cref="JobParallelHashMapVisitKeyValue.Read{TJob, TKey, TValue}" /> to safely get the current key/value.
+    /// You can use <see cref="JobHashMapDefer.Read{TJob, TKey, TValue}" /> to safely get the current key/value.
     /// </summary>
-    [JobProducerType(typeof(JobParallelHashMapVisitKeyValue.JobParallelHashMapVisitKeyValueProducer<>))]
-    public unsafe interface IJobParallelHashMapVisitKeyValue
+    [JobProducerType(typeof(JobHashMapDefer.JobHashMapVisitKeyValueProducer<>))]
+    public interface IJobHashMapDefer
     {
-        void ExecuteNext(byte* keys, byte* values, int entryIndex, int jobIndex);
+        void ExecuteNext(int entryIndex, int jobIndex);
     }
 
-    public static class JobParallelHashMapVisitKeyValue
+    public static class JobHashMapDefer
     {
         public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
             this TJob jobData,
-            NativeParallelMultiHashMap<TKey, TValue> hashMap,
+            NativeHashMap<TKey, TValue> hashMap,
             int minIndicesPerJobCount,
             JobHandle dependsOn = default)
-            where TJob : unmanaged, IJobParallelHashMapVisitKeyValue
+            where TJob : unmanaged, IJobHashMapDefer
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var jobProducer = new JobParallelHashMapVisitKeyValueProducer<TJob>
+            var jobProducer = new JobHashMapVisitKeyValueProducer<TJob>
             {
-                HashMap = hashMap.m_MultiHashMapData.m_Buffer,
+                HashMap = (HashMapWrapper*)hashMap.m_Data,
                 JobData = jobData,
             };
 
-            JobParallelHashMapVisitKeyValueProducer<TJob>.Initialize();
-            var reflectionData = JobParallelHashMapVisitKeyValueProducer<TJob>.ReflectionData.Data;
+            JobHashMapVisitKeyValueProducer<TJob>.Initialize();
+            var reflectionData = JobHashMapVisitKeyValueProducer<TJob>.ReflectionData.Data;
             CollectionHelper.CheckReflectionDataCorrect<TJob>(reflectionData);
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(
@@ -51,35 +51,17 @@ namespace BovineLabs.Core.Jobs
                 dependsOn,
                 ScheduleMode.Parallel);
 
-            return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.GetUnsafeBucketData().bucketCapacityMask + 1, minIndicesPerJobCount);
-        }
+            void* atomicSafetyHandlePtr = null;
+            // Calculate the deferred atomic safety handle before constructing JobScheduleParameters so
+            // DOTS Runtime can validate the deferred list statically similar to the reflection based
+            // validation in Big Unity.
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var safety = hashMap.m_Safety;
+            atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
+#endif
 
-        public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
-            this TJob jobData,
-            NativeParallelHashMap<TKey, TValue> hashMap,
-            int minIndicesPerJobCount,
-            JobHandle dependsOn = default)
-            where TJob : unmanaged, IJobParallelHashMapVisitKeyValue
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            var jobProducer = new JobParallelHashMapVisitKeyValueProducer<TJob>
-            {
-                HashMap = hashMap.m_HashMapData.m_Buffer,
-                JobData = jobData,
-            };
-
-            JobParallelHashMapVisitKeyValueProducer<TJob>.Initialize();
-            var reflectionData = JobParallelHashMapVisitKeyValueProducer<TJob>.ReflectionData.Data;
-            CollectionHelper.CheckReflectionDataCorrect<TJob>(reflectionData);
-
-            var scheduleParams = new JobsUtility.JobScheduleParameters(
-                UnsafeUtility.AddressOf(ref jobProducer),
-                reflectionData,
-                dependsOn,
-                ScheduleMode.Parallel);
-
-            return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.GetUnsafeBucketData().bucketCapacityMask + 1, minIndicesPerJobCount);
+            byte* lengthPtr = (byte*)&hashMap.m_Data->BucketCapacity - sizeof(void*);
+            return JobsUtility.ScheduleParallelForDeferArraySize(ref scheduleParams, minIndicesPerJobCount, lengthPtr, atomicSafetyHandlePtr);
         }
 
         /// <summary>
@@ -88,39 +70,43 @@ namespace BovineLabs.Core.Jobs
         /// </summary>
         [UsedImplicitly]
         public static void EarlyJobInit<T>()
-            where T : struct, IJobParallelHashMapVisitKeyValue
+            where T : struct, IJobHashMapDefer
         {
-            JobParallelHashMapVisitKeyValueProducer<T>.Initialize();
+            JobHashMapVisitKeyValueProducer<T>.Initialize();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void Read<TJob, TKey, TValue>(this ref TJob job, int entryIndex, byte* keys, byte* values, out TKey key, out TValue value)
-            where TJob : unmanaged, IJobParallelHashMapVisitKeyValue
+        public static unsafe void Read<TJob, TKey, TValue>(this ref TJob job, NativeHashMap<TKey, TValue> hashMap, int entryIndex, out TKey key, out TValue value)
+            where TJob : unmanaged, IJobHashMapDefer
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            key = UnsafeUtility.ReadArrayElement<TKey>(keys, entryIndex);
-            value = UnsafeUtility.ReadArrayElement<TValue>(values, entryIndex);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
+#endif
+
+            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.m_Data->Keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_Data->Ptr, entryIndex);
         }
 
         /// <summary> The job execution struct. </summary>
         /// <typeparam name="T"> The type of the job. </typeparam>
-        internal unsafe struct JobParallelHashMapVisitKeyValueProducer<T>
-            where T : struct, IJobParallelHashMapVisitKeyValue
+        internal unsafe struct JobHashMapVisitKeyValueProducer<T>
+            where T : struct, IJobHashMapDefer
         {
             /// <summary> The <see cref="NativeParallelMultiHashMap{TKey,TValue}" />. </summary>
             [ReadOnly]
             [NativeDisableUnsafePtrRestriction]
-            internal UnsafeParallelHashMapData* HashMap;
+            internal HashMapWrapper* HashMap;
 
             // ReSharper disable once StaticMemberInGenericType
-            internal static readonly SharedStatic<IntPtr> ReflectionData = SharedStatic<IntPtr>.GetOrCreate<JobParallelHashMapVisitKeyValueProducer<T>>();
+            internal static readonly SharedStatic<IntPtr> ReflectionData = SharedStatic<IntPtr>.GetOrCreate<JobHashMapVisitKeyValueProducer<T>>();
 
             /// <summary> The job. </summary>
             internal T JobData;
 
             private delegate void ExecuteJobFunction(
-                ref JobParallelHashMapVisitKeyValueProducer<T> producer,
+                ref JobHashMapVisitKeyValueProducer<T> producer,
                 IntPtr additionalPtr,
                 IntPtr bufferRangePatchData,
                 ref JobRanges ranges,
@@ -132,7 +118,7 @@ namespace BovineLabs.Core.Jobs
                 if (ReflectionData.Data == IntPtr.Zero)
                 {
                     ReflectionData.Data = JobsUtility.CreateJobReflectionData(
-                        typeof(JobParallelHashMapVisitKeyValueProducer<T>),
+                        typeof(JobHashMapVisitKeyValueProducer<T>),
                         typeof(T),
                         (ExecuteJobFunction)Execute);
                 }
@@ -146,7 +132,7 @@ namespace BovineLabs.Core.Jobs
             /// <param name="jobIndex"> The job index. </param>
             [SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Required by burst.")]
             internal static void Execute(
-                ref JobParallelHashMapVisitKeyValueProducer<T> fullData,
+                ref JobHashMapVisitKeyValueProducer<T> fullData,
                 IntPtr additionalPtr,
                 IntPtr bufferRangePatchData,
                 ref JobRanges ranges,
@@ -159,10 +145,8 @@ namespace BovineLabs.Core.Jobs
                         return;
                     }
 
-                    var buckets = (int*)fullData.HashMap->buckets;
-                    var nextPtrs = (int*)fullData.HashMap->next;
-                    var keys = fullData.HashMap->keys;
-                    var values = fullData.HashMap->values;
+                    var buckets = fullData.HashMap->Buckets;
+                    var nextPtrs = fullData.HashMap->Next;
 
                     for (var i = begin; i < end; i++)
                     {
@@ -170,12 +154,36 @@ namespace BovineLabs.Core.Jobs
 
                         while (entryIndex != -1)
                         {
-                            fullData.JobData.ExecuteNext(keys, values, entryIndex, jobIndex);
+                            fullData.JobData.ExecuteNext(entryIndex, jobIndex);
                             entryIndex = nextPtrs[entryIndex];
                         }
                     }
                 }
             }
+        }
+
+        internal unsafe struct HashMapWrapper
+        {
+            [NativeDisableUnsafePtrRestriction]
+            internal byte* Ptr;
+
+            [NativeDisableUnsafePtrRestriction]
+            internal byte* Keys;
+
+            [NativeDisableUnsafePtrRestriction]
+            internal int* Next;
+
+            [NativeDisableUnsafePtrRestriction]
+            internal int* Buckets;
+
+            private int Count;
+            private int Capacity;
+            private int Log2MinGrowth;
+            private int BucketCapacity;
+            private int AllocatedIndex;
+            private int FirstFreeIdx;
+            private int SizeOfTValue;
+            private AllocatorManager.AllocatorHandle Allocator;
         }
     }
 }
