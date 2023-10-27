@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.3] - 2023-10-27
+
+### Fixed
+* Destroy system with Netcode
+
 ## [1.1.2] - 2023-10-27
 
 ### Added

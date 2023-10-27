@@ -19,8 +19,8 @@ namespace BovineLabs.Core.LifeCycle
 #if UNITY_NETCODE
             // Client doesn't destroy ghosts, instead we'll disable them in
             this.query = Unity.NetCode.ClientServerWorldExtensions.IsClient(state.WorldUnmanaged)
-                ? SystemAPI.QueryBuilder().WithAll<EntityDestroy>().WithNone<Unity.NetCode.GhostInstance>().Build()
-                : SystemAPI.QueryBuilder().WithAll<EntityDestroy>().Build();
+                ? SystemAPI.QueryBuilder().WithAll<DestroyEntity>().WithNone<Unity.NetCode.GhostInstance>().Build()
+                : SystemAPI.QueryBuilder().WithAll<DestroyEntity>().Build();
 #else
             this.query = SystemAPI.QueryBuilder().WithAll<DestroyEntity>().Build();
 #endif
