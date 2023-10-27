@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Functions
 {
     using System;
+    using System.Collections.Generic;
     using System.Reflection;
     using System.Runtime.InteropServices;
     using BovineLabs.Core.Utility;
@@ -13,13 +14,14 @@ namespace BovineLabs.Core.Functions
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-    using UnityEngine;
 
     /// <summary> The builder for creating <see cref="Functions{T}"/>. </summary>
     /// <typeparam name="T"> Is the void* data that will be passed to the ExecuteFunction. Also serves as a grouping mechanism for ReflectAll. </typeparam>
     public unsafe struct FunctionsBuilder<T> : IDisposable
         where T : unmanaged
     {
+        private static Dictionary<Type, List<MethodInfo>> cachedReflectAll = new();
+
         private NativeHashSet<BuildData> functions;
 
         /// <summary> Initializes a new instance of the <see cref="FunctionsBuilder{T}"/> struct. </summary>
@@ -40,11 +42,13 @@ namespace BovineLabs.Core.Functions
         /// <returns> Itself. </returns>
         public FunctionsBuilder<T> ReflectAll(ref SystemState state)
         {
-            var implementations = ReflectionUtility.GetAllImplementations<IFunction<T>>();
-            var baseMethod = typeof(FunctionsBuilder<T>).GetMethod(nameof(this.AddInternalDefault), BindingFlags.Instance | BindingFlags.NonPublic)!;
-
-            fixed (void* ptr = &state)
+            if (!cachedReflectAll.TryGetValue(typeof(T), out var cachedData))
             {
+                cachedReflectAll[typeof(T)] = cachedData = new List<MethodInfo>();
+
+                var baseMethod = typeof(FunctionsBuilder<T>).GetMethod(nameof(this.AddInternalDefault), BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+                var implementations = ReflectionUtility.GetAllImplementations<IFunction<T>>();
                 foreach (var type in implementations)
                 {
                     if (!UnsafeUtility.IsUnmanaged(type))
@@ -53,6 +57,14 @@ namespace BovineLabs.Core.Functions
                     }
 
                     var genericMethod = baseMethod.MakeGenericMethod(type);
+                    cachedData.Add(genericMethod);
+                }
+            }
+
+            fixed (void* ptr = &state)
+            {
+                foreach (var genericMethod in cachedData)
+                {
                     genericMethod.Invoke(this, new object[] { (IntPtr)ptr });
                 }
             }

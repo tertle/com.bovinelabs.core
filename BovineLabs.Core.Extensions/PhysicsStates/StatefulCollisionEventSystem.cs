@@ -107,6 +107,15 @@ namespace BovineLabs.Core.PhysicsStates
             [ReadOnly]
             private NativeHashSet<StatefulCollisionEventContainer> previousEvents;
 
+            [NativeDisableContainerSafetyRestriction]
+            private NativeList<ContactPoint> contactPoints;
+
+            private interface IDetails
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                StatefulCollisionEvent.Details GetDetails(ref PhysicsWorld physicsWorld, in CollisionEvent collisionEvent);
+            }
+
             public BufferTypeHandle<StatefulCollisionEvent> StatefulNewEventHandle { set => this.statefulNewEventHandle = value; }
 
             public EntityTypeHandle EntityHandle { set => this.entityHandle = value; }
@@ -126,94 +135,72 @@ namespace BovineLabs.Core.PhysicsStates
                 var statefulNewEventAccessor = chunk.GetBufferAccessorRO(ref this.statefulNewEventHandle);
                 var entities = chunk.GetEntityDataPtrRO(this.entityHandle);
 
-                var changed = false;
+                bool changed;
 
                 if (writeDetails)
                 {
-                    var contactPoints = new NativeList<ContactPoint>(1, Allocator.Temp);
-
-                    for (var i = 0; i < chunk.Count; i++)
+                    if (!this.contactPoints.IsCreated)
                     {
-                        var statefulNewEvents = statefulNewEventAccessor[i];
-                        var entity = entities[i];
-
-                        if (this.currentEventMap.TryGetFirstValue(entity, out var currentEvent, out var it))
-                        {
-                            changed = true;
-                            do
-                            {
-                                var state = this.previousEvents.Contains(currentEvent) ? StatefulEventState.Stay : StatefulEventState.Enter;
-
-                                var statefulCollisionEvent = currentEvent.Create(entity, state);
-                                var details = CalculateDetails(ref this.PhysicsWorld, contactPoints, currentEvent.CollisionEvent);
-
-                                statefulCollisionEvent.CollisionDetails = new StatefulCollisionEvent.Details(
-                                    details.EstimatedContactPointPositions.Length,
-                                    details.EstimatedImpulse,
-                                    details.AverageContactPointPosition);
-
-                                statefulNewEvents.Add(statefulCollisionEvent);
-                            }
-                            while (this.currentEventMap.TryGetNextValue(out currentEvent, ref it));
-                        }
-
-                        if (this.previousEventMap.TryGetFirstValue(entity, out var previousEvent, out it))
-                        {
-                            do
-                            {
-                                if (this.currentEvents.Contains(previousEvent))
-                                {
-                                    // Already handled by looping the currentEventMap
-                                    continue;
-                                }
-
-                                changed = true;
-                                statefulNewEvents.Add(previousEvent.Create(entity, StatefulEventState.Exit));
-                            }
-                            while (this.currentEventMap.TryGetNextValue(out previousEvent, ref it));
-                        }
+                        this.contactPoints = new NativeList<ContactPoint>(1, Allocator.Temp);
                     }
+
+                    changed = this.IterateEvents(chunk, statefulNewEventAccessor, entities, new WithDetails(this.contactPoints));
                 }
                 else
                 {
-                    for (var i = 0; i < chunk.Count; i++)
-                    {
-                        var statefulNewEvents = statefulNewEventAccessor[i];
-                        var entity = entities[i];
-
-                        if (this.currentEventMap.TryGetFirstValue(entity, out var currentEvent, out var it))
-                        {
-                            changed = true;
-                            do
-                            {
-                                var state = this.previousEvents.Contains(currentEvent) ? StatefulEventState.Stay : StatefulEventState.Enter;
-                                statefulNewEvents.Add(currentEvent.Create(entity, state));
-                            }
-                            while (this.currentEventMap.TryGetNextValue(out currentEvent, ref it));
-                        }
-
-                        if (this.previousEventMap.TryGetFirstValue(entity, out var previousEvent, out it))
-                        {
-                            do
-                            {
-                                if (this.currentEvents.Contains(previousEvent))
-                                {
-                                    // Already handled by looping the currentEventMap
-                                    continue;
-                                }
-
-                                changed = true;
-                                statefulNewEvents.Add(previousEvent.Create(entity, StatefulEventState.Exit));
-                            }
-                            while (this.currentEventMap.TryGetNextValue(out previousEvent, ref it));
-                        }
-                    }
+                    changed = this.IterateEvents(chunk, statefulNewEventAccessor, entities, default(NoDetails));
                 }
 
                 if (changed)
                 {
                     chunk.SetChangeFilter(ref this.statefulNewEventHandle);
                 }
+            }
+
+            private bool IterateEvents<T>(in ArchetypeChunk chunk, in BufferAccessor<StatefulCollisionEvent> statefulNewEventAccessor, Entity* entities, T details)
+                where T : IDetails
+            {
+                var changed = false;
+
+                for (var i = 0; i < chunk.Count; i++)
+                {
+                    var statefulNewEvents = statefulNewEventAccessor[i];
+                    var entity = entities[i];
+
+                    if (this.currentEventMap.TryGetFirstValue(entity, out var currentEvent, out var it))
+                    {
+                        changed = true;
+                        do
+                        {
+                            var state = this.previousEvents.Contains(currentEvent) ? StatefulEventState.Stay : StatefulEventState.Enter;
+
+                            var statefulCollisionEvent = currentEvent.Create(entity, state);
+                            statefulCollisionEvent.CollisionDetails = details.GetDetails(ref this.PhysicsWorld, currentEvent.CollisionEvent);
+                            statefulNewEvents.Add(statefulCollisionEvent);
+                        }
+                        while (this.currentEventMap.TryGetNextValue(out currentEvent, ref it));
+                    }
+
+                    if (!this.previousEventMap.TryGetFirstValue(entity, out var previousEvent, out it))
+                    {
+                        continue;
+                    }
+
+                    do
+                    {
+                        if (this.currentEvents.Contains(previousEvent))
+                        {
+                            // Already handled by looping the currentEventMap
+                            continue;
+                        }
+
+                        changed = true;
+                        statefulNewEvents.Add(previousEvent.Create(entity, StatefulEventState.Exit));
+                    }
+                    while (this.currentEventMap.TryGetNextValue(out previousEvent, ref it));
+                }
+
+                return changed;
             }
 
             private static CollisionEvent.Details CalculateDetails(ref PhysicsWorld physicsWorld, NativeList<ContactPoint> contactPoints, in CollisionEvent collisionEvent)
@@ -230,6 +217,36 @@ namespace BovineLabs.Core.PhysicsStates
                 }
 
                 return eventData.Value.CalculateDetails(ref physicsWorld, collisionEvent.TimeStep, collisionEvent.InputVelocityA, collisionEvent.InputVelocityB, contactPointsArray);
+            }
+
+            private readonly struct NoDetails : IDetails
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                public StatefulCollisionEvent.Details GetDetails(ref PhysicsWorld physicsWorld, in CollisionEvent collisionEvent)
+                {
+                    return default;
+                }
+            }
+
+            private readonly struct WithDetails : IDetails
+            {
+                private readonly NativeList<ContactPoint> contactPoints;
+
+                public WithDetails(NativeList<ContactPoint> contactPoints)
+                {
+                    this.contactPoints = contactPoints;
+                }
+
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                public StatefulCollisionEvent.Details GetDetails(ref PhysicsWorld physicsWorld, in CollisionEvent collisionEvent)
+                {
+                    var details = CalculateDetails(ref physicsWorld, this.contactPoints, collisionEvent);
+
+                    return new StatefulCollisionEvent.Details(
+                        details.EstimatedContactPointPositions.Length,
+                        details.EstimatedImpulse,
+                        details.AverageContactPointPosition);
+                }
             }
         }
 

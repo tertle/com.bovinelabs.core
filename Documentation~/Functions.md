@@ -106,7 +106,7 @@ public unsafe struct Functions<T>
       public void OnCreate(ref SystemState state)
       {
           // Can't be burst compiled when using ReflectAll
-          this.instantiateFunctions = new FunctionBuilder<InstantiateData>(Allocator.Temp)
+          this.instantiateFunctions = new FunctionsBuilder<InstantiateData>(Allocator.Temp)
               .ReflectAll(ref state) // Will find all IFunction<InstantiateData>
               .Build();
       }

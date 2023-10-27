@@ -10,7 +10,8 @@
         "Unity.Mathematics",
         "Unity.Mathematics.Extensions",
         "UnityEditor.TestRunner",
-        "UnityEngine.TestRunner"
+        "UnityEngine.TestRunner",
+        "BovineLabs.Core.Extensions"
     ],
     "includePlatforms": [
         "Editor"

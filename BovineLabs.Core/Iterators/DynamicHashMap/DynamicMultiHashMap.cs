@@ -163,13 +163,11 @@ namespace BovineLabs.Core.Iterators
             return count;
         }
 
-        /// <summary>
-        /// Sets the capacity to match what it would be if it had been originally initialized with all its entries.
-        /// </summary>
-        public void TrimExcess()
+        /// <summary> Removes holes. </summary>
+        public void Flatten()
         {
             this.CheckWrite();
-            DynamicHashMapHelper<TKey>.TrimExcess(this.buffer, ref this.helper);
+            DynamicHashMapHelper<TKey>.Flatten(this.buffer, ref this.helper);
         }
 
         public void AddBatchUnsafe(NativeArray<TKey> keys, NativeArray<TValue> values)
@@ -242,7 +240,6 @@ namespace BovineLabs.Core.Iterators
         {
             throw new NotImplementedException();
         }
-
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckSize(DynamicBuffer<byte> buffer)

@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Chunks
     using BovineLabs.Core.Chunks.Data;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Iterators;
+    using BovineLabs.Core.LifeCycle;
 #if UNITY_NETCODE
     using Unity.NetCode;
 #endif
@@ -20,7 +21,7 @@ namespace BovineLabs.Core.Chunks
 #if UNITY_NETCODE
     [UpdateAfter(typeof(NetworkReceiveSystemGroup))]
 #endif
-    [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
+    [UpdateAfter(typeof(DestroyEntityCommandBufferSystem))]
     [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     public partial struct ChunkLinkSystem : ISystem
     {

@@ -14,9 +14,7 @@ namespace BovineLabs.Core.App
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation)]
     public partial struct PauseSystem : ISystem, ISystemStartStop
     {
-        private SystemHandle beginSimulationEntityCommandBufferSystem;
-        private SystemHandle endSimulationEntityCommandBufferSystem;
-        private SystemHandle beginPresentationEntityCommandBufferSystem;
+        private bool hasPresentation;
 
         /// <inheritdoc/>
         public void OnCreate(ref SystemState state)
@@ -24,9 +22,7 @@ namespace BovineLabs.Core.App
             var query = SystemAPI.QueryBuilder().WithAll<PauseGame>().WithOptions(EntityQueryOptions.IncludeSystems).Build();
             state.RequireForUpdate(query);
 
-            this.beginSimulationEntityCommandBufferSystem = state.World.GetExistingSystem<BeginSimulationEntityCommandBufferSystem>();
-            this.endSimulationEntityCommandBufferSystem = state.World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
-            this.beginPresentationEntityCommandBufferSystem = state.World.GetExistingSystem<BeginPresentationEntityCommandBufferSystem>();
+            this.hasPresentation = state.World.GetExistingSystem<BeginPresentationEntityCommandBufferSystem>() != SystemHandle.Null;
         }
 
         /// <inheritdoc/>
@@ -43,17 +39,11 @@ namespace BovineLabs.Core.App
             this.SetPaused(ref state, false);
         }
 
+        /// <inheritdoc/>
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            // Flush command buffers in case someone is using them to avoid them leaking
-            this.beginSimulationEntityCommandBufferSystem.Update(state.WorldUnmanaged);
-            this.endSimulationEntityCommandBufferSystem.Update(state.WorldUnmanaged);
-
-            // Server might not have presentation
-            if (this.beginPresentationEntityCommandBufferSystem != SystemHandle.Null)
-            {
-                this.beginPresentationEntityCommandBufferSystem.Update(state.WorldUnmanaged);
-            }
+            // NO-OP
         }
 
         [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Local", Justification = "SystemAPI")]
@@ -64,7 +54,7 @@ namespace BovineLabs.Core.App
             ref var simulationSystemGroup = ref state.WorldUnmanaged.GetExistingSystemState<SimulationSystemGroup>();
             simulationSystemGroup.Enabled = !paused;
 
-            if (this.beginPresentationEntityCommandBufferSystem != SystemHandle.Null)
+            if (this.hasPresentation)
             {
                 ref var presentationSystemGroup = ref state.WorldUnmanaged.GetExistingSystemState<PresentationSystemGroup>();
                 presentationSystemGroup.Enabled = !paused;

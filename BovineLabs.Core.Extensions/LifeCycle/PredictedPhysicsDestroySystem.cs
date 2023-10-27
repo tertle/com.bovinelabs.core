@@ -2,8 +2,8 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_DESTROY && UNITY_PHYSICS
-namespace BovineLabs.Core.Destroy
+#if !BL_DISABLE_LIFECYCLE && UNITY_PHYSICS
+namespace BovineLabs.Core.LifeCycle
 {
     using BovineLabs.Core.Assertions;
     using BovineLabs.Core.Extensions;
@@ -30,11 +30,11 @@ namespace BovineLabs.Core.Destroy
             }
 
             this.query = SystemAPI.QueryBuilder()
-                .WithAll<EntityDestroy, Simulate>()
+                .WithAll<DestroyEntity, Simulate>()
                 .WithAny<PhysicsVelocity, PhysicsCollider>()
                 .Build();
 
-            this.query.SetChangedVersionFilter(ComponentType.ReadOnly<EntityDestroy>());
+            this.query.SetChangedVersionFilter(ComponentType.ReadOnly<DestroyEntity>());
         }
 
         /// <inheritdoc/>

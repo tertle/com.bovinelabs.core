@@ -2,8 +2,8 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_DESTROY
-namespace BovineLabs.Core.Destroy
+#if !BL_DISABLE_LIFECYCLE
+namespace BovineLabs.Core.LifeCycle
 {
     using BovineLabs.Core.Assertions;
     using Unity.Burst;
@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Destroy
     public struct DestroyTimer<T>
         where T : unmanaged, IComponentData
     {
-        private ComponentTypeHandle<EntityDestroy> entityDestroyHandle;
+        private ComponentTypeHandle<DestroyEntity> entityDestroyHandle;
         private ComponentTypeHandle<T> remainingHandle;
         private EntityQuery query;
 
@@ -24,10 +24,10 @@ namespace BovineLabs.Core.Destroy
         {
             Check.Assume(UnsafeUtility.SizeOf<float>() == UnsafeUtility.SizeOf<T>());
 
-            this.entityDestroyHandle = state.GetComponentTypeHandle<EntityDestroy>();
+            this.entityDestroyHandle = state.GetComponentTypeHandle<DestroyEntity>();
             this.remainingHandle = state.GetComponentTypeHandle<T>();
 
-            this.query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithDisabledRW<EntityDestroy>().Build(ref state);
+            this.query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithDisabledRW<DestroyEntity>().Build(ref state);
         }
 
         public void OnUpdate(ref SystemState state, UpdateTimeJob job = default)
@@ -45,7 +45,7 @@ namespace BovineLabs.Core.Destroy
         [BurstCompile]
         public unsafe struct UpdateTimeJob : IJobChunk
         {
-            public ComponentTypeHandle<EntityDestroy> EntityDestroyHandle;
+            public ComponentTypeHandle<DestroyEntity> EntityDestroyHandle;
             public ComponentTypeHandle<T> RemainingHandle;
             public float DeltaTime;
 

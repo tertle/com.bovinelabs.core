@@ -52,6 +52,27 @@ namespace BovineLabs.Core.Tests.Functions
             functions.OnDestroy(ref state);
         }
 
+        [Test]
+        public void ReflectAllCache()
+        {
+            const int expected = 7;
+
+            SystemState state = default;
+
+            var functions = new FunctionsBuilder<TestData>(Allocator.Temp).ReflectAll(ref state).Build();
+            var functions2 = new FunctionsBuilder<TestData>(Allocator.Temp).ReflectAll(ref state).Build();
+
+            var data = new TestData { Value = 5 };
+            var actual = functions.Execute(0, ref data);
+            var actual2 = functions2.Execute(0, ref data);
+
+            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected, actual2);
+
+            functions.OnDestroy(ref state);
+            functions2.OnDestroy(ref state);
+        }
+
         private struct TestData
         {
             public int Value;
@@ -75,7 +96,6 @@ namespace BovineLabs.Core.Tests.Functions
 
             private int Execute(ref TestData data)
             {
-                Debug.Log($"{data.Value}");
                 return this.result;
             }
 

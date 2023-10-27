@@ -5,13 +5,14 @@
 #if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
+    using BovineLabs.Core.LifeCycle;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Scenes;
     using Unity.Transforms;
 
-    [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
+    [UpdateAfter(typeof(DestroySystemGroup))]
     [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.LocalSimulation | WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
     public partial struct LoadWithBoundingVolumeSystem : ISystem

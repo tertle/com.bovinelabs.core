@@ -373,7 +373,46 @@ namespace BovineLabs.Core.Iterators
             helper->Count += length;
         }
 
-        internal static void TrimExcess(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data)
+        internal static void AddBatchUnsafe<TValue>(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data, NativeSlice<TKey> keys, [NoAlias] NativeSlice<TValue> values)
+            where TValue : unmanaged
+        {
+            var helper = buffer.AsHelper<TKey>();
+
+            Check.Assume(keys.Length == values.Length, "keys.Length != values.Length");
+
+            var length = keys.Length;
+
+            var oldLength = helper->Count;
+            var newLength = oldLength + length;
+
+            if (helper->Capacity < newLength)
+            {
+                Resize(buffer, ref data, newLength);
+                helper = buffer.AsHelper<TKey>();
+            }
+
+            var keyPtr = helper->Keys + oldLength;
+            var valuePtr = helper->Values + (oldLength * helper->SizeOfTValue);
+
+            Check.Assume(helper->SizeOfTValue == UnsafeUtility.SizeOf<TValue>());
+            UnsafeUtility.MemCpyStride(keyPtr, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), length);
+            UnsafeUtility.MemCpyStride(valuePtr, helper->SizeOfTValue, values.GetUnsafeReadOnlyPtr(), values.Stride, helper->SizeOfTValue, length);
+
+            var buckets = helper->Buckets;
+            var nextPtrs = helper->Next + oldLength;
+
+            for (var idx = 0; idx < length; idx++)
+            {
+                var bucket = keys[idx].GetHashCode() & helper->BucketCapacityMask;
+                nextPtrs[idx] = buckets[bucket];
+                buckets[bucket] = oldLength + idx;
+            }
+
+            helper->AllocatedIndex += length;
+            helper->Count += length;
+        }
+
+        internal static void Flatten(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data)
         {
             var capacity = CalcCapacityCeilPow2(data->Count, data->Count, data->Log2MinGrowth);
             ResizeExact(buffer, ref data, capacity, GetBucketSize(capacity));
@@ -654,6 +693,38 @@ namespace BovineLabs.Core.Iterators
             }
 
             return result;
+        }
+
+        internal void RemoveRangeShiftDown(int start, int length)
+        {
+            Check.Assume(this.FirstFreeIdx == -1, "Trying to RemoveRangeShiftDown on map with holes. Call Flatten() first.");
+            Check.Assume(start >= 0 && start < this.Count);
+            Check.Assume(length >= 0 && start + length < this.Count);
+
+            var keys = this.Keys;
+            var values = this.Values;
+
+            var shift = this.Count - length - start;
+
+            // var shift = count - le
+            UnsafeUtility.MemMove(keys + start, keys + start + length, UnsafeUtility.SizeOf<TKey>() * shift);
+            UnsafeUtility.MemMove(values + start * this.SizeOfTValue, values + (start + length) * this.SizeOfTValue, shift * this.SizeOfTValue);
+
+            UnsafeUtility.MemSet(this.Buckets, 0xff, this.BucketCapacity * sizeof(int));
+            UnsafeUtility.MemSet(this.Next + this.Count - length, 0xff, length * sizeof(int)); // only need to clear replaced elements
+
+            this.AllocatedIndex -= length;
+            this.Count -= length;
+
+            var buckets = this.Buckets;
+            var next = this.Next;
+
+            for (var idx = 0; idx < Count; idx++)
+            {
+                var bucket = keys[idx].GetHashCode() & this.BucketCapacityMask;
+                next[idx] = buckets[bucket];
+                buckets[bucket] = idx;
+            }
         }
 
         private int AddNoCollideNoAlloc(in TKey key)

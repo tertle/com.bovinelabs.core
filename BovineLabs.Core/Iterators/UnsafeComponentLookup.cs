@@ -285,10 +285,12 @@ namespace BovineLabs.Core.Iterators
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckWriteAndThrow(in UnsafeComponentLookup<T> componentLookup)
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (componentLookup.isReadOnly != 0)
             {
                 throw new InvalidOperationException("Writing when read only");
             }
+#endif
         }
     }
 }

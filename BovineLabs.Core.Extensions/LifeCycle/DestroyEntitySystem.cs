@@ -1,15 +1,15 @@
-﻿// <copyright file="EntityDestroySystem.cs" company="BovineLabs">
+﻿// <copyright file="DestroyEntitySystem.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_DESTROY
-namespace BovineLabs.Core.Destroy
+#if !BL_DISABLE_LIFECYCLE
+namespace BovineLabs.Core.LifeCycle
 {
     using Unity.Burst;
     using Unity.Entities;
 
     [UpdateInGroup(typeof(DestroySystemGroup), OrderLast = true)]
-    public partial struct EntityDestroySystem : ISystem
+    public partial struct DestroyEntitySystem : ISystem
     {
         private EntityQuery query;
 
@@ -22,21 +22,21 @@ namespace BovineLabs.Core.Destroy
                 ? SystemAPI.QueryBuilder().WithAll<EntityDestroy>().WithNone<Unity.NetCode.GhostInstance>().Build()
                 : SystemAPI.QueryBuilder().WithAll<EntityDestroy>().Build();
 #else
-            this.query = SystemAPI.QueryBuilder().WithAll<EntityDestroy>().Build();
+            this.query = SystemAPI.QueryBuilder().WithAll<DestroyEntity>().Build();
 #endif
-            this.query.SetChangedVersionFilter(ComponentType.ReadOnly<EntityDestroy>());
+            this.query.SetChangedVersionFilter(ComponentType.ReadOnly<DestroyEntity>());
         }
 
         /// <inheritdoc />
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var bufferSingleton = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
+            var bufferSingleton = SystemAPI.GetSingleton<DestroyEntityCommandBufferSystem.Singleton>();
             new DestroyJob { CommandBuffer = bufferSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter() }.ScheduleParallel(this.query);
         }
 
-        [WithChangeFilter(typeof(EntityDestroy))]
-        [WithAll(typeof(EntityDestroy))]
+        [WithChangeFilter(typeof(DestroyEntity))]
+        [WithAll(typeof(DestroyEntity))]
         [BurstCompile]
         private partial struct DestroyJob : IJobEntity
         {

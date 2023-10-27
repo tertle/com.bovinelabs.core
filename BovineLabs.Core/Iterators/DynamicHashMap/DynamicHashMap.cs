@@ -167,6 +167,19 @@ namespace BovineLabs.Core.Iterators
             return ref UnsafeUtility.ArrayElementAsRef<TValue>(this.helper->Values, idx);
         }
 
+        public readonly TValue GetOrDefault(TKey key, TValue defaultValue = default)
+        {
+            this.CheckWrite();
+
+            var idx = this.helper->Find(key);
+            if (idx == -1)
+            {
+                return defaultValue;
+            }
+
+            return UnsafeUtility.ReadArrayElement<TValue>(this.helper->Values, idx);
+        }
+
         /// <summary>
         /// Removes a key-value pair.
         /// </summary>
@@ -198,13 +211,16 @@ namespace BovineLabs.Core.Iterators
             return this.helper->Find(key) != -1;
         }
 
-        /// <summary>
-        /// Sets the capacity to match what it would be if it had been originally initialized with all its entries.
-        /// </summary>
-        public void TrimExcess()
+        /// <summary> Removes holes. </summary>
+        public void Flatten()
         {
             this.CheckWrite();
-            DynamicHashMapHelper<TKey>.TrimExcess(this.buffer, ref this.helper);
+            DynamicHashMapHelper<TKey>.Flatten(this.buffer, ref this.helper);
+        }
+
+        public void RemoveRangeShiftDown(int index, int range)
+        {
+            this.helper->RemoveRangeShiftDown(index, range);
         }
 
         public void AddBatchUnsafe(NativeArray<TKey> keys, NativeArray<TValue> values)
@@ -217,6 +233,12 @@ namespace BovineLabs.Core.Iterators
         {
             this.CheckWrite();
             DynamicHashMapHelper<TKey>.AddBatchUnsafe(this.buffer, ref this.helper, keys, (byte*)values, length);
+        }
+
+        public void AddBatchUnsafe(NativeSlice<TKey> keys, NativeSlice<TValue> values)
+        {
+            CheckLengthsMatch(keys.Length, values.Length);
+            DynamicHashMapHelper<TKey>.AddBatchUnsafe(this.buffer, ref this.helper, keys, values);
         }
 
         /// <summary> Returns an array with a copy of all this hash map's keys (in no particular order). </summary>
@@ -251,6 +273,16 @@ namespace BovineLabs.Core.Iterators
         public readonly DynamicHashMapEnumerator<TKey, TValue> GetEnumerator()
         {
             return new DynamicHashMapEnumerator<TKey, TValue>(this.helper);
+        }
+
+        public TValue* GetUnsafeValuePtr()
+        {
+            return (TValue*)this.helper->Values;
+        }
+
+        public TKey* GetUnsafeKeyPtr()
+        {
+            return this.helper->Keys;
         }
 
         /// <summary>

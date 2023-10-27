@@ -108,13 +108,11 @@ namespace BovineLabs.Core.Iterators
             return this.helper->Find(item) != -1;
         }
 
-        /// <summary>
-        /// Sets the capacity to match what it would be if it had been originally initialized with all its entries.
-        /// </summary>
-        public void TrimExcess()
+        /// <summary> Removes holes. </summary>
+        public void Flatten()
         {
             this.CheckWrite();
-            DynamicHashMapHelper<T>.TrimExcess(this.buffer, ref this.helper);
+            DynamicHashMapHelper<T>.Flatten(this.buffer, ref this.helper);
         }
 
         // public void AddBatchUnsafe(NativeArray<T> keys, NativeArray<TValue> values)

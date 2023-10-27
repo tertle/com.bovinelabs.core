@@ -38,7 +38,7 @@ namespace BovineLabs.Core.Debug.ToolbarTabs
         protected override string Tab => "Monitor";
 
         /// <inheritdoc />
-        protected override string Name => "Network";
+        protected override string Name => "FPS";
 
         /// <inheritdoc />
         protected override void OnCreateSystem()

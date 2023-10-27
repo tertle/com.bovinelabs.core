@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.1.2] - 2023-10-27
+
+### Added
+* Added GetOrDefault to DynamicHashMap
+* Added StructuralCommandBufferSystem to LifeCycle
+* UnsafeMultiHashMap
+* DestroyOnDestroySystem to support LinkedEntityGroup with DestroyEntity
+
+### Changed
+* Destroy renamed LifeCycle as it now encompasses creating and changes as well
+* EntityDestroyX have been renamed DestroyEntityX
+
+### Fixed
+* Fixed UnsafeComponentLookup in builds
+
+### Documentation
+* Added documentation for Entropy
+* Added documentation for Spatial
+
 ## [1.1.1] - 2023-10-18
 
 ### Added
