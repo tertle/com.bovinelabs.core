@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Editor.Internal
     using Unity.Entities;
     using Unity.Entities.Editor;
     using UnityEditor;
+    using UnityEngine;
 
     public static class EntitySelection
     {
@@ -24,6 +25,36 @@ namespace BovineLabs.Core.Editor.Internal
                 if (s is EntitySelectionProxy proxy)
                 {
                     yield return (proxy.World, proxy.Entity);
+                }
+            }
+        }
+
+        public static IEnumerable<Entity> GetAllSelectionsInWorld(World world)
+        {
+            foreach (var s in Selection.objects)
+            {
+                switch (s)
+                {
+                    case EntitySelectionProxy proxy:
+                    {
+                        if (proxy.World == world)
+                        {
+                            yield return proxy.Entity;
+                        }
+
+                        break;
+                    }
+
+                    case GameObject go:
+                    {
+                        var entity = world.EntityManager.Debug.GetPrimaryEntityForAuthoringObject(go);
+                        if (entity != Entity.Null)
+                        {
+                            yield return entity;
+                        }
+
+                        break;
+                    }
                 }
             }
         }

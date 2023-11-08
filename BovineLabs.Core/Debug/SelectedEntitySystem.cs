@@ -17,7 +17,7 @@ namespace BovineLabs.Core
         /// <inheritdoc/>
         public void OnCreate(ref SystemState state)
         {
-            state.EntityManager.CreateEntity(typeof(SelectedEntity));
+            state.EntityManager.CreateEntity(typeof(SelectedEntity), typeof(SelectedEntities));
 
             // In debug builds you can't select entities, at least not via this system
             state.Enabled = false;

@@ -19,16 +19,16 @@ namespace BovineLabs.Core.Collections
     [StructLayout(LayoutKind.Sequential)]
     public struct BlobCurve
     {
-        internal CurveHeader header;
-        public BlobArray<BlobCurveSegment> Segments;
+        internal BlobCurveHeader header;
+        private BlobArray<BlobCurveSegment> Segments;
 
-        public unsafe ref CurveHeader Header => ref UnsafeUtility.AsRef<CurveHeader>(UnsafeUtility.AddressOf(ref this.header));
+        public unsafe ref BlobCurveHeader Header => ref UnsafeUtility.AsRef<BlobCurveHeader>(UnsafeUtility.AddressOf(ref this.header));
 
         public unsafe ref BlobArray<float> Times => ref UnsafeUtility.AsRef<BlobArray<float>>(UnsafeUtility.AddressOf(ref this.header.Times));
 
-        public CurveHeader.WrapMode WrapModePrev => this.header.WrapModePrev;
+        public BlobCurveHeader.WrapMode WrapModePrev => this.header.WrapModePrev;
 
-        public CurveHeader.WrapMode WrapModePost => this.header.WrapModePost;
+        public BlobCurveHeader.WrapMode WrapModePost => this.header.WrapModePost;
 
         public int SegmentCount => this.header.SegmentCount;
 
@@ -114,13 +114,13 @@ namespace BovineLabs.Core.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static CurveHeader.WrapMode ConvertWrapMode(WrapMode mode)
+        private static BlobCurveHeader.WrapMode ConvertWrapMode(WrapMode mode)
         {
             return mode switch
             {
-                WrapMode.Loop => CurveHeader.WrapMode.Loop,
-                WrapMode.PingPong => CurveHeader.WrapMode.PingPong,
-                _ => CurveHeader.WrapMode.Clamp,
+                WrapMode.Loop => BlobCurveHeader.WrapMode.Loop,
+                WrapMode.PingPong => BlobCurveHeader.WrapMode.PingPong,
+                _ => BlobCurveHeader.WrapMode.Clamp,
             };
         }
 

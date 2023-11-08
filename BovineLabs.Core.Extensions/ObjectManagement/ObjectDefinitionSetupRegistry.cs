@@ -14,8 +14,4 @@ namespace BovineLabs.Core.ObjectManagement
         [UsedImplicitly] // By ObjectDefinitionSystem
         public Entity Prefab;
     }
-
-    internal struct ObjectDefinitionSetupRegistryInitialized : ICleanupComponentData
-    {
-    }
 }

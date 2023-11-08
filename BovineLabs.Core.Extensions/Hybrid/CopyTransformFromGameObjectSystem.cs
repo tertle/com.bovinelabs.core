@@ -5,6 +5,7 @@
 #if !BL_DISABLE_COPY_TRANSFORM
 namespace BovineLabs.Core.Hybrid
 {
+    using BovineLabs.Core.Groups;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
@@ -15,7 +16,7 @@ namespace BovineLabs.Core.Hybrid
 
     [RequireMatchingQueriesForUpdate]
     [WorldSystemFilter(WorldSystemFilterFlags.Presentation)]
-    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
+    [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
     public partial class CopyTransformFromGameObjectSystem : SystemBase
     {
         /// <inheritdoc />

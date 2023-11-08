@@ -1,0 +1,41 @@
+{
+    "name": "BovineLabs.Core.Extensions.Tests",
+    "rootNamespace": "",
+    "references": [
+        "BovineLabs.Core",
+        "BovineLabs.Core.Extensions",
+        "BovineLabs.Core.Extensions.Data",
+        "BovineLabs.Testing",
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Entities.Graphics",
+        "Unity.Entities.Hybrid",
+        "Unity.InputSystem",
+        "Unity.Logging",
+        "Unity.Mathematics",
+        "Unity.NetCode",
+        "Unity.Networking.Transport",
+        "Unity.PerformanceTesting",
+        "Unity.Physics",
+        "Unity.Transforms",
+        "UnityEditor.TestRunner",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS",
+        "BL_CORE_EXTENSIONS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

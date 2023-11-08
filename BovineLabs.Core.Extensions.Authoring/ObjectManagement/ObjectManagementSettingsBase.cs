@@ -148,7 +148,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                         continue;
                     }
 
-                    if (!this.categoryToComponentTypes.TryAdd(c.Value, ComponentType.FromTypeIndex(typeIndex)))
+                    if (!this.categoryToComponentTypes.TryAdd((byte)c.Value, ComponentType.FromTypeIndex(typeIndex)))
                     {
                         Debug.LogWarning($"Duplicate entries for {c.Value}");
                     }

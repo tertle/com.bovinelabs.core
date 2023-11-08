@@ -10,7 +10,6 @@ namespace BovineLabs.Core.Editor.UI
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    [InitializeOnLoad]
     public static class EditorToolbar
     {
         private static readonly Type ToolbarType = typeof(Editor).Assembly.GetType("UnityEditor.Toolbar");
@@ -26,11 +25,37 @@ namespace BovineLabs.Core.Editor.UI
 
             LeftParent = CreateParentElement();
             RightParent = CreateParentElement();
+
+            LeftParent.Add(LeftLeftParent = CreateSectionElement());
+            LeftParent.Add(LeftCenterParent = CreateSectionElement());
+            LeftParent.Add(LeftRightParent = CreateSectionElement());
+
+            RightParent.Add(RightLeftParent = CreateSectionElement());
+            RightParent.Add(RightCenterParent = CreateSectionElement());
+            RightParent.Add(RightRightParent = CreateSectionElement());
+
+            LeftCenterParent.style.justifyContent = Justify.Center;
+            RightCenterParent.style.justifyContent = Justify.Center;
+
+            LeftRightParent.style.justifyContent = Justify.FlexEnd;
+            RightRightParent.style.justifyContent = Justify.FlexEnd;
         }
 
         public static VisualElement LeftParent { get; }
 
+        public static VisualElement LeftLeftParent { get; }
+
+        public static VisualElement LeftCenterParent { get; }
+
+        public static VisualElement LeftRightParent { get; }
+
         public static VisualElement RightParent { get; }
+
+        public static VisualElement RightLeftParent { get; }
+
+        public static VisualElement RightCenterParent { get; }
+
+        public static VisualElement RightRightParent { get; }
 
         private static void OnUpdate()
         {
@@ -59,6 +84,18 @@ namespace BovineLabs.Core.Editor.UI
         }
 
         private static VisualElement CreateParentElement()
+        {
+            return new VisualElement
+            {
+                style =
+                {
+                    flexGrow = 1,
+                    flexDirection = FlexDirection.Row,
+                },
+            };
+        }
+
+        private static VisualElement CreateSectionElement()
         {
             return new VisualElement
             {

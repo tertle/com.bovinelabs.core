@@ -8,12 +8,14 @@
         "Unity.Entities",
         "Unity.Entities.Editor",
         "Unity.Entities.Hybrid",
+        "Unity.Entities.UI",
         "Unity.Entities.UI.Editor",
         "Unity.Logging",
         "Unity.Mathematics",
         "Unity.Scenes",
         "Unity.Scenes.Editor",
-        "Unity.Physics"
+        "Unity.Physics",
+        "Unity.InternalAPIEditorBridge.002"
     ],
     "includePlatforms": [
         "Editor"

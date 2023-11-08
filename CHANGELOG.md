@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.1.4] - 2023-11-09
+
+### Added
+- BeginSimulationSystemGroup
+- SetChangeFilter and GetRefRWNoChangeFilter extensions to ComponentLookup
+- Custom SearchProvider for ObjectDefinitions
+- SelectedEntities if you have a way to select multiple
+
+### Fixed
+- UIDAttributeDrawer when using nested scriptable objects
+- KAttributeDrawer on flags if there were holes
+
+### Changed
+- Moved K into extensions
+- K assets now need to exist in a K folder inside resources to speed up editor iteration time
+- You now need to place [Configurable] on any class/struct that uses ConfigVar. This significantly speeds up the initialization
+
+### Removed
+- Removed dependency window as you can use https://github.com/Unity-Technologies/com.unity.search.extensions/wiki/dependency-viewer instead
+
 ## [1.1.3] - 2023-10-27
 
 ### Fixed

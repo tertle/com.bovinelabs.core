@@ -241,6 +241,12 @@ namespace BovineLabs.Core.Iterators
             DynamicHashMapHelper<TKey>.AddBatchUnsafe(this.buffer, ref this.helper, keys, values);
         }
 
+        public void AddBatchUnsafe(NativeSlice<TKey> keys, NativeArray<TValue> values)
+        {
+            CheckLengthsMatch(keys.Length, values.Length);
+            DynamicHashMapHelper<TKey>.AddBatchUnsafe(this.buffer, ref this.helper, keys, values);
+        }
+
         /// <summary> Returns an array with a copy of all this hash map's keys (in no particular order). </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>

@@ -2,7 +2,7 @@
 //     Copyright (c) VirtualChunks. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_LINKED_CHUNKS
+#if BL_ENABLE_LINKED_CHUNKS
 namespace BovineLabs.Core.Chunks.Data
 {
     using Unity.Entities;

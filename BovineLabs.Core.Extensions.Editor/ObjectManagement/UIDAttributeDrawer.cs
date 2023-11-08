@@ -62,19 +62,25 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             foreach (var guid in assets)
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
-                if (AssetDatabase.LoadAssetAtPath<ScriptableObject>(path) is not IUID asset)
-                {
-                    Debug.Log("Not all assets");
-                    continue;
-                }
 
-                try
+                var assetsAtPath = AssetDatabase.LoadAllAssetsAtPath(path);
+
+                foreach (var obj in assetsAtPath)
                 {
-                    keyedAssets.Add(asset.ID, asset);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError(ex);
+                    if (obj is not IUID asset || asset.GetType().Name != name)
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        keyedAssets.Add(asset.ID, asset);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"GetBestType failed for {path}");
+                        Debug.LogError(ex);
+                    }
                 }
             }
 

@@ -9,6 +9,7 @@ namespace BovineLabs.Core.ConfigVars
     using Unity.Burst;
 
     /// <summary> The attribute defining a config variable. This should only be placed on a <see cref="SharedStatic{T}" />. </summary>
+    [AttributeUsage(AttributeTargets.Field)]
     public class ConfigVarAttribute : Attribute, IEquatable<ConfigVarAttribute>
     {
         /// <summary> Initializes a new instance of the <see cref="ConfigVarAttribute" /> class. </summary>

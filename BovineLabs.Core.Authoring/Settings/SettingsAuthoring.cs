@@ -14,23 +14,21 @@ namespace BovineLabs.Core.Authoring.Settings
         [SerializeField]
         private SettingsBase[] settings = Array.Empty<SettingsBase>();
 
-        public SettingsBase[] Settings => this.settings;
-    }
-
-    public class SettingsBaker : Baker<SettingsAuthoring>
-    {
-        public override void Bake(SettingsAuthoring authoring)
+        private class Baker : Baker<SettingsAuthoring>
         {
-            foreach (var setting in authoring.Settings.Distinct())
+            public override void Bake(SettingsAuthoring authoring)
             {
-                if (setting == null)
+                foreach (var setting in authoring.settings.Distinct())
                 {
-                    Debug.LogWarning("Setting is not set");
-                    continue;
-                }
+                    if (setting == null)
+                    {
+                        Debug.LogWarning("Setting is not set");
+                        continue;
+                    }
 
-                this.DependsOn(setting);
-                setting.Bake(this);
+                    this.DependsOn(setting);
+                    setting.Bake(this);
+                }
             }
         }
     }

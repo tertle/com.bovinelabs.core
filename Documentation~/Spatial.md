@@ -1,6 +1,6 @@
 ﻿# Spatial
 ## Summary
-Spatial provides a very fast to generate a spatial hashmap designed to be used when it needs to be rebuilt every frame.
+Spatial provides a very fast to generate spatial hashmap designed to be used when it needs to be rebuilt every frame.
 It is extremely fast to build while still providing excellent speeds for finding nearest neighbours.
 
 Spatial map requires a type of ISpatialPosition 

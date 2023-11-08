@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_LINKED_CHUNKS
+#if BL_ENABLE_LINKED_CHUNKS
 namespace BovineLabs.Core.Chunks.Iterators
 {
     using Unity.Burst.CompilerServices;

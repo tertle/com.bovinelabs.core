@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-// Not wrapped in !BL_DISABLE_LINKED_CHUNKS to allow it to be used conditionally
+// Not wrapped in BL_ENABLE_LINKED_CHUNKS to allow it to be used conditionally
 namespace BovineLabs.Core.Chunks
 {
     using System;

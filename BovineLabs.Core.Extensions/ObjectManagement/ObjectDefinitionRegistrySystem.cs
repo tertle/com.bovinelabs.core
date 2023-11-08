@@ -27,8 +27,8 @@ namespace BovineLabs.Core.ObjectManagement
 
             state.EntityManager.AddComponentData(state.SystemHandle, new ObjectDefinitionRegistry(this.objectDefinitions, this.objectDefinitionsOffsets));
 
-            this.newQuery = SystemAPI.QueryBuilder().WithAll<Mod, ObjectDefinitionSetupRegistry>().WithNone<ObjectDefinitionSetupRegistryInitialized>().Build();
-            this.oldQuery = SystemAPI.QueryBuilder().WithNone<Mod, ObjectDefinitionSetupRegistry>().WithAll<ObjectDefinitionSetupRegistryInitialized>().Build();
+            this.newQuery = SystemAPI.QueryBuilder().WithAll<Mod, ObjectDefinitionSetupRegistry>().WithNone<Initialized>().Build();
+            this.oldQuery = SystemAPI.QueryBuilder().WithNone<Mod, ObjectDefinitionSetupRegistry>().WithAll<Initialized>().Build();
 
             var anyQueries = new NativeArray<EntityQuery>(2, Allocator.Temp);
             anyQueries[0] = this.newQuery;
@@ -46,8 +46,8 @@ namespace BovineLabs.Core.ObjectManagement
         public void OnUpdate(ref SystemState state)
         {
             state.CompleteDependency();
-            state.EntityManager.RemoveComponent<ObjectDefinitionSetupRegistryInitialized>(this.oldQuery);
-            state.EntityManager.AddComponent<ObjectDefinitionSetupRegistryInitialized>(this.newQuery);
+            state.EntityManager.RemoveComponent<Initialized>(this.oldQuery);
+            state.EntityManager.AddComponent<Initialized>(this.newQuery);
 
             this.objectDefinitions.Clear();
             this.objectDefinitionsOffsets.Clear();
@@ -66,6 +66,10 @@ namespace BovineLabs.Core.ObjectManagement
                 offsets += odr.Length;
                 this.objectDefinitions.AddRange(odr.AsNativeArray().Reinterpret<Entity>());
             }
+        }
+
+        internal struct Initialized : ICleanupComponentData
+        {
         }
     }
 }

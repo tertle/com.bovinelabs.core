@@ -18,6 +18,7 @@ namespace BovineLabs.Core.Debug.Toolbar
     using UnityEngine.UIElements;
 
     /// <summary> The system for the ribbon toolbar. </summary>
+    [Configurable]
     internal static class ToolbarManager
     {
         private const string RootName = "root";

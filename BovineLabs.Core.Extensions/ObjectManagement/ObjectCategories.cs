@@ -44,7 +44,8 @@ namespace BovineLabs.Core.ObjectManagement
             private string name;
 
             [SerializeField]
-            private byte value;
+            [Range(0, 31)]
+            private int value;
 
             [SerializeField]
             [StableTypeHash(StableTypeHashAttribute.TypeCategory.ComponentData, OnlyZeroSize = true, AllowUnityNamespace = false)]
@@ -56,7 +57,7 @@ namespace BovineLabs.Core.ObjectManagement
                 set => this.name = value;
             }
 
-            public byte Value => this.value;
+            public int Value => this.value;
 
             /// <inheritdoc/>
             int IKKeyValue.Value

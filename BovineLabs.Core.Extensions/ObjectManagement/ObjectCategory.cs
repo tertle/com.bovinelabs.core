@@ -22,6 +22,11 @@ namespace BovineLabs.Core.ObjectManagement
             return category.Value;
         }
 
+        public static implicit operator ObjectCategory(uint category)
+        {
+            return new ObjectCategory { Value = category };
+        }
+
         /// <inheritdoc />
         public bool Equals(ObjectCategory other)
         {

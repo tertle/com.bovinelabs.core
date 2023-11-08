@@ -104,9 +104,16 @@ namespace BovineLabs.Core.Editor.Settings
                 settings.GetOrAddPath(key, ref defaultDirectory);
             }
 
-            if (type.GetCustomAttribute<ResourceSettingsAttribute>() != null)
+            var resourceAttribute = type.GetCustomAttribute<ResourceSettingsAttribute>();
+            if (resourceAttribute != null)
             {
-                defaultDirectory = Path.Combine(defaultDirectory, "Resources");
+                var resources = "Resources";
+                if (!string.IsNullOrWhiteSpace(resourceAttribute.Directory))
+                {
+                    resources = Path.Combine(resources, resourceAttribute.Directory);
+                }
+
+                defaultDirectory = Path.Combine(defaultDirectory, resources);
             }
 
             AssetDatabaseHelper.CreateDirectories(defaultDirectory);

@@ -6,12 +6,15 @@ namespace BovineLabs.Core.ConfigVars
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Reflection;
     using System.Text.RegularExpressions;
     using BovineLabs.Core.Utility;
     using Unity.Burst;
     using Unity.Collections;
     using UnityEngine;
+    using UnityEngine.Profiling;
+    using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
     using UnityEditor;
 #endif
@@ -25,8 +28,15 @@ namespace BovineLabs.Core.ConfigVars
 
         internal static IEnumerable<(ConfigVarAttribute ConfigVar, FieldInfo Field)> FindAllConfigVars()
         {
+            var coreAssembly = typeof(ConfigVarManager).Assembly;
+
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
+                if (!assembly.IsAssemblyReferencingAssembly(coreAssembly))
+                {
+                    continue;
+                }
+
                 Type[] types;
 
                 try
@@ -41,6 +51,11 @@ namespace BovineLabs.Core.ConfigVars
 
                 foreach (var type in types)
                 {
+                    if (type.GetCustomAttribute<ConfigurableAttribute>() == null)
+                    {
+                        continue;
+                    }
+
                     foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public))
                     {
                         var configVar = field.GetCustomAttribute<ConfigVarAttribute>();

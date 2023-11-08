@@ -412,6 +412,45 @@ namespace BovineLabs.Core.Iterators
             helper->Count += length;
         }
 
+        internal static void AddBatchUnsafe<TValue>(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data, NativeSlice<TKey> keys, [NoAlias] NativeArray<TValue> values)
+            where TValue : unmanaged
+        {
+            var helper = buffer.AsHelper<TKey>();
+
+            Check.Assume(keys.Length == values.Length, "keys.Length != values.Length");
+
+            var length = keys.Length;
+
+            var oldLength = helper->Count;
+            var newLength = oldLength + length;
+
+            if (helper->Capacity < newLength)
+            {
+                Resize(buffer, ref data, newLength);
+                helper = buffer.AsHelper<TKey>();
+            }
+
+            var keyPtr = helper->Keys + oldLength;
+            var valuePtr = helper->Values + (oldLength * helper->SizeOfTValue);
+
+            Check.Assume(helper->SizeOfTValue == UnsafeUtility.SizeOf<TValue>());
+            UnsafeUtility.MemCpyStride(keyPtr, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), length);
+            UnsafeUtility.MemCpy(valuePtr, values.GetUnsafeReadOnlyPtr(), helper->SizeOfTValue * length);
+
+            var buckets = helper->Buckets;
+            var nextPtrs = helper->Next + oldLength;
+
+            for (var idx = 0; idx < length; idx++)
+            {
+                var bucket = keys[idx].GetHashCode() & helper->BucketCapacityMask;
+                nextPtrs[idx] = buckets[bucket];
+                buckets[bucket] = oldLength + idx;
+            }
+
+            helper->AllocatedIndex += length;
+            helper->Count += length;
+        }
+
         internal static void Flatten(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data)
         {
             var capacity = CalcCapacityCeilPow2(data->Count, data->Count, data->Log2MinGrowth);
@@ -697,6 +736,11 @@ namespace BovineLabs.Core.Iterators
 
         internal void RemoveRangeShiftDown(int start, int length)
         {
+            if (length == 0)
+            {
+                return;
+            }
+
             Check.Assume(this.FirstFreeIdx == -1, "Trying to RemoveRangeShiftDown on map with holes. Call Flatten() first.");
             Check.Assume(start >= 0 && start < this.Count);
             Check.Assume(length >= 0 && start + length < this.Count);

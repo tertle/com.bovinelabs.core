@@ -13,29 +13,27 @@ namespace BovineLabs.Core.Collections
     {
         // v0  m0  m1  v1
         private static readonly float4x4 HermiteMat = new(
-            02, 01, 01, -2, //t^3
-            -3, -2, -1, 03, //t^2
-            00, 01, 00, 00, //t^1
-            01, 00, 00, 00  //t^0
-        );
+            02, 01, 01, -2, // t^3
+            -3, -2, -1, 03, // t^2
+            00, 01, 00, 00, // t^1
+            01, 00, 00, 00); // t^0
 
         // p0  p1  p2  p3
         private static readonly float4x4 BezierMat = new(
-            -1, 03, -3, 01, //t^3
-            03, -6, 03, 00, //t^2
-            -3, 03, 00, 00, //t^1
-            01, 00, 00, 00  //t^0
-        );
+            -1, 03, -3, 01, // t^3
+            03, -6, 03, 00, // t^2
+            -3, 03, 00, 00, // t^1
+            01, 00, 00, 00); // t^0
 
         private readonly float4 factors;
 
-        /// <summary> Create from scratch </summary>
+        /// <summary>Initializes a new instance of the <see cref="BlobCurveSegment"/> struct from scratch. </summary>
         public BlobCurveSegment(float4 factors)
         {
             this.factors = factors;
         }
 
-        /// <summary> Convert From Keyframe Pair </summary>
+        /// <summary>Initializes a new instance of the <see cref="BlobCurveSegment"/> struct from Keyframe Pair. </summary>
         public BlobCurveSegment(Keyframe k0, Keyframe k1)
         {
             this.factors = UnityFactor(k0.value, k0.outTangent, k1.inTangent, k1.value, k1.time - k0.time);

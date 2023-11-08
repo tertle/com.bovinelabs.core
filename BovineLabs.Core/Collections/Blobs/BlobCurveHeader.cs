@@ -1,4 +1,4 @@
-﻿// <copyright file="CurveHeader.cs" company="BovineLabs">
+﻿// <copyright file="BlobCurveHeader.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Collections
     using Unity.Entities;
     using Unity.Mathematics;
 
-    public struct CurveHeader
+    public struct BlobCurveHeader
     {
         public enum WrapMode : short
         {
@@ -24,9 +24,10 @@ namespace BovineLabs.Core.Collections
         public int SegmentCount;
         public float StartTime;
         public float EndTime;
-        public float Duration => this.EndTime - this.StartTime;
 
-        public BlobArray<float> Times;
+        internal BlobArray<float> Times;
+
+        public float Duration => this.EndTime - this.StartTime;
 
         public unsafe int SearchIgnoreWrapMode(in float time, [NoAlias] ref BlobCurveCache cache, [NoAlias] out float t)
         {
@@ -111,7 +112,10 @@ namespace BovineLabs.Core.Collections
             float wrappedTime, duration;
             var preClamp = this.WrapModePrev == WrapMode.Clamp;
             var postClamp = this.WrapModePost == WrapMode.Clamp;
-            if (preClamp & postClamp) wrappedTime = math.clamp(time, this.StartTime, this.EndTime);
+            if (preClamp & postClamp)
+            {
+                wrappedTime = math.clamp(time, this.StartTime, this.EndTime);
+            }
             else
             {
                 var left = time < this.StartTime;
@@ -131,13 +135,16 @@ namespace BovineLabs.Core.Collections
                         case WrapMode.PingPong:
                             duration = this.Duration;
                             var offset = ModPlus(time - this.StartTime, duration);
-                            var loopCounter = (int)(math.floor((time - this.StartTime) / this.Duration));
+                            var loopCounter = (int)math.floor((time - this.StartTime) / this.Duration);
                             var isMirror = (loopCounter & 1) == 1;
                             wrappedTime = this.StartTime + (isMirror ? this.Duration - offset : offset);
                             break;
                     }
                 }
-                else wrappedTime = time;
+                else
+                {
+                    wrappedTime = time;
+                }
             }
 
             var isPrev = wrappedTime < cache.NeighborhoodTimes.x;
@@ -189,7 +196,10 @@ namespace BovineLabs.Core.Collections
             float wrappedTime, duration;
             var preClamp = this.WrapModePrev == WrapMode.Clamp;
             var postClamp = this.WrapModePost == WrapMode.Clamp;
-            if (preClamp & postClamp) wrappedTime = math.clamp(time, this.StartTime, this.EndTime);
+            if (preClamp & postClamp)
+            {
+                wrappedTime = math.clamp(time, this.StartTime, this.EndTime);
+            }
             else
             {
                 var left = time < this.StartTime;
@@ -209,13 +219,16 @@ namespace BovineLabs.Core.Collections
                         case WrapMode.PingPong:
                             duration = this.Duration;
                             var offset = ModPlus(time - this.StartTime, duration);
-                            var loopCounter = (int)(math.floor((time - this.StartTime) / this.Duration));
+                            var loopCounter = (int)math.floor((time - this.StartTime) / this.Duration);
                             var isMirror = (loopCounter & 1) == 1;
                             wrappedTime = this.StartTime + (isMirror ? this.Duration - offset : offset);
                             break;
                     }
                 }
-                else wrappedTime = time;
+                else
+                {
+                    wrappedTime = time;
+                }
             }
 
             var times = (float*)this.Times.GetUnsafePtr();

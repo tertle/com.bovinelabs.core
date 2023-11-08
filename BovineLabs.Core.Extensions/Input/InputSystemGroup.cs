@@ -5,6 +5,7 @@
 #if !BL_DISABLE_INPUT
 namespace BovineLabs.Core.Input
 {
+    using BovineLabs.Core.Groups;
     using Unity.Entities;
     using Unity.NetCode;
 
@@ -12,7 +13,7 @@ namespace BovineLabs.Core.Input
 #if UNITY_NETCODE
     [UpdateInGroup(typeof(GhostInputSystemGroup))]
 #else
-    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
+    [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
 #endif
     public partial class InputSystemGroup : ComponentSystemGroup
     {

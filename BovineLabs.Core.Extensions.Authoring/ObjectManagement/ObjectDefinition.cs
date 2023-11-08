@@ -45,11 +45,14 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             internal set => this.prefab = value;
         }
 
+        public int ID => this.id;
+
         public ObjectCategory Categories => new() { Value = (uint)this.categories };
 
-        public string FriendlyName => this.friendlyName;
+        public string FriendlyName => string.IsNullOrWhiteSpace(this.friendlyName) ? this.name : this.friendlyName;
 
-        public int ID => this.id;
+        public string Description => this.description;
+
 
         int IUID.ID
         {

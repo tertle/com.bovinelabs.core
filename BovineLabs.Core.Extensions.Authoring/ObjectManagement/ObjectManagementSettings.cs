@@ -48,7 +48,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             var entity = baker.GetEntity(TransformUsageFlags.None);
             var components = baker.AddBuffer<ObjectCategoryComponents>(entity);
 
-            var unique = new HashSet<byte>();
+            var unique = new HashSet<int>();
 
             foreach (var c in objectCategories.Components)
             {
@@ -64,7 +64,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                     continue;
                 }
 
-                if (c.Value > ObjectCategory.MaxBits)
+                if (c.Value is < 0 or >= ObjectCategory.MaxBits)
                 {
                     Debug.LogWarning($"Value outside bit field range {c.Value}");
                     continue;
@@ -72,7 +72,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
                 components.Add(new ObjectCategoryComponents
                 {
-                    CategoryBit = c.Value,
+                    CategoryBit = (byte)c.Value,
                     StableTypeHash = c.ComponentType,
                 });
             }

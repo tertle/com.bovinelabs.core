@@ -15,6 +15,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
     using Unity.Entities;
     using Unity.Jobs;
 
+    [Configurable]
     public partial struct ChangeFilterTrackingSystem : ISystem
     {
         private const int ShortUpdateTime = 60; // must be multiple of FramesToTrack

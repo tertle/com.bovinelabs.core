@@ -10,5 +10,13 @@ namespace BovineLabs.Core.Settings
     [AttributeUsage(AttributeTargets.Class)]
     public class ResourceSettingsAttribute : Attribute
     {
+        /// <summary> Initializes a new instance of the <see cref="ResourceSettingsAttribute"/> class. </summary>
+        /// <param name="directory"> An optional subdirectory to use in resources. </param>
+        public ResourceSettingsAttribute(string directory = "")
+        {
+            this.Directory = directory;
+        }
+
+        public string Directory { get; }
     }
 }

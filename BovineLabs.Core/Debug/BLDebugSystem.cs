@@ -23,6 +23,7 @@ namespace BovineLabs.Core
     [BurstCompile]
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation)]
+    [Configurable]
     public partial class BLDebugSystem : SystemBase
     {
         internal const string LogLevelName = "debug.loglevel";
