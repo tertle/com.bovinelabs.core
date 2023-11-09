@@ -36,17 +36,17 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
         private void SetupCategories(IBaker baker)
         {
-            var objectCategories = Resources.Load<ObjectCategories>(nameof(ObjectCategories));
+            var objectCategories = Resources.Load<ObjectCategories>("K/" + nameof(ObjectCategories));
+            baker.DependsOn(objectCategories);
+
+            var entity = baker.GetEntity(TransformUsageFlags.None);
+            var components = baker.AddBuffer<ObjectCategoryComponents>(entity);
+
             if (objectCategories == null)
             {
                 Debug.LogWarning("Categories missing");
                 return;
             }
-
-            baker.DependsOn(objectCategories);
-
-            var entity = baker.GetEntity(TransformUsageFlags.None);
-            var components = baker.AddBuffer<ObjectCategoryComponents>(entity);
 
             var unique = new HashSet<int>();
 

@@ -133,7 +133,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         {
             this.categoryToComponentTypes = new NativeHashMap<byte, ComponentType>(0, Allocator.Persistent);
 
-            var objectCategories = Resources.Load<ObjectCategories>(nameof(ObjectCategories));
+            var objectCategories = Resources.Load<ObjectCategories>("K/" + nameof(ObjectCategories));
             if (objectCategories == null)
             {
                 Debug.LogWarning("Categories missing");
