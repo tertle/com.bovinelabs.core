@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_CONFIG
 namespace BovineLabs.Core.Keys
 {
     using System;
@@ -42,9 +41,11 @@ namespace BovineLabs.Core.Keys
     /// The base KSettings file for defining custom enums, layers, keys. Do not implement this directly, implement <see cref="KSettings{T}" />.
     /// </summary>
     [Serializable]
-    [ResourceSettings("K")]
+    [ResourceSettings(KResourceDirectory)]
     public abstract class KSettings : ScriptableObject, ISettings
     {
+        public const string KResourceDirectory = "K";
+
         [Multiline]
         [UsedImplicitly]
         [SerializeField]
@@ -96,7 +97,7 @@ namespace BovineLabs.Core.Keys
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void LoadAll()
         {
-            var kvSettings = Resources.LoadAll<KSettings>("K");
+            var kvSettings = Resources.LoadAll<KSettings>(KResourceDirectory);
 
             foreach (var setting in kvSettings)
             {
@@ -105,4 +106,3 @@ namespace BovineLabs.Core.Keys
         }
     }
 }
-#endif

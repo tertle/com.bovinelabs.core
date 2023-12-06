@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_CONFIG
 namespace BovineLabs.Core.Keys
 {
     using System;
@@ -28,4 +27,3 @@ namespace BovineLabs.Core.Keys
         public bool Flags { get; }
     }
 }
-#endif

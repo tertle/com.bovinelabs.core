@@ -22,6 +22,8 @@ namespace BovineLabs.Core.Utility
 
         public bool IsCreated => this.Value != null;
 
+        public ref T Ref => ref UnsafeUtility.AsRef<T>(this.Value);
+
         public static implicit operator T*(Ptr<T> node)
         {
             return node.Value;

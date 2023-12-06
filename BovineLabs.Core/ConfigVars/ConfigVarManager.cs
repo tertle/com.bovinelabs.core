@@ -6,14 +6,12 @@ namespace BovineLabs.Core.ConfigVars
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Reflection;
     using System.Text.RegularExpressions;
     using BovineLabs.Core.Utility;
     using Unity.Burst;
     using Unity.Collections;
     using UnityEngine;
-    using UnityEngine.Profiling;
     using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
     using UnityEditor;

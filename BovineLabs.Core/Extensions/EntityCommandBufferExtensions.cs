@@ -16,6 +16,8 @@ namespace BovineLabs.Core.Extensions
         {
             ecb.EnforceSingleThreadOwnership();
             ecb.AssertDidNotPlayback();
+
+            // TODO try use the m_BufferSafety and m_ArrayInvalidationSafety but they are private
             return ecb.m_Data->CreateUntypedBufferCommand(ECBCommand.AddBuffer, &ecb.m_Data->m_MainThreadChain, ecb.MainThreadSortKey, e, componentType);
         }
 
@@ -74,28 +76,29 @@ namespace BovineLabs.Core.Extensions
             cmd->Header.IdentityIndex = 0;
             cmd->Header.BatchCount = 1;
             cmd->ComponentTypeIndex = typeIndex;
-            cmd->ComponentSize = type.SizeInChunk;
+            cmd->ComponentSize = (short)type.SizeInChunk;
+            cmd->ValueRequiresEntityFixup = 0;
 
             BufferHeader* header = &cmd->BufferNode.TempBuffer;
             BufferHeader.Initialize(header, type.BufferCapacity);
 
+            // Track all DynamicBuffer headers created during recording. Until the ECB is played back, it owns the
+            // memory allocations for these buffers and is responsible for deallocating them when the ECB is disposed.
             cmd->BufferNode.Prev = chain->m_Cleanup->BufferCleanupList;
             chain->m_Cleanup->BufferCleanupList = &(cmd->BufferNode);
+            // The caller may invoke methods on the DynamicBuffer returned by this command during ECB recording which
+            // cause it to allocate memory (for example, DynamicBuffer.AddRange). These allocations always use
+            // Allocator.Persistent, not the ECB's allocator. These allocations must ALWAYS be manually cleaned up
+            // if the ECB is disposed without being played back. So, we have to force the full ECB cleanup process
+            // to run in this case, even if it could normally be skipped.
+            ecbd.m_ForceFullDispose = true;
 
             internalCapacity = type.BufferCapacity;
 
             if (TypeManager.HasEntityReferences(typeIndex))
             {
-                if (op == ECBCommand.AddBuffer)
-                {
-                    ecbd.m_BufferWithFixups.Add(1);
-                    cmd->Header.Header.CommandType = ECBCommand.AddBufferWithEntityFixUp;
-                }
-                else if (op == ECBCommand.SetBuffer)
-                {
-                    ecbd.m_BufferWithFixups.Add(1);
-                    cmd->Header.Header.CommandType = ECBCommand.SetBufferWithEntityFixUp;
-                }
+                cmd->ValueRequiresEntityFixup = 1;
+                ecbd.m_BufferWithFixups.Add(1);
             }
 
             return header;

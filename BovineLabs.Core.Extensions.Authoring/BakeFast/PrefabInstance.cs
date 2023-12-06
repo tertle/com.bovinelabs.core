@@ -1,5 +1,5 @@
-// <copyright file="PrefabInstance.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="PrefabInstance.cs" company="BovineLabs">
+// Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 #if BL_PREFAB_INSTANCE

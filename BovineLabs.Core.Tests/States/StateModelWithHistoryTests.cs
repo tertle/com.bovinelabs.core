@@ -156,7 +156,7 @@ namespace BovineLabs.Core.Tests.States
         /// <inheritdoc />
         public void OnStopRunning(ref SystemState state)
         {
-            this.impl.Dispose();
+            this.impl.Dispose(ref state);
         }
 
         /// <inheritdoc />

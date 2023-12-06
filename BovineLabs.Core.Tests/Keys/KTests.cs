@@ -2,8 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_CONFIG
-namespace BovineLabs.Core.Extensions.Tests.Keys
+namespace BovineLabs.Core.Tests.Keys
 {
     using BovineLabs.Core.Keys;
     using NUnit.Framework;
@@ -55,4 +54,3 @@ namespace BovineLabs.Core.Extensions.Tests.Keys
         }
     }
 }
-#endif

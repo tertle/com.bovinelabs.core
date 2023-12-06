@@ -27,14 +27,15 @@ namespace BovineLabs.Core.States
             this.impl = new StateImpl(ref state, stateComponent, previousStateComponent);
         }
 
-        public void Dispose()
+        public void Dispose(ref SystemState state)
         {
+            state.Dependency.Complete();
             this.impl.Dispose();
         }
 
         public void Run(ref SystemState state, EntityCommandBuffer commandBuffer)
         {
-            // state.Dependency.Complete();
+            state.Dependency.Complete();
             var job = this.UpdateInternal(ref state, commandBuffer.AsParallelWriter());
             job.Run(this.impl.Query);
         }

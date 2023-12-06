@@ -1,4 +1,4 @@
-﻿// <copyright file="StateModel.cs" company="BovineLabs">
+﻿// <copyright file="StateModelEnableable.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -36,26 +36,29 @@ namespace BovineLabs.Core.States
             }
         }
 
-        public void Dispose()
+        public void Dispose(ref SystemState state)
         {
+            state.Dependency.Complete();
             this.impl.Dispose();
         }
 
         public void Run(ref SystemState state)
         {
             state.Dependency.Complete();
-            this.UpdateInternal(ref state).Run(this.impl.Query);
+            var job = this.UpdateInternal(ref state);
+            job.RunByRef(this.impl.Query);
         }
 
         public void Update(ref SystemState state)
         {
             var job = this.UpdateInternal(ref state);
-            state.Dependency = this.UpdateInternal(ref state).Schedule(this.impl.Query, state.Dependency);
+            state.Dependency = job.ScheduleByRef(this.impl.Query, state.Dependency);
         }
 
         public void UpdateParallel(ref SystemState state)
         {
-            state.Dependency = this.UpdateInternal(ref state).ScheduleParallel(this.impl.Query, state.Dependency);
+            var job = this.UpdateInternal(ref state);
+            state.Dependency = job.ScheduleParallel(this.impl.Query, state.Dependency);
         }
 
         private StateJob UpdateInternal(ref SystemState state)

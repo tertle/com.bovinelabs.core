@@ -16,8 +16,86 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    public static class AssetCreator
+    public class AssetCreator
     {
+        private readonly string path;
+        private readonly SerializedObject serializedObject;
+        private readonly SerializedProperty serializedProperty;
+        private readonly Type type;
+        private ListView? listView;
+
+        public AssetCreator(SerializedObject serializedObject, SerializedProperty serializedProperty, Type type)
+        {
+            this.serializedObject = serializedObject;
+            this.serializedProperty = serializedProperty;
+            this.type = type;
+            this.serializedProperty.isExpanded = false;
+
+            this.Element = new PropertyField(serializedProperty);
+            this.Element.Bind(this.serializedObject);
+
+            if (!TryGetDirectory(this.type, out this.path))
+            {
+                return;
+            }
+
+            this.Element.RegisterCallback<GeometryChangedEvent>(this.Init);
+            this.Element.AddManipulator(new ContextualMenuManipulator(this.MenuBuilder));
+        }
+
+        public PropertyField Element { get; }
+
+        protected virtual void Initialize(object instance)
+        {
+        }
+
+        private void Init(GeometryChangedEvent evt)
+        {
+            this.listView = this.Element.Q<ListView>();
+            if (this.listView == null)
+            {
+                return;
+            }
+
+            this.Element.UnregisterCallback<GeometryChangedEvent>(this.Init);
+
+            var removeButton = this.listView.Q<Button>("unity-list-view__remove-button");
+            removeButton.parent.Remove(removeButton);
+
+            this.listView.showBoundCollectionSize = false;
+
+            this.listView.itemsAdded += ints =>
+            {
+                var count = ints.Count();
+                for (var i = 0; i < count; i++)
+                {
+                    var instance = ScriptableObject.CreateInstance(this.type);
+                    this.Initialize(instance);
+                    AssetDatabase.CreateAsset(instance, AssetDatabase.GenerateUniqueAssetPath(this.path));
+
+                    EditorGUIUtility.PingObject(instance);
+                }
+            };
+
+            this.listView.Q<VisualElement>("unity-content-container").SetEnabled(false);
+        }
+
+        private void MenuBuilder(ContextualMenuPopulateEvent evt)
+        {
+            evt.menu.AppendAction("Remove Missing", _ =>
+            {
+                for (var i = this.serializedProperty.arraySize - 1; i >= 0; i--)
+                {
+                    if (this.serializedProperty.GetArrayElementAtIndex(i).objectReferenceValue == null)
+                    {
+                        this.serializedProperty.DeleteArrayElementAtIndex(i);
+                    }
+                }
+
+                this.serializedObject.ApplyModifiedProperties();
+            });
+        }
+
         public static bool TryGetDirectory(Type type, out string path)
         {
             var assetCreatorAttribute = type.GetCustomAttribute<AssetCreatorAttribute>();
@@ -49,83 +127,21 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         }
     }
 
-    public class AssetCreator<T>
+    public class AssetCreator<T> : AssetCreator
         where T : ScriptableObject, IUID
     {
-        private readonly string path;
-        private readonly SerializedObject serializedObject;
-        private readonly SerializedProperty serializedProperty;
-        private ListView? listView;
-
         public AssetCreator(SerializedObject serializedObject, SerializedProperty serializedProperty)
+            : base(serializedObject, serializedProperty, typeof(T))
         {
-            this.serializedObject = serializedObject;
-            this.serializedProperty = serializedProperty;
-            this.serializedProperty.isExpanded = false;
-
-            this.Element = new PropertyField(serializedProperty);
-            this.Element.Bind(this.serializedObject);
-
-            if (!AssetCreator.TryGetDirectory(typeof(T), out this.path))
-            {
-                return;
-            }
-
-            this.Element.RegisterCallback<GeometryChangedEvent>(this.Init);
-            this.Element.AddManipulator(new ContextualMenuManipulator(this.MenuBuilder));
         }
-
-        public PropertyField Element { get; }
 
         protected virtual void Initialize(T instance)
         {
         }
 
-        private void Init(GeometryChangedEvent evt)
+        protected sealed override void Initialize(object obj)
         {
-            this.listView = this.Element.Q<ListView>();
-            if (this.listView == null)
-            {
-                return;
-            }
-
-            this.Element.UnregisterCallback<GeometryChangedEvent>(this.Init);
-
-            var removeButton = this.listView.Q<Button>("unity-list-view__remove-button");
-            removeButton.parent.Remove(removeButton);
-
-            this.listView.showBoundCollectionSize = false;
-
-            this.listView.itemsAdded += ints =>
-            {
-                var count = ints.Count();
-                for (var i = 0; i < count; i++)
-                {
-                    var instance = ScriptableObject.CreateInstance<T>();
-                    this.Initialize(instance);
-                    AssetDatabase.CreateAsset(instance, AssetDatabase.GenerateUniqueAssetPath(this.path));
-
-                    EditorGUIUtility.PingObject(instance);
-                }
-            };
-
-            this.listView.Q<VisualElement>("unity-content-container").SetEnabled(false);
-        }
-
-        private void MenuBuilder(ContextualMenuPopulateEvent evt)
-        {
-            evt.menu.AppendAction("Remove Missing", _ =>
-            {
-                for (var i = this.serializedProperty.arraySize - 1; i >= 0; i--)
-                {
-                    if (this.serializedProperty.GetArrayElementAtIndex(i).objectReferenceValue == null)
-                    {
-                        this.serializedProperty.DeleteArrayElementAtIndex(i);
-                    }
-                }
-
-                this.serializedObject.ApplyModifiedProperties();
-            });
+            this.Initialize((T)obj);
         }
     }
 }

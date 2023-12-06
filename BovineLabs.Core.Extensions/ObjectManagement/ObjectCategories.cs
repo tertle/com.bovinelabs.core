@@ -11,7 +11,6 @@ namespace BovineLabs.Core.ObjectManagement
     using BovineLabs.Core.Keys;
     using BovineLabs.Core.PropertyDrawers;
     using BovineLabs.Core.Settings;
-    using Unity.Entities.Content;
     using UnityEngine;
 
     /// <summary> Object categories dynamically implement using <see cref="K{T}" />. </summary>
@@ -25,6 +24,7 @@ namespace BovineLabs.Core.ObjectManagement
 
         public override IReadOnlyList<NameValue> Keys => this.keys.Select(k => new NameValue() { Name = k.Name, Value = k.Value }).ToArray();
 
+        /// <inheritdoc/>
         protected internal override void Init()
         {
             K<ObjectCategories>.Initialize(this.Keys);

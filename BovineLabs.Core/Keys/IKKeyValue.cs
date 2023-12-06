@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_CONFIG
 namespace BovineLabs.Core.Keys
 {
     public interface IKKeyValue
@@ -12,4 +11,3 @@ namespace BovineLabs.Core.Keys
         int Value { get; set; }
     }
 }
-#endif

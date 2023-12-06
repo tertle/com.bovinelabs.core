@@ -7,7 +7,9 @@ namespace BovineLabs.Core.Utility
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using Unity.Collections;
+    using Assembly = UnityEditor.Compilation.Assembly;
 #if UNITY_EDITOR
     using UnityEditor.Compilation;
 #endif
@@ -222,6 +224,29 @@ namespace BovineLabs.Core.Utility
         public static IEnumerable<System.Reflection.Assembly> GetAllAssemblyWithReference(System.Reflection.Assembly reference)
         {
             return AppDomain.CurrentDomain.GetAssemblies().Where(a => IsAssemblyReferencingAssembly(a, reference));
+        }
+
+        public static FieldInfo? GetFieldInBase(this Type? type, string name)
+        {
+            while (true)
+            {
+                if (type == null)
+                {
+                    return null;
+                }
+
+                const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic |
+                                           BindingFlags.Static | BindingFlags.Instance |
+                                           BindingFlags.DeclaredOnly;
+
+                var field = type.GetField(name, flags);
+                if (field != null)
+                {
+                    return field;
+                }
+
+                type = type.BaseType;
+            }
         }
 
         private static T? GetCustomImplementation<T>(Type? defaultImplementation)

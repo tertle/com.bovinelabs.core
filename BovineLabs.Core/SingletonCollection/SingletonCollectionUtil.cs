@@ -20,16 +20,12 @@ namespace BovineLabs.Core.SingletonCollection
         where TC : unmanaged, IDisposable
     {
         private readonly UnsafeList<TC>* containers;
-        private AllocatorHelper<RewindableAllocator> allocator;
-        private AllocatorHelper<RewindableAllocator> allocator2;
+        private DoubleRewindableAllocators allocator;
         private EntityQuery query;
 
         public SingletonCollectionUtil(ref SystemState state, int initialSizeInBytes = 16 * 1024, Allocator allocator = Allocator.Persistent)
         {
-            this.allocator = new AllocatorHelper<RewindableAllocator>(allocator);
-            this.allocator.Allocator.Initialize(initialSizeInBytes);
-            this.allocator2 = new AllocatorHelper<RewindableAllocator>(allocator);
-            this.allocator2.Allocator.Initialize(initialSizeInBytes);
+            this.allocator = new DoubleRewindableAllocators(allocator, initialSizeInBytes);
 
             this.containers = UnsafeList<TC>.Create(1, Allocator.Persistent);
 
@@ -52,9 +48,7 @@ namespace BovineLabs.Core.SingletonCollection
         {
             this.containers->Clear();
 
-            (this.allocator, this.allocator2) = (this.allocator2, this.allocator);
-            this.allocator.Allocator.Rewind();
-
+            this.allocator.Update();
             var s = this.query.GetSingletonRW<T>();
             s.ValueRW.Allocator = this.allocator.Allocator.ToAllocator;
         }
@@ -64,11 +58,7 @@ namespace BovineLabs.Core.SingletonCollection
             this.containers->Dispose();
             AllocatorManager.Free(Allocator.Persistent, this.containers);
 
-            this.allocator.Allocator.Dispose();
             this.allocator.Dispose();
-
-            this.allocator2.Allocator.Dispose();
-            this.allocator2.Dispose();
         }
     }
 }

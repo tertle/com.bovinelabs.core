@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0] - 2023-11-09
+
+### Added
+* Added GetChunkComponentDataRW to ArchetypeChunk
+
+### Changed
+* Bumped requirement to Entities 1.2.0-exp.3
+* Renamed InputSettings to InputCommonSettings to avoid bug in Input package
+* Moved K back into core
+
+### Fixed
+* Fixed compile errors when object definitions were disabled
+
 ## [1.1.5] - 2023-11-09
 
 ### Fixed

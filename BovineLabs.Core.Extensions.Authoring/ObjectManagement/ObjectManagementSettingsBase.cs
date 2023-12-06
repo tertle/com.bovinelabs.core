@@ -11,6 +11,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     using BovineLabs.Core.Assertions;
     using BovineLabs.Core.Authoring.Settings;
     using BovineLabs.Core.Extensions;
+    using BovineLabs.Core.Keys;
     using BovineLabs.Core.ObjectManagement;
     using Unity.Burst;
     using Unity.Collections;
@@ -133,7 +134,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         {
             this.categoryToComponentTypes = new NativeHashMap<byte, ComponentType>(0, Allocator.Persistent);
 
-            var objectCategories = Resources.Load<ObjectCategories>("K/" + nameof(ObjectCategories));
+            var objectCategories = Resources.Load<ObjectCategories>($"{KSettings.KResourceDirectory}/{nameof(ObjectCategories)}");
             if (objectCategories == null)
             {
                 Debug.LogWarning("Categories missing");

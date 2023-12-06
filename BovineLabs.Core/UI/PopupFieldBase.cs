@@ -114,8 +114,52 @@ namespace BovineLabs.Core.UI
         /// <returns> True if equal. </returns>
         protected abstract bool AreEquals(T t1, T t2);
 
+#if UNITY_2023_3_OR_NEWER
+        protected override void HandleEventBubbleUp(EventBase? evt)
+        {
+            base.HandleEventBubbleUp(evt);
+
+            if (evt == null)
+            {
+                return;
+            }
+
+            var showMenu = false;
+            var hideMenu = false;
+            if (evt is KeyDownEvent kde)
+            {
+                if (kde.keyCode is KeyCode.Space or KeyCode.KeypadEnter or KeyCode.Return)
+                {
+                    showMenu = true;
+                }
+                else if (kde.keyCode == KeyCode.Escape)
+                {
+                    hideMenu = true;
+                }
+            }
+            else if ((evt as MouseDownEvent)?.button == (int)MouseButton.LeftMouse)
+            {
+                var mde = (MouseDownEvent)evt;
+                if (this.visualInput.ContainsPoint(this.visualInput.WorldToLocal(mde.mousePosition)))
+                {
+                    showMenu = true;
+                }
+            }
+
+            if (showMenu)
+            {
+                this.ToggleMenu();
+                evt.StopPropagation();
+            }
+            else if (hideMenu)
+            {
+                this.HideMenu();
+                evt.StopPropagation();
+            }
+        }
+#else
         /// <inheritdoc />
-        protected override void ExecuteDefaultActionAtTarget(EventBase evt)
+        protected override void ExecuteDefaultActionAtTarget(EventBase? evt)
         {
             base.ExecuteDefaultActionAtTarget(evt);
 
@@ -157,6 +201,7 @@ namespace BovineLabs.Core.UI
                 evt.StopPropagation();
             }
         }
+#endif
 
         /// <summary> Hides the menu. </summary>
         protected void HideMenu()

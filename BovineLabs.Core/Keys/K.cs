@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_CONFIG
 namespace BovineLabs.Core.Keys
 {
     using System.Collections.Generic;
@@ -24,15 +23,7 @@ namespace BovineLabs.Core.Keys
         /// <returns> The value. </returns>
         public static int NameToKey(FixedString32Bytes name)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (Map.Data.Capacity == 0)
-            {
-                Debug.LogError("Trying to read from an uninitialized K");
-                return default;
-            }
-#endif
-
-            if (!Map.Data.TryGetValue(name, out var key))
+            if (!TryNameToKey(name, out var key))
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 Debug.LogError($"{name} does not exist");
@@ -40,6 +31,20 @@ namespace BovineLabs.Core.Keys
             }
 
             return key;
+        }
+
+        public static bool TryNameToKey(FixedString32Bytes name, out int key)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (Map.Data.Capacity == 0)
+            {
+                Debug.LogError("Trying to read from an uninitialized K");
+                key = default;
+                return false;
+            }
+#endif
+
+            return Map.Data.TryGetValue(name, out key);
         }
 
         /// <summary> Given a key, returns the name that's associated with it. Mostly used for debugging. </summary>
@@ -73,4 +78,3 @@ namespace BovineLabs.Core.Keys
         }
     }
 }
-#endif

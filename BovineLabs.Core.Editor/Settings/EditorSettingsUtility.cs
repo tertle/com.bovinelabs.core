@@ -116,7 +116,7 @@ namespace BovineLabs.Core.Editor.Settings
                 defaultDirectory = Path.Combine(defaultDirectory, resources);
             }
 
-            AssetDatabaseHelper.CreateDirectories(defaultDirectory);
+            AssetDatabaseHelper.CreateDirectories(ref defaultDirectory);
 
             return defaultDirectory;
         }

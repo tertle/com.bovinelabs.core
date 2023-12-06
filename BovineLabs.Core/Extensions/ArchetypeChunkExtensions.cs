@@ -381,6 +381,19 @@ namespace BovineLabs.Core.Extensions
             return result;
         }
 
+        public static ref T GetChunkComponentDataRW<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle)
+            where T : unmanaged, IComponentData
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(typeHandle.m_Safety);
+#endif
+            // TODO(DOTS-5748): use type handle's LookupCache here
+            var metaChunkEntity = archetypeChunk.m_Chunk.MetaChunkEntity;
+            archetypeChunk.m_EntityComponentStore->AssertEntityHasComponent(metaChunkEntity, typeHandle.m_TypeIndex);
+            var ptr = archetypeChunk.m_EntityComponentStore->GetComponentDataWithTypeRW(metaChunkEntity, typeHandle.m_TypeIndex, typeHandle.GlobalSystemVersion);
+            return ref UnsafeUtility.AsRef<T>(ptr);
+        }
+
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static void JournalAddRecord(

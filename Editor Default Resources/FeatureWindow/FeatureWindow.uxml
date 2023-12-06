@@ -5,10 +5,6 @@
             <ui:Label tabindex="-1" text="Analyzers" display-tooltip-when-elided="true" name="BL_DISABLE_ANALYZERS" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
         </ui:VisualElement>
-        <ui:VisualElement tooltip="Adds K and ConfigVars as ways to configure your application." class="feature-group">
-            <ui:Label tabindex="-1" text="Config" display-tooltip-when-elided="true" name="BL_DISABLE_CONFIG" />
-            <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
-        </ui:VisualElement>
         <ui:VisualElement tooltip="Adds back the CopyTransformToGameObject and CopyTransformFromGameObject components." class="feature-group">
             <ui:Label tabindex="-1" text="Copy Transform" display-tooltip-when-elided="true" name="BL_DISABLE_COPY_TRANSFORM" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />

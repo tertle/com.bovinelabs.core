@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 {
     using System;
     using System.Collections.Generic;
+    using BovineLabs.Core.Keys;
     using BovineLabs.Core.ObjectManagement;
     using BovineLabs.Core.Settings;
     using Unity.Entities;
@@ -36,7 +37,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
         private void SetupCategories(IBaker baker)
         {
-            var objectCategories = Resources.Load<ObjectCategories>("K/" + nameof(ObjectCategories));
+            var objectCategories = Resources.Load<ObjectCategories>($"{KSettings.KResourceDirectory}/{nameof(ObjectCategories)}");
             baker.DependsOn(objectCategories);
 
             var entity = baker.GetEntity(TransformUsageFlags.None);

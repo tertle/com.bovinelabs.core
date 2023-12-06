@@ -1,5 +1,5 @@
-﻿// <copyright file="NativeMultiHashMap.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+﻿// <copyright file="NativeMultiHashMap.cs" company="BovineLabs">
+// Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 // ReSharper disable once CheckNamespace

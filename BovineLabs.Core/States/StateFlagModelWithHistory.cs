@@ -48,8 +48,9 @@ namespace BovineLabs.Core.States
             this.impl = new StateImpl(ref state, stateComponent, previousStateComponent);
         }
 
-        public void Dispose()
+        public void Dispose(ref SystemState state)
         {
+            state.Dependency.Complete();
             this.impl.Dispose();
         }
 

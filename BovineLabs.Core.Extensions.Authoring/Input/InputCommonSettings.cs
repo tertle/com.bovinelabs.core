@@ -1,4 +1,4 @@
-﻿// <copyright file="InputSettings.cs" company="BovineLabs">
+﻿// <copyright file="InputCommonSettings.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Authoring.Input
     using Unity.Entities;
     using UnityEngine;
 
-    public class InputSettings : SettingsBase
+    public class InputCommonSettings : SettingsBase
     {
         [SerializeField]
         private InputDefault core = new();

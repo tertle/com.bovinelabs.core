@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     using System.IO;
     using BovineLabs.Core.Authoring.ObjectManagement;
     using BovineLabs.Core.Editor.Settings;
-    using BovineLabs.Core.ObjectManagement;
     using UnityEditor;
     using UnityEngine;
 

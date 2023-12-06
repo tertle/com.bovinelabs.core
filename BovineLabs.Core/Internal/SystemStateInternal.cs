@@ -8,12 +8,12 @@ namespace BovineLabs.Core.Internal
 
     public static class SystemStateInternal
     {
-        public static ComponentSystemBase GetManagedSystem(this SystemState state)
+        public static ComponentSystemBase GetManagedSystem(ref this SystemState state)
         {
             return state.ManagedSystem;
         }
 
-        public static string GetSystemTypeName(this SystemState state)
+        public static string GetSystemTypeName(ref this SystemState state)
         {
             var managed = state.GetManagedSystem();
             return managed != null ? TypeManager.GetSystemName(managed.GetType()).ToString() : state.DebugName.ToString();

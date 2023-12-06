@@ -9,8 +9,10 @@ namespace BovineLabs.Core.Editor.Helpers
 
     public static class AssetDatabaseHelper
     {
-        public static void CreateDirectories(string directory)
+        public static void CreateDirectories(ref string directory)
         {
+            directory = directory.Replace('\\', '/');
+
             var combo = string.Empty;
             var dir = directory.Split('/');
             foreach (var d in dir)

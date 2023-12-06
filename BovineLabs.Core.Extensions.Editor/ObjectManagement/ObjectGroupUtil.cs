@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.Editor.ObjectManagement
 {
     using UnityEditor;
@@ -65,3 +66,4 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         }
     }
 }
+#endif

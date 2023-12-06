@@ -32,7 +32,7 @@ namespace BovineLabs.Core.UI
         [BurstCompile]
         public void OnStopRunning(ref SystemState state)
         {
-            this.impl.Dispose();
+            this.impl.Dispose(ref state);
         }
 
         /// <inheritdoc />
@@ -41,7 +41,6 @@ namespace BovineLabs.Core.UI
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             this.impl.Run(ref state, ecb);
-            ecb.Playback(state.EntityManager);
         }
     }
 }

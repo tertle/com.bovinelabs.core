@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_CONFIG
 namespace BovineLabs.Core.Editor.Keys
 {
     using System.Collections.Generic;
@@ -26,7 +25,7 @@ namespace BovineLabs.Core.Editor.Keys
             }
 
             var attr = (KAttribute)this.attribute;
-            var k = Resources.Load<KSettings>(attr.Settings);
+            var k = Resources.Load<KSettings>($"{KSettings.KResourceDirectory}/{attr.Settings}");
 
             if (k == null)
             {
@@ -126,4 +125,3 @@ namespace BovineLabs.Core.Editor.Keys
         }
     }
 }
-#endif
