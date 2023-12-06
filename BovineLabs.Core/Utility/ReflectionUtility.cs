@@ -9,9 +9,9 @@ namespace BovineLabs.Core.Utility
     using System.Linq;
     using System.Reflection;
     using Unity.Collections;
-    using Assembly = UnityEditor.Compilation.Assembly;
 #if UNITY_EDITOR
     using UnityEditor.Compilation;
+    using Assembly = UnityEditor.Compilation.Assembly;
 #endif
 
     /// <summary> Common reflection helpers. </summary>
