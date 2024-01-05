@@ -1,0 +1,28 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement data-source-type="BovineLabs.Core.ToolbarTabs.PhysicsToolbarBindings, BovineLabs.Core.Extensions.Debug" class="bl-toggle-group" style="flex-direction: row;">
+        <ui:VisualElement>
+            <ui:Toggle text="Colliders" name="collider-edges" class="bl-toggle-button">
+                <Bindings>
+                    <ui:DataBinding property="value" data-source-path="DrawColliderEdges" binding-mode="ToSource" />
+                </Bindings>
+            </ui:Toggle>
+            <ui:Toggle text="AABBs" name="collider-aabbs" class="bl-toggle-button">
+                <Bindings>
+                    <ui:DataBinding property="value" data-source-path="DrawColliderAabbs" binding-mode="ToSource" />
+                </Bindings>
+            </ui:Toggle>
+        </ui:VisualElement>
+        <ui:VisualElement>
+            <ui:Toggle text="Collisions" name="collision-events" class="bl-toggle-button">
+                <Bindings>
+                    <ui:DataBinding property="value" data-source-path="DrawCollisionEvents" binding-mode="ToSource" />
+                </Bindings>
+            </ui:Toggle>
+            <ui:Toggle text="Triggers" name="trigger-events" class="bl-toggle-button">
+                <Bindings>
+                    <ui:DataBinding property="value" data-source-path="DrawTriggerEvents" binding-mode="ToSource" />
+                </Bindings>
+            </ui:Toggle>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

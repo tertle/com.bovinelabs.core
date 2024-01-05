@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Authoring.Entities
 
         public bool SetVelocityToZero => this.setVelocityToZero;
 
-        public class Baker : Baker<PhysicsMassOverrideAuthoring>
+        private class Baker : Baker<PhysicsMassOverrideAuthoring>
         {
             public override void Bake(PhysicsMassOverrideAuthoring authoring)
             {

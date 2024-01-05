@@ -27,22 +27,38 @@ namespace BovineLabs.Core.ObjectManagement
         [CreateProperty]
         public int ID { get; }
 
-        /// <inheritdoc />
-        public bool Equals(ObjectId other)
+
+        public static bool operator ==(ObjectId left, ObjectId right)
         {
-            return this.ID == other.ID;
+            return left.CompareTo(right) == 0;
         }
 
-        /// <inheritdoc />
-        public override int GetHashCode()
+        public static bool operator !=(ObjectId left, ObjectId right)
         {
-            return this.ID;
+            return left.CompareTo(right) != 0;
         }
 
         public int CompareTo(ObjectId other)
         {
             var idComparison = this.ID.CompareTo(other.ID);
             return idComparison != 0 ? idComparison : this.Mod.CompareTo(other.Mod);
+        }
+
+        /// <inheritdoc />
+        public bool Equals(ObjectId other)
+        {
+            return this.ID == other.ID;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            return this.ID;
         }
 
         public override string ToString()

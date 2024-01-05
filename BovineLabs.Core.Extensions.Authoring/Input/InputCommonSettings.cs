@@ -9,17 +9,28 @@ namespace BovineLabs.Core.Authoring.Input
     using BovineLabs.Core.Input;
     using Unity.Entities;
     using UnityEngine;
+    using UnityEngine.InputSystem;
 
     public class InputCommonSettings : SettingsBase
     {
         [SerializeField]
-        private InputDefault core = new();
+        private InputActionAsset? asset;
+
+        [SerializeField]
+        public InputActionReference? cursorPosition;
 
         /// <inheritdoc />
         public override void Bake(IBaker baker)
         {
             var entity = baker.GetEntity(TransformUsageFlags.None);
-            baker.AddComponentObject(entity, this.core);
+
+            var defaultSettings = new InputDefault
+            {
+                Asset = this.asset!,
+                CursorPosition = this.cursorPosition!,
+            };
+
+            baker.AddComponent(entity, defaultSettings);
             baker.AddComponent<InputCommon>(entity);
         }
     }

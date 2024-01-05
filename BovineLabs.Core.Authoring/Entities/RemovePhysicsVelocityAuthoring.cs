@@ -13,12 +13,12 @@ namespace BovineLabs.Core.Authoring.Entities
 
     public partial class RemovePhysicsVelocityAuthoring : MonoBehaviour
     {
-        [TemporaryBakingType]
+        [BakingType]
         internal struct RemovePhysicsVelocityBaking : IComponentData
         {
         }
 
-        public class Baker : Baker<RemovePhysicsVelocityAuthoring>
+        private class Baker : Baker<RemovePhysicsVelocityAuthoring>
         {
             public override void Bake(RemovePhysicsVelocityAuthoring authoring)
             {
@@ -28,7 +28,7 @@ namespace BovineLabs.Core.Authoring.Entities
         }
 
         [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
-        public partial struct RemovePhysicsVelocityConversionSystem : ISystem
+        private partial struct RemovePhysicsVelocityConversionSystem : ISystem
         {
             [BurstCompile]
             public void OnUpdate(ref SystemState state)

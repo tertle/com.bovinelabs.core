@@ -3,7 +3,7 @@
 // </copyright>
 
 #if BL_DRAW && UNITY_PHYSICS
-namespace BovineLabs.Core.Debug.PhysicsDrawers
+namespace BovineLabs.Core.PhysicsDrawers
 {
     using BovineLabs.Core;
     using BovineLabs.Core.Internal;
@@ -16,7 +16,6 @@ namespace BovineLabs.Core.Debug.PhysicsDrawers
     using Unity.Physics;
     using Unity.Transforms;
     using UnityEngine;
-    // using Unity.Physics;
     using BoxCollider = Unity.Physics.BoxCollider;
     using CapsuleCollider = Unity.Physics.CapsuleCollider;
     using Collider = Unity.Physics.Collider;

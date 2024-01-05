@@ -11,6 +11,7 @@ namespace BovineLabs.Core.LifeCycle
     [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
     [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     [UpdateBefore(typeof(BeginSimulationSystemGroup))]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | Worlds.Service)]
     public partial class DestroySystemGroup : ComponentSystemGroup
     {
     }

@@ -1,2 +1,2 @@
 -nullable:enable
--warnaserror:nullable
+#-warnaserror:nullable

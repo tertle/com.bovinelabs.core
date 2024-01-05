@@ -11,10 +11,11 @@ namespace BovineLabs.Core.App
 
     [UpdateInGroup(typeof(InitializationSystemGroup), OrderLast = true)]
     [UpdateAfter(typeof(EndInitializationEntityCommandBufferSystem))]
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | Worlds.Service)]
     public partial struct PauseSystem : ISystem, ISystemStartStop
     {
         private bool hasPresentation;
+        private bool hasPaused;
 
         /// <inheritdoc/>
         public void OnCreate(ref SystemState state)
@@ -37,6 +38,7 @@ namespace BovineLabs.Core.App
         public void OnStopRunning(ref SystemState state)
         {
             this.SetPaused(ref state, false);
+            this.hasPaused = true;
         }
 
         /// <inheritdoc/>
@@ -54,7 +56,9 @@ namespace BovineLabs.Core.App
             ref var simulationSystemGroup = ref state.WorldUnmanaged.GetExistingSystemState<SimulationSystemGroup>();
             simulationSystemGroup.Enabled = !paused;
 
-            if (this.hasPresentation)
+            // We only pause presentation for initial pause for subscene loading
+            // In game pauses should continue to tick presentation
+            if (!this.hasPaused && this.hasPresentation)
             {
                 ref var presentationSystemGroup = ref state.WorldUnmanaged.GetExistingSystemState<PresentationSystemGroup>();
                 presentationSystemGroup.Enabled = !paused;

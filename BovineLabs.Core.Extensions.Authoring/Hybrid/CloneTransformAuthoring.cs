@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_COPY_TRANSFORM
+#if !BL_DISABLE_HYBRID
 namespace BovineLabs.Core.Authoring.Hybrid
 {
     using BovineLabs.Core.Hybrid;
@@ -12,18 +12,14 @@ namespace BovineLabs.Core.Authoring.Hybrid
     public class CloneTransformAuthoring : MonoBehaviour
     {
         public GameObject? Target;
-    }
 
-    public class CloneTransformBaker : Baker<CloneTransformAuthoring>
-    {
-        public override void Bake(CloneTransformAuthoring authoring)
+        private class CloneTransformBaker : Baker<CloneTransformAuthoring>
         {
-            var entity = this.GetEntity(TransformUsageFlags.Dynamic);
-
-            this.AddComponent(entity, new CloneTransform
+            public override void Bake(CloneTransformAuthoring authoring)
             {
-                Value = this.GetEntity(authoring.Target, TransformUsageFlags.Dynamic),
-            });
+                var entity = this.GetEntity(TransformUsageFlags.Dynamic);
+                this.AddComponent(entity, new CloneTransform { Value = this.GetEntity(authoring.Target, TransformUsageFlags.Dynamic) });
+            }
         }
     }
 }

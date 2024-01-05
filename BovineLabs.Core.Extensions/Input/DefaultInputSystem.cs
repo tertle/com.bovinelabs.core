@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Input
     [UpdateInGroup(typeof(InputSystemGroup))]
     public partial class DefaultInputSystem : SystemBase
     {
-        private InputDefault input = null!;
+        private InputDefault input;
         private InputCommon inputCommon;
 
         /// <inheritdoc />
@@ -28,14 +28,14 @@ namespace BovineLabs.Core.Input
         /// <inheritdoc />
         protected override void OnStartRunning()
         {
-            this.input = SystemAPI.ManagedAPI.GetSingleton<InputDefault>();
-            this.input.Asset.Enable();
-            this.input.CursorPosition.action.performed += this.OnCursorPositionPerformed;
+            this.input = SystemAPI.GetSingleton<InputDefault>();
+            this.input.Asset.Value.Enable();
+            this.input.CursorPosition.Value.action.performed += this.OnCursorPositionPerformed;
         }
 
         protected override void OnStopRunning()
         {
-            this.input.CursorPosition.action.performed -= this.OnCursorPositionPerformed;
+            this.input.CursorPosition.Value.action.performed -= this.OnCursorPositionPerformed;
         }
 
         /// <inheritdoc />
@@ -48,7 +48,7 @@ namespace BovineLabs.Core.Input
             this.inputCommon.InputOverUI = EventSystem.current.IsPointerOverGameObject();
 
             // ScreenPointToRay fails if out of bounds so we clamp it.
-            // // Won't be accurate but it's up to the user to determine if they want to use it or not with InViewPort
+            // Won't be accurate but it's up to the user to determine if they want to use it or not with InViewPort
             var screenPointForRay = this.inputCommon.InViewPort
                 ? this.inputCommon.ScreenPoint
                 : math.clamp(this.inputCommon.ScreenPoint, float2.zero, this.inputCommon.ScreenPoint);

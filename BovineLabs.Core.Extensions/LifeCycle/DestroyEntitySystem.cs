@@ -8,7 +8,9 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Burst;
     using Unity.Entities;
 
+    [UpdateBefore(typeof(DestroyEntityCommandBufferSystem))]
     [UpdateInGroup(typeof(DestroySystemGroup), OrderLast = true)]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | Worlds.Service)]
     public partial struct DestroyEntitySystem : ISystem
     {
         private EntityQuery query;

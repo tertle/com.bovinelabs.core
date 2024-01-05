@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_COPY_TRANSFORM
+#if !BL_DISABLE_HYBRID
 namespace BovineLabs.Core.Authoring.Hybrid
 {
     using BovineLabs.Core.Hybrid;
@@ -11,13 +11,12 @@ namespace BovineLabs.Core.Authoring.Hybrid
 
     public class CopyTransformToGameObjectAuthoring : MonoBehaviour
     {
-    }
-
-    public class CopyTransformToGameObjectBaker : Baker<CopyTransformToGameObjectAuthoring>
-    {
-        public override void Bake(CopyTransformToGameObjectAuthoring authoring)
+        private class Baker : Baker<CopyTransformToGameObjectAuthoring>
         {
-            this.AddComponent<CopyTransformToGameObject>(this.GetEntity(TransformUsageFlags.Dynamic));
+            public override void Bake(CopyTransformToGameObjectAuthoring authoring)
+            {
+                this.AddComponent<CopyTransformToGameObject>(this.GetEntity(TransformUsageFlags.Dynamic));
+            }
         }
     }
 }

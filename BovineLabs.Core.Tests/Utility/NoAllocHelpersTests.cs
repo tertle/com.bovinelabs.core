@@ -13,11 +13,11 @@ namespace BovineLabs.Core.Tests.Utility
     {
         /// <summary> Tests the <see cref="NoAllocHelpers.ExtractArrayFromListT{T}" /> method. </summary>
         [Test]
-        public void ExtractArrayFromListT()
+        public void ExtractArrayFromList()
         {
             var list = new List<int> { 0, 1, 2 };
 
-            var array = NoAllocHelpers.ExtractArrayFromListT(list);
+            var array = NoAllocHelpers.ExtractArrayFromList(list);
 
             Assert.AreEqual(0, array[0]);
             Assert.AreEqual(1, array[1]);

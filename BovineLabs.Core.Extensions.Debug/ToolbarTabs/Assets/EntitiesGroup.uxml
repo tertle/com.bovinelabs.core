@@ -1,0 +1,27 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.bovinelabs.core/BovineLabs.Core.Extensions.Debug/ToolbarTabs/Assets/Monitoring.uss?fileID=7433441132597879392&amp;guid=eb67d98a83d3a884aa3c004d4177c38a&amp;type=3#Monitoring" />
+    <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
+        <ui:VisualElement>
+            <ui:Label text="Entities" class="bl-label-left" />
+            <ui:Label text="Chunks" class="bl-label-left" />
+            <ui:Label text="Archetypes" class="bl-label-left" />
+        </ui:VisualElement>
+        <ui:VisualElement data-source-type="BovineLabs.Core.ToolbarTabs.EntitiesToolbarBindings, BovineLabs.Core.Extensions.Debug" class="bl-monitor-rightgroup">
+            <ui:Label name="entities" class="bl-label-right">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="Entities" binding-mode="ToTarget" />
+                </Bindings>
+            </ui:Label>
+            <ui:Label name="chunks" class="bl-label-right">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="Chunks" binding-mode="ToTarget" />
+                </Bindings>
+            </ui:Label>
+            <ui:Label name="archetypes" class="bl-label-right">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="Archetypes" binding-mode="ToTarget" />
+                </Bindings>
+            </ui:Label>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

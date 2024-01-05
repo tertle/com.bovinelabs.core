@@ -20,7 +20,11 @@ namespace BovineLabs.Core.EntityCommands
             this.blobAssetStore = blobAssetStore;
         }
 
-        public Entity Entity => this.entity;
+        public Entity Entity
+        {
+            get => this.entity;
+            set => this.entity = value;
+        }
 
         public Entity CreateEntity()
         {
@@ -67,6 +71,13 @@ namespace BovineLabs.Core.EntityCommands
             this.entityManager.AddComponent(this.entity, components);
         }
 
+        public void AddComponentObject<T>(in T component)
+            where T : class
+        {
+            Check.Assume(!this.entity.Equals(Entity.Null));
+            this.entityManager.AddComponentObject(this.entity, component);
+        }
+
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
@@ -88,6 +99,12 @@ namespace BovineLabs.Core.EntityCommands
             var buffer = this.entityManager.GetBuffer<T>(this.entity);
             buffer.Clear();
             return buffer;
+        }
+
+        public void AppendToBuffer<T>(in T element)
+            where T : unmanaged, IBufferElementData
+        {
+            this.entityManager.GetBuffer<T>(this.entity).Add(element);
         }
 
         public void SetComponentEnabled<T>(bool enabled)

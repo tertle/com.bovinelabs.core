@@ -10,6 +10,7 @@
         "Unity.Burst",
         "Unity.Collections",
         "Unity.Entities",
+        "Unity.Entities.Editor",
         "Unity.Entities.Hybrid",
         "Unity.InternalAPIEditorBridge.002",
         "Unity.InputSystem",

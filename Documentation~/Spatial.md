@@ -137,7 +137,7 @@ The follow example finds and store all other entities within 10 of each other
                         var otherEntity = this.Entities[item];
 
                         // Don't add ourselves
-                        if (!otherEntity.Equals(entity))
+                        if (otherEntity.Equals(entity))
                         {
                             continue;
                         }

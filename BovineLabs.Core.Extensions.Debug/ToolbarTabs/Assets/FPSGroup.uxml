@@ -1,0 +1,39 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.bovinelabs.core/BovineLabs.Core.Extensions.Debug/Resources/Monitoring.uss?fileID=7433441132597879392&amp;guid=eb67d98a83d3a884aa3c004d4177c38a&amp;type=3#Monitoring" />
+    <ui:VisualElement class="horizontal">
+        <ui:VisualElement>
+            <ui:Label text="Current" class="bl-label-left" />
+            <ui:Label text="Frame" class="bl-label-left" />
+            <ui:Label text="Average" class="bl-label-left" />
+            <ui:Label text="Min" class="bl-label-left" />
+            <ui:Label text="Max" class="bl-label-left" />
+        </ui:VisualElement>
+        <ui:VisualElement data-source-type="BovineLabs.Core.ToolbarTabs.FPSToolbarBindings, BovineLabs.Core.Extensions.Debug" class="bl-monitor-rightgroup">
+            <ui:Label text="153 fps" name="current" class="bl-label-right">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="CurrentFPS" binding-mode="ToTarget" source-to-ui-converters="Value to fps" />
+                </Bindings>
+            </ui:Label>
+            <ui:Label name="frametime" class="bl-label-right">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="FrameTime" binding-mode="ToTarget" source-to-ui-converters="Value to ms" />
+                </Bindings>
+            </ui:Label>
+            <ui:Label name="avg" class="bl-label-right">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="AverageFPS" binding-mode="ToTarget" source-to-ui-converters="Value to fps" />
+                </Bindings>
+            </ui:Label>
+            <ui:Label name="min" class="bl-label-right">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="MinFPS" binding-mode="ToTarget" source-to-ui-converters="Value to fps" />
+                </Bindings>
+            </ui:Label>
+            <ui:Label name="max" class="bl-label-right">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="MaxFPS" binding-mode="ToTarget" source-to-ui-converters="Value to fps" />
+                </Bindings>
+            </ui:Label>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

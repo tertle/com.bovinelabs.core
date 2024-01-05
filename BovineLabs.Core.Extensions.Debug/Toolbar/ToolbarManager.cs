@@ -2,8 +2,10 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+using Unity.Entities;
+
 #if !BL_DISABLE_TOOLBAR
-namespace BovineLabs.Core.Debug.Toolbar
+namespace BovineLabs.Core.Toolbar
 {
     using System;
     using System.Collections.Generic;
@@ -12,291 +14,573 @@ namespace BovineLabs.Core.Debug.Toolbar
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.UI;
     using BovineLabs.Core.Utility;
+    using Unity.Assertions;
     using Unity.Burst;
+    using Unity.Collections;
     using Unity.Mathematics;
+    using Unity.Properties;
     using UnityEngine;
     using UnityEngine.UIElements;
 
     /// <summary> The system for the ribbon toolbar. </summary>
     [Configurable]
-    internal static class ToolbarManager
+    internal class ToolbarManager : UIAssetManagement
     {
+        public const float DefaultUpdateRate = 1 / 4f;
+
         private const string RootName = "root";
         private const string MenuName = "menu";
         private const string ShowButtonName = "show";
+        private const string FilterButtonName = "filter";
 
-        private const string ContentsClass = "bl-toolbar-contents";
         private const string ButtonHighlightClass = "bl-toolbar-highlight";
-        private const string ToolbarGroupNameClass = "group-name";
-        private const string ToolbarGroupClass = "bl-toolbar-group";
+
+        public static readonly SharedStatic<FixedString32Bytes> ActiveTab = SharedStatic<FixedString32Bytes>.GetOrCreate<ActiveTabVar>();
 
         [ConfigVar("debug.toolbar", true, "Should the toolbar be hidden", true)]
         private static readonly SharedStatic<bool> Show = SharedStatic<bool>.GetOrCreate<EnabledVar>();
 
-        private static readonly Dictionary<string, ToolbarTab> ToolbarTabs = new();
+        private readonly Dictionary<string, ToolbarTab> toolbarTabs = new();
+        private readonly Dictionary<int, ToolbarTab.Group> toolbarGroups = new();
 
-        private static TemplateContainer? panelElement;
+        [SerializeField]
+        private VisualTreeAsset? toolbarAsset;
 
-        private static (string Name, ToolbarTab Tab) activeTab;
+        private int key;
 
-        private static VisualElement menuElement = new();
-        private static VisualElement? rootElement;
+        private VisualElement panelElement = null!;
 
-        private static float uiHeight;
-        private static Button? showButton;
-        private static bool showRibbon;
+        private ToolbarTab? activeTab;
 
-        public static void AddGroup(string tabName, ToolbarTab.Group group)
+        private VisualElement menuElement = null!;
+        private VisualElement rootElement = null!;
+
+        private FilterBind filterBind = new();
+
+        private float uiHeight;
+        private bool showRibbon;
+
+        private bool refreshVisible;
+
+        public static ToolbarManager Instance { get; private set; } = null!;
+
+        private void Awake()
         {
-            if (!ToolbarTabs.TryGetValue(tabName, out var tabs))
-            {
-                tabs = ToolbarTabs[tabName] = CreateTab(tabName);
-            }
+            Instance = this;
+            this.menuElement = new VisualElement();
 
-            var parent = new VisualElement();
-            parent.AddToClassList(ToolbarGroupClass);
-            parent.Add(group.RootElement);
+            this.filterBind.ValueChanged += this.FilterBindOnValueChanged;
 
-            var groupLabel = new Label(group.Name);
-            groupLabel.AddToClassList(ToolbarGroupNameClass);
-
-            parent.Add(groupLabel);
-
-            tabs.Groups.Add((group, parent));
-            tabs.Groups.Sort((t1, t2) => string.Compare(t1.Group.Name, t2.Group.Name, StringComparison.Ordinal));
-
-            var index = tabs.Groups.FindIndex(g => g.Group == group);
-            tabs.Parent.Insert(index, parent);
-
-            // If the first toolbar group loads after the toolbar we want to set it as default
-            if (rootElement != null && activeTab == default)
-            {
-                SetToolbarActive(tabName);
-            }
+            DontDestroyOnLoad(this.gameObject);
         }
 
-        public static void RemoveGroup(string tabName, ToolbarTab.Group group)
+        private void Start()
         {
-            if (!ToolbarTabs.ContainsKey(tabName))
+            this.LoadAllPanels();
+
+            if (this.toolbarAsset == null)
             {
-                return;
+                throw new Exception("Toolbar not setup");
             }
 
-            var tabs = ToolbarTabs[tabName];
-            var index = tabs.Groups.FindIndex(g => g.Group == group);
-            if (index == -1)
-            {
-                return;
-            }
+            this.panelElement = this.toolbarAsset.CloneTree();
+            this.panelElement.name = "Toolbar";
 
-            tabs.Parent.Remove(tabs.Groups[index].Parent);
-            tabs.Groups.RemoveAt(index);
-
-            // Removed all groups, remove the tab
-            if (tabs.Groups.Count == 0)
-            {
-                DestroyTab(tabName);
-            }
-        }
-
-        public static bool IsTabVisible(string tabName)
-        {
-            return activeTab.Name == tabName;
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void AfterSceneLoad()
-        {
-            // TODO
-            var asset = Resources.Load<VisualTreeAsset>("BLToolbar");
-
-            panelElement = asset.CloneTree();
-            panelElement.name = "Toolbar";
-
-            OnLoad(panelElement);
+            this.OnLoad(this.panelElement);
 
             if (Show.Data)
             {
-                UIDocumentManager.Instance.AddRoot(panelElement, -1000);
+                UIDocumentManager.Instance.AddRoot(this.panelElement, -1000);
 #if UNITY_EDITOR
                 UIDocumentManager.Instance.EditorRebuild += () =>
                 {
-                    UIDocumentManager.Instance.RemoveRoot(panelElement);
-                    UIDocumentManager.Instance.AddRoot(panelElement, -1000);
+                    UIDocumentManager.Instance.RemoveRoot(this.panelElement);
+                    UIDocumentManager.Instance.AddRoot(this.panelElement, -1000);
                 };
 #endif
-                UIDocumentManager.Instance.Root.RegisterCallback<GeometryChangedEvent>(OnRootContentChanged);
+                UIDocumentManager.Instance.Root.RegisterCallback<GeometryChangedEvent>(this.OnRootContentChanged);
             }
         }
 
-        private static void OnLoad(VisualElement panel)
+        private void Update()
         {
-            var oldMenuItem = menuElement;
-            menuElement = panel.Q<VisualElement>(MenuName);
+            if (!this.refreshVisible)
+            {
+                return;
+            }
+
+            this.refreshVisible = false;
+
+            var visible = (uint)this.filterBind.Value;
+            while (visible != 0)
+            {
+                var index = (byte)math.tzcnt(visible);
+                visible ^= 1U << index;
+
+                if (index >= this.filterBind.Selections.Count)
+                {
+                    break;
+                }
+
+                var groupName = this.filterBind.Selections[index];
+                foreach (var t in this.toolbarTabs)
+                {
+                    foreach (var g in t.Value.Groups)
+                    {
+                        if (g.Name == groupName)
+                        {
+                            this.ShowGroup(g);
+                        }
+                    }
+                }
+            }
+        }
+
+        public int AddGroup(string tabName, string groupName, int assetKey, IBindingObject binding)
+        {
+            var id = ++this.key;
+
+            var result = this.TryLoadPanel(id, assetKey, out var element);
+            element.dataSource = binding;
+
+            if (!this.toolbarTabs.TryGetValue(tabName, out var tab))
+            {
+                tab = this.toolbarTabs[tabName] = this.CreateTab(tabName);
+            }
+
+            var container = new ToolbarGroupContainer(groupName);
+            container.Add(element);
+
+            var group = new ToolbarTab.Group(id, groupName, container, tab);
+            this.toolbarGroups.Add(id, group);
+
+            tab.Groups.Add(group);
+            tab.Groups.Sort((t1, t2) => string.Compare(t1.Name, t2.Name, StringComparison.Ordinal));
+
+            var filterName = GetFilterName(group);
+
+            this.filterBind.AddSelection(filterName);
+
+            this.refreshVisible = true;
+
+            return id;
+        }
+
+        public void RemoveGroup(int id)
+        {
+            if (!this.toolbarGroups.Remove(id, out var group))
+            {
+                return;
+            }
+
+            var filterName = GetFilterName(group);
+            this.filterBind.RemoveSelection(filterName);
+
+            this.HideGroup(group);
+            group.Tab.Groups.Remove(group);
+        }
+
+        private static string GetFilterName(ToolbarTab.Group group)
+        {
+            return group.Name;
+        }
+
+        private void ShowGroup(ToolbarTab.Group group)
+        {
+            // Already visible
+            if (group.Container.parent != null)
+            {
+                 return;
+            }
+
+            var insert = FindInsertIndex(group);
+
+            var tab = group.Tab;
+            tab.Parent.Insert(insert, group.Container);
+
+            // If this tab is hidden, show it
+            if (tab.Button.parent == null)
+            {
+                this.menuElement.Add(tab.Button);
+            }
+
+            // If the first toolbar group loads after the toolbar we want to set it as default
+            if (this.activeTab == null)
+            {
+                this.SetToolbarActive(tab);
+            }
+        }
+
+        private void HideGroup(ToolbarTab.Group group)
+        {
+            var tab = group.Tab;
+
+            group.Container.RemoveFromHierarchy();
+
+            // Removed all groups, hide the tab
+            if (tab.Parent.childCount == 0)
+            {
+                tab.Button.RemoveFromHierarchy();
+
+                if (this.activeTab == tab)
+                {
+                    this.SetDefaultGroup();
+                }
+            }
+        }
+
+        private void OnLoad(VisualElement panel)
+        {
+            var oldMenuItem = this.menuElement;
+            this.menuElement = panel.Q<VisualElement>(MenuName);
 
             // Move any elements that were added to the temp menu element
             while (oldMenuItem.childCount > 0)
             {
                 var child = oldMenuItem[0];
-                menuElement.Add(child);
+                this.menuElement.Add(child);
             }
 
-            showButton = panel.Q<Button>(ShowButtonName);
-            showButton.clicked += ShowToggle;
+            var showButton = panel.Q<Button>(ShowButtonName);
+            showButton.clicked += this.ShowToggle;
 
-            rootElement = panel.Q<VisualElement>(RootName);
-            rootElement.RegisterCallback<GeometryChangedEvent>(OnRootElementGeometryChanged);
+            var filter = panel.Q<MaskSelectionField>(FilterButtonName);
+            filter.dataSource = this.filterBind;
 
-            uiHeight = Screen.height;
+            this.rootElement = panel.Q<VisualElement>(RootName);
+            this.rootElement.RegisterCallback<GeometryChangedEvent>(this.OnRootElementGeometryChanged);
 
-            ShowRibbon(showRibbon);
-            SetDefaultGroup();
+            this.uiHeight = Screen.height;
+
+            this.ShowRibbon(this.showRibbon);
+            this.SetDefaultGroup();
         }
 
-        private static ToolbarTab CreateTab(string tabName)
+        private ToolbarTab CreateTab(string tabName)
         {
             var button = new Button { text = tabName };
-            button.clicked += () => SetToolbarActive(tabName);
-            menuElement.Add(button);
+            var contents = new ToolbarTabElement();
+            var toolbarTab = new ToolbarTab(tabName, button, contents);
 
-            var contents = new VisualElement();
-            contents.AddToClassList(ContentsClass);
-
-            var toolbarTab = new ToolbarTab(button, contents);
+            button.clicked += () => this.SetToolbarActive(toolbarTab);
             return toolbarTab;
         }
 
-        private static void DestroyTab(string tabName)
+        private void SetDefaultGroup()
         {
-            var tab = ToolbarTabs[tabName];
-            menuElement.Remove(tab.Button);
-            ToolbarTabs.Remove(tabName);
-
-            if (activeTab.Name == tabName)
-            {
-                SetDefaultGroup();
-            }
-        }
-
-        private static void SetDefaultGroup()
-        {
-            SetToolbarActive(string.Empty);
+            this.SetToolbarActive(null);
 
             // First is always the toggle button
-            if (menuElement.childCount == 0)
+            if (this.menuElement.childCount == 0)
             {
                 return;
             }
 
-            var firstButton = (Button)menuElement.contentContainer.Children().First();
-            var group = ToolbarTabs.First(g => g.Value.Button == firstButton);
-            SetToolbarActive(group.Key);
+            var firstButton = (Button)this.menuElement.contentContainer.Children().First();
+            var group = this.toolbarTabs.First(g => g.Value.Button == firstButton);
+            this.SetToolbarActive(group.Value);
         }
 
-        private static void SetToolbarActive(string name)
+        private void SetToolbarActive(ToolbarTab? tab)
         {
-            if (name == activeTab.Name)
+            if (tab == this.activeTab)
             {
-                ShowRibbon(true);
+                this.ShowRibbon(true);
+
                 return;
             }
 
-            if (activeTab != default)
+            if (this.activeTab != null)
             {
-                activeTab.Tab.Button.RemoveFromClassList(ButtonHighlightClass);
+                this.activeTab.Button.RemoveFromClassList(ButtonHighlightClass);
 
                 // something else has already removed it or moved it
-                if (activeTab.Tab.Parent.parent == rootElement)
+                if (this.activeTab.Parent.parent == this.rootElement)
                 {
-                    rootElement.Remove(activeTab.Tab.Parent);
+                    this.rootElement.Remove(this.activeTab.Parent);
                 }
 
-                activeTab = default;
+                this.activeTab = default;
+                ActiveTab.Data = string.Empty;
             }
 
-            if (string.IsNullOrWhiteSpace(name))
+            if (tab == null)
             {
                 return;
             }
 
-            if (!ToolbarTabs.TryGetValue(name, out var tab))
-            {
-                throw new ArgumentException("Unknown button", nameof(name));
-            }
-
-            activeTab = (name, tab);
+            this.activeTab = tab;
+            ActiveTab.Data = tab.Name;
             tab.Button.AddToClassList(ButtonHighlightClass);
 
-            rootElement!.Add(activeTab.Tab.Parent);
-            ShowRibbon(true);
+            this.ShowRibbon(true);
         }
 
-        private static void ShowRibbon(bool show)
+        private void ShowRibbon(bool show)
         {
             if (show)
             {
-                if (activeTab != default)
+                if (this.activeTab != null)
                 {
-                    rootElement!.Add(activeTab.Tab.Parent);
+                    if (this.activeTab.Parent.parent != null)
+                    {
+                        Assert.IsTrue(this.rootElement == this.activeTab.Parent.parent);
+                        return;
+                    }
+
+                    this.rootElement.Add(this.activeTab.Parent);
                 }
             }
             else
             {
-                if (activeTab != default)
+                if (this.activeTab != null)
                 {
-                    rootElement!.Remove(activeTab.Tab.Parent);
+                    Assert.IsTrue(this.activeTab.Parent.parent == this.rootElement);
+                    this.rootElement.Remove(this.activeTab.Parent);
                 }
             }
 
-            showRibbon = show;
+            this.showRibbon = show;
         }
 
-        private static void ShowToggle()
+        private void ShowToggle()
         {
-            ShowRibbon(!showRibbon);
+            this.ShowRibbon(!this.showRibbon);
         }
 
-        private static void OnRootContentChanged(GeometryChangedEvent evt)
+        private void OnRootContentChanged(GeometryChangedEvent evt)
         {
             var height = UIDocumentManager.Instance.Root.contentRect.height;
 
-            if (math.abs(uiHeight - height) > float.Epsilon)
+            if (math.abs(this.uiHeight - height) > float.Epsilon)
             {
-                uiHeight = height;
-                ResizeViewRect(rootElement!.contentRect);
+                this.uiHeight = height;
+                this.ResizeViewRect(this.rootElement.contentRect);
             }
         }
 
-        private static void OnRootElementGeometryChanged(GeometryChangedEvent evt)
+        private void OnRootElementGeometryChanged(GeometryChangedEvent evt)
         {
-            ResizeViewRect(evt.newRect);
+            this.ResizeViewRect(evt.newRect);
         }
 
-        private static void ResizeViewRect(Rect uiRect)
+        private void ResizeViewRect(Rect uiRect)
         {
-            if (uiHeight == 0)
+            if (this.uiHeight == 0)
             {
                 return;
             }
 
-            var cameraHeightNormalized = (uiHeight - uiRect.height) / uiHeight;
+            var cameraHeightNormalized = (this.uiHeight - uiRect.height) / this.uiHeight;
 
             foreach (var world in WorldUtility.AllExcludingAdvanced())
             {
                 world.EntityManager.CompleteAllTrackedJobs();
                 if (world.EntityManager.TryGetSingletonEntity<Camera>(out var cameraEntity))
                 {
-                    var camera = world.EntityManager.GetComponentObject<Camera>(cameraEntity);
-                    var rect = camera.rect;
+                    var cam = world.EntityManager.GetComponentObject<Camera>(cameraEntity);
+                    var rect = cam.rect;
                     rect.height = cameraHeightNormalized;
-                    camera.rect = rect;
+                    cam.rect = rect;
                     break;
                 }
             }
         }
 
+        private static int FindInsertIndex(ToolbarTab.Group group)
+        {
+            var tab = group.Tab;
+            var index = tab.Groups.FindIndex(g => g == group);
+
+            // Start index before us
+            for (var i = index - 1; i >= 0; i--)
+            {
+                // tab.Groups is sorted alphabetically so we find the closest active element before this
+                if (tab.Groups[i].Container.parent != null)
+                {
+                    // Then find the index in the visual element
+                    return tab.Parent.IndexOf(tab.Groups[i].Container) + 1; // insert after it
+                }
+            }
+
+            return 0;
+        }
+
+        private void FilterBindOnValueChanged((int NewValue, int PreviousValue, IReadOnlyList<string> Selections) v)
+        {
+            var toRemove = ~v.NewValue & v.PreviousValue;
+            var toAdd = v.NewValue & ~v.PreviousValue;
+
+            for (var r = 0; r < v.Selections.Count; r++)
+            {
+                var mask = (1 << r);
+
+                if ((mask & toRemove) != 0)
+                {
+                    var s = v.Selections[r];
+                    foreach (var g in this.toolbarTabs.SelectMany(t => t.Value.Groups.Where(g => g.Name == s)))
+                    {
+                        this.HideGroup(g);
+                    }
+                }
+                else if ((mask & toAdd) != 0)
+                {
+                    var s = v.Selections[r];
+                    foreach (var g in this.toolbarTabs.SelectMany(t => t.Value.Groups.Where(g => g.Name == s)))
+                    {
+                        this.ShowGroup(g);
+                    }
+                }
+            }
+        }
+
+        private struct ActiveTabVar
+        {
+        }
+
         private struct EnabledVar
         {
+        }
+
+        private class FilterBind : INotifyBindablePropertyChanged
+        {
+            private const string SelectionKey = "bl.toolbarmanager.filter.selections";
+
+            private readonly List<string> selectionsValue = new();
+            private readonly Dictionary<string, int> selectionsHash = new();
+            private HashSet<string> selectionsHidden = new();
+            private bool initialized;
+
+            private int value = -1;
+
+            public event EventHandler<BindablePropertyChangedEventArgs>? propertyChanged;
+
+            public event Action<(int NewValue, int PreviousValue, IReadOnlyList<string> Selections)>? ValueChanged;
+
+            [CreateProperty]
+            public List<string> Selections => this.selectionsValue;
+
+            [CreateProperty]
+            public int Value
+            {
+                get
+                {
+                    if (!this.initialized)
+                    {
+                        this.initialized = true;
+
+                        var selectionSaved = PlayerPrefs.GetString(SelectionKey, string.Empty);
+                        var selectionArray = selectionSaved.Split(",");
+                        this.selectionsHidden = new HashSet<string>();
+                        this.selectionsHidden.UnionWith(selectionArray);
+                        this.selectionsHidden.Remove(string.Empty);
+                    }
+
+                    return this.value;
+                }
+
+                set
+                {
+                    if (this.value == value)
+                    {
+                        return;
+                    }
+
+                    var removed = (uint)(~value & this.value);
+                    var added = (uint)(value & ~this.value);
+
+                    var previousValue = this.value;
+                    this.value = value;
+
+                    while (removed != 0)
+                    {
+                        var index = math.tzcnt(removed);
+                        var shifted = (uint)(1 << index);
+                        removed ^= shifted;
+
+                        if (index >= this.selectionsValue.Count)
+                        {
+                            break;
+                        }
+
+                        this.selectionsHidden.Add(this.selectionsValue[index]);
+                    }
+
+                    while (added != 0)
+                    {
+                        var index = math.tzcnt(added);
+                        var shifted = (uint)(1 << index);
+                        added ^= shifted;
+
+                        if (index >= this.selectionsValue.Count)
+                        {
+                            break;
+                        }
+
+                        this.selectionsHidden.Remove(this.selectionsValue[index]);
+                    }
+
+                    var serializedString = string.Join(",", this.selectionsHidden);
+                    PlayerPrefs.SetString(SelectionKey, serializedString);
+
+                    this.ValueChanged?.Invoke((value, previousValue, this.selectionsValue));
+                    this.propertyChanged?.Invoke(this, new BindablePropertyChangedEventArgs(nameof(this.Value)));
+                }
+            }
+
+            public void AddSelection(string filterName)
+            {
+                this.selectionsHash.TryGetValue(filterName, out var count);
+                if (count == 0)
+                {
+                    this.selectionsValue.Add(filterName);
+                    this.selectionsValue.Sort();
+                    this.UpdateValue();
+                    this.UpdateSelections();
+                }
+
+                this.selectionsHash[filterName] = count + 1;
+            }
+
+            public void RemoveSelection(string filterName)
+            {
+                if (!this.selectionsHash.TryGetValue(filterName, out var currentValue))
+                {
+                    return;
+                }
+
+                currentValue--;
+                if (currentValue == 0)
+                {
+                    this.selectionsHash.Remove(filterName);
+                    this.selectionsValue.Remove(filterName);
+                    this.UpdateSelections();
+                }
+                else
+                {
+                    this.selectionsHash[filterName] = currentValue;
+                }
+            }
+
+            private void UpdateValue()
+            {
+                var newValue = 0;
+                for (var i = 0; i < this.selectionsValue.Count; i++)
+                {
+                    var selection = this.selectionsValue[i];
+                    if (!this.selectionsHidden.Contains(selection))
+                    {
+                        newValue |= 1 << i;
+                    }
+                }
+
+                this.Value = newValue;
+            }
+
+            private void UpdateSelections()
+            {
+                this.propertyChanged?.Invoke(this, new BindablePropertyChangedEventArgs(nameof(this.Selections)));
+            }
         }
     }
 }

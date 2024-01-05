@@ -1,0 +1,24 @@
+.unity-button {
+    width: 20px;
+    height: 20px;
+}
+
+#PauseTime {
+    background-image: url('project://database/Packages/com.bovinelabs.core/BovineLabs.Core.Extensions.Debug/Media/Icons/ic_pause_white_48dp.png?fileID=21300000&guid=e76e261a2b41a314d8e1f66850225b5e&type=3#ic_pause_white_48dp');
+}
+
+#PauseTime.play {
+    background-image: url('project://database/Packages/com.bovinelabs.core/BovineLabs.Core.Extensions.Debug/Media/Icons/ic_play_arrow_white_48dp.png?fileID=21300000&guid=9e45b5cacfc6a30489fa23f19d12a7f3&type=3#ic_play_arrow_white_48dp');
+}
+
+#SlowDown {
+    background-image: url('project://database/Packages/com.bovinelabs.core/BovineLabs.Core.Extensions.Debug/Media/Icons/ic_fast_rewind_white_48dp.png?fileID=21300000&guid=7b52c1fd593a52a4b9073fdea8566989&type=3#ic_fast_rewind_white_48dp');
+}
+
+#SpeedUp {
+    background-image: url('project://database/Packages/com.bovinelabs.core/BovineLabs.Core.Extensions.Debug/Media/Icons/ic_fast_forward_white_48dp.png?fileID=21300000&guid=7627a2d96fedb1f4e9ee95a90e44a3a7&type=3#ic_fast_forward_white_48dp');
+}
+
+.unity-float-field__input {
+    -unity-text-align: upper-center;
+}

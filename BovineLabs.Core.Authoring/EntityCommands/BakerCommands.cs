@@ -19,7 +19,11 @@ namespace BovineLabs.Core.Authoring.EntityCommands
             this.entity = entity;
         }
 
-        public Entity Entity => this.entity;
+        public Entity Entity
+        {
+            get => this.entity;
+            set => this.entity = value;
+        }
 
         public Entity CreateEntity()
         {
@@ -55,6 +59,12 @@ namespace BovineLabs.Core.Authoring.EntityCommands
             this.baker.AddComponent(this.entity, components);
         }
 
+        public void AddComponentObject<T>(in T component)
+            where T : class
+        {
+            this.baker.AddComponentObject(this.entity, component);
+        }
+
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
@@ -71,6 +81,12 @@ namespace BovineLabs.Core.Authoring.EntityCommands
             where T : unmanaged, IBufferElementData
         {
             return this.baker.SetBuffer<T>(this.entity);
+        }
+
+        public void AppendToBuffer<T>(in T element)
+            where T : unmanaged, IBufferElementData
+        {
+            throw new NotImplementedException("Can't append to buffer in a baker, use Add/Set");
         }
 
         public void SetComponentEnabled<T>(bool enabled)

@@ -15,10 +15,13 @@ namespace BovineLabs.Core.SubScenes
     [DisallowMultipleComponent]
     public class SubSceneLoadConfig : MonoBehaviour
     {
-#if UNITY_NETCODE
         [SerializeField]
+#if UNITY_NETCODE
         private SubSceneLoadFlags targetWorld = SubSceneLoadFlags.ThinClient | SubSceneLoadFlags.Client | SubSceneLoadFlags.Server;
+#else
+        private SubSceneLoadFlags targetWorld = SubSceneLoadFlags.Game;
 #endif
+
         [SerializeField]
         private SubSceneLoadMode loadMode = SubSceneLoadMode.BoundingVolume;
 
@@ -80,8 +83,16 @@ namespace BovineLabs.Core.SubScenes
                 flags |= WorldFlags.GameThinClient;
             }
 #else
-            flags = WorldFlags.Game;
+            if ((this.targetWorld & SubSceneLoadFlags.Game) != 0)
+            {
+                flags |= WorldFlags.Game;
+            }
 #endif
+            if ((this.targetWorld & SubSceneLoadFlags.Service) != 0)
+            {
+                flags |= Worlds.ServiceWorld;
+            }
+
             // Remove the live flag
             flags &= ~WorldFlags.Live;
             return flags;

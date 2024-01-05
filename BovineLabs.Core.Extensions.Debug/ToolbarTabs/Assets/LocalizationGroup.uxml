@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <BovineLabs.Core.UI.DropdownField data-source-type="BovineLabs.Core.ToolbarTabs.LocalizationToolbarBindings, BovineLabs.Core.Extensions.Debug" drop-down-width="250" dropDownWidth="230" style="width: 100px;">
+        <Bindings>
+            <ui:DataBinding property="index" data-source-path="SelectedLocale" />
+            <ui:DataBinding property="choicesExposed" data-source-path="Locales" binding-mode="ToTarget" />
+        </Bindings>
+    </BovineLabs.Core.UI.DropdownField>
+</ui:UXML>

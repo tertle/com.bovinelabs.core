@@ -64,6 +64,44 @@ namespace BovineLabs.Core.Jobs
             return JobsUtility.ScheduleParallelForDeferArraySize(ref scheduleParams, minIndicesPerJobCount, lengthPtr, atomicSafetyHandlePtr);
         }
 
+        public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
+            this TJob jobData,
+            NativeMultiHashMap<TKey, TValue> hashMap,
+            int minIndicesPerJobCount,
+            JobHandle dependsOn = default)
+            where TJob : unmanaged, IJobHashMapDefer
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            var jobProducer = new JobHashMapVisitKeyValueProducer<TJob>
+            {
+                HashMap = (HashMapWrapper*)hashMap.data,
+                JobData = jobData,
+            };
+
+            JobHashMapVisitKeyValueProducer<TJob>.Initialize();
+            var reflectionData = JobHashMapVisitKeyValueProducer<TJob>.ReflectionData.Data;
+            CollectionHelper.CheckReflectionDataCorrect<TJob>(reflectionData);
+
+            var scheduleParams = new JobsUtility.JobScheduleParameters(
+                UnsafeUtility.AddressOf(ref jobProducer),
+                reflectionData,
+                dependsOn,
+                ScheduleMode.Parallel);
+
+            void* atomicSafetyHandlePtr = null;
+            // Calculate the deferred atomic safety handle before constructing JobScheduleParameters so
+            // DOTS Runtime can validate the deferred list statically similar to the reflection based
+            // validation in Big Unity.
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var safety = hashMap.m_Safety;
+            atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
+#endif
+
+            byte* lengthPtr = (byte*)&hashMap.data->BucketCapacity - sizeof(void*);
+            return JobsUtility.ScheduleParallelForDeferArraySize(ref scheduleParams, minIndicesPerJobCount, lengthPtr, atomicSafetyHandlePtr);
+        }
+
         /// <summary>
         /// Gathers and caches reflection data for the internal job system's managed bindings.
         /// Unity is responsible for calling this method - don't call it yourself.
@@ -87,6 +125,20 @@ namespace BovineLabs.Core.Jobs
 
             key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.m_Data->Keys, entryIndex);
             value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_Data->Ptr, entryIndex);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void Read<TJob, TKey, TValue>(this ref TJob job, NativeMultiHashMap<TKey, TValue> hashMap, int entryIndex, out TKey key, out TValue value)
+            where TJob : unmanaged, IJobHashMapDefer
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
+#endif
+
+            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.data->Keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.data->Ptr, entryIndex);
         }
 
         /// <summary> The job execution struct. </summary>

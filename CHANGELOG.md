@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.2.2] - 2024-01-05
+### Added
+* Toolbar now has the option of showing and hiding groups.
+* InputActionMapSystem
+* AddComponentObject to IEntityCommand
+* Added HybridComponent to Hybrid feature
+* Internal access to CompanionComponentSupportedTypes
+* Added AfterSceneSystemGroup
+
+### Changed
+* Updated dependency to Unity 2023.3.0b1
+* Toolbar rewritten to support new UITK binding and use bursted ISystem
+* PauseSystem will now only pause presentation for the first initial pause
+* Renamed the feature Copy Transform to Hybrid 
+* Updated NoAllocHelpers to no longer use cached reflection
+* ObjectDefinition now sets itself up on scene objects
+* ChangeFilterTracking threshold can now be configured
+
+### Removed
+* Removed Popup and PopupMask in favour of updated MaskField and Dropdown
+* Draw toolbar
+* RemoveLinkedEntityGroupSystem - use my entities fork if you want this behaviour
+
+### Documentation
+* Added documentation for ChangeFilterTracking
+
 ## [1.2.1] - 2023-12-07
 
 ### Fixed

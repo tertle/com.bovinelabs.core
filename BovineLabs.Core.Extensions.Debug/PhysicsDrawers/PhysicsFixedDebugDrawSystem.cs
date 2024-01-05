@@ -3,7 +3,7 @@
 // </copyright>
 
 #if BL_DRAW && UNITY_PHYSICS
-namespace BovineLabs.Core.Debug.PhysicsDrawers
+namespace BovineLabs.Core.PhysicsDrawers
 {
     using BovineLabs.Draw;
     using Unity.Burst;

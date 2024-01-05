@@ -21,11 +21,35 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
     public abstract class ObjectManagementSettingsBase : SettingsBase
     {
+        private Dictionary<GameObject, int>? objectDefinitionMap;
+
         public abstract int Mod { get; }
 
         public abstract IReadOnlyCollection<ObjectDefinition> ObjectDefinitions { get; }
 
         public abstract IReadOnlyCollection<ObjectGroup> ObjectGroups { get; }
+
+        public Dictionary<GameObject, int> ObjectDefinitionMap
+        {
+            get
+            {
+                this.OnValidate();
+
+                if (this.objectDefinitionMap == null)
+                {
+                    var notNull = this.ObjectDefinitions.Where(o => o.Prefab != null).ToArray();
+                    var distinct = notNull.Distinct(default(PrefabDistinct)).ToArray();
+                    if (distinct.Length != notNull.Length)
+                    {
+                        Debug.LogError("Non-unique object definitions. Make a prefab instance if you need to duplicate one");
+                    }
+
+                    this.objectDefinitionMap = distinct.ToDictionary(o => o.Prefab!, o => o.ID);
+                }
+
+                return this.objectDefinitionMap;
+            }
+        }
 
         public override void Bake(IBaker baker)
         {
@@ -110,6 +134,32 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
                     Check.Assume(objectGroupMatcher.Contains((group, id)));
                 }
+            }
+        }
+
+        private void OnValidate()
+        {
+            if (this.objectDefinitionMap == null)
+            {
+                return;
+            }
+
+            if (this.ObjectDefinitions.Count != this.objectDefinitionMap.Count)
+            {
+                this.objectDefinitionMap = null;
+            }
+        }
+        
+        private struct PrefabDistinct : IEqualityComparer<ObjectDefinition>
+        {
+            public bool Equals(ObjectDefinition x, ObjectDefinition y)
+            {
+                return x.Prefab == y.Prefab;
+            }
+
+            public int GetHashCode(ObjectDefinition obj)
+            {
+                return obj.Prefab!.GetHashCode();
             }
         }
     }

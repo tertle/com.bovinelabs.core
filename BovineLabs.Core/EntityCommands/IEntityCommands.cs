@@ -4,11 +4,12 @@
 
 namespace BovineLabs.Core.EntityCommands
 {
+    using Unity.Burst;
     using Unity.Entities;
 
     public interface IEntityCommands
     {
-        Entity Entity { get; }
+        Entity Entity { get; set; }
 
         /// <summary> Creates a new entity and replaces any internal stored one so other commands will now affect this. </summary>
         /// <returns> The new entity. </returns>
@@ -27,6 +28,9 @@ namespace BovineLabs.Core.EntityCommands
 
         void AddComponent(in ComponentTypeSet components);
 
+        void AddComponentObject<T>(in T component)
+            where T : class;
+
         void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData;
 
@@ -34,6 +38,9 @@ namespace BovineLabs.Core.EntityCommands
             where T : unmanaged, IBufferElementData;
 
         DynamicBuffer<T> SetBuffer<T>()
+            where T : unmanaged, IBufferElementData;
+
+        void AppendToBuffer<T>(in T element)
             where T : unmanaged, IBufferElementData;
 
         void SetComponentEnabled<T>(bool enabled)

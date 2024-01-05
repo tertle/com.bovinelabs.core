@@ -9,6 +9,7 @@ namespace BovineLabs.Core.SubScenes
     using System.Linq;
     using BovineLabs.Core.App;
     using BovineLabs.Core.Extensions;
+    using BovineLabs.Core.Groups;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
@@ -18,9 +19,8 @@ namespace BovineLabs.Core.SubScenes
     using UnityEngine;
 
     /// <summary> System that loads our SubScenes depending on the world and the SubScene load mode. </summary>
-    [UpdateInGroup(typeof(InitializationSystemGroup))]
-    [UpdateAfter(typeof(SceneSystemGroup))]
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation)]
+    [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderLast = true)]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | Worlds.Service)]
     public partial class SubSceneLoadingSystem : SystemBase
     {
         private readonly Dictionary<SubScene, Entity> requiredScenes = new();

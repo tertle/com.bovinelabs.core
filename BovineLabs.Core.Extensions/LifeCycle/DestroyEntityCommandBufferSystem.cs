@@ -10,6 +10,7 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Entities;
 
     [UpdateInGroup(typeof(DestroySystemGroup), OrderLast = true)]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | Worlds.Service)]
     public partial class DestroyEntityCommandBufferSystem : EntityCommandBufferSystem
     {
         /// <inheritdoc cref="EntityCommandBufferSystem.OnCreate"/>

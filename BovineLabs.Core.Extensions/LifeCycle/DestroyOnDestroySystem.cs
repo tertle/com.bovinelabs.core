@@ -10,6 +10,7 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Entities;
 
     [UpdateInGroup(typeof(DestroySystemGroup), OrderFirst = true)]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | Worlds.Service)]
     public partial struct DestroyOnDestroySystem : ISystem
     {
         [BurstCompile]
@@ -59,6 +60,7 @@ namespace BovineLabs.Core.LifeCycle
                         continue;
                     }
 
+                    // Check child has destroy component, if not we just let regular destroy handle it
                     var enabled = this.DestroyEntities.GetComponentEnabledRefRWOptional<DestroyEntity>(entity);
                     if (!enabled.IsValid)
                     {
@@ -76,6 +78,7 @@ namespace BovineLabs.Core.LifeCycle
 
                     enabled.ValueRW = true;
 
+                    // Propagate down
                     if (this.LinkedEntityGroups.TryGetBuffer(entity, out var newLinkedEntityGroup))
                     {
                         this.Destroy(newLinkedEntityGroup);

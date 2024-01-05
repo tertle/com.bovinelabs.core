@@ -1,6 +1,6 @@
 {
     "name": "BovineLabs.Core.Extensions.Debug",
-    "rootNamespace": "BovineLabs.Core.Debug",
+    "rootNamespace": "BovineLabs.Core",
     "references": [
         "BovineLabs.Core",
         "BovineLabs.Core.Extensions",
@@ -17,6 +17,7 @@
         "Unity.NetCode",
         "Unity.Networking.Transport",
         "Unity.Physics",
+        "Unity.ResourceManager",
         "Unity.Transforms"
     ],
     "includePlatforms": [],

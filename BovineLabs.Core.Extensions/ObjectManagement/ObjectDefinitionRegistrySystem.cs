@@ -5,14 +5,13 @@
 #if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.ObjectManagement
 {
+    using BovineLabs.Core.Groups;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Scenes;
     using UnityEngine;
 
-    [UpdateInGroup(typeof(InitializationSystemGroup))]
-    [UpdateAfter(typeof(SceneSystemGroup))]
+    [UpdateInGroup(typeof(AfterSceneSystemGroup))]
     public partial struct ObjectDefinitionRegistrySystem : ISystem
     {
         private NativeHashMap<int, int> objectDefinitionsOffsets;

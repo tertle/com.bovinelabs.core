@@ -4,7 +4,9 @@
 
 namespace BovineLabs.Core.EntityCommands
 {
+    using System;
     using BovineLabs.Core.Assertions;
+    using Unity.Burst;
     using Unity.Entities;
 
     public struct CommandBufferCommands : IEntityCommands
@@ -20,7 +22,11 @@ namespace BovineLabs.Core.EntityCommands
             this.blobAssetStore = blobAssetStore;
         }
 
-        public Entity Entity => this.entity;
+        public Entity Entity
+        {
+            get => this.entity;
+            set => this.entity = value;
+        }
 
         public Entity CreateEntity()
         {
@@ -67,6 +73,15 @@ namespace BovineLabs.Core.EntityCommands
             this.commandBuffer.AddComponent(this.entity, components);
         }
 
+        [BurstDiscard]
+        public void AddComponentObject<T>(in T component)
+            where T : class
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            throw new NotImplementedException("Can't AddComponentObject from a command buffer");
+#endif
+        }
+
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
@@ -86,6 +101,12 @@ namespace BovineLabs.Core.EntityCommands
         {
             Check.Assume(!this.entity.Equals(Entity.Null));
             return this.commandBuffer.SetBuffer<T>(this.entity);
+        }
+
+        public void AppendToBuffer<T>(in T element)
+            where T : unmanaged, IBufferElementData
+        {
+            this.commandBuffer.AppendToBuffer(this.entity, element);
         }
 
         public void SetComponentEnabled<T>(bool enabled)

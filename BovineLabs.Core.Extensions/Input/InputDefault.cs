@@ -9,11 +9,10 @@ namespace BovineLabs.Core.Input
     using Unity.Entities;
     using UnityEngine.InputSystem;
 
-    [Serializable]
-    public class InputDefault : IComponentData
+    public struct InputDefault : IComponentData
     {
-        public InputActionAsset Asset = null!;
-        public InputActionReference CursorPosition = null!;
+        public UnityObjectRef<InputActionAsset> Asset;
+        public UnityObjectRef<InputActionReference> CursorPosition;
     }
 }
 #endif

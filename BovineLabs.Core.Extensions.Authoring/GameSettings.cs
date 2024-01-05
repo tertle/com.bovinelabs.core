@@ -5,11 +5,13 @@
 #if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.Authoring
 {
+    using BovineLabs.Core.Settings;
     using BovineLabs.Core.SubScenes;
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
 
+    [SettingsGroup("Game")]
     public class GameSettings : Settings.SettingsBase
     {
         [Min(0)]

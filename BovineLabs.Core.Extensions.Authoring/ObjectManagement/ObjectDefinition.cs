@@ -53,7 +53,6 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
         public string Description => this.description;
 
-
         int IUID.ID
         {
             get => this.id;

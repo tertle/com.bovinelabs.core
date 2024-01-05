@@ -20,10 +20,12 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
     {
         private const int ShortUpdateTime = 60; // must be multiple of FramesToTrack
         private const int FramesToTrack = 600;
-        private const float WarningLevel = 0.85f;
 
-        [ConfigVar("debug.changefiltertracking", false, "Enable change filter tracking.")]
-        internal static readonly SharedStatic<bool> IsEnabled = SharedStatic<bool>.GetOrCreate<ChangeFilterTrackingSystem>();
+        [ConfigVar("debug.changefilter.enabled", true, "Enable change filter tracking.")]
+        internal static readonly SharedStatic<bool> IsEnabled = SharedStatic<bool>.GetOrCreate<IsEnabledContext>();
+
+        [ConfigVar("debug.changefilter.threshold", 0.85f, "Warn threshold.")]
+        internal static readonly SharedStatic<float> WarningLevel = SharedStatic<float>.GetOrCreate<WarningLevelContext>();
 
         private NativeArray<JobHandle> jobHandles;
         private NativeArray<TypeTrack> typeTracks;
@@ -237,7 +239,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
                     var averageChange = total / this.Result.Length;
                     this.Long.Value = averageChange;
 
-                    if (!this.HasWarned.Value && averageChange > WarningLevel)
+                    if (!this.HasWarned.Value && averageChange > WarningLevel.Data)
                     {
                         var percent = (int)(averageChange * 100);
                         this.Debug.Warning($"{this.TypeName} DidChange triggered on average {percent}% of chunks per frame");
@@ -245,6 +247,14 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
                     }
                 }
             }
+        }
+
+        private struct WarningLevelContext
+        {
+        }
+
+        private struct IsEnabledContext
+        {
         }
     }
 }

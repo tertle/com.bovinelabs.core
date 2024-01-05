@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Packages/com.bovinelabs.core/BovineLabs.Core.Extensions.Debug/Resources/TimeGroup.uss?fileID=7433441132597879392&amp;guid=2145bf30b419a8a4f93627f4a99351c4&amp;type=3#TimeGroup" />
+    <ui:VisualElement data-source-type="BovineLabs.Core.ToolbarTabs.TimeToolbarBindings, BovineLabs.Core.Extensions.Debug" name="Bindings" style="flex-grow: 1;">
+        <ui:Toggle text="Pause" name="Pause">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="IsPaused" binding-mode="ToSource" />
+            </Bindings>
+        </ui:Toggle>
+        <ui:FloatField value="1" name="Timescale" label="Timescale">
+            <Bindings>
+                <ui:DataBinding property="value" update-trigger="OnSourceChanged" data-source-path="TimeScale" binding-mode="TwoWay" />
+            </Bindings>
+        </ui:FloatField>
+    </ui:VisualElement>
+</ui:UXML>

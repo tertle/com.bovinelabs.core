@@ -3,12 +3,12 @@
 // </copyright>
 
 #if !BL_DISABLE_TOOLBAR
-namespace BovineLabs.Core.Debug.Toolbar
+namespace BovineLabs.Core.Toolbar
 {
     using BovineLabs.Core;
     using Unity.Entities;
 
-    [WorldSystemFilter(WorldSystemFilterFlags.Default)]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | Worlds.Service)]
     [UpdateInGroup(typeof(DebugSystemGroup))]
     public partial class ToolbarSystemGroup : ComponentSystemGroup
     {

@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Time
     using UnityEngine;
 
     [UpdateInGroup(typeof(InitializationSystemGroup), OrderFirst = true)]
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | Worlds.Service)]
     public partial struct UnityTimeSystem : ISystem
     {
         /// <inheritdoc/>

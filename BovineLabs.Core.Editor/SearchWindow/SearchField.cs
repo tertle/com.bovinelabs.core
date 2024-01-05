@@ -9,7 +9,8 @@ namespace BovineLabs.Core.Editor.SearchWindow
     using BovineLabs.Core.Editor.UI;
     using UnityEngine.UIElements;
 
-    internal class SearchField : TextField
+    [UxmlElement]
+    internal partial class SearchField : TextField
     {
         private static readonly UITemplate SearchFieldTemplate = new(SearchWindow.RootUIPath + "SearchField");
 
@@ -47,10 +48,6 @@ namespace BovineLabs.Core.Editor.SearchWindow
             this.RegisterCallback<FocusInEvent>(_ => { this.searchContainer.style.display = DisplayStyle.None; });
 
             this.RegisterCallback<FocusOutEvent>(_ => { this.searchContainer.style.display = this.value.Length == 0 ? DisplayStyle.Flex : DisplayStyle.None; });
-        }
-
-        internal new class UxmlFactory : UxmlFactory<SearchField, UxmlTraits>
-        {
         }
     }
 }

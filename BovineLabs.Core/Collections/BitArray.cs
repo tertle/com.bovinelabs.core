@@ -13,6 +13,7 @@ namespace BovineLabs.Core.Collections
     using System.Runtime.CompilerServices;
     using System.Text.RegularExpressions;
     using Unity.Mathematics;
+    using Unity.Properties;
     using UnityEngine;
 
     /// <summary>
@@ -20,7 +21,7 @@ namespace BovineLabs.Core.Collections
     /// Originally based off com.unity.render-pipelines.core@12.0.0\Runtime\Utilities\BitArray but made generic and burst friendly.
     /// </summary>
     /// <typeparam name="T"> The type. </typeparam>
-    public interface IBitArray<T>
+    public interface IBitArray<T> : IEquatable<T>
         where T : unmanaged, IBitArray<T>
     {
         /// <summary> Gets the capacity of this BitArray. This is the number of bits that are usable. </summary>
@@ -230,7 +231,7 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         /// <param name="obj"> Bit array to compare to. </param>
         /// <returns> True if the provided bit array is equal to this.. </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is BitArray8 array8 && (array8.data == this.data);
         }
@@ -242,6 +243,11 @@ namespace BovineLabs.Core.Collections
         public override int GetHashCode()
         {
             return 1768953197 + this.data.GetHashCode();
+        }
+
+        public bool Equals(BitArray8 other)
+        {
+            return this.data == other.data;
         }
     }
 
@@ -397,7 +403,7 @@ namespace BovineLabs.Core.Collections
         /// <summary> Equality operator. </summary>
         /// <param name="obj"> Bit array to compare to. </param>
         /// <returns> True if the provided bit array is equal to this.. </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is BitArray16 array16 && (array16.data == this.data);
         }
@@ -407,6 +413,11 @@ namespace BovineLabs.Core.Collections
         public override int GetHashCode()
         {
             return 1768953197 + this.data.GetHashCode();
+        }
+
+        public bool Equals(BitArray16 other)
+        {
+            return this.data == other.data;
         }
     }
 
@@ -562,7 +573,7 @@ namespace BovineLabs.Core.Collections
         /// <summary> Equality operator. </summary>
         /// <param name="obj"> Bit array to compare to. </param>
         /// <returns> True if the provided bit array is equal to this.. </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is BitArray32 array32 && (array32.data == this.data);
         }
@@ -572,6 +583,11 @@ namespace BovineLabs.Core.Collections
         public override int GetHashCode()
         {
             return 1768953197 + this.data.GetHashCode();
+        }
+
+        public bool Equals(BitArray32 other)
+        {
+            return this.data == other.data;
         }
     }
 
@@ -729,7 +745,7 @@ namespace BovineLabs.Core.Collections
         /// <summary> Equality operator. </summary>
         /// <param name="obj"> Bit array to compare to. </param>
         /// <returns> True if the provided bit array is equal to this.. </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is BitArray64 array64 && (array64.data == this.data);
         }
@@ -739,6 +755,11 @@ namespace BovineLabs.Core.Collections
         public override int GetHashCode()
         {
             return 1768953197 + this.data.GetHashCode();
+        }
+
+        public bool Equals(BitArray64 other)
+        {
+            return this.data == other.data;
         }
     }
 
@@ -919,7 +940,7 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         /// <param name="obj"> Bit array to compare to. </param>
         /// <returns> True if the provided bit array is equal to this.. </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is BitArray128 array128 && this.data1.Equals(array128.data1) && this.data2.Equals(array128.data2);
         }
@@ -935,6 +956,11 @@ namespace BovineLabs.Core.Collections
             hashCode = (hashCode * -1521134295) + this.data2.GetHashCode();
             return hashCode;
         }
+
+        public bool Equals(BitArray128 other)
+        {
+            return this.data1 == other.data1 && this.data2 == other.data2;
+        }
     }
 
     /// <summary>
@@ -944,16 +970,23 @@ namespace BovineLabs.Core.Collections
     [DebuggerDisplay("{this.GetType().Name} {HumanizedData}")]
     public struct BitArray256 : IBitArray<BitArray256>
     {
+        public static readonly BitArray256 None = default;
+        public static readonly BitArray256 All = new(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue);
+
         [SerializeField]
+        [DontCreateProperty]
         private ulong data1;
 
         [SerializeField]
+        [DontCreateProperty]
         private ulong data2;
 
         [SerializeField]
+        [DontCreateProperty]
         private ulong data3;
 
         [SerializeField]
+        [DontCreateProperty]
         private ulong data4;
 
         /// <summary> Initializes a new instance of the <see cref="BitArray256" /> struct. </summary>
@@ -971,7 +1004,7 @@ namespace BovineLabs.Core.Collections
 
         /// <summary> Initializes a new instance of the <see cref="BitArray256" /> struct. </summary>
         /// <param name="bitIndexTrue"> List of indices where bits should be set to true. </param>
-        public BitArray256(IEnumerable<uint> bitIndexTrue)
+        public BitArray256(params uint[]? bitIndexTrue)
         {
             this.data1 = this.data2 = this.data3 = this.data4 = 0uL;
             if (bitIndexTrue == null)
@@ -1001,12 +1034,16 @@ namespace BovineLabs.Core.Collections
             }
         }
 
+        [CreateProperty]
         public ulong Data1 => this.data1;
 
+        [CreateProperty]
         public ulong Data2 => this.data2;
 
+        [CreateProperty]
         public ulong Data3 => this.data3;
 
+        [CreateProperty]
         public ulong Data4 => this.data4;
 
         /// <summary> Number of elements in the bit array. </summary>
@@ -1018,6 +1055,12 @@ namespace BovineLabs.Core.Collections
         /// <summary> True if all bits are 1. </summary>
         public bool AllTrue => (this.data1 == ulong.MaxValue) && (this.data2 == ulong.MaxValue) && (this.data3 == ulong.MaxValue) &&
                                (this.data4 == ulong.MaxValue);
+
+        public bool IsPowerOf2()
+        {
+            // Means only 1 bit set
+            return math.countbits(this.data1) + math.countbits(this.data2) + math.countbits(this.data3) + math.countbits(this.data4) == 1;
+        }
 
         /// <summary> Gets the bit array in a human readable form. </summary>
         public string HumanizedData =>
@@ -1122,7 +1165,7 @@ namespace BovineLabs.Core.Collections
         /// <summary> Equality operator. </summary>
         /// <param name="obj"> Bit array to compare to. </param>
         /// <returns> True if the provided bit array is equal to this.. </returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is BitArray256 array256
                    && this.data1.Equals(array256.data1)
@@ -1141,6 +1184,11 @@ namespace BovineLabs.Core.Collections
             hashCode = (hashCode * -1521134295) + this.data3.GetHashCode();
             hashCode = (hashCode * -1521134295) + this.data4.GetHashCode();
             return hashCode;
+        }
+
+        public bool Equals(BitArray256 other)
+        {
+            return this.data1 == other.data1 && this.data2 == other.data2 && this.data3 == other.data3 && this.data4 == other.data4;
         }
     }
 

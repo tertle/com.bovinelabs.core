@@ -20,6 +20,20 @@ namespace BovineLabs.Core.Extensions
             return entityManager.GetCheckedEntityDataAccess()->EntityComponentStore->m_Archetypes.Length;
         }
 
+        // Only use these for tests
+        public static ComponentLookup<T> GetComponentLookup<T>(this EntityManager entityManager, bool isReadOnly = false)
+            where T : unmanaged, IComponentData
+        {
+            return entityManager.GetComponentLookup<T>(isReadOnly);
+        }
+
+        // Only use these for tests
+        public static BufferLookup<T> GetBufferLookup<T>(this EntityManager entityManager, bool isReadOnly = false)
+            where T : unmanaged, IBufferElementData
+        {
+            return entityManager.GetBufferLookup<T>(isReadOnly);
+        }
+
         internal static SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
             where T : struct, ISharedComponentData
         {

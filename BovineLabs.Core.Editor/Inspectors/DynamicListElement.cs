@@ -119,7 +119,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             }
 
             var valueList = element.GetTarget<Inspected>().Value;
-            var array = NoAllocHelpers.ExtractArrayFromListT(valueList);
+            var array = NoAllocHelpers.ExtractArrayFromList(valueList);
 
             var handle = GCHandle.Alloc(array, GCHandleType.Pinned);
             var nativeArray =

@@ -10,6 +10,7 @@ namespace BovineLabs.Core.Keys
     using System.Linq;
     using BovineLabs.Core.Settings;
     using JetBrains.Annotations;
+    using Unity.Mathematics;
     using UnityEngine;
 
     /// <summary> Generic implementation of <see cref="KSettings" /> to allow calling the generic <see cref="K{T}" />. </summary>
@@ -66,29 +67,11 @@ namespace BovineLabs.Core.Keys
                 Array.Copy(keysOld, keys, KMap.MaxCapacity);
             }
 
-            var all = new HashSet<int>();
-            all.UnionWith(keys.Select(s => s.Value));
-
-            var duplicate = new HashSet<int>();
-
             for (var i = 0; i < keys.Length; i++)
             {
                 var k = keys[i];
                 k.Name = k.Name.ToLower();
-
-                if (!duplicate.Add(k.Value))
-                {
-                    var newKey = k.Value;
-                    do
-                    {
-                        newKey++;
-                    }
-                    while (!all.Add(newKey));
-
-                    k.Value = newKey;
-                    duplicate.Add(k.Value);
-                }
-
+                k.Value = math.min(k.Value, KMap.MaxCapacity - 1);
                 keys[i] = k;
             }
         }
