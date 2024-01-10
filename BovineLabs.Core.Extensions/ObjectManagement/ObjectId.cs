@@ -27,7 +27,6 @@ namespace BovineLabs.Core.ObjectManagement
         [CreateProperty]
         public int ID { get; }
 
-
         public static bool operator ==(ObjectId left, ObjectId right)
         {
             return left.CompareTo(right) == 0;

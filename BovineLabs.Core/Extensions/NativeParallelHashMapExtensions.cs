@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Extensions
     using System;
     using System.Diagnostics;
     using System.Runtime.InteropServices;
+    using System.Threading;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -25,6 +26,13 @@ namespace BovineLabs.Core.Extensions
             where TValue : unmanaged
         {
             return hashMap.m_Writer.m_Buffer->GetBucketData();
+        }
+
+        public static ref TValue GetOrAddRef<TKey, TValue>(this NativeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, TKey key, TValue defaultValue = default)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            return ref hashMap.m_Writer.GetOrAddRef(key, defaultValue);
         }
 
         public static void ClearLengthBuckets<TKey, TValue>([NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap)

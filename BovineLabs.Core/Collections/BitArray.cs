@@ -96,14 +96,9 @@ namespace BovineLabs.Core.Collections
         public BitArray8(IEnumerable<uint> bitIndexTrue)
         {
             this.data = (byte)0u;
-            if (bitIndexTrue == null)
-            {
-                return;
-            }
 
-            for (var index = bitIndexTrue.Count() - 1; index >= 0; --index)
+            foreach (var bitIndex in bitIndexTrue)
             {
-                var bitIndex = bitIndexTrue.ElementAt(index);
                 if (bitIndex >= this.Capacity)
                 {
                     continue;
@@ -271,14 +266,9 @@ namespace BovineLabs.Core.Collections
         public BitArray16(IEnumerable<uint> bitIndexTrue)
         {
             this.data = (ushort)0u;
-            if (bitIndexTrue == null)
-            {
-                return;
-            }
 
-            for (var index = bitIndexTrue.Count() - 1; index >= 0; --index)
+            foreach (var bitIndex in bitIndexTrue)
             {
-                var bitIndex = bitIndexTrue.ElementAt(index);
                 if (bitIndex >= this.Capacity)
                 {
                     continue;
@@ -441,14 +431,9 @@ namespace BovineLabs.Core.Collections
         public BitArray32(IEnumerable<uint> bitIndexTrue)
         {
             this.data = 0u;
-            if (bitIndexTrue == null)
-            {
-                return;
-            }
 
-            for (var index = bitIndexTrue.Count() - 1; index >= 0; --index)
+            foreach (var bitIndex in bitIndexTrue)
             {
-                var bitIndex = bitIndexTrue.ElementAt(index);
                 if (bitIndex >= this.Capacity)
                 {
                     continue;
@@ -613,14 +598,9 @@ namespace BovineLabs.Core.Collections
         public BitArray64(IEnumerable<uint> bitIndexTrue)
         {
             this.data = 0L;
-            if (bitIndexTrue == null)
-            {
-                return;
-            }
 
-            for (var index = bitIndexTrue.Count() - 1; index >= 0; --index)
+            foreach (var bitIndex in bitIndexTrue)
             {
-                var bitIndex = bitIndexTrue.ElementAt(index);
                 if (bitIndex >= this.Capacity)
                 {
                     continue;
@@ -790,14 +770,9 @@ namespace BovineLabs.Core.Collections
         public BitArray128(IEnumerable<uint> bitIndexTrue)
         {
             this.data1 = this.data2 = 0uL;
-            if (bitIndexTrue == null)
-            {
-                return;
-            }
 
-            for (var index = bitIndexTrue.Count() - 1; index >= 0; --index)
+            foreach (var bitIndex in bitIndexTrue)
             {
-                var bitIndex = bitIndexTrue.ElementAt(index);
                 if (bitIndex < 64u)
                 {
                     this.data1 |= 1uL << (int)bitIndex;
@@ -1004,17 +979,12 @@ namespace BovineLabs.Core.Collections
 
         /// <summary> Initializes a new instance of the <see cref="BitArray256" /> struct. </summary>
         /// <param name="bitIndexTrue"> List of indices where bits should be set to true. </param>
-        public BitArray256(params uint[]? bitIndexTrue)
+        public BitArray256(params uint[] bitIndexTrue)
         {
             this.data1 = this.data2 = this.data3 = this.data4 = 0uL;
-            if (bitIndexTrue == null)
-            {
-                return;
-            }
 
-            for (var index = bitIndexTrue.Count() - 1; index >= 0; --index)
+             foreach (var bitIndex in bitIndexTrue)
             {
-                var bitIndex = bitIndexTrue.ElementAt(index);
                 if (bitIndex < 64u)
                 {
                     this.data1 |= 1uL << (int)bitIndex;

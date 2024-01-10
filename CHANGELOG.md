@@ -1,8 +1,17 @@
 # Changelog
 
+## [1.2.3] - 2024-01-10
+### Added
+* minmax to mathex
+* DebugLong to BLDebug
+* GetInternalDependency extension for SystemState
+
+### Fixed
+* Compile error on BovineLabsBoostrap when NetCode was installed
+
 ## [1.2.2] - 2024-01-05
 ### Added
-* Toolbar now has the option of showing and hiding groups.
+* Toolbar now has the option of showing and hiding groups
 * InputActionMapSystem
 * AddComponentObject to IEntityCommand
 * Added HybridComponent to Hybrid feature

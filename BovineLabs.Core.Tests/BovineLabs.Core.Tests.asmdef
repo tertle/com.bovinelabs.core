@@ -4,14 +4,15 @@
     "references": [
         "BovineLabs.Core",
         "BovineLabs.Testing",
+        "UnityEditor.TestRunner",
+        "UnityEngine.TestRunner",
         "Unity.Burst",
         "Unity.Collections",
         "Unity.Entities",
         "Unity.Mathematics",
         "Unity.Mathematics.Extensions",
-        "UnityEditor.TestRunner",
-        "UnityEngine.TestRunner",
-        "BovineLabs.Core.Extensions"
+        "Unity.PerformanceTesting",
+        "Unity.Transforms"
     ],
     "includePlatforms": [
         "Editor"

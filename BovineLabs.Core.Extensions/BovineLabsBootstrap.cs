@@ -12,7 +12,7 @@ namespace BovineLabs.Core
 
     [Preserve]
 #if UNITY_NETCODE
-    public abstract class BovineLabsBootstrap : Unity.Netcode.ClientServerBootstrap
+    public abstract class BovineLabsBootstrap : Unity.NetCode.ClientServerBootstrap
 #else
     public abstract class BovineLabsBootstrap : ICustomBootstrap
 #endif

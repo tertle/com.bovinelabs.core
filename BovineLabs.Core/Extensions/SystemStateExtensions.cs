@@ -7,10 +7,16 @@ namespace BovineLabs.Core.Extensions
     using BovineLabs.Core.Iterators;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Jobs;
 
     public static class SystemStateExtensions
     {
         private const EntityQueryOptions QueryOptions = EntityQueryOptions.IncludeSystems;
+
+        public static JobHandle GetInternalDependency(ref this SystemState system)
+        {
+            return system.m_JobHandle;
+        }
 
         public static SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(ref this SystemState system, bool isReadOnly = false)
             where T : struct, ISharedComponentData

@@ -40,6 +40,17 @@ namespace BovineLabs.Core
             }
         }
 
+        [Conditional("UNITY_EDITOR")]
+        [Conditional("BL_DEBUG")]
+        public readonly void DebugLong(in FixedString4096Bytes msg)
+        {
+            if (this.Enabled)
+            {
+                Log.To(this.LoggerHandle).Debug(msg);
+            }
+        }
+
+
         public readonly void Info(in FixedString512Bytes msg)
         {
             if (this.Enabled)

@@ -12,6 +12,8 @@ namespace BovineLabs.Core.Utility
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Mathematics;
+    using UnityEngine;
+    using Random = Unity.Mathematics.Random;
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "matching mathematics package")]
     [SuppressMessage("ReSharper", "SA1300", Justification = "matching mathematics package")]
@@ -172,6 +174,57 @@ namespace BovineLabs.Core.Utility
             }
 
             return minValue;
+        }
+
+        /// <summary> Calculates the minimum and maximum values of an array of float2. </summary>
+        /// <param name="values"> The data. </param>
+        /// <param name="length"> The length of the data. </param>
+        /// <returns> The maximum value. int.MinValue if length 0 is passed. </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe Rect minMax(float2* values, [AssumeRange(0, int.MaxValue)] int length)
+        {
+            var minValue4 = new float4(float.MaxValue);
+            var maxValue4 = new float4(float.MinValue);
+
+            var numSamples4 = length >> 1;
+
+            for (var iValue = 0; iValue < numSamples4; iValue++)
+            {
+                var value4 = ((float4*)values)[iValue];
+                minValue4 = math.min(minValue4, value4);
+                maxValue4 = math.max(maxValue4, value4);
+            }
+
+            var minValue = new float2(math.cmin(minValue4.xz), math.cmin(minValue4.yw));
+            var maxValue = new float2(math.cmax(maxValue4.xz), math.cmax(maxValue4.yw));
+
+            for (var iValue = numSamples4 << 1; iValue < length; iValue++)
+            {
+                minValue = math.min(minValue, values[iValue]);
+                maxValue = math.max(maxValue, values[iValue]);
+            }
+
+            return Rect.MinMaxRect(minValue.x, minValue.y, maxValue.x, maxValue.y);
+        }
+
+        /// <summary> Calculates the maximum value. </summary>
+        /// <param name="values"> The data. </param>
+        /// <param name="length"> The length of the data. </param>
+        /// <returns> The maximum value. int.MinValue if length 0 is passed. </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe MinMaxAABB minMax(float3* values, [AssumeRange(0, int.MaxValue)] int length)
+        {
+            var minValue = new float3(float.MaxValue);
+            var maxValue = new float3(float.MinValue);
+
+            for (var i = 0; i < length; i++)
+            {
+                var value = values[i];
+                minValue = math.min(minValue, value);
+                maxValue = math.max(maxValue, value);
+            }
+
+            return new MinMaxAABB { Min = minValue, Max = maxValue };
         }
 
         /// <summary> Calculates the sum of values. </summary>

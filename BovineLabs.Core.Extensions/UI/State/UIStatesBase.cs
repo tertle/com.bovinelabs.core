@@ -37,7 +37,7 @@ namespace BovineLabs.Core.UI
         public class NameUI : IKKeyValue
         {
             [SerializeField]
-            private string name = string.Empty;
+            private string name;
 
             [SerializeField]
             private byte value;
