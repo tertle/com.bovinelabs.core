@@ -13,8 +13,10 @@ namespace BovineLabs.Core.Iterators
 
     public static unsafe class DynamicExtensions
     {
+        private const int DefaultMinGrowth = 256;
+
         public static DynamicBuffer<TBuffer> InitializeHashMap<TBuffer, TKey, TValue>(
-            this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DynamicHashMapHelper<TKey>.MinimumCapacity)
+            this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
             where TBuffer : unmanaged, IDynamicHashMap<TKey, TValue>
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -29,7 +31,7 @@ namespace BovineLabs.Core.Iterators
         }
 
         public static DynamicBuffer<TBuffer> InitializeMultiHashMap<TBuffer, TKey, TValue>(
-            this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DynamicHashMapHelper<TKey>.MinimumCapacity)
+            this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
             where TBuffer : unmanaged, IDynamicMultiHashMap<TKey, TValue>
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -43,7 +45,7 @@ namespace BovineLabs.Core.Iterators
             return buffer;
         }
 
-        public static DynamicBuffer<TBuffer> InitializeHashSet<TBuffer, TKey>(this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DynamicHashMapHelper<TKey>.MinimumCapacity)
+        public static DynamicBuffer<TBuffer> InitializeHashSet<TBuffer, TKey>(this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
             where TBuffer : unmanaged, IDynamicHashSet<TKey>
             where TKey : unmanaged, IEquatable<TKey>
         {

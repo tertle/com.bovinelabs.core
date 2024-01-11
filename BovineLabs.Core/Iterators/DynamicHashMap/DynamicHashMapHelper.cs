@@ -19,8 +19,6 @@ namespace BovineLabs.Core.Iterators
     public unsafe struct DynamicHashMapHelper<TKey>
         where TKey : unmanaged, IEquatable<TKey>
     {
-        internal const int MinimumCapacity = 256;
-
         internal int ValuesOffset;
         internal int KeysOffset;
         internal int NextOffset;

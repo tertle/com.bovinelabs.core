@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Toolbar
     using System.Collections.Generic;
     using BovineLabs.Core.Keys;
     using BovineLabs.Core.UI;
-    using UnityEditor;
     using UnityEngine;
     using UnityEngine.UIElements;
 
@@ -20,6 +19,7 @@ namespace BovineLabs.Core.Toolbar
             K<ToolbarStates>.Initialize(this.Keys);
         }
 
+#if UNITY_EDITOR
         private void Reset()
         {
             var keys = new List<NameUI>();
@@ -40,7 +40,7 @@ namespace BovineLabs.Core.Toolbar
         private static void AddCoreToolbar(List<NameUI> keys, ref byte index, string key, string fileName)
         {
             const string dir = "Packages/com.bovinelabs.core/BovineLabs.Core.Extensions.Debug/ToolbarTabs/Assets/";
-            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(dir + fileName + ".uxml");
+            var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(dir + fileName + ".uxml");
             if (asset == null)
             {
                 Debug.LogError($"Asset {fileName} missing for toolbar. Please report");
@@ -49,6 +49,7 @@ namespace BovineLabs.Core.Toolbar
 
             keys.Add(new NameUI(key, index++, asset));
         }
+#endif
     }
 }
 #endif

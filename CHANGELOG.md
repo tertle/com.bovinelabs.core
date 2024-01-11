@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.4] - 2024-01-12
+### Fixed
+* Compiling when toolbar extension was enabled
+
 ## [1.2.3] - 2024-01-10
 ### Added
 * minmax to mathex
