@@ -28,7 +28,7 @@ namespace BovineLabs.Core.Toolbar
         private GCHandle handle;
         private TD* data;
 
-        public ToolbarHelper(FixedString32Bytes tabName, FixedString32Bytes groupName, int assetKey)
+        public ToolbarHelper(ref SystemState state, FixedString32Bytes tabName, FixedString32Bytes groupName, int assetKey)
         {
             this.tabName = tabName;
             this.groupName = groupName;
@@ -36,22 +36,29 @@ namespace BovineLabs.Core.Toolbar
             this.handle = default;
             this.data = default;
             this.key = 0;
+
+            if (this.assetKey == -1)
+            {
+                state.Enabled = false;
+            }
         }
 
-        public ToolbarHelper(FixedString32Bytes tabName, FixedString32Bytes groupName, FixedString32Bytes stateName)
-            : this(tabName, groupName, K<ToolbarStates>.NameToKey(stateName))
+        public ToolbarHelper(ref SystemState state, FixedString32Bytes tabName, FixedString32Bytes groupName, FixedString32Bytes assetKey)
+            : this(ref state, tabName, groupName, K<ToolbarStates>.TryNameToKey(assetKey, out var n) ? n : -1)
         {
         }
 
-        public ToolbarHelper(World world, FixedString32Bytes groupName, int assetKey)
-            : this(FormatWorld(world.Name), groupName, assetKey)
+        public ToolbarHelper(ref SystemState state, FixedString32Bytes groupName, int assetKey)
+            : this(ref state, FormatWorld(state.World.Name), groupName, assetKey)
         {
         }
 
-        public ToolbarHelper(World world, FixedString32Bytes groupName, FixedString32Bytes assetKey)
-            : this(FormatWorld(world.Name), groupName, assetKey)
+        public ToolbarHelper(ref SystemState state, FixedString32Bytes groupName, FixedString32Bytes assetKey)
+            : this(ref state, FormatWorld(state.World.Name), groupName, K<ToolbarStates>.TryNameToKey(assetKey, out var n) ? n : -1)
         {
         }
+
+        public bool AssetKeyValid => this.assetKey != -1;
 
         public ref TD Binding => ref UnsafeUtility.AsRef<TD>(this.data);
 
@@ -92,11 +99,11 @@ namespace BovineLabs.Core.Toolbar
 
         public bool IsVisible()
         {
-            return ToolbarManager.ActiveTab.Data == this.tabName;
+            return ToolbarManagerData.ActiveTab.Data == this.tabName;
         }
 
         // Not burst compatible
-        public VisualElement GetToolbar()
+        public object? GetToolbar()
         {
             return ToolbarManager.Instance.GetPanel(this.assetKey);
         }

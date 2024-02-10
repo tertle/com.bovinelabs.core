@@ -1,4 +1,4 @@
-﻿// <copyright file="UnsafeDynamicBufferAccessor.cs" company="BovineLabs">
+﻿// <copyright file="UnsafeUntypedDynamicBufferAccessor.cs" company="BovineLabs">
 // Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 

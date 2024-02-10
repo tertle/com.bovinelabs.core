@@ -100,6 +100,16 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             this.rootVisualElement.Q<Button>("create").clickable.clicked += this.Create;
             this.rootVisualElement.Q<TextField>("name").value = $"{PlayerSettings.companyName}.";
             this.rootVisualElement.Q<TextField>("directory").SetEnabled(false);
+
+#if !UNITY_NETCODE
+            foreach (var toggle in this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>())
+            {
+                if (toggle.label is "Unity.NetCode" or "Unity.Networking.Transport")
+                {
+                    toggle.value = false;
+                }
+            }
+#endif
         }
 
         private void BindAssemblyToggle(Toggle toggle)
@@ -267,7 +277,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private IEnumerable<string> GetCommonReferences()
         {
-            return this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().Select(t => t.label);
+            return this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().Where(t => t.value).Select(t => t.label);
         }
 
         private bool GetToggleValue(string toggleName)

@@ -159,7 +159,7 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
 #endif
 
-            var oldLength = hashMap.Count();
+            var oldLength = hashMap.m_HashMapData.m_Buffer->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -202,7 +202,7 @@ namespace BovineLabs.Core.Extensions
 #endif
 
             var length = keys.Length;
-            var oldLength = hashMap.Count();
+            var oldLength = hashMap.m_HashMapData.m_Buffer->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)

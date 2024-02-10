@@ -1,8 +1,4 @@
-﻿// <copyright file="BlobCurve.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Collections
+﻿namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Diagnostics;
@@ -17,7 +13,7 @@ namespace BovineLabs.Core.Collections
     using Debug = UnityEngine.Debug;
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct BlobCurve
+    public struct BlobCurve : IBlobCurve<float>
     {
         internal BlobCurveHeader header;
         private BlobArray<BlobCurveSegment> Segments;
@@ -48,8 +44,8 @@ namespace BovineLabs.Core.Collections
             var builder = new BlobBuilder(Allocator.Temp);
             ref var data = ref builder.ConstructRoot<BlobCurve>();
             data.header.SegmentCount = segmentCount;
-            data.header.WrapModePrev = ConvertWrapMode(curve.preWrapMode);
-            data.header.WrapModePost = ConvertWrapMode(curve.postWrapMode);
+            data.header.WrapModePrev = BlobShared.ConvertWrapMode(curve.preWrapMode);
+            data.header.WrapModePost = BlobShared.ConvertWrapMode(curve.postWrapMode);
 
             if (hasOnlyOneKeyframe)
             {
@@ -79,49 +75,31 @@ namespace BovineLabs.Core.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float EvaluateIgnoreWrapMode(float time, [NoAlias] ref BlobCurveCache cache)
+        public float EvaluateIgnoreWrapMode(in float time, [NoAlias] ref BlobCurveCache cache)
         {
             var i = this.header.SearchIgnoreWrapMode(time, ref cache, out var t);
-            return this.Segments[i].Sample(PowerSerial(t));
+            return this.Segments[i].Sample(BlobShared.PowerSerial(t));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float EvaluateIgnoreWrapMode(float time)
+        public float EvaluateIgnoreWrapMode(in float time)
         {
             var i = this.header.SearchIgnoreWrapMode(time, out var t);
-            return this.Segments[i].Sample(PowerSerial(t));
+            return this.Segments[i].Sample(BlobShared.PowerSerial(t));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float Evaluate(float time, [NoAlias] ref BlobCurveCache cache)
+        public float Evaluate(in float time, [NoAlias] ref BlobCurveCache cache)
         {
             var i = this.header.Search(time, ref cache, out var t);
-            return this.Segments[i].Sample(PowerSerial(t));
+            return this.Segments[i].Sample(BlobShared.PowerSerial(t));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float Evaluate(float time)
+        public float Evaluate(in float time)
         {
             var i = this.header.Search(time, out var t);
-            return this.Segments[i].Sample(PowerSerial(t));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static float4 PowerSerial(float t)
-        {
-            var sq = t * t;
-            return new float4(sq * t, sq, t, 1);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static BlobCurveHeader.WrapMode ConvertWrapMode(WrapMode mode)
-        {
-            return mode switch
-            {
-                WrapMode.Loop => BlobCurveHeader.WrapMode.Loop,
-                WrapMode.PingPong => BlobCurveHeader.WrapMode.PingPong,
-                _ => BlobCurveHeader.WrapMode.Clamp,
-            };
+            return this.Segments[i].Sample(BlobShared.PowerSerial(t));
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

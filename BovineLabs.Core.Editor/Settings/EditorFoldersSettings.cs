@@ -15,7 +15,9 @@ namespace BovineLabs.Core.Editor.Settings
     public class EditorFoldersSettings : ScriptableObject, ISettings
     {
         public const string SettingsKey = "settings";
-        public const string DefaultSettingsDirectory = "Assets/Configs/Settings/";
+        public const string SettingsResourceKey = "settings.resource";
+        public const string DefaultSettingsDirectory = "Assets/Settings/Settings";
+        public const string DefaultSettingsResourceDirectory = "Assets/Settings/";
 
         [SerializeField]
         private List<KeyPath> paths = new();

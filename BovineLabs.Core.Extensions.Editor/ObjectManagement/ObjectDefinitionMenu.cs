@@ -13,7 +13,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
     public static class ObjectDefinitionMenu
     {
-        private const string DefaultDirectory = "Assets/Configs/Definitions";
+        private const string DefaultDirectory = "Assets/Settings/Definitions";
 
         [MenuItem("BovineLabs/Utility/Create Definitions from Assets")]
         public static void CreateDefinitionsFromAssets()

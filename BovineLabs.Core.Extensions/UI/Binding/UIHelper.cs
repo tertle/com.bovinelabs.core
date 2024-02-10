@@ -5,6 +5,7 @@
 #if !BL_DISABLE_UI
 namespace BovineLabs.Core.UI
 {
+    using System;
     using System.Runtime.InteropServices;
     using BovineLabs.Core.Keys;
     using Unity.Collections.LowLevel.Unsafe;
@@ -20,8 +21,13 @@ namespace BovineLabs.Core.UI
         private TD* data;
 
         public UIHelper(string stateName, int priority = 0)
+            : this((byte)K<UIStates>.NameToKey(stateName), priority)
         {
-            this.stateKey = (byte)K<UIStates>.NameToKey(stateName);
+        }
+
+        public UIHelper(byte stateKey, int priority = 0)
+        {
+            this.stateKey = stateKey;
             this.priority = priority;
             this.handle = default;
             this.data = default;
@@ -36,6 +42,8 @@ namespace BovineLabs.Core.UI
 
             this.handle = GCHandle.Alloc(binding, GCHandleType.Pinned);
             this.data = (TD*)UnsafeUtility.AddressOf(ref binding.Value);
+
+            binding.Load();
         }
 
         public void Unload()
@@ -44,10 +52,23 @@ namespace BovineLabs.Core.UI
 
             if (this.handle.IsAllocated)
             {
+                var obj = (T)this.handle.Target;
+                obj.Unload();
+                if (obj is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+
                 this.handle.Free();
                 this.handle = default;
                 this.data = default;
             }
+        }
+
+        // Not burst compatible
+        public object? GetToolbar()
+        {
+            return UIDocumentManager.Instance.GetPanel(this.stateKey);
         }
     }
 }

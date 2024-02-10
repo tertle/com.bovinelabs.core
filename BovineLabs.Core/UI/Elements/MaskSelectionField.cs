@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if UNITY_2023_3_OR_NEWER
 #nullable disable
 namespace BovineLabs.Core.UI
 {
@@ -27,3 +28,4 @@ namespace BovineLabs.Core.UI
          public new string text { get; set; }
     }
 }
+#endif

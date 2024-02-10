@@ -22,23 +22,33 @@ namespace BovineLabs.Core.UI
     public interface IBindingObjectNotify<T> : IBindingObject<T>, INotifyBindablePropertyChanged
         where T : unmanaged, IBindingObjectNotifyData
     {
+        public static void Load(IBindingObjectNotify<T> bindingObjectNotify)
+        {
+            var propertyChanged = new OnPropertyChangedDelegate(bindingObjectNotify.OnPropertyChanged);
+            BindingObjectCollection.Handles[bindingObjectNotify] = GCHandle.Alloc(propertyChanged, GCHandleType.Pinned);
+            bindingObjectNotify.Value.Notify = new FunctionPointer<OnPropertyChangedDelegate>(Marshal.GetFunctionPointerForDelegate(propertyChanged));
+        }
+
+        public static void Unload(IBindingObjectNotify<T> bindingObjectNotify)
+        {
+            if (BindingObjectCollection.Handles.Remove(bindingObjectNotify, out var handle))
+            {
+                handle.Free();
+            }
+
+            bindingObjectNotify.Value.Notify = default;
+        }
+
         /// <inheritdoc/>
         void IBindingObject<T>.Load()
         {
-            var propertyChanged = new OnPropertyChangedDelegate(this.OnPropertyChanged);
-            BindingObjectCollection.Handles[this] = GCHandle.Alloc(propertyChanged, GCHandleType.Pinned);
-            this.Value.Notify = new FunctionPointer<OnPropertyChangedDelegate>(Marshal.GetFunctionPointerForDelegate(propertyChanged));
+            Load(this);
         }
 
         /// <inheritdoc/>
         void IBindingObject<T>.Unload()
         {
-            if (BindingObjectCollection.Handles.Remove(this, out var handle))
-            {
-                handle.Free();
-            }
-
-            this.Value.Notify = default;
+            Unload(this);
         }
 
         void OnPropertyChanged(in FixedString64Bytes property);
@@ -52,6 +62,15 @@ namespace BovineLabs.Core.UI
     public static class BindingObjectNotifyDataExtensions
     {
         public static void Notify<T>(this ref T binding, [CallerMemberName] string property = "")
+            where T : unmanaged, IBindingObjectNotifyData
+        {
+            if (binding.Notify.IsCreated)
+            {
+                binding.Notify.Invoke(property);
+            }
+        }
+
+        public static void NotifyExplicit<T>(this ref T binding, FixedString64Bytes property)
             where T : unmanaged, IBindingObjectNotifyData
         {
             if (binding.Notify.IsCreated)

@@ -6,26 +6,35 @@
 namespace BovineLabs.Core.Time
 {
     using Unity.Entities;
+    using Unity.IntegerTime;
     using UnityEngine;
 
     [UpdateInGroup(typeof(InitializationSystemGroup), OrderFirst = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | Worlds.Service)]
     public partial struct UnityTimeSystem : ISystem
     {
+        private long systemTicks;
+
         /// <inheritdoc/>
         public void OnCreate(ref SystemState state)
         {
             state.EntityManager.AddComponent<UnityTime>(state.SystemHandle);
-            Set(ref state);
+            this.systemTicks = System.DateTime.Now.Ticks;
+            this.Set(ref state);
         }
 
+        /// <inheritdoc/>
         public void OnUpdate(ref SystemState state)
         {
-            Set(ref state);
+            this.Set(ref state);
         }
 
-        private static void Set(ref SystemState state)
+        private void Set(ref SystemState state)
         {
+            var ticks = System.DateTime.Now.Ticks;
+            var deltaTicks = ticks - this.systemTicks;
+            this.systemTicks = ticks;
+
             state.EntityManager.SetComponentData(state.SystemHandle, new UnityTime
             {
                 FrameCount = Time.frameCount,
@@ -37,6 +46,7 @@ namespace BovineLabs.Core.Time
                 UnscaledTime = Time.unscaledTime,
                 RealTimeSinceStartup = Time.realtimeSinceStartup,
                 TimeSinceLevelLoad = Time.timeSinceLevelLoad,
+                Ticks = deltaTicks * DiscreteTime.TicksPerSecond / System.TimeSpan.TicksPerSecond,
             });
         }
     }

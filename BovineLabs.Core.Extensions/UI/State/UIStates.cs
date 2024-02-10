@@ -6,7 +6,9 @@
 namespace BovineLabs.Core.UI
 {
     using BovineLabs.Core.Keys;
+    using BovineLabs.Core.Settings;
 
+    [SettingsGroup("UI")]
     public class UIStates : UIStatesBase
     {
         /// <inheritdoc/>

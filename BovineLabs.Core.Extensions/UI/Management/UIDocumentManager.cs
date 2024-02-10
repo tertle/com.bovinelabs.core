@@ -210,6 +210,11 @@ namespace BovineLabs.Core.UI
             public void RemovePanel(int key)
             {
             }
+
+            public object? GetPanel(int id)
+            {
+                return null;
+            }
         }
     }
 }

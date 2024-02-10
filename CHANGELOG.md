@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.2.5] - 2024-02-11
+### Added
+* 2022.3 Core support back, with limitations
+* ListViewCountTrackerBinding for binding ListViews
+* AlwaysUpdatePhysicsWorld to rebuild physics world when fps is above fixed update. Enabled with BL_PHYSICS_ALWAYS_UPDATE for now
+* Support for multiple data bindings on UI via manually invoking Load/Unload
+* Ticks to UnityTime
+* GetEnabledMaskRO extension to ArchetypeChunk
+* BlobCurve2, BlobCurve3 and BlobCurve4 as well as BlobCurveNT
+* GetEnableRefRWNoChangeFilter from ComponentLookup
+
+### Changed
+* Toolbar systems will now disable itself instead of an error if state not set
+* Changed IUIAssetManagement GetPanel to object
+* Default folder for settings moved from Assets/Configs to Assets/Settings to match where Unity is now using
+    * You will need to update (or clear) your Editor Folder settings file if you want this to be used
+
+### Fixed
+* Toolbar will no longer error if used in a scene without the manager
+* UI helper not calling Load/Unload
+* DynamicHashMap.RemoveRangeShiftDown error if trying to remove all elements
+* Compile error when lifecycle was disabled
+* AssemblyBuilder adding unticked references
+
+### Removed
+* EnabledBinding has been removed as it's not longer required
+
 ## [1.2.4] - 2024-01-12
 ### Fixed
 * Compiling when toolbar extension was enabled

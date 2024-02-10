@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     /// It provides a way to give high definition <see cref="ObjectCategories"/> which can auto place into <see cref="ObjectGroup"/> for you.
     /// </summary>
     [UIDManager("ObjectManagementSettings", "objectDefinitions")]
-    [AssetCreator("object.definitions", "Assets/Configs/Definitions", "Definition.asset")]
+    [AssetCreator("object.definitions", "Assets/Settings/Definitions", "Definition.asset")]
     public class ObjectDefinition : ScriptableObject, IUID
     {
         [InspectorReadOnly]

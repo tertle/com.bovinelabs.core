@@ -53,6 +53,25 @@ namespace BovineLabs.Core.Extensions
 #endif
         }
 
+        public static EnabledRefRW<T> GetEnableRefRWNoChangeFilter<T>(this ComponentLookup<T> lookup, Entity entity)
+            where T : unmanaged, IComponentData, IEnableableComponent
+        {
+            ref var lookupInternal = ref UnsafeUtility.As<ComponentLookup<T>, ComponentLookupInternal>(ref lookup);
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(lookup.m_Safety);
+#endif
+            EntityComponentStore* ecs = lookupInternal.m_Access->EntityComponentStore;
+            ecs->AssertEntityHasComponent(entity, lookupInternal.m_TypeIndex, ref lookupInternal.m_Cache);
+
+            int indexInBitField;
+            int* ptrChunkDisabledCount;
+            var ptr = ecs->GetEnabledRawRO(
+                entity, lookupInternal.m_TypeIndex, ref lookupInternal.m_Cache, out indexInBitField, out ptrChunkDisabledCount);
+
+            return new EnabledRefRW<T>(MakeSafeBitRef(lookup, ptr, indexInBitField), ptrChunkDisabledCount);
+        }
+
         public static void SetChangeFilter<T>(this ComponentLookup<T> lookup, Entity entity)
             where T : unmanaged, IComponentData
         {
@@ -75,6 +94,14 @@ namespace BovineLabs.Core.Extensions
             var typeIndexInArchetype = lookupInternal.m_Cache.IndexInArchetype;
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.ListIndex, lookup.GlobalSystemVersion);
         }
+
+        private static SafeBitRef MakeSafeBitRef<T>(in ComponentLookup<T> lookup, ulong* ptr, int offsetInBits)
+            where T : unmanaged, IComponentData, IEnableableComponent
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            => new(ptr, offsetInBits, lookup.m_Safety);
+#else
+            => new(ptr, offsetInBits);
+#endif
 
         private struct ComponentLookupInternal
         {

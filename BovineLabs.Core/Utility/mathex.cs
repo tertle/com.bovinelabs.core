@@ -585,19 +585,25 @@ namespace BovineLabs.Core.Utility
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool AreApproximatelyEqual(float2 f1, float2 f2, float delta = 0.01f)
+        public static bool Approximately(float f1, float f2, float delta = math.EPSILON * 8)
+        {
+            return math.abs(f1 - f2) < delta;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Approximately(float2 f1, float2 f2, float delta = 0.01f)
         {
             return (math.abs(f1.x - f2.x) < delta) && (math.abs(f1.y - f2.y) < delta);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool AreApproximatelyEqual(float3 f1, float3 f2, float delta = 0.01f)
+        public static bool Approximately(float3 f1, float3 f2, float delta = 0.01f)
         {
             return (math.abs(f1.x - f2.x) < delta) && (math.abs(f1.y - f2.y) < delta) && (math.abs(f1.z - f2.z) < delta);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool AreApproximatelyEqual(float4 f1, float4 f2, float delta = 0.01f)
+        public static bool Approximately(float4 f1, float4 f2, float delta = 0.01f)
         {
             return math.all(math.abs(f1 - f2) < delta);
         }

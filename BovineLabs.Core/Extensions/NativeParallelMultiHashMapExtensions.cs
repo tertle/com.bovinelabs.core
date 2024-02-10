@@ -166,7 +166,7 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
 #endif
 
-            var oldLength = hashMap.Count();
+            var oldLength = hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -217,7 +217,7 @@ namespace BovineLabs.Core.Extensions
             CheckLengthsMatch(keys.Length, values.Length);
 
             var length = keys.Length;
-            var oldLength = hashMap.Count();
+            var oldLength = hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -271,7 +271,7 @@ namespace BovineLabs.Core.Extensions
 #endif
 
             var length = keys.Length;
-            var oldLength = hashMap.Count();
+            var oldLength = hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -323,7 +323,7 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
 #endif
 
-            var oldLength = hashMap.Count();
+            var oldLength = hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -375,7 +375,7 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
 #endif
 
-            var oldLength = hashMap.Count();
+            var oldLength = hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength;
             var newLength = oldLength + keys.Length;
 
             if (hashMap.Capacity < newLength)
@@ -425,7 +425,7 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
 #endif
 
-            var oldLength = hashMap.Count();
+            var oldLength = hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength;
             var newLength = oldLength + values.Length;
 
             if (hashMap.Capacity < newLength)

@@ -45,6 +45,7 @@ namespace BovineLabs.Core.Extensions
         public static ref T ElementAt<T>(this NativeArray<T> array, int index)
             where T : unmanaged
         {
+            CheckElementWriteAccess(array, index);
             return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafePtr(), index);
         }
 
@@ -52,6 +53,7 @@ namespace BovineLabs.Core.Extensions
         public static ref readonly T ElementAtRO<T>(this NativeArray<T> array, int index)
             where T : unmanaged
         {
+            CheckElementReadAccess(array, index);
             return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafeReadOnlyPtr(), index);
         }
 
@@ -59,6 +61,7 @@ namespace BovineLabs.Core.Extensions
         public static ref readonly T ElementAtRO<T>(this NativeArray<T>.ReadOnly array, int index)
             where T : unmanaged
         {
+            CheckElementReadAccess(array, index);
             return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafeReadOnlyPtr(), index);
         }
 
@@ -276,6 +279,51 @@ namespace BovineLabs.Core.Extensions
             {
                 throw new InvalidOperationException("Array of length 0");
             }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CheckElementReadAccess<T>(NativeArray<T> array, int index)
+            where T : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (index < 0 || index >= array.Length)
+            {
+                FailOutOfRangeError(index, array.Length);
+            }
+
+            AtomicSafetyHandle.CheckReadAndThrow(NativeArrayUnsafeUtility.GetAtomicSafetyHandle(array));
+#endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CheckElementReadAccess<T>(NativeArray<T>.ReadOnly array, int index)
+            where T : unmanaged
+        {
+            // TODO we need a better approach here
+            var a = array[index];
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CheckElementWriteAccess<T>(NativeArray<T> array, int index)
+            where T : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (index < 0 || index >= array.Length)
+            {
+                FailOutOfRangeError(index, array.Length);
+            }
+
+            AtomicSafetyHandle.CheckWriteAndThrow(NativeArrayUnsafeUtility.GetAtomicSafetyHandle(array));
+#endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void FailOutOfRangeError(int index, int length)
+        {
+            throw new IndexOutOfRangeException($"Index {index} is out of range of '{length}' Length.");
         }
     }
 }

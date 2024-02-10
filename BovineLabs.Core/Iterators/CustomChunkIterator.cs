@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Iterators
         void Execute(int entityIndexInChunk);
     }
 
-    public struct CustomChunkIterator<T>
+    public readonly struct CustomChunkIterator<T>
         where T : unmanaged, ICustomChunkIterator
     {
         private readonly T execute;

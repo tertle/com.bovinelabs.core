@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if UNITY_2023_3_OR_NEWER
 #nullable disable
 namespace BovineLabs.Core.UI
 {
@@ -99,7 +100,16 @@ namespace BovineLabs.Core.UI
             set
             {
                 this.ChoicesRaw = value ?? throw new ArgumentNullException(nameof(value));
-                this.SetValueWithoutNotify(this.rawValue);
+
+                if (this.indexValue >= 0 && this.indexValue < this.ChoicesRaw.Count)
+                {
+                    base.value = this.ChoicesRaw[this.indexValue];
+                }
+                else
+                {
+                    base.value = default;
+                }
+
                 this.NotifyPropertyChanged(ChoicesProperty);
             }
         }
@@ -183,11 +193,11 @@ namespace BovineLabs.Core.UI
                     this.indexValue = value;
                     if (this.indexValue >= 0 && this.indexValue < this.ChoicesRaw.Count)
                     {
-                        this.value = this.ChoicesRaw[this.indexValue];
+                        base.value = this.ChoicesRaw[this.indexValue];
                     }
                     else
                     {
-                        this.value = default;
+                        base.value = default;
                     }
 
                     this.NotifyPropertyChanged(IndexProperty);
@@ -224,3 +234,4 @@ namespace BovineLabs.Core.UI
         }
     }
 }
+#endif

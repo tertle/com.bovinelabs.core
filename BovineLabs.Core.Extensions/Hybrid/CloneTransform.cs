@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_HYBRID
 namespace BovineLabs.Core.Hybrid
 {
     using Unity.Entities;
@@ -12,4 +11,3 @@ namespace BovineLabs.Core.Hybrid
         public Entity Value;
     }
 }
-#endif

@@ -22,8 +22,6 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                 return;
             }
 
-            var objectManagementSettings = AuthoringSettingsUtility.GetSettings<ObjectManagementSettings>();
-
             var path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(authoring.gameObject);
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -36,6 +34,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                 return;
             }
 
+            var objectManagementSettings = AuthoringSettingsUtility.GetSettings<ObjectManagementSettings>();
             if (!objectManagementSettings.ObjectDefinitionMap.TryGetValue(prefab, out var id))
             {
                 return;

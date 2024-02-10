@@ -5,8 +5,8 @@
             <ui:Button name="show" />
             <BovineLabs.Core.UI.MaskSelectionField name="filter" dropDownWidth="200" data-source-type="BovineLabs.Core.Toolbar.ToolbarManager+FilterBind, BovineLabs.Core.Extensions.Debug" value="-1">
                 <Bindings>
-                    <ui:DataBinding property="choices" data-source-path="Selections" binding-mode="ToTarget" />
                     <ui:DataBinding property="value" data-source-path="Value" />
+                    <ui:DataBinding property="choicesExposed" data-source-path="Selections" binding-mode="ToTarget" />
                 </Bindings>
             </BovineLabs.Core.UI.MaskSelectionField>
             <ui:VisualElement name="menu" class="toolbar-menu" />

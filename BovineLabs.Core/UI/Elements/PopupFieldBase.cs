@@ -2,6 +2,7 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
+#if UNITY_2023_3_OR_NEWER
 #nullable disable
 namespace BovineLabs.Core.UI
 {
@@ -241,3 +242,4 @@ namespace BovineLabs.Core.UI
         }
     }
 }
+#endif

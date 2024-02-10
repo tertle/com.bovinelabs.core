@@ -1,13 +1,9 @@
-﻿// <copyright file="BlobCurveSampler.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Collections
+﻿namespace BovineLabs.Core.Collections
 {
     using System.Runtime.CompilerServices;
     using Unity.Entities;
 
-    public struct BlobCurveSampler
+    public struct BlobCurveSampler : IBlobCurveSampler<float>
     {
         public readonly BlobAssetReference<BlobCurve> Curve;
         private BlobCurveCache cache;
@@ -17,6 +13,8 @@ namespace BovineLabs.Core.Collections
             this.Curve = curve;
             this.cache = BlobCurveCache.Empty;
         }
+
+        public bool IsCreated => this.Curve.IsCreated;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float Evaluate(in float time)

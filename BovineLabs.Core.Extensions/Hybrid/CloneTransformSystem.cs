@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_HYBRID
 namespace BovineLabs.Core.Hybrid
 {
     using Unity.Burst;
@@ -14,6 +13,7 @@ namespace BovineLabs.Core.Hybrid
     [UpdateInGroup(typeof(TransformSystemGroup), OrderFirst = true)]
     public partial struct CloneTransformSystem : ISystem
     {
+        /// <inheritdoc/>
         public void OnUpdate(ref SystemState state)
         {
             new CloneTransformJob { LocalTransforms = SystemAPI.GetComponentLookup<LocalTransform>(true) }.Schedule();
@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Hybrid
         private partial struct CloneTransformJob : IJobEntity
         {
             [ReadOnly]
-            [NativeDisableContainerSafetyRestriction]
+            [NativeDisableContainerSafetyRestriction] // This is not parallel scheduled so it's safe but safety system doesn't like it
             public ComponentLookup<LocalTransform> LocalTransforms;
 
             private void Execute(ref LocalTransform transform, in CloneTransform cloneTransform)
@@ -36,4 +36,3 @@ namespace BovineLabs.Core.Hybrid
         }
     }
 }
-#endif

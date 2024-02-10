@@ -16,7 +16,7 @@ namespace BovineLabs.Core.ToolbarTabs
 
     public class LocalizationToolbarBindings : IBindingObject<LocalizationToolbarBindings.Data>, INotifyBindablePropertyChanged, IDisposable
     {
-        private LocalizationToolbarBindings.Data data;
+        private Data data;
         private int selectedLocale = -1;
 
         public LocalizationToolbarBindings()
@@ -41,7 +41,7 @@ namespace BovineLabs.Core.ToolbarTabs
 
         public event EventHandler<BindablePropertyChangedEventArgs>? propertyChanged;
 
-        public ref LocalizationToolbarBindings.Data Value => ref this.data;
+        public ref Data Value => ref this.data;
 
         [CreateProperty]
         public List<string> Locales { get; } = new();

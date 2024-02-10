@@ -6,9 +6,11 @@
 namespace BovineLabs.Core.Authoring.UI
 {
     using BovineLabs.Core.Authoring.Settings;
+    using BovineLabs.Core.Settings;
     using BovineLabs.Core.UI;
     using Unity.Entities;
 
+    [SettingsGroup("UI")]
     public class UISettings : SettingsBase
     {
         /// <inheritdoc />

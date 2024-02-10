@@ -21,6 +21,8 @@ namespace BovineLabs.Core.Time
         public double UnscaledTime;
         public double RealTimeSinceStartup;
         public double TimeSinceLevelLoad;
+
+        public long Ticks;
     }
 }
 #endif

@@ -33,7 +33,6 @@ namespace BovineLabs.Core.Toolbar
             AddCoreToolbar(keys, ref index, "quality", "QualityGroup");
             AddCoreToolbar(keys, ref index, "time", "TimeGroup");
 
-
             this.SetKeys(keys.ToArray());
         }
 

@@ -18,7 +18,7 @@ namespace BovineLabs.Core.ToolbarTabs
         /// <inheritdoc/>
         public void OnCreate(ref SystemState state)
         {
-            this.toolbar = new ToolbarHelper<PhysicsToolbarBindings, PhysicsToolbarBindings.Data>(state.World, "Physics", "physics");
+            this.toolbar = new ToolbarHelper<PhysicsToolbarBindings, PhysicsToolbarBindings.Data>(ref state, "Physics", "physics");
 
             state.EntityManager.AddComponentData(state.SystemHandle, new PhysicsDebugDraw { DrawMeshColliderEdges = false });
         }

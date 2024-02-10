@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     using UnityEngine;
 
     [UIDManager("ObjectManagementSettings", "objectGroups")]
-    [AssetCreator("object.groups", "Assets/Configs/Groups", "Group.asset")]
+    [AssetCreator("object.groups", "Assets/Settings/Groups", "Group.asset")]
     public class ObjectGroup : ScriptableObject, IUID
     {
         [HideInInspector] // So the field is not editable even in debug mode.

@@ -18,7 +18,7 @@ namespace BovineLabs.Core.ToolbarTabs
         /// <inheritdoc/>
         public void OnCreate(ref SystemState state)
         {
-            this.toolbar = new ToolbarHelper<LocalizationToolbarBindings, LocalizationToolbarBindings.Data>(state.World, "Localization", "localization");
+            this.toolbar = new ToolbarHelper<LocalizationToolbarBindings, LocalizationToolbarBindings.Data>(ref state, "Localization", "localization");
         }
 
         /// <inheritdoc/>

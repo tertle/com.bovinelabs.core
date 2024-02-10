@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Extensions
             return -1;
         }
 
-        public static int IndexOf<T>(this IEnumerable<T> e, System.Func<T, bool> predicate)
+        public static int IndexOf<T>(this IEnumerable<T> e, Func<T, bool> predicate)
         {
             int index = 0;
 

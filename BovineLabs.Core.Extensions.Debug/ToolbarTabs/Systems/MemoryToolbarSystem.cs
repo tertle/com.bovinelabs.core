@@ -22,7 +22,7 @@ namespace BovineLabs.Core.ToolbarTabs
         /// <inheritdoc/>
         public void OnCreate(ref SystemState state)
         {
-            this.toolbar = new ToolbarHelper<MemoryToolbarBindings, MemoryToolbarBindings.Data>(state.World, "Memory", "memory");
+            this.toolbar = new ToolbarHelper<MemoryToolbarBindings, MemoryToolbarBindings.Data>(ref state, "Memory", "memory");
         }
 
         /// <inheritdoc/>

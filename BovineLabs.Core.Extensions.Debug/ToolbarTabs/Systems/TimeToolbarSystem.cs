@@ -7,6 +7,7 @@ namespace BovineLabs.Core.ToolbarTabs
 {
     using BovineLabs.Core.App;
     using BovineLabs.Core.Toolbar;
+    using BovineLabs.Core.Utility;
     using Unity.Burst;
     using Unity.Entities;
 
@@ -14,11 +15,12 @@ namespace BovineLabs.Core.ToolbarTabs
     internal partial struct TimeToolbarSystem : ISystem, ISystemStartStop
     {
         private ToolbarHelper<TimeToolbarBindings, TimeToolbarBindings.Data> toolbar;
+        private float lastTimeScale;
 
         /// <inheritdoc/>
         public void OnCreate(ref SystemState state)
         {
-            this.toolbar = new ToolbarHelper<TimeToolbarBindings, TimeToolbarBindings.Data>(state.World, "Time", "time");
+            this.toolbar = new ToolbarHelper<TimeToolbarBindings, TimeToolbarBindings.Data>(ref state, "Time", "time");
         }
 
         /// <inheritdoc/>
@@ -57,6 +59,17 @@ namespace BovineLabs.Core.ToolbarTabs
                 {
                     state.EntityManager.RemoveComponent<PauseGame>(state.SystemHandle);
                 }
+            }
+
+            if (!mathex.Approximately(UnityEngine.Time.timeScale, this.lastTimeScale))
+            {
+                data.Timescale = UnityEngine.Time.timeScale;
+                this.lastTimeScale = data.Timescale;
+            }
+            else if (!mathex.Approximately(data.Timescale, this.lastTimeScale))
+            {
+                UnityEngine.Time.timeScale = data.Timescale;
+                this.lastTimeScale = data.Timescale;
             }
         }
     }

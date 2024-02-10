@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using BovineLabs.Core.ConfigVars;
     using BovineLabs.Core.Editor.Settings;
     using Unity.Burst;
@@ -30,7 +31,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
         public string GroupName => this.DisplayName;
 
         /// <summary> Gets a list of all the config vars this panel draws. </summary>
-        internal List<(ConfigVarAttribute ConfigVar, Type FieldType)> ConfigVars { get; } = new();
+        internal List<(ConfigVarAttribute ConfigVar, FieldInfo FieldInfo)> ConfigVars { get; } = new();
 
         private List<(ConfigVarAttribute ConfigVar, VisualElement Field)> Fields { get; } = new();
 
@@ -40,10 +41,10 @@ namespace BovineLabs.Core.Editor.ConfigVars
             // Matching the display name should show everything
             var allMatch = string.IsNullOrWhiteSpace(searchContext);
 
-            foreach (var (attribute, fieldType) in this.ConfigVars)
+            foreach (var (attribute, fieldInfo) in this.ConfigVars)
             {
                 var readOnly = attribute.IsReadOnly && EditorApplication.isPlaying;
-                var field = CreateVisualElement(attribute, fieldType);
+                var field = CreateVisualElement(attribute, fieldInfo);
 
                 // TODO move to uss
                 if (!allMatch && MatchesSearchContext(attribute.Name, searchContext))
@@ -86,44 +87,35 @@ namespace BovineLabs.Core.Editor.ConfigVars
             return s.IndexOf(searchContext, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
 
-        private static VisualElement CreateVisualElement(ConfigVarAttribute configVar, Type type)
+        private static VisualElement CreateVisualElement(ConfigVarAttribute configVar, FieldInfo field)
         {
-            if (type == typeof(SharedStatic<int>))
-            {
-                return SetupField(new IntegerField(), configVar);
-            }
+            var fieldValue = field.GetValue(null);
 
-            if (type == typeof(SharedStatic<float>))
+            return fieldValue switch
             {
-                return SetupField(new FloatField(), configVar);
-            }
-
-            if (type == typeof(SharedStatic<bool>))
-            {
-                return SetupField(new Toggle(), configVar);
-            }
-
-            if ((type == typeof(SharedStatic<FixedString32Bytes>)) ||
-                (type == typeof(SharedStatic<FixedString64Bytes>)) ||
-                (type == typeof(SharedStatic<FixedString128Bytes>)) ||
-                (type == typeof(SharedStatic<FixedString512Bytes>)) ||
-                (type == typeof(SharedStatic<FixedString4096Bytes>)))
-            {
-                return SetupTextField(new TextField(), configVar);
-            }
-
-            throw new ArgumentOutOfRangeException();
+                SharedStatic<int> sharedStatic => SetupField(new IntegerField(), configVar, sharedStatic),
+                SharedStatic<float> sharedStatic => SetupField(new FloatField(), configVar, sharedStatic),
+                SharedStatic<bool> sharedStatic => SetupField(new Toggle(), configVar, sharedStatic),
+                SharedStatic<FixedString32Bytes> sharedStatic => SetupTextField(configVar, sharedStatic),
+                SharedStatic<FixedString64Bytes> sharedStatic => SetupTextField(configVar, sharedStatic),
+                SharedStatic<FixedString128Bytes> sharedStatic => SetupTextField(configVar, sharedStatic),
+                SharedStatic<FixedString512Bytes> sharedStatic => SetupTextField(configVar, sharedStatic),
+                SharedStatic<FixedString4096Bytes> sharedStatic => SetupTextField(configVar, sharedStatic),
+                _ => throw new ArgumentOutOfRangeException(),
+            };
         }
 
-        private static BaseField<T> SetupField<T>(BaseField<T> field, ConfigVarAttribute configVar)
+        private static BaseField<T> SetupField<T>(BaseField<T> field, ConfigVarAttribute configVar, SharedStatic<T> sharedStatic)
             where T : unmanaged, IEquatable<T>
         {
-            return SetupField(field, configVar, new ConfigVarBinding<T>(field, configVar));
+            return SetupField(field, configVar, new ConfigVarBinding<T>(field, configVar, sharedStatic));
         }
 
-        private static BaseField<string> SetupTextField(TextInputBaseField<string> field, ConfigVarAttribute configVar)
+        private static BaseField<string> SetupTextField<T>(ConfigVarAttribute configVar, SharedStatic<T> sharedStatic)
+            where T : unmanaged, IEquatable<T>
         {
-            return SetupField(field, configVar, new ConfigVarStringBinding(field, configVar));
+            var field = new TextField();
+            return SetupField(field, configVar, new ConfigVarStringBinding<T>(field, configVar, sharedStatic));
         }
 
         private static BaseField<T> SetupField<T>(BaseField<T> field, ConfigVarAttribute configVar, IConfigVarBinding<T> binding)
@@ -132,23 +124,13 @@ namespace BovineLabs.Core.Editor.ConfigVars
             field.label = configVar.Name;
             field.tooltip = configVar.Description;
             field.value = binding.Value;
-            field.RegisterValueChangedCallback(evt => EditorPrefs.SetString(configVar.Name, evt.newValue!.ToString()));
             return field;
         }
 
         private static void UpdateState(VisualElement field, ConfigVarAttribute configVar, bool isPlaying)
         {
             var isEnabled = !configVar.IsReadOnly || !isPlaying;
-
-            if (field is TextInputBaseField<string> textInputBaseField)
-            {
-                textInputBaseField.isReadOnly = !isEnabled;
-                textInputBaseField.isDelayed = true;
-            }
-            else
-            {
-                field.SetEnabled(isEnabled);
-            }
+            field.SetEnabled(isEnabled);
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange state)

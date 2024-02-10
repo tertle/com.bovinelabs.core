@@ -9,7 +9,12 @@ namespace BovineLabs.Core.UI
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    public abstract class UIAssetManagement : MonoBehaviour
+    public interface IUIAssetManagement
+    {
+        object? GetPanel(int id);
+    }
+
+    public abstract class UIAssetManagement : MonoBehaviour, IUIAssetManagement
     {
         private readonly Dictionary<int, VisualElement> loadedPanels = new();
         private readonly Dictionary<int, VisualTreeAsset> allPanels = new();
@@ -17,7 +22,7 @@ namespace BovineLabs.Core.UI
         [SerializeField]
         private UIStatesBase? panels;
 
-        public VisualElement GetPanel(int id)
+        public object GetPanel(int id)
         {
             return this.loadedPanels[id];
         }

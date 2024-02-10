@@ -11,13 +11,13 @@ namespace BovineLabs.Core.Editor.Helpers
 
     public static class SerializedHelper
     {
-        public static IEnumerable<SerializedProperty> IterateAllChildren(SerializedObject root, bool siblingProperties = false)
+        public static IEnumerable<SerializedProperty> IterateAllChildren(SerializedObject root, bool includeScript, bool siblingProperties = false)
         {
             var iterator = root.GetIterator();
 
             for (var enterChildren = true; iterator.NextVisible(enterChildren); enterChildren = false)
             {
-                if (iterator.propertyPath != "m_Script")
+                if (includeScript || iterator.propertyPath != "m_Script")
                 {
                     yield return iterator.Copy();
 

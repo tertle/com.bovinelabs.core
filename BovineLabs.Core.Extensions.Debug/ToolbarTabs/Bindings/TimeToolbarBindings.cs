@@ -5,24 +5,30 @@
 #if !BL_DISABLE_TOOLBAR
 namespace BovineLabs.Core.ToolbarTabs
 {
+    using System;
     using BovineLabs.Core.UI;
+    using BovineLabs.Core.Utility;
     using JetBrains.Annotations;
+    using Unity.Burst;
+    using Unity.Collections;
     using Unity.Mathematics;
     using Unity.Properties;
-    using UnityEngine;
+    using UnityEngine.UIElements;
 
-    public class TimeToolbarBindings : IBindingObject<TimeToolbarBindings.Data>
+    public class TimeToolbarBindings : IBindingObjectNotify<TimeToolbarBindings.Data>
     {
-        private TimeToolbarBindings.Data data;
+        private Data data;
 
-        public ref TimeToolbarBindings.Data Value => ref this.data;
+        public event EventHandler<BindablePropertyChangedEventArgs>? propertyChanged;
+
+        public ref Data Value => ref this.data;
 
         [CreateProperty]
         [UsedImplicitly]
         public float TimeScale
         {
-            get => Time.timeScale;
-            set => Time.timeScale = math.max(0, value);
+            get => this.data.Timescale;
+            set => this.data.Timescale = value;
         }
 
         [CreateProperty]
@@ -33,9 +39,43 @@ namespace BovineLabs.Core.ToolbarTabs
             set => this.data.Paused = value;
         }
 
-        public struct Data
+        public void OnPropertyChanged(in FixedString64Bytes property)
         {
-            public bool Paused;
+            this.propertyChanged?.Invoke(this, new BindablePropertyChangedEventArgs(property.ToString()));
+        }
+
+        public struct Data : IBindingObjectNotifyData
+        {
+            private float timeScale;
+            private bool paused;
+
+            public float Timescale
+            {
+                get => this.timeScale;
+                set
+                {
+                    if (!mathex.Approximately(this.timeScale, value, 0.01f))
+                    {
+                        this.timeScale = math.max(0, value);
+                        this.Notify();
+                    }
+                }
+            }
+
+            public bool Paused
+            {
+                readonly get => this.paused;
+                set
+                {
+                    if (this.paused != value)
+                    {
+                        this.paused = value;
+                        this.Notify();
+                    }
+                }
+            }
+
+            public FunctionPointer<OnPropertyChangedDelegate> Notify { get; set; }
         }
     }
 }

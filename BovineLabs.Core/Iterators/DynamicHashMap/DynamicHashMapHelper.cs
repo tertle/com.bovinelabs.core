@@ -741,7 +741,7 @@ namespace BovineLabs.Core.Iterators
 
             Check.Assume(this.FirstFreeIdx == -1, "Trying to RemoveRangeShiftDown on map with holes. Call Flatten() first.");
             Check.Assume(start >= 0 && start < this.Count);
-            Check.Assume(length >= 0 && start + length < this.Count);
+            Check.Assume(length >= 0 && start + length <= this.Count);
 
             var keys = this.Keys;
             var values = this.Values;

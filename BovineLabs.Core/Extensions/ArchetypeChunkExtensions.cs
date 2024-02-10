@@ -381,6 +381,46 @@ namespace BovineLabs.Core.Extensions
             return result;
         }
 
+        /// <summary>
+        /// Provides a ComponentEnabledMask to the component enabled bits in this chunk.
+        /// </summary>
+        /// <typeparam name="T">The component type</typeparam>
+        /// <param name="typeHandle">Type handle for the component type <typeparamref name="T"/>.</param>
+        /// <returns>An <see cref="EnabledMask"/> instance for component <typeparamref name="T"/> in this chunk.</returns>
+        public static EnabledMask GetEnabledMaskRO<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle)
+            where T : unmanaged, IComponentData, IEnableableComponent
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
+#endif
+            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
+            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetype))
+            {
+                typeHandle.m_LookupCache.Update(archetype, typeHandle.m_TypeIndex);
+            }
+            // In case the chunk does not contains the component type (or the internal TypeIndex lookup fails to find a
+            // match), the LookupCache.Update will invalidate the IndexInArchetype.
+            // In such a case, we return an empty EnabledMask.
+            if (Hint.Unlikely(typeHandle.m_LookupCache.IndexInArchetype == -1))
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                return new EnabledMask(new SafeBitRef(null, 0, typeHandle.m_Safety), null);
+#else
+                return new EnabledMask(SafeBitRef.Null, null);
+#endif
+            }
+
+            var ptr = GetEnabledRefRWNoChange(
+                archetypeChunk.m_Chunk, archetypeChunk.Archetype.Archetype, typeHandle.m_LookupCache.IndexInArchetype, out var ptrChunkDisabledCount).Ptr;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var result = new EnabledMask(new SafeBitRef(ptr, 0, typeHandle.m_Safety), ptrChunkDisabledCount);
+#else
+            var result = new EnabledMask(new SafeBitRef(ptr, 0), ptrChunkDisabledCount);
+#endif
+            return result;
+        }
+
         public static ref T GetChunkComponentDataRW<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle)
             where T : unmanaged, IComponentData
         {
@@ -392,6 +432,16 @@ namespace BovineLabs.Core.Extensions
             archetypeChunk.m_EntityComponentStore->AssertEntityHasComponent(metaChunkEntity, typeHandle.m_TypeIndex);
             var ptr = archetypeChunk.m_EntityComponentStore->GetComponentDataWithTypeRW(metaChunkEntity, typeHandle.m_TypeIndex, typeHandle.GlobalSystemVersion);
             return ref UnsafeUtility.AsRef<T>(ptr);
+        }
+
+        private static UnsafeBitArray GetEnabledRefRWNoChange(ChunkIndex chunk, Archetype* archetype, int indexInTypeArray, out int* ptrChunkDisabledCount)
+        {
+            var chunkListIndex = chunk.ListIndex;
+            var chunks = archetype->Chunks;
+
+            int memoryOrderIndexInArchetype = archetype->TypeIndexInArchetypeToMemoryOrderIndex[indexInTypeArray];
+            ptrChunkDisabledCount = chunks.GetPointerToChunkDisabledCountForType(memoryOrderIndexInArchetype, chunkListIndex);
+            return chunks.GetEnabledArrayForTypeInChunk(memoryOrderIndexInArchetype, chunkListIndex);
         }
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING

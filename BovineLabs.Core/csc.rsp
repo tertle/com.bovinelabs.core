@@ -1,2 +1,4 @@
 -nullable:enable
 #-warnaserror:nullable
+-nowarn:8625
+-nowarn:8618

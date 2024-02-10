@@ -50,7 +50,23 @@ namespace BovineLabs.Core.Editor.Settings
             {
                 case 0:
 
-                    var directory = GetAssetDirectory<T>(EditorFoldersSettings.SettingsKey, EditorFoldersSettings.DefaultSettingsDirectory);
+                    string directory;
+                    var resourceAttribute = type.GetCustomAttribute<ResourceSettingsAttribute>();
+                    if (resourceAttribute != null)
+                    {
+                        var resources = "Resources";
+                        if (!string.IsNullOrWhiteSpace(resourceAttribute.Directory))
+                        {
+                            resources = Path.Combine(resources, resourceAttribute.Directory);
+                        }
+
+                        directory = GetAssetDirectory<T>(EditorFoldersSettings.SettingsResourceKey, EditorFoldersSettings.DefaultSettingsResourceDirectory, resources);
+                    }
+                    else
+                    {
+                        directory = GetAssetDirectory<T>(EditorFoldersSettings.SettingsKey, EditorFoldersSettings.DefaultSettingsDirectory);
+                    }
+
                     var path = Path.Combine(directory, $"{typeof(T).Name}.asset");
 
                     // Search didn't work, for some reason this seems to fail sometimes due to library state
@@ -81,13 +97,13 @@ namespace BovineLabs.Core.Editor.Settings
             return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(asset));
         }
 
-        public static string GetAssetDirectory<T>(string key, string defaultDirectory)
+        public static string GetAssetDirectory<T>(string key, string defaultDirectory, string subDirectory = "")
             where T : ScriptableObject
         {
-            return GetAssetDirectory(typeof(T), key, defaultDirectory);
+            return GetAssetDirectory(typeof(T), key, defaultDirectory, subDirectory);
         }
 
-        public static string GetAssetDirectory(Type type, string key, string defaultDirectory)
+        public static string GetAssetDirectory(Type type, string key, string defaultDirectory, string subDirectory = "")
         {
             var assets = AssetDatabase.FindAssets($"t:{nameof(EditorFoldersSettings)}");
 
@@ -104,16 +120,9 @@ namespace BovineLabs.Core.Editor.Settings
                 settings.GetOrAddPath(key, ref defaultDirectory);
             }
 
-            var resourceAttribute = type.GetCustomAttribute<ResourceSettingsAttribute>();
-            if (resourceAttribute != null)
+            if (!string.IsNullOrWhiteSpace(subDirectory))
             {
-                var resources = "Resources";
-                if (!string.IsNullOrWhiteSpace(resourceAttribute.Directory))
-                {
-                    resources = Path.Combine(resources, resourceAttribute.Directory);
-                }
-
-                defaultDirectory = Path.Combine(defaultDirectory, resources);
+                defaultDirectory = Path.Combine(defaultDirectory, subDirectory);
             }
 
             AssetDatabaseHelper.CreateDirectories(ref defaultDirectory);

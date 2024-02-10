@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if UNITY_2023_3_OR_NEWER
 namespace BovineLabs.Core.Utility
 {
     using System;
@@ -37,7 +38,7 @@ namespace BovineLabs.Core.Utility
 #if UNITY_EDITOR
                 // this is required because bakers don't like resource loading
                 // TODO configurable
-                r = AssetDatabase.LoadAssetAtPath<TypeManagerOverrideSettings>("Assets/Configs/Settings/Resources/TypeManagerOverrideSettings.asset");
+                r = AssetDatabase.LoadAssetAtPath<TypeManagerOverrideSettings>("Assets/Settings/Resources/TypeManagerOverrideSettings.asset");
                 if (r == null)
 #endif
                 {
@@ -115,3 +116,4 @@ namespace BovineLabs.Core.Utility
         }
     }
 }
+#endif

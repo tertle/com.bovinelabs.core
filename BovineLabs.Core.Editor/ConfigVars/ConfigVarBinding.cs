@@ -6,24 +6,33 @@ namespace BovineLabs.Core.Editor.ConfigVars
 {
     using System;
     using BovineLabs.Core.ConfigVars;
+    using Unity.Burst;
     using UnityEditor;
     using UnityEngine.UIElements;
 
     internal class ConfigVarBinding<T> : IConfigVarBinding<T>
-        where T : struct, IEquatable<T>
+        where T : unmanaged, IEquatable<T>
     {
         private readonly BaseField<T> baseField;
         private readonly ConfigVarAttribute attribute;
+        private readonly IConfigVarContainer<T> container;
 
         private bool hasFocus;
 
-        public ConfigVarBinding(BaseField<T> baseField, ConfigVarAttribute attribute)
+        public ConfigVarBinding(BaseField<T> baseField, ConfigVarAttribute attribute, SharedStatic<T> sharedStatic)
         {
             this.baseField = baseField;
             this.attribute = attribute;
+            this.container = new ConfigVarSharedStaticContainer<T>(sharedStatic);
 
             this.baseField.RegisterCallback<FocusInEvent>(this.GainFocus);
             this.baseField.RegisterCallback<FocusOutEvent>(this.LoseFocus);
+
+            this.baseField.RegisterValueChangedCallback(evt =>
+            {
+                this.Value = evt.newValue;
+                EditorPrefs.SetString(attribute.Name, evt.newValue.ToString());
+            });
         }
 
         public void PreUpdate()
@@ -42,7 +51,11 @@ namespace BovineLabs.Core.Editor.ConfigVars
             }
         }
 
-        public T Value => (T)Convert.ChangeType(EditorPrefs.GetString(this.attribute.Name, this.attribute.DefaultValue), typeof(T));
+        public T Value
+        {
+            get => this.container.Value; // (T)Convert.ChangeType(EditorPrefs.GetString(this.attribute.Name, this.attribute.DefaultValue), typeof(T));
+            set => this.container.Value = value;
+        }
 
         public void Release()
         {

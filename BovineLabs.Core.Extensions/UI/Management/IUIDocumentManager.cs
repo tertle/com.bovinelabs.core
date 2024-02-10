@@ -8,7 +8,7 @@ namespace BovineLabs.Core.UI
     using System;
     using UnityEngine.UIElements;
 
-    public interface IUIDocumentManager
+    public interface IUIDocumentManager : IUIAssetManagement
     {
 #if UNITY_EDITOR
         /// <summary>

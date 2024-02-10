@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if UNITY_2023_3_OR_NEWER
 namespace BovineLabs.Core.UI
 {
     public struct ButtonEvent
@@ -31,3 +32,4 @@ namespace BovineLabs.Core.UI
         }
     }
 }
+#endif

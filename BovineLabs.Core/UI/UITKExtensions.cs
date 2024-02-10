@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if UNITY_2023_3_OR_NEWER
 namespace BovineLabs.Core.UI
 {
     using System;
@@ -242,3 +243,4 @@ namespace BovineLabs.Core.UI
         private delegate void NotifyPropertyChangedDelegate(CallbackEventHandler handler, in BindingId bindingId);
     }
 }
+#endif

@@ -33,7 +33,7 @@ namespace BovineLabs.Core.Extensions
             where T : unmanaged, IEquatable<T>
         {
             var data = hashSet.m_Data.m_HashMapData;
-            var count = data.Count();
+            var count = data.m_Buffer->allocatedIndexLength;
             list.Resize(count, NativeArrayOptions.UninitializedMemory);
             UnsafeParallelHashMapData.GetKeyArray(data.m_Buffer, list.AsArray());
         }
@@ -42,7 +42,7 @@ namespace BovineLabs.Core.Extensions
             where T : unmanaged, IEquatable<T>
         {
             var data = hashSet.m_Data;
-            var count = data.Count();
+            var count = data.m_Buffer->allocatedIndexLength;
             list.Resize(count, NativeArrayOptions.UninitializedMemory);
             UnsafeParallelHashMapData.GetKeyArray(data.m_Buffer, list.AsArray());
         }

@@ -42,7 +42,7 @@ namespace BovineLabs.Core.Chunks
             {
                 // this is required because bakers don't like resource loading sometimes
                 // TODO configurable
-                chunkSettings = AssetDatabase.LoadAssetAtPath<VirtualChunkSettings>("Assets/Configs/Settings/Resources/VirtualChunkSettings.asset");
+                chunkSettings = AssetDatabase.LoadAssetAtPath<VirtualChunkSettings>("Assets/Settings/Resources/VirtualChunkSettings.asset");
             }
 #endif
 

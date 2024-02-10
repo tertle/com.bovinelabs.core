@@ -26,7 +26,7 @@ namespace BovineLabs.Core.ToolbarTabs
         /// <inheritdoc/>
         public void OnCreate(ref SystemState state)
         {
-            this.toolbar = new ToolbarHelper<FPSToolbarBindings, FPSToolbarBindings.Data>(state.World, "FPS", "fps");
+            this.toolbar = new ToolbarHelper<FPSToolbarBindings, FPSToolbarBindings.Data>(ref state, "FPS", "fps");
 
             var averageFPSSamples = default(FixedList512Bytes<float>);
             averageFPSSamples.Length = AvgFPSSamplesCapacity;
@@ -77,7 +77,6 @@ namespace BovineLabs.Core.ToolbarTabs
             data.AverageFPS = this.fps.AvgFPS;
             data.MinFPS = this.fps.MinFPS;
             data.MaxFPS = this.fps.MaxFPS;
-            data.Version++;
         }
 
         private void CalculateStatistics(float unscaledDeltaTime)

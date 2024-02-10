@@ -22,9 +22,25 @@ namespace BovineLabs.Core.Toolbar
     using UnityEngine;
     using UnityEngine.UIElements;
 
+    internal interface IToolbarManager : IUIAssetManagement
+    {
+        int AddGroup(string tabName, string groupName, int assetKey, IBindingObject binding);
+        void RemoveGroup(int id);
+    }
+
+    /// <summary> Burst data separate to avoid compiling issues with static variables. </summary>
+    public static class ToolbarManagerData
+    {
+        public static readonly SharedStatic<FixedString32Bytes> ActiveTab = SharedStatic<FixedString32Bytes>.GetOrCreate<ActiveTabVar>();
+
+        private struct ActiveTabVar
+        {
+        }
+    }
+
     /// <summary> The system for the ribbon toolbar. </summary>
     [Configurable]
-    internal class ToolbarManager : UIAssetManagement
+    internal class ToolbarManager : UIAssetManagement, IToolbarManager
     {
         public const float DefaultUpdateRate = 1 / 4f;
 
@@ -35,13 +51,13 @@ namespace BovineLabs.Core.Toolbar
 
         private const string ButtonHighlightClass = "bl-toolbar-highlight";
 
-        public static readonly SharedStatic<FixedString32Bytes> ActiveTab = SharedStatic<FixedString32Bytes>.GetOrCreate<ActiveTabVar>();
-
         [ConfigVar("debug.toolbar", true, "Should the toolbar be hidden", true)]
         private static readonly SharedStatic<bool> Show = SharedStatic<bool>.GetOrCreate<EnabledVar>();
 
         private readonly Dictionary<string, ToolbarTab> toolbarTabs = new();
         private readonly Dictionary<int, ToolbarTab.Group> toolbarGroups = new();
+
+        private readonly FilterBind filterBind = new();
 
         [SerializeField]
         private VisualTreeAsset? toolbarAsset;
@@ -55,14 +71,12 @@ namespace BovineLabs.Core.Toolbar
         private VisualElement menuElement = null!;
         private VisualElement rootElement = null!;
 
-        private FilterBind filterBind = new();
-
         private float uiHeight;
         private bool showRibbon;
 
         private bool refreshVisible;
 
-        public static ToolbarManager Instance { get; private set; } = null!;
+        public static IToolbarManager Instance { get; private set; } = new NullToolbarManager();
 
         private void Awake()
         {
@@ -301,7 +315,7 @@ namespace BovineLabs.Core.Toolbar
                 }
 
                 this.activeTab = default;
-                ActiveTab.Data = string.Empty;
+                ToolbarManagerData.ActiveTab.Data = string.Empty;
             }
 
             if (tab == null)
@@ -310,7 +324,7 @@ namespace BovineLabs.Core.Toolbar
             }
 
             this.activeTab = tab;
-            ActiveTab.Data = tab.Name;
+            ToolbarManagerData.ActiveTab.Data = tab.Name;
             tab.Button.AddToClassList(ButtonHighlightClass);
 
             this.ShowRibbon(true);
@@ -432,10 +446,6 @@ namespace BovineLabs.Core.Toolbar
                     }
                 }
             }
-        }
-
-        private struct ActiveTabVar
-        {
         }
 
         private struct EnabledVar
@@ -580,6 +590,23 @@ namespace BovineLabs.Core.Toolbar
             private void UpdateSelections()
             {
                 this.propertyChanged?.Invoke(this, new BindablePropertyChangedEventArgs(nameof(this.Selections)));
+            }
+        }
+
+        private class NullToolbarManager : IToolbarManager
+        {
+            public int AddGroup(string tabName, string groupName, int assetKey, IBindingObject binding)
+            {
+                return 0;
+            }
+
+            public void RemoveGroup(int id)
+            {
+            }
+
+            public object? GetPanel(int id)
+            {
+                return null;
             }
         }
     }

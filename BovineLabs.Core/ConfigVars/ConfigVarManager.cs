@@ -77,7 +77,7 @@ namespace BovineLabs.Core.ConfigVars
 
         /// <summary> Initializes the <see cref="ConfigVarAttribute" />s throughout the project. </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-        private static void Init()
+        internal static void Init()
         {
             if (isInitialized)
             {

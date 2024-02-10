@@ -45,6 +45,36 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
         public PropertyField Element { get; }
 
+        public static bool TryGetDirectory(Type type, out string path)
+        {
+            var assetCreatorAttribute = type.GetCustomAttribute<AssetCreatorAttribute>();
+            if (assetCreatorAttribute == null)
+            {
+                path = string.Empty;
+                Debug.LogError($"Type {type} does not have {nameof(AssetCreatorAttribute)} but is being created via AssetCreator");
+                return false;
+            }
+
+            var directory = EditorSettingsUtility.GetAssetDirectory(type, assetCreatorAttribute.DirectoryKey, assetCreatorAttribute.DefaultDirectory);
+            path = Path.Combine(directory, assetCreatorAttribute.DefaultFileName);
+            return true;
+        }
+
+        public static bool TryGetDirectory(Type type, string defaultFileName, out string path)
+        {
+            var assetCreatorAttribute = type.GetCustomAttribute<AssetCreatorAttribute>();
+            if (assetCreatorAttribute == null)
+            {
+                path = string.Empty;
+                Debug.LogError($"Type {type} does not have {nameof(AssetCreatorAttribute)} but is being created via AssetCreator");
+                return false;
+            }
+
+            var directory = EditorSettingsUtility.GetAssetDirectory(type, assetCreatorAttribute.DirectoryKey, assetCreatorAttribute.DefaultDirectory);
+            path = Path.Combine(directory, defaultFileName);
+            return true;
+        }
+
         protected virtual void Initialize(object instance)
         {
         }
@@ -94,36 +124,6 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
                 this.serializedObject.ApplyModifiedProperties();
             });
-        }
-
-        public static bool TryGetDirectory(Type type, out string path)
-        {
-            var assetCreatorAttribute = type.GetCustomAttribute<AssetCreatorAttribute>();
-            if (assetCreatorAttribute == null)
-            {
-                path = string.Empty;
-                Debug.LogError($"Type {type} does not have {nameof(AssetCreatorAttribute)} but is being created via AssetCreator");
-                return false;
-            }
-
-            var directory = EditorSettingsUtility.GetAssetDirectory(type, assetCreatorAttribute.DirectoryKey, assetCreatorAttribute.DefaultDirectory);
-            path = Path.Combine(directory, assetCreatorAttribute.DefaultFileName);
-            return true;
-        }
-
-        public static bool TryGetDirectory(Type type, string defaultFileName, out string path)
-        {
-            var assetCreatorAttribute = type.GetCustomAttribute<AssetCreatorAttribute>();
-            if (assetCreatorAttribute == null)
-            {
-                path = string.Empty;
-                Debug.LogError($"Type {type} does not have {nameof(AssetCreatorAttribute)} but is being created via AssetCreator");
-                return false;
-            }
-
-            var directory = EditorSettingsUtility.GetAssetDirectory(type, assetCreatorAttribute.DirectoryKey, assetCreatorAttribute.DefaultDirectory);
-            path = Path.Combine(directory, defaultFileName);
-            return true;
         }
     }
 

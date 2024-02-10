@@ -19,7 +19,7 @@ namespace BovineLabs.Core.ToolbarTabs
         /// <inheritdoc/>
         public void OnCreate(ref SystemState state)
         {
-            this.toolbar = new ToolbarHelper<EntitiesToolbarBindings, EntitiesToolbarBindings.Data>(state.World, "Entities", "entities");
+            this.toolbar = new ToolbarHelper<EntitiesToolbarBindings, EntitiesToolbarBindings.Data>(ref state, "Entities", "entities");
         }
 
         /// <inheritdoc/>
