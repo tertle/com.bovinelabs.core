@@ -12,7 +12,7 @@ namespace BovineLabs.Core.UI
     public class UIStates : UIStatesBase
     {
         /// <inheritdoc/>
-        protected internal override void Init()
+        protected override void Init()
         {
             K<UIStates>.Initialize(this.Keys);
         }

@@ -25,7 +25,7 @@ namespace BovineLabs.Core.Keys
         public override IReadOnlyList<NameValue> Keys => this.keys;
 
         /// <inheritdoc />
-        protected internal sealed override void Init()
+        protected sealed override void Init()
         {
             K<T>.Initialize(this.keys);
         }
@@ -54,7 +54,7 @@ namespace BovineLabs.Core.Keys
 
         public abstract IReadOnlyList<NameValue> Keys { get; }
 
-        protected internal abstract void Init();
+        protected abstract void Init();
 
 #if UNITY_EDITOR
         protected static void Validate<T>(ref T[] keys)

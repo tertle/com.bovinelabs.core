@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.6] - 2024-02-11
+### Fixed
+* Weird compile issue some users were experiencing related to internal
+
 ## [1.2.5] - 2024-02-11
 ### Added
 * 2022.3 Core support back, with limitations

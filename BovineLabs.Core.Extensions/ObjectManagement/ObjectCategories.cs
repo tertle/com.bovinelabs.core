@@ -25,7 +25,7 @@ namespace BovineLabs.Core.ObjectManagement
         public override IReadOnlyList<NameValue> Keys => this.keys.Select(k => new NameValue() { Name = k.Name, Value = k.Value }).ToArray();
 
         /// <inheritdoc/>
-        protected internal override void Init()
+        protected override void Init()
         {
             K<ObjectCategories>.Initialize(this.Keys);
         }
