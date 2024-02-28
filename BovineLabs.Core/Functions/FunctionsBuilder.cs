@@ -15,16 +15,18 @@ namespace BovineLabs.Core.Functions
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
-    /// <summary> The builder for creating <see cref="Functions{T}"/>. </summary>
+    /// <summary> The builder for creating <see cref="Functions{T, TO}"/>. </summary>
     /// <typeparam name="T"> Is the void* data that will be passed to the ExecuteFunction. Also serves as a grouping mechanism for ReflectAll. </typeparam>
-    public unsafe struct FunctionsBuilder<T> : IDisposable
+    /// <typeparam name="TO"> Is the type of result that is expected from the ExecuteFunction. </typeparam>
+    public unsafe struct FunctionsBuilder<T, TO> : IDisposable
         where T : unmanaged
+        where TO : unmanaged
     {
-        private static Dictionary<Type, List<MethodInfo>> cachedReflectAll = new();
+        private static List<MethodInfo>? cachedReflectAll;
 
         private NativeHashSet<BuildData> functions;
 
-        /// <summary> Initializes a new instance of the <see cref="FunctionsBuilder{T}"/> struct. </summary>
+        /// <summary> Initializes a new instance of the <see cref="FunctionsBuilder{T, TO}"/> struct. </summary>
         /// <param name="allocator"> The allocator to use for the builder. This should nearly always be <see cref="Allocator.Temp"/>. </param>
         public FunctionsBuilder(Allocator allocator)
         {
@@ -40,13 +42,13 @@ namespace BovineLabs.Core.Functions
         /// <summary> Find all implementations of <see cref="IFunction{T}"/>. </summary>
         /// <param name="state"> The system state passed to OnCreate. </param>
         /// <returns> Itself. </returns>
-        public FunctionsBuilder<T> ReflectAll(ref SystemState state)
+        public FunctionsBuilder<T, TO> ReflectAll(ref SystemState state)
         {
-            if (!cachedReflectAll.TryGetValue(typeof(T), out var cachedData))
+            if (cachedReflectAll == null)
             {
-                cachedReflectAll[typeof(T)] = cachedData = new List<MethodInfo>();
+                cachedReflectAll = new List<MethodInfo>();
 
-                var baseMethod = typeof(FunctionsBuilder<T>).GetMethod(nameof(this.AddInternalDefault), BindingFlags.Instance | BindingFlags.NonPublic)!;
+                var baseMethod = typeof(FunctionsBuilder<T, TO>).GetMethod(nameof(this.AddInternalDefault), BindingFlags.Instance | BindingFlags.NonPublic)!;
 
                 var implementations = ReflectionUtility.GetAllImplementations<IFunction<T>>();
                 foreach (var type in implementations)
@@ -57,13 +59,13 @@ namespace BovineLabs.Core.Functions
                     }
 
                     var genericMethod = baseMethod.MakeGenericMethod(type);
-                    cachedData.Add(genericMethod);
+                    cachedReflectAll.Add(genericMethod);
                 }
             }
 
             fixed (void* ptr = &state)
             {
-                foreach (var genericMethod in cachedData)
+                foreach (var genericMethod in cachedReflectAll)
                 {
                     genericMethod.Invoke(this, new object[] { (IntPtr)ptr });
                 }
@@ -77,7 +79,7 @@ namespace BovineLabs.Core.Functions
         /// <param name="function"> The instance </param>
         /// <typeparam name="TF"> The type of <see cref="IFunction{T}"/>. </typeparam>
         /// <returns> Itself. </returns>
-        public FunctionsBuilder<T> Add<TF>(ref SystemState state, TF function)
+        public FunctionsBuilder<T, TO> Add<TF>(ref SystemState state, TF function)
             where TF : unmanaged, IFunction<T>
         {
             var hash = BurstRuntime.GetHashCode64<TF>();
@@ -125,7 +127,7 @@ namespace BovineLabs.Core.Functions
         /// <param name="state"> The system state passed to OnCreate. </param>
         /// <typeparam name="TF"> The type of <see cref="IFunction{T}"/> to create. </typeparam>
         /// <returns> Itself. </returns>
-        public FunctionsBuilder<T> Add<TF>(ref SystemState state)
+        public FunctionsBuilder<T, TO> Add<TF>(ref SystemState state)
             where TF : unmanaged, IFunction<T>
         {
             fixed (SystemState* ptr = &state)
@@ -134,9 +136,9 @@ namespace BovineLabs.Core.Functions
             }
         }
 
-        /// <summary> Builds the <see cref="Functions{T}"/> to use with all the found <see cref="IFunction{T}"/>. </summary>
-        /// <returns> A new instance of <see cref="Functions{T}"/>. </returns>
-        public Functions<T> Build()
+        /// <summary> Builds the <see cref="Functions{T, TO}"/> to use with all the found <see cref="IFunction{T}"/>. </summary>
+        /// <returns> A new instance of <see cref="Functions{T, TO}"/>. </returns>
+        public Functions<T, TO> Build()
         {
             var array = new NativeArray<FunctionData>(this.functions.Count, Allocator.Persistent);
 
@@ -148,10 +150,10 @@ namespace BovineLabs.Core.Functions
                 array[index++] = e.Current.FunctionData;
             }
 
-            return new Functions<T>(array);
+            return new Functions<T, TO>(array);
         }
 
-        private FunctionsBuilder<T> AddInternalDefault<TF>(SystemState* state)
+        private FunctionsBuilder<T, TO> AddInternalDefault<TF>(SystemState* state)
             where TF : unmanaged, IFunction<T>
         {
             return this.Add<TF>(ref *state, default);

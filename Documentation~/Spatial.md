@@ -44,7 +44,7 @@ However I find this annoying and as a workaround the jobs have been included as 
 ```csharp
 public JobHandle Build(NativeArray<T> positions, JobHandle dependency, ResizeNativeKeyedMapJob resizeStub = default, QuantizeJob quantizeStub = default)
 ```
-Therefore when using this method these parameters can be ignored. Only the positions nad dependency need to be set.
+Therefore when using this method these parameters can be ignored. Only the positions and dependency need to be set.
 
 ## Example
 ### Setup

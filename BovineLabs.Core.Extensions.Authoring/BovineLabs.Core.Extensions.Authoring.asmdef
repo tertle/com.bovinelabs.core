@@ -17,7 +17,8 @@
         "Unity.Mathematics.Extensions",
         "Unity.Physics",
         "Unity.Scenes",
-        "Unity.Transforms"
+        "Unity.Transforms",
+        "BovineLabs.Core.Editor"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

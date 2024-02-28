@@ -5,14 +5,15 @@
 #if !BL_DISABLE_INPUT
 namespace BovineLabs.Core.Input
 {
-    using System;
+    using Unity.Collections;
     using Unity.Entities;
     using UnityEngine.InputSystem;
 
-    public struct InputDefault : IComponentData
+    internal struct InputDefault : IComponentData
     {
         public UnityObjectRef<InputActionAsset> Asset;
         public UnityObjectRef<InputActionReference> CursorPosition;
+        public FixedString32Bytes CommonActionMap;
     }
 }
 #endif

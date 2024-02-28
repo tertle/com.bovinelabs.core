@@ -7,6 +7,7 @@ namespace BovineLabs.Core
     using System;
     using System.Linq;
     using BovineLabs.Core.Extensions;
+    using BovineLabs.Core.Internal;
     using Unity.Entities;
     using UnityEngine.Scripting;
 
@@ -40,12 +41,33 @@ namespace BovineLabs.Core
 
             // We find all default systems in the Unity.Entities and add them to the ServiceWorld
             var allSystems = TypeManager.GetSystems(WorldSystemFilterFlags.Default)
-                .Where(t => t is { Namespace: not null } &&
-                            ((t.Namespace.StartsWith("Unity.Entities") && !t.Namespace.StartsWith("Unity.Entities.Graphics")) ||
-                             t.Namespace.StartsWith("Unity.Scenes") || t.Namespace.StartsWith("Unity.Transforms")))
+                .Where(t =>
+                {
+                    if (t is not { Namespace: not null })
+                        return false;
+
+                    if (t.Namespace.StartsWith("Unity.Entities"))
+                    {
+                        if (t.Namespace.StartsWith("Unity.Entities.Graphics"))
+                        {
+                            return false;
+                        }
+
+                        return t != typeof(FixedStepSimulationSystemGroup) &&
+                                    t != typeof(BeginFixedStepSimulationEntityCommandBufferSystem) &&
+                                    t != typeof(EndFixedStepSimulationEntityCommandBufferSystem) &&
+                                    t != typeof(VariableRateSimulationSystemGroup) &&
+                                    t != typeof(BeginVariableRateSimulationEntityCommandBufferSystem) &&
+                                    t != typeof(EndVariableRateSimulationEntityCommandBufferSystem) &&
+                                    t != typeof(CompanionGameObjectUpdateTransformSystem) &&
+                                    t != EntityInternals.CompanionGameObjectUpdateSystemType;
+                    }
+
+                    return t.Namespace.StartsWith("Unity.Scenes"); // || t.Namespace.StartsWith("Unity.Transforms");
+                })
                 // TODO do we need transform, companion, fixed/variable update etc
 #if UNITY_EDITOR
-                .Where(s => !s.Namespace!.Contains("Tests"))
+                .Where(t => !t.Namespace!.Contains("Tests"))
 #endif
                 .Select(TypeManager.GetSystemTypeIndex)
                 .ToArray();

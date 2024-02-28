@@ -204,12 +204,10 @@ namespace BovineLabs.Core.Extensions
 
             var src = ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, archetypeChunk.Archetype.Archetype, source.m_LookupCache.IndexInArchetype).Ptr;
 
-            // var archetype = archetypeChunk.m_Chunk->Archetype;
             var chunks = archetype->Chunks;
             int memoryOrderIndexInArchetype = archetype->TypeIndexInArchetypeToMemoryOrderIndex[source.m_LookupCache.IndexInArchetype];
             var srcPtrChunkDisabledCount = chunks.GetPointerToChunkDisabledCountForType(memoryOrderIndexInArchetype, archetypeChunk.m_Chunk.ListIndex);
 
-            // UnsafeUtility.MemCpy(dst, src, sizeof(ulong) * 2);
             dst[0] = src[0];
             dst[1] = src[1];
             *dstPtrChunkDisabledCount = *srcPtrChunkDisabledCount;

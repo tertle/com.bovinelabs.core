@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Model
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using UnityEngine;
 
     public struct CopyEnableable<TTo, TFrom>
         where TTo : unmanaged, IComponentData, IEnableableComponent
@@ -51,6 +52,7 @@ namespace BovineLabs.Core.Model
             [ReadOnly]
             public ComponentTypeHandle<TFrom> FromHandle;
 
+            /// <inheritdoc/>
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 chunk.CopyEnableMaskFrom(ref this.ToHandle, ref this.FromHandle);

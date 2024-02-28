@@ -6,7 +6,7 @@ namespace BovineLabs.Core.Functions
 {
     using Unity.Entities;
 
-    public unsafe delegate int ExecuteFunction(void* target, void* data);
+    public unsafe delegate void ExecuteFunction(void* target, void* data, void* result);
 
     public unsafe delegate void UpdateFunction(void* target, ref SystemState state);
 

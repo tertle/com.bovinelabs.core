@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Keys
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
     using BovineLabs.Core.Settings;
     using JetBrains.Annotations;
     using Unity.Mathematics;

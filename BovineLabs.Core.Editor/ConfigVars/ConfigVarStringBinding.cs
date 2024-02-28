@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
 {
     using BovineLabs.Core.ConfigVars;
     using Unity.Burst;
+    using UnityEditor;
     using UnityEngine.UIElements;
 
     internal class ConfigVarStringBinding<TS> : IConfigVarBinding<string>
@@ -25,6 +26,12 @@ namespace BovineLabs.Core.Editor.ConfigVars
 
             this.baseField.RegisterCallback<FocusInEvent>(this.GainFocus);
             this.baseField.RegisterCallback<FocusOutEvent>(this.LoseFocus);
+
+            this.baseField.RegisterValueChangedCallback(evt =>
+            {
+                this.Value = evt.newValue;
+                EditorPrefs.SetString(attribute.Name, evt.newValue.ToString());
+            });
         }
 
         public string Value

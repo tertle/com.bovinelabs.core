@@ -39,6 +39,7 @@ namespace BovineLabs.Core.Editor.Keys
                 var remap = GetRemap(k.Keys, choices);
 
                 var popup = new MaskField(property.displayName, choices, defaultValue);
+                popup.AddToClassList(BaseField<int>.alignedFieldUssClassName);
                 popup.RegisterValueChangedCallback(evt =>
                 {
                     property.intValue = Remap((uint)evt.newValue, remap);
@@ -61,6 +62,7 @@ namespace BovineLabs.Core.Editor.Keys
                 var choices = k.Keys.Select(s => s.Value).ToList();
 
                 var popup = new PopupField<int>(property.displayName, choices, index, FormatCallback, FormatCallback);
+                popup.AddToClassList(BaseField<int>.alignedFieldUssClassName);
                 popup.RegisterValueChangedCallback(evt =>
                 {
                     property.intValue = evt.newValue;

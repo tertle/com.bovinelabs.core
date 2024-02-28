@@ -16,9 +16,10 @@ namespace BovineLabs.InputGenerator
     [Generator]
     public class InputActionGenerator : IIncrementalGenerator
     {
+        private const string ButtonState = "ButtonState";
+
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            // Do a simple filter for enums
             var candidateProvider = context.SyntaxProvider
                 .CreateSyntaxProvider(
                     predicate: IsSyntaxTargetForGeneration,
@@ -135,8 +136,18 @@ namespace BovineLabs.InputGenerator
                 source.AppendLine("                this.deltaTime = this.World.Time.DeltaTime;");
             }
 
-            source.Append($@"                this.query.SetSingleton(this.input);
-            }}
+            source.Append(@"                this.query.SetSingleton(this.input);
+");
+            foreach (var fieldSymbol in fields)
+            {
+                if (fieldSymbol.Type == ButtonState)
+                {
+                    source.Append($@"                this.input.{fieldSymbol.Name}.Reset();
+");
+                }
+            }
+
+            source.Append($@"            }}
 
             protected override void OnStartRunning()
             {{
@@ -152,7 +163,7 @@ namespace BovineLabs.InputGenerator
                 if (actions.{fieldSymbol.Name}.Value != null)
                 {{
 ");
-                source.AppendLine(fieldSymbol.Type == "bool"
+                source.AppendLine(fieldSymbol.Type is "bool" or ButtonState
                     ? $"                    actions.{fieldSymbol.Name}.Value.action.started += this.On{fieldSymbol.Name}Started;"
                     : $"                    actions.{fieldSymbol.Name}.Value.action.performed += this.On{fieldSymbol.Name}Performed;");
 
@@ -178,7 +189,7 @@ namespace BovineLabs.InputGenerator
                 source.Append($@"                    if (actions.{fieldSymbol.Name}.Value != null)
                     {{
 ");
-                source.AppendLine(fieldSymbol.Type == "bool"
+                source.AppendLine(fieldSymbol.Type is "bool" or ButtonState
                     ? $"                        actions.{fieldSymbol.Name}.Value.action.started -= this.On{fieldSymbol.Name}Started;"
                     : $"                        actions.{fieldSymbol.Name}.Value.action.performed -= this.On{fieldSymbol.Name}Performed;");
 
@@ -203,6 +214,20 @@ namespace BovineLabs.InputGenerator
             private void On{fieldSymbol.Name}Canceled(InputAction.CallbackContext context)
             {{
                 this.input.{fieldSymbol.Name} = false;
+            }}
+");
+                }
+                else if (fieldSymbol.Type == ButtonState)
+                {
+                    source.Append($@"
+            private void On{fieldSymbol.Name}Started(InputAction.CallbackContext context)
+            {{
+                this.input.{fieldSymbol.Name}.Started();
+            }}
+
+            private void On{fieldSymbol.Name}Canceled(InputAction.CallbackContext context)
+            {{
+                this.input.{fieldSymbol.Name}.Cancelled();
             }}
 ");
                 }
@@ -381,8 +406,8 @@ namespace BovineLabs.InputGenerator
                 case "bool":
                 case "float":
                 case "float2":
+                case ButtonState:
                     return true;
-
                 default:
                     return false;
             }

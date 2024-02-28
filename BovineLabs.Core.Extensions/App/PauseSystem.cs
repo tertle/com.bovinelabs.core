@@ -6,7 +6,9 @@
 namespace BovineLabs.Core.App
 {
     using System.Diagnostics.CodeAnalysis;
+    using BovineLabs.Core.Extensions;
     using Unity.Burst;
+    using Unity.Core;
     using Unity.Entities;
 
     [UpdateInGroup(typeof(InitializationSystemGroup), OrderLast = true)]
@@ -17,19 +19,23 @@ namespace BovineLabs.Core.App
         private bool hasPresentation;
         private bool hasPaused;
 
+        private double pauseTime;
+
         /// <inheritdoc/>
+        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             var query = SystemAPI.QueryBuilder().WithAll<PauseGame>().WithOptions(EntityQueryOptions.IncludeSystems).Build();
             state.RequireForUpdate(query);
 
-            this.hasPresentation = state.World.GetExistingSystem<BeginPresentationEntityCommandBufferSystem>() != SystemHandle.Null;
+            this.hasPresentation = state.WorldUnmanaged.SystemExists<BeginPresentationEntityCommandBufferSystem>();
         }
 
         /// <inheritdoc/>
         [BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
+            pauseTime = SystemAPI.Time.ElapsedTime;
             this.SetPaused(ref state, true);
         }
 
@@ -45,7 +51,8 @@ namespace BovineLabs.Core.App
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            // NO-OP
+            // Game time progress needs to be paused to stop fixed step catchup after unpausing
+            state.WorldUnmanaged.Time = new TimeData(this.pauseTime, state.WorldUnmanaged.Time.DeltaTime);
         }
 
         [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Local", Justification = "SystemAPI")]

@@ -105,7 +105,9 @@ namespace BovineLabs.Core.UI
             this.view = new VisualElement { pickingMode = PickingMode.Ignore };
             this.view.AddToClassList(RootClassName);
 
-            DontDestroyOnLoad(this.gameObject);
+            var go = this.gameObject;
+            go.transform.SetParent(null);
+            DontDestroyOnLoad(go);
         }
 
         private void Start()

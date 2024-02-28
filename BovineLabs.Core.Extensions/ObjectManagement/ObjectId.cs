@@ -43,15 +43,22 @@ namespace BovineLabs.Core.ObjectManagement
             return idComparison != 0 ? idComparison : this.Mod.CompareTo(other.Mod);
         }
 
+
+        public override string ToString()
+        {
+            return $"Mod:{this.Mod}, ID:{this.ID}";
+        }
+
         /// <inheritdoc />
         public bool Equals(ObjectId other)
         {
             return this.ID == other.ID;
         }
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
-            throw new NotImplementedException();
+            return obj is ObjectId other && this.Equals(other);
         }
 
         /// <inheritdoc />
@@ -60,10 +67,6 @@ namespace BovineLabs.Core.ObjectManagement
             return this.ID;
         }
 
-        public override string ToString()
-        {
-            return $"Mod:{this.Mod}, ID:{this.ID}";
-        }
     }
 }
 #endif

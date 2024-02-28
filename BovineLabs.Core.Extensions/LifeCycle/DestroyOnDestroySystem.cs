@@ -11,7 +11,6 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Entities;
 
     [UpdateInGroup(typeof(DestroySystemGroup), OrderFirst = true)]
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | Worlds.Service)]
     public partial struct DestroyOnDestroySystem : ISystem
     {
         [BurstCompile]

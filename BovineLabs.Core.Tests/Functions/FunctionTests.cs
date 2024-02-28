@@ -10,24 +10,23 @@ namespace BovineLabs.Core.Tests.Functions
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-    using UnityEngine;
     using Assert = Unity.Assertions.Assert;
 
     [BurstCompile]
     public class FunctionTests
     {
-        private const int Expected = 7;
+        private static readonly Entity Expected = new() { Index = 1234, Version = 5 };
 
         [Test]
         public void ExecuteTest()
         {
             SystemState state = default;
 
-            var functions = new FunctionsBuilder<TestData>(Allocator.Temp)
+            var functions = new FunctionsBuilder<TestData, Entity>(Allocator.Temp)
                 .Add<TestFunction>(ref state)
                 .Build();
 
-            var data = new TestData { Value = 5 };
+            var data = new TestData { Value = Expected };
             var actual = functions.Execute(0, ref data);
             Assert.AreEqual(Expected, actual);
 
@@ -37,17 +36,15 @@ namespace BovineLabs.Core.Tests.Functions
         [Test]
         public void ReflectAll()
         {
-            const int expected = 7;
-
             SystemState state = default;
 
-            var functions = new FunctionsBuilder<TestData>(Allocator.Temp)
+            var functions = new FunctionsBuilder<TestData, Entity>(Allocator.Temp)
                 .ReflectAll(ref state)
                 .Build();
 
-            var data = new TestData { Value = 7 };
+            var data = new TestData { Value = Expected };
             var actual = functions.Execute(0, ref data);
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(Expected, actual);
 
             functions.OnDestroy(ref state);
         }
@@ -55,19 +52,17 @@ namespace BovineLabs.Core.Tests.Functions
         [Test]
         public void ReflectAllCache()
         {
-            const int expected = 7;
-
             SystemState state = default;
 
-            var functions = new FunctionsBuilder<TestData>(Allocator.Temp).ReflectAll(ref state).Build();
-            var functions2 = new FunctionsBuilder<TestData>(Allocator.Temp).ReflectAll(ref state).Build();
+            var functions = new FunctionsBuilder<TestData, Entity>(Allocator.Temp).ReflectAll(ref state).Build();
+            var functions2 = new FunctionsBuilder<TestData, Entity>(Allocator.Temp).ReflectAll(ref state).Build();
 
-            var data = new TestData { Value = 5 };
+            var data = new TestData { Value = Expected };
             var actual = functions.Execute(0, ref data);
             var actual2 = functions2.Execute(0, ref data);
 
-            Assert.AreEqual(expected, actual);
-            Assert.AreEqual(expected, actual2);
+            Assert.AreEqual(Expected, actual);
+            Assert.AreEqual(Expected, actual2);
 
             functions.OnDestroy(ref state);
             functions2.OnDestroy(ref state);
@@ -75,14 +70,12 @@ namespace BovineLabs.Core.Tests.Functions
 
         private struct TestData
         {
-            public int Value;
+            public Entity Value;
         }
 
         [BurstCompile]
         private unsafe struct TestFunction : IFunction<TestData>
         {
-            private int result;
-
             public UpdateFunction? UpdateFunction => null;
 
             public DestroyFunction? DestroyFunction => null;
@@ -91,19 +84,18 @@ namespace BovineLabs.Core.Tests.Functions
 
             public void OnCreate(ref SystemState state)
             {
-                this.result = Expected;
             }
 
-            private int Execute(ref TestData data)
+            private Entity Execute(ref TestData data)
             {
-                return this.result;
+                return data.Value;
             }
 
             [BurstCompile]
             [AOT.MonoPInvokeCallback(typeof(ExecuteFunction))]
-            private static int Execute(void* target, void* data)
+            private static void Execute(void* target, void* data, void* result)
             {
-                return ((TestFunction*)target)->Execute(ref UnsafeUtility.AsRef<TestData>(data));
+                *(Entity*)result = ((TestFunction*)target)->Execute(ref UnsafeUtility.AsRef<TestData>(data));
             }
         }
     }

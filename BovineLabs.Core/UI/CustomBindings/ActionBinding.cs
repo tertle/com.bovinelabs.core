@@ -34,6 +34,7 @@ namespace BovineLabs.Core.UI
         }
 
         [UxmlAttribute("inverted")]
+        [CreateProperty]
         public string? InvertString
         {
             get => this.Invert ? true.ToString() : false.ToString();

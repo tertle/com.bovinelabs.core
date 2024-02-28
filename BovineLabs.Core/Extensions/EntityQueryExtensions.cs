@@ -81,7 +81,7 @@ namespace BovineLabs.Core.Extensions
             }
 #endif
 
-            impl->GetSingletonChunk(typeIndex, out var indexInArchetype, out var chunk);
+            impl->GetSingletonChunkAndEntity(typeIndex, out var indexInArchetype, out var chunk, out var entityIndexInChunk);
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(impl->_Access->EntityComponentStore->m_RecordToJournal != 0) && !isReadOnly)
                 impl->RecordSingletonJournalRW(chunk, typeIndex, EntitiesJournaling.RecordType.GetBufferRW);
@@ -98,7 +98,7 @@ namespace BovineLabs.Core.Extensions
                 impl->_Access->EntityComponentStore->GlobalSystemVersion);
 #endif
 
-            return bufferAccessor.GetUnsafe(0);
+            return bufferAccessor.GetUnsafe(entityIndexInChunk);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

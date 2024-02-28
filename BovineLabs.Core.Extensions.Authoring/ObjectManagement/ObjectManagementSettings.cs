@@ -14,7 +14,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     using UnityEngine;
 
     [SettingsGroup("Objects")]
-    public sealed partial class ObjectManagementSettings : ObjectManagementSettingsBase
+    public sealed class ObjectManagementSettings : ObjectManagementSettingsBase
     {
         [SerializeField]
         private ObjectDefinition[] objectDefinitions = Array.Empty<ObjectDefinition>();

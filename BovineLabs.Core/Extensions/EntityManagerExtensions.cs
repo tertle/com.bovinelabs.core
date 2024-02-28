@@ -8,7 +8,7 @@ namespace BovineLabs.Core.Extensions
     using BovineLabs.Core.Iterators;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Jobs.LowLevel.Unsafe;
+    using Unity.Transforms;
 
     /// <summary> Extensions for <see cref="EntityManager" />. </summary>
     public static unsafe class EntityManagerExtensions
@@ -32,66 +32,6 @@ namespace BovineLabs.Core.Extensions
             where T : unmanaged, IBufferElementData
         {
             return entityManager.GetBufferLookup<T>(isReadOnly);
-        }
-
-        internal static SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
-            where T : struct, ISharedComponentData
-        {
-            EntityDataAccess* access = entityManager.GetCheckedEntityDataAccess();
-            var typeIndex = TypeManager.GetTypeIndex<T>();
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            return new SharedComponentDataFromIndex<T>(typeIndex, access, isReadOnly);
-#else
-            return new SharedComponentDataFromIndex<T>(typeIndex, access);
-#endif
-        }
-
-        internal static SharedComponentLookup<T> GetSharedComponentLookup<T>(this EntityManager entityManager, bool isReadOnly = true)
-            where T : unmanaged, ISharedComponentData
-        {
-            var access = entityManager.GetCheckedEntityDataAccess();
-            var typeIndex = TypeManager.GetTypeIndex<T>();
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            return new SharedComponentLookup<T>(typeIndex, access, isReadOnly);
-#else
-            return new SharedComponentLookup<T>(typeIndex, access);
-#endif
-        }
-
-        internal static UnsafeComponentHandle GetUnsafeComponentHandle(this EntityManager entityManager)
-        {
-            var access = entityManager.GetCheckedEntityDataAccess();
-            return new UnsafeComponentHandle(access);
-        }
-
-        internal static UnsafeEnableableLookup GetUnsafeEnableableLookup(this EntityManager entityManager)
-        {
-            var access = entityManager.GetCheckedEntityDataAccess();
-            return new UnsafeEnableableLookup(access);
-        }
-
-        internal static UnsafeComponentLookup<T> GetUnsafeComponentLookup<T>(this EntityManager entityManager, bool isReadOnly)
-            where T : unmanaged, IComponentData
-        {
-            var typeIndex = TypeManager.GetTypeIndex<T>();
-            var access = entityManager.GetCheckedEntityDataAccess();
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            return new UnsafeComponentLookup<T>(typeIndex, access, isReadOnly);
-#else
-            return new UnsafeComponentLookup<T>(typeIndex, access);
-#endif
-        }
-
-        internal static UnsafeBufferLookup<T> GetUnsafeBufferLookup<T>(this EntityManager entityManager, bool isReadOnly)
-            where T : unmanaged, IBufferElementData
-        {
-            var typeIndex = TypeManager.GetTypeIndex<T>();
-            var access = entityManager.GetCheckedEntityDataAccess();
-
-            return new UnsafeBufferLookup<T>(typeIndex, access, isReadOnly);
         }
 
         public static UntypedDynamicBuffer GetUntypedBuffer(
@@ -121,6 +61,7 @@ namespace BovineLabs.Core.Extensions
         public static void* GetComponentDataRaw(this EntityManager entityManager, Entity entity, ComponentType componentType)
         {
             var access = entityManager.GetCheckedEntityDataAccess();
+
             return access->GetComponentDataRawRW(entity, componentType.TypeIndex);
         }
 
@@ -166,27 +107,15 @@ namespace BovineLabs.Core.Extensions
         {
             var access = entityManager.GetCheckedEntityDataAccess();
             var sharedComponentIndex = access->EntityComponentStore->GetSharedComponentDataIndex(entity, componentType.TypeIndex);
+
             return access->EntityComponentStore->GetSharedComponentDataAddr_Unmanaged(sharedComponentIndex, componentType.TypeIndex);
-        }
-
-        // Internal because this is not safe called directly form EntityManager
-        internal static ChangeFilterLookup<T> GetChangeFilterLookup<T>(this EntityManager entityManager, bool isReadOnly)
-            where T : unmanaged
-        {
-            var access = entityManager.GetCheckedEntityDataAccess();
-            var typeIndex = TypeManager.GetTypeIndex<T>();
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            return new ChangeFilterLookup<T>(typeIndex, access, isReadOnly);
-#else
-            return new ChangeFilterLookup<T>(typeIndex, access);
-#endif
         }
 
         public static object GetSharedComponentManagedBoxed(this EntityManager entityManager, Entity entity, ComponentType componentType)
         {
             var access = entityManager.GetCheckedEntityDataAccess();
             var sharedComponentIndex = access->EntityComponentStore->GetSharedComponentDataIndex(entity, componentType.TypeIndex);
+
             return access->ManagedComponentStore.GetSharedComponentDataBoxed(sharedComponentIndex, componentType.TypeIndex);
         }
 
@@ -204,6 +133,7 @@ namespace BovineLabs.Core.Extensions
 
             var entity = em.CreateEntity();
             em.AddComponent<T>(entity);
+
             return entity;
         }
 
@@ -211,6 +141,7 @@ namespace BovineLabs.Core.Extensions
         {
             using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
             query.CompleteDependency();
+
             return query.GetSingletonEntity();
         }
 
@@ -221,16 +152,19 @@ namespace BovineLabs.Core.Extensions
             if (query.CalculateChunkCount() != 1)
             {
                 entity = Entity.Null;
+
                 return false;
             }
 
             entity = query.GetSingletonEntity();
+
             return true;
         }
 
         public static bool HasSingleton<T>(this EntityManager em)
         {
             using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+
             return query.CalculateChunkCount() == 1;
         }
 
@@ -289,6 +223,7 @@ namespace BovineLabs.Core.Extensions
             if (query.CalculateEntityCount() != 1)
             {
                 component = default;
+
                 return false;
             }
 
@@ -298,6 +233,7 @@ namespace BovineLabs.Core.Extensions
             }
 
             component = query.GetSingleton<T>();
+
             return true;
         }
 
@@ -305,6 +241,7 @@ namespace BovineLabs.Core.Extensions
             where T : unmanaged, IBufferElementData
         {
             using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+
             return query.GetSingletonBuffer<T>(isReadOnly);
         }
 
@@ -316,10 +253,12 @@ namespace BovineLabs.Core.Extensions
             if (query.CalculateEntityCount() != 1)
             {
                 buffer = default;
+
                 return false;
             }
 
             buffer = query.GetSingletonBuffer<T>(isReadOnly);
+
             return true;
         }
 
@@ -344,6 +283,7 @@ namespace BovineLabs.Core.Extensions
             if (query.CalculateEntityCount() != 1)
             {
                 component = default;
+
                 return false;
             }
 
@@ -353,8 +293,84 @@ namespace BovineLabs.Core.Extensions
             }
 
             component = query.GetSingleton<T>();
+
             return true;
         }
 #endif
+        internal static SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
+            where T : struct, ISharedComponentData
+        {
+            EntityDataAccess* access = entityManager.GetCheckedEntityDataAccess();
+            var typeIndex = TypeManager.GetTypeIndex<T>();
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            return new SharedComponentDataFromIndex<T>(typeIndex, access, isReadOnly);
+#else
+            return new SharedComponentDataFromIndex<T>(typeIndex, access);
+#endif
+        }
+
+        internal static SharedComponentLookup<T> GetSharedComponentLookup<T>(this EntityManager entityManager, bool isReadOnly = true)
+            where T : unmanaged, ISharedComponentData
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+            var typeIndex = TypeManager.GetTypeIndex<T>();
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            return new SharedComponentLookup<T>(typeIndex, access, isReadOnly);
+#else
+            return new SharedComponentLookup<T>(typeIndex, access);
+#endif
+        }
+
+        internal static UnsafeComponentHandle GetUnsafeComponentHandle(this EntityManager entityManager)
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+
+            return new UnsafeComponentHandle(access);
+        }
+
+        internal static UnsafeEnableableLookup GetUnsafeEnableableLookup(this EntityManager entityManager)
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+
+            return new UnsafeEnableableLookup(access);
+        }
+
+        internal static UnsafeComponentLookup<T> GetUnsafeComponentLookup<T>(this EntityManager entityManager, bool isReadOnly)
+            where T : unmanaged, IComponentData
+        {
+            var typeIndex = TypeManager.GetTypeIndex<T>();
+            var access = entityManager.GetCheckedEntityDataAccess();
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            return new UnsafeComponentLookup<T>(typeIndex, access, isReadOnly);
+#else
+            return new UnsafeComponentLookup<T>(typeIndex, access);
+#endif
+        }
+
+        internal static UnsafeBufferLookup<T> GetUnsafeBufferLookup<T>(this EntityManager entityManager, bool isReadOnly)
+            where T : unmanaged, IBufferElementData
+        {
+            var typeIndex = TypeManager.GetTypeIndex<T>();
+            var access = entityManager.GetCheckedEntityDataAccess();
+
+            return new UnsafeBufferLookup<T>(typeIndex, access, isReadOnly);
+        }
+
+        // Internal because this is not safe called directly form EntityManager
+        internal static ChangeFilterLookup<T> GetChangeFilterLookup<T>(this EntityManager entityManager, bool isReadOnly)
+            where T : unmanaged
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+            var typeIndex = TypeManager.GetTypeIndex<T>();
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            return new ChangeFilterLookup<T>(typeIndex, access, isReadOnly);
+#else
+            return new ChangeFilterLookup<T>(typeIndex, access);
+#endif
+        }
     }
 }

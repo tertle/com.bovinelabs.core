@@ -37,8 +37,6 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         [SerializeField]
         private GameObject? prefab;
 
-        private static ObjectManagementSettings? settings; // for validation
-
         public GameObject? Prefab
         {
             get => this.prefab;
@@ -59,12 +57,12 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             set => this.id = value;
         }
 
-        public static implicit operator int(ObjectDefinition definition)
+        public static implicit operator int(ObjectDefinition? definition)
         {
             return definition != null ? definition.id : default;
         }
 
-        public static implicit operator ObjectId(ObjectDefinition definition)
+        public static implicit operator ObjectId(ObjectDefinition? definition)
         {
             // TODO get the mod
             return definition == null ? default : new ObjectId(0, definition.id);

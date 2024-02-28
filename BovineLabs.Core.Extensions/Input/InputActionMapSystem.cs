@@ -13,13 +13,9 @@ namespace BovineLabs.Core.Input
         /// <inheritdoc/>
         protected override void OnStartRunning()
         {
-            var inputAsset = SystemAPI.GetSingleton<InputDefault>().Asset;
-
             // Disable all action maps by default
-            foreach (var am in inputAsset.Value.actionMaps)
-            {
-                am.Disable();
-            }
+            var inputAsset = SystemAPI.GetSingleton<InputDefault>().Asset;
+            inputAsset.Value.Disable();
         }
 
         /// <inheritdoc/>

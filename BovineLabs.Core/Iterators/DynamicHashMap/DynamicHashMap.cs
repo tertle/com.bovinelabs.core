@@ -169,8 +169,6 @@ namespace BovineLabs.Core.Iterators
 
         public readonly TValue GetOrDefault(TKey key, TValue defaultValue = default)
         {
-            this.CheckWrite();
-
             var idx = this.helper->Find(key);
             if (idx == -1)
             {

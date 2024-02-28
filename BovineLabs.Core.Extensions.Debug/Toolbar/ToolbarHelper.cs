@@ -13,7 +13,6 @@ namespace BovineLabs.Core.Toolbar
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using UnityEngine;
-    using UnityEngine.UIElements;
 
     public unsafe struct ToolbarHelper<T, TD>
         where T : IBindingObject<TD>, new()

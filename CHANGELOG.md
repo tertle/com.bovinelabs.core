@@ -1,8 +1,28 @@
 # Changelog
 
+## [1.2.7] - 2024-02-29
+### Added
+* ButtonState can now be generated from [InputAction]
+
+### Changed
+* Updated to Entities 1.2.0-pre.12
+* ObjectDefinitions now add ObjectDefinitionAuthoring to their prefab to make baking scene objects and adding components easier
+* Functions can now return any type of data
+
+### Fixed
+* Missing missing ObjectId Equals(object) override was breaking the inspector
+* Making changes to string config vars in in the window wasn't apply changes
+* DynamicHashMap.GetOrDefault safety fail when readonly
+* PauseSystem now stops elapsed time updates to avoid fixed step issues
+
+### Removed
+* Hybrid (copy transform to/from gameobject) has been removed
+* Old virtual chunks implementation
+
 ## [1.2.6] - 2024-02-11
 ### Fixed
 * Weird compile issue some users were experiencing related to internal
+* Toolbar causing missing warnings in builds
 
 ## [1.2.5] - 2024-02-11
 ### Added

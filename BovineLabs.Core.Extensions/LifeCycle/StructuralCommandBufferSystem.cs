@@ -9,7 +9,7 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | Worlds.Service)]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation)]
     [UpdateBefore(typeof(BeginSimulationEntityCommandBufferSystem))]
     [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     public partial class StructuralCommandBufferSystem : EntityCommandBufferSystem

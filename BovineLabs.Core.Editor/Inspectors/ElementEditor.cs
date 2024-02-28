@@ -54,6 +54,11 @@ namespace BovineLabs.Core.Editor.Inspectors
             return field;
         }
 
+        protected static PropertyField CreatePropertyField(SerializedProperty property)
+        {
+            return CreatePropertyField(property, property.serializedObject);
+        }
+
         protected virtual VisualElement CreateElement(SerializedProperty property)
         {
             return CreatePropertyField(property, this.serializedObject);

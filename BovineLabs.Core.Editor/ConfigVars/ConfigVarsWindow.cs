@@ -10,7 +10,6 @@ namespace BovineLabs.Core.Editor.ConfigVars
     using BovineLabs.Core.Editor.Settings;
     using UnityEditor;
     using UnityEditor.UIElements;
-    using UnityEngine;
     using UnityEngine.UIElements;
 
     /// <summary> Window for config vars. </summary>

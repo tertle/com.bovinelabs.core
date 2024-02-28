@@ -9,10 +9,6 @@
             <ui:Label tabindex="-1" text="Entropy" display-tooltip-when-elided="true" name="BL_DISABLE_ENTROPY" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
         </ui:VisualElement>
-        <ui:VisualElement tooltip="Adds hybrid workflow including bringing back back the CopyTransformToGameObject and CopyTransformFromGameObject components." class="feature-group">
-            <ui:Label tabindex="-1" text="Hybrid" display-tooltip-when-elided="true" name="BL_DISABLE_HYBRID" />
-            <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
-        </ui:VisualElement>
         <ui:VisualElement tooltip="Adds an InputCommon component you can query for common input info such as InputOverUI, CameraRay, ScreenPoint and ViewPoint." class="feature-group">
             <ui:Label tabindex="-1" text="Input" display-tooltip-when-elided="true" name="BL_DISABLE_INPUT" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
@@ -21,15 +17,11 @@
             <ui:Label tabindex="-1" text="Life Cycle" display-tooltip-when-elided="true" name="BL_DISABLE_LIFECYCLE" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
         </ui:VisualElement>
-<!--        <ui:VisualElement tooltip="Adds support for experimental linked chunks." class="feature-group">-->
-<!--            <ui:Label tabindex="-1" text="Linked Chunks" display-tooltip-when-elided="true" name="BL_DISABLE_LINKED_CHUNKS" />-->
-<!--            <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />-->
-<!--        </ui:VisualElement>-->
         <ui:VisualElement tooltip="Adds an auto managed object identification system that is git merge safe." class="feature-group">
             <ui:Label tabindex="-1" text="Object Definitions" display-tooltip-when-elided="true" name="BL_DISABLE_OBJECT_DEFINITION" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
         </ui:VisualElement>
-        <ui:VisualElement tooltip="A more performant parallel version of Unity's physics states." class="feature-group">
+        <ui:VisualElement tooltip="A more performant parallel version of Unity&apos;s physics states." class="feature-group">
             <ui:Label tabindex="-1" text="Physics States" display-tooltip-when-elided="true" name="BL_DISABLE_PHYSICS_STATES" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
         </ui:VisualElement>

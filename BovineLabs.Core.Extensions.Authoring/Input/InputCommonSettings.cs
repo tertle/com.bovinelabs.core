@@ -19,6 +19,9 @@ namespace BovineLabs.Core.Authoring.Input
         private InputActionAsset? asset;
 
         [SerializeField]
+        private string inputCommonActionMap = "Common";
+
+        [SerializeField]
         private InputActionReference? cursorPosition;
 
         [SerializeField]
@@ -35,6 +38,7 @@ namespace BovineLabs.Core.Authoring.Input
             var defaultSettings = new InputDefault
             {
                 Asset = this.asset!,
+                CommonActionMap = this.inputCommonActionMap,
                 CursorPosition = baker.DependsOn(this.cursorPosition)!,
             };
 

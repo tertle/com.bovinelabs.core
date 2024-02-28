@@ -28,7 +28,7 @@ namespace BovineLabs.Core.Input
         /// <remarks> Displacement is set as a unit vector. </remarks>
         public Ray CameraRay;
 
-        // TODO frustrum would be nice
+        public bool AnyButtonPress;
     }
 }
 #endif

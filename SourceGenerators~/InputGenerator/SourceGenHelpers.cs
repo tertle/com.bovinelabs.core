@@ -16,7 +16,6 @@ namespace BovineLabs.InputGenerator
             // Throw if we are cancelled
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Don't run if we don't reference Entities (or are Entities) or if we are CodeGen.Tests (which need to run generators manually)
             return compilation.ReferencedAssemblyNames.Any(n => n.Name == "BovineLabs.Core.Extensions") &&
                    compilation.ReferencedAssemblyNames.Any(n => n.Name == "Unity.Entities") &&
                    compilation.ReferencedAssemblyNames.Any(n => n.Name == "Unity.Collections") &&
@@ -28,7 +27,7 @@ namespace BovineLabs.InputGenerator
             // Ignore IO exceptions in case there is already a lock, could use a named mutex but don't want to eat the performance cost
             try
             {
-                string generatedCodePath = @"SourceGeneratorLog\";
+                string generatedCodePath = @"Logs\";
                 var sourceGenLogPath = Path.Combine(generatedCodePath, "InputGenerator.log");
                 using var writer = File.AppendText(sourceGenLogPath);
                 writer.WriteLine(message);

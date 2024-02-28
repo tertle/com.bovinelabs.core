@@ -5,11 +5,14 @@
 #if !BL_DISABLE_INPUT
 namespace BovineLabs.Core.Input
 {
+    using System;
+    using BovineLabs.Core.Extensions;
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
     using UnityEngine.EventSystems;
     using UnityEngine.InputSystem;
+    using UnityEngine.InputSystem.Utilities;
     using Ray = Unity.Physics.Ray;
 
     [UpdateInGroup(typeof(InputSystemGroup))]
@@ -17,6 +20,8 @@ namespace BovineLabs.Core.Input
     {
         private InputDefault input;
         private InputCommon inputCommon;
+
+        private IDisposable? anyButtonPress;
 
         /// <inheritdoc />
         protected override void OnCreate()
@@ -29,13 +34,17 @@ namespace BovineLabs.Core.Input
         protected override void OnStartRunning()
         {
             this.input = SystemAPI.GetSingleton<InputDefault>();
-            this.input.Asset.Value.Enable();
             this.input.CursorPosition.Value.action.performed += this.OnCursorPositionPerformed;
+
+            this.EntityManager.GetSingletonBuffer<InputActionMapEnable>().Add(new InputActionMapEnable { Input = this.input.CommonActionMap, Enable = true });
+
+            this.anyButtonPress = InputSystem.onAnyButtonPress.Call(this.OnButtonPressed);
         }
 
         protected override void OnStopRunning()
         {
             this.input.CursorPosition.Value.action.performed -= this.OnCursorPositionPerformed;
+            this.anyButtonPress!.Dispose();
         }
 
         /// <inheritdoc />
@@ -57,11 +66,19 @@ namespace BovineLabs.Core.Input
             this.inputCommon.CameraRay = new Ray { Origin = cameraRay.origin, Displacement = cameraRay.direction };
 
             SystemAPI.SetSingleton(this.inputCommon);
+
+            this.inputCommon.AnyButtonPress = false;
         }
 
         private void OnCursorPositionPerformed(InputAction.CallbackContext context)
         {
             this.inputCommon.ScreenPoint = context.ReadValue<Vector2>();
+        }
+
+        private void OnButtonPressed(InputControl button)
+        {
+            // TODO lets limit this when cursor inside window
+            this.inputCommon.AnyButtonPress = true;
         }
     }
 }

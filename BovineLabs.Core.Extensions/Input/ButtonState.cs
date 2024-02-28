@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Input
             this.Up = true;
         }
 
-        public void ResetFrame()
+        public void Reset()
         {
             this.Down = false;
             this.Up = false;
