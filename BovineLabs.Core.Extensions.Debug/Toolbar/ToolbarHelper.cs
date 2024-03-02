@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Toolbar
     using UnityEngine;
 
     public unsafe struct ToolbarHelper<T, TD>
-        where T : IBindingObject<TD>, new()
+        where T : class, IBindingObject<TD>, new()
         where TD : unmanaged
     {
         private readonly FixedString32Bytes tabName;
@@ -64,8 +64,7 @@ namespace BovineLabs.Core.Toolbar
         // Load the tab onto the group. Usually called from OnStartRunning.
         public void Load()
         {
-            var binding = new T();
-            this.key = ToolbarManager.Instance.AddGroup(this.tabName.ToString(), this.groupName.ToString(), this.assetKey, binding);
+            ToolbarManager.Instance.AddGroup<T>(this.tabName.ToString(), this.groupName.ToString(), this.assetKey, out this.key, out var binding);
 
             this.handle = GCHandle.Alloc(binding, GCHandleType.Pinned);
             this.data = (TD*)UnsafeUtility.AddressOf(ref binding.Value);

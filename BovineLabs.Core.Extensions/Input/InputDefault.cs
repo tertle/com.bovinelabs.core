@@ -14,6 +14,7 @@ namespace BovineLabs.Core.Input
         public UnityObjectRef<InputActionAsset> Asset;
         public UnityObjectRef<InputActionReference> CursorPosition;
         public FixedString32Bytes CommonActionMap;
+        public FixedString32Bytes UIActionMap;
     }
 }
 #endif

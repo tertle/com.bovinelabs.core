@@ -14,6 +14,8 @@ namespace BovineLabs.Core.Editor.Settings
 
         string GroupName { get; }
 
+        bool IsEmpty { get; }
+
         /// <summary> Called when panel is activated. Use this to draw UI toolkit. </summary>
         /// <param name="searchContext"> The search context. </param>
         /// <param name="rootElement"> The root element that can be used to draw UI toolkit. </param>
@@ -24,7 +26,8 @@ namespace BovineLabs.Core.Editor.Settings
 
         /// <summary> Checks if the panel matches a search context for filtering. </summary>
         /// <param name="searchContext"> The context to match. </param>
+        /// <param name="allowEmpty"> Are empty panels allowed to match. </param>
         /// <returns> True if this panel matches the context. </returns>
-        bool MatchesFilter(string searchContext);
+        bool MatchesFilter(string searchContext, bool allowEmpty);
     }
 }

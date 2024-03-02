@@ -11,7 +11,8 @@ namespace BovineLabs.Core.Authoring
     using Unity.Mathematics;
     using UnityEngine;
 
-    [SettingsGroup("Game")]
+    [SettingsGroup("Core")]
+    [SettingsWorld("Shared")]
     public class GameSettings : Settings.SettingsBase
     {
         [Min(0)]

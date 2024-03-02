@@ -53,9 +53,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         protected static PropertyField CreatePropertyField(SerializedProperty property, SerializedObject serializedObject)
         {
-            var field = new PropertyField(property);
-            field.Bind(serializedObject);
-            return field;
+            return PropertyUtil.CreateProperty(property, serializedObject);
         }
 
         protected virtual VisualElement CreateElement(SerializedProperty property)

@@ -75,6 +75,7 @@ namespace BovineLabs.Core.Editor.Settings
                 catch (Exception ex)
                 {
                     Debug.LogException(ex);
+
                     continue;
                 }
 

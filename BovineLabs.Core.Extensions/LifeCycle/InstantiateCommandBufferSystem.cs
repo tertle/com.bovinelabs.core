@@ -1,4 +1,4 @@
-﻿// <copyright file="StructuralCommandBufferSystem.cs" company="BovineLabs">
+﻿// <copyright file="InstantiateCommandBufferSystem.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -9,10 +9,8 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation)]
-    [UpdateBefore(typeof(BeginSimulationEntityCommandBufferSystem))]
-    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
-    public partial class StructuralCommandBufferSystem : EntityCommandBufferSystem
+    [UpdateInGroup(typeof(InitializeSystemGroup), OrderFirst = true)]
+    public partial class InstantiateCommandBufferSystem : EntityCommandBufferSystem
     {
         /// <inheritdoc cref="EntityCommandBufferSystem.OnCreate"/>
         protected override void OnCreate()

@@ -30,6 +30,8 @@ namespace BovineLabs.Core.Editor.ConfigVars
 
         public string GroupName => this.DisplayName;
 
+        public bool IsEmpty => false;
+
         /// <summary> Gets a list of all the config vars this panel draws. </summary>
         internal List<(ConfigVarAttribute ConfigVar, FieldInfo FieldInfo)> ConfigVars { get; } = new();
 
@@ -77,8 +79,18 @@ namespace BovineLabs.Core.Editor.ConfigVars
         }
 
         /// <inheritdoc />
-        bool ISettingsPanel.MatchesFilter(string searchContext)
+        bool ISettingsPanel.MatchesFilter(string searchContext, bool allowEmpty)
         {
+            if (!allowEmpty && this.IsEmpty)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(searchContext))
+            {
+                return true;
+            }
+
             return this.ConfigVars.Any(s => MatchesSearchContext(s.ConfigVar.Name, searchContext));
         }
 

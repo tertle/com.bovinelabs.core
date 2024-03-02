@@ -9,10 +9,12 @@ namespace BovineLabs.Core.Authoring.Input
     using System.Diagnostics.CodeAnalysis;
     using BovineLabs.Core.Authoring.Settings;
     using BovineLabs.Core.Input;
+    using BovineLabs.Core.Settings;
     using Unity.Entities;
     using UnityEngine;
     using UnityEngine.InputSystem;
 
+    [SettingsGroup("Core")]
     public class InputCommonSettings : SettingsBase
     {
         [SerializeField]
@@ -20,6 +22,9 @@ namespace BovineLabs.Core.Authoring.Input
 
         [SerializeField]
         private string inputCommonActionMap = "Common";
+
+        [SerializeField]
+        private string inputUIActionMap = "UI";
 
         [SerializeField]
         private InputActionReference? cursorPosition;
@@ -39,6 +44,7 @@ namespace BovineLabs.Core.Authoring.Input
             {
                 Asset = this.asset!,
                 CommonActionMap = this.inputCommonActionMap,
+                UIActionMap = this.inputUIActionMap,
                 CursorPosition = baker.DependsOn(this.cursorPosition)!,
             };
 

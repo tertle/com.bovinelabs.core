@@ -26,13 +26,15 @@ namespace BovineLabs.Core.UI
 
         /// <summary> Adds a panel to the UI. </summary>
         /// <param name="key"> The panel to add. </param>
-        /// <param name="bindingObject"> The object to bind to the panel. </param>
         /// <param name="priority"> The draw priority. </param>
-        void AddPanel(int key, IBindingObject bindingObject, int priority = 0);
+        /// <returns> The object to bind to the panel. </returns>
+        T AddPanel<T>(int key, int priority = 0)
+            where T : class, IBindingObject, new();
 
         /// <summary> Removes a panel from the UI. </summary>
         /// <param name="key"> The panel to remove. </param>
-        void RemovePanel(int key);
+        /// <returns> The object that was bound to this panel. </returns>
+        IBindingObject RemovePanel(int key);
     }
 }
 #endif

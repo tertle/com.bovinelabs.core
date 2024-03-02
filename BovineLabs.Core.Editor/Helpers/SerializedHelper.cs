@@ -53,11 +53,11 @@ namespace BovineLabs.Core.Editor.Helpers
             }
         }
 
-        public static Type GetFieldType(this SerializedProperty property)
+        public static Type? GetFieldType(this SerializedProperty property)
         {
             var parentType = property.serializedObject.targetObject.GetType();
             var fi = parentType.GetFieldInBase(property.propertyPath);
-            return fi!.FieldType;
+            return fi?.FieldType ?? null;
         }
     }
 }

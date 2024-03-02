@@ -15,7 +15,8 @@
         "Unity.Scenes",
         "Unity.Scenes.Editor",
         "Unity.Physics",
-        "Unity.InternalAPIEditorBridge.002"
+        "Unity.InternalAPIEditorBridge.002",
+        "BovineLabs.Core.Authoring"
     ],
     "includePlatforms": [
         "Editor"

@@ -11,7 +11,7 @@ namespace BovineLabs.Core.UI
     using Unity.Collections.LowLevel.Unsafe;
 
     public unsafe struct UIHelper<T, TD>
-        where T : IBindingObject<TD>, new()
+        where T : class, IBindingObject<TD>, new()
         where TD : unmanaged
     {
         private readonly int stateKey;
@@ -37,10 +37,9 @@ namespace BovineLabs.Core.UI
 
         public void Load()
         {
-            var binding = new T();
-            UIDocumentManager.Instance.AddPanel(this.stateKey, binding, this.priority);
+            var binding = UIDocumentManager.Instance.AddPanel<T>(this.stateKey, this.priority);
 
-            this.handle = GCHandle.Alloc(binding, GCHandleType.Pinned);
+            this.handle = GCHandle.Alloc(binding.Value, GCHandleType.Pinned);
             this.data = (TD*)UnsafeUtility.AddressOf(ref binding.Value);
 
             binding.Load();
@@ -48,13 +47,12 @@ namespace BovineLabs.Core.UI
 
         public void Unload()
         {
-            UIDocumentManager.Instance.RemovePanel(this.stateKey);
+            var binding = UIDocumentManager.Instance.RemovePanel(this.stateKey);
 
             if (this.handle.IsAllocated)
             {
-                var obj = (T)this.handle.Target;
-                obj.Unload();
-                if (obj is IDisposable disposable)
+                binding.Unload();
+                if (binding is IDisposable disposable)
                 {
                     disposable.Dispose();
                 }

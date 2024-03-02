@@ -56,14 +56,16 @@ namespace BovineLabs.Core.UI
             }
         }
 
-        public void AddPanel(int key, IBindingObject binding, int priority = 0)
+        public T AddPanel<T>(int key, int priority = 0)
+            where T : class, IBindingObject, new()
         {
             // We use the same key as asset key as we don't allow multiple copies of same panel loaded at this time
-            if (!this.TryLoadPanel(key, key, out var element))
+            if (!this.TryLoadPanel<T>(key, key, out var panel))
             {
-                return;
+                return panel.Binding;
             }
 
+            var (element, binding) = panel;
             element.dataSource = binding;
 
             element.pickingMode = PickingMode.Ignore;
@@ -76,26 +78,30 @@ namespace BovineLabs.Core.UI
 
             var index = this.elements.IndexOf(e);
             this.view.Insert(index, element);
+
+            return binding;
         }
 
-        public void RemovePanel(int key)
+        public IBindingObject RemovePanel(int key)
         {
-            if (!this.TryUnloadPanel(key, out var ve))
+            if (!this.TryUnloadPanel(key, out var panel))
             {
-                return;
+                return panel.Binding;
             }
 
-            var index = this.elements.IndexOf(new OrderedElement(ve, 0));
+            var index = this.elements.IndexOf(new OrderedElement(panel.Element, 0));
 
             if (index < 0)
             {
-                Debug.LogError($"Removing {ve} that isn't added.");
+                Debug.LogError($"Removing {panel} that isn't added.");
             }
             else
             {
                 this.elements.RemoveAt(index);
-                ve.RemoveFromHierarchy();
+                panel.Element.RemoveFromHierarchy();
             }
+
+            return panel.Binding;
         }
 
         private void Awake()
@@ -188,6 +194,7 @@ namespace BovineLabs.Core.UI
         private class NullDocumentManager : IUIDocumentManager
         {
             private VisualElement? root;
+            private Dictionary<int, IBindingObject> bindingObjects = new();
 
 #if UNITY_EDITOR
 #pragma warning disable CS0067
@@ -205,12 +212,18 @@ namespace BovineLabs.Core.UI
             {
             }
 
-            public void AddPanel(int key, IBindingObject bindingObject, int priority = 0)
+            public T AddPanel<T>(int key, int priority = 0) where T : class, IBindingObject, new()
             {
+                var t = new T();
+                this.bindingObjects.Add(key, t);
+                return t;
             }
 
-            public void RemovePanel(int key)
+            public IBindingObject RemovePanel(int key)
             {
+                var t = this.bindingObjects[key];
+                this.bindingObjects.Remove(key);
+                return t;
             }
 
             public object? GetPanel(int id)

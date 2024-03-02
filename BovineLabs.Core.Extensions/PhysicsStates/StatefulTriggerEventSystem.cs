@@ -38,6 +38,11 @@ namespace BovineLabs.Core.PhysicsStates
         public void OnUpdate(ref SystemState state)
         {
             var simulationSingleton = SystemAPI.GetSingleton<SimulationSingleton>();
+            if (simulationSingleton.Type == SimulationType.NoPhysics)
+            {
+                return;
+            }
+
             var simulation = simulationSingleton.AsSimulation();
             SafetyChecks.CheckSimulationStageAndThrow(simulation.m_SimulationScheduleStage, SimulationScheduleStage.Idle);
             if (!simulation.ReadyForEventScheduling)

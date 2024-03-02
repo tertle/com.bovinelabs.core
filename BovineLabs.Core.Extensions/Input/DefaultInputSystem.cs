@@ -36,7 +36,17 @@ namespace BovineLabs.Core.Input
             this.input = SystemAPI.GetSingleton<InputDefault>();
             this.input.CursorPosition.Value.action.performed += this.OnCursorPositionPerformed;
 
-            this.EntityManager.GetSingletonBuffer<InputActionMapEnable>().Add(new InputActionMapEnable { Input = this.input.CommonActionMap, Enable = true });
+            var map = this.EntityManager.GetSingletonBuffer<InputActionMapEnable>();
+
+            if (this.input.CommonActionMap != default)
+            {
+                map.Add(new InputActionMapEnable { Input = this.input.CommonActionMap, Enable = true });
+            }
+
+            if (this.input.UIActionMap != default)
+            {
+                map.Add(new InputActionMapEnable { Input = this.input.UIActionMap, Enable = true });
+            }
 
             this.anyButtonPress = InputSystem.onAnyButtonPress.Call(this.OnButtonPressed);
         }

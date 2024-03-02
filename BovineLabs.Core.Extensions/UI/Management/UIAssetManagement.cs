@@ -5,6 +5,7 @@
 #if !BL_DISABLE_UI
 namespace BovineLabs.Core.UI
 {
+    using System;
     using System.Collections.Generic;
     using UnityEngine;
     using UnityEngine.UIElements;
@@ -16,7 +17,7 @@ namespace BovineLabs.Core.UI
 
     public abstract class UIAssetManagement : MonoBehaviour, IUIAssetManagement
     {
-        private readonly Dictionary<int, VisualElement> loadedPanels = new();
+        private readonly Dictionary<int, (VisualElement Element, IBindingObject Binding)> loadedPanels = new();
         private readonly Dictionary<int, VisualTreeAsset> allPanels = new();
 
         [SerializeField]
@@ -47,29 +48,39 @@ namespace BovineLabs.Core.UI
             }
         }
 
-        protected bool TryLoadPanel(int id, int assetKey, out VisualElement element)
+        protected bool TryLoadPanel<T>(int id, int assetKey, out (VisualElement Element, T Binding) panel)
+            where T : class, IBindingObject, new()
         {
-            if (this.loadedPanels.TryGetValue(id, out element))
+            if (this.loadedPanels.TryGetValue(id, out var panel2))
             {
                 Unity.Debug.LogError($"Panel with id {id} already loaded");
+                if (panel2.Item2 is not T existingBinding)
+                {
+                    throw new InvalidOperationException("Trying to load a binding of a different type");
+                }
+
+                panel = (panel2.Element, existingBinding);
+
                 return false;
             }
 
             if (!this.allPanels.TryGetValue(assetKey, out var assets))
             {
                 Debug.LogError($"Panel {assetKey} not setup");
-                element = null!;
+                panel = (null!, null!);
                 return false;
             }
 
             var visualElement = assets.CloneTree();
-            this.loadedPanels.Add(id, visualElement);
+            var binding = new T();
 
-            element = visualElement;
+            this.loadedPanels.Add(id, (visualElement, binding));
+
+            panel = (visualElement, binding);
             return true;
         }
 
-        protected bool TryUnloadPanel(int id, out VisualElement panel)
+        protected bool TryUnloadPanel(int id, out (VisualElement Element, IBindingObject Binding) panel)
         {
             return this.loadedPanels.Remove(id, out panel);
         }

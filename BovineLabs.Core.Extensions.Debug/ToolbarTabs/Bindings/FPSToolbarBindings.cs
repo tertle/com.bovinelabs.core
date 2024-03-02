@@ -69,6 +69,7 @@ namespace BovineLabs.Core.ToolbarTabs
                     {
                         this.currentFPS = value;
                         this.Notify();
+                        this.NotifyExplicit("FrameTime");
                     }
                 }
             }

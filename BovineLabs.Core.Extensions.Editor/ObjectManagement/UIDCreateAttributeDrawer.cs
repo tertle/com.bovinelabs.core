@@ -6,6 +6,7 @@
 namespace BovineLabs.Core.Editor.ObjectManagement
 {
     using System;
+    using BovineLabs.Core.Editor.Inspectors;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.ObjectManagement;
     using UnityEditor;
@@ -26,9 +27,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             this.serializedProperty = property;
-
-            this.propertyField = new PropertyField(property);
-            this.propertyField.Bind(property.serializedObject);
+            this.propertyField = PropertyUtil.CreateProperty(property, property.serializedObject);
 
             var type = this.fieldInfo.FieldType;
             if (typeof(IUID).IsAssignableFrom(type))

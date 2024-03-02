@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.2.8] - 2024-03-02
+### Added
+* SetBinding to allow you to bind a binding
+* You can now automatically generate hashmaps from data on Object Definitions
+* Automatically add your settings files to the appropriate settings authoring in the subscene. Assign a default in EditorSettings and optionally use SettingsWorldAttribute if you have multiple worlds
+* Settings search now highlights
+
+### Changed
+* InputSystemGroup now updates in Initialization so input still works while paused
+* Settings now use a TreeView. All Core settings are now grouped
+* Settings now hides empty settings with an option to toggle them visible
+
+### Fixed
+* FrameTime on FPS toolbar wasn't updating
+* Stateful events error when physics simulation disabled
+* UI binding and IL2CPP builds
+
 ## [1.2.7] - 2024-02-29
 ### Added
 * ButtonState can now be generated from [InputAction]

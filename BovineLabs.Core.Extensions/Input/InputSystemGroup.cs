@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Input
 #if UNITY_NETCODE
     [UpdateInGroup(typeof(Unity.NetCode.GhostInputSystemGroup))]
 #else
-    [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
+    [UpdateInGroup(typeof(AfterSceneSystemGroup))]
 #endif
     public partial class InputSystemGroup : ComponentSystemGroup
     {

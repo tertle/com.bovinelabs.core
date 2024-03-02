@@ -20,8 +20,10 @@ namespace BovineLabs.Core.Toolbar
 
     internal interface IToolbarManager : IUIAssetManagement
     {
-        int AddGroup(string tabName, string groupName, int assetKey, IBindingObject binding);
-        void RemoveGroup(int id);
+        void AddGroup<T>(string tabName, string groupName, int assetKey, out int id, out T binding)
+            where T : class, IBindingObject, new();
+
+        IBindingObject RemoveGroup(int id);
     }
 
     /// <summary> Burst data separate to avoid compiling issues with static variables. </summary>
@@ -144,12 +146,15 @@ namespace BovineLabs.Core.Toolbar
             }
         }
 
-        public int AddGroup(string tabName, string groupName, int assetKey, IBindingObject binding)
+        public void AddGroup<T>(string tabName, string groupName, int assetKey, out int id, out T binding)
+            where T : class, IBindingObject, new()
         {
-            var id = ++this.key;
+            id = ++this.key;
 
-            var result = this.TryLoadPanel(id, assetKey, out var element);
-            element.dataSource = binding;
+            var result = this.TryLoadPanel<T>(id, assetKey, out var panel);
+
+            binding = panel.Binding;
+            panel.Element.dataSource = panel.Binding;
 
             if (!this.toolbarTabs.TryGetValue(tabName, out var tab))
             {
@@ -157,7 +162,7 @@ namespace BovineLabs.Core.Toolbar
             }
 
             var container = new ToolbarGroupContainer(groupName);
-            container.Add(element);
+            container.Add(panel.Element);
 
             var group = new ToolbarTab.Group(id, groupName, container, tab);
             this.toolbarGroups.Add(id, group);
@@ -170,15 +175,15 @@ namespace BovineLabs.Core.Toolbar
             this.filterBind.AddSelection(filterName);
 
             this.refreshVisible = true;
-
-            return id;
         }
 
-        public void RemoveGroup(int id)
+        public IBindingObject RemoveGroup(int id)
         {
+            this.TryUnloadPanel(id, out var panel);
+
             if (!this.toolbarGroups.Remove(id, out var group))
             {
-                return;
+                return panel.Binding;
             }
 
             var filterName = GetFilterName(group);
@@ -186,6 +191,7 @@ namespace BovineLabs.Core.Toolbar
 
             this.HideGroup(group);
             group.Tab.Groups.Remove(group);
+            return panel.Binding;
         }
 
         private static string GetFilterName(ToolbarTab.Group group)
@@ -584,13 +590,23 @@ namespace BovineLabs.Core.Toolbar
 
         private class NullToolbarManager : IToolbarManager
         {
-            public int AddGroup(string tabName, string groupName, int assetKey, IBindingObject binding)
+            private readonly Dictionary<int, IBindingObject> bindings = new();
+
+            private int key;
+
+            public void AddGroup<T>(string tabName, string groupName, int assetKey, out int id, out T binding)
+                where T : class, IBindingObject, new()
             {
-                return 0;
+                id = key++;
+                binding = new T();
+                this.bindings.Add(id, binding);
             }
 
-            public void RemoveGroup(int id)
+            public IBindingObject RemoveGroup(int id)
             {
+                var binding = this.bindings[id];
+                this.bindings.Remove(id);
+                return binding;
             }
 
             public object? GetPanel(int id)

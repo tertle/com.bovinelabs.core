@@ -6,7 +6,6 @@ namespace BovineLabs.Core.Editor.Settings
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using BovineLabs.Core.Settings;
@@ -20,7 +19,7 @@ namespace BovineLabs.Core.Editor.Settings
     public abstract class SettingsBasePanel<T> : ISettingsPanel
         where T : ScriptableObject, ISettings
     {
-        private readonly List<string> keywordList = new();
+        private readonly Dictionary<string, List<string>> keywordList = new();
 
         /// <summary> Initializes a new instance of the <see cref="SettingsBasePanel{T}" /> class. </summary>
         protected SettingsBasePanel()
@@ -31,13 +30,15 @@ namespace BovineLabs.Core.Editor.Settings
             this.SerializedObject = new SerializedObject(this.Settings);
 
             // ReSharper disable once VirtualMemberCallInConstructor, Justification: GetKeyWords marked with a warning
-            this.GetKeyWords(this.keywordList);
+            this.IsEmpty = !this.GetKeyWords(this.keywordList);
         }
 
         /// <inheritdoc />
         public string DisplayName => this.Settings.DisplayName();
 
         public string GroupName { get; }
+
+        public bool IsEmpty { get; }
 
         /// <summary> Gets the settings that the panel is drawing. </summary>
         protected T Settings { get; }
@@ -55,32 +56,88 @@ namespace BovineLabs.Core.Editor.Settings
         {
             var inspectorElement = new InspectorElement(this.SerializedObject);
             rootElement.Add(inspectorElement);
+
+            if (!string.IsNullOrWhiteSpace(searchContext))
+            {
+                var parents = new HashSet<string>();
+
+                foreach (var c in this.keywordList)
+                {
+                    if (!MatchesSearchContext(c.Key, searchContext))
+                    {
+                        continue;
+                    }
+
+                    parents.UnionWith(c.Value);
+                }
+
+                foreach (var p in parents)
+                {
+                    inspectorElement.Q<PropertyField>($"PropertyField:{p}")?.AddToClassList("search");
+                }
+            }
         }
 
-        /// <summary> Executed when deactivate is called from teh settings window. </summary>
+        /// <summary> Executed when deactivate is called from the settings window. </summary>
         public virtual void OnDeactivate()
         {
         }
 
         /// <inheritdoc />
-        public bool MatchesFilter(string searchContext)
+        public bool MatchesFilter(string searchContext, bool allowEmpty)
         {
-            return this.keywordList.Any(s => MatchesSearchContext(s, searchContext));
+            if (!allowEmpty && this.IsEmpty)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(searchContext))
+            {
+                return true;
+            }
+
+            return this.keywordList.Any(s => MatchesSearchContext(s.Key, searchContext));
         }
 
         /// <summary> Populates all the keywords associated with the settings. </summary>
         /// <remarks> Do not populate this in constructor. </remarks>
         /// <param name="keywords"> The list to populate. </param>
-        protected virtual void GetKeyWords(List<string> keywords)
+        /// <returns> If there were any children. </returns>
+        protected virtual bool GetKeyWords(Dictionary<string, List<string>> keywords)
         {
-            keywords.AddRange(this.Settings.DisplayName().Split(' '));
+            foreach (var c in this.Settings.DisplayName().Split(' '))
+            {
+                AddToKeyWord(keywords, c, null);
+            }
 
             var groups = IterateAllChildren(this.SerializedObject);
+            bool anyChildren = false;
 
             foreach (var g in groups)
             {
-                keywords.Add(g.Parent.name);
-                keywords.AddRange(g.Children.Select(c => c.name));
+                AddToKeyWord(keywords, g.Parent.name, g.Parent.name);
+
+                foreach (var c in g.Children)
+                {
+                    AddToKeyWord(keywords, c.name, g.Parent.name);
+                }
+
+                anyChildren = true;
+            }
+
+            return anyChildren;
+        }
+
+        private static void AddToKeyWord(IDictionary<string, List<string>> keywords, string keyword, string? parent)
+        {
+            if (!keywords.TryGetValue(keyword, out var parents))
+            {
+                keywords[keyword] = parents = new List<string>();
+            }
+
+            if (!string.IsNullOrEmpty(parent))
+            {
+                parents.Add(parent!);
             }
         }
 
@@ -131,14 +188,6 @@ namespace BovineLabs.Core.Editor.Settings
         {
             public SerializedProperty Parent;
             public SerializedProperty[] Children;
-        }
-    }
-
-    public class Test
-    {
-        public enum Mode
-        {
-
         }
     }
 }

@@ -15,14 +15,14 @@ namespace BovineLabs.Core.ObjectManagement
 
     public static class ObjectGroupRegistryExtensions
     {
-        public static DynamicMultiHashMap<GroupId, ObjectId> AsMap(this DynamicBuffer<ObjectGroupRegistry> buffer)
-        {
-            return buffer.AsMultiHashMap<ObjectGroupRegistry, GroupId, ObjectId>();
-        }
-
         internal static DynamicBuffer<ObjectGroupRegistry> Initialize(this DynamicBuffer<ObjectGroupRegistry> buffer)
         {
             return buffer.InitializeMultiHashMap<ObjectGroupRegistry, GroupId, ObjectId>();
+        }
+
+        public static DynamicMultiHashMap<GroupId, ObjectId> AsMap(this DynamicBuffer<ObjectGroupRegistry> buffer)
+        {
+            return buffer.AsMultiHashMap<ObjectGroupRegistry, GroupId, ObjectId>();
         }
     }
 }

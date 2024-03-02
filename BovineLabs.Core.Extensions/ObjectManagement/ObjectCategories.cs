@@ -14,7 +14,7 @@ namespace BovineLabs.Core.ObjectManagement
     using UnityEngine;
 
     /// <summary> Object categories dynamically implement using <see cref="K{T}" />. </summary>
-    [SettingsGroup("Objects")]
+    [SettingsGroup("Core")]
     public class ObjectCategories : KSettings
     {
         [SerializeField]

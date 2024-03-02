@@ -6,6 +6,7 @@
 namespace BovineLabs.Core.Editor.SubScenes
 {
     using System;
+    using BovineLabs.Core.Editor.Inspectors;
     using BovineLabs.Core.SubScenes;
     using UnityEditor;
     using UnityEditor.UIElements;
@@ -40,8 +41,8 @@ namespace BovineLabs.Core.Editor.SubScenes
             this.inspector = new VisualElement();
 
             // Properties that always exist
-            this.inspector.Add(new PropertyField(this.targetWorld));
-            var loadModeProperty = new PropertyField(this.loadMode);
+            this.inspector.Add(PropertyUtil.CreateProperty(this.targetWorld));
+            var loadModeProperty = PropertyUtil.CreateProperty(this.loadMode);
             this.inspector.Add(loadModeProperty);
             loadModeProperty.RegisterValueChangeCallback(_ => this.Rebuild());
 

@@ -10,7 +10,8 @@ namespace BovineLabs.Core.Authoring.UI
     using BovineLabs.Core.UI;
     using Unity.Entities;
 
-    [SettingsGroup("UI")]
+    [SettingsGroup("Core")]
+    [SettingsWorld("Shared")]
     public class UISettings : SettingsBase
     {
         /// <inheritdoc />

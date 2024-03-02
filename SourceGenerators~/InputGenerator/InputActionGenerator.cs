@@ -126,6 +126,9 @@ namespace BovineLabs.InputGenerator
             {{
                 this.query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<{structSymbol.Name}>().Build(this);
                 this.queryActions = new EntityQueryBuilder(Allocator.Temp).WithAll<ActionsGenerated>().Build(this);
+
+                this.RequireForUpdate(this.query);
+                this.RequireForUpdate(this.queryActions);
             }}
 
             protected override void OnUpdate()

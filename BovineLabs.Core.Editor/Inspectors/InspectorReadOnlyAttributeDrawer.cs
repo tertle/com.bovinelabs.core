@@ -16,8 +16,7 @@ namespace BovineLabs.Core.Editor.Inspectors
         /// <inheritdoc />
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            var propertyField = new PropertyField(property);
-            propertyField.Bind(property.serializedObject);
+            var propertyField = PropertyUtil.CreateProperty(property, property.serializedObject);
             propertyField.SetEnabled(false);
             return propertyField;
         }

@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using BovineLabs.Core.Editor.Inspectors;
     using BovineLabs.Core.Editor.Settings;
     using BovineLabs.Core.ObjectManagement;
     using UnityEditor;
@@ -31,8 +32,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             this.type = type;
             this.serializedProperty.isExpanded = false;
 
-            this.Element = new PropertyField(serializedProperty);
-            this.Element.Bind(this.serializedObject);
+            this.Element = PropertyUtil.CreateProperty(serializedProperty, this.serializedObject);
 
             if (!TryGetDirectory(this.type, out this.path))
             {
@@ -55,7 +55,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 return false;
             }
 
-            var directory = EditorSettingsUtility.GetAssetDirectory(type, assetCreatorAttribute.DirectoryKey, assetCreatorAttribute.DefaultDirectory);
+            var directory = EditorSettingsUtility.GetAssetDirectory(assetCreatorAttribute.DirectoryKey, assetCreatorAttribute.DefaultDirectory);
             path = Path.Combine(directory, assetCreatorAttribute.DefaultFileName);
             return true;
         }
@@ -70,7 +70,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 return false;
             }
 
-            var directory = EditorSettingsUtility.GetAssetDirectory(type, assetCreatorAttribute.DirectoryKey, assetCreatorAttribute.DefaultDirectory);
+            var directory = EditorSettingsUtility.GetAssetDirectory(assetCreatorAttribute.DirectoryKey, assetCreatorAttribute.DefaultDirectory);
             path = Path.Combine(directory, defaultFileName);
             return true;
         }

@@ -5,6 +5,7 @@
 #if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.Authoring.ObjectManagement
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Assertions;
@@ -50,6 +51,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         {
             this.SetupRegistry(baker);
             this.SetupGroups(baker);
+            this.SetupLookups(baker);
         }
 
         private void SetupRegistry(IBaker baker)
@@ -115,6 +117,30 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                     objectGroupRegistry.Add(group, id);
 
                     Check.Assume(objectGroupMatcher.Contains((group, id)));
+                }
+            }
+        }
+
+        private void SetupLookups(IBaker baker)
+        {
+            if (this.ObjectDefinitions.Count == 0)
+            {
+                return;
+            }
+
+            var entity = baker.GetEntity(TransformUsageFlags.None);
+            var maps = new Dictionary<Type, object>();
+
+            foreach (var d in this.ObjectDefinitions)
+            {
+                if (d.Prefab == null)
+                {
+                    continue;
+                }
+
+                foreach (var c in d.Prefab.GetComponents<ILookupAuthoring>())
+                {
+                    c.Bake(baker, entity, d, maps);
                 }
             }
         }

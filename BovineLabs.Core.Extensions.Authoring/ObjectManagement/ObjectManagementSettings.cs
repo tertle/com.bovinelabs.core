@@ -13,7 +13,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     using Unity.Entities;
     using UnityEngine;
 
-    [SettingsGroup("Objects")]
+    [SettingsGroup("Core")]
     public sealed class ObjectManagementSettings : ObjectManagementSettingsBase
     {
         [SerializeField]
@@ -77,6 +77,8 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                     StableTypeHash = c.ComponentType,
                 });
             }
+
+
         }
     }
 }

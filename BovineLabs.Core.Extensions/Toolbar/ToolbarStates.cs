@@ -7,10 +7,12 @@ namespace BovineLabs.Core.Toolbar
 {
     using System.Collections.Generic;
     using BovineLabs.Core.Keys;
+    using BovineLabs.Core.Settings;
     using BovineLabs.Core.UI;
     using UnityEngine;
     using UnityEngine.UIElements;
 
+    [SettingsGroup("Core")]
     public class ToolbarStates : UIStatesBase
     {
         /// <inheritdoc/>

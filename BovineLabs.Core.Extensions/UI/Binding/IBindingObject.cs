@@ -7,13 +7,6 @@ namespace BovineLabs.Core.UI
 {
     public interface IBindingObject
     {
-    }
-
-    public interface IBindingObject<T> : IBindingObject
-        where T : unmanaged
-    {
-        ref T Value { get; }
-
         void Load()
         {
         }
@@ -21,6 +14,12 @@ namespace BovineLabs.Core.UI
         void Unload()
         {
         }
+    }
+
+    public interface IBindingObject<T> : IBindingObject
+        where T : unmanaged
+    {
+        ref T Value { get; }
     }
 }
 #endif
