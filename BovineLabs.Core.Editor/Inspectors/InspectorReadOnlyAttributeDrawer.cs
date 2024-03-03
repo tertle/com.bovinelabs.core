@@ -6,7 +6,6 @@ namespace BovineLabs.Core.Editor.Inspectors
 {
     using BovineLabs.Core.PropertyDrawers;
     using UnityEditor;
-    using UnityEditor.UIElements;
     using UnityEngine;
     using UnityEngine.UIElements;
 

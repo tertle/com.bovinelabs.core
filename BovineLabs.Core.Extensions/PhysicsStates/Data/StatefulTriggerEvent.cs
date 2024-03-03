@@ -7,7 +7,6 @@ namespace BovineLabs.Core.PhysicsStates
 {
     using Unity.Entities;
     using Unity.Physics;
-    using Unity.Properties;
 
     [InternalBufferCapacity(0)]
     public struct StatefulTriggerEvent : IBufferElementData

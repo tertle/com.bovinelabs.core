@@ -5,7 +5,6 @@
 #if UNITY_2023_3_OR_NEWER
 namespace BovineLabs.Core.Editor.Inspectors
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Editor.SearchWindow;

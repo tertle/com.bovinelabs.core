@@ -6,8 +6,6 @@ namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Collections.Generic;
-    using Unity.Mathematics;
-    using UnityEngine;
 
     public static class EnumerableExtensions
     {

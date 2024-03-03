@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 {
     using System;
     using System.Collections.Generic;
-    using System.Runtime.CompilerServices;
     using BovineLabs.Core.ObjectManagement;
     using UnityEngine;
 

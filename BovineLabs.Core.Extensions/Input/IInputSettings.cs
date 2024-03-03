@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_INPUT
 namespace BovineLabs.Core.Input
 {
     using Unity.Entities;
@@ -20,3 +21,4 @@ namespace BovineLabs.Core.Input
         void Bake(IBakerWrapper baker);
     }
 }
+#endif

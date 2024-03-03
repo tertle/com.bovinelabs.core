@@ -4,7 +4,6 @@
 
 namespace BovineLabs.Core.Extensions
 {
-    using System;
     using System.Collections.Generic;
 
     /// <summary> Extensions for <see cref="IReadOnlyList{T}" />. </summary>

@@ -4,7 +4,6 @@
 
 namespace BovineLabs.Core.Tests.Collections
 {
-    using BovineLabs.Core.Collections;
     using NUnit.Framework;
     using Unity.Collections;
 

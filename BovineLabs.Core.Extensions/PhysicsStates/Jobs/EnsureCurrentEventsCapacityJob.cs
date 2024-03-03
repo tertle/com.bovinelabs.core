@@ -10,7 +10,6 @@ namespace BovineLabs.Core.PhysicsStates
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using Unity.Physics;
 
     [BurstCompile]
     internal struct EnsureCurrentEventsCapacityJob<T, TC> : IJob

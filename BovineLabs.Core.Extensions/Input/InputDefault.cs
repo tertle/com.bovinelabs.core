@@ -13,8 +13,12 @@ namespace BovineLabs.Core.Input
     {
         public UnityObjectRef<InputActionAsset> Asset;
         public UnityObjectRef<InputActionReference> CursorPosition;
-        public FixedString32Bytes CommonActionMap;
-        public FixedString32Bytes UIActionMap;
+    }
+
+    [InternalBufferCapacity(0)]
+    internal struct InputDefaultEnabled : IBufferElementData
+    {
+        public FixedString32Bytes ActionMap;
     }
 }
 #endif

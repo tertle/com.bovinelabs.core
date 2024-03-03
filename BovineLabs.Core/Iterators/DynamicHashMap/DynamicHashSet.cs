@@ -165,6 +165,7 @@ namespace BovineLabs.Core.Iterators
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
         private static void CheckSize(DynamicBuffer<byte> buffer)
         {
             if (buffer.Length == 0)
@@ -188,22 +189,6 @@ namespace BovineLabs.Core.Iterators
                 throw new ArgumentException($"Trying to write to a readonly dynamicHashMap");
             }
 #endif
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [Conditional("UNITY_DOTS_DEBUG")]
-        private void ThrowKeyNotPresent(T key)
-        {
-            throw new ArgumentException($"Key: {key} is not present.");
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckLengthsMatch(int keys, int values)
-        {
-            if (keys != values)
-            {
-                throw new ArgumentException("Key and value array don't match");
-            }
         }
     }
 

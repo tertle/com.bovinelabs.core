@@ -4,7 +4,6 @@
 
 namespace BovineLabs.Core.EntityCommands
 {
-    using Unity.Burst;
     using Unity.Entities;
 
     public interface IEntityCommands

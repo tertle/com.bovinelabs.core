@@ -242,6 +242,7 @@ namespace BovineLabs.Core.Iterators
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
         private static void CheckSize(DynamicBuffer<byte> buffer)
         {
             if (buffer.Length == 0)
@@ -268,6 +269,7 @@ namespace BovineLabs.Core.Iterators
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
         private static void CheckLengthsMatch(int keys, int values)
         {
             if (keys != values)

@@ -5,17 +5,32 @@
 #if !BL_DISABLE_INPUT
 namespace BovineLabs.Core.Input
 {
+    using Unity.Collections;
     using Unity.Entities;
+    using UnityEngine;
+    using UnityEngine.InputSystem;
 
     [UpdateInGroup(typeof(InputSystemGroup), OrderFirst = true)]
     public partial class InputActionMapSystem : SystemBase
     {
+        protected override void OnCreate()
+        {
+            this.RequireForUpdate<InputDefault>();
+        }
+
         /// <inheritdoc/>
         protected override void OnStartRunning()
         {
             // Disable all action maps by default
             var inputAsset = SystemAPI.GetSingleton<InputDefault>().Asset;
             inputAsset.Value.Disable();
+
+            // Enable defaults
+            var map = SystemAPI.GetSingletonBuffer<InputDefaultEnabled>();
+            foreach (var m in map)
+            {
+                this.SetInputEnable(inputAsset, m.ActionMap, true);
+            }
         }
 
         /// <inheritdoc/>
@@ -28,20 +43,31 @@ namespace BovineLabs.Core.Input
             }
 
             var inputAsset = SystemAPI.GetSingleton<InputDefault>().Asset;
-            foreach (var s in enables.AsNativeArray())
+            foreach (var state in enables.AsNativeArray())
             {
-                var actionMap = inputAsset.Value.FindActionMap(s.Input.ToString(), true);
-                if (s.Enable)
-                {
-                    actionMap.Enable();
-                }
-                else
-                {
-                    actionMap.Disable();
-                }
+                this.SetInputEnable(inputAsset, state.Input, state.Enable);
             }
 
             enables.Clear();
+        }
+
+        private void SetInputEnable(UnityObjectRef<InputActionAsset> inputAsset, FixedString32Bytes input, bool enable)
+        {
+            var actionMap = inputAsset.Value.FindActionMap(input.ToString());
+            if (actionMap == null)
+            {
+                SystemAPI.GetSingleton<BLDebug>().Warning($"Unable to find action map of name {input}");
+                return;
+            }
+
+            if (enable)
+            {
+                actionMap.Enable();
+            }
+            else
+            {
+                actionMap.Disable();
+            }
         }
     }
 }

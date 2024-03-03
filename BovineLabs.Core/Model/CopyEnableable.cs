@@ -9,7 +9,6 @@ namespace BovineLabs.Core.Model
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
-    using UnityEngine;
 
     public struct CopyEnableable<TTo, TFrom>
         where TTo : unmanaged, IComponentData, IEnableableComponent

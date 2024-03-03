@@ -10,7 +10,6 @@ namespace BovineLabs.Core.PhysicsStates
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Physics;
 
     internal interface ICollectsEventsImpl<T, out TC>
         where T : unmanaged, IBufferElementData

@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Extensions
     using BovineLabs.Core.Iterators;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Transforms;
 
     /// <summary> Extensions for <see cref="EntityManager" />. </summary>
     public static unsafe class EntityManagerExtensions

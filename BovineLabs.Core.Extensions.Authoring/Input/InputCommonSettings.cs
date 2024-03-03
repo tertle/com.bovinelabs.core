@@ -21,10 +21,7 @@ namespace BovineLabs.Core.Authoring.Input
         private InputActionAsset? asset;
 
         [SerializeField]
-        private string inputCommonActionMap = "Common";
-
-        [SerializeField]
-        private string inputUIActionMap = "UI";
+        private string[] defaultEnabled = new [] { "Common", "UI"} ;
 
         [SerializeField]
         private InputActionReference? cursorPosition;
@@ -43,13 +40,18 @@ namespace BovineLabs.Core.Authoring.Input
             var defaultSettings = new InputDefault
             {
                 Asset = this.asset!,
-                CommonActionMap = this.inputCommonActionMap,
-                UIActionMap = this.inputUIActionMap,
                 CursorPosition = baker.DependsOn(this.cursorPosition)!,
             };
 
+            var toEnable = baker.AddBuffer<InputDefaultEnabled>(entity);
+            foreach (var actionMap in this.defaultEnabled)
+            {
+                toEnable.Add(new InputDefaultEnabled { ActionMap = actionMap });
+            }
+
             baker.AddComponent(entity, defaultSettings);
             baker.AddComponent<InputCommon>(entity);
+            baker.AddComponent<InputActionMapEnable>(entity);
 
             var wrapper = new BakerWrapper(baker, entity);
 

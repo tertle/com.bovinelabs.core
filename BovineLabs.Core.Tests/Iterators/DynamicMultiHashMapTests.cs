@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Tests.Iterators
     using BovineLabs.Testing;
     using NUnit.Framework;
     using Unity.Collections;
-    using UnityEngine;
 
     public class DynamicMultiHashMapTests : ECSTestsFixture
     {

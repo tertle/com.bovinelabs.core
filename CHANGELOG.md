@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.9] - 2024-03-03
+### Added
+* UNITY_DOTS_DEBUG to SpatialMap, K, DynamicHashMaps, EntityCommands and Check
+
+### Changed
+* Changed exception to warning in InputActionMapSystem
+
+### Fixed
+* Dependency issue on InputActionMapSystem
+
 ## [1.2.8] - 2024-03-02
 ### Added
 * SetBinding to allow you to bind a binding

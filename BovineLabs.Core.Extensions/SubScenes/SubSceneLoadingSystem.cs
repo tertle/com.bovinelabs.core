@@ -10,10 +10,8 @@ namespace BovineLabs.Core.SubScenes
     using BovineLabs.Core.App;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Groups;
-    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Jobs;
     using Unity.Mathematics;
     using Unity.Scenes;
     using UnityEngine;

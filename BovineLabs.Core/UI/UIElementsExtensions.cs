@@ -4,9 +4,6 @@
 
 namespace BovineLabs.Core.UI
 {
-    using System.Linq;
-    using System.Reflection;
-    using UnityEngine;
     using UnityEngine.UIElements;
 
     /// <summary> Extensions and helpers for UIToolkit. </summary>

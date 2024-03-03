@@ -6,7 +6,6 @@
 namespace BovineLabs.Core.Input
 {
     using System;
-    using BovineLabs.Core.Extensions;
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
@@ -35,18 +34,6 @@ namespace BovineLabs.Core.Input
         {
             this.input = SystemAPI.GetSingleton<InputDefault>();
             this.input.CursorPosition.Value.action.performed += this.OnCursorPositionPerformed;
-
-            var map = this.EntityManager.GetSingletonBuffer<InputActionMapEnable>();
-
-            if (this.input.CommonActionMap != default)
-            {
-                map.Add(new InputActionMapEnable { Input = this.input.CommonActionMap, Enable = true });
-            }
-
-            if (this.input.UIActionMap != default)
-            {
-                map.Add(new InputActionMapEnable { Input = this.input.UIActionMap, Enable = true });
-            }
 
             this.anyButtonPress = InputSystem.onAnyButtonPress.Call(this.OnButtonPressed);
         }

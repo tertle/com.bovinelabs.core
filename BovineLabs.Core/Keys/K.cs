@@ -25,7 +25,7 @@ namespace BovineLabs.Core.Keys
         {
             if (!TryNameToKey(name, out var key))
             {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 Debug.LogError($"{name} does not exist");
 #endif
             }
@@ -35,7 +35,7 @@ namespace BovineLabs.Core.Keys
 
         public static bool TryNameToKey(FixedString32Bytes name, out int key)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             if (Map.Data.Capacity == 0)
             {
                 Debug.LogError("Trying to read from an uninitialized K");
@@ -52,7 +52,7 @@ namespace BovineLabs.Core.Keys
         /// <returns> The value. </returns>
         public static FixedString32Bytes KeyToName(int key)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             if (Map.Data.Capacity == 0)
             {
                 Debug.LogError("Trying to read from an uninitialized K");
@@ -62,7 +62,7 @@ namespace BovineLabs.Core.Keys
 
             if (!Map.Data.TryGetValue(key, out var name))
             {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 Debug.LogError($"{key} does not exist");
 #endif
             }

@@ -7,7 +7,6 @@ namespace BovineLabs.Core.PhysicsStates
 {
     using System;
     using Unity.Entities;
-    using Unity.Physics;
 
     public interface IEventContainer<T, TC> : IEquatable<TC>
         where TC : unmanaged, IEventContainer<T, TC>

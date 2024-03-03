@@ -9,7 +9,6 @@ namespace BovineLabs.Core.Extensions
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
-    using Unity.Jobs.LowLevel.Unsafe;
 
     /// <summary> Extensions for <see cref="NativeParallelMultiHashMap{TKey,TValue}" />. </summary>
     public static unsafe class NativeParallelMultiHashMapExtensions

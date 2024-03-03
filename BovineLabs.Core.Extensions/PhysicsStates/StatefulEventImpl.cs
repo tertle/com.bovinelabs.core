@@ -9,7 +9,6 @@ namespace BovineLabs.Core.PhysicsStates
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using Unity.Physics;
 
     internal interface IWriteJob<T, TC> : IJobChunk
         where T : unmanaged, IBufferElementData

@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Editor.Inspectors
     using System.Collections.Generic;
     using BovineLabs.Core.Iterators;
     using JetBrains.Annotations;
-    using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 

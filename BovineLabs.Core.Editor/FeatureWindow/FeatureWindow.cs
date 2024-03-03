@@ -5,7 +5,6 @@
 namespace BovineLabs.Core.Editor.FeatureWindow
 {
     using System.Collections.Generic;
-    using System.Linq;
     using BovineLabs.Core.Editor.UI;
     using UnityEditor;
     using UnityEditor.Build;

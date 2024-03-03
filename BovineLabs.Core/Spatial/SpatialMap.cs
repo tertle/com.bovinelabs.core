@@ -23,11 +23,6 @@ namespace BovineLabs.Core.Spatial
         private readonly int quantizeSize;
         private readonly int2 halfSize;
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-        private readonly float2 min;
-        private readonly float2 max;
-#endif
-
         private NativeKeyedMap<int> map;
 
         public SpatialMap(float quantizeStep, int size, Allocator allocator = Allocator.Persistent)
@@ -37,11 +32,6 @@ namespace BovineLabs.Core.Spatial
             this.halfSize = new int2(size) / 2;
 
             this.map = new NativeKeyedMap<int>(0, this.quantizeSize * this.quantizeSize, allocator);
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            this.min = -this.halfSize;
-            this.max = new int2(size) - this.halfSize;
-#endif
         }
 
         public bool IsCreated => this.map.IsCreated;
@@ -84,10 +74,6 @@ namespace BovineLabs.Core.Spatial
                     QuantizeWidth = this.quantizeSize,
                     HalfSize = this.halfSize,
                     Workers = workers,
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                    Min = this.min,
-                    Max = this.max,
-#endif
                 }
                 .ScheduleParallel(workers, 1, dependency);
 
@@ -144,11 +130,6 @@ namespace BovineLabs.Core.Spatial
 
             public int Workers;
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            public float2 Min;
-            public float2 Max;
-#endif
-
             public void Execute(int index)
             {
                 var length = this.Positions.Length / this.Workers;
@@ -166,8 +147,10 @@ namespace BovineLabs.Core.Spatial
                 for (var entityInQueryIndex = start; entityInQueryIndex < end; entityInQueryIndex++)
                 {
                     var position = this.Positions[entityInQueryIndex].Position;
-                    this.ValidatePosition(position);
                     var quantized = SpatialMap.Quantized(position, this.QuantizeStep, this.HalfSize);
+
+                    this.ValidatePosition(position, quantized);
+
                     var hashed = SpatialMap.Hash(quantized, this.QuantizeWidth);
                     keys[entityInQueryIndex] = hashed;
                     values[entityInQueryIndex] = entityInQueryIndex;
@@ -175,15 +158,17 @@ namespace BovineLabs.Core.Spatial
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            private void ValidatePosition(float2 position)
+            [Conditional("UNITY_DOTS_DEBUG")]
+            private void ValidatePosition(float2 position, int2 quantized)
             {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                if (math.any(position < this.Min) || math.any(position > this.Max))
+                if (math.any(quantized >= this.QuantizeWidth))
                 {
-                    Debug.LogError($"Position {position} is outside the size of the world");
-                    throw new ArgumentException($"Position {position} is outside the size of the world");
+                    var min = new int2(-this.HalfSize);
+                    var max = new int2(this.HalfSize - 1);
+
+                    Debug.LogError($"Position {position} is outside the size of the world, min={min} max={max}");
+                    throw new ArgumentException($"Position {position} is outside the size of the world, min={min} max={max}");
                 }
-#endif
             }
         }
     }

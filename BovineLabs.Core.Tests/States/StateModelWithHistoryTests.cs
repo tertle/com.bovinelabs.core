@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Tests.States
     using BovineLabs.Testing;
     using NUnit.Framework;
     using Unity.Burst;
-    using Unity.Collections;
     using Unity.Entities;
 
     internal class StateModelWithHistoryTests : ECSTestsFixture

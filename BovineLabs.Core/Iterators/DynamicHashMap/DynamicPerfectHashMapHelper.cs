@@ -148,6 +148,7 @@ namespace BovineLabs.Core.Iterators
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
         private static void AssertCollisionFree(NativeArray<TKey> keys, NativeHashSet<int> unique)
         {
             foreach (var key in keys)

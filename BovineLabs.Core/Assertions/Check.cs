@@ -31,6 +31,7 @@ namespace BovineLabs.Core.Assertions
 
         [AssertionMethod]
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
         private static void IsTrue(bool condition)
         {
             Debug.Assert(condition);
@@ -38,6 +39,7 @@ namespace BovineLabs.Core.Assertions
 
         [AssertionMethod]
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
         private static void IsTrue(bool condition, string message)
         {
             Debug.Assert(condition, message);

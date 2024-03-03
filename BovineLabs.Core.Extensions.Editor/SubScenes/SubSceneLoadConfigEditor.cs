@@ -9,7 +9,6 @@ namespace BovineLabs.Core.Editor.SubScenes
     using BovineLabs.Core.Editor.Inspectors;
     using BovineLabs.Core.SubScenes;
     using UnityEditor;
-    using UnityEditor.UIElements;
     using UnityEngine.UIElements;
 
     /// <summary> Custom editor for <see cref="SubSceneLoadConfig" />. </summary>

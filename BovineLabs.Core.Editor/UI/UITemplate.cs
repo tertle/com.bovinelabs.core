@@ -4,7 +4,6 @@
 
 namespace BovineLabs.Core.Editor.UI
 {
-    using Unity.Entities.Editor;
     using UnityEditor;
     using UnityEngine.UIElements;
 

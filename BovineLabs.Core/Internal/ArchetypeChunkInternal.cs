@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Internal
     using System;
     using System.Diagnostics;
     using Unity.Burst.CompilerServices;
-    using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
     public static class ArchetypeChunkInternal
@@ -116,6 +115,7 @@ namespace BovineLabs.Core.Internal
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
         private static void SetChangeFilterCheckWriteAndThrow<T>(ComponentTypeHandle<T> chunkComponentType)
             where T : IComponentData
         {
@@ -126,6 +126,7 @@ namespace BovineLabs.Core.Internal
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
         private static void SetChangeFilterCheckWriteAndThrow<T>(BufferTypeHandle<T> chunkComponentType)
             where T : unmanaged, IBufferElementData
         {
@@ -136,6 +137,7 @@ namespace BovineLabs.Core.Internal
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
         private static void SetChangeFilterCheckWriteAndThrow(DynamicComponentTypeHandle chunkComponentType)
         {
             if (chunkComponentType.IsReadOnly)

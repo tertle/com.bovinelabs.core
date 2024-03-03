@@ -6,7 +6,6 @@
 namespace BovineLabs.Core.Authoring.Entities
 {
     using Unity.Burst;
-    using Unity.Collections;
     using Unity.Entities;
     using Unity.Physics;
     using UnityEngine;

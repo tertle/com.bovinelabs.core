@@ -77,7 +77,7 @@ namespace BovineLabs.Core.EntityCommands
         public void AddComponentObject<T>(in T component)
             where T : class
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             throw new NotImplementedException("Can't AddComponentObject from a command buffer");
 #endif
         }
