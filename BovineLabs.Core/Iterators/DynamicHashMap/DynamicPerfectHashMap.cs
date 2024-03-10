@@ -9,24 +9,27 @@ namespace BovineLabs.Core.Iterators
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
+    using BovineLabs.Core.Extensions;
     using Unity.Burst.CompilerServices;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
     [DebuggerTypeProxy(typeof(DynamicPerfectHashMapDebuggerTypeProxy<,>))]
-    public readonly unsafe struct DynamicPerfectHashMap<TKey, TValue> : IEnumerable<KVPair<TKey, TValue>>
+    public unsafe struct DynamicPerfectHashMap<TKey, TValue> : IEnumerable<KVPair<TKey, TValue>>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
+        private DynamicBuffer<byte> buffer;
+
         [NativeDisableUnsafePtrRestriction]
-        private readonly DynamicPerfectHashMapHelper<TKey, TValue>* helper;
+        private DynamicPerfectHashMapHelper<TKey, TValue>* helper;
 
         internal DynamicPerfectHashMap(DynamicBuffer<byte> buffer)
         {
             CheckSize(buffer);
-
-            this.helper = buffer.AsHelperReadOnly<TKey, TValue>();
+            this.buffer = buffer;
+            this.helper = buffer.AsHelper<TKey, TValue>(); // TODO enable
         }
 
         internal DynamicPerfectHashMapHelper<TKey, TValue>* Helper => this.helper;
@@ -40,16 +43,21 @@ namespace BovineLabs.Core.Iterators
         {
             get
             {
+                this.buffer.CheckReadAccess();
+
                 if (Hint.Unlikely(!this.TryGetValue(key, out var value)))
                 {
                     this.ThrowKeyNotPresent(key);
+
                     return default;
                 }
 
                 return value;
             }
+
             set
             {
+                this.buffer.CheckWriteAccess();
                 if (!this.TryGetIndex(key, out var index))
                 {
                     this.ThrowKeyNotPresent(key);
@@ -65,6 +73,7 @@ namespace BovineLabs.Core.Iterators
         /// <returns>True if the key was present.</returns>
         public bool TryGetValue(TKey key, out TValue item)
         {
+            this.buffer.CheckReadAccess();
             if (!this.TryGetIndex(key, out var index))
             {
                 item = default;
@@ -77,6 +86,7 @@ namespace BovineLabs.Core.Iterators
 
         public TValue GetNoCheck(TKey key)
         {
+            this.buffer.CheckReadAccess();
             if (!this.TryGetIndex(key, out var index))
             {
                 this.ThrowKeyNotPresent(key);
@@ -118,7 +128,6 @@ namespace BovineLabs.Core.Iterators
             throw new NotImplementedException();
         }
 
-
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
         private static void CheckSize(DynamicBuffer<byte> buffer)
@@ -140,7 +149,6 @@ namespace BovineLabs.Core.Iterators
         {
             throw new ArgumentException($"Key: {key} is not present.");
         }
-
     }
 
     internal sealed unsafe class DynamicPerfectHashMapDebuggerTypeProxy<TKey, TValue>

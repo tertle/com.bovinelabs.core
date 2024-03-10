@@ -32,6 +32,47 @@ namespace BovineLabs.Core.Editor.Helpers
             }
         }
 
+        public static IEnumerable<SerializedProperty> IterateAllChildrenAndFlatten(SerializedObject root)
+        {
+            var iterator = root.GetIterator();
+            return IterateAllChildrenAndFlatten(iterator);
+        }
+
+        public static IEnumerable<SerializedProperty> IterateAllChildrenAndFlatten(SerializedProperty iterator)
+        {
+            for (var enterChildren = true; iterator.NextVisible(enterChildren); enterChildren = false)
+            {
+                if (iterator.propertyPath != "m_Script")
+                {
+                    if (iterator.isArray)
+                    {
+                        yield return iterator.Copy();
+                    }
+                    else
+                    {
+                        if (iterator.propertyType != SerializedPropertyType.Generic)
+                        {
+                            yield return iterator.Copy();
+                        }
+
+                        if (iterator.propertyType != SerializedPropertyType.ObjectReference) // TODO probably a few more things here
+                        {
+                            foreach (var child in GetChildren(iterator))
+                            {
+                                // TODO like to be able to iterate lower
+                                yield return child; /* .Copy();
+
+                                foreach (var i in IterateAllChildrenAndFlatten(child))
+                                {
+                                    yield return i;
+                                }*/
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         public static IEnumerable<SerializedProperty> GetChildren(SerializedProperty property)
         {
             var currentProperty = property.Copy();

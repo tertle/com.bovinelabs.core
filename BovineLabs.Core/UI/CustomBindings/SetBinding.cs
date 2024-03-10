@@ -1,4 +1,4 @@
-﻿// <copyright file="ActionBinding.cs" company="BovineLabs">
+﻿// <copyright file="SetBinding.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -15,14 +15,14 @@ namespace BovineLabs.Core.UI
         public SetBinding() => this.updateTrigger = BindingUpdateTrigger.OnSourceChanged;
 
         [CreateProperty]
-        public object? dataSource => null;
+        public object dataSource => null!;
 
         /// <inheritdoc/>
         [CreateProperty]
         public PropertyPath dataSourcePath { get; set; }
 
         [UxmlAttribute("data-source-type")]
-        [UxmlTypeReference(typeof (object))]
+        [UxmlTypeReference(typeof(object))]
         public Type DataSourceString { get; set; }
 
         [UxmlAttribute("data-source-path")]

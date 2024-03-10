@@ -11,6 +11,7 @@ namespace BovineLabs.Core.ConfigVars
     using BovineLabs.Core.Utility;
     using Unity.Burst;
     using Unity.Collections;
+    using Unity.Entities;
     using UnityEngine;
     using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
@@ -102,13 +103,27 @@ namespace BovineLabs.Core.ConfigVars
 
                 RegisterConfigVar(configVar, container);
 
-                container.StringValue = CommandLineArgs.TryGetArgument(configVar.Name, out var value)
-                    ? value
+                if (CommandLineArgs.TryGetArgument($"-{configVar.Name}", out var value))
+                {
+                    try
+                    {
+                        container.StringValue = value;
+                        Debug.Log($"ConfigVar {configVar.Name} set from command line to {value}");
+                    }
+                    catch (Exception)
+                    {
+                        Debug.LogWarning($"Trying to set a configvar {configVar.Name} value of {value} which is not in the write type format. Faling back to default.");
+                        container.StringValue = configVar.DefaultValue;
+                    }
+                }
+                else
+                {
 #if UNITY_EDITOR
-                    : EditorPrefs.GetString(configVar.Name, configVar.DefaultValue);
+                    container.StringValue = EditorPrefs.GetString(configVar.Name, configVar.DefaultValue);
 #else
-                    : configVar.DefaultValue;
+                    container.StringValue = configVar.DefaultValue;
 #endif
+                }
             }
         }
 

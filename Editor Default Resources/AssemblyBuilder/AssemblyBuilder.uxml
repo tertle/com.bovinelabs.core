@@ -16,6 +16,7 @@
                     <ui:Toggle label="Unity.InputSystem" value="true" />
                     <ui:Toggle label="Unity.Logging" value="true" />
                     <ui:Toggle label="Unity.Mathematics" value="true" />
+                    <ui:Toggle label="Unity.Mathematics.Extensions" value="true" />
                     <ui:Toggle label="Unity.NetCode" value="true" />
                     <ui:Toggle label="Unity.Networking.Transport" value="true" />
                     <ui:Toggle label="Unity.Physics" value="true" />

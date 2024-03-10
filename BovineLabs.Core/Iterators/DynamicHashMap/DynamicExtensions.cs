@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Iterators
 {
     using System;
     using System.Diagnostics;
+    using BovineLabs.Core.Extensions;
     using Unity.Assertions;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -150,14 +151,7 @@ namespace BovineLabs.Core.Iterators
             where TKey : unmanaged, IEquatable<TKey>
         {
             CheckSize<DynamicHashMapHelper<TKey>>(buffer);
-            return (DynamicHashMapHelper<TKey>*)buffer.GetUnsafePtr();
-        }
-
-        internal static DynamicHashMapHelper<TKey>* AsHelperReadOnly<TKey>(this DynamicBuffer<byte> buffer)
-            where TKey : unmanaged, IEquatable<TKey>
-        {
-            CheckSize<DynamicHashMapHelper<TKey>>(buffer);
-            return (DynamicHashMapHelper<TKey>*)buffer.GetUnsafeReadOnlyPtr();
+            return (DynamicHashMapHelper<TKey>*)buffer.GetPtr();
         }
 
         internal static DynamicPerfectHashMapHelper<TKey, TValue>* AsHelper<TKey, TValue>(this DynamicBuffer<byte> buffer)
@@ -165,15 +159,7 @@ namespace BovineLabs.Core.Iterators
             where TValue : unmanaged
         {
             CheckSize<DynamicHashMapHelper<TKey>>(buffer);
-            return (DynamicPerfectHashMapHelper<TKey, TValue>*)buffer.GetUnsafePtr();
-        }
-
-        internal static DynamicPerfectHashMapHelper<TKey, TValue>* AsHelperReadOnly<TKey, TValue>(this DynamicBuffer<byte> buffer)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            CheckSize<DynamicHashMapHelper<TKey>>(buffer);
-            return (DynamicPerfectHashMapHelper<TKey, TValue>*)buffer.GetUnsafeReadOnlyPtr();
+            return (DynamicPerfectHashMapHelper<TKey, TValue>*)buffer.GetPtr();
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

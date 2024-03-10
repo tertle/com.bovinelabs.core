@@ -34,17 +34,7 @@ namespace BovineLabs.Core.ConfigVars
         string IConfigVarContainer.StringValue
         {
             get => this.field.Data.ToString();
-            set
-            {
-                try
-                {
-                    this.field.Data = (T)Convert.ChangeType(value, typeof(T));
-                }
-                catch (Exception)
-                {
-                    Debug.LogWarning($"Trying to set a config value of {value} which is not of type {typeof(T)}");
-                }
-            }
+            set => this.field.Data = (T)Convert.ChangeType(value, typeof(T));
         }
     }
 }

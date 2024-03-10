@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.2.10] - 2024-03-11
+### Added
+* BlobHashMap, BlobMultiHashMap
+* PrefabElementEditor and PrefabElementAttribute which makes an inspector where changes are written to the prefab not instance
+* Inspectors for various UnityObjectRef<T> including Material and Mesh
+* Separate ViewPorts in InputCommon for camera vs screen
+* Added ApplicationFocus to InputCommon
+* Added gamma and normal distributions to mathex
+* Static method for toggle pause on PauseGame to unify logs
+* Burst replacement for UpdateWorldTimeSystem if using BovineLabsBoostrap
+* PauseSystem can now pause presentation separately
+
+### Changed
+* Renamed UIHelper GetToolbar to GetPanel
+* LifeCycleAuthoring DisableInstantiateOnInstance has been inverted to InstantiateOnInstance
+* DynamicHashMaps can now be accessed on main thread without triggering safety, allowing you to pass them to jobs
+* Improved performance of destroy pipeline and removed DestroyEntityCommandBufferSystem
+* SubSceneLoadingSystem is now a bursted ISystem
+* UnityTimeSystem is now bursted
+
+### Fixed
+* UIHelper.GetPanel again returns the actual panel
+* FixedArray Length value was wrong
+* ConfigVarManager loading via environmental variables
+* Loading volume SubScenes
+* ToolbarManager error when disabled
+
+### Removed
+* Removed UnityTime, instead just directly use UnityEngine.Time in burst
+
 ## [1.2.9] - 2024-03-03
 ### Added
 * UNITY_DOTS_DEBUG to SpatialMap, K, DynamicHashMaps, EntityCommands and Check
@@ -14,7 +44,7 @@
 ### Added
 * SetBinding to allow you to bind a binding
 * You can now automatically generate hashmaps from data on Object Definitions
-* Automatically add your settings files to the appropriate settings authoring in the subscene. Assign a default in EditorSettings and optionally use SettingsWorldAttribute if you have multiple worlds
+* Automatically add your settings files to the appropriate settings authoring in the SubScene. Assign a default in EditorSettings and optionally use SettingsWorldAttribute if you have multiple worlds
 * Settings search now highlights
 
 ### Changed

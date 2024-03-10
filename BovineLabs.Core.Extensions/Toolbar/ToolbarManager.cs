@@ -2,7 +2,8 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_TOOLBAR && (BL_DEBUG || UNITY_EDITOR)
+#if !BL_DISABLE_TOOLBAR
+#if BL_DEBUG || UNITY_EDITOR
 namespace BovineLabs.Core.Toolbar
 {
     using System;
@@ -632,4 +633,5 @@ namespace BovineLabs.Core.Toolbar
         private VisualTreeAsset? toolbarAsset;
     }
 }
+#endif
 #endif

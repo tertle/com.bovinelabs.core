@@ -6,8 +6,8 @@ It allows function pointers to be passed to a job that forward to a method on a 
 ### IFunction
 
 ```csharp
-public unsafe delegate void UpdateFunction(void* target, ref SystemState state);
 public unsafe delegate void DestroyFunction(void* target, ref SystemState state);
+public unsafe delegate void UpdateFunction(void* target, ref SystemState state);
 public unsafe delegate void ExecuteFunction(void* target, void* data, void* result);
 
 /// <summary> An implementation of a forwarding function pointer for extending jobs to other developers or modders. </summary>
@@ -33,7 +33,6 @@ public interface IFunction<T>
     /// <summary>
     /// Gets the OnUpdate forwarding function which must be a static forwarding function and burst compilable.
     /// The logic that will execute inside the job when requested.
-    /// Returns int to allow some conditional execution when inside a job.
     /// </summary>
     ExecuteFunction ExecuteFunction { get; }
 
@@ -67,8 +66,8 @@ public unsafe struct FunctionsBuilder<T, TO> : IDisposable
     /// <summary> Manually create an instance of <see cref="IFunction{T}"/>. </summary>
     public FunctionsBuilder<T, TO> Add<TF>(ref SystemState state);
 
-    /// <summary> Builds the <see cref="Functions{T}"/> to use with all the found <see cref="IFunction{T}"/>. </summary>
-    public Functions<T> Build();
+    /// <summary> Builds the <see cref="Functions{T, TO}"/> to use with all the found <see cref="IFunction{T}"/>. </summary>
+    public Functions<T, TO> Build();
 }
 ```
 

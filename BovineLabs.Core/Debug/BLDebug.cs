@@ -22,7 +22,7 @@ namespace BovineLabs.Core
         public bool IsValid => this.LoggerHandle.IsValid;
 
         [Conditional("UNITY_EDITOR")]
-        public readonly void Verbose(in FixedString32Bytes msg)
+        public readonly void Verbose(in FixedString128Bytes msg)
         {
             if (this.Enabled)
             {
@@ -32,7 +32,7 @@ namespace BovineLabs.Core
 
         [Conditional("UNITY_EDITOR")]
         [Conditional("BL_DEBUG")]
-        public readonly void Debug(in FixedString512Bytes msg)
+        public readonly void Debug(in FixedString128Bytes msg)
         {
             if (this.Enabled)
             {
@@ -42,7 +42,7 @@ namespace BovineLabs.Core
 
         [Conditional("UNITY_EDITOR")]
         [Conditional("BL_DEBUG")]
-        public readonly void DebugLong(in FixedString4096Bytes msg)
+        public readonly void DebugLong512(in FixedString512Bytes msg)
         {
             if (this.Enabled)
             {
@@ -50,8 +50,17 @@ namespace BovineLabs.Core
             }
         }
 
+        [Conditional("UNITY_EDITOR")]
+        [Conditional("BL_DEBUG")]
+        public readonly void DebugLong4096(in FixedString4096Bytes msg)
+        {
+            if (this.Enabled)
+            {
+                Log.To(this.LoggerHandle).Debug(msg);
+            }
+        }
 
-        public readonly void Info(in FixedString512Bytes msg)
+        public readonly void Info(in FixedString128Bytes msg)
         {
             if (this.Enabled)
             {
@@ -59,7 +68,7 @@ namespace BovineLabs.Core
             }
         }
 
-        public readonly void Warning(in FixedString512Bytes msg)
+        public readonly void Warning(in FixedString128Bytes msg)
         {
             if (this.Enabled)
             {
@@ -67,7 +76,7 @@ namespace BovineLabs.Core
             }
         }
 
-        public readonly void Error(in FixedString512Bytes msg)
+        public readonly void Error(in FixedString128Bytes msg)
         {
             if (this.Enabled)
             {

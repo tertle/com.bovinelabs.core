@@ -14,7 +14,9 @@ namespace BovineLabs.Core.Authoring.LifeCycle
     public class LifeCycleAuthoring : MonoBehaviour
     {
         public bool AddInstantiate = true;
-        public bool DisableInstantiateOnInstance = true;
+
+        [Tooltip("Should SubScene objects be instantiated as well? Default off as the expected behaviour of instances is they would be manually configured.")]
+        public bool InstantiateSubSceneObjects;
         public bool AddDestroy = true;
 
         private class Baker : Baker<LifeCycleAuthoring>
@@ -28,7 +30,7 @@ namespace BovineLabs.Core.Authoring.LifeCycle
                 {
                     this.AddComponent<InitializeEntity>(entity);
 
-                    if (!authoring.IsPrefab() && authoring.DisableInstantiateOnInstance)
+                    if (!authoring.IsPrefab() && !authoring.InstantiateSubSceneObjects)
                     {
                         this.SetComponentEnabled<InitializeEntity>(entity, false);
                     }

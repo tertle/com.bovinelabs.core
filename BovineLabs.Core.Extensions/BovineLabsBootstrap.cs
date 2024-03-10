@@ -5,11 +5,15 @@
 namespace BovineLabs.Core
 {
     using System;
-    using System.Linq;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Internal;
+    using Unity.Collections;
     using Unity.Entities;
     using UnityEngine.Scripting;
+#if !BL_DISABLE_TIME
+    using BLUpdateWorldTimeSystem = BovineLabs.Core.Time.UpdateWorldTimeSystem;
+    using UnityUpdateWorldTimeSystem = Unity.Entities.UpdateWorldTimeSystem;
+#endif
 
     [Preserve]
 #if UNITY_NETCODE
@@ -35,44 +39,21 @@ namespace BovineLabs.Core
 
             // Special case because these exist in Core not extensions so don't have access to Service
             systems.Add(TypeManager.GetSystemTypeIndex<BLDebugSystem>());
+#if !BL_DISABLE_TIME
+            systems.Add(TypeManager.GetSystemTypeIndex<BLUpdateWorldTimeSystem>()); // manually created
+#endif
 #if UNITY_EDITOR || BL_DEBUG
             systems.Add(TypeManager.GetSystemTypeIndex<DebugSystemGroup>());
 #endif
 
             // We find all default systems in the Unity.Entities and add them to the ServiceWorld
-            var allSystems = TypeManager.GetSystems(WorldSystemFilterFlags.Default)
-                .Where(t =>
+            foreach(var systemIndex in TypeManager.GetSystemTypeIndices(WorldSystemFilterFlags.Default).AsArray())
+            {
+                if (ServiceUnityFilter(systemIndex))
                 {
-                    if (t is not { Namespace: not null })
-                        return false;
-
-                    if (t.Namespace.StartsWith("Unity.Entities"))
-                    {
-                        if (t.Namespace.StartsWith("Unity.Entities.Graphics"))
-                        {
-                            return false;
-                        }
-
-                        return t != typeof(FixedStepSimulationSystemGroup) &&
-                                    t != typeof(BeginFixedStepSimulationEntityCommandBufferSystem) &&
-                                    t != typeof(EndFixedStepSimulationEntityCommandBufferSystem) &&
-                                    t != typeof(VariableRateSimulationSystemGroup) &&
-                                    t != typeof(BeginVariableRateSimulationEntityCommandBufferSystem) &&
-                                    t != typeof(EndVariableRateSimulationEntityCommandBufferSystem) &&
-                                    t != typeof(CompanionGameObjectUpdateTransformSystem) &&
-                                    t != EntityInternals.CompanionGameObjectUpdateSystemType;
-                    }
-
-                    return t.Namespace.StartsWith("Unity.Scenes"); // || t.Namespace.StartsWith("Unity.Transforms");
-                })
-                // TODO do we need transform, companion, fixed/variable update etc
-#if UNITY_EDITOR
-                .Where(t => !t.Namespace!.Contains("Tests"))
-#endif
-                .Select(TypeManager.GetSystemTypeIndex)
-                .ToArray();
-
-            systems.AddRange(allSystems);
+                    systems.Add(systemIndex);
+                }
+            }
 
             DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(serviceWorld, systems);
             ScriptBehaviourUpdateOrder.AppendWorldToCurrentPlayerLoop(serviceWorld);
@@ -93,6 +74,10 @@ namespace BovineLabs.Core
             GameWorldCreated?.Invoke(gameWorld);
 
             var systems = DefaultWorldInitialization.GetAllSystemTypeIndices(WorldSystemFilterFlags.Default);
+#if !BL_DISABLE_TIME
+            systems.Add(TypeManager.GetSystemTypeIndex<BLUpdateWorldTimeSystem>());
+            Remove<UnityUpdateWorldTimeSystem>(systems);
+#endif
             DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(gameWorld, systems);
             ScriptBehaviourUpdateOrder.AppendWorldToCurrentPlayerLoop(gameWorld);
         }
@@ -108,6 +93,79 @@ namespace BovineLabs.Core
 
             gameWorld.Dispose();
             gameWorld = null;
+        }
+
+        // We find all default systems in the Unity.Entities and add them to the ServiceWorld
+        private static bool ServiceUnityFilter(SystemTypeIndex index)
+        {
+            var t = TypeManager.GetSystemType(index);
+
+            if (t is not { Namespace: not null })
+            {
+                return false;
+            }
+
+            if (t.Namespace.StartsWith("Unity.Scenes"))
+            {
+                return true;
+            }
+
+            if (!t.Namespace.StartsWith("Unity.Entities"))
+            {
+                return false;
+            }
+
+#if UNITY_EDITOR
+            if (t.Namespace.Contains("Tests"))
+            {
+                return false;
+            }
+#endif
+
+            if (t.Namespace.StartsWith("Unity.Entities.Graphics"))
+            {
+                return false;
+            }
+
+            return t != typeof(FixedStepSimulationSystemGroup) &&
+                   t != typeof(BeginFixedStepSimulationEntityCommandBufferSystem) &&
+                   t != typeof(EndFixedStepSimulationEntityCommandBufferSystem) &&
+                   t != typeof(VariableRateSimulationSystemGroup) &&
+                   t != typeof(BeginVariableRateSimulationEntityCommandBufferSystem) &&
+                   t != typeof(EndVariableRateSimulationEntityCommandBufferSystem) &&
+                   t != typeof(CompanionGameObjectUpdateTransformSystem) &&
+#if !BL_DISABLE_TIME
+                   t != typeof(UnityUpdateWorldTimeSystem) &&
+#endif
+                   t != EntityInternals.CompanionGameObjectUpdateSystemType;
+
+            // TODO do we need transform, companion, fixed/variable update etc
+        }
+
+        private static void Remove<T>(NativeList<SystemTypeIndex> systems)
+        {
+            var index = systems.AsArray().IndexOf(new RemoveSystem(TypeManager.GetSystemTypeIndex<T>()));
+            if (index == -1)
+            {
+                return;
+            }
+
+            systems.RemoveAtSwapBack(index);
+        }
+
+        private struct RemoveSystem : IPredicate<SystemTypeIndex>
+        {
+            private readonly SystemTypeIndex system;
+
+            public RemoveSystem(SystemTypeIndex system)
+            {
+                this.system = system;
+            }
+
+            public bool Check(SystemTypeIndex other)
+            {
+                return other == this.system;
+            }
         }
     }
 }

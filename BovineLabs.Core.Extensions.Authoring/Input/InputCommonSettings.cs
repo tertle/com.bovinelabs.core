@@ -5,6 +5,7 @@
 #if !BL_DISABLE_INPUT
 namespace BovineLabs.Core.Authoring.Input
 {
+    using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using BovineLabs.Core.Authoring.Settings;
@@ -13,6 +14,7 @@ namespace BovineLabs.Core.Authoring.Input
     using Unity.Entities;
     using UnityEngine;
     using UnityEngine.InputSystem;
+    using Object = UnityEngine.Object;
 
     [SettingsGroup("Core")]
     public class InputCommonSettings : SettingsBase
@@ -21,7 +23,7 @@ namespace BovineLabs.Core.Authoring.Input
         private InputActionAsset? asset;
 
         [SerializeField]
-        private string[] defaultEnabled = new [] { "Common", "UI"} ;
+        private string[] defaultEnabled = Array.Empty<string>();
 
         [SerializeField]
         private InputActionReference? cursorPosition;

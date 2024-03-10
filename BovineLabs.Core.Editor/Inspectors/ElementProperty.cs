@@ -23,30 +23,51 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         public override VisualElement CreatePropertyGUI(SerializedProperty rootProperty)
         {
+            var iterateChildren = rootProperty.propertyType == SerializedPropertyType.Generic;
+
             if (this.Inline)
             {
                 this.parent = new VisualElement();
-                this.parent.AddToClassList("unity-decorator-drawers-container");
 
-                var label = new Label(rootProperty.displayName);
-                label.AddToClassList("unity-header-drawer__label");
-                this.Parent.Add(label);
-                // TODO indent?
+                if (iterateChildren)
+                {
+                    // TODO indent?
+                    this.parent.AddToClassList("unity-decorator-drawers-container");
+
+                    var label = new Label(rootProperty.displayName);
+                    label.AddToClassList("unity-header-drawer__label");
+                    this.Parent.Add(label);
+                }
             }
             else
             {
                 this.parent = new Foldout { text = rootProperty.displayName };
+                this.parent.AddToClassList("unity-collection-view");
+                this.parent.AddToClassList("unity-list-view");
             }
 
             this.serializedObject = rootProperty.serializedObject;
 
-            foreach (var property in SerializedHelper.GetChildren(rootProperty))
+            var createElements = this.PreElementCreation(this.parent);
+
+            if (createElements)
             {
-                var element = this.CreateElement(property);
-                this.Parent.Add(element);
+                if (iterateChildren)
+                {
+                    foreach (var property in SerializedHelper.GetChildren(rootProperty))
+                    {
+                        var element = this.CreateElement(property);
+                        this.Parent.Add(element);
+                    }
+                }
+                else
+                {
+                    var element = this.CreateElement(rootProperty);
+                    this.Parent.Add(element);
+                }
             }
 
-            this.PostElementCreation(this.Parent);
+            this.PostElementCreation(this.Parent, createElements);
 
             return this.Parent;
         }
@@ -61,8 +82,23 @@ namespace BovineLabs.Core.Editor.Inspectors
             return CreatePropertyField(property, this.SerializedObject);
         }
 
-        protected virtual void PostElementCreation(VisualElement root)
+        protected virtual bool PreElementCreation(VisualElement root)
         {
+            return true;
+        }
+
+        protected virtual void PostElementCreation(VisualElement root, bool createdElements)
+        {
+        }
+
+        /// <summary> Adds appropriate styles to make a label match the default <see cref="BaseField{TValueType}"/> alignment in an inspector. </summary>
+        /// <param name="label"> The label to apply to. </param>
+        protected static void AddLabelStyles(Label label)
+        {
+            label.AddToClassList(BaseField<string>.ussClassName);
+            label.AddToClassList(BaseField<string>.labelUssClassName);
+            label.AddToClassList(BaseField<string>.ussClassName + "__inspector-field");
+            label.style.minHeight = new StyleLength(19); // bit gross but matches the element
         }
     }
 }

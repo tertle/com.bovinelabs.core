@@ -41,8 +41,7 @@ namespace BovineLabs.Core.ToolbarTabs
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var time = SystemAPI.GetSingleton<UnityTime>();
-            this.timeToTriggerUpdatesPassed += time.UnscaledDeltaTime;
+            this.timeToTriggerUpdatesPassed += UnityEngine.Time.unscaledDeltaTime;
 
             if (!this.toolbar.IsVisible())
             {

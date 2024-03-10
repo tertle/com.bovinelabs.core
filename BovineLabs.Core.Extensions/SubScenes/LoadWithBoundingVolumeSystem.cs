@@ -78,6 +78,7 @@ namespace BovineLabs.Core.SubScenes
             }
 
             ecb.Playback(state.EntityManager);
+            ecb.Dispose();
         }
 
         private static void UnloadScene(EntityCommandBuffer entityCommandBuffer, Entity entity, DynamicBuffer<ResolvedSectionEntity> resolvedSectionEntity)

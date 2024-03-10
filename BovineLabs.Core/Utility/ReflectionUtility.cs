@@ -12,6 +12,7 @@ namespace BovineLabs.Core.Utility
 #if UNITY_EDITOR
     using UnityEditor.Compilation;
     using Assembly = UnityEditor.Compilation.Assembly;
+    using AssemblyFlags = UnityEditor.Compilation.AssemblyFlags;
 #endif
 
     /// <summary> Common reflection helpers. </summary>

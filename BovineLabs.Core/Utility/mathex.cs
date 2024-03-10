@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Utility
 {
+    using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Assertions;
@@ -659,6 +660,142 @@ namespace BovineLabs.Core.Utility
             q = cross * invLength;
         }
 
+        public static float3 ToFloat3(this float2 f, float y = 0)
+        {
+            return new float3(f.x, y, f.x);
+        }
+
+        public static int3 ToInt3(this int2 f, int y = 0)
+        {
+            return new int3(f.x, y, f.x);
+        }
+
+        /// <summary> Implementation of the Box-Muller transform to generate normal distribution. </summary>
+        /// <remarks> https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform </remarks>
+        /// <param name="random"></param>
+        /// <param name="mu"> Mean of the distribution. </param>
+        /// <param name="sigma"> The standard deviation. </param>
+        /// <returns> Two independent random variable with a standard normal distribution.</returns>
+        public static (float z0, float z1) GenerateGaussianNoise(ref Random random, float mu, float sigma)
+        {
+            float u1;
+            do u1 = random.NextFloat();
+            while (Hint.Unlikely(u1 == 0)); // 0 is infinite
+
+            var u2 = random.NextFloat();
+
+            var R = sigma * math.sqrt(-2 * math.log(u1));
+            var theta = math.PI2 * u2;
+
+            var z0 = R * math.cos(theta) + mu;
+            var z1 = R * math.sin(theta) + mu;
+
+            return (z0, z1);
+        }
+
+        // <copyright file="Gamma.cs" company="Math.NET">
+        // Math.NET Numerics, part of the Math.NET Project
+        // http://numerics.mathdotnet.com
+        // http://github.com/mathnet/mathnet-numerics
+        //
+        // Copyright (c) 2009-2014 Math.NET
+        //
+        // Permission is hereby granted, free of charge, to any person
+        // obtaining a copy of this software and associated documentation
+        // files (the "Software"), to deal in the Software without
+        // restriction, including without limitation the rights to use,
+        // copy, modify, merge, publish, distribute, sublicense, and/or sell
+        // copies of the Software, and to permit persons to whom the
+        // Software is furnished to do so, subject to the following
+        // conditions:
+        //
+        // The above copyright notice and this permission notice shall be
+        // included in all copies or substantial portions of the Software.
+        //
+        // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+        // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+        // OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+        // NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+        // HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+        // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+        // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+        // OTHER DEALINGS IN THE SOFTWARE.
+        // </copyright>
+        // https://github.com/mathnet/mathnet-numerics/blob/master/src/Numerics/Distributions/Gamma.cs
+        public static float GammaDistribution(ref Random random, float shape, float rate)
+        {
+            if (float.IsPositiveInfinity(rate))
+            {
+                return shape;
+            }
+
+            var a = shape;
+            var alphafix = 1f;
+
+            // Fix when alpha is less than one.
+            if (shape < 1f)
+            {
+                a = shape + 1f;
+                alphafix = math.pow(random.NextFloat(), 1f/shape);
+            }
+
+            var d = a - (1f/3f);
+            var c = 1f / math.sqrt(9f * d);
+            while (true)
+            {
+                var x = NormalDistribution(ref random, 0f, 1f);
+                var v = 1f + c * x;
+                while (v <= 0.0)
+                {
+                    x = NormalDistribution(ref random, 0f, 1f);
+                    v = 1f + c * x;
+                }
+
+                v = v * v * v;
+                var u = random.NextFloat();
+                x = x * x;
+                if (u < 1f - (0.0331f * x * x))
+                {
+                    return alphafix * d * v / rate;
+                }
+
+                if (math.log(u) < (0.5f * x) + (d * (1f - v + math.log(v))))
+                {
+                    return alphafix * d * v / rate;
+                }
+            }
+        }
+
+        // https://github.com/mathnet/mathnet-numerics/blob/master/src/Numerics/Distributions/Normal.cs
+        public static float NormalDistribution(ref Random random, float mean, float stddev)
+        {
+            float x;
+            while (!PolarTransform(random.NextFloat(), random.NextFloat(), out x, out _))
+            {
+            }
+
+            return mean + stddev * x;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool PolarTransform(float a, float b, out float x, out float y)
+        {
+            var v1 = (2f*a) - 1f;
+            var v2 = (2f*b) - 1f;
+            var r = (v1*v1) + (v2*v2);
+            if (r is >= 1f or 0f)
+            {
+                x = 0;
+                y = 0;
+                return false;
+            }
+
+            var fac = math.sqrt(-2f * math.log(r) / r);
+            x = v1*fac;
+            y = v2*fac;
+            return true;
+        }
+
         private static float3 eulerReorderBack(float3 euler, math.RotationOrder order)
         {
             switch (order)
@@ -678,5 +815,6 @@ namespace BovineLabs.Core.Utility
                     return euler;
             }
         }
+
     }
 }

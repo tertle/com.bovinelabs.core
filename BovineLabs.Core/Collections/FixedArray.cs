@@ -14,7 +14,7 @@ namespace BovineLabs.Core.Collections
     {
         private TS data;
 
-        public readonly int Length => sizeof(T) / sizeof(TS);
+        public readonly int Length => sizeof(TS) / sizeof(T);
 
         private readonly T* Buffer
         {

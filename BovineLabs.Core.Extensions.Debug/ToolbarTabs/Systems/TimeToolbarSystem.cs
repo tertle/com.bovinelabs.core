@@ -50,14 +50,14 @@ namespace BovineLabs.Core.ToolbarTabs
             {
                 if (!state.EntityManager.HasComponent<PauseGame>(state.SystemHandle))
                 {
-                    state.EntityManager.AddComponent<PauseGame>(state.SystemHandle);
+                    PauseGame.Pause(ref state);
                 }
             }
             else
             {
                 if (state.EntityManager.HasComponent<PauseGame>(state.SystemHandle))
                 {
-                    state.EntityManager.RemoveComponent<PauseGame>(state.SystemHandle);
+                    PauseGame.Unpause(ref state);
                 }
             }
 

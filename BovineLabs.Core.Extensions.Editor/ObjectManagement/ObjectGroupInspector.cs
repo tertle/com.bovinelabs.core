@@ -30,7 +30,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             return element;
         }
 
-        protected override void PostElementCreation(VisualElement root)
+        protected override void PostElementCreation(VisualElement root, bool createdElements)
         {
             this.CreateSummary();
         }

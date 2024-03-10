@@ -6,6 +6,9 @@ namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
+    using System.Runtime.CompilerServices;
+    using BovineLabs.Core.Assertions;
+    using BovineLabs.Core.Collections;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -66,31 +69,22 @@ namespace BovineLabs.Core.Extensions
             return ref UnsafeUtility.ArrayElementAsRef<T>(buffer.GetUnsafeReadOnlyPtr(), index);
         }
 
-        // return buffer.AsNativeArray().AsReadOnly();
-        // fixed (void* ptr = &buffer)
-        // {
-        //                 var shadow = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(BufferHeader.GetElementPointer((BufferHeader*)ptr), buffer.Length, Allocator.None);
-        // #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        //                 var handle = buffer.m_Safety1;
-        //                 AtomicSafetyHandle.UseSecondaryVersion(ref handle);
-        //                 NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref shadow, handle);
-        //
-        // #endif
-        //                 return shadow.AsReadOnly();
-        // }
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [Conditional("UNITY_DOTS_DEBUG")]
-        private static void CheckBounds<T>(DynamicBuffer<T> buffer, int index)
+        /// <summary> Gets an <see langword="unsafe"/> read-only pointer to the contents of the buffer. </summary>
+        /// <param name="buffer"> The dynamic buffer to get the element from. </param>
+        /// <remarks>This function can only be called in unsafe code contexts.</remarks>
+        /// <returns>A typed, unsafe pointer to the first element in the buffer.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void* GetPtr<T>(this DynamicBuffer<T> buffer)
             where T : unmanaged
         {
-            if ((uint)index >= (uint)buffer.Length)
-            {
-                throw new IndexOutOfRangeException($"Index {index} is out of range in DynamicBuffer of '{buffer.Length}' Length.");
-            }
+            var ptr = UnsafeUtility.As<DynamicBuffer<T>, IntPtr>(ref buffer);
+            var header = (BufferHeader*)ptr;
+            return BufferHeader.GetElementPointer(header);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckReadAccess<T>(in DynamicBuffer<T> buffer)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CheckReadAccess<T>(this in DynamicBuffer<T> buffer)
             where T : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -100,13 +94,26 @@ namespace BovineLabs.Core.Extensions
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckWriteAccess<T>(in DynamicBuffer<T> buffer)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CheckWriteAccess<T>(this in DynamicBuffer<T> buffer)
             where T : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(buffer.m_Safety0);
             AtomicSafetyHandle.CheckWriteAndThrow(buffer.m_Safety1);
+            Check.Assume(buffer.m_IsReadOnly == 0);
 #endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private static void CheckBounds<T>(DynamicBuffer<T> buffer, int index)
+            where T : unmanaged
+        {
+            if ((uint)index >= (uint)buffer.Length)
+            {
+                throw new IndexOutOfRangeException($"Index {index} is out of range in DynamicBuffer of '{buffer.Length}' Length.");
+            }
         }
     }
 }

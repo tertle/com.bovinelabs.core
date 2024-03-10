@@ -29,10 +29,6 @@
             <ui:Label tabindex="-1" text="Subscene Loading" display-tooltip-when-elided="true" name="BL_DISABLE_SUBSCENE" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
         </ui:VisualElement>
-        <ui:VisualElement tooltip="Adds a new UnityTime singleton that provides access to various time properties such as FrameCount, UnscaleTime etc" class="feature-group">
-            <ui:Label tabindex="-1" text="Time" display-tooltip-when-elided="true" name="BL_DISABLE_TIME" />
-            <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
-        </ui:VisualElement>
         <ui:VisualElement tooltip="Adds flexible debug toolbar panel. Requires UI to be enabled." class="feature-group">
             <ui:Label tabindex="-1" text="Toolbar" display-tooltip-when-elided="true" name="BL_DISABLE_TOOLBAR" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />

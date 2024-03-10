@@ -25,7 +25,7 @@ namespace BovineLabs.Core.UI
 
         public object GetPanel(int id)
         {
-            return this.loadedPanels[id];
+            return this.loadedPanels[id].Element;
         }
 
         protected void LoadAllPanels()
