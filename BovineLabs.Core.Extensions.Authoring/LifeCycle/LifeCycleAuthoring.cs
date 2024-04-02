@@ -13,35 +13,33 @@ namespace BovineLabs.Core.Authoring.LifeCycle
     [DisallowMultipleComponent]
     public class LifeCycleAuthoring : MonoBehaviour
     {
-        public bool AddInstantiate = true;
-
-        [Tooltip("Should SubScene objects be instantiated as well? Default off as the expected behaviour of instances is they would be manually configured.")]
-        public bool InstantiateSubSceneObjects;
-        public bool AddDestroy = true;
-
         private class Baker : Baker<LifeCycleAuthoring>
         {
             /// <inheritdoc/>
             public override void Bake(LifeCycleAuthoring authoring)
             {
                 var entity = this.GetEntity(TransformUsageFlags.None);
+                var isPrefab = authoring.IsPrefab();
 
-                if (authoring.AddInstantiate)
-                {
-                    this.AddComponent<InitializeEntity>(entity);
-
-                    if (!authoring.IsPrefab() && !authoring.InstantiateSubSceneObjects)
-                    {
-                        this.SetComponentEnabled<InitializeEntity>(entity, false);
-                    }
-                }
-
-                if (authoring.AddDestroy)
-                {
-                    this.AddComponent<DestroyEntity>(entity);
-                    this.SetComponentEnabled<DestroyEntity>(entity, false);
-                }
+                AddComponents(this, entity, isPrefab);
             }
+        }
+
+        public static void AddComponents(IBaker baker, Entity entity, bool isPrefab)
+        {
+            if (isPrefab)
+            {
+                baker.AddComponent<InitializeEntity>(entity);
+                baker.SetComponentEnabled<InitializeEntity>(entity, true);
+            }
+            else
+            {
+                baker.AddComponent<InitializeSubSceneEntity>(entity);
+                baker.SetComponentEnabled<InitializeSubSceneEntity>(entity, true);
+            }
+
+            baker.AddComponent<DestroyEntity>(entity);
+            baker.SetComponentEnabled<DestroyEntity>(entity, false);
         }
     }
 }

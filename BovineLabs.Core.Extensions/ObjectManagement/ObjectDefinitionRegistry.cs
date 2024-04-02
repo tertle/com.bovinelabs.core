@@ -12,7 +12,7 @@ namespace BovineLabs.Core.ObjectManagement
 
     /// <summary> A buffer of all objects in the project where <see cref="ObjectDefinition.ID" /> maps to the index. </summary>
     [InternalBufferCapacity(0)]
-    public readonly partial struct ObjectDefinitionRegistry : IComponentData
+    public readonly struct ObjectDefinitionRegistry : IComponentData
     {
         [ReadOnly]
         private readonly NativeHashMap<int, int> objectDefinitionsOffsets;

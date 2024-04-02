@@ -26,10 +26,10 @@ namespace BovineLabs.Core.App
                 return;
             }
 
-            var text = default(FixedString512Bytes);
-            text.Append(systemState.DebugName);
-            text.Append((FixedString32Bytes)"paused: true");
-            systemState.EntityManager.GetSingleton<BLDebug>(false).DebugLong512(text);
+            // var text = default(FixedString512Bytes);
+            // text.Append(systemState.DebugName);
+            // text.Append((FixedString32Bytes)" | Paused: true");
+            // systemState.EntityManager.GetSingleton<BLDebug>(false).DebugLong512(text);
         }
 
         public static void Unpause(ref SystemState systemState)
@@ -44,7 +44,7 @@ namespace BovineLabs.Core.App
 
             var text = default(FixedString512Bytes);
             text.Append(systemState.DebugName);
-            text.Append((FixedString32Bytes)"paused: false");
+            text.Append((FixedString32Bytes)" | Paused: false");
             systemState.EntityManager.GetSingleton<BLDebug>(false).DebugLong512(text);
         }
     }

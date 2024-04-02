@@ -10,7 +10,7 @@ namespace BovineLabs.Core.SingletonCollection
     using Unity.Entities;
 
     public unsafe interface ISingletonCollection<T> : IComponentData
-        where T : unmanaged, IDisposable
+        where T : unmanaged
     {
         UnsafeList<T>* Collections { get; set; }
 

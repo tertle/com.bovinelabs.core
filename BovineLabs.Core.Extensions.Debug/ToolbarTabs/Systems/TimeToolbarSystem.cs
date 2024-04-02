@@ -10,6 +10,8 @@ namespace BovineLabs.Core.ToolbarTabs
     using BovineLabs.Core.Utility;
     using Unity.Burst;
     using Unity.Entities;
+    using Unity.Mathematics;
+    using UnityEngine;
 
     [UpdateInGroup(typeof(ToolbarSystemGroup))]
     internal partial struct TimeToolbarSystem : ISystem, ISystemStartStop
@@ -39,6 +41,20 @@ namespace BovineLabs.Core.ToolbarTabs
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+#if !BL_DISABLE_INPUT
+            const float multi = 8f;
+
+            var inputDebug = SystemAPI.GetSingleton<InputCoreDebug>();
+            if (inputDebug.TimeScaleDouble.Down)
+            {
+                Time.timeScale = math.clamp(math.ceilpow2((int)(Time.timeScale * multi * 2)) / multi, 1 / multi, 100);
+            }
+            else if (inputDebug.TimeScaleHalve.Up)
+            {
+                Time.timeScale = math.max(math.ceilpow2((int)(Time.timeScale * multi / 2)) / multi, 0);
+            }
+#endif
+
             if (!this.toolbar.IsVisible())
             {
                 return;
@@ -61,15 +77,18 @@ namespace BovineLabs.Core.ToolbarTabs
                 }
             }
 
-            if (!mathex.Approximately(UnityEngine.Time.timeScale, this.lastTimeScale))
+            var newTimescale = math.clamp(data.TimeScale, 0, 100);
+
+            if (!mathex.Approximately(Time.timeScale, this.lastTimeScale, 0.01f))
             {
-                data.Timescale = UnityEngine.Time.timeScale;
-                this.lastTimeScale = data.Timescale;
+                data.TimeScale = Time.timeScale;
+                this.lastTimeScale = data.TimeScale;
             }
-            else if (!mathex.Approximately(data.Timescale, this.lastTimeScale))
+            else if (!mathex.Approximately(newTimescale, this.lastTimeScale, 0.01f))
             {
-                UnityEngine.Time.timeScale = data.Timescale;
-                this.lastTimeScale = data.Timescale;
+                Time.timeScale = newTimescale;
+                this.lastTimeScale = newTimescale;
+                data.TimeScale = newTimescale; // in case it went outside clamp
             }
         }
     }

@@ -20,7 +20,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             {
                 "objectDefinitions" => new AssetCreator<ObjectDefinition>(this.serializedObject, property).Element,
                 "objectGroups" => new AssetCreator<ObjectGroup>(this.serializedObject, property).Element,
-                _ => base.CreateElement(property),
+                _ => CreatePropertyField(property),
             };
         }
     }

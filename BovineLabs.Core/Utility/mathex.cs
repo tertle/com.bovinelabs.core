@@ -4,7 +4,6 @@
 
 namespace BovineLabs.Core.Utility
 {
-    using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Assertions;
@@ -19,6 +18,7 @@ namespace BovineLabs.Core.Utility
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "matching mathematics package")]
     [SuppressMessage("ReSharper", "SA1300", Justification = "matching mathematics package")]
     [SuppressMessage("ReSharper", "IdentifierTypo", Justification = "lower case causes issues")]
+    [BurstCompile]
     public static class mathex
     {
         public const float Radians90 = math.PI / 2f;
@@ -59,6 +59,7 @@ namespace BovineLabs.Core.Utility
         /// <param name="length"> The length of the data. </param>
         /// <returns> The maximum value. float.MinValue if 0 length array is passed. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [BurstCompile]
         public static unsafe float max(float* values, [AssumeRange(0, int.MaxValue)] int length)
         {
             var maxValue4 = new float4(float.MinValue);
@@ -92,6 +93,7 @@ namespace BovineLabs.Core.Utility
         /// <param name="length"> The length of the data. </param>
         /// <returns> The maximum value. int.MinValue if length 0 is passed. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [BurstCompile]
         public static unsafe int max(int* values, [AssumeRange(0, int.MaxValue)] int length)
         {
             var maxValue4 = new int4(int.MinValue);
@@ -125,6 +127,7 @@ namespace BovineLabs.Core.Utility
         /// <param name="length"> The length of the data. </param>
         /// <returns> The maximum value. float.MaxValue if length 0 is passed. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [BurstCompile]
         public static unsafe float min(float* values, [AssumeRange(0, int.MaxValue)] int length)
         {
             var minValue4 = new float4(float.MaxValue);
@@ -158,6 +161,7 @@ namespace BovineLabs.Core.Utility
         /// <param name="length"> The length of the data. </param>
         /// <returns> The maximum value. int.MaxValue if length 0 is passed. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [BurstCompile]
         public static unsafe int min(int* values, [AssumeRange(0, int.MaxValue)] int length)
         {
             var minValue4 = new int4(int.MaxValue);
@@ -180,9 +184,10 @@ namespace BovineLabs.Core.Utility
         /// <summary> Calculates the minimum and maximum values of an array of float2. </summary>
         /// <param name="values"> The data. </param>
         /// <param name="length"> The length of the data. </param>
-        /// <returns> The maximum value. int.MinValue if length 0 is passed. </returns>
+        /// <param name="minMax"> The maximum value. int.MinValue if length 0 is passed. </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe Rect minMax(float2* values, [AssumeRange(0, int.MaxValue)] int length)
+        [BurstCompile]
+        public static unsafe void minMax(float2* values, [AssumeRange(0, int.MaxValue)] int length, out Rect minMax)
         {
             var minValue4 = new float4(float.MaxValue);
             var maxValue4 = new float4(float.MinValue);
@@ -205,15 +210,16 @@ namespace BovineLabs.Core.Utility
                 maxValue = math.max(maxValue, values[iValue]);
             }
 
-            return Rect.MinMaxRect(minValue.x, minValue.y, maxValue.x, maxValue.y);
+            minMax = Rect.MinMaxRect(minValue.x, minValue.y, maxValue.x, maxValue.y);
         }
 
         /// <summary> Calculates the maximum value. </summary>
         /// <param name="values"> The data. </param>
         /// <param name="length"> The length of the data. </param>
-        /// <returns> The maximum value. int.MinValue if length 0 is passed. </returns>
+        /// <param name="minMax"> The maximum value. int.MinValue if length 0 is passed. </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe MinMaxAABB minMax(float3* values, [AssumeRange(0, int.MaxValue)] int length)
+        [BurstCompile]
+        public static unsafe void minMax(float3* values, [AssumeRange(0, int.MaxValue)] int length, out MinMaxAABB minMax)
         {
             var minValue = new float3(float.MaxValue);
             var maxValue = new float3(float.MinValue);
@@ -225,7 +231,7 @@ namespace BovineLabs.Core.Utility
                 maxValue = math.max(maxValue, value);
             }
 
-            return new MinMaxAABB { Min = minValue, Max = maxValue };
+            minMax = new MinMaxAABB { Min = minValue, Max = maxValue };
         }
 
         /// <summary> Calculates the sum of values. </summary>
@@ -242,6 +248,7 @@ namespace BovineLabs.Core.Utility
         /// <param name="length"> The length of the data. </param>
         /// <returns> The sum of values. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [BurstCompile]
         public static unsafe float sum(float* values, [AssumeRange(0, int.MaxValue)] int length)
         {
             var sumValue = 0f;
@@ -274,6 +281,7 @@ namespace BovineLabs.Core.Utility
         /// <param name="length"> The length of the data. </param>
         /// <returns> The sum of values. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [BurstCompile]
         public static unsafe int sum(int* values, [AssumeRange(0, int.MaxValue)] int length)
         {
             var sumValue = 0;
@@ -300,6 +308,7 @@ namespace BovineLabs.Core.Utility
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [BurstCompile]
         public static unsafe void add([NoAlias] int* dst, [ReadOnly] int* src, [AssumeRange(0, int.MaxValue)] int length, int value)
         {
             var dst4 = (int4*)dst;
@@ -662,12 +671,18 @@ namespace BovineLabs.Core.Utility
 
         public static float3 ToFloat3(this float2 f, float y = 0)
         {
-            return new float3(f.x, y, f.x);
+            return new float3(f.x, y, f.y);
         }
 
         public static int3 ToInt3(this int2 f, int y = 0)
         {
-            return new int3(f.x, y, f.x);
+            return new int3(f.x, y, f.y);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float cross(float2 a, float2 b)
+        {
+            return a.x * b.y - a.y * b.x;
         }
 
         /// <summary> Implementation of the Box-Muller transform to generate normal distribution. </summary>

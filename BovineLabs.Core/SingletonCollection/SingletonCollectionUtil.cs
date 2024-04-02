@@ -10,14 +10,14 @@ namespace BovineLabs.Core.SingletonCollection
     using Unity.Entities;
 
     public interface ISingletonCollectionUtil<TC>
-        where TC : unmanaged, IDisposable
+        where TC : unmanaged
     {
         UnsafeList<TC>.ReadOnly Containers { get; }
     }
 
     public unsafe struct SingletonCollectionUtil<T, TC> : ISingletonCollectionUtil<TC>, IDisposable
         where T : unmanaged, ISingletonCollection<TC>
-        where TC : unmanaged, IDisposable
+        where TC : unmanaged
     {
         private readonly UnsafeList<TC>* containers;
         private DoubleRewindableAllocators allocator;
@@ -55,8 +55,7 @@ namespace BovineLabs.Core.SingletonCollection
 
         public void Dispose()
         {
-            this.containers->Dispose();
-            AllocatorManager.Free(Allocator.Persistent, this.containers);
+            UnsafeList<TC>.Destroy(this.containers);
 
             this.allocator.Dispose();
         }

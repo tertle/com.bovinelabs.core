@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Input
 {
     using System;
     using System.Runtime.CompilerServices;
+    using BovineLabs.Core.Camera;
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
@@ -29,14 +30,14 @@ namespace BovineLabs.Core.Input
         /// <inheritdoc />
         protected override void OnCreate()
         {
-            this.RequireForUpdate<Camera>();
             this.RequireForUpdate<InputDefault>();
+            this.RequireForUpdate(SystemAPI.QueryBuilder().WithAll<CameraMain, Camera>().Build());
 
             // Start out of the screen until actual input occurs
             // This stops being moused out and thinking you are near an edge in game view
             this.inputCommon.CameraScreenPoint = new float2(-1, -1);
 
-            this.focus = new GameObject("Focus") {hideFlags = HideFlags.HideAndDontSave}.AddComponent<OnApplicationFocusBehaviour>();
+            this.focus = new GameObject("Focus") { hideFlags = HideFlags.HideAndDontSave }.AddComponent<OnApplicationFocusBehaviour>();
             Object.DontDestroyOnLoad(this.focus.gameObject);
         }
 
@@ -62,7 +63,7 @@ namespace BovineLabs.Core.Input
         /// <inheritdoc />
         protected override void OnUpdate()
         {
-            var camera = this.EntityManager.GetComponentObject<Camera>(SystemAPI.ManagedAPI.GetSingletonEntity<Camera>());
+            var camera = this.EntityManager.GetComponentObject<Camera>(SystemAPI.GetSingletonEntity<CameraMain>());
 
             this.inputCommon.ScreenSize = new int2(Screen.width, Screen.height);
             this.inputCommon.ViewPoint = this.inputCommon.CameraScreenPoint / this.inputCommon.ScreenSize;

@@ -7,7 +7,7 @@ namespace BovineLabs.Core.Utility
     using System.Runtime.CompilerServices;
     using System.Threading;
 
-    // Taken from I:\Documents\BovineLabs\Survivor\Library\PackageCache\com.unity.entities@1.0.16\Unity.Entities\Journaling\Spinlock.cs
+    // Taken from com.unity.entities@1.0.16\Unity.Entities\Journaling\Spinlock.cs
     public struct SpinLock
     {
         private int @lock;

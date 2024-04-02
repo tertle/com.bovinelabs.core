@@ -23,7 +23,7 @@ namespace BovineLabs.Core.UI
 
         [UxmlAttribute("data-source-type")]
         [UxmlTypeReference(typeof(object))]
-        public Type DataSourceString { get; set; }
+        public Type? DataSourceString { get; set; }
 
         [UxmlAttribute("data-source-path")]
         public string DataSourcePathString

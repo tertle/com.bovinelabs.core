@@ -104,6 +104,20 @@ namespace BovineLabs.Core.Iterators
             return buffer;
         }
 
+        public static DynamicBuffer<TBuffer> InitializeUntypedHashMap<TBuffer, TKey>(
+            this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
+            where TBuffer : unmanaged, IDynamicUntypedHashMap<TKey>
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            Assert.AreEqual(1, UnsafeUtility.SizeOf<TBuffer>());
+#endif
+
+            var bytes = buffer.Reinterpret<byte>();
+            DynamicUntypedHashMapHelper<TKey>.Init(bytes, capacity, capacity, minGrowth);
+            return buffer;
+        }
+
         public static DynamicHashMap<TKey, TValue> AsHashMap<TBuffer, TKey, TValue>(this DynamicBuffer<TBuffer> buffer)
             where TBuffer : unmanaged, IDynamicHashMap<TKey, TValue>
             where TKey : unmanaged, IEquatable<TKey>
@@ -147,11 +161,28 @@ namespace BovineLabs.Core.Iterators
             return new DynamicPerfectHashMap<TKey, TValue>(buffer.Reinterpret<byte>());
         }
 
+        public static DynamicUntypedHashMap<TKey> AsUntypedHashMap<TBuffer, TKey>(this DynamicBuffer<TBuffer> buffer)
+            where TBuffer : unmanaged, IDynamicUntypedHashMap<TKey>
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            Assert.AreEqual(1, sizeof(TBuffer));
+#endif
+            return new DynamicUntypedHashMap<TKey>(buffer.Reinterpret<byte>());
+        }
+
         internal static DynamicHashMapHelper<TKey>* AsHelper<TKey>(this DynamicBuffer<byte> buffer)
             where TKey : unmanaged, IEquatable<TKey>
         {
             CheckSize<DynamicHashMapHelper<TKey>>(buffer);
             return (DynamicHashMapHelper<TKey>*)buffer.GetPtr();
+        }
+
+        internal static DynamicUntypedHashMapHelper<TKey>* AsUntypedHelper<TKey>(this DynamicBuffer<byte> buffer)
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+            CheckSize<DynamicUntypedHashMapHelper<TKey>>(buffer);
+            return (DynamicUntypedHashMapHelper<TKey>*)buffer.GetPtr();
         }
 
         internal static DynamicPerfectHashMapHelper<TKey, TValue>* AsHelper<TKey, TValue>(this DynamicBuffer<byte> buffer)

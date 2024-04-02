@@ -26,11 +26,11 @@ namespace BovineLabs.Core.Editor.Input
                 var ve = new VisualElement();
                 var button = new Button(this.Refresh) { text = "Find All Input" };
                 ve.Add(button);
-                ve.Add(base.CreateElement(property));
+                ve.Add(CreatePropertyField(property));
                 return ve;
             }
 
-            return base.CreateElement(property);
+            return CreatePropertyField(property);
         }
 
         private void Refresh()

@@ -78,16 +78,21 @@ namespace BovineLabs.Core.Iterators
 
         public void SetChangeFilter(Entity entity)
         {
-            this.SetChangeFilter(entity, this.globalSystemVersion);
-        }
-
-        public void SetChangeFilter(Entity entity, uint systemVersion)
-        {
-            this.SetChangeFilterCheckWriteAndThrow();
-
             var ecs = this.access->EntityComponentStore;
             var chunk = ecs->GetChunk(entity);
 
+            this.SetChangeFilter(chunk, this.globalSystemVersion);
+        }
+
+        public void SetChangeFilter(int chunkIndex)
+        {
+            this.SetChangeFilter(new ChunkIndex(chunkIndex), this.globalSystemVersion);
+        }
+
+        private void SetChangeFilter(ChunkIndex chunk, uint systemVersion)
+        {
+            this.SetChangeFilterCheckWriteAndThrow();
+            var ecs = this.access->EntityComponentStore;
             var archetype = ecs->GetArchetype(chunk);
             if (Hint.Unlikely(archetype != this.cache.Archetype))
             {

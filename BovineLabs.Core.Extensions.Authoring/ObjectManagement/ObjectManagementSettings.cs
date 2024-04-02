@@ -77,8 +77,6 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                     StableTypeHash = c.ComponentType,
                 });
             }
-
-
         }
     }
 }

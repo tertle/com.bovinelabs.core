@@ -113,7 +113,6 @@ namespace BovineLabs.Core.Iterators
 
             var data = buffer.AsHelper<TKey>();
 
-            data->Count = 0;
             data->Log2MinGrowth = log2MinGrowth;
             data->Capacity = capacity;
             data->BucketCapacityMask = bucketCapacity - 1;
@@ -124,7 +123,7 @@ namespace BovineLabs.Core.Iterators
             data->NextOffset = hashMapDataSize + nextOffset;
             data->BucketsOffset = hashMapDataSize + bucketOffset;
 
-            data->Clear();
+            data->Clear(); // sets FirstFreeIdx, Count, AllocatedIndex
         }
 
         internal static void Resize(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data, int newCapacity)

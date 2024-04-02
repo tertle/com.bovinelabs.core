@@ -174,6 +174,25 @@ namespace BovineLabs.Core.Iterators
             return ref UnsafeUtility.ArrayElementAsRef<TValue>(this.helper->Values, idx);
         }
 
+        public ref TValue GetOrAddRef(TKey key, out bool add, TValue defaultValue = default)
+        {
+            this.buffer.CheckWriteAccess();
+
+            var idx = this.helper->Find(key);
+            if (idx == -1)
+            {
+                idx = DynamicHashMapHelper<TKey>.AddUnique(this.buffer, ref this.helper, key);
+                UnsafeUtility.WriteArrayElement(this.helper->Values, idx, defaultValue);
+                add = true;
+            }
+            else
+            {
+                add = false;
+            }
+
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(this.helper->Values, idx);
+        }
+
         public readonly TValue GetOrDefault(TKey key, TValue defaultValue = default)
         {
             this.buffer.CheckReadAccess();

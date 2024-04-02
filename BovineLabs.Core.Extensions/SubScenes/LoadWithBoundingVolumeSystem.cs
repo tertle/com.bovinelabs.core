@@ -5,15 +5,14 @@
 #if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
+    using BovineLabs.Core.Groups;
     using BovineLabs.Core.LifeCycle;
     using Unity.Burst;
-    using Unity.Collections;
     using Unity.Entities;
     using Unity.Scenes;
     using Unity.Transforms;
 
-    [UpdateAfter(typeof(DestroySystemGroup))]
-    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
+    [UpdateInGroup(typeof(AfterTransformSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.LocalSimulation | WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
     public partial struct LoadWithBoundingVolumeSystem : ISystem
     {
@@ -42,10 +41,10 @@ namespace BovineLabs.Core.SubScenes
             var loadMaxDistanceSq = config.LoadMaxDistance * config.LoadMaxDistance;
             var unloadMaxDistanceSq = config.UnloadMaxDistance * config.UnloadMaxDistance;
 
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = SystemAPI.GetSingleton<InstantiateCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+            var resolvedSectionEntitys = SystemAPI.GetBufferLookup<ResolvedSectionEntity>(true);
 
-            foreach (var (loadRO, resolvedSectionEntity, entity) in SystemAPI.Query<RefRO<LoadWithBoundingVolume>, DynamicBuffer<ResolvedSectionEntity>>()
-                         .WithAll<ResolvedSectionEntity>().WithEntityAccess())
+            foreach (var (loadRO, entity) in SystemAPI.Query<RefRO<LoadWithBoundingVolume>>().WithEntityAccess())
             {
                 ref readonly var load = ref loadRO.ValueRO;
                 var loadDistanceSq = load.LoadMaxDistanceOverrideSq > 0 ? load.LoadMaxDistanceOverrideSq : loadMaxDistanceSq;
@@ -65,37 +64,16 @@ namespace BovineLabs.Core.SubScenes
                 {
                     if (!SystemAPI.HasComponent<RequestSceneLoaded>(entity))
                     {
-                        LoadScene(ecb, entity, resolvedSectionEntity);
+                        SubSceneUtil.LoadScene(ecb, entity, ref resolvedSectionEntitys);
                     }
                 }
                 else if (allOutOfRange)
                 {
                     if (SystemAPI.HasComponent<RequestSceneLoaded>(entity))
                     {
-                        UnloadScene(ecb, entity, resolvedSectionEntity);
+                        SubSceneUtil.UnloadScene(ecb, entity, ref resolvedSectionEntitys);
                     }
                 }
-            }
-
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
-        }
-
-        private static void UnloadScene(EntityCommandBuffer entityCommandBuffer, Entity entity, DynamicBuffer<ResolvedSectionEntity> resolvedSectionEntity)
-        {
-            entityCommandBuffer.RemoveComponent<RequestSceneLoaded>(entity);
-            foreach (var section in resolvedSectionEntity.AsNativeArray())
-            {
-                entityCommandBuffer.RemoveComponent<RequestSceneLoaded>(section.SectionEntity);
-            }
-        }
-
-        private static void LoadScene(EntityCommandBuffer entityCommandBuffer, Entity entity, DynamicBuffer<ResolvedSectionEntity> resolvedSectionEntity)
-        {
-            entityCommandBuffer.AddComponent<RequestSceneLoaded>(entity);
-            foreach (var section in resolvedSectionEntity.AsNativeArray())
-            {
-                entityCommandBuffer.AddComponent<RequestSceneLoaded>(section.SectionEntity);
             }
         }
     }

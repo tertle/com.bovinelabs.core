@@ -61,5 +61,19 @@ namespace BovineLabs.Core.Collections
             hashMap->Dispose();
             AllocatorManager.Free(allocator, hashMap);
         }
+
+        public static UnsafeQueue<T>* CreateQueue<T>(AllocatorManager.AllocatorHandle allocator)
+            where T : unmanaged
+        {
+            var queue = UnsafeQueue<T>.Alloc(allocator);
+            *queue = new UnsafeQueue<T>(allocator);
+            return queue;
+        }
+
+        public static void Destroy<T>(UnsafeQueue<T>* queue)
+            where T : unmanaged
+        {
+            UnsafeQueue<T>.Free(queue);
+        }
     }
 }

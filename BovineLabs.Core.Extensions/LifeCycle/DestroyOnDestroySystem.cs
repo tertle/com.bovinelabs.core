@@ -70,7 +70,7 @@ namespace BovineLabs.Core.LifeCycle
                     // Need to be removed from LEG so it can be handled by destroy system instead
                     linkedEntityGroup.RemoveAtSwapBack(i);
 
-                    // Destroy already being handled so we don't touch it as it will be iterated over at the top level
+                    // Destroy already being handled, so we don't touch it as it will be iterated over at the top level
                     if (enabled.ValueRO)
                     {
                         continue;

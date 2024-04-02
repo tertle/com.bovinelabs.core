@@ -18,6 +18,8 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         protected virtual bool IncludeScript => true;
 
+        protected bool MultiEditing => this.targets.Length > 1;
+
         public sealed override VisualElement CreateInspectorGUI()
         {
             this.parent = new VisualElement();
@@ -35,14 +37,11 @@ namespace BovineLabs.Core.Editor.Inspectors
             {
                 foreach (var property in SerializedHelper.IterateAllChildren(this.serializedObject, this.IncludeScript))
                 {
-                    if (property.propertyPath == "m_Script")
-                    {
-                        continue;
-                    }
-
                     var element = this.CreateElement(property);
-
-                    this.Parent.Add(element);
+                    if (element != null)
+                    {
+                        this.Parent.Add(element);
+                    }
                 }
             }
 
@@ -61,7 +60,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             return CreatePropertyField(property, property.serializedObject);
         }
 
-        protected virtual VisualElement CreateElement(SerializedProperty property)
+        protected virtual VisualElement? CreateElement(SerializedProperty property)
         {
             return CreatePropertyField(property, this.serializedObject);
         }
@@ -95,6 +94,11 @@ namespace BovineLabs.Core.Editor.Inspectors
             foldout.contentContainer.style.marginLeft = 0;
             foldout.value = false;
             return foldout;
+        }
+
+        protected static void SetVisible(VisualElement element, bool visible)
+        {
+            element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
         }
     }
 }

@@ -432,6 +432,11 @@ namespace BovineLabs.Core.Extensions
             return ref UnsafeUtility.AsRef<T>(ptr);
         }
 
+        public static int ChunkIndex(this ArchetypeChunk chunk)
+        {
+            return UnsafeUtility.As<ChunkIndex, int>(ref chunk.m_Chunk);
+        }
+
         private static UnsafeBitArray GetEnabledRefRWNoChange(ChunkIndex chunk, Archetype* archetype, int indexInTypeArray, out int* ptrChunkDisabledCount)
         {
             var chunkListIndex = chunk.ListIndex;

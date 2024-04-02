@@ -13,6 +13,7 @@ namespace BovineLabs.Core.SubScenes
     /// <summary> Marks a <see cref="SubScene" /> as only loading in a specific world type. </summary>
     [RequireComponent(typeof(SubScene))]
     [DisallowMultipleComponent]
+    [DefaultExecutionOrder(-1)] // just needs to execute before SubScene to stop autoload
     public class SubSceneLoadConfig : MonoBehaviour
     {
         [SerializeField]
@@ -57,11 +58,14 @@ namespace BovineLabs.Core.SubScenes
         /// </summary>
         public float UnloadMaxDistanceOverride => this.unloadMaxDistanceOverride;
 
+        private void Awake()
+        {
+            this.GetComponent<SubScene>().AutoLoadScene = false;
+        }
+
         private void OnValidate()
         {
             this.unloadMaxDistanceOverride = math.max(this.unloadMaxDistanceOverride, this.loadMaxDistanceOverride);
-
-            this.GetComponent<SubScene>().AutoLoadScene = false;
         }
 
         private WorldFlags ConvertFlags()

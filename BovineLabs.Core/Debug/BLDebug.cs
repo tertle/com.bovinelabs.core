@@ -76,7 +76,39 @@ namespace BovineLabs.Core
             }
         }
 
+        public readonly void Warning512(in FixedString512Bytes msg)
+        {
+            if (this.Enabled)
+            {
+                Log.To(this.LoggerHandle).Warning(msg);
+            }
+        }
+
+        public readonly void Warning4096(in FixedString4096Bytes msg)
+        {
+            if (this.Enabled)
+            {
+                Log.To(this.LoggerHandle).Warning(msg);
+            }
+        }
+
         public readonly void Error(in FixedString128Bytes msg)
+        {
+            if (this.Enabled)
+            {
+                Log.To(this.LoggerHandle).Error(msg);
+            }
+        }
+
+        public readonly void Error512(in FixedString512Bytes msg)
+        {
+            if (this.Enabled)
+            {
+                Log.To(this.LoggerHandle).Error(msg);
+            }
+        }
+
+        public readonly void Error4096(in FixedString4096Bytes msg)
         {
             if (this.Enabled)
             {

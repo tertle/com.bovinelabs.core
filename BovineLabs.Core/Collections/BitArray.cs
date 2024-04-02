@@ -81,7 +81,7 @@ namespace BovineLabs.Core.Collections
     public struct BitArray8 : IBitArray<BitArray8>
     {
         public static readonly BitArray8 All = new (byte.MaxValue);
-        public static readonly BitArray8 None = new (0);
+        public static readonly BitArray8 None = default;
 
         [SerializeField]
         private byte data;
@@ -253,8 +253,8 @@ namespace BovineLabs.Core.Collections
     [DebuggerDisplay("{this.GetType().Name} {HumanizedData}")]
     public struct BitArray16 : IBitArray<BitArray16>
     {
-        public static readonly BitArray16 All = new (ushort.MaxValue);
-        public static readonly BitArray16 None = new (0);
+        public static readonly BitArray16 All = new(ushort.MaxValue);
+        public static readonly BitArray16 None = default;
 
         [SerializeField]
         private ushort data;
@@ -421,8 +421,8 @@ namespace BovineLabs.Core.Collections
     [DebuggerDisplay("{this.GetType().Name} {HumanizedData}")]
     public struct BitArray32 : IBitArray<BitArray32>
     {
-        public static readonly BitArray32 All = new (uint.MaxValue);
-        public static readonly BitArray32 None = new (0);
+        public static readonly BitArray32 All = new(uint.MaxValue);
+        public static readonly BitArray32 None = default;
 
         [SerializeField]
         private uint data;
@@ -591,8 +591,8 @@ namespace BovineLabs.Core.Collections
     [DebuggerDisplay("{this.GetType().Name} {HumanizedData}")]
     public struct BitArray64 : IBitArray<BitArray64>
     {
-        public static readonly BitArray64 All = new (ulong.MaxValue);
-        public static readonly BitArray64 None = new (0);
+        public static readonly BitArray64 All = new(ulong.MaxValue);
+        public static readonly BitArray64 None = default;
 
         [SerializeField]
         private ulong data;
@@ -762,7 +762,7 @@ namespace BovineLabs.Core.Collections
     public struct BitArray128 : IBitArray<BitArray128>
     {
         public static readonly BitArray128 All = new (ulong.MaxValue, ulong.MaxValue);
-        public static readonly BitArray128 None = new (0, 0);
+        public static readonly BitArray128 None = default;
 
         [SerializeField]
         private ulong data1;
@@ -960,7 +960,7 @@ namespace BovineLabs.Core.Collections
     public struct BitArray256 : IBitArray<BitArray256>
     {
         public static readonly BitArray256 All = new(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue);
-        public static readonly BitArray256 None = new(0, 0, 0, 0);
+        public static readonly BitArray256 None = default;
 
         [SerializeField]
         [DontCreateProperty]

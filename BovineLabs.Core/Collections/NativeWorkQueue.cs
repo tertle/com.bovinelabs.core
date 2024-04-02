@@ -11,6 +11,7 @@ namespace BovineLabs.Core.Collections
     using Unity.Burst.CompilerServices;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
+    using Unity.Jobs;
     using Unity.Mathematics;
 
     [NativeContainer]
@@ -45,8 +46,6 @@ namespace BovineLabs.Core.Collections
             this.currentRef = (int*)UnsafeUtility.MallocTracked(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator, 0);
 
             this.Capacity = maxQueueSize;
-
-            // UnsafeList<T>.Create(maxQueueSize, allocator);
 
             *this.queueWriteHead = 0;
             *this.queueReadHead = 0;
@@ -92,8 +91,17 @@ namespace BovineLabs.Core.Collections
 
         public void Update()
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+#endif
+
             *this.queueWriteHead = 0; // math.min(*this.queueWriteHead, this.Capacity);
             *this.queueReadHead = 0; // math.min(*this.queueReadHead, *this.queueWriteHead);
+        }
+
+        public JobHandle Update(JobHandle handle)
+        {
+            return new UpdateNativeWorkQueueJob { QueueReadHead = this.queueReadHead, QueueWriteHead = this.queueWriteHead }.Schedule(handle);
         }
 
         /// <summary> Try add some work to the queue. </summary>
@@ -307,6 +315,23 @@ namespace BovineLabs.Core.Collections
                 ptr = this.queue + idx;
                 return queueRef;
             }
+        }
+    }
+
+    [BurstCompile]
+    internal unsafe struct UpdateNativeWorkQueueJob : IJob
+    {
+        [NativeDisableUnsafePtrRestriction]
+        public int* QueueWriteHead;
+
+        [NativeDisableUnsafePtrRestriction]
+        public int* QueueReadHead;
+
+        public void Execute()
+        {
+            // TODO safety?
+            *this.QueueWriteHead = 0;
+            *this.QueueReadHead = 0;
         }
     }
 }

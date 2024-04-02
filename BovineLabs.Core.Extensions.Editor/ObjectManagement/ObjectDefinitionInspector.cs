@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             {
                 "prefab" => this.CreatePrefab(property),
                 "categories" => this.CreateCategories(property),
-                _ => base.CreateElement(property),
+                _ => CreatePropertyField(property),
             };
         }
 

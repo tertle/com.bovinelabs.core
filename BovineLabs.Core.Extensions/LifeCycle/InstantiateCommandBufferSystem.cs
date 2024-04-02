@@ -8,8 +8,10 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+    using Unity.Scenes;
 
-    [UpdateInGroup(typeof(InitializeSystemGroup), OrderFirst = true)]
+    [UpdateInGroup(typeof(InitializationSystemGroup))]
+    [UpdateBefore(typeof(SceneSystemGroup))]
     public partial class InstantiateCommandBufferSystem : EntityCommandBufferSystem
     {
         /// <inheritdoc cref="EntityCommandBufferSystem.OnCreate"/>

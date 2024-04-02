@@ -27,8 +27,8 @@ namespace BovineLabs.Core.ToolbarTabs
         [UsedImplicitly]
         public float TimeScale
         {
-            get => this.data.Timescale;
-            set => this.data.Timescale = value;
+            get => this.data.TimeScale;
+            set => this.data.TimeScale = value;
         }
 
         [CreateProperty]
@@ -49,7 +49,7 @@ namespace BovineLabs.Core.ToolbarTabs
             private float timeScale;
             private bool paused;
 
-            public float Timescale
+            public float TimeScale
             {
                 get => this.timeScale;
                 set

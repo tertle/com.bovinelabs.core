@@ -1,4 +1,35 @@
 # Changelog
+## [1.2.11] - 2024-04-02
+### Added
+* Hotkeys for timescale if TimeToolbar exists
+* ElementEditor has had a few helpers added alignment, visibility etc
+* Basic main camera pipeline with frustum and corner buffers
+* Added InlineObjectAttribute for drawing the fields of an ObjectField
+* Added SubSceneToolbarSystem
+* The Destroy Pipeline can now handle unloading SubScenes (if done via SubSceneUtil.UnloadScene)
+* ConvexHullBuilder
+* MeshSimplifier
+* TerrainToMesh
+* IntersectionTests.AABBTriangle
+
+### Changed
+* SubSceneLoadConfig now supports when SubScenes are marked AutoLoad - setting will be ignored at runtime but will allow auto loading in editor
+* Modernized SubSceneLoadConfigEditor
+* Reordered Initialize and Destroy system groups a bit
+* Initialize now separated into InitializeEntity and InitializeSubSceneEntity
+* Updated to Entities 1.2.0
+* SingletonCollection now doesn't require type to be IDisposable
+* Safety on NativeWorkQueue.Update
+* Toolbar now jumps to latest created tab
+
+### Fixed
+* Destroy pipeline changes in 1.2.10 that broke destroying LinkedEntityGroups
+* Toolbar breaking 2022.3
+* Fixed  BitArray256.None actually being one
+* Stopped SubScenes being loaded into default world when SubSceneLoading is enabled
+
+### Removed
+* PhysicsDraw as it depended on internal libraries
 
 ## [1.2.10] - 2024-03-11
 ### Added

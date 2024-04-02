@@ -10,7 +10,6 @@ namespace BovineLabs.Core.Groups
     [UpdateBefore(typeof(FixedStepSimulationSystemGroup))]
     [UpdateBefore(typeof(VariableRateSimulationSystemGroup))]
     [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
-    [WorldSystemFilter(WorldSystemFilterFlags.Default)]
     public partial class BeginSimulationSystemGroup : ComponentSystemGroup
     {
     }

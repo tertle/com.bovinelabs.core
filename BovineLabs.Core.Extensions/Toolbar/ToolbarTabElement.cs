@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if UNITY_2023_3_OR_NEWER
 namespace BovineLabs.Core.Toolbar
 {
     using UnityEngine.UIElements;
@@ -17,3 +18,4 @@ namespace BovineLabs.Core.Toolbar
         }
     }
 }
+#endif

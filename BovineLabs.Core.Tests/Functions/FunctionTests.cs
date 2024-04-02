@@ -22,11 +22,11 @@ namespace BovineLabs.Core.Tests.Functions
         {
             SystemState state = default;
 
-            var functions = new FunctionsBuilder<TestData, Entity>(Allocator.Temp)
+            var functions = new FunctionsBuilder<TestResult, Entity>(Allocator.Temp)
                 .Add<TestFunction>(ref state)
                 .Build();
 
-            var data = new TestData { Value = Expected };
+            var data = new TestResult { Value = Expected };
             var actual = functions.Execute(0, ref data);
             Assert.AreEqual(Expected, actual);
 
@@ -38,11 +38,11 @@ namespace BovineLabs.Core.Tests.Functions
         {
             SystemState state = default;
 
-            var functions = new FunctionsBuilder<TestData, Entity>(Allocator.Temp)
+            var functions = new FunctionsBuilder<TestResult, Entity>(Allocator.Temp)
                 .ReflectAll(ref state)
                 .Build();
 
-            var data = new TestData { Value = Expected };
+            var data = new TestResult { Value = Expected };
             var actual = functions.Execute(0, ref data);
             Assert.AreEqual(Expected, actual);
 
@@ -54,10 +54,10 @@ namespace BovineLabs.Core.Tests.Functions
         {
             SystemState state = default;
 
-            var functions = new FunctionsBuilder<TestData, Entity>(Allocator.Temp).ReflectAll(ref state).Build();
-            var functions2 = new FunctionsBuilder<TestData, Entity>(Allocator.Temp).ReflectAll(ref state).Build();
+            var functions = new FunctionsBuilder<TestResult, Entity>(Allocator.Temp).ReflectAll(ref state).Build();
+            var functions2 = new FunctionsBuilder<TestResult, Entity>(Allocator.Temp).ReflectAll(ref state).Build();
 
-            var data = new TestData { Value = Expected };
+            var data = new TestResult { Value = Expected };
             var actual = functions.Execute(0, ref data);
             var actual2 = functions2.Execute(0, ref data);
 
@@ -68,13 +68,13 @@ namespace BovineLabs.Core.Tests.Functions
             functions2.OnDestroy(ref state);
         }
 
-        private struct TestData
+        private struct TestResult
         {
             public Entity Value;
         }
 
         [BurstCompile]
-        private unsafe struct TestFunction : IFunction<TestData>
+        private unsafe struct TestFunction : IFunction<TestResult>
         {
             public UpdateFunction? UpdateFunction => null;
 
@@ -86,16 +86,16 @@ namespace BovineLabs.Core.Tests.Functions
             {
             }
 
-            private Entity Execute(ref TestData data)
+            private Entity Execute(ref TestResult result)
             {
-                return data.Value;
+                return result.Value;
             }
 
             [BurstCompile]
             [AOT.MonoPInvokeCallback(typeof(ExecuteFunction))]
             private static void Execute(void* target, void* data, void* result)
             {
-                *(Entity*)result = ((TestFunction*)target)->Execute(ref UnsafeUtility.AsRef<TestData>(data));
+                *(Entity*)result = ((TestFunction*)target)->Execute(ref UnsafeUtility.AsRef<TestResult>(data));
             }
         }
     }

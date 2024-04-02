@@ -5,13 +5,14 @@
 #if !BL_DISABLE_LIFECYCLE
 namespace BovineLabs.Core.LifeCycle
 {
-    using BovineLabs.Core.Groups;
+    using BovineLabs.Core.App;
     using Unity.Entities;
+    using Unity.Scenes;
 
-    [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
-    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
-    [UpdateBefore(typeof(BeginSimulationSystemGroup))]
-    public partial class DestroySystemGroup : ComponentSystemGroup
+    [UpdateInGroup(typeof(InitializationSystemGroup))]
+    [UpdateAfter(typeof(InstantiateCommandBufferSystem))]
+    [UpdateBefore(typeof(SceneSystemGroup))]
+    public partial class DestroySystemGroup : InitializationRequireSubScenesSystemGroup
     {
     }
 }

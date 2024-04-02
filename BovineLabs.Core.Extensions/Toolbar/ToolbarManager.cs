@@ -278,6 +278,9 @@ namespace BovineLabs.Core.Toolbar
             var toolbarTab = new ToolbarTab(tabName, button, contents);
 
             button.clicked += () => this.SetToolbarActive(toolbarTab);
+
+            this.SetToolbarActive(toolbarTab);
+
             return toolbarTab;
         }
 

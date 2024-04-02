@@ -8,7 +8,7 @@ namespace BovineLabs.Core.Input
     using Unity.Collections;
     using Unity.Entities;
 
-    [InternalBufferCapacity(4)]
+    [InternalBufferCapacity(0)]
     public struct InputActionMapEnable : IBufferElementData
     {
         public FixedString32Bytes Input;

@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Extensions
 {
+    using System.Runtime.CompilerServices;
     using BovineLabs.Core.Iterators;
     using Unity.Collections;
     using Unity.Entities;
@@ -69,9 +70,16 @@ namespace BovineLabs.Core.Extensions
             return system.EntityManager.GetChangeFilterLookup<T>(isReadOnly);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AddSystemDependency(ref this SystemState state, TypeIndex typeIndex, bool isReadOnly = false)
         {
-            state.AddReaderWriter(isReadOnly ? ComponentType.ReadOnly(typeIndex) : ComponentType.ReadWrite(typeIndex));
+            state.AddSystemDependency(isReadOnly ? ComponentType.ReadOnly(typeIndex) : ComponentType.ReadWrite(typeIndex));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AddSystemDependency(ref this SystemState state, ComponentType componentType)
+        {
+            state.AddReaderWriter(componentType);
         }
 
         public static Entity GetSingletonEntity<T>(ref this SystemState state)

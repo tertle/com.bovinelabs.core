@@ -178,17 +178,12 @@
     color: rgb(18, 2, 7);
 }
 
-.unity-toggle {
-    margin: 0;
-    height: 22px;
-    padding: 1px;
-}
-
 .unity-base-field {
     flex-direction: row;
     overflow: hidden;
     flex-shrink: 0;
-    margin: 1px 3px;
+    margin: 1px 2px;
+    padding: 1px;
     max-width: 200px;
 }
 
@@ -208,6 +203,14 @@
 
 .unity-base-popup-field__text {
     margin-right: 4px;
+}
+
+.unity-toggle {
+    /*margin: 0;*/
+    /*height: 22px;*/
+    padding: 1px;
+    margin: 1px 1px 0 0;
+    height: 20px;
 }
 
 .unity-enum-field__input {
@@ -360,7 +363,7 @@
     background-image: none;
 }
 
-.bl-toggle-group .unity-toggle {
-    margin: 1px 1px 0 0;
-    height: 20px;
-}
+/*.bl-toggle-group .unity-toggle {*/
+/*    margin: 1px 1px 0 0;*/
+/*    height: 20px;*/
+/*}*/

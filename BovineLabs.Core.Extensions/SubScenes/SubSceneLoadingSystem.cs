@@ -16,21 +16,26 @@ namespace BovineLabs.Core.SubScenes
     using UnityEngine;
 
     /// <summary> System that loads our SubScenes depending on the world and the SubScene load mode. </summary>
-    [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderLast = true)]
+    [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderFirst = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | Worlds.Service)]
+    [CreateAfter(typeof(BLDebugSystem))]
     public partial struct SubSceneLoadingSystem : ISystem, ISystemStartStop
     {
         private NativeList<Volume> volumes;
         private NativeList<Entity> requiredScenes;
         private NativeHashSet<Entity> waitingForLoad;
 
+        /// <inheritdoc/>
         public void OnCreate(ref SystemState state)
         {
             this.volumes = new NativeList<Volume>(16, Allocator.Persistent);
             this.requiredScenes = new NativeList<Entity>(4, Allocator.Persistent);
             this.waitingForLoad = new NativeHashSet<Entity>(16, Allocator.Persistent);
+
+            PauseGame.Pause(ref state, true);
         }
 
+        /// <inheritdoc/>
         public void OnDestroy(ref SystemState state)
         {
             this.volumes.Dispose();
@@ -56,7 +61,7 @@ namespace BovineLabs.Core.SubScenes
 #if UNITY_EDITOR
             var loadRequired = false;
 
-            foreach(var required in this.requiredScenes.AsArray())
+            foreach (var required in this.requiredScenes.AsArray())
             {
                 if (!this.IsSceneLoad(ref state, required))
                 {
@@ -109,6 +114,8 @@ namespace BovineLabs.Core.SubScenes
 
                 if ((targetWorld & flags) == 0)
                 {
+                    // SubScene OnEnable can load sub scenes before we have a chance to stop it so let's just revert this here
+                    SceneSystem.UnloadScene(state.WorldUnmanaged, subScene.SceneGUID, SceneSystem.UnloadParameters.DestroyMetaEntities);
                     continue;
                 }
 
@@ -122,10 +129,19 @@ namespace BovineLabs.Core.SubScenes
                 var entity = SceneSystem.LoadSceneAsync(state.WorldUnmanaged, subScene.SceneGUID, loadingParams);
                 state.EntityManager.AddComponentObject(entity, subScene);
 
+#if UNITY_EDITOR
+                // Only when loaded are names set from entity but for debugging it's nice to have a name now
+                var sceneNameFs = default(FixedString64Bytes);
+                sceneNameFs.CopyFromTruncated($"Scene: {subScene.SceneName}");
+                state.EntityManager.SetName(entity, sceneNameFs);
+#endif
+
                 if (requiredForLoading)
                 {
                     this.waitingForLoad.Add(entity);
                     this.requiredScenes.Add(entity);
+
+                    state.EntityManager.AddComponent<RequiredSubScene>(entity);
                 }
 
                 // We want to create the subscene entity but not request scene loading for volumes
@@ -142,21 +158,21 @@ namespace BovineLabs.Core.SubScenes
                     {
                         Entity = entity,
                         LoadMaxDistanceOverride = subSceneLoadConfig.LoadMaxDistanceOverride,
-                        UnloadMaxDistanceOverride = subSceneLoadConfig.UnloadMaxDistanceOverride
+                        UnloadMaxDistanceOverride = subSceneLoadConfig.UnloadMaxDistanceOverride,
                     });
                 }
             }
 
-            if (this.waitingForLoad.Count > 0)
+            if (this.waitingForLoad.Count == 0)
             {
-                PauseGame.Pause(ref state, true);
+                PauseGame.Unpause(ref state);
             }
         }
 
         private void WaitToLoad(ref SystemState state)
         {
             using var e = this.waitingForLoad.GetEnumerator();
-            while(e.MoveNext())
+            while (e.MoveNext())
             {
                 if (!this.IsSceneLoad(ref state, e.Current))
                 {

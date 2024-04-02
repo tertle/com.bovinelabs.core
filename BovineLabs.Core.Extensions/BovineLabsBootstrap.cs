@@ -47,7 +47,7 @@ namespace BovineLabs.Core
 #endif
 
             // We find all default systems in the Unity.Entities and add them to the ServiceWorld
-            foreach(var systemIndex in TypeManager.GetSystemTypeIndices(WorldSystemFilterFlags.Default).AsArray())
+            foreach (var systemIndex in TypeManager.GetSystemTypeIndices(WorldSystemFilterFlags.Default).AsArray())
             {
                 if (ServiceUnityFilter(systemIndex))
                 {
@@ -86,7 +86,7 @@ namespace BovineLabs.Core
         {
             World.DefaultGameObjectInjectionWorld = serviceWorld;
 
-            if (gameWorld == null)
+            if (gameWorld is not { IsCreated: true })
             {
                 return;
             }

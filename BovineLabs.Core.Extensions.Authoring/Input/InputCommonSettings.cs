@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Authoring.Input
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using BovineLabs.Core.Authoring.Settings;
+    using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Input;
     using BovineLabs.Core.Settings;
     using Unity.Entities;

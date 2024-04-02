@@ -66,7 +66,7 @@ namespace BovineLabs.Core.Extensions
             query._GetImpl()->_Filter.Shared.SharedComponentIndex[index] = query._GetImpl()->_Access->InsertSharedComponent_Unmanaged(sharedComponent);
         }
 
-        public static DynamicBuffer<T> GetSingletonBufferNoSync<T>(this EntityQuery query, bool isReadOnly = false)
+        public static DynamicBuffer<T> GetSingletonBufferNoSync<T>(this EntityQuery query, bool isReadOnly)
             where T : unmanaged, IBufferElementData
         {
             var impl = query._GetImpl();

@@ -102,5 +102,32 @@ namespace BovineLabs.Core.Collections
                 UnsafeUtility.MemCpy(buffer + (i * MaxSize), ptr, MaxSize);
             }
         }
+
+        /// <summary> Read a chunk of memory that could have been larger than the max allocation size. </summary>
+        /// <param name="reader"> The reader. </param>
+        /// <param name="buffer"> A buffer to write back to. </param>
+        /// <param name="length"> The number of elements. </param>
+        /// <typeparam name="T"> The element type to read. </typeparam>
+        public static void ReadLarge<T>(this ref NativeThreadStream.Reader reader, byte* buffer, int length)
+            where T : unmanaged
+        {
+            var size = sizeof(T) * length;
+
+            var allocationCount = size / MaxSize;
+            var allocationRemainder = size % MaxSize;
+
+            // Write the remainder first as this helps avoid an extra chunk allocation most times
+            if (allocationRemainder > 0)
+            {
+                var ptr = reader.ReadUnsafePtr(allocationRemainder);
+                UnsafeUtility.MemCpy(buffer + (allocationCount * MaxSize), ptr, allocationRemainder);
+            }
+
+            for (var i = 0; i < allocationCount; i++)
+            {
+                var ptr = reader.ReadUnsafePtr(MaxSize);
+                UnsafeUtility.MemCpy(buffer + (i * MaxSize), ptr, MaxSize);
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@
 #if !BL_DISABLE_INPUT
 namespace BovineLabs.Core.Input
 {
+    using BovineLabs.Core.Camera;
     using BovineLabs.Core.Groups;
     using Unity.Entities;
 
@@ -12,6 +13,7 @@ namespace BovineLabs.Core.Input
 #if UNITY_NETCODE
     [UpdateInGroup(typeof(Unity.NetCode.GhostInputSystemGroup))]
 #else
+    [UpdateBefore(typeof(CameraMainSystem))]
     [UpdateInGroup(typeof(AfterSceneSystemGroup))]
 #endif
     public partial class InputSystemGroup : ComponentSystemGroup

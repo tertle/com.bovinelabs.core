@@ -14,6 +14,7 @@ namespace BovineLabs.Core.Clone
     public partial struct CloneTransformSystem : ISystem
     {
         /// <inheritdoc/>
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             new CloneTransformJob { LocalTransforms = SystemAPI.GetComponentLookup<LocalTransform>(true) }.Schedule();

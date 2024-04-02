@@ -29,14 +29,14 @@ namespace BovineLabs.Core
         internal const string LogLevelName = "debug.loglevel";
         internal const int LogLevelDefaultValue = (int)Unity.Logging.LogLevel.Error;
 
-        [ConfigVar(LogLevelName, LogLevelDefaultValue, "The log level debugging for BovineLabs libraries.")]
-        internal static readonly SharedStatic<int> LogLevel = SharedStatic<int>.GetOrCreate<BLDebugSystem>();
-
-#if UNITY_EDITOR || BL_DEBUG
+        #if UNITY_EDITOR || BL_DEBUG
         private const LogLevel MinLogLevel = Unity.Logging.LogLevel.Debug;
 #else
         private const LogLevel MinLogLevel = Unity.Logging.LogLevel.Warning;
 #endif
+
+        [ConfigVar(LogLevelName, LogLevelDefaultValue, "The log level debugging for BovineLabs libraries.")]
+        internal static readonly SharedStatic<int> LogLevel = SharedStatic<int>.GetOrCreate<BLDebugSystem>();
 
         private LoggerHandle loggerHandle;
         private LogLevel currentLogLevel;
@@ -46,7 +46,7 @@ namespace BovineLabs.Core
         /// <inheritdoc />
         protected override void OnCreate()
         {
-            var netDebugEntity = this.EntityManager.CreateEntity(ComponentType.ReadWrite<BLDebug>());
+            var netDebugEntity = this.EntityManager.CreateSingleton<BLDebug>();
             this.EntityManager.SetName(netDebugEntity, "DBDebug");
 
             this.currentLogLevel = ToLogLevel(LogLevel.Data);

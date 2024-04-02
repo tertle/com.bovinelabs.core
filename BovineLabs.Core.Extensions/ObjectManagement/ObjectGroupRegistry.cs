@@ -8,6 +8,7 @@ namespace BovineLabs.Core.ObjectManagement
     using BovineLabs.Core.Iterators;
     using Unity.Entities;
 
+    [InternalBufferCapacity(0)]
     public struct ObjectGroupRegistry : IDynamicMultiHashMap<GroupId, ObjectId>
     {
         byte IDynamicMultiHashMap<GroupId, ObjectId>.Value { get; }

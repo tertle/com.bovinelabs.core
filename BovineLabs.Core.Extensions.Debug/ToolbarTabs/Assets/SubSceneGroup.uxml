@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement data-source-type="BovineLabs.Core.ToolbarTabs.SubSceneToolbarBindings, BovineLabs.Core.Extensions.Debug" style="flex-grow: 1;">
+        <BovineLabs.Core.UI.MaskField256 label="SubScenes" dropDownWidth="250">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="SubSceneMask" binding-mode="TwoWay" />
+                <ui:DataBinding property="choicesExposed" data-source-path="SubScenes" binding-mode="ToTarget" />
+            </Bindings>
+        </BovineLabs.Core.UI.MaskField256>
+    </ui:VisualElement>
+</ui:UXML>

@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Extensions
 
     public static unsafe class ComponentLookupExtensions
     {
-        public static T* GetOptionalComponentDataRW<T>(this ComponentLookup<T> lookup, Entity entity)
+        public static T* GetOptionalComponentDataRW<T>(ref this ComponentLookup<T> lookup, Entity entity)
             where T : unmanaged, IComponentData
         {
             ref var lookupInternal = ref UnsafeUtility.As<ComponentLookup<T>, ComponentLookupInternal>(ref lookup);
@@ -28,7 +28,7 @@ namespace BovineLabs.Core.Extensions
             return (T*)ecs->GetOptionalComponentDataWithTypeRW(entity, lookupInternal.m_TypeIndex, lookupInternal.m_GlobalSystemVersion, ref lookupInternal.m_Cache);
         }
 
-        public static RefRW<T> GetRefRWNoChangeFilter<T>(this ComponentLookup<T> lookup, Entity entity)
+        public static RefRW<T> GetRefRWNoChangeFilter<T>(ref this ComponentLookup<T> lookup, Entity entity)
             where T : unmanaged, IComponentData
         {
             ref var lookupInternal = ref UnsafeUtility.As<ComponentLookup<T>, ComponentLookupInternal>(ref lookup);
@@ -53,7 +53,7 @@ namespace BovineLabs.Core.Extensions
 #endif
         }
 
-        public static EnabledRefRW<T> GetEnableRefRWNoChangeFilter<T>(this ComponentLookup<T> lookup, Entity entity)
+        public static EnabledRefRW<T> GetEnableRefRWNoChangeFilter<T>(ref this ComponentLookup<T> lookup, Entity entity)
             where T : unmanaged, IComponentData, IEnableableComponent
         {
             ref var lookupInternal = ref UnsafeUtility.As<ComponentLookup<T>, ComponentLookupInternal>(ref lookup);
@@ -72,7 +72,7 @@ namespace BovineLabs.Core.Extensions
             return new EnabledRefRW<T>(MakeSafeBitRef(lookup, ptr, indexInBitField), ptrChunkDisabledCount);
         }
 
-        public static void SetChangeFilter<T>(this ComponentLookup<T> lookup, Entity entity)
+        public static void SetChangeFilter<T>(ref this ComponentLookup<T> lookup, Entity entity)
             where T : unmanaged, IComponentData
         {
             ref var lookupInternal = ref UnsafeUtility.As<ComponentLookup<T>, ComponentLookupInternal>(ref lookup);

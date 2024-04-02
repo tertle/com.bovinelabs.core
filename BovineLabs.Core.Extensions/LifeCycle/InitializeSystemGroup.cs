@@ -2,13 +2,16 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_LIFECYCLE
 namespace BovineLabs.Core.LifeCycle
 {
+    using BovineLabs.Core.App;
+    using BovineLabs.Core.Groups;
     using Unity.Entities;
 
-    [UpdateBefore(typeof(BeginSimulationEntityCommandBufferSystem))]
-    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
-    public partial class InitializeSystemGroup : ComponentSystemGroup
+    [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderFirst = true)]
+    public partial class InitializeSystemGroup : InitializationRequireSubScenesSystemGroup
     {
     }
 }
+#endif

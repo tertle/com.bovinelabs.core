@@ -8,6 +8,7 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Burst;
     using Unity.Entities;
 
+    [UpdateBefore(typeof(DestroyEntityCommandBufferSystem))]
     [UpdateInGroup(typeof(DestroySystemGroup), OrderLast = true)]
     public partial struct DestroyEntitySystem : ISystem
     {
@@ -29,7 +30,10 @@ namespace BovineLabs.Core.LifeCycle
                 return;
             }
 
-            state.EntityManager.DestroyEntity(query);
+            foreach (var e in query.ToEntityArray(state.WorldUpdateAllocator))
+            {
+                state.EntityManager.DestroyEntity(e);
+            }
         }
     }
 }
