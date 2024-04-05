@@ -243,7 +243,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
                     if (!this.HasWarned.Value && averageChange > WarningLevel.Data)
                     {
                         var percent = (int)(averageChange * 100);
-                        this.Debug.Warning($"{this.TypeName} DidChange triggered on average {percent}% of chunks per frame");
+                        this.Debug.Warning512($"{this.TypeName} DidChange triggered on average {percent}% of chunks per frame");
                         this.HasWarned.Value = true;
                     }
                 }

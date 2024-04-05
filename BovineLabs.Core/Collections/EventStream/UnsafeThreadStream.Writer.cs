@@ -30,6 +30,11 @@ namespace BovineLabs.Core.Collections
                 this.m_ThreadIndex = 0; // 0 so main thread works
             }
 
+            public void SetThreadIndex(int threadIndex)
+            {
+                this.m_ThreadIndex = threadIndex;
+            }
+
             /// <summary> Write data. </summary>
             /// <typeparam name="T"> The type of value. </typeparam>
             /// <param name="value"> Value to write. </param>

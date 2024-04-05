@@ -13,6 +13,18 @@ namespace BovineLabs.Core.Extensions
 
     public static unsafe class UnsafeParallelHashMapExtensions
     {
+        public static UnsafeParallelHashMap<TKey, TValue>.ParallelWriter AsParallelWriter<TKey, TValue>(
+            this UnsafeParallelHashMap<TKey, TValue> hashMap, int threadIndex)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            UnsafeParallelHashMap<TKey, TValue>.ParallelWriter writer;
+            writer.m_ThreadIndex = threadIndex;
+            writer.m_Buffer = hashMap.m_Buffer;
+
+            return writer;
+        }
+
         public static ref TValue GetOrAddRef<TKey, TValue>(this UnsafeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, TKey key, TValue defaultValue = default)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged

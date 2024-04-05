@@ -1,4 +1,14 @@
 # Changelog
+## [1.2.12] - 2024-04-05
+### Added
+* Ability to specify ThreadIndex for UnsafeThreadStream and UnsafeParallelHashMap
+
+### Fixed
+* Unity 2022.3 support
+
+### Changed
+* Renamed StatefulNewCollisionEventAuthoring to StatefulCollisionEventAuthoring
+
 ## [1.2.11] - 2024-04-02
 ### Added
 * Hotkeys for timescale if TimeToolbar exists

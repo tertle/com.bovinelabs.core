@@ -1,4 +1,4 @@
-﻿// <copyright file="StatefulNewTriggerEventAuthoring.cs" company="BovineLabs">
+﻿// <copyright file="StatefulTriggerEventAuthoring.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -9,11 +9,11 @@ namespace BovineLabs.Core.Authoring.PhysicsStates
     using Unity.Entities;
     using UnityEngine;
 
-    public class StatefulNewTriggerEventAuthoring : MonoBehaviour
+    public class StatefulTriggerEventAuthoring : MonoBehaviour
     {
-        private class Baker : Baker<StatefulNewTriggerEventAuthoring>
+        private class Baker : Baker<StatefulTriggerEventAuthoring>
         {
-            public override void Bake(StatefulNewTriggerEventAuthoring authoring)
+            public override void Bake(StatefulTriggerEventAuthoring authoring)
             {
                 var entity = this.GetEntity(TransformUsageFlags.None);
                 this.AddBuffer<StatefulTriggerEvent>(entity);

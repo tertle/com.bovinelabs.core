@@ -1,4 +1,4 @@
-﻿// <copyright file="StatefulNewCollisionEventAuthoring.cs" company="BovineLabs">
+﻿// <copyright file="StatefulCollisionEventAuthoring.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -9,13 +9,13 @@ namespace BovineLabs.Core.Authoring.PhysicsStates
     using Unity.Entities;
     using UnityEngine;
 
-    public class StatefulNewCollisionEventAuthoring : MonoBehaviour
+    public class StatefulCollisionEventAuthoring : MonoBehaviour
     {
         public bool EventDetails;
 
-        private class Baker : Baker<StatefulNewCollisionEventAuthoring>
+        private class Baker : Baker<StatefulCollisionEventAuthoring>
         {
-            public override void Bake(StatefulNewCollisionEventAuthoring authoring)
+            public override void Bake(StatefulCollisionEventAuthoring authoring)
             {
                 var entity = this.GetEntity(TransformUsageFlags.None);
                 this.AddBuffer<StatefulCollisionEvent>(entity);
