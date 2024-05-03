@@ -22,11 +22,13 @@
             where TValue : unmanaged
         {
             int count = source.Count();
-            var kv = source.GetKeyValueArrays(Allocator.Temp);
             var hashMapBuilder = builder.AllocateHashMap(ref blobHashMap, count);
 
-            for (int i = 0; i < kv.Length; i++)
-                hashMapBuilder.Add(kv.Keys[i], kv.Values[i]);
+            using var e = source.GetEnumerator();
+            while (e.MoveNext())
+            {
+                hashMapBuilder.Add(e.Current.Key, e.Current.Value);
+            }
         }
 
         /// <summary> Allocates a BlobHashMap and copies all key value pairs from the source dictionary. </summary>
@@ -88,13 +90,14 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            int count = source.Count();
-
-            var kv = source.GetKeyValueArrays(Allocator.Temp);
+            var count = source.Count();
             var hashMapBuilder = builder.AllocateMultiHashMap(ref blobMultiHashMap, count);
 
-            for (int i = 0; i < kv.Length; i++)
-                hashMapBuilder.Add(kv.Keys[i], kv.Values[i]);
+            using var e = source.GetEnumerator();
+            while (e.MoveNext())
+            {
+                hashMapBuilder.Add(e.Current.Key, e.Current.Value);
+            }
         }
 
         /// <summary> Allocates a BlobMultiHashMap and returns a builder than can be used to add values manually. </summary>
@@ -107,10 +110,8 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var hashmapBuilder = new BlobBuilderMultiHashMap<TKey, TValue>(capacity, capacity <= UseBucketCapacityRatioOfThreeUpTo ? 3 : 2, ref builder,
-                ref blobMultiHashMap.Data);
-
-            return hashmapBuilder;
+            return new BlobBuilderMultiHashMap<TKey, TValue>(
+                capacity, capacity <= UseBucketCapacityRatioOfThreeUpTo ? 3 : 2, ref builder, ref blobMultiHashMap.Data);
         }
 
         /// <summary> Allocates a BlobMultiHashMap and returns a builder than can be used to add values manually. </summary>
@@ -124,12 +125,12 @@
         /// <returns>Builder that can be ued to add values to the multihashmap</returns>
         public static BlobBuilderMultiHashMap<TKey, TValue> AllocateMultiHashMap<TKey, TValue>(
             this ref BlobBuilder builder, ref BlobMultiHashMap<TKey, TValue> blobMultiHashMap,
-            int capacity, int bucketCapacityRatio)
+            int capacity,
+            int bucketCapacityRatio)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var hashmapBuilder = new BlobBuilderMultiHashMap<TKey, TValue>(capacity, bucketCapacityRatio, ref builder, ref blobMultiHashMap.Data);
-            return hashmapBuilder;
+            return new BlobBuilderMultiHashMap<TKey, TValue>(capacity, bucketCapacityRatio, ref builder, ref blobMultiHashMap.Data);
         }
     }
 }

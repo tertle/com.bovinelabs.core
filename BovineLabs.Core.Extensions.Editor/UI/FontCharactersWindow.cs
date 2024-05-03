@@ -735,7 +735,7 @@ namespace BovineLabs.Core.Editor.UI
             return fft;
         }
 
-        [MenuItem("Window/Text/Font Characters", false, 2025)]
+        [MenuItem("BovineLabs/Tools/Font Characters", false)]
         private static void Init()
         {
             FontCharactersWindow window = (FontCharactersWindow)GetWindow(typeof(FontCharactersWindow));

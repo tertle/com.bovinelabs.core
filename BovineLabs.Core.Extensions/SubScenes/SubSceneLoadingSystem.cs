@@ -31,8 +31,6 @@ namespace BovineLabs.Core.SubScenes
             this.volumes = new NativeList<Volume>(16, Allocator.Persistent);
             this.requiredScenes = new NativeList<Entity>(4, Allocator.Persistent);
             this.waitingForLoad = new NativeHashSet<Entity>(16, Allocator.Persistent);
-
-            PauseGame.Pause(ref state, true);
         }
 
         /// <inheritdoc/>
@@ -91,6 +89,8 @@ namespace BovineLabs.Core.SubScenes
 
         private void LoadSubScenes(ref SystemState state)
         {
+            PauseGame.Pause(ref state, true);
+
             var debug = SystemAPI.GetSingleton<BLDebug>();
             var flags = state.WorldUnmanaged.Flags;
 

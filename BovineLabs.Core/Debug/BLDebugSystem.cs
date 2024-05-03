@@ -29,7 +29,7 @@ namespace BovineLabs.Core
         internal const string LogLevelName = "debug.loglevel";
         internal const int LogLevelDefaultValue = (int)Unity.Logging.LogLevel.Error;
 
-        #if UNITY_EDITOR || BL_DEBUG
+#if UNITY_EDITOR || BL_DEBUG
         private const LogLevel MinLogLevel = Unity.Logging.LogLevel.Debug;
 #else
         private const LogLevel MinLogLevel = Unity.Logging.LogLevel.Warning;

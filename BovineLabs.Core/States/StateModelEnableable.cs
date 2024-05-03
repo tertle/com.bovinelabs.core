@@ -32,7 +32,7 @@ namespace BovineLabs.Core.States
                 Assert.IsTrue(TypeManager.GetTypeInfo(e.Current.Value.TypeIndex).EnableableType, $"Non EnableableType {e.Current.Value} trying to be assigned to {stateComponent}");
 
                 // Add all component dependencies to this system
-                state.AddSystemDependency(e.Current.Value.TypeIndex);
+                state.AddDependency(e.Current.Value.TypeIndex);
             }
         }
 

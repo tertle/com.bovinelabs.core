@@ -12,4 +12,5 @@
             <ui:VisualElement name="menu" class="toolbar-menu" />
         </ui:VisualElement>
     </ui:VisualElement>
+    <ui:ScrollView />
 </ui:UXML>

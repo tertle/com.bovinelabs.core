@@ -1,4 +1,29 @@
 # Changelog
+## [1.2.13] - 2024-05-04
+### Added
+* NativeThreadStream.Writer<T> generic variation
+* NativeMultiHashMap.Remove(key, value)
+* BitFieldAttributeEditor which can be used to create a bit and flag inspector element from any data
+* MaskFieldL for a long mask field
+* Removing need for CustomBindings by adding custom BindableX elements instead
+* [Native|Unsafe]PerfectHashMap
+* NativeMultiHashMap.ReadOnly
+* UnmanagedPool
+* NativeHashMap extensions to access via index
+* Serializer and Deserializer originally from my save package
+
+### Changed
+* Updated to Entities 1.2.1
+* No longer supports 2023.3, only Unity 6+ (and 2022.3)
+* UI moved to BovineLabs.Core.UI and restricted to Unity 6+
+* SystemState.AddSystemDependency renamed to SystemState.AddDependency
+* LifeCycle system groups no longer update unless there is something to work on
+
+### Fixed
+* Toolbar issues in IL2CPP build
+* Netcode compile issues
+* SelectedEntity wasn't being set
+
 ## [1.2.12] - 2024-04-05
 ### Added
 * Ability to specify ThreadIndex for UnsafeThreadStream and UnsafeParallelHashMap

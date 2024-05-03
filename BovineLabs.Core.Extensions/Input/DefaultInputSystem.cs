@@ -8,8 +8,10 @@ namespace BovineLabs.Core.Input
     using System;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Camera;
+    using BovineLabs.Core.Extensions;
     using Unity.Entities;
     using Unity.Mathematics;
+    using Unity.Transforms;
     using UnityEngine;
     using UnityEngine.EventSystems;
     using UnityEngine.InputSystem;
@@ -35,7 +37,7 @@ namespace BovineLabs.Core.Input
 
             // Start out of the screen until actual input occurs
             // This stops being moused out and thinking you are near an edge in game view
-            this.inputCommon.CameraScreenPoint = new float2(-1, -1);
+            this.inputCommon.CursorScreenPoint = new float2(-1, -1);
 
             this.focus = new GameObject("Focus") { hideFlags = HideFlags.HideAndDontSave }.AddComponent<OnApplicationFocusBehaviour>();
             Object.DontDestroyOnLoad(this.focus.gameObject);
@@ -66,11 +68,11 @@ namespace BovineLabs.Core.Input
             var camera = this.EntityManager.GetComponentObject<Camera>(SystemAPI.GetSingletonEntity<CameraMain>());
 
             this.inputCommon.ScreenSize = new int2(Screen.width, Screen.height);
-            this.inputCommon.ViewPoint = this.inputCommon.CameraScreenPoint / this.inputCommon.ScreenSize;
-            this.inputCommon.InViewPort = InViewPort(this.inputCommon.ViewPoint);
+            this.inputCommon.CursorViewPoint = this.inputCommon.CursorScreenPoint / this.inputCommon.ScreenSize;
+            this.inputCommon.CursorInViewPort = InViewPort(this.inputCommon.CursorViewPoint);
 
-            this.inputCommon.CameraViewPoint = ((float3)camera.ScreenToViewportPoint((Vector2)this.inputCommon.CameraScreenPoint)).xy;
-            this.inputCommon.InCameraViewPort = InViewPort(this.inputCommon.CameraViewPoint);
+            this.inputCommon.CursorCameraViewPoint = ((float3)camera.ScreenToViewportPoint((Vector2)this.inputCommon.CursorScreenPoint)).xy;
+            this.inputCommon.CursorInCameraViewPort = InViewPort(this.inputCommon.CursorCameraViewPoint);
 
             this.inputCommon.InputOverUI = EventSystem.current.IsPointerOverGameObject();
 
@@ -78,9 +80,9 @@ namespace BovineLabs.Core.Input
 
             // ScreenPointToRay fails if out of bounds so we clamp it.
             // Won't be accurate, but it's up to the user to determine if they want to use it or not with InViewPort
-            var screenPointForRay = this.inputCommon.InCameraViewPort
-                ? this.inputCommon.CameraScreenPoint
-                : math.clamp(this.inputCommon.CameraScreenPoint, float2.zero, this.inputCommon.CameraScreenPoint);
+            var screenPointForRay = this.inputCommon.CursorInCameraViewPort
+                ? this.inputCommon.CursorScreenPoint
+                : math.clamp(this.inputCommon.CursorScreenPoint, float2.zero, this.inputCommon.CursorScreenPoint);
 
             var cameraRay = camera.ScreenPointToRay((Vector2)screenPointForRay);
             this.inputCommon.CameraRay = new Ray { Origin = cameraRay.origin, Displacement = cameraRay.direction };
@@ -99,12 +101,12 @@ namespace BovineLabs.Core.Input
 
         private void OnCursorPositionPerformed(InputAction.CallbackContext context)
         {
-            this.inputCommon.CameraScreenPoint = context.ReadValue<Vector2>();
+            this.inputCommon.CursorScreenPoint = context.ReadValue<Vector2>();
         }
 
         private void OnButtonPressed(InputControl button)
         {
-            if (this.inputCommon.InViewPort)
+            if (this.inputCommon.CursorInViewPort)
             {
                 this.inputCommon.AnyButtonPress = true;
             }

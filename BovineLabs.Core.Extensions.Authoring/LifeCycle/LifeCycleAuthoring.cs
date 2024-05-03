@@ -13,18 +13,6 @@ namespace BovineLabs.Core.Authoring.LifeCycle
     [DisallowMultipleComponent]
     public class LifeCycleAuthoring : MonoBehaviour
     {
-        private class Baker : Baker<LifeCycleAuthoring>
-        {
-            /// <inheritdoc/>
-            public override void Bake(LifeCycleAuthoring authoring)
-            {
-                var entity = this.GetEntity(TransformUsageFlags.None);
-                var isPrefab = authoring.IsPrefab();
-
-                AddComponents(this, entity, isPrefab);
-            }
-        }
-
         public static void AddComponents(IBaker baker, Entity entity, bool isPrefab)
         {
             if (isPrefab)
@@ -40,6 +28,18 @@ namespace BovineLabs.Core.Authoring.LifeCycle
 
             baker.AddComponent<DestroyEntity>(entity);
             baker.SetComponentEnabled<DestroyEntity>(entity, false);
+        }
+
+        private class Baker : Baker<LifeCycleAuthoring>
+        {
+            /// <inheritdoc/>
+            public override void Bake(LifeCycleAuthoring authoring)
+            {
+                var entity = this.GetEntity(TransformUsageFlags.None);
+                var isPrefab = authoring.IsPrefab();
+
+                AddComponents(this, entity, isPrefab);
+            }
         }
     }
 }

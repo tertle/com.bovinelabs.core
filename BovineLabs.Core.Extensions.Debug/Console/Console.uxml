@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <ui:VisualElement data-source-type="BovineLabs.Core.ToolbarTabs.TimeToolbarBindings, BovineLabs.Core.Extensions.Debug" name="Bindings" style="flex-grow: 1;">
+        <ui:ListView />
+        <ui:TextField placeholder-text="Command" />
+    </ui:VisualElement>
+</ui:UXML>

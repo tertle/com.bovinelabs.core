@@ -18,7 +18,7 @@ namespace BovineLabs.Core.App
             var isPaused = systemState.EntityManager.HasComponent<PauseGame>(systemState.SystemHandle);
 
             // We still set component even if we were already paused as the presentation part might change
-            systemState.EntityManager.AddComponentData(systemState.SystemHandle, new PauseGame {PausePresentation = pausePresentation});
+            systemState.EntityManager.AddComponentData(systemState.SystemHandle, new PauseGame { PausePresentation = pausePresentation });
 
             // We were already paused, we don't bother logging
             if (isPaused)
@@ -26,10 +26,10 @@ namespace BovineLabs.Core.App
                 return;
             }
 
-            // var text = default(FixedString512Bytes);
-            // text.Append(systemState.DebugName);
-            // text.Append((FixedString32Bytes)" | Paused: true");
-            // systemState.EntityManager.GetSingleton<BLDebug>(false).DebugLong512(text);
+            var text = default(FixedString512Bytes);
+            text.Append(systemState.DebugName);
+            text.Append((FixedString32Bytes)" | Paused: true");
+            systemState.EntityManager.GetSingleton<BLDebug>(false).DebugLong512(text);
         }
 
         public static void Unpause(ref SystemState systemState)

@@ -36,5 +36,7 @@ namespace BovineLabs.Core.ConfigVars
             get => this.field.Data.ToString();
             set => this.field.Data = (T)Convert.ChangeType(value, typeof(T));
         }
+
+        public Type Type => typeof(T);
     }
 }

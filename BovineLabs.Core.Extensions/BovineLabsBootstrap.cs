@@ -27,7 +27,15 @@ namespace BovineLabs.Core
 
         public static event Action<World>? GameWorldCreated;
 
+        public static World? ServiceWorld => serviceWorld;
+
+        public static World? GameWorld => gameWorld;
+
+#if UNITY_NETCODE
+        public override bool Initialize(string defaultWorldName)
+#else
         public bool Initialize(string defaultWorldName)
+#endif
         {
             gameWorld = null;
 

@@ -26,7 +26,7 @@ namespace BovineLabs.Core.Editor
 
             foreach (var entity in EntitySelection.GetAllSelectionsInWorld(this.World))
             {
-                if (selectedEntity.Value != Entity.Null)
+                if (selectedEntity.Value == Entity.Null)
                 {
                     selectedEntity.Value = entity;
                 }

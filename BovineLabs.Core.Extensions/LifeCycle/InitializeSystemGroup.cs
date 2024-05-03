@@ -12,6 +12,16 @@ namespace BovineLabs.Core.LifeCycle
     [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderFirst = true)]
     public partial class InitializeSystemGroup : InitializationRequireSubScenesSystemGroup
     {
+        protected override void OnUpdate()
+        {
+            var query = SystemAPI.QueryBuilder().WithAny<InitializeEntity, InitializeSubSceneEntity>().Build();
+            if (query.IsEmpty)
+            {
+                return;
+            }
+
+            base.OnUpdate();
+        }
     }
 }
 #endif

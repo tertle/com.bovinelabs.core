@@ -315,7 +315,7 @@ namespace BovineLabs.Core.Toolbar
                 // something else has already removed it or moved it
                 if (this.activeTab.Parent.parent == this.rootElement)
                 {
-                    this.rootElement.Remove(this.activeTab.Parent);
+                    this.activeTab.Parent.RemoveFromTab();
                 }
 
                 this.activeTab = default;
@@ -346,7 +346,7 @@ namespace BovineLabs.Core.Toolbar
                         return;
                     }
 
-                    this.rootElement.Add(this.activeTab.Parent);
+                    this.activeTab.Parent.AddToTab(this.rootElement);
                 }
             }
             else
@@ -354,7 +354,7 @@ namespace BovineLabs.Core.Toolbar
                 if (this.activeTab != null)
                 {
                     Assert.IsTrue(this.activeTab.Parent.parent == this.rootElement);
-                    this.rootElement.Remove(this.activeTab.Parent);
+                    this.activeTab.Parent.RemoveFromTab();
                 }
             }
 

@@ -1,0 +1,26 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <ui:VisualElement data-source-type="BovineLabs.Core.ToolbarTabs.CommandToolbarBindings, BovineLabs.Core.Extensions.Debug" style="flex-grow: 1; width: 200px; max-width: 200px;">
+        <BovineLabs.Core.UI.BindableTextField>
+            <Bindings>
+                <ui:DataBinding property="caret" data-source-path="Caret" binding-mode="ToTarget" />
+                <ui:DataBinding property="value" data-source-path="Input" binding-mode="TwoWay" />
+                <ui:DataBinding property="submitted" data-source-path="Submitted" binding-mode="ToSource" />
+            </Bindings>
+        </BovineLabs.Core.UI.BindableTextField>
+        <ui:Label>
+            <Bindings>
+                <ui:DataBinding property="text" data-source-path="Output[0]" binding-mode="ToTarget" />
+            </Bindings>
+        </ui:Label>
+        <ui:Label>
+            <Bindings>
+                <ui:DataBinding property="text" data-source-path="Output[1]" binding-mode="ToTarget" />
+            </Bindings>
+        </ui:Label>
+        <ui:Label>
+            <Bindings>
+                <ui:DataBinding property="text" data-source-path="Output[2]" binding-mode="ToTarget" />
+            </Bindings>
+        </ui:Label>
+    </ui:VisualElement>
+</ui:UXML>

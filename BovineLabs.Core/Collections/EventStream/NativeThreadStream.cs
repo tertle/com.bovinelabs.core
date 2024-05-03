@@ -69,6 +69,15 @@ namespace BovineLabs.Core.Collections
             return new Writer(ref this);
         }
 
+        /// <summary> Returns strictly typed writer instance. </summary>
+        /// <typeparam name="T"> The type allowed for writing. </typeparam>
+        /// <returns> The writer instance. </returns>
+        public Writer<T> AsWriter<T>()
+            where T : unmanaged
+        {
+            return new Writer<T>(ref this);
+        }
+
         /// <summary>
         /// The current number of items in the container.
         /// </summary>

@@ -51,18 +51,19 @@ namespace BovineLabs.Core.Utility
         [BurstCompile]
         public static void Generate(ref NativeArray<float3> points, ref NativeList<float3> outVerts, ref NativeList<int> outTris)
         {
-            if (points.Length <= 3)
+            switch (points.Length)
             {
-                outVerts.AddRange(points);
-                outTris.Add(0);
-                outTris.Add(1);
-                outTris.Add(2);
-
-                return;
+                case < 3:
+                    return;
+                case 3:
+                    outVerts.AddRange(points);
+                    outTris.Add(0);
+                    outTris.Add(1);
+                    outTris.Add(2);
+                    return;
             }
 
             var data = new Data(Allocator.Temp);
-
             GenerateInitialHull(ref data, points);
 
             while (data.OpenSetTail >= 0)

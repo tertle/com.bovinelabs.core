@@ -66,7 +66,7 @@ namespace BovineLabs.Core.Toolbar
         {
             ToolbarManager.Instance.AddGroup<T>(this.tabName.ToString(), this.groupName.ToString(), this.assetKey, out this.key, out var binding);
 
-            this.handle = GCHandle.Alloc(binding, GCHandleType.Pinned);
+            this.handle = GCHandle.Alloc(binding.Value, GCHandleType.Pinned);
             this.data = (TD*)UnsafeUtility.AddressOf(ref binding.Value);
 
             binding.Load();
@@ -74,11 +74,12 @@ namespace BovineLabs.Core.Toolbar
 
         public void Unload()
         {
+            var binding = ToolbarManager.Instance.RemoveGroup(this.key);
+
             if (this.handle.IsAllocated)
             {
-                var obj = (T)this.handle.Target;
-                obj.Unload();
-                if (obj is IDisposable disposable)
+                binding.Unload();
+                if (binding is IDisposable disposable)
                 {
                     disposable.Dispose();
                 }
@@ -92,7 +93,7 @@ namespace BovineLabs.Core.Toolbar
                 Debug.LogError("Did not unload");
             }
 
-            ToolbarManager.Instance.RemoveGroup(this.key);
+
         }
 
         public bool IsVisible()
@@ -103,7 +104,7 @@ namespace BovineLabs.Core.Toolbar
         // Not burst compatible
         public object? GetToolbar()
         {
-            return ToolbarManager.Instance.GetPanel(this.assetKey);
+            return ToolbarManager.Instance.GetPanel(this.key);
         }
 
         private static string FormatWorld(string name)

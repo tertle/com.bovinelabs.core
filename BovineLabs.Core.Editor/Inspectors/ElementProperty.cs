@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Editor.Inspectors
 {
+    using System.Collections.Generic;
     using BovineLabs.Core.Editor.Helpers;
     using UnityEditor;
     using UnityEditor.UIElements;
@@ -15,14 +16,20 @@ namespace BovineLabs.Core.Editor.Inspectors
         private SerializedObject? serializedObject;
         private VisualElement? parent;
 
+        private static readonly Dictionary<SerializedProperty, object> caches = new();
+
         protected virtual bool Inline { get; }
 
         protected VisualElement Parent => this.parent!;
 
         protected SerializedObject SerializedObject => this.serializedObject!;
 
-        public override VisualElement CreatePropertyGUI(SerializedProperty rootProperty)
+        protected SerializedProperty? RootProperty { get; private set; }
+
+        public sealed override VisualElement CreatePropertyGUI(SerializedProperty rootProperty)
         {
+            this.RootProperty = rootProperty;
+
             var iterateChildren = rootProperty.propertyType == SerializedPropertyType.Generic;
 
             if (this.Inline)
@@ -34,9 +41,12 @@ namespace BovineLabs.Core.Editor.Inspectors
                     // TODO indent?
                     this.parent.AddToClassList("unity-decorator-drawers-container");
 
-                    var label = new Label(rootProperty.displayName);
-                    label.AddToClassList("unity-header-drawer__label");
-                    this.Parent.Add(label);
+                    if (!rootProperty.displayName.StartsWith("Element "))
+                    {
+                        var label = new Label(rootProperty.displayName);
+                        label.AddToClassList("unity-header-drawer__label");
+                        this.Parent.Add(label);
+                    }
                 }
             }
             else
@@ -57,13 +67,19 @@ namespace BovineLabs.Core.Editor.Inspectors
                     foreach (var property in SerializedHelper.GetChildren(rootProperty))
                     {
                         var element = this.CreateElement(property);
-                        this.Parent.Add(element);
+                        if (element != null)
+                        {
+                            this.Parent.Add(element);
+                        }
                     }
                 }
                 else
                 {
                     var element = this.CreateElement(rootProperty);
-                    this.Parent.Add(element);
+                    if (element != null)
+                    {
+                        this.Parent.Add(element);
+                    }
                 }
             }
 
@@ -77,7 +93,18 @@ namespace BovineLabs.Core.Editor.Inspectors
             return PropertyUtil.CreateProperty(property, serializedObject);
         }
 
-        protected virtual VisualElement CreateElement(SerializedProperty property)
+        protected T Cache<T>()
+            where T : class, new()
+        {
+            if (!caches.TryGetValue(this.RootProperty!, out var cache))
+            {
+                caches[this.RootProperty!] = cache = new T();
+            }
+
+            return (T)cache;
+        }
+
+        protected virtual VisualElement? CreateElement(SerializedProperty property)
         {
             return CreatePropertyField(property, this.SerializedObject);
         }

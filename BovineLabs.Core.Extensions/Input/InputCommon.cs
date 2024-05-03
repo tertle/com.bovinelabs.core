@@ -16,19 +16,19 @@ namespace BovineLabs.Core.Input
         public int2 ScreenSize;
 
         /// <summary> Point in screen space. Screenspace is defined in pixels. The bottom-left is (0,0); the right-top is (pixelWidth,pixelHeight). </summary>
-        public float2 CameraScreenPoint;
+        public float2 CursorScreenPoint;
 
-        /// <summary> Point in viewport space. Viewport space is normalized. The bottom-left is (0,0); the top-right is (1,1). </summary>
-        public float2 CameraViewPoint;
+        /// <summary> Cursor point in viewport space. Viewport space is normalized. The bottom-left is (0,0); the top-right is (1,1). </summary>
+        public float2 CursorViewPoint;
 
-        /// <summary> Point in viewport space. Viewport space is normalized. The bottom-left is (0,0); the top-right is (1,1). </summary>
-        public float2 ViewPoint;
-
-        /// <summary> Is the cursor currently inside the view port. </summary>
-        public bool InViewPort;
+        /// <summary> Cursor point in camera viewport space. Viewport space is normalized. The bottom-left is (0,0); the top-right is (1,1). </summary>
+        public float2 CursorCameraViewPoint;
 
         /// <summary> Is the cursor currently inside the view port. </summary>
-        public bool InCameraViewPort;
+        public bool CursorInViewPort;
+
+        /// <summary> Is the cursor currently inside the cameras view port. </summary>
+        public bool CursorInCameraViewPort;
 
         /// <summary> Gets a value indicating whether the cursor is currently over the UI. </summary>
         public bool InputOverUI;
@@ -36,15 +36,18 @@ namespace BovineLabs.Core.Input
         /// <summary> Gets a value indicating whether the application has focus. </summary>
         public bool ApplicationFocus;
 
-        /// <summary> A ray going from camera through the current <see cref="CameraScreenPoint" /> using <see cref="Camera.ScreenPointToRay(Vector3)" />. </summary>
+        /// <summary> A ray going from camera through the current <see cref="CursorScreenPoint" /> using <see cref="Camera.ScreenPointToRay(Vector3)" />. </summary>
         /// <remarks> Displacement is set as a unit vector. </remarks>
         public Ray CameraRay;
 
         /// <summary> Gets a value indicating whether any button was pressed. </summary>
         public bool AnyButtonPress;
 
-        /// <summary> Combination of <see cref="InViewPort"/> && <see cref="ApplicationFocus"/>. </summary>
-        public bool InViewWithFocus => this.InViewPort && this.ApplicationFocus;
+        /// <summary>
+        /// Gets a value indicating whether the cursor is in the view and the application has focus.
+        /// combination of <see cref="CursorInViewPort"/> && <see cref="ApplicationFocus"/>.
+        /// </summary>
+        public bool InViewWithFocus => this.CursorInViewPort && this.ApplicationFocus;
     }
 }
 #endif

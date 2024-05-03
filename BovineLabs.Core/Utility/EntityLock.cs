@@ -28,9 +28,7 @@ namespace BovineLabs.Core.Utility
         private readonly Allocator allocator;
 
         public EntityLock(Allocator allocator)
-        // public EntityLock(NativeParallelHashMap<Entity, SpinLock> locks)
         {
-            // this.locks = locks;
              this.allocator = allocator;
              this.length = JobsUtility.ThreadIndexCount;
              this.pairs = (LockData*)UnsafeUtility.MallocTracked(sizeof(LockData) * this.length, UnsafeUtility.AlignOf<LockData>(), allocator, 0);
@@ -45,14 +43,6 @@ namespace BovineLabs.Core.Utility
             UnsafeUtility.FreeTracked(this.pairs, this.allocator);
             UnsafeUtility.FreeTracked(this.locksLock, this.allocator);
         }
-
-        // public Lock Acquire(Entity entity)
-        // {
-        //     AssertIsNotNull(entity);
-        //
-        //     ref var r = ref this.locks.GetOrAddRef(entity);
-        //     r.Acquire();
-        // }
 
         public Lock Acquire(Entity entity)
         {

@@ -20,8 +20,9 @@ namespace BovineLabs.Core.Collections
     /// <remarks> The iteration order over the values associated with a key is an implementation detail. Do not rely upon any particular ordering. </remarks>
     public struct UnsafeKeyedMapIterator
     {
-        internal int Key;
         internal int NextEntryIndex;
+
+        public int EntryIndex { get; internal set; }
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -123,7 +124,6 @@ namespace BovineLabs.Core.Collections
             Memory.Unmanaged.Free(data->Values, allocator);
             Memory.Unmanaged.Free(data, allocator);
         }
-
 
         private static int CalculateDataSize<TValue>(int length, int bucketLength, out int keyOffset, out int nextOffset, out int bucketOffset)
             where TValue : unmanaged
@@ -275,11 +275,11 @@ namespace BovineLabs.Core.Collections
         {
             CheckKeyOutOfBounds(this.buffer, key);
 
-            it.Key = key;
+            it = default;
 
             if (this.buffer->Length <= 0)
             {
-                it.NextEntryIndex = -1;
+                it.EntryIndex = it.NextEntryIndex = -1;
                 item = default;
                 return false;
             }
@@ -298,8 +298,8 @@ namespace BovineLabs.Core.Collections
         /// <returns> True if the key was present and had another value. </returns>
         public bool TryGetNextValue(out TValue item, ref UnsafeKeyedMapIterator it)
         {
-            var entryIdx = it.NextEntryIndex;
-            if (entryIdx < 0 /* || entryIdx >= this.Buffer->KeyCapacity*/)
+            it.EntryIndex = it.NextEntryIndex;
+            if (it.EntryIndex < 0 /* || entryIdx >= this.Buffer->KeyCapacity*/)
             {
                 it.NextEntryIndex = -1;
                 item = default;
@@ -307,10 +307,10 @@ namespace BovineLabs.Core.Collections
             }
 
             var nextPtrs = (int*)this.buffer->Next;
-            it.NextEntryIndex = nextPtrs[entryIdx];
+            it.NextEntryIndex = nextPtrs[it.EntryIndex];
 
             // Read the value
-            item = UnsafeUtility.ReadArrayElement<TValue>(this.buffer->Values, entryIdx);
+            item = UnsafeUtility.ReadArrayElement<TValue>(this.buffer->Values, it.EntryIndex);
             return true;
         }
 

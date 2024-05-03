@@ -52,7 +52,7 @@ namespace BovineLabs.Core.Editor.Inspectors
         {
             if (this.IsPrefab || this.prefabObject == null)
             {
-                return base.CreateElement(property);
+                return CreatePropertyField(property, this.SerializedObject);
             }
 
             var prefabProperty = this.prefabObject.FindProperty(property.propertyPath);

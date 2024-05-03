@@ -25,7 +25,7 @@ namespace BovineLabs.Core.PhysicsUpdate
             this.buildPhysicsWorld = this.World.GetExistingSystem<BuildPhysicsWorld>();
             this.buildPhysicsWorldSystemState = this.World.Unmanaged.ResolveSystemStateChecked(this.buildPhysicsWorld);
 
-            this.CheckedStateRef.AddSystemDependency(TypeManager.GetTypeIndex<PhysicsWorldSingleton>());
+            this.CheckedStateRef.AddDependency(TypeManager.GetTypeIndex<PhysicsWorldSingleton>());
         }
 
         /// <inheritdoc/>

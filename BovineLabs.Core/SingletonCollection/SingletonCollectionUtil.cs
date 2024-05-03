@@ -44,6 +44,9 @@ namespace BovineLabs.Core.SingletonCollection
 
         public UnsafeList<TC>.ReadOnly Containers => this.containers->AsReadOnly();
 
+        /// <summary> Gets the underlying container. Don't use this unless you really know what you're doing. </summary>
+        public UnsafeList<TC>* ContainersUnsafe => this.containers;
+
         public void ClearRewind()
         {
             this.containers->Clear();

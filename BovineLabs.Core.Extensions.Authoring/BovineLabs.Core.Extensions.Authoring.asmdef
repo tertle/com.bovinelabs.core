@@ -4,6 +4,7 @@
     "references": [
         "BovineLabs.Core",
         "BovineLabs.Core.Authoring",
+        "BovineLabs.Core.Editor",
         "BovineLabs.Core.Extensions",
         "Unity.Burst",
         "Unity.Collections",
@@ -17,8 +18,7 @@
         "Unity.Mathematics.Extensions",
         "Unity.Physics",
         "Unity.Scenes",
-        "Unity.Transforms",
-        "BovineLabs.Core.Editor"
+        "Unity.Transforms"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

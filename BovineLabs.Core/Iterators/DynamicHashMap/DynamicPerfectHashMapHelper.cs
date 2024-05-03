@@ -147,19 +147,6 @@ namespace BovineLabs.Core.Iterators
             return false;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [Conditional("UNITY_DOTS_DEBUG")]
-        private static void AssertCollisionFree(NativeArray<TKey> keys, NativeHashSet<int> unique)
-        {
-            foreach (var key in keys)
-            {
-                if (!unique.Add(key.GetHashCode()))
-                {
-                    throw new ArgumentException("HashCode collision.");
-                }
-            }
-        }
-
         private static int CalculateDataSize(int count, out int outValueOffset)
         {
             var sizeOfTKey = sizeof(TKey);
@@ -172,6 +159,19 @@ namespace BovineLabs.Core.Iterators
             outValueOffset = keysSize;
 
             return totalSize;
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private static void AssertCollisionFree(NativeArray<TKey> keys, NativeHashSet<int> unique)
+        {
+            foreach (var key in keys)
+            {
+                if (!unique.Add(key.GetHashCode()))
+                {
+                    throw new ArgumentException("HashCode collision.");
+                }
+            }
         }
     }
 }

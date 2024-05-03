@@ -14,6 +14,16 @@ namespace BovineLabs.Core.LifeCycle
     [UpdateBefore(typeof(SceneSystemGroup))]
     public partial class DestroySystemGroup : InitializationRequireSubScenesSystemGroup
     {
+        protected override void OnUpdate()
+        {
+            var query = SystemAPI.QueryBuilder().WithAll<DestroyEntity>().Build();
+            if (query.IsEmpty)
+            {
+                return;
+            }
+
+            base.OnUpdate();
+        }
     }
 }
 #endif

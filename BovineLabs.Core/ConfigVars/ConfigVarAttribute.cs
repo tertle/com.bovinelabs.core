@@ -80,13 +80,21 @@ namespace BovineLabs.Core.ConfigVars
                 return false;
             }
 
-            return this.Name == other.Name;
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return base.Equals(other) && this.Name == other.Name;
         }
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return this.Name.GetHashCode();
+            unchecked
+            {
+                return (base.GetHashCode() * 397) ^ this.Name.GetHashCode();
+            }
         }
     }
 }

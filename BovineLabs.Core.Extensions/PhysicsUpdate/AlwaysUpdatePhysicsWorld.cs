@@ -1,4 +1,4 @@
-﻿// <copyright file="FixedStepUpdatedSystem.cs" company="BovineLabs">
+﻿// <copyright file="AlwaysUpdatePhysicsWorld.cs" company="BovineLabs">
 // Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 

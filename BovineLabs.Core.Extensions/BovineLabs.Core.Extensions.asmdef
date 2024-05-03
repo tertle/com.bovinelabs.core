@@ -3,6 +3,7 @@
     "rootNamespace": "BovineLabs.Core",
     "references": [
         "BovineLabs.Core",
+        "BovineLabs.Core.UI",
         "Unity.Burst",
         "Unity.Collections",
         "Unity.Entities",
@@ -12,6 +13,7 @@
         "Unity.Logging",
         "Unity.Mathematics",
         "Unity.Mathematics.Extensions",
+        "Unity.NetCode",
         "Unity.Physics",
         "Unity.ResourceManager",
         "Unity.Scenes",

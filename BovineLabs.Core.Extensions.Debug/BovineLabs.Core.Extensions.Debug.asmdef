@@ -32,7 +32,8 @@
     "autoReferenced": true,
     "defineConstraints": [
         "UNITY_EDITOR || BL_DEBUG",
-        "BL_CORE_EXTENSIONS"
+        "BL_CORE_EXTENSIONS",
+        "UNITY_6000_0_OR_NEWER"
     ],
     "versionDefines": [
         {

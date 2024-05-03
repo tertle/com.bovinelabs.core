@@ -11,6 +11,7 @@ namespace BovineLabs.Core.Editor.Settings
     using System.Reflection;
     using BovineLabs.Core.Authoring.Settings;
     using BovineLabs.Core.Editor.Helpers;
+    using BovineLabs.Core.Keys;
     using BovineLabs.Core.Settings;
     using UnityEditor;
     using UnityEngine;
@@ -29,13 +30,21 @@ namespace BovineLabs.Core.Editor.Settings
             where T : ScriptableObject, ISettings
         {
             var type = typeof(T);
+            return (T)GetSettings(type);
+        }
 
+        /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
+        /// <typeparam name="T"> The type. </typeparam>
+        /// <returns> The settings instance. </returns>
+        /// <exception cref="Exception"> Thrown if more than 1 instance found in project. </exception>
+        public static ISettings GetSettings(Type type)
+        {
             if (CachedSettings.TryGetValue(type, out var cached))
             {
-                return (T)cached;
+                return cached;
             }
 
-            var settings = GetOrCreateSettings<T>(type);
+            var settings = GetOrCreateSettings(type);
             CachedSettings.Add(type, settings);
             return settings;
         }
@@ -57,10 +66,20 @@ namespace BovineLabs.Core.Editor.Settings
         private static T GetOrCreateSettings<T>(Type type)
             where T : ScriptableObject, ISettings
         {
+            return (T)GetOrCreateSettings(type);
+        }
+
+        private static ISettings GetOrCreateSettings(Type type)
+        {
+            if (!typeof(ISettings).IsAssignableFrom(type))
+            {
+                throw new Exception("Settings must implement ISettings");
+            }
+
             var filter = type.Namespace == null ? type.Name : $"{type.Namespace}.{type.Name}";
             var assets = AssetDatabase.FindAssets($"t:{filter}");
 
-            T? instance;
+            ScriptableObject? instance;
 
             switch (assets.Length)
             {
@@ -83,14 +102,15 @@ namespace BovineLabs.Core.Editor.Settings
                         directory = GetAssetDirectory(EditorSettings.SettingsKey, EditorSettings.DefaultSettingsDirectory);
                     }
 
-                    var path = Path.Combine(directory, $"{typeof(T).Name}.asset");
+                    var path = Path.Combine(directory, $"{type.Name}.asset");
 
                     // Search didn't work, for some reason this seems to fail sometimes due to library state
                     // So before creating a new instance, try to directly look it up where we expect it
-                    instance = AssetDatabase.LoadAssetAtPath<T>(path);
+                    instance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
+
                     if (instance == null)
                     {
-                        instance = ScriptableObject.CreateInstance<T>();
+                        instance = ScriptableObject.CreateInstance(type);
                         AssetDatabase.CreateAsset(instance, path);
                         AssetDatabase.SaveAssets();
                     }
@@ -102,26 +122,26 @@ namespace BovineLabs.Core.Editor.Settings
                 {
                     // Return
                     var asset = assets.First();
-                    instance = AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(asset));
+                    instance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(asset));
                     break;
                 }
 
                 default:
                 {
                     // Error
-                    Debug.LogError($"More than 1 instance of {typeof(T)} found. {string.Join(",", assets)}");
+                    Debug.LogError($"More than 1 instance of {type.Name} found. {string.Join(",", assets)}");
                     var asset = assets.First();
-                    instance = AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(asset));
+                    instance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(asset));
                     break;
                 }
             }
 
             TryAddToSettingsAuthoring(instance);
-            return instance;
+
+            return (ISettings)instance;
         }
 
-        private static void TryAddToSettingsAuthoring<T>(T settings)
-            where T : ScriptableObject, ISettings
+        private static void TryAddToSettingsAuthoring(ScriptableObject settings)
         {
             if (settings is not SettingsBase settingsBase)
             {

@@ -72,6 +72,7 @@ namespace BovineLabs.Core.UI
             }
 
             var visualElement = assets.CloneTree();
+
             var binding = new T();
 
             this.loadedPanels.Add(id, (visualElement, binding));

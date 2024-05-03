@@ -32,8 +32,8 @@ namespace BovineLabs.Core.LifeCycle
         /// </remarks>
         public unsafe struct Singleton : IComponentData, IECBSingleton
         {
-            internal UnsafeList<EntityCommandBuffer>* PendingBuffers;
-            internal AllocatorManager.AllocatorHandle Allocator;
+            private UnsafeList<EntityCommandBuffer>* pendingBuffers;
+            private AllocatorManager.AllocatorHandle allocator;
 
             /// <summary>
             /// Create a command buffer for the parent system to play back.
@@ -44,7 +44,7 @@ namespace BovineLabs.Core.LifeCycle
             /// <returns>The command buffer to record to.</returns>
             public EntityCommandBuffer CreateCommandBuffer(WorldUnmanaged world)
             {
-                return EntityCommandBufferSystem.CreateCommandBuffer(ref *this.PendingBuffers, this.Allocator, world);
+                return EntityCommandBufferSystem.CreateCommandBuffer(ref *this.pendingBuffers, this.allocator, world);
             }
 
             /// <summary>
@@ -56,25 +56,25 @@ namespace BovineLabs.Core.LifeCycle
             /// <param name="buffers">The list of buffers to play back. This list replaces any existing pending command buffers on this system.</param>
             void IECBSingleton.SetPendingBufferList(ref UnsafeList<EntityCommandBuffer> buffers)
             {
-                this.PendingBuffers = (UnsafeList<EntityCommandBuffer>*)UnsafeUtility.AddressOf(ref buffers);
+                this.pendingBuffers = (UnsafeList<EntityCommandBuffer>*)UnsafeUtility.AddressOf(ref buffers);
             }
 
             /// <summary>
             /// Set the allocator that command buffers created with this singleton should be allocated with.
             /// </summary>
-            /// <param name="allocatorIn">The allocator to use</param>
+            /// <param name="allocatorIn"> The allocator to use. </param>
             void IECBSingleton.SetAllocator(Allocator allocatorIn)
             {
-                this.Allocator = allocatorIn;
+                this.allocator = allocatorIn;
             }
 
             /// <summary>
             /// Set the allocator that command buffers created with this singleton should be allocated with.
             /// </summary>
-            /// <param name="allocatorIn">The allocator to use</param>
+            /// <param name="allocatorIn"> The allocator to use. </param>
             void IECBSingleton.SetAllocator(AllocatorManager.AllocatorHandle allocatorIn)
             {
-                this.Allocator = allocatorIn;
+                this.allocator = allocatorIn;
             }
         }
     }

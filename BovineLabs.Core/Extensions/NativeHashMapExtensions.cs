@@ -80,6 +80,38 @@ namespace BovineLabs.Core.Extensions
             return false;
         }
 
+        public static bool TryGetIndex<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key, out int index)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+
+        {
+            index = hashMap.m_Data->Find(key);
+            return index != -1;
+        }
+
+        public static TValue ReadIndexUnsafe<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, int index)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            return UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_Data->Ptr, index);
+        }
+
+        public static bool TryGetIndex<TKey, TValue>(this NativeHashMap<TKey, TValue>.ReadOnly hashMap, TKey key, out int index)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+
+        {
+            index = hashMap.m_Data->Find(key);
+            return index != -1;
+        }
+
+        public static TValue ReadIndexUnsafe<TKey, TValue>(this NativeHashMap<TKey, TValue>.ReadOnly hashMap, int index)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            return UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_Data->Ptr, index);
+        }
+
         internal static int AddNoFind<TKey>(this ref HashMapHelper<TKey> hashMapHelper, in TKey key)
             where TKey : unmanaged, IEquatable<TKey>
         {

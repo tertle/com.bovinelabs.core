@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Toolbar
 
     internal class ToolbarTab
     {
-        public ToolbarTab(string name, Button button, VisualElement parent)
+        public ToolbarTab(string name, Button button, ToolbarTabElement parent)
         {
             this.Name = name;
             this.Button = button;
@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Toolbar
 
         public Button Button { get; }
 
-        public VisualElement Parent { get; }
+        public ToolbarTabElement Parent { get; }
 
         public List<Group> Groups { get; } = new();
 

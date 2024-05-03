@@ -4,126 +4,49 @@
 
 namespace BovineLabs.Core.Editor.Keys
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using BovineLabs.Core.Editor.Inspectors;
+    using BovineLabs.Core.Editor.Settings;
     using BovineLabs.Core.Keys;
-    using Unity.Mathematics;
+    using BovineLabs.Core.Utility;
     using UnityEditor;
-    using UnityEditor.UIElements;
     using UnityEngine;
-    using UnityEngine.UIElements;
 
     [CustomPropertyDrawer(typeof(KAttribute), true)]
-    public class KAttributeDrawer : PropertyDrawer
+    public class KAttributeDrawer : BitFieldAttributeEditor<KAttribute>
     {
-        /// <inheritdoc/>
-        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        private static Dictionary<string, Type>? KTypes;
+
+        protected override IEnumerable<(string Name, int Value)>? GetKeyValues(KAttribute attr)
         {
-            if (property.propertyType != SerializedPropertyType.Integer)
+            var type = TryGetType(attr.Settings);
+            if (type == null)
             {
-                return new Label("KAttribute can only be applied to integer fields.");
+                Debug.LogWarning($"KAttribute could not find settings {attr.Settings}. Please check spelling and capitalization.");
+                return null;
             }
 
-            var attr = (KAttribute)this.attribute;
-            var k = Resources.Load<KSettings>($"{KSettings.KResourceDirectory}/{attr.Settings}");
-
-            if (k == null)
-            {
-                return new Label($"Settings file {attr.Settings} not found");
-            }
-
-            if (attr.Flags)
-            {
-                var choices = k.Keys.Select(s => s.Name).ToList();
-                var defaultValue = GetDefaultValue((uint)property.intValue, k.Keys, choices);
-                var remap = GetRemap(k.Keys, choices);
-
-                var popup = new MaskField(property.displayName, choices, defaultValue);
-                popup.AddToClassList(BaseField<int>.alignedFieldUssClassName);
-                popup.RegisterValueChangedCallback(evt =>
-                {
-                    property.intValue = Remap((uint)evt.newValue, remap);
-                    property.serializedObject.ApplyModifiedProperties();
-                });
-                return popup;
-            }
-            else
-            {
-                var current = property.intValue;
-                int index = 0;
-                for (; index < k.Keys.Count; index++)
-                {
-                    if (current == k.Keys[index].Value)
-                    {
-                        break;
-                    }
-                }
-
-                var choices = k.Keys.Select(s => s.Value).ToList();
-
-                var popup = new PopupField<int>(property.displayName, choices, index, FormatCallback, FormatCallback);
-                popup.AddToClassList(BaseField<int>.alignedFieldUssClassName);
-                popup.RegisterValueChangedCallback(evt =>
-                {
-                    property.intValue = evt.newValue;
-                    property.serializedObject.ApplyModifiedProperties();
-                });
-
-                return popup;
-
-                string FormatCallback(int i) => k.Keys.FirstOrDefault(key => i == key.Value).Name ?? "[None]";
-            }
+            var k = EditorSettingsUtility.GetSettings(type) as KSettings;
+            return k == null ? null : k.Keys.Select(s => (s.Name, s.Value));
         }
 
-        private static int Remap(uint c, Dictionary<int, int> remap)
+        private static Type? TryGetType(string type)
         {
-            var value = 0;
-            while (c != 0)
+            if (KTypes == null)
             {
-                var index = math.tzcnt(c);
-                var shifted = (uint)(1 << index);
-                c ^= shifted;
-                if (remap.TryGetValue(index, out var i))
+                KTypes = new Dictionary<string, Type>();
+
+                foreach (var c in ReflectionUtility.GetAllImplementations<KSettings>())
                 {
-                    value |= 1 << i;
+                    KTypes[c.Name] = c;
                 }
             }
 
-            return value;
-        }
+            KTypes.TryGetValue(type, out var result);
 
-        private static Dictionary<int, int> GetRemap(IEnumerable<NameValue> keys, List<string> choices)
-        {
-            var nameToValue = keys.ToDictionary(key => key.Name, key => key.Value);
-            var remap = new Dictionary<int, int>();
-            for (var index = 0; index < choices.Count; index++)
-            {
-                remap.Add(index, nameToValue[choices[index]]);
-            }
-
-            return remap;
-        }
-
-        private static int GetDefaultValue(uint c, IEnumerable<NameValue> keys, List<string> choices)
-        {
-            var setup = keys.ToDictionary(key => key.Value, key => key.Name);
-            var defaultValue = 0;
-            while (c != 0)
-            {
-                var index = math.tzcnt(c);
-                var shifted = (uint)(1 << math.tzcnt(c));
-                c ^= shifted;
-
-                if (!setup.TryGetValue(index, out var choice))
-                {
-                    continue;
-                }
-
-                var i = choices.IndexOf(choice);
-                defaultValue |= 1 << i;
-            }
-
-            return defaultValue;
+            return result;
         }
     }
 }

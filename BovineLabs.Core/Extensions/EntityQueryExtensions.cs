@@ -101,6 +101,14 @@ namespace BovineLabs.Core.Extensions
             return bufferAccessor.GetUnsafe(entityIndexInChunk);
         }
 
+        public static bool TryGetSingletonBufferNoSync<T>(this EntityQuery query, out DynamicBuffer<T> buffer, bool isReadOnly)
+            where T : unmanaged, IBufferElementData
+        {
+            var hasSingleton = query.HasSingleton<T>();
+            buffer = hasSingleton ? query.GetSingletonBufferNoSync<T>(isReadOnly) : default;
+            return hasSingleton;
+        }
+
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
         private static void AssertRange(int index, int count)
