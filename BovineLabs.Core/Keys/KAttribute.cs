@@ -6,7 +6,6 @@ namespace BovineLabs.Core.Keys
 {
     using System;
     using BovineLabs.Core.Inspectors;
-    using BovineLabs.Core.Utility;
     using UnityEngine;
 
     /// <summary> Apply to a byte/integer field to display the name defined in the <see cref="Settings" /> file. </summary>

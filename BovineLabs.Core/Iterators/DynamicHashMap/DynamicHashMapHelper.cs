@@ -611,29 +611,30 @@ namespace BovineLabs.Core.Iterators
             return false;
         }
 
-        internal bool TryGetFirstValue<TValue>(TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        internal bool TryGetFirstValue<TValue>(TKey key, out TValue item, out HashMapIterator<TKey> it)
             where TValue : unmanaged
         {
             it.Key = key;
 
             if (this.AllocatedIndex <= 0)
             {
-                it.EntryIndex = -1;
+                it.EntryIndex = it.NextEntryIndex = -1;
                 item = default;
                 return false;
             }
 
             // First find the slot based on the hash
             var bucket = this.GetBucket(it.Key);
-            it.EntryIndex = this.Buckets[bucket];
+            it.EntryIndex = it.NextEntryIndex = this.Buckets[bucket];
 
             return this.TryGetNextValue(out item, ref it);
         }
 
-        internal bool TryGetNextValue<TValue>(out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        internal bool TryGetNextValue<TValue>(out TValue item, ref HashMapIterator<TKey> it)
             where TValue : unmanaged
         {
-            var entryIdx = it.EntryIndex;
+            var entryIdx = it.NextEntryIndex;
+            it.NextEntryIndex = -1;
             it.EntryIndex = -1;
 
             if (entryIdx < 0 || entryIdx >= this.Capacity)
@@ -655,7 +656,8 @@ namespace BovineLabs.Core.Iterators
                 }
             }
 
-            it.EntryIndex = next[entryIdx];
+            it.NextEntryIndex = next[entryIdx];
+            it.EntryIndex = entryIdx;
             item = UnsafeUtility.ReadArrayElement<TValue>(this.Values, entryIdx);
             return true;
         }

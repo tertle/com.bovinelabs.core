@@ -9,7 +9,6 @@ namespace BovineLabs.Core.Authoring.Input
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using BovineLabs.Core.Authoring.Settings;
-    using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Input;
     using BovineLabs.Core.Settings;
     using Unity.Entities;
@@ -34,6 +33,14 @@ namespace BovineLabs.Core.Authoring.Input
         [SuppressMessage("ReSharper", "CollectionNeverUpdated.Local", Justification = "Unity serialization")]
         [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Local", Justification = "Unity serialization")]
         private List<IInputSettings> settings = new();
+
+#if UNITY_EDITOR || BL_DEBUG
+        [SerializeField]
+        [SerializeReference]
+        [SuppressMessage("ReSharper", "CollectionNeverUpdated.Local", Justification = "Unity serialization")]
+        [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Local", Justification = "Unity serialization")]
+        private List<IInputSettings> debugSettings = new();
+#endif
 
         /// <inheritdoc />
         public override void Bake(IBaker baker)
@@ -61,6 +68,16 @@ namespace BovineLabs.Core.Authoring.Input
             foreach (var s in this.settings)
             {
                 s?.Bake(wrapper);
+            }
+
+#if !BL_DEBUG
+            if (baker.IsBakingForEditor())
+#endif
+            {
+                foreach (var s in this.debugSettings)
+                {
+                    s?.Bake(wrapper);
+                }
             }
         }
 

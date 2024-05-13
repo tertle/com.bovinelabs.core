@@ -205,7 +205,7 @@ namespace Unity.Collections
         /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
         /// <param name="it">A reference to the iterator to advance.</param>
         /// <returns>True if the key was present.</returns>
-        public readonly bool TryGetFirstValue(TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        public readonly bool TryGetFirstValue(TKey key, out TValue item, out HashMapIterator<TKey> it)
         {
             this.CheckRead();
             return this.data->TryGetFirstValue(key, out item, out it);
@@ -215,7 +215,7 @@ namespace Unity.Collections
         /// <param name="item">Outputs the next value.</param>
         /// <param name="it">A reference to the iterator to advance.</param>
         /// <returns>True if the key was present and had another value.</returns>
-        public readonly bool TryGetNextValue(out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        public readonly bool TryGetNextValue(out TValue item, ref HashMapIterator<TKey> it)
         {
             this.CheckRead();
             return this.data->TryGetNextValue(out item, ref it);
@@ -435,7 +435,7 @@ namespace Unity.Collections
             /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
             /// <param name="it">A reference to the iterator to advance.</param>
             /// <returns>True if the key was present.</returns>
-            public bool TryGetFirstValue(TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+            public bool TryGetFirstValue(TKey key, out TValue item, out HashMapIterator<TKey> it)
             {
                 this.CheckRead();
                 return this.data->TryGetFirstValue(key, out item, out it);
@@ -445,7 +445,7 @@ namespace Unity.Collections
             /// <param name="item">Outputs the next value.</param>
             /// <param name="it">A reference to the iterator to advance.</param>
             /// <returns>True if the key was present and had another value.</returns>
-            public bool TryGetNextValue(out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+            public bool TryGetNextValue(out TValue item, ref HashMapIterator<TKey> it)
             {
                 this.CheckRead();
                 return this.data->TryGetNextValue(out item, ref it);
@@ -576,11 +576,12 @@ namespace Unity.Collections
         }
     }
 
-    public struct NativeMultiHashMapIterator<TKey>
+    public struct HashMapIterator<TKey>
         where TKey : unmanaged, IEquatable<TKey>
     {
+        public int EntryIndex;
         internal TKey Key;
-        internal int EntryIndex;
+        internal int NextEntryIndex;
     }
 
     public static unsafe class NativeMultiHashMapExtensions
@@ -803,7 +804,7 @@ namespace Unity.Collections
             return false;
         }
 
-        internal static bool TryGetFirstValue<TKey, TValue>(this in HashMapHelper<TKey> hashMapHelper, TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        internal static bool TryGetFirstValue<TKey, TValue>(this in HashMapHelper<TKey> hashMapHelper, TKey key, out TValue item, out HashMapIterator<TKey> it)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -811,24 +812,25 @@ namespace Unity.Collections
 
             if (hashMapHelper.AllocatedIndex <= 0)
             {
-                it.EntryIndex = -1;
+                it.EntryIndex = it.NextEntryIndex = -1;
                 item = default;
                 return false;
             }
 
             // First find the slot based on the hash
             var bucket = hashMapHelper.GetBucket(it.Key);
-            it.EntryIndex = hashMapHelper.Buckets[bucket];
+            it.EntryIndex = it.NextEntryIndex = hashMapHelper.Buckets[bucket];
 
             return hashMapHelper.TryGetNextValue(out item, ref it);
         }
 
-        internal static bool TryGetNextValue<TKey, TValue>(this in HashMapHelper<TKey> hashMapHelper, out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        internal static bool TryGetNextValue<TKey, TValue>(this in HashMapHelper<TKey> hashMapHelper, out TValue item, ref HashMapIterator<TKey> it)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var entryIdx = it.EntryIndex;
+            var entryIdx = it.NextEntryIndex;
             it.EntryIndex = -1;
+            it.NextEntryIndex = -1;
 
             if (entryIdx < 0 || entryIdx >= hashMapHelper.Capacity)
             {
@@ -847,7 +849,8 @@ namespace Unity.Collections
                 }
             }
 
-            it.EntryIndex = nextPtrs[entryIdx];
+            it.NextEntryIndex = nextPtrs[entryIdx];
+            it.EntryIndex = entryIdx;
             item = UnsafeUtility.ReadArrayElement<TValue>(hashMapHelper.Ptr, entryIdx);
             return true;
         }

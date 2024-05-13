@@ -1,4 +1,4 @@
-﻿// <copyright file="SpatialMap.cs" company="BovineLabs">
+﻿// <copyright file="SpatialMap3.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -16,22 +16,22 @@ namespace BovineLabs.Core.Spatial
     using Unity.Mathematics;
     using Debug = UnityEngine.Debug;
 
-    public struct SpatialMap<T> : IDisposable
-        where T : unmanaged, ISpatialPosition
+    public struct SpatialMap3<T> : IDisposable
+        where T : unmanaged, ISpatialPosition3
     {
         private readonly float quantizeStep;
         private readonly int quantizeSize;
-        private readonly int2 halfSize;
+        private readonly int3 halfSize;
 
-        private NativeParallelMultiHashMap<int, int> map;
+        private NativeParallelMultiHashMap<long, int> map;
 
-        public SpatialMap(float quantizeStep, int size, Allocator allocator = Allocator.Persistent)
+        public SpatialMap3(float quantizeStep, int size, Allocator allocator = Allocator.Persistent)
         {
             this.quantizeStep = quantizeStep;
             this.quantizeSize = (int)math.ceil(size / quantizeStep);
-            this.halfSize = new int2(size) / 2;
+            this.halfSize = new int3(size) / 2;
 
-            this.map = new NativeParallelMultiHashMap<int, int>(0, allocator);
+            this.map = new NativeParallelMultiHashMap<long, int>(0, allocator);
         }
 
         public bool IsCreated => this.map.IsCreated;
@@ -72,12 +72,13 @@ namespace BovineLabs.Core.Spatial
                     Map = this.map,
                     QuantizeStep = this.quantizeStep,
                     QuantizeWidth = this.quantizeSize,
+                    QuantizeDepth = this.quantizeSize,
                     HalfSize = this.halfSize,
                     Workers = workers,
                 }
                 .ScheduleParallel(workers, 1, dependency);
 
-            dependency = new SpatialMap.CalculateMap
+            dependency = new SpatialMap3.CalculateMap
                 {
                     SpatialHashMap = this.map,
                 }
@@ -88,16 +89,16 @@ namespace BovineLabs.Core.Spatial
 
         /// <summary> Gets a readonly copy of the struct that can be used to query the spatial hash map. Also includes methods to quantize and hash. </summary>
         /// <returns> A readonly container. </returns>
-        public SpatialMap.ReadOnly AsReadOnly()
+        public SpatialMap3.ReadOnly AsReadOnly()
         {
-            return new SpatialMap.ReadOnly(this.quantizeStep, this.quantizeSize, this.halfSize, this.map);
+            return new SpatialMap3.ReadOnly(this.quantizeStep, this.quantizeSize, this.quantizeSize, this.halfSize, this.map);
         }
 
         // Jobs outside to avoid generic issues
         [BurstCompile]
         public struct ResizeNativeParallelHashMapJob : IJob
         {
-            public NativeParallelMultiHashMap<int, int> Map;
+            public NativeParallelMultiHashMap<long, int> Map;
 
             [ReadOnly]
             public NativeArray<T> Length;
@@ -122,11 +123,12 @@ namespace BovineLabs.Core.Spatial
             public NativeArray<T> Positions;
 
             [NativeDisableParallelForRestriction]
-            public NativeParallelMultiHashMap<int, int> Map;
+            public NativeParallelMultiHashMap<long, int> Map;
 
             public float QuantizeStep;
             public int QuantizeWidth;
-            public int2 HalfSize;
+            public int QuantizeDepth;
+            public int3 HalfSize;
 
             public int Workers;
 
@@ -141,17 +143,17 @@ namespace BovineLabs.Core.Spatial
                     end += this.Positions.Length % this.Workers;
                 }
 
-                var keys = (int*)this.Map.GetUnsafeBucketData().keys;
+                var keys = (long*)this.Map.GetUnsafeBucketData().keys;
                 var values = (int*)this.Map.GetUnsafeBucketData().values;
 
                 for (var entityInQueryIndex = start; entityInQueryIndex < end; entityInQueryIndex++)
                 {
                     var position = this.Positions[entityInQueryIndex].Position;
-                    var quantized = SpatialMap.Quantized(position, this.QuantizeStep, this.HalfSize);
+                    var quantized = SpatialMap3.Quantized(position, this.QuantizeStep, this.HalfSize);
 
                     this.ValidatePosition(position, quantized);
 
-                    var hashed = SpatialMap.Hash(quantized, this.QuantizeWidth);
+                    var hashed = SpatialMap3.Hash(quantized, this.QuantizeWidth, this.QuantizeDepth);
                     keys[entityInQueryIndex] = hashed;
                     values[entityInQueryIndex] = entityInQueryIndex;
                 }
@@ -159,12 +161,12 @@ namespace BovineLabs.Core.Spatial
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             [Conditional("UNITY_DOTS_DEBUG")]
-            private void ValidatePosition(float2 position, int2 quantized)
+            private void ValidatePosition(float3 position, int3 quantized)
             {
                 if (math.any(quantized >= this.QuantizeWidth))
                 {
-                    var min = new int2(-this.HalfSize);
-                    var max = new int2(this.HalfSize - 1);
+                    var min = new int3(-this.HalfSize);
+                    var max = new int3(this.HalfSize - 1);
 
                     Debug.LogError($"Position {position} is outside the size of the world, min={min} max={max}");
                     throw new ArgumentException($"Position {position} is outside the size of the world, min={min} max={max}");
@@ -173,18 +175,18 @@ namespace BovineLabs.Core.Spatial
         }
     }
 
-    public static class SpatialMap
+    public static class SpatialMap3
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int2 Quantized(float2 position, float step, int2 halfSize)
+        public static int3 Quantized(float3 position, float step, int3 halfSize)
         {
-            return new int2(math.floor((position + halfSize) / step));
+            return new int3(math.floor((position + halfSize) / step));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int Hash(int2 quantized, int width)
+        public static long Hash(int3 quantized, int width, int depth)
         {
-            return quantized.x + (quantized.y * width);
+            return quantized.x + (quantized.y * width) + (quantized.z * width * depth);
         }
 
         /// <summary> Readonly copy for querying the map. </summary>
@@ -192,36 +194,38 @@ namespace BovineLabs.Core.Spatial
         {
             private readonly float quantizeStep;
             private readonly int quantizeWidth;
-            private readonly int2 halfSize;
+            private readonly int quantizeDepth;
+            private readonly int3 halfSize;
 
-            public ReadOnly(float quantizeStep, int quantizeWidth, int2 halfSize, NativeParallelMultiHashMap<int, int> map)
+            public ReadOnly(float quantizeStep, int quantizeWidth, int quantizeDepth, int3 halfSize, NativeParallelMultiHashMap<long, int> map)
             {
                 this.quantizeStep = quantizeStep;
                 this.quantizeWidth = quantizeWidth;
+                this.quantizeDepth = quantizeDepth;
                 this.halfSize = halfSize;
                 this.Map = map;
             }
 
             [field: ReadOnly]
-            public NativeParallelMultiHashMap<int, int> Map { get; }
+            public NativeParallelMultiHashMap<long, int> Map { get; }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public int2 Quantized(float2 position)
+            public int3 Quantized(float3 position)
             {
-                return SpatialMap.Quantized(position, this.quantizeStep, this.halfSize);
+                return SpatialMap3.Quantized(position, this.quantizeStep, this.halfSize);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public int Hash(int2 quantized)
+            public long Hash(int3 quantized)
             {
-                return SpatialMap.Hash(quantized, this.quantizeWidth);
+                return SpatialMap3.Hash(quantized, this.quantizeWidth, this.quantizeDepth);
             }
         }
 
         [BurstCompile]
         internal struct CalculateMap : IJob
         {
-            public NativeParallelMultiHashMap<int, int> SpatialHashMap;
+            public NativeParallelMultiHashMap<long, int> SpatialHashMap;
 
             public void Execute()
             {

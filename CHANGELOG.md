@@ -1,4 +1,20 @@
 # Changelog
+## [1.2.14] - 2024-05-13
+### Added
+* AddDependency<T> extension for SystemState
+* SpatialMap3 for a spatial map in 3D
+* ConfigVar option to disable SelectedEntityEditorSystem
+
+### Changed
+* Removed Batch from IJobParallelForDeferBatch methods
+* Input with the word Debug in the name are now separate so they can be stripped
+* Exposed iterator data for DynamicHashMap
+* SpatialMap has been replaced by a HashMap variation. The old SpatialMap has been renamed to SpatialKeyedMap
+* Rewrote SelectedEntityEditorSystem to hopefully handle large entity count slightly better
+
+### Fixed
+* Created Definitions from Assets wasn't adding the authoring component
+
 ## [1.2.13] - 2024-05-04
 ### Added
 * NativeThreadStream.Writer<T> generic variation

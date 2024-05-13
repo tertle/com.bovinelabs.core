@@ -22,7 +22,7 @@ namespace BovineLabs.Core.Authoring.Settings
                 {
                     if (setting == null)
                     {
-                        Debug.LogWarning($"Setting is not set on {authoring} in {authoring.gameObject.scene}");
+                        Debug.LogWarning($"Setting is not set on {authoring.gameObject} in {authoring.gameObject.scene.name}");
                         continue;
                     }
 

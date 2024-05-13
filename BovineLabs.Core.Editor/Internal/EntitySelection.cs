@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Editor.Internal
 {
     using System.Collections.Generic;
+    using Unity.Collections;
     using Unity.Entities;
     using Unity.Entities.Editor;
     using UnityEditor;
@@ -53,6 +54,31 @@ namespace BovineLabs.Core.Editor.Internal
                             yield return entity;
                         }
 
+                        break;
+                    }
+                }
+            }
+        }
+
+        public static void GetAllSelectionsInWorld(World world, NativeList<Entity> entities, NativeList<int> instanceIds)
+        {
+            foreach (var s in Selection.objects)
+            {
+                switch (s)
+                {
+                    case EntitySelectionProxy proxy:
+                    {
+                        if (proxy.World == world)
+                        {
+                            entities.Add(proxy.Entity);
+                        }
+
+                        break;
+                    }
+
+                    case GameObject go:
+                    {
+                        instanceIds.Add(go.GetInstanceID());
                         break;
                     }
                 }

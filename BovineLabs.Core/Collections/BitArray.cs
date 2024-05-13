@@ -95,7 +95,7 @@ namespace BovineLabs.Core.Collections
 
         /// <summary> Initializes a new instance of the <see cref="BitArray8" /> struct. </summary>
         /// <param name="bitIndexTrue"> List of indices where bits should be set to true. </param>
-        public BitArray8(IEnumerable<uint> bitIndexTrue)
+        public BitArray8(Span<uint> bitIndexTrue)
         {
             this.data = (byte)0u;
 
@@ -268,7 +268,7 @@ namespace BovineLabs.Core.Collections
 
         /// <summary> Initializes a new instance of the <see cref="BitArray16" /> struct. </summary>
         /// <param name="bitIndexTrue"> List of indices where bits should be set to true. </param>
-        public BitArray16(IEnumerable<uint> bitIndexTrue)
+        public BitArray16(Span<uint> bitIndexTrue)
         {
             this.data = (ushort)0u;
 
@@ -428,15 +428,15 @@ namespace BovineLabs.Core.Collections
         private uint data;
 
         /// <summary> Initializes a new instance of the <see cref="BitArray32" /> struct. </summary>
-        /// <param name="initValue"> Initialization value. </param>
-        public BitArray32(uint initValue)
+        /// <param name="rawValue"> Initialization value. </param>
+        public BitArray32(uint rawValue)
         {
-            this.data = initValue;
+            this.data = rawValue;
         }
 
         /// <summary> Initializes a new instance of the <see cref="BitArray32" /> struct. </summary>
         /// <param name="bitIndexTrue"> List of indices where bits should be set to true. </param>
-        public BitArray32(IEnumerable<uint> bitIndexTrue)
+        public BitArray32(Span<uint> bitIndexTrue)
         {
             this.data = 0u;
 
@@ -605,8 +605,15 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary> Initializes a new instance of the <see cref="BitArray64" /> struct. </summary>
+        /// <param name="bitIndexTrue"> Single initial index that is set to true. </param>
+        public unsafe BitArray64(uint bitIndexTrue)
+            : this(new Span<uint>(&bitIndexTrue, 1))
+        {
+        }
+
+        /// <summary> Initializes a new instance of the <see cref="BitArray64" /> struct. </summary>
         /// <param name="bitIndexTrue"> List of indices where bits should be set to true. </param>
-        public BitArray64(IEnumerable<uint> bitIndexTrue)
+        public BitArray64(Span<uint> bitIndexTrue)
         {
             this.data = 0L;
 
@@ -780,8 +787,15 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary> Initializes a new instance of the <see cref="BitArray128" /> struct. </summary>
+        /// <param name="bitIndexTrue"> Single initial index that is set to true. </param>
+        public unsafe BitArray128(uint bitIndexTrue)
+            : this(new Span<uint>(&bitIndexTrue, 1))
+        {
+        }
+
+        /// <summary> Initializes a new instance of the <see cref="BitArray128" /> struct. </summary>
         /// <param name="bitIndexTrue"> List of indices where bits should be set to true. </param>
-        public BitArray128(IEnumerable<uint> bitIndexTrue)
+        public BitArray128(Span<uint> bitIndexTrue)
         {
             this.data1 = this.data2 = 0uL;
 
@@ -992,12 +1006,19 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary> Initializes a new instance of the <see cref="BitArray256" /> struct. </summary>
+        /// <param name="bitIndexTrue"> Single initial index that is set to true. </param>
+        public unsafe BitArray256(uint bitIndexTrue)
+            : this(new Span<uint>(&bitIndexTrue, 1))
+        {
+        }
+
+        /// <summary> Initializes a new instance of the <see cref="BitArray256" /> struct. </summary>
         /// <param name="bitIndexTrue"> List of indices where bits should be set to true. </param>
-        public BitArray256(params uint[] bitIndexTrue)
+        public BitArray256(Span<uint> bitIndexTrue)
         {
             this.data1 = this.data2 = this.data3 = this.data4 = 0uL;
 
-             foreach (var bitIndex in bitIndexTrue)
+            foreach (var bitIndex in bitIndexTrue)
             {
                 if (bitIndex < 64u)
                 {

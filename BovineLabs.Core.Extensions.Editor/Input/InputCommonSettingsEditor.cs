@@ -17,6 +17,7 @@ namespace BovineLabs.Core.Editor.Input
     public class InputCommonSettingsEditor : ElementEditor
     {
         private const string SettingsProperty = "settings";
+        private const string DebugSettingsProperty = "debugSettings";
 
         /// <inheritdoc/>
         protected override VisualElement CreateElement(SerializedProperty property)
@@ -38,6 +39,7 @@ namespace BovineLabs.Core.Editor.Input
             var baseType = typeof(IInputSettings);
 
             var property = this.serializedObject.FindProperty(SettingsProperty);
+            var debugProperty = this.serializedObject.FindProperty(DebugSettingsProperty);
 
             ClearNullReferences(property);
 
@@ -47,14 +49,47 @@ namespace BovineLabs.Core.Editor.Input
                          .Where(t => t.IsClass && t is { IsInterface: false, IsAbstract: false })
                          .Where(t => baseType.IsAssignableFrom(t)))
             {
-                if (TypeExistsInArray(property, type))
+                var isDebug = type.FullName!.Contains("Debug");
+
+                if (TypeExistsInArray(property, type, out int index))
                 {
-                    continue;
+                    if (isDebug)
+                    {
+                        property.DeleteArrayElementAtIndex(index);
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
 
-                property.InsertArrayElementAtIndex(property.arraySize);
-                var element = property.GetArrayElementAtIndex(property.arraySize - 1);
-                element.managedReferenceValue = (IInputSettings)Activator.CreateInstance(type);
+                if (TypeExistsInArray(debugProperty, type, out index))
+                {
+                    if (!isDebug)
+                    {
+                        debugProperty.DeleteArrayElementAtIndex(index);
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+
+                var obj = (IInputSettings)Activator.CreateInstance(type);
+                SerializedProperty element;
+
+                if (isDebug)
+                {
+                    debugProperty.InsertArrayElementAtIndex(debugProperty.arraySize);
+                    element = debugProperty.GetArrayElementAtIndex(debugProperty.arraySize - 1);
+                }
+                else
+                {
+                    property.InsertArrayElementAtIndex(property.arraySize);
+                    element = property.GetArrayElementAtIndex(property.arraySize - 1);
+                }
+
+                element.managedReferenceValue = obj;
             }
 
             this.serializedObject.ApplyModifiedProperties();
@@ -73,12 +108,12 @@ namespace BovineLabs.Core.Editor.Input
             }
         }
 
-        private static bool TypeExistsInArray(SerializedProperty property, Type type)
+        private static bool TypeExistsInArray(SerializedProperty property, Type type, out int index)
         {
             var size = property.arraySize;
-            for (var i = 0; i < size; i++)
+            for (index = 0; index < size; index++)
             {
-                var element = property.GetArrayElementAtIndex(i);
+                var element = property.GetArrayElementAtIndex(index);
 
                 if (element.managedReferenceValue.GetType() == type)
                 {

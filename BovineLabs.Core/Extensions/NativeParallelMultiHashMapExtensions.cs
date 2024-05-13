@@ -467,6 +467,26 @@ namespace BovineLabs.Core.Extensions
 
         public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
+            [NoAlias] NativeArray<TKey> keys,
+            [NoAlias] NativeSlice<TValue> values)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            hashMap.m_Writer.m_Buffer->AddBatchUnsafeParallel(keys, values);
+        }
+
+        public static void AddBatchUnsafe<TKey, TValue>(
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
+            [NoAlias] NativeSlice<TKey> keys,
+            [NoAlias] NativeArray<TValue> values)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            hashMap.m_Writer.m_Buffer->AddBatchUnsafeParallel(keys, values);
+        }
+
+        public static void AddBatchUnsafe<TKey, TValue>(
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap,
             [NoAlias] TKey* keys,
             [NoAlias] TValue* values,
             int length)

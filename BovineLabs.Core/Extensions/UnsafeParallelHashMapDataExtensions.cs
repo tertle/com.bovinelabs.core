@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Extensions
     using System.Collections.Generic;
     using System.Threading;
     using Unity.Burst;
+    using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
     public static unsafe class UnsafeParallelHashMapDataExtensions
@@ -16,6 +17,72 @@ namespace BovineLabs.Core.Extensions
         {
             var newLength = Interlocked.Add(ref data.allocatedIndexLength, length);
             return newLength - length;
+        }
+
+        internal static void AddBatchUnsafeParallel<TKey, TValue>(
+            [NoAlias] this ref UnsafeParallelHashMapData data,
+            [NoAlias] NativeArray<TKey> keys,
+            [NoAlias] NativeSlice<TValue> values)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            if (keys.Length == 0)
+            {
+                return;
+            }
+
+            var oldLength = data.ReserveParallel(keys.Length);
+
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
+
+            UnsafeUtility.MemCpy(keyPtr, keys.GetUnsafeReadOnlyPtr(), keys.Length * UnsafeUtility.SizeOf<TKey>());
+            UnsafeUtility.MemCpyStride(
+                valuePtr, UnsafeUtility.SizeOf<TValue>(), values.GetUnsafeReadOnlyPtr(), values.Stride, UnsafeUtility.SizeOf<TValue>(), values.Length);
+
+            var buckets = (int*)data.buckets;
+            var nextPtrs = (int*)data.next + oldLength;
+
+            for (var idx = 0; idx < keys.Length; idx++)
+            {
+                var hash = keys[idx].GetHashCode() & data.bucketCapacityMask;
+                var index = oldLength + idx;
+                var next = Interlocked.Exchange(ref UnsafeUtility.ArrayElementAsRef<int>(buckets, hash), index);
+                nextPtrs[idx] = next;
+            }
+        }
+
+        internal static void AddBatchUnsafeParallel<TKey, TValue>(
+            [NoAlias] this ref UnsafeParallelHashMapData data,
+            [NoAlias] NativeSlice<TKey> keys,
+            [NoAlias] NativeArray<TValue> values)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            if (keys.Length == 0)
+            {
+                return;
+            }
+
+            var oldLength = data.ReserveParallel(keys.Length);
+
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
+
+            UnsafeUtility.MemCpyStride(
+                keyPtr, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), keys.Length);
+            UnsafeUtility.MemCpy(valuePtr, values.GetUnsafeReadOnlyPtr(), values.Length * UnsafeUtility.SizeOf<TValue>());
+
+            var buckets = (int*)data.buckets;
+            var nextPtrs = (int*)data.next + oldLength;
+
+            for (var idx = 0; idx < keys.Length; idx++)
+            {
+                var hash = keys[idx].GetHashCode() & data.bucketCapacityMask;
+                var index = oldLength + idx;
+                var next = Interlocked.Exchange(ref UnsafeUtility.ArrayElementAsRef<int>(buckets, hash), index);
+                nextPtrs[idx] = next;
+            }
         }
 
         internal static void AddBatchUnsafeParallel<TKey, TValue>(

@@ -29,7 +29,10 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             {
                 var path = Path.Combine(directory, $"{select.name}Definition.asset");
                 var definition = ScriptableObject.CreateInstance<ObjectDefinition>();
+
                 definition.Prefab = select;
+                ObjectDefinitionInspector.AddAuthoring(select, definition);
+
                 AssetDatabase.CreateAsset(definition, path);
                 AssetDatabase.ImportAsset(path);
             }

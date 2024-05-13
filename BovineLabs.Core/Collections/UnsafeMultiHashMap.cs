@@ -12,6 +12,7 @@ namespace Unity.Collections
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
+    using BovineLabs.Core.Collections;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Internal;
     using Unity.Collections.LowLevel.Unsafe;
@@ -56,6 +57,8 @@ namespace Unity.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => !this.IsCreated || this.data.IsEmpty;
         }
+
+        public UnsafeHashMapBucketData<TKey, TValue> UnsafeBucketData => new((TValue*)this.data.Ptr, this.data.Keys, this.data.Next, this.data.Buckets);
 
         /// <summary> Gets the current number of key-value pairs in this hash map. </summary>
         /// <returns>The current number of key-value pairs in this hash map.</returns>
@@ -141,7 +144,7 @@ namespace Unity.Collections
         /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
         /// <param name="it">A reference to the iterator to advance.</param>
         /// <returns>True if the key was present.</returns>
-        public bool TryGetFirstValue(TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        public bool TryGetFirstValue(TKey key, out TValue item, out HashMapIterator<TKey> it)
         {
             return this.data.TryGetFirstValue(key, out item, out it);
         }
@@ -150,7 +153,7 @@ namespace Unity.Collections
         /// <param name="item">Outputs the next value.</param>
         /// <param name="it">A reference to the iterator to advance.</param>
         /// <returns>True if the key was present and had another value.</returns>
-        public bool TryGetNextValue(out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        public bool TryGetNextValue(out TValue item, ref HashMapIterator<TKey> it)
         {
             return this.data.TryGetNextValue(out item, ref it);
         }

@@ -117,13 +117,13 @@ namespace BovineLabs.Core.Iterators
         /// <param name="key">The key to look up.</param>
         /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
         /// <returns>True if the key was present.</returns>*/
-        public bool TryGetFirstValue(TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        public bool TryGetFirstValue(TKey key, out TValue item, out HashMapIterator<TKey> it)
         {
             this.buffer.CheckReadAccess();
             return this.helper->TryGetFirstValue(key, out item, out it);
         }
 
-        public bool TryGetNextValue(out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        public bool TryGetNextValue(out TValue item, ref HashMapIterator<TKey> it)
         {
             this.buffer.CheckReadAccess();
             return this.helper->TryGetNextValue(out item, ref it);

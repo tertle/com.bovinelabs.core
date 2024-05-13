@@ -26,7 +26,7 @@ namespace BovineLabs.Core.Iterators
         internal byte isFirst;
 
         TValue value;
-        NativeMultiHashMapIterator<TKey> iterator;
+        HashMapIterator<TKey> iterator;
 
         /// <summary>
         /// Does nothing.

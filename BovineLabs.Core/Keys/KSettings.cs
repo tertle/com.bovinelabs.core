@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Keys
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
     using BovineLabs.Core.Settings;
     using JetBrains.Annotations;
     using Unity.Mathematics;
@@ -29,12 +30,23 @@ namespace BovineLabs.Core.Keys
             K<T>.Initialize(this.keys);
         }
 
+        protected virtual IEnumerable<NameValue> SetReset()
+        {
+            return Enumerable.Empty<NameValue>();
+        }
+
 #if UNITY_EDITOR
         protected virtual void OnValidate()
         {
             Validate(ref this.keys);
         }
+
+        private void Reset()
+        {
+            this.keys = this.SetReset().ToArray();
+        }
 #endif
+
     }
 
     /// <summary>

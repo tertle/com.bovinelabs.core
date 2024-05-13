@@ -110,7 +110,7 @@ namespace BovineLabs.Core.PhysicsStates
                     EventCollector = eventCollector,
                     EventsPerRead = this.eventsPerRead,
                 }
-                .ScheduleParallelBatch(this.foreachCount, 64, state.Dependency);
+                .ScheduleParallel(this.foreachCount, 64, state.Dependency);
 
             var buckets1 = new CalculateEventMapBucketsJob<T, TC> { CurrentEventMap = this.currentEventMap }.Schedule(state.Dependency);
             var buckets2 = new CalculateCurrentEventsBucketsJob<T, TC> { CurrentEvents = this.currentEvents }.Schedule(state.Dependency);

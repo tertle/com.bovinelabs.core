@@ -13,11 +13,13 @@ namespace BovineLabs.Core.Spatial
     using Unity.Mathematics;
     using Unity.Transforms;
 
-    public struct SpatialPosition : ISpatialPosition
+    public struct SpatialPosition : ISpatialPosition, ISpatialPosition3
     {
         public float3 Position;
 
         float2 ISpatialPosition.Position => this.Position.xz;
+
+        float3 ISpatialPosition3.Position => this.Position;
     }
 
     public struct PositionBuilder

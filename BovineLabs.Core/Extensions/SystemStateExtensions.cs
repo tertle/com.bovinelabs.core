@@ -82,6 +82,12 @@ namespace BovineLabs.Core.Extensions
             state.AddReaderWriter(componentType);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AddDependency<T>(ref this SystemState state, bool isReadOnly = false)
+        {
+            state.AddDependency(isReadOnly ? ComponentType.ReadOnly<T>() : ComponentType.ReadWrite<T>());
+        }
+
         public static Entity GetSingletonEntity<T>(ref this SystemState state)
         {
             var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(ref state);

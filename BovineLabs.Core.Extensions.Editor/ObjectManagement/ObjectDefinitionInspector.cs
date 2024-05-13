@@ -17,6 +17,24 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     [CustomEditor(typeof(ObjectDefinition))]
     public class ObjectDefinitionInspector : ElementEditor
     {
+        public static bool AddAuthoring(GameObject target, ObjectDefinition objectDefinition)
+        {
+            var authoring = target.GetComponent<ObjectDefinitionAuthoring>();
+            if (authoring == null)
+            {
+                authoring = target.AddComponent<ObjectDefinitionAuthoring>();
+                authoring.Definition = objectDefinition;
+            }
+            else if (authoring.Definition != objectDefinition)
+            {
+                Debug.LogError($"{objectDefinition} and it's target prefab {authoring} don't match. This likely means it's being used in 2 places.");
+
+                return false;
+            }
+
+            return true;
+        }
+
         protected override VisualElement CreateElement(SerializedProperty property)
         {
             return property.name switch
@@ -56,15 +74,8 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 return;
             }
 
-            var authoring = go.GetComponent<ObjectDefinitionAuthoring>();
-            if (authoring == null)
+            if (!AddAuthoring(go, to))
             {
-                authoring = go.AddComponent<ObjectDefinitionAuthoring>();
-                authoring.Definition = to;
-            }
-            else if (authoring.Definition != to)
-            {
-                Debug.LogError($"{to} and it's target prefab {authoring} don't match. This likely means it's being used in 2 places.");
                 evt.changedProperty.objectReferenceValue = null;
             }
         }
