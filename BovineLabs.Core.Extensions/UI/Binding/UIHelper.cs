@@ -64,7 +64,7 @@ namespace BovineLabs.Core.UI
         }
 
         // Not burst compatible
-        public object? GetPanel()
+        public object GetPanel()
         {
             return UIDocumentManager.Instance.GetPanel(this.stateKey);
         }

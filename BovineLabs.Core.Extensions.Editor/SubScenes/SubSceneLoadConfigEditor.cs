@@ -59,19 +59,19 @@ namespace BovineLabs.Core.Editor.SubScenes
 
         private void Rebuild()
         {
-            SetVisible(this.isRequired!, false);
-            SetVisible(this.loadMaxDistanceOverride!, false);
-            SetVisible(this.unloadMaxDistanceOverride!, false);
+            ElementUtility.SetVisible(this.isRequired!, false);
+            ElementUtility.SetVisible(this.loadMaxDistanceOverride!, false);
+            ElementUtility.SetVisible(this.unloadMaxDistanceOverride!, false);
 
             var loadModeIndex = this.loadMode!.enumValueIndex;
             switch ((SubSceneLoadMode)loadModeIndex)
             {
                 case SubSceneLoadMode.AutoLoad:
-                    SetVisible(this.isRequired!, true);
+                    ElementUtility.SetVisible(this.isRequired!, true);
                     break;
                 case SubSceneLoadMode.BoundingVolume:
-                    SetVisible(this.loadMaxDistanceOverride!, true);
-                    SetVisible(this.unloadMaxDistanceOverride!, true);
+                    ElementUtility.SetVisible(this.loadMaxDistanceOverride!, true);
+                    ElementUtility.SetVisible(this.unloadMaxDistanceOverride!, true);
                     break;
                 case SubSceneLoadMode.OnDemand:
                     break;

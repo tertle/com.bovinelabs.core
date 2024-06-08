@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Utility
 {
     using System.Runtime.InteropServices;
     using Unity.Collections;
+    using Unity.Collections.LowLevel.Unsafe;
 
     /// <remarks> Based off com.unity.entities@0.50.0-preview.24\Unity.Core\Compression\Codec.cs . </remarks>
     public static unsafe class CodecService
@@ -25,13 +26,13 @@ namespace BovineLabs.Core.Utility
         public static int Compress(in byte* src, int srcSize, out byte* dst, Allocator allocator = Allocator.Temp)
         {
             var boundedSize = CompressBoundLZ4(srcSize);
-            dst = (byte*)Memory.Unmanaged.Allocate(boundedSize, 16, allocator);
+            dst = (byte*)UnsafeUtility.MallocTracked(boundedSize, 16, allocator, 0);
 
             var compressedSize = CompressLZ4(src, dst, srcSize, boundedSize);
 
             if (compressedSize < 0)
             {
-                Memory.Unmanaged.Free(dst, allocator);
+                UnsafeUtility.FreeTracked(dst, allocator);
                 dst = null;
             }
 

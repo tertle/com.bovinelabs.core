@@ -25,6 +25,10 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 authoring = target.AddComponent<ObjectDefinitionAuthoring>();
                 authoring.Definition = objectDefinition;
             }
+            else if (authoring.Definition == null)
+            {
+                authoring.Definition = objectDefinition;
+            }
             else if (authoring.Definition != objectDefinition)
             {
                 Debug.LogError($"{objectDefinition} and it's target prefab {authoring} don't match. This likely means it's being used in 2 places.");

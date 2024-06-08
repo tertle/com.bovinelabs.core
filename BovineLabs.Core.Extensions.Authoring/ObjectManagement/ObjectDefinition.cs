@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     /// This mapping is stored in <see cref="ObjectDefinitionRegistry"/> where the key is the index in the dynamic buffer.
     /// It provides a way to give high definition <see cref="ObjectCategories"/> which can auto place into <see cref="ObjectGroup"/> for you.
     /// </summary>
-    [UIDManager("ObjectManagementSettings", "objectDefinitions")]
+    [AutoRef("ObjectManagementSettings", "objectDefinitions")]
     [AssetCreator("object.definitions", "Assets/Settings/Definitions", "Definition.asset")]
     public class ObjectDefinition : ScriptableObject, IUID
     {

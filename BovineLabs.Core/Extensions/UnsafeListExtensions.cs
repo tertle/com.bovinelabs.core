@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Extensions
     using System;
     using System.Diagnostics;
     using System.Threading;
+    using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
     public static unsafe class UnsafeListExtensions
@@ -19,7 +20,6 @@ namespace BovineLabs.Core.Extensions
             ptr = (T*)((byte*)list.Ptr + (idx * UnsafeUtility.SizeOf<T>()));
         }
 
-
         public static void ReserveNoResize<T>(this UnsafeList<T>.ParallelWriter unsafeList, int length, out T* ptr, out int idx)
             where T : unmanaged
         {
@@ -29,7 +29,48 @@ namespace BovineLabs.Core.Extensions
             ptr = (T*)((byte*)unsafeList.Ptr + (idx * UnsafeUtility.SizeOf<T>()));
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        public static NativeArray<T> AsArray<T>(this UnsafeList<T> list)
+            where T : unmanaged
+        {
+            var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(list.Ptr, list.Length, Allocator.None);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, AtomicSafetyHandle.GetTempMemoryHandle());
+#endif
+            return array;
+        }
+
+        public static int IndexOf<T, TPredicate>(this UnsafeList<T> collection, TPredicate predicate)
+            where T : unmanaged
+            where TPredicate : IPredicate<T>
+        {
+            for (var i = 0; i < collection.Length; i++)
+            {
+                if (predicate.Check(collection[i]))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        public static bool TryGetValue<T, TPredicate>(this UnsafeList<T> collection, TPredicate predicate, out T value)
+            where T : unmanaged
+            where TPredicate : IPredicate<T>
+        {
+            var index = collection.IndexOf(predicate);
+            if (index == -1)
+            {
+                value = default;
+                return false;
+            }
+
+            value = collection[index];
+            return true;
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
         private static void CheckSufficientCapacity(int capacity, int length)
         {
             if (capacity < length)

@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Extensions
     using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
+    using BovineLabs.Core.Assertions;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
@@ -26,6 +27,17 @@ namespace BovineLabs.Core.Extensions
                 UnsafeUtility.WriteArrayElement(hashMap.m_Data->Ptr, idx, defaultValue);
             }
 
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data->Ptr, idx);
+        }
+
+        public static ref TValue GetRef<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            CheckWrite(hashMap);
+
+            var idx = hashMap.m_Data->Find(key);
+            Check.Assume(idx != -1);
             return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data->Ptr, idx);
         }
 
@@ -147,6 +159,58 @@ namespace BovineLabs.Core.Extensions
             return idx;
         }
 
+        internal static int AddNoFindNoResize<TKey>(this ref HashMapHelper<TKey> hashMapHelper, in TKey key)
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+            CheckHasCapacity(ref hashMapHelper);
+
+            var idx = hashMapHelper.FirstFreeIdx;
+
+            if (idx >= 0)
+            {
+                hashMapHelper.FirstFreeIdx = hashMapHelper.Next[idx];
+            }
+            else
+            {
+                idx = hashMapHelper.AllocatedIndex++;
+            }
+
+            CheckIndexOutOfBounds(idx, hashMapHelper.Capacity);
+
+            UnsafeUtility.WriteArrayElement(hashMapHelper.Keys, idx, key);
+            var bucket = hashMapHelper.GetBucket(key);
+
+            // Add the index to the hash-map
+            var next = hashMapHelper.Next;
+            next[idx] = hashMapHelper.Buckets[bucket];
+            hashMapHelper.Buckets[bucket] = idx;
+            hashMapHelper.Count++;
+
+            return idx;
+        }
+
+        internal static int AddLinearNoResize<TKey>(this ref HashMapHelper<TKey> hashMapHelper, in TKey key)
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+            CheckHasCapacity(ref hashMapHelper);
+            CheckNoFreeIDX(ref hashMapHelper);
+
+            var idx = hashMapHelper.AllocatedIndex++;
+
+            CheckIndexOutOfBounds(idx, hashMapHelper.Capacity);
+
+            UnsafeUtility.WriteArrayElement(hashMapHelper.Keys, idx, key);
+            var bucket = hashMapHelper.GetBucket(key);
+
+            // Add the index to the hash-map
+            var next = hashMapHelper.Next;
+            next[idx] = hashMapHelper.Buckets[bucket];
+            hashMapHelper.Buckets[bucket] = idx;
+            hashMapHelper.Count++;
+
+            return idx;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int GetBucket<TKey>(this in HashMapHelper<TKey> hashMapHelper, in TKey key)
             where TKey : unmanaged, IEquatable<TKey>
@@ -173,6 +237,43 @@ namespace BovineLabs.Core.Extensions
             if ((uint)idx >= (uint)capacity)
             {
                 throw new InvalidOperationException($"Internal HashMap error. idx {idx}");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CheckDoesNotExist<TKey>(this ref HashMapHelper<TKey> hashMapHelper, in TKey key)
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+            if (hashMapHelper.Find(key) != -1)
+            {
+                throw new InvalidOperationException($"Key already exists {key}");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CheckHasCapacity<TKey>(this ref HashMapHelper<TKey> hashMapHelper)
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+            // Allocate an entry from the free list
+            if (hashMapHelper.AllocatedIndex >= hashMapHelper.Capacity && hashMapHelper.FirstFreeIdx < 0)
+            {
+                throw new InvalidOperationException("Capacity reached");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CheckNoFreeIDX<TKey>(this ref HashMapHelper<TKey> hashMapHelper)
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+            if (hashMapHelper.FirstFreeIdx >= 0)
+            {
+                throw new InvalidOperationException("No free idx allowed");
             }
         }
     }

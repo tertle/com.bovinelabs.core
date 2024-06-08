@@ -23,7 +23,7 @@ namespace BovineLabs.Core.UI
         private VisualElement view = null!;
 
 #if UNITY_EDITOR
-        public event Action? EditorRebuild;
+        public event Action EditorRebuild;
 #endif
 
         public static IUIDocumentManager Instance { get; private set; } = new NullDocumentManager();
@@ -193,12 +193,12 @@ namespace BovineLabs.Core.UI
 
         private class NullDocumentManager : IUIDocumentManager
         {
-            private VisualElement? root;
+            private VisualElement root;
             private Dictionary<int, IBindingObject> bindingObjects = new();
 
 #if UNITY_EDITOR
 #pragma warning disable CS0067
-            public event Action? EditorRebuild;
+            public event Action EditorRebuild;
 #pragma warning restore CS0067
 #endif
 
@@ -226,7 +226,7 @@ namespace BovineLabs.Core.UI
                 return t;
             }
 
-            public object? GetPanel(int id)
+            public object GetPanel(int id)
             {
                 return null;
             }

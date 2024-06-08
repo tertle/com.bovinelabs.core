@@ -20,6 +20,13 @@ namespace BovineLabs.Core.Utility
             this.Value = value;
         }
 
+        /// <summary> Initializes a new instance of the <see cref="Ptr{T}" /> struct. </summary>
+        /// <param name="value"> The pointer to hold. </param>
+        public Ptr(ref T value)
+        {
+            this.Value = (T*)UnsafeUtility.AddressOf(ref value);
+        }
+
         public bool IsCreated => this.Value != null;
 
         public ref T Ref => ref UnsafeUtility.AsRef<T>(this.Value);

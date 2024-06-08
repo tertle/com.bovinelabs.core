@@ -5,8 +5,10 @@
 namespace BovineLabs.Core
 {
     using System;
+    using BovineLabs.Core.ConfigVars;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Internal;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using UnityEngine.Scripting;
@@ -16,20 +18,27 @@ namespace BovineLabs.Core
 #endif
 
     [Preserve]
+    [Configurable]
 #if UNITY_NETCODE
     public abstract class BovineLabsBootstrap : Unity.NetCode.ClientServerBootstrap
 #else
     public abstract class BovineLabsBootstrap : ICustomBootstrap
 #endif
     {
-        private static World? serviceWorld;
-        private static World? gameWorld;
+        [ConfigVar("app.fixed-update", 0, "Override the fixed update, this is in frames per second. If less than or equal to 0 this will be ignored", true)]
+        private static readonly SharedStatic<int> FixedUpdate = SharedStatic<int>.GetOrCreate<FixedUpdateKey>();
 
-        public static event Action<World>? GameWorldCreated;
+        [ConfigVar("app.target-frame-rate", 0, "Override the target frame rate, this is in frames per second. If less than or equal to 0 this will be ignored", true)]
+        private static readonly SharedStatic<int> FrameRate = SharedStatic<int>.GetOrCreate<FrameRateKey>();
 
-        public static World? ServiceWorld => serviceWorld;
+        private static World serviceWorld;
+        private static World gameWorld;
 
-        public static World? GameWorld => gameWorld;
+        public static event Action<World> GameWorldCreated;
+
+        public static World ServiceWorld => serviceWorld;
+
+        public static World GameWorld => gameWorld;
 
 #if UNITY_NETCODE
         public override bool Initialize(string defaultWorldName)
@@ -66,6 +75,11 @@ namespace BovineLabs.Core
             DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(serviceWorld, systems);
             ScriptBehaviourUpdateOrder.AppendWorldToCurrentPlayerLoop(serviceWorld);
 
+            if (FrameRate.Data > 0)
+            {
+                UnityEngine.Application.targetFrameRate = FrameRate.Data;
+            }
+
             return true;
         }
 
@@ -88,6 +102,11 @@ namespace BovineLabs.Core
 #endif
             DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(gameWorld, systems);
             ScriptBehaviourUpdateOrder.AppendWorldToCurrentPlayerLoop(gameWorld);
+
+            if (FixedUpdate.Data > 0)
+            {
+                gameWorld.GetExistingSystemManaged<FixedStepSimulationSystemGroup>().Timestep = 1f / FixedUpdate.Data;
+            }
         }
 
         public static void DestroyGameWorld()
@@ -174,6 +193,14 @@ namespace BovineLabs.Core
             {
                 return other == this.system;
             }
+        }
+
+        private struct FixedUpdateKey
+        {
+        }
+
+        private struct FrameRateKey
+        {
         }
     }
 }

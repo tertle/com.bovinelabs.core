@@ -22,7 +22,7 @@ namespace BovineLabs.Core
 
     [BurstCompile]
     [UpdateInGroup(typeof(InitializationSystemGroup))]
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | WorldSystemFilterFlags.Editor)]
     [Configurable]
     public partial class BLDebugSystem : SystemBase
     {

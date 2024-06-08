@@ -16,14 +16,14 @@ namespace BovineLabs.Core.Iterators
     using Unity.Entities;
 
     [DebuggerTypeProxy(typeof(DynamicPerfectHashMapDebuggerTypeProxy<,>))]
-    public unsafe struct DynamicPerfectHashMap<TKey, TValue> : IEnumerable<KVPair<TKey, TValue>>
+    public readonly unsafe struct DynamicPerfectHashMap<TKey, TValue> : IEnumerable<KVPair<TKey, TValue>>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-        private DynamicBuffer<byte> buffer;
+        private readonly DynamicBuffer<byte> buffer;
 
         [NativeDisableUnsafePtrRestriction]
-        private DynamicPerfectHashMapHelper<TKey, TValue>* helper;
+        private readonly DynamicPerfectHashMapHelper<TKey, TValue>* helper;
 
         internal DynamicPerfectHashMap(DynamicBuffer<byte> buffer)
         {
@@ -44,7 +44,6 @@ namespace BovineLabs.Core.Iterators
             get
             {
                 this.buffer.CheckReadAccess();
-
                 if (Hint.Unlikely(!this.TryGetValue(key, out var value)))
                 {
                     this.ThrowKeyNotPresent(key);

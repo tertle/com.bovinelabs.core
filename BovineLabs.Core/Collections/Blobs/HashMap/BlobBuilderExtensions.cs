@@ -1,4 +1,8 @@
-﻿namespace BovineLabs.Core.Collections
+﻿// <copyright file="BlobBuilderExtensions.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Collections.Generic;

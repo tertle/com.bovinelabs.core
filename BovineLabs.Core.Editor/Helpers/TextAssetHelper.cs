@@ -36,28 +36,23 @@ namespace BovineLabs.Core.Editor.Helpers
         {
             var data = serializedProperty.objectReferenceValue;
 
-            if (data == null)
-            {
-                path = EditorUtility.SaveFilePanel($"Save {defaultName}", string.Empty, $"{defaultName}.bytes", "bytes");
-            }
-            else
-            {
-                path = Application.dataPath;
-                path = path.Remove(path.LastIndexOf("Assets", StringComparison.Ordinal), "Assets".Length);
-                path += AssetDatabase.GetAssetPath(data);
-            }
+            path = data == null
+                ? EditorUtility.SaveFilePanelInProject($"Save {defaultName}", $"{defaultName}.bytes", "bytes", "Save nav mesh data to file")
+                : AssetDatabase.GetAssetPath(data);
 
             return !string.IsNullOrWhiteSpace(path);
         }
 
         private static void WriteData(SerializedProperty serializedProperty, string path, byte[] bytes)
         {
-            File.WriteAllBytes(path, bytes);
+            var dataPath = Application.dataPath;
+            dataPath = dataPath.Remove(dataPath.LastIndexOf("Assets", StringComparison.Ordinal), "Assets".Length);
+            dataPath += path;
+
+            File.WriteAllBytes(dataPath, bytes);
             AssetDatabase.Refresh();
 
-            var assetPath = path.Remove(0, Application.dataPath.Length - "Assets".Length);
-
-            serializedProperty.objectReferenceValue = AssetDatabase.LoadAssetAtPath<TextAsset>(assetPath);
+            serializedProperty.objectReferenceValue = AssetDatabase.LoadAssetAtPath<TextAsset>(path);
             serializedProperty.serializedObject.ApplyModifiedProperties();
         }
     }

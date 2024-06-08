@@ -38,7 +38,7 @@ namespace BovineLabs.Core.Toolbar
 
         [UxmlAttribute]
         [CreateProperty]
-        public string? label
+        public string label
         {
             get => this.groupLabel.text;
             set => this.groupLabel.text = value;

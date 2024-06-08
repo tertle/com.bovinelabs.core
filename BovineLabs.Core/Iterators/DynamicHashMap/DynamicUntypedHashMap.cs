@@ -14,7 +14,7 @@ namespace BovineLabs.Core.Iterators
     public unsafe struct DynamicUntypedHashMap<TKey>
         where TKey : unmanaged, IEquatable<TKey>
     {
-        private DynamicBuffer<byte> buffer;
+        private readonly DynamicBuffer<byte> buffer;
 
         [NativeDisableUnsafePtrRestriction]
         private DynamicUntypedHashMapHelper<TKey>* helper;
@@ -38,6 +38,7 @@ namespace BovineLabs.Core.Iterators
             get
             {
                 this.buffer.CheckReadAccess();
+                this.RefCheck();
                 return !this.IsCreated || this.helper->IsEmpty;
             }
         }
@@ -50,6 +51,7 @@ namespace BovineLabs.Core.Iterators
             get
             {
                 this.buffer.CheckReadAccess();
+                this.RefCheck();
                 return this.helper->Count;
             }
         }
@@ -63,12 +65,14 @@ namespace BovineLabs.Core.Iterators
             readonly get
             {
                 this.buffer.CheckReadAccess();
+                this.RefCheck();
                 return this.helper->Capacity;
             }
 
             set
             {
                 this.buffer.CheckWriteAccess();
+                this.RefCheck();
                 DynamicUntypedHashMapHelper<TKey>.Resize(this.buffer, ref this.helper, value);
             }
         }
@@ -86,7 +90,7 @@ namespace BovineLabs.Core.Iterators
             where TValue : unmanaged
         {
             this.buffer.CheckWriteAccess();
-
+            this.RefCheck();
             DynamicUntypedHashMapHelper<TKey>.AddOrSet(this.buffer, ref this.helper, key, item);
         }
 
@@ -94,6 +98,7 @@ namespace BovineLabs.Core.Iterators
             where TValue : unmanaged
         {
             this.buffer.CheckWriteAccess();
+            this.RefCheck();
 
             var idx = this.helper->Find(key);
             if (idx == -1)
@@ -114,7 +119,18 @@ namespace BovineLabs.Core.Iterators
             where TValue : unmanaged
         {
             this.buffer.CheckReadAccess();
+            this.RefCheck();
             return this.helper->TryGetValue(key, out item);
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private readonly void RefCheck()
+        {
+            if (this.helper != this.buffer.GetPtr())
+            {
+                throw new ArgumentException("DynamicUntypedHashMap was not passed by ref when doing a resize and is now invalid");
+            }
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

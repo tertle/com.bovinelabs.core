@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Iterators
     public unsafe struct DynamicHashSet<T> : IEnumerable<T>
         where T : unmanaged, IEquatable<T>
     {
-        private DynamicBuffer<byte> buffer;
+        private readonly DynamicBuffer<byte> buffer;
 
         [NativeDisableUnsafePtrRestriction]
         private DynamicHashMapHelper<T>* helper;
@@ -42,6 +42,7 @@ namespace BovineLabs.Core.Iterators
             get
             {
                 this.buffer.CheckReadAccess();
+                this.RefCheck();
                 return !this.IsCreated || this.helper->IsEmpty;
             }
         }
@@ -54,6 +55,7 @@ namespace BovineLabs.Core.Iterators
             get
             {
                 this.buffer.CheckReadAccess();
+                this.RefCheck();
                 return this.helper->Count;
             }
         }
@@ -67,12 +69,14 @@ namespace BovineLabs.Core.Iterators
             readonly get
             {
                 this.buffer.CheckReadAccess();
+                this.RefCheck();
                 return this.helper->Capacity;
             }
 
             set
             {
                 this.buffer.CheckWriteAccess();
+                this.RefCheck();
                 DynamicHashMapHelper<T>.Resize(this.buffer, ref this.helper, value);
             }
         }
@@ -84,6 +88,7 @@ namespace BovineLabs.Core.Iterators
         public void Clear()
         {
             this.buffer.CheckWriteAccess();
+            this.RefCheck();
             this.helper->Clear();
         }
 
@@ -95,6 +100,7 @@ namespace BovineLabs.Core.Iterators
         public bool Add(T item)
         {
             this.buffer.CheckWriteAccess();
+            this.RefCheck();
             return DynamicHashMapHelper<T>.TryAdd(this.buffer, ref this.helper, item) != -1;
         }
 
@@ -104,6 +110,7 @@ namespace BovineLabs.Core.Iterators
         public bool Remove(T item)
         {
             this.buffer.CheckReadAccess();
+            this.RefCheck();
             return this.helper->TryRemove(item) != -1;
         }
 
@@ -113,6 +120,7 @@ namespace BovineLabs.Core.Iterators
         public bool Contains(T item)
         {
             this.buffer.CheckReadAccess();
+            this.RefCheck();
             return this.helper->Find(item) != -1;
         }
 
@@ -120,6 +128,7 @@ namespace BovineLabs.Core.Iterators
         public void Flatten()
         {
             this.buffer.CheckWriteAccess();
+            this.RefCheck();
             DynamicHashMapHelper<T>.Flatten(this.buffer, ref this.helper);
         }
 
@@ -129,6 +138,7 @@ namespace BovineLabs.Core.Iterators
         public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
+            this.RefCheck();
             return this.helper->GetKeyArray(allocator);
         }
 
@@ -139,6 +149,7 @@ namespace BovineLabs.Core.Iterators
         public DynamicHashSetEnumerator<T> GetEnumerator()
         {
             this.buffer.CheckReadAccess();
+            this.RefCheck();
             return new DynamicHashSetEnumerator<T>(this.helper);
         }
 
@@ -160,6 +171,16 @@ namespace BovineLabs.Core.Iterators
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private readonly void RefCheck()
+        {
+            if (this.helper != this.buffer.GetPtr())
+            {
+                throw new ArgumentException("DynamicHashSet was not passed by ref when doing a resize and is now invalid");
+            }
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

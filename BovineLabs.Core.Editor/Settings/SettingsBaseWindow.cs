@@ -49,7 +49,7 @@ namespace BovineLabs.Core.Editor.Settings
         /// <summary> Gets the title text for the unity window tab. </summary>
         protected abstract string TitleText { get; }
 
-        protected virtual bool HideToggleShowEmpty { get; } = false;
+        protected virtual bool HideToggleShowEmpty => false;
 
         private string SplitterKey => $"bl-{this.TitleText}-splitter";
 

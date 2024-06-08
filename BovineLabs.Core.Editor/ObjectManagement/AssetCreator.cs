@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.Editor.ObjectManagement
 {
     using System;
@@ -145,4 +144,3 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         }
     }
 }
-#endif

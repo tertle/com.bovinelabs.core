@@ -34,6 +34,8 @@ namespace BovineLabs.Core.PropertyDrawers
 
         public bool OnlyZeroSize { get; set; }
 
+        public bool OnlySize { get; set; }
+
         public bool OnlyEnableable { get; set; }
 
         public bool AllowUnityNamespace { get; set; } = true;

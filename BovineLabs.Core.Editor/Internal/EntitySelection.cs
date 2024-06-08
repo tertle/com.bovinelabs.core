@@ -30,6 +30,22 @@ namespace BovineLabs.Core.Editor.Internal
             }
         }
 
+        public static Entity GetPrimaryEntityForAuthoringObject(World? world, Object target)
+        {
+            if (world != null)
+            {
+                return target switch
+                {
+                    EntitySelectionProxy proxy => proxy.World == world ? proxy.Entity : Entity.Null,
+                    GameObject go => world.EntityManager.Debug.GetPrimaryEntityForAuthoringObject(go),
+                    Component c => world.EntityManager.Debug.GetPrimaryEntityForAuthoringObject(c.gameObject),
+                    _ => Entity.Null,
+                };
+            }
+
+            return Entity.Null;
+        }
+
         public static IEnumerable<Entity> GetAllSelectionsInWorld(World world)
         {
             foreach (var s in Selection.objects)

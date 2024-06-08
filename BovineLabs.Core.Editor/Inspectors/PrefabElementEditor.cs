@@ -10,6 +10,7 @@ namespace BovineLabs.Core.Editor.Inspectors
     using UnityEngine.Assertions;
     using UnityEngine.UIElements;
 
+    /// <summary> A custom editor that will cause you to edit the source prefab instead of instances. </summary>
     public abstract class PrefabElementEditor : ElementEditor
     {
         private SerializedObject? prefabObject;
@@ -40,7 +41,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             this.prefabObject = new SerializedObject(prefab);
 
             var label = new Label("Changes are applied to the prefab");
-            AddLabelStyles(label);
+            ElementUtility.AddLabelStyles(label);
             root.Add(label);
 
             return true;
@@ -69,7 +70,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             }
 
             var label = new Label("Can only apply changes if it's a prefab");
-            AddLabelStyles(label);
+            ElementUtility.AddLabelStyles(label);
             root.Add(label);
         }
     }

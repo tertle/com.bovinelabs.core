@@ -1,16 +1,15 @@
-﻿// <copyright file="UIDManagerAttribute.cs" company="BovineLabs">
+﻿// <copyright file="AutoRefAttribute.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.ObjectManagement
 {
     using System;
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-    public class UIDManagerAttribute : Attribute
+    public class AutoRefAttribute : Attribute
     {
-        public UIDManagerAttribute(string manager, string property)
+        public AutoRefAttribute(string manager, string property)
         {
             this.Manager = manager;
             this.Property = property;
@@ -21,4 +20,3 @@ namespace BovineLabs.Core.ObjectManagement
         public string Property { get; }
     }
 }
-#endif

@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Editor.Inspectors
     using UnityEditor.UIElements;
     using UnityEngine.UIElements;
 
-    /// <summary> Provides an editor with custom element but will fall back to PropertyField if not overriden. </summary>
+    /// <summary> Provides an inspector ([CustomPropertyDrawer(typeof(T))]) with custom element but will fall back to PropertyField if not overriden. </summary>
     public abstract class ElementProperty : PropertyDrawer
     {
         private SerializedObject? serializedObject;
@@ -116,16 +116,6 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         protected virtual void PostElementCreation(VisualElement root, bool createdElements)
         {
-        }
-
-        /// <summary> Adds appropriate styles to make a label match the default <see cref="BaseField{TValueType}"/> alignment in an inspector. </summary>
-        /// <param name="label"> The label to apply to. </param>
-        protected static void AddLabelStyles(Label label)
-        {
-            label.AddToClassList(BaseField<string>.ussClassName);
-            label.AddToClassList(BaseField<string>.labelUssClassName);
-            label.AddToClassList(BaseField<string>.ussClassName + "__inspector-field");
-            label.style.minHeight = new StyleLength(19); // bit gross but matches the element
         }
     }
 }

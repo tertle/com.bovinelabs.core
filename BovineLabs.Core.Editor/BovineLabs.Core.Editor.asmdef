@@ -17,7 +17,8 @@
         "Unity.Scenes",
         "Unity.Scenes.Editor",
         "Unity.Physics",
-        "Unity.Transforms"
+        "Unity.Transforms",
+        "Unity.VisualEffectGraph.Editor"
     ],
     "includePlatforms": [
         "Editor"
@@ -53,6 +54,11 @@
             "name": "com.unity.netcode",
             "expression": "0",
             "define": "UNITY_NETCODE"
+        },
+        {
+            "name": "com.unity.visualeffectgraph",
+            "expression": "0",
+            "define": "UNITY_VFX_GRAPH"
         }
     ],
     "noEngineReferences": false

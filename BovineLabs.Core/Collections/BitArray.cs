@@ -11,6 +11,7 @@ namespace BovineLabs.Core.Collections
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using System.Text.RegularExpressions;
+    using Unity.Burst.Intrinsics;
     using Unity.Mathematics;
     using Unity.Properties;
     using UnityEngine;
@@ -787,6 +788,14 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary> Initializes a new instance of the <see cref="BitArray128" /> struct. </summary>
+        /// <param name="initValue"> Initialization value. </param>
+        public BitArray128(v128 initValue)
+        {
+            this.data1 = initValue.ULong0;
+            this.data2 = initValue.ULong1;
+        }
+
+        /// <summary> Initializes a new instance of the <see cref="BitArray128" /> struct. </summary>
         /// <param name="bitIndexTrue"> Single initial index that is set to true. </param>
         public unsafe BitArray128(uint bitIndexTrue)
             : this(new Span<uint>(&bitIndexTrue, 1))
@@ -837,6 +846,15 @@ namespace BovineLabs.Core.Collections
         /// <param name="index"> Index of the bit. </param>
         /// <returns> State of the bit at the provided index. </returns>
         public bool this[uint index]
+        {
+            get => BitArrayUtilities.Get128(index, this.data1, this.data2);
+            set => BitArrayUtilities.Set128(index, ref this.data1, ref this.data2, value);
+        }
+
+        /// <summary> Returns the state of the bit at a specific index. </summary>
+        /// <param name="index"> Index of the bit. </param>
+        /// <returns> State of the bit at the provided index. </returns>
+        public bool this[int index]
         {
             get => BitArrayUtilities.Get128(index, this.data1, this.data2);
             set => BitArrayUtilities.Set128(index, ref this.data1, ref this.data2, value);
@@ -1262,9 +1280,22 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Get128(uint index, ulong data1, ulong data2)
         {
+            return Get128((int)index, data1, data2);
+        }
+
+        /// <summary>
+        /// Get a bit at a specific index.
+        /// </summary>
+        /// <param name="index"> Bit index. </param>
+        /// <param name="data1"> Bit array data 1. </param>
+        /// <param name="data2"> Bit array data 2. </param>
+        /// <returns> The value of the bit at the specific index. </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Get128(int index, ulong data1, ulong data2)
+        {
             return index < 64u
-                ? (data1 & (1uL << (int)index)) != 0uL
-                : (data2 & (1uL << (int)(index - 64u))) != 0uL;
+                ? (data1 & (1uL << index)) != 0uL
+                : (data2 & (1uL << (index - 64))) != 0uL;
         }
 
         /// <summary>
@@ -1346,15 +1377,29 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Set128(uint index, ref ulong data1, ref ulong data2, bool value)
         {
+            Set128((int)index, ref data1, ref data2, value);
+        }
+
+        /// <summary>
+        /// Set a bit at a specific index.
+        /// </summary>
+        /// <param name="index"> Bit index. </param>
+        /// <param name="data1"> Bit array data 1. </param>
+        /// <param name="data2"> Bit array data 2. </param>
+        /// <param name="value"> Value to set the bit to. </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Set128(int index, ref ulong data1, ref ulong data2, bool value)
+        {
             if (index < 64u)
             {
-                data1 = value ? data1 | (1uL << (int)index) : data1 & ~(1uL << (int)index);
+                data1 = value ? data1 | (1uL << index) : data1 & ~(1uL << index);
             }
             else
             {
-                data2 = value ? data2 | (1uL << (int)(index - 64u)) : data2 & ~(1uL << (int)(index - 64u));
+                data2 = value ? data2 | (1uL << (index - 64)) : data2 & ~((1uL << index - 64));
             }
         }
+
 
         /// <summary>
         /// Set a bit at a specific index.

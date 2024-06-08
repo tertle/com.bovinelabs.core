@@ -56,7 +56,7 @@ namespace BovineLabs.Core.ObjectManagement
         }
 
         /// <inheritdoc />
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
             return obj is ObjectId other && this.Equals(other);
         }
@@ -66,7 +66,6 @@ namespace BovineLabs.Core.ObjectManagement
         {
             return this.ID;
         }
-
     }
 }
 #endif

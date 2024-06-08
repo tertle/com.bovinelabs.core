@@ -10,6 +10,7 @@ namespace BovineLabs.Core.Editor.Inspectors
     using BovineLabs.Core.Editor.SearchWindow;
     using BovineLabs.Core.PropertyDrawers;
     using BovineLabs.Core.Utility;
+    using Unity;
     using Unity.Entities;
     using UnityEditor;
 
@@ -20,9 +21,29 @@ namespace BovineLabs.Core.Editor.Inspectors
         {
             var componentTypes = new List<SearchView.Item> { new() { Path = "None", Data = 0UL } };
 
-            foreach (TypeManager.TypeInfo t in TypeManager.AllTypes)
+            if (att.OnlyZeroSize)
+            {
+                if (att.OnlySize)
+                {
+                    Debug.LogError("OnlyZeroSize && OnlySize will return no results");
+                    return componentTypes;
+                }
+
+                if (att.Category == StableTypeHashAttribute.TypeCategory.BufferData)
+                {
+                    Debug.LogError("OnlyZeroSize && Buffer category will return no results");
+                    return componentTypes;
+                }
+            }
+
+            foreach (var t in TypeManager.AllTypes)
             {
                 if (att.OnlyZeroSize && !t.IsZeroSized)
+                {
+                    continue;
+                }
+
+                if (att.OnlySize && t.IsZeroSized)
                 {
                     continue;
                 }
@@ -49,7 +70,8 @@ namespace BovineLabs.Core.Editor.Inspectors
                     continue;
                 }
 
-                if (!att.AllowEditorAssemblies && type.Assembly.IsAssemblyEditorAssembly())
+
+                if (!att.AllowEditorAssemblies && (type.Assembly.IsAssemblyEditorAssembly() || type.Assembly.IsTestEditorAssembly()))
                 {
                     continue;
                 }

@@ -1,4 +1,8 @@
-﻿namespace BovineLabs.Core.Collections
+﻿// <copyright file="BlobHashMapDataBuilder.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Collections
 {
     using System;
     using Unity.Collections.LowLevel.Unsafe;
@@ -6,8 +10,8 @@
     using Unity.Mathematics;
 
     internal ref struct BlobBuilderHashMapData<TKey, TValue>
-        where TKey : struct, IEquatable<TKey>
-        where TValue : struct
+        where TKey : unmanaged, IEquatable<TKey>
+        where TValue : unmanaged
     {
         private BlobBuilderArray<TValue> values;
         private BlobBuilderArray<TKey> keys;

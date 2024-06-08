@@ -40,6 +40,8 @@ namespace BovineLabs.Core.Functions
 
         /// <summary> Called directly from the builder to setup the struct if required. </summary>
         /// <param name="state"> The system state. </param>
-        void OnCreate(ref SystemState state);
+        void OnCreate(ref SystemState state)
+        {
+        }
     }
 }

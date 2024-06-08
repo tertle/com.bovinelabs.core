@@ -10,14 +10,12 @@ namespace BovineLabs.Core.Editor.Inspectors
     using BovineLabs.Core.Utility;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
-    using Unity.Entities;
     using Unity.Entities.UI;
     using Unity.Properties;
     using UnityEditor;
     using UnityEngine.UIElements;
 
-    public abstract class DynamicListElement<TBuffer, TElement> : DynamicBufferElementBase<TBuffer>
-        where TBuffer : unmanaged, IBufferElementData
+    public abstract class DynamicListElement<T, TElement> : EntityInspector<T>
         where TElement : unmanaged
     {
         private readonly PropertyElement content;
@@ -113,7 +111,7 @@ namespace BovineLabs.Core.Editor.Inspectors
                 return;
             }
 
-            if (this.Context.EntityContainer.IsReadOnly || this.autoRefresh)
+            if (this.Context.IsReadOnly || this.autoRefresh)
             {
                 return;
             }
@@ -149,7 +147,7 @@ namespace BovineLabs.Core.Editor.Inspectors
                 propertyElement.userData = propertyElement;
             }
 
-            propertyElement.AddContext(this.Context);
+            propertyElement.AddContext(this.Context.Context);
             propertyElement.SetTarget(new Inspected { Value = list });
             propertyElement.OnChanged += this.OnComponentChanged;
             return propertyElement;

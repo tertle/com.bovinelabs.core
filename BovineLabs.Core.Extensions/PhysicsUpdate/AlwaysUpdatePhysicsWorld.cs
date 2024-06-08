@@ -12,9 +12,9 @@ namespace BovineLabs.Core.PhysicsUpdate
     /// This ensures the spatial map is always up to date and can be reliably used inside of the regular update.
     /// It does not cause the physics world to be simulated.
     /// </summary>
-    public struct AlwaysUpdatePhysicsWorld : IComponentData
+    internal struct AlwaysUpdatePhysicsWorld : IComponentData
     {
-        internal bool FixedStepUpdatedThisFrame;
+        public bool FixedStepUpdatedThisFrame;
     }
 }
 #endif

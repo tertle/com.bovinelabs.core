@@ -31,7 +31,7 @@ namespace BovineLabs.Core.Editor.FeatureWindow
         {
             // Get existing open window or if none, make a new one:
             var window = GetWindow<FeatureWindow>();
-            window.titleContent = new GUIContent("BovineLab");
+            window.titleContent = new GUIContent("BovineLabs");
             window.Show();
         }
 

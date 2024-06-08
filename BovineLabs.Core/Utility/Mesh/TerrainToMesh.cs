@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if UNITY_TERRAIN
 // Modified version of com.unity.rendering.light-transport\Runtime\UnifiedRayTracing\Common\TerrainToMesh.cs
 namespace BovineLabs.Core.Utility
 {
@@ -243,3 +244,4 @@ namespace BovineLabs.Core.Utility
         }
     }
 }
+#endif

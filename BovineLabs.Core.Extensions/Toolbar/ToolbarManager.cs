@@ -59,13 +59,13 @@ namespace BovineLabs.Core.Toolbar
         private readonly FilterBind filterBind = new();
 
         [SerializeField]
-        private VisualTreeAsset? toolbarAsset;
+        private VisualTreeAsset toolbarAsset;
 
         private int key;
 
         private VisualElement panelElement = null!;
 
-        private ToolbarTab? activeTab;
+        private ToolbarTab activeTab;
 
         private VisualElement menuElement = null!;
         private VisualElement rootElement = null!;
@@ -299,7 +299,7 @@ namespace BovineLabs.Core.Toolbar
             this.SetToolbarActive(group.Value);
         }
 
-        private void SetToolbarActive(ToolbarTab? tab)
+        private void SetToolbarActive(ToolbarTab tab)
         {
             if (tab == this.activeTab)
             {
@@ -462,9 +462,9 @@ namespace BovineLabs.Core.Toolbar
 
             private int value = -1;
 
-            public event EventHandler<BindablePropertyChangedEventArgs>? propertyChanged;
+            public event EventHandler<BindablePropertyChangedEventArgs> propertyChanged;
 
-            public event Action<(int NewValue, int PreviousValue, IReadOnlyList<string> Selections)>? ValueChanged;
+            public event Action<(int NewValue, int PreviousValue, IReadOnlyList<string> Selections)> ValueChanged;
 
             [CreateProperty]
             public List<string> Selections => this.selectionsValue;
@@ -613,7 +613,7 @@ namespace BovineLabs.Core.Toolbar
                 return binding;
             }
 
-            public object? GetPanel(int id)
+            public object GetPanel(int id)
             {
                 return null;
             }
@@ -633,7 +633,7 @@ namespace BovineLabs.Core.Toolbar
     internal class ToolbarManager : UIAssetManagement
     {
         [SerializeField]
-        private VisualTreeAsset? toolbarAsset;
+        private VisualTreeAsset toolbarAsset;
     }
 }
 #endif

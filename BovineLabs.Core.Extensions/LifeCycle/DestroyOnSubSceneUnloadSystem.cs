@@ -12,8 +12,9 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Scenes;
 
     [BurstCompile]
-    [UpdateInGroup(typeof(DestroySystemGroup), OrderFirst = true)]
-    [UpdateBefore(typeof(DestroyOnDestroySystem))]
+    [UpdateInGroup(typeof(InitializationSystemGroup))]
+    [UpdateAfter(typeof(InstantiateCommandBufferSystem))]
+    [UpdateBefore(typeof(DestroySystemGroup))] // This can't run in DestroySystemGroup because it stops execution if no DestroyEntity
     public partial struct DestroyOnSubSceneUnloadSystem : ISystem
     {
         /// <inheritdoc/>

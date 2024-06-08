@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
-    <ui:VisualElement class="horizontal">
-        <ui:DropdownField label="Mode" index="0" choices="Find Asset Dependencies, Find Assets That Depend On" name="Mode" class="grow" />
+    <ui:VisualElement class="horizontal" style="min-height: 21px;">
+        <ui:DropdownField label="Mode" index="0" choices="Find Authoring Problems,Find Assets That Depend On" name="Mode" class="grow" />
         <ui:Button text="Find" display-tooltip-when-elided="true" name="Find" class="grow" />
     </ui:VisualElement>
     <ui:ScrollView name="Content" />

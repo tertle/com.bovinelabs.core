@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Extensions
 {
+    using BovineLabs.Core.Utility;
     using Unity.Collections;
     using Unity.Entities;
 
@@ -62,6 +63,40 @@ namespace BovineLabs.Core.Extensions
 
             var list = new FixedList32Bytes<ComponentType> { type };
             return entityQueryBuilder.WithNone(ref list);
+        }
+
+        public static EntityQueryBuilder WithAnyWriteGroup<T>(this EntityQueryBuilder entityQueryBuilder)
+        {
+            return entityQueryBuilder.WithAnyWriteGroup(ComponentType.ReadOnly<T>());
+        }
+
+        public static EntityQueryBuilder WithAnyWriteGroup(this EntityQueryBuilder entityQueryBuilder, ComponentType type)
+        {
+            var comps = TypeManagerUtil.GetWriteGroupComponents(type, Allocator.Temp);
+
+            foreach (var c in comps)
+            {
+                entityQueryBuilder.WithAny(c);
+            }
+
+            return entityQueryBuilder;
+        }
+
+        public static EntityQueryBuilder WithNoneWriteGroup<T>(this EntityQueryBuilder entityQueryBuilder)
+        {
+            return entityQueryBuilder.WithNoneWriteGroup(ComponentType.ReadOnly<T>());
+        }
+
+        public static EntityQueryBuilder WithNoneWriteGroup(this EntityQueryBuilder entityQueryBuilder, ComponentType type)
+        {
+            var comps = TypeManagerUtil.GetWriteGroupComponents(type, Allocator.Temp);
+
+            foreach (var c in comps)
+            {
+                entityQueryBuilder.WithNone(c);
+            }
+
+            return entityQueryBuilder;
         }
     }
 }

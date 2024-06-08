@@ -130,6 +130,28 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Adds a new key-value pair.
+        /// </summary>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        public void AddNoResize(TKey key, TValue item)
+        {
+            var idx = this.data.AddNoFindNoResize(key);
+            UnsafeUtility.WriteArrayElement(this.data.Ptr, idx, item);
+        }
+
+        /// <summary>
+        /// Adds a new key-value pair.
+        /// </summary>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        public void AddLinear(TKey key, TValue item)
+        {
+            var idx = this.data.AddLinearNoResize(key);
+            UnsafeUtility.WriteArrayElement(this.data.Ptr, idx, item);
+        }
+
+        /// <summary>
         /// Removes a key and its associated value(s).
         /// </summary>
         /// <param name="key">The key to remove.</param>

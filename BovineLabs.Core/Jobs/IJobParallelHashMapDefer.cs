@@ -41,7 +41,30 @@ namespace BovineLabs.Core.Jobs
             // validation in Big Unity.
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             var safety = hashMap.m_Safety;
-            void* atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
+            var atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
+#else
+            void* atomicSafetyHandlePtr = null;
+#endif
+
+            return ScheduleParallelInternal(jobData, hashMap.m_MultiHashMapData.m_Buffer, atomicSafetyHandlePtr, minIndicesPerJobCount, dependsOn);
+        }
+
+        public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
+            this TJob jobData,
+            NativeParallelMultiHashMap<TKey, TValue>.ReadOnly hashMap,
+            int minIndicesPerJobCount,
+            JobHandle dependsOn = default)
+            where TJob : unmanaged, IJobParallelHashMapDefer
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            // Calculate the deferred atomic safety handle before constructing JobScheduleParameters so
+            // DOTS Runtime can validate the deferred list statically similar to the reflection based
+            // validation in Big Unity.
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var safety = UnsafeUtility.As<NativeParallelMultiHashMap<TKey, TValue>.ReadOnly, NativeParallelMultiHashMapReadOnly<TKey, TValue>>(
+                ref hashMap).Safety;
+            var atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #else
             void* atomicSafetyHandlePtr = null;
 #endif
@@ -63,7 +86,29 @@ namespace BovineLabs.Core.Jobs
             // validation in Big Unity.
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             var safety = hashMap.m_Safety;
-            void* atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
+            var atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
+#else
+            void* atomicSafetyHandlePtr = null;
+#endif
+
+            return ScheduleParallelInternal(jobData, hashMap.m_HashMapData.m_Buffer, atomicSafetyHandlePtr, minIndicesPerJobCount, dependsOn);
+        }
+
+        public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
+            this TJob jobData,
+            NativeParallelHashMap<TKey, TValue>.ReadOnly hashMap,
+            int minIndicesPerJobCount,
+            JobHandle dependsOn = default)
+            where TJob : unmanaged, IJobParallelHashMapDefer
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            // Calculate the deferred atomic safety handle before constructing JobScheduleParameters so
+            // DOTS Runtime can validate the deferred list statically similar to the reflection based
+            // validation in Big Unity.
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var safety = UnsafeUtility.As<NativeParallelHashMap<TKey, TValue>.ReadOnly, NativeParallelHashMapReadOnly<TKey, TValue>>(ref hashMap).Safety;
+            var atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #else
             void* atomicSafetyHandlePtr = null;
 #endif
@@ -95,7 +140,7 @@ namespace BovineLabs.Core.Jobs
                 dependsOn,
                 ScheduleMode.Parallel);
 
-            byte* lengthPtr = (byte*)&hashMap->bucketCapacityMask - sizeof(void*);
+            var lengthPtr = (byte*)&hashMap->bucketCapacityMask - sizeof(void*);
 
             return JobsUtility.ScheduleParallelForDeferArraySize(ref scheduleParams, minIndicesPerJobCount, lengthPtr, atomicSafetyHandlePtr);
         }
@@ -112,7 +157,8 @@ namespace BovineLabs.Core.Jobs
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void Read<TJob, TKey, TValue>(this ref TJob job, NativeParallelHashMap<TKey, TValue> hashMap, int entryIndex, out TKey key, out TValue value)
+        public static unsafe void Read<TJob, TKey, TValue>(
+            this ref TJob job, NativeParallelHashMap<TKey, TValue> hashMap, int entryIndex, out TKey key, out TValue value)
             where TJob : unmanaged, IJobParallelHashMapDefer
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -126,13 +172,46 @@ namespace BovineLabs.Core.Jobs
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void Read<TJob, TKey, TValue>(this ref TJob job, NativeParallelMultiHashMap<TKey, TValue> hashMap, int entryIndex, out TKey key, out TValue value)
+        public static unsafe void Read<TJob, TKey, TValue>(
+            this ref TJob job, NativeParallelHashMap<TKey, TValue>.ReadOnly hashMap, int entryIndex, out TKey key, out TValue value)
+            where TJob : unmanaged, IJobParallelHashMapDefer
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var re = UnsafeUtility.As<NativeParallelHashMap<TKey, TValue>.ReadOnly, NativeParallelHashMapReadOnly<TKey, TValue>>(ref hashMap);
+            AtomicSafetyHandle.CheckReadAndThrow(re.Safety);
+#endif
+
+            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.m_HashMapData.m_Buffer->keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_HashMapData.m_Buffer->values, entryIndex);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void Read<TJob, TKey, TValue>(
+            this ref TJob job, NativeParallelMultiHashMap<TKey, TValue> hashMap, int entryIndex, out TKey key, out TValue value)
             where TJob : unmanaged, IJobParallelHashMapDefer
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
+#endif
+
+            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.m_MultiHashMapData.m_Buffer->keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_MultiHashMapData.m_Buffer->values, entryIndex);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void Read<TJob, TKey, TValue>(
+            this ref TJob job, NativeParallelMultiHashMap<TKey, TValue>.ReadOnly hashMap, int entryIndex, out TKey key, out TValue value)
+            where TJob : unmanaged, IJobParallelHashMapDefer
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var re = UnsafeUtility.As<NativeParallelMultiHashMap<TKey, TValue>.ReadOnly, NativeParallelMultiHashMapReadOnly<TKey, TValue>>(ref hashMap);
+            AtomicSafetyHandle.CheckReadAndThrow(re.Safety);
 #endif
 
             key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.m_MultiHashMapData.m_Buffer->keys, entryIndex);
@@ -223,5 +302,23 @@ namespace BovineLabs.Core.Jobs
                 }
             }
         }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        private struct NativeParallelMultiHashMapReadOnly<TKey, TValue>
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            public UnsafeParallelHashMap<TKey, TValue> HashMapData;
+            public AtomicSafetyHandle Safety;
+        }
+
+        private struct NativeParallelHashMapReadOnly<TKey, TValue>
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            public UnsafeParallelMultiHashMap<TKey, TValue> HashMapData;
+            public AtomicSafetyHandle Safety;
+        }
+#endif
     }
 }

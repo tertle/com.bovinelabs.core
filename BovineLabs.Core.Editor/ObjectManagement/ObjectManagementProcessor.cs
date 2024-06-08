@@ -1,8 +1,7 @@
-﻿// <copyright file="ObjectDefinitionProcessor.cs" company="BovineLabs">
+﻿// <copyright file="ObjectManagementProcessor.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.Editor.ObjectManagement
 {
     using System;
@@ -17,8 +16,10 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     using Object = UnityEngine.Object;
 
     /// <summary> An <see cref="AssetPostprocessor"/> that ensures <see cref="IUID" /> types always have a unique ID even if 2 branches merge. </summary>
-    public class ObjectDefinitionProcessor : AssetPostprocessor
+    public class ObjectManagementProcessor : AssetPostprocessor
     {
+        private static GlobalProcessor global = new();
+
         [UsedImplicitly(ImplicitUseKindFlags.Access)]
         [SuppressMessage("ReSharper", "Unity.IncorrectMethodSignature", Justification = "Changed in 2021")]
         private static void OnPostprocessAllAssets(
@@ -29,7 +30,9 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 return;
             }
 
+            global = new GlobalProcessor();
             var processors = new Dictionary<Type, Processor>();
+            var autoRefMap = new Dictionary<Type, AutoRefAttribute>();
 
             foreach (var assetPath in importedAssets)
             {
@@ -41,43 +44,71 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                     continue;
                 }
 
-                ProcessAsset(asset, processors);
+                ProcessAsset(asset, processors, autoRefMap);
                 foreach (var subAsset in AssetDatabase.LoadAllAssetRepresentationsAtPath(assetPath))
                 {
-                    ProcessAsset(subAsset, processors);
+                    if (subAsset == null)
+                    {
+                        continue;
+                    }
+
+                    ProcessAsset(subAsset, processors, autoRefMap);
                 }
             }
 
-            foreach (var p in processors)
+            foreach (var manager in autoRefMap)
             {
-                UpdateManager(p.Value.Type);
+                UpdateAutoRef(manager.Key, manager.Value);
             }
         }
 
-        private static void ProcessAsset(Object asset, Dictionary<Type, Processor> processors)
+        private static void ProcessAsset(Object asset, Dictionary<Type, Processor> processors, Dictionary<Type, AutoRefAttribute> autoRefMap)
         {
-            if (asset is not IUID)
-            {
-                return;
-            }
-
-            var assetType = asset.GetType();
-            if (!processors.TryGetValue(assetType, out var processor))
-            {
-                processor = processors[assetType] = new Processor(assetType);
-            }
-
-            processor.Process(asset);
+            CheckAutoRef(asset, autoRefMap);
+            CheckAutoID(asset, processors);
         }
 
-        private static void UpdateManager(Type type)
+        private static void CheckAutoRef(Object asset, Dictionary<Type, AutoRefAttribute> autoRefMap)
         {
-            var attribute = type.GetCustomAttribute<UIDManagerAttribute>();
+            var type = asset.GetType();
+
+            var attribute = type.GetCustomAttribute<AutoRefAttribute>();
             if (attribute == null)
             {
                 return;
             }
 
+            autoRefMap[type] = attribute;
+        }
+
+        private static void CheckAutoID(Object asset, Dictionary<Type, Processor> processors)
+        {
+            switch (asset)
+            {
+                case IUIDGlobal:
+                {
+                    global.Process(asset);
+
+                    break;
+                }
+
+                case IUID:
+                {
+                    var assetType = asset.GetType();
+                    if (!processors.TryGetValue(assetType, out var processor))
+                    {
+                        processor = processors[assetType] = new Processor(assetType);
+                    }
+
+                    processor.Process(asset);
+
+                    break;
+                }
+            }
+        }
+
+        private static void UpdateAutoRef(Type type, AutoRefAttribute attribute)
+        {
             var managerGuid = AssetDatabase.FindAssets($"t:{attribute.Manager}");
             if (managerGuid.Length == 0)
             {
@@ -135,6 +166,19 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             AssetDatabase.SaveAssetIfDirty(manager);
         }
 
+        private static int GetFirstFreeID(IReadOnlyDictionary<int, int> map)
+        {
+            for (var i = 0; i < int.MaxValue; i++)
+            {
+                if (!map.ContainsKey(i))
+                {
+                    return i;
+                }
+            }
+
+            return 0; // You'd have to hit int.MaxValue ids to ever hit this case, you have other problems
+        }
+
         private class Processor
         {
             private readonly string filter;
@@ -161,8 +205,6 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                     this.map[asset.ID] = count - 1; // update the old ID
                     asset.ID = newId;
                     this.map[newId] = 1;
-                    EditorUtility.SetDirty(obj);
-                    AssetDatabase.SaveAssetIfDirty(obj);
                 }
             }
 
@@ -178,6 +220,11 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
                     foreach (var asset in assets)
                     {
+                        if (asset == null)
+                        {
+                            continue;
+                        }
+
                         if (asset.GetType() != this.Type)
                         {
                             continue;
@@ -192,20 +239,59 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
                 return idMap;
             }
+        }
 
-            private static int GetFirstFreeID(IReadOnlyDictionary<int, int> map)
+        private class GlobalProcessor
+        {
+            private const string Filter = "t:ScriptableObject";
+            private Dictionary<int, int>? map;
+
+            public void Process(Object obj)
             {
-                for (var i = 0; i < int.MaxValue; i++)
+                var asset = (IUIDGlobal)obj;
+
+                this.map ??= GetIDMap();
+                this.map.TryGetValue(asset.ID, out var count);
+
+                if (count > 1)
                 {
-                    if (!map.ContainsKey(i))
+                    var newId = GetFirstFreeID(this.map);
+                    this.map[asset.ID] = count - 1; // update the old ID
+                    asset.ID = newId;
+                    this.map[newId] = 1;
+                }
+            }
+
+            private static Dictionary<int, int> GetIDMap()
+            {
+                var idMap = new Dictionary<int, int>();
+
+                var paths = AssetDatabase.FindAssets(Filter).Select(AssetDatabase.GUIDToAssetPath).Distinct();
+
+                foreach (var path in paths)
+                {
+                    var assets = AssetDatabase.LoadAllAssetsAtPath(path);
+
+                    foreach (var asset in assets)
                     {
-                        return i;
+                        if (asset == null)
+                        {
+                            continue;
+                        }
+
+                        if (asset is not IUIDGlobal uid)
+                        {
+                            continue;
+                        }
+
+                        idMap.TryGetValue(uid.ID, out var count);
+                        count++;
+                        idMap[uid.ID] = count;
                     }
                 }
 
-                return -1; // You'd have to hit int.MaxValue ids to ever hit this case, you have other problems
+                return idMap;
             }
         }
     }
 }
-#endif

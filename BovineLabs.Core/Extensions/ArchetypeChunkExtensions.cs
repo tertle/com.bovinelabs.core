@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Extensions
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Collections;
+    using BovineLabs.Core.Iterators;
     using Unity.Burst.CompilerServices;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -432,9 +433,57 @@ namespace BovineLabs.Core.Extensions
             return ref UnsafeUtility.AsRef<T>(ptr);
         }
 
+        public static DynamicBuffer<T> GetChunkBuffer<T>(this ArchetypeChunk chunk, ref BufferTypeHandle<T> bufferTypeHandle)
+            where T : unmanaged, IBufferElementData
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(bufferTypeHandle.m_Safety0);
+#endif
+            var metaChunkEntity = chunk.m_Chunk.MetaChunkEntity;
+
+            chunk.m_EntityComponentStore->AssertEntityHasComponent(metaChunkEntity, bufferTypeHandle.m_TypeIndex);
+
+            BufferHeader* header;
+            if (bufferTypeHandle.IsReadOnly)
+            {
+                header = (BufferHeader*)chunk.m_EntityComponentStore->GetComponentDataWithTypeRO(metaChunkEntity, bufferTypeHandle.m_TypeIndex);
+            }
+            else
+            {
+                header = (BufferHeader*)chunk.m_EntityComponentStore->GetComponentDataWithTypeRW(
+                    metaChunkEntity, bufferTypeHandle.m_TypeIndex, chunk.m_EntityComponentStore->GlobalSystemVersion);
+            }
+
+            int internalCapacity = TypeManager.GetTypeInfo(bufferTypeHandle.m_TypeIndex).BufferCapacity;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var useMemoryInit = chunk.m_EntityComponentStore->useMemoryInitPattern != 0;
+            var memoryInitPattern = chunk.m_EntityComponentStore->memoryInitPattern;
+            return new DynamicBuffer<T>(header, bufferTypeHandle.m_Safety0, bufferTypeHandle.m_Safety1, bufferTypeHandle.IsReadOnly, useMemoryInit, memoryInitPattern, internalCapacity);
+#else
+            return new DynamicBuffer<T>(header, internalCapacity);
+#endif
+        }
+
         public static int ChunkIndex(this ArchetypeChunk chunk)
         {
             return UnsafeUtility.As<ChunkIndex, int>(ref chunk.m_Chunk);
+        }
+
+        /// <summary> Checks a list of components to check if any enable components are enabled OR any other components exist. </summary>
+        /// <param name="archetypeChunk"></param>
+        /// <param name="components"></param>
+        /// <returns></returns>
+        public static BitArray128 GetAny(this ArchetypeChunk archetypeChunk, NativeArray<ComponentType> components)
+        {
+            var enabled = BitArray128.None;
+            foreach (var componentType in components)
+            {
+                ref readonly var bits = ref UnsafeEntityDataAccess.GetRequiredEnabledBitsRO(archetypeChunk, componentType);
+                enabled |= new BitArray128(bits);
+            }
+
+            return enabled;
         }
 
         private static UnsafeBitArray GetEnabledRefRWNoChange(ChunkIndex chunk, Archetype* archetype, int indexInTypeArray, out int* ptrChunkDisabledCount)

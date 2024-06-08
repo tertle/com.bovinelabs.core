@@ -82,10 +82,6 @@ namespace BovineLabs.Core.Tests.Functions
 
             public ExecuteFunction ExecuteFunction => Execute;
 
-            public void OnCreate(ref SystemState state)
-            {
-            }
-
             private Entity Execute(ref TestResult result)
             {
                 return result.Value;

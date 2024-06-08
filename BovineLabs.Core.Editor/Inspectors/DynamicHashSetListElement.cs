@@ -22,6 +22,11 @@ namespace BovineLabs.Core.Editor.Inspectors
         private DynamicHashSet<T> GetSet =>
             this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity).AsHashSet<TBuffer, T>();
 
+        public override bool IsValid()
+        {
+            return base.IsValid() && this.Context.EntityManager.HasBuffer<TBuffer>(this.Context.Entity);
+        }
+
         protected override void PopulateList(List<KVP> list)
         {
             var set = this.GetSet;

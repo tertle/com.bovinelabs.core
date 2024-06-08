@@ -43,6 +43,11 @@
             "name": "com.unity.entities.graphics",
             "expression": "0",
             "define": "UNITY_GRAPHICS"
+        },
+        {
+            "name": "com.unity.modules.terrain",
+            "expression": "0",
+            "define": "UNITY_TERRAIN"
         }
     ],
     "noEngineReferences": false

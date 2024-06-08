@@ -33,9 +33,9 @@ namespace BovineLabs.Core.Extensions
             return system.EntityManager.GetSharedComponentLookup<T>(isReadOnly);
         }
 
-        public static UnsafeComponentHandle GetUnsafeComponentHandle(ref this SystemState system)
+        public static UnsafeEntityDataAccess GetUnsafeEntityDataAccess(ref this SystemState system)
         {
-            return system.EntityManager.GetUnsafeComponentHandle();
+            return system.EntityManager.GetUnsafeEntityDataAccess();
         }
 
         public static UnsafeComponentLookup<T> GetUnsafeComponentLookup<T>(ref this SystemState system, bool isReadOnly = false)

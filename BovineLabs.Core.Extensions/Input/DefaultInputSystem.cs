@@ -25,7 +25,7 @@ namespace BovineLabs.Core.Input
         private InputDefault input;
         private InputCommon inputCommon;
 
-        private IDisposable? anyButtonPress;
+        private IDisposable anyButtonPress;
 
         private OnApplicationFocusBehaviour focus = null!;
 

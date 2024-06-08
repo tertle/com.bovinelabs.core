@@ -1,11 +1,15 @@
-﻿namespace BovineLabs.Core.Collections
+﻿// <copyright file="BlobBuilderMultiHashMap.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Collections
 {
     using System;
     using Unity.Entities;
 
     public ref struct BlobBuilderMultiHashMap<TKey, TValue>
-        where TKey : struct, IEquatable<TKey>
-        where TValue : struct
+        where TKey : unmanaged, IEquatable<TKey>
+        where TValue : unmanaged
     {
         private BlobBuilderHashMapData<TKey, TValue> data;
 
@@ -27,6 +31,7 @@
         }
 
         public int Capacity => this.data.KeyCapacity;
+
         public int Count => this.data.Count;
 
         public void Add(TKey key, TValue item)

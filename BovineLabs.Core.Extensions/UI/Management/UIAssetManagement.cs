@@ -12,7 +12,7 @@ namespace BovineLabs.Core.UI
 
     public interface IUIAssetManagement
     {
-        object? GetPanel(int id);
+        object GetPanel(int id);
     }
 
     public abstract class UIAssetManagement : MonoBehaviour, IUIAssetManagement
@@ -21,7 +21,7 @@ namespace BovineLabs.Core.UI
         private readonly Dictionary<int, VisualTreeAsset> allPanels = new();
 
         [SerializeField]
-        private UIStatesBase? panels;
+        private UIStatesBase panels;
 
         public object GetPanel(int id)
         {
@@ -54,7 +54,7 @@ namespace BovineLabs.Core.UI
             if (this.loadedPanels.TryGetValue(id, out var panel2))
             {
                 Unity.Debug.LogError($"Panel with id {id} already loaded");
-                if (panel2.Item2 is not T existingBinding)
+                if (panel2.Binding is not T existingBinding)
                 {
                     throw new InvalidOperationException("Trying to load a binding of a different type");
                 }

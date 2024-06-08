@@ -4,24 +4,17 @@
 
 namespace BovineLabs.Core.Editor.Inspectors
 {
-    using System;
     using Unity.Entities.Editor;
-    using Unity.Entities.UI;
     using UnityEngine.UIElements;
 
     public abstract class EntityInspector<T> : VisualElement
     {
         protected EntityInspector(object inspector)
         {
-            if (inspector is not InspectorBase<T> propertyInspector)
-            {
-                throw new ArgumentException($"Inspector is not {nameof(InspectorBase<T>)}", nameof(inspector));
-            }
-
-            this.Context = propertyInspector.GetContext<EntityInspectorContext>();
+            this.Context = ContextGetter.Create<T>(inspector);
         }
 
-        internal EntityInspectorContext Context { get; }
+        internal IContextGetter Context { get; }
 
         public virtual bool IsValid()
         {

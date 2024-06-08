@@ -19,8 +19,6 @@ namespace BovineLabs.Core.Utility
     public static class ReflectionUtility
     {
 #if UNITY_EDITOR
-        // private static Dictionary<string, Assembly>? assemblies = CompilationPipeline.GetAssemblies().ToDictionary(r => r.name, r => r);
-
         private static Dictionary<string, Assembly> AssembliesMap { get; }
             = CompilationPipeline.GetAssemblies().ToDictionary(r => r.name, r => r);
 #endif
@@ -208,6 +206,19 @@ namespace BovineLabs.Core.Utility
             }
 
             return (uAssembly.flags & AssemblyFlags.EditorAssembly) != 0;
+        }
+
+        /// <summary> Checks if an assembly is an editor only assembly. </summary>
+        /// <param name="asm"> The assembly to check. </param>
+        /// <returns> True if editor assembly. </returns>
+        public static bool IsTestEditorAssembly(this System.Reflection.Assembly asm)
+        {
+            if (!AssembliesMap.TryGetValue(asm.GetName().Name, out var uAssembly))
+            {
+                return false; // this happens in sub scene conversion process if a new assembly is added after loading unity...
+            }
+
+            return uAssembly.assemblyReferences.Any(c => c.name == "UnityEngine.TestRunner");
         }
 #else
         /// <summary> Gets the name of all assemblies with a specific reference. </summary>

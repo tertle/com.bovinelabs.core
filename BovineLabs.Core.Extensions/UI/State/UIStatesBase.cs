@@ -43,7 +43,7 @@ namespace BovineLabs.Core.UI
             private byte value;
 
             [SerializeField]
-            private VisualTreeAsset? asset;
+            private VisualTreeAsset asset;
 
             public NameUI(string name, byte value, VisualTreeAsset asset)
             {
@@ -64,7 +64,7 @@ namespace BovineLabs.Core.UI
                 set => this.value = (byte)value;
             }
 
-            public VisualTreeAsset? Asset => this.asset;
+            public VisualTreeAsset Asset => this.asset;
         }
     }
 }

@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Extensions
     using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
+    using BovineLabs.Core.Utility;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Mathematics;
@@ -47,6 +48,14 @@ namespace BovineLabs.Core.Extensions
         {
             CheckElementWriteAccess(array, index);
             return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafePtr(), index);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Ptr<T> ElementAtAsPtr<T>(this NativeArray<T> array, int index)
+            where T : unmanaged
+        {
+            CheckElementWriteAccess(array, index);
+            return new Ptr<T>((T*)array.GetUnsafePtr() + index);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

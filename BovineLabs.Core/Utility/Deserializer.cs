@@ -13,9 +13,18 @@ namespace BovineLabs.Core.Utility
         [ReadOnly]
         private NativeArray<byte> data;
 
-        public Deserializer(NativeArray<byte> data, int offset)
+        public Deserializer(NativeArray<byte> data, int offset = 0)
         {
             this.data = data;
+            this.CurrentIndex = offset;
+        }
+
+        public Deserializer(byte* ptr, int length, int offset = 0)
+        {
+            this.data = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<byte>(ptr, length, Allocator.None);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref this.data, AtomicSafetyHandle.Create());
+#endif
             this.CurrentIndex = offset;
         }
 

@@ -19,6 +19,15 @@ namespace BovineLabs.Core.Extensions
             return entityManager.GetCheckedEntityDataAccess()->EntityComponentStore->m_Archetypes.Length;
         }
 
+        public static DynamicBuffer<T> GetChunkBuffer<T>(this EntityManager em, Entity entity)
+            where T : unmanaged, IBufferElementData
+        {
+            var store = em.GetCheckedEntityDataAccess()->EntityComponentStore;
+            store->AssertEntitiesExist(&entity, 1);
+            var chunk = store->GetChunk(entity);
+            return em.GetBuffer<T>(chunk.MetaChunkEntity);
+        }
+
         // Only use these for tests
         public static ComponentLookup<T> GetComponentLookup<T>(this EntityManager entityManager, bool isReadOnly = false)
             where T : unmanaged, IComponentData
@@ -322,11 +331,11 @@ namespace BovineLabs.Core.Extensions
 #endif
         }
 
-        internal static UnsafeComponentHandle GetUnsafeComponentHandle(this EntityManager entityManager)
+        internal static UnsafeEntityDataAccess GetUnsafeEntityDataAccess(this EntityManager entityManager)
         {
             var access = entityManager.GetCheckedEntityDataAccess();
 
-            return new UnsafeComponentHandle(access);
+            return new UnsafeEntityDataAccess(access);
         }
 
         internal static UnsafeEnableableLookup GetUnsafeEnableableLookup(this EntityManager entityManager)

@@ -31,6 +31,13 @@ namespace BovineLabs.Core.Editor.Settings
 
             // ReSharper disable once VirtualMemberCallInConstructor, Justification: GetKeyWords marked with a warning
             this.IsEmpty = !this.GetKeyWords(this.keywordList);
+            if (this.IsEmpty)
+            {
+                if (typeof(T).GetCustomAttribute<AlwaysShowSettingsAttribute>() != null)
+                {
+                    this.IsEmpty = false;
+                }
+            }
         }
 
         /// <inheritdoc />

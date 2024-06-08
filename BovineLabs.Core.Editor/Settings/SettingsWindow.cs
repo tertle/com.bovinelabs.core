@@ -40,8 +40,6 @@ namespace BovineLabs.Core.Editor.Settings
                 try
                 {
                     this.settingsPanelMap.Add(settings, panel);
-
-                    Debug.Log($"Custom {settings}, {panel}");
                 }
                 catch (ArgumentException)
                 {

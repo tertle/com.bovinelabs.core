@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Editor.Inspectors
     using UnityEngine;
     using SearchElement = BovineLabs.Core.Editor.UI.SearchElement;
 
-    public class DynamicHashMapSearchElement<TBuffer, TKey, TValue> : DynamicBufferElementBase<TBuffer>
+    public class DynamicHashMapSearchElement<T, TBuffer, TKey, TValue> : EntityInspector<T>
         where TBuffer : unmanaged, IDynamicHashMap<TKey, TValue>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             var popup = new SearchElement(items, "Stat");
 
             this.content = new PropertyElement();
-            this.content.AddContext(this.Context);
+            this.content.AddContext(this.Context.Context);
             this.content.OnChanged += this.OnComponentChanged;
 
             popup.OnSelection += evt => this.UpdateValue(evt.Data);
@@ -89,7 +89,7 @@ namespace BovineLabs.Core.Editor.Inspectors
                 return;
             }
 
-            if (this.Context.EntityContainer.IsReadOnly)
+            if (this.Context.IsReadOnly)
             {
                 return;
             }

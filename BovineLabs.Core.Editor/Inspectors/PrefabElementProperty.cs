@@ -42,7 +42,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             this.prefabObject = new SerializedObject(prefab);
 
             var label = new Label("Changes are applied to the prefab");
-            AddLabelStyles(label);
+            ElementUtility.AddLabelStyles(label);
             root.Add(label);
 
             return true;

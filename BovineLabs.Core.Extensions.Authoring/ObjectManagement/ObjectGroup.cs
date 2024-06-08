@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     using BovineLabs.Core.ObjectManagement;
     using UnityEngine;
 
-    [UIDManager("ObjectManagementSettings", "objectGroups")]
+    [AutoRef("ObjectManagementSettings", "objectGroups")]
     [AssetCreator("object.groups", "Assets/Settings/Groups", "Group.asset")]
     public class ObjectGroup : ScriptableObject, IUID
     {

@@ -1,13 +1,18 @@
-﻿namespace BovineLabs.Core.Collections
+﻿// <copyright file="BlobHashMapData.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Collections
 {
     using System;
+    using System.Diagnostics;
+    using BovineLabs.Core.Utility;
     using Unity.Collections;
-    using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
-    internal unsafe struct BlobHashMapData<TKey, TValue>
-        where TKey : struct, IEquatable<TKey>
-        where TValue : struct
+    internal struct BlobHashMapData<TKey, TValue>
+        where TKey : unmanaged, IEquatable<TKey>
+        where TValue : unmanaged
     {
         internal BlobArray<TValue> Values;
         internal BlobArray<TKey> Keys;
@@ -17,7 +22,7 @@
 
         internal int BucketCapacityMask; // == buckets.Length - 1
 
-        internal bool TryGetFirstValue(TKey key, out TValue item, out BlobMultiHashMapIterator<TKey> it)
+        internal bool TryGetFirstValue(TKey key, out Ptr<TValue> item, out BlobMultiHashMapIterator<TKey> it)
         {
             it.Key = key;
 
@@ -28,7 +33,7 @@
             return this.TryGetNextValue(out item, ref it);
         }
 
-        internal bool TryGetNextValue(out TValue item, ref BlobMultiHashMapIterator<TKey> it)
+        internal bool TryGetNextValue(out Ptr<TValue> item, ref BlobMultiHashMapIterator<TKey> it)
         {
             var index = it.NextIndex;
             it.NextIndex = -1;
@@ -49,25 +54,65 @@
             }
 
             it.NextIndex = this.Next[index];
-            item = this.Values[index];
-
+            item = new Ptr<TValue>(ref this.Values[index]);
             return true;
         }
+    }
 
-        internal NativeArray<TKey> GetKeys(Allocator allocator)
+    /// <summary> A key-value pair. </summary>
+    /// <remarks>Used for enumerators.</remarks>
+    /// <typeparam name="TKey">The type of the keys.</typeparam>
+    /// <typeparam name="TValue">The type of the values.</typeparam>
+    [DebuggerDisplay("Key = {Key}, Value = {Value}")]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
+    public readonly unsafe struct KVPair<TKey, TValue>
+        where TKey : unmanaged, IEquatable<TKey>
+        where TValue : unmanaged
+    {
+        private readonly BlobHashMapData<TKey, TValue>* data;
+        private readonly int index;
+
+        internal KVPair(BlobHashMapData<TKey, TValue>* data, int index)
         {
-            var length = this.Count[0];
-            var arr = new NativeArray<TKey>(length, allocator, NativeArrayOptions.UninitializedMemory);
-            UnsafeUtility.MemCpy(arr.GetUnsafePtr(), this.Keys.GetUnsafePtr(), UnsafeUtility.SizeOf<TKey>() * length);
-            return arr;
+            this.data = data;
+            this.index = index;
         }
 
-        internal NativeArray<TValue> GetValues(Allocator allocator)
+        /// <summary>
+        /// The key.
+        /// </summary>
+        /// <value>The key. If this KeyValue is Null, returns the default of TKey.</value>
+        public ref TKey Key
         {
-            var length = this.Count[0];
-            var arr = new NativeArray<TValue>(length, allocator, NativeArrayOptions.UninitializedMemory);
-            UnsafeUtility.MemCpy(arr.GetUnsafePtr(), this.Values.GetUnsafePtr(), UnsafeUtility.SizeOf<TValue>() * length);
-            return arr;
+            get
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+                if (this.index == -1)
+                {
+                    throw new ArgumentException("must be valid");
+                }
+#endif
+
+                return ref this.data->Keys[this.index];
+            }
+        }
+
+        /// <summary>
+        /// Value of key/value pair.
+        /// </summary>
+        public ref TValue Value
+        {
+            get
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+                if (this.index == -1)
+                {
+                    throw new ArgumentException("must be valid");
+                }
+#endif
+
+                return ref this.data->Values[this.index];
+            }
         }
     }
 }

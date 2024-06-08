@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.App
+namespace BovineLabs.Core
 {
     using Unity.Entities;
     using UnityEngine;

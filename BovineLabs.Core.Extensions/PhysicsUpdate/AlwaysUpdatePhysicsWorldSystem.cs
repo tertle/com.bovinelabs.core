@@ -17,12 +17,14 @@ namespace BovineLabs.Core.PhysicsUpdate
     public unsafe partial class AlwaysUpdatePhysicsWorldSystem : SystemBase
     {
         private SystemHandle buildPhysicsWorld;
+        private SystemHandle buildPhysicsWorldDependencyResolver;
         private SystemState* buildPhysicsWorldSystemState;
 
         /// <inheritdoc/>
         protected override void OnCreate()
         {
             this.buildPhysicsWorld = this.World.GetExistingSystem<BuildPhysicsWorld>();
+            this.buildPhysicsWorldDependencyResolver = this.World.GetExistingSystem<BuildPhysicsWorldDependencyResolver>();
             this.buildPhysicsWorldSystemState = this.World.Unmanaged.ResolveSystemStateChecked(this.buildPhysicsWorld);
 
             this.CheckedStateRef.AddDependency(TypeManager.GetTypeIndex<PhysicsWorldSingleton>());
@@ -39,6 +41,7 @@ namespace BovineLabs.Core.PhysicsUpdate
                 return;
             }
 
+            this.buildPhysicsWorldDependencyResolver.Update(this.World.Unmanaged);
             this.buildPhysicsWorld.Update(this.World.Unmanaged);
 
             var physicsDependency = this.buildPhysicsWorldSystemState->GetInternalDependency();

@@ -74,16 +74,6 @@ namespace BovineLabs.Core.Editor.Inspectors
         {
         }
 
-        /// <summary> Adds appropriate styles to make a label match the default <see cref="BaseField{TValueType}"/> alignment in an inspector. </summary>
-        /// <param name="label"> The label to apply to. </param>
-        protected static void AddLabelStyles(Label label)
-        {
-            label.AddToClassList(BaseField<string>.ussClassName);
-            label.AddToClassList(BaseField<string>.labelUssClassName);
-            label.AddToClassList(BaseField<string>.ussClassName + "__inspector-field");
-            label.style.minHeight = new StyleLength(19); // bit gross but matches the element
-        }
-
         /// <summary> Create a foldout without margins so it lines up with the inspector listviews. </summary>
         /// <param name="text"> Text value of the foldout. </param>
         /// <returns> A new foldout. </returns>
@@ -94,11 +84,6 @@ namespace BovineLabs.Core.Editor.Inspectors
             foldout.contentContainer.style.marginLeft = 0;
             foldout.value = false;
             return foldout;
-        }
-
-        protected static void SetVisible(VisualElement element, bool visible)
-        {
-            element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
         }
     }
 }

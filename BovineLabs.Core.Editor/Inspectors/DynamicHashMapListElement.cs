@@ -11,7 +11,7 @@ namespace BovineLabs.Core.Editor.Inspectors
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    public class DynamicHashMapListElement<TBuffer, TKey, TValue> : DynamicListElement<TBuffer, DynamicHashMapListElement<TBuffer, TKey, TValue>.KVP>
+    public class DynamicHashMapListElement<T, TBuffer, TKey, TValue> : DynamicListElement<T, DynamicHashMapListElement<T, TBuffer, TKey, TValue>.KVP>
         where TBuffer : unmanaged, IDynamicHashMap<TKey, TValue>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
@@ -23,6 +23,11 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         private DynamicHashMap<TKey, TValue> GetMap =>
              this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity).AsHashMap<TBuffer, TKey, TValue>();
+
+        public override bool IsValid()
+        {
+            return base.IsValid() && this.Context.EntityManager.HasBuffer<TBuffer>(this.Context.Entity);
+        }
 
         protected override void PopulateList(List<KVP> list)
         {

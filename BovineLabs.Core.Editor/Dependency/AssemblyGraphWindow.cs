@@ -6,7 +6,9 @@ namespace BovineLabs.Core.Editor.Dependency
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using BovineLabs.Core.Editor.AssemblyBuilder;
+    using BovineLabs.Core.Editor.Settings;
     using BovineLabs.Core.Editor.UI;
     using UnityEditor;
     using UnityEditorInternal;
@@ -84,7 +86,7 @@ namespace BovineLabs.Core.Editor.Dependency
             switch (this.mode!.index)
             {
                 case 0:
-                    this.FindAssetDependencies();
+                    this.FindAuthoringProblems();
                     break;
                 case 1:
                     this.FindAssetThatDependsOn();
@@ -110,6 +112,11 @@ namespace BovineLabs.Core.Editor.Dependency
 
             foreach (var data in this.dependencyData)
             {
+                if (data.Dependencies.Count == 0)
+                {
+                    continue;
+                }
+
                 this.content!.Add(CreateAssetButton(data.AssetPath, data.Asset));
 
                 foreach (var (asset, path) in data.Dependencies)
@@ -117,31 +124,6 @@ namespace BovineLabs.Core.Editor.Dependency
                     this.content.Add(CreateDependencyButton(path, asset, this.mode!.index == 0));
                 }
             }
-        }
-
-        private void FindAssetDependencies()
-        {
-            // foreach (var selected in Selection.objects)
-            // {
-            //     if (!AssetDatabase.IsMainAsset(selected))
-            //     {
-            //         Debug.LogWarning($"Asset {selected} is not a main asset");
-            //         continue;
-            //     }
-            //
-            //     var path = AssetDatabase.GetAssetPath(selected);
-            //     var dependencies = new List<string>(AssetDatabase.GetDependencies(path));
-            //     dependencies.Remove(path); // GetDependencies returns itself
-            //
-            //     var data = new DependencyData
-            //     {
-            //         AssetPath = path,
-            //         Asset = selected,
-            //     };
-            //     data.Dependencies.AddRange(dependencies.Select(s => (AssetDatabase.LoadAssetAtPath<Object>(s), s)));
-            //
-            //     this.dependencyData.Add(data);
-            // }
         }
 
         private void FindAssetThatDependsOn()
@@ -212,6 +194,83 @@ namespace BovineLabs.Core.Editor.Dependency
             }
 
             EditorUtility.ClearProgressBar();
+        }
+
+        private void FindAuthoringProblems()
+        {
+            var settings = EditorSettingsUtility.GetSettings<AssemblyGraphSettings>();
+
+            try
+            {
+                var guids = AssetDatabase.FindAssets("t:AssemblyDefinitionAsset");
+
+                var badAssemblyNames = new Dictionary<string, (string Path, AssemblyDefinitionAsset Asset)>();
+                var badAssemblyGUIDs = new Dictionary<string, (string Path, AssemblyDefinitionAsset Asset)>();
+
+                for (var i = 0; i < guids.Length; i++)
+                {
+                    var guid = guids[i];
+                    var path = AssetDatabase.GUIDToAssetPath(guid);
+                    EditorUtility.DisplayProgressBar("Searching", "AssemblyDefinitionAsset:" + path + " " + i + "/" + guids.Length,
+                        ((float)i / guids.Length) / 2f);
+
+                    var assemblyDefinition = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>(path);
+                    if (assemblyDefinition == null)
+                    {
+                        continue;
+                    }
+
+                    if (settings.AssembliesToIgnore.Any(a => assemblyDefinition.name.StartsWith(a)))
+                    {
+                        continue;
+                    }
+
+                    if (settings.AssembliesToCheck.Any(a => assemblyDefinition.name.EndsWith(a)))
+                    {
+                        var data = new DependencyData(assemblyDefinition, path);
+                        this.dependencyData.Add(data);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            badAssemblyNames.Add(assemblyDefinition.name, (path, assemblyDefinition));
+                        }
+                        catch (ArgumentException)
+                        {
+                            // Unity has the same name of some tests...
+                        }
+
+                        badAssemblyGUIDs.Add($"GUID:{AssetDatabase.GUIDFromAssetPath(path)}", (path, assemblyDefinition));
+                    }
+                }
+
+                for (var i = 0; i < this.dependencyData.Count; i++)
+                {
+                    var data = this.dependencyData[i];
+                    EditorUtility.DisplayProgressBar("Searching", "Check Asset Dependency:" + data.AssetPath + " " + i + "/" + guids.Length,
+                        0.5f + ((float)i / this.dependencyData.Count / 2f));
+
+                    var json = AssemblyDefinitionTemplate.New();
+                    JsonUtility.FromJsonOverwrite(data.Asset.text, json);
+
+                    foreach (var dependency in json.references)
+                    {
+                        if (badAssemblyNames.TryGetValue(dependency, out var dependencyAsset))
+                        {
+                            data.Dependencies.Add((dependencyAsset.Asset, dependencyAsset.Path));
+                        }
+                        else if (badAssemblyGUIDs.TryGetValue(dependency, out dependencyAsset))
+                        {
+                            data.Dependencies.Add((dependencyAsset.Asset, dependencyAsset.Path));
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+            }
         }
 
         private record DependencyData(AssemblyDefinitionAsset Asset, string AssetPath)

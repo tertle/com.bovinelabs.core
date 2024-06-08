@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Functions
     using System.Reflection;
     using System.Runtime.InteropServices;
     using BovineLabs.Core.Utility;
+    using Unity;
     using Unity.Assertions;
     using Unity.Burst;
     using Unity.Collections;
@@ -82,12 +83,23 @@ namespace BovineLabs.Core.Functions
         public FunctionsBuilder<T, TO> Add<TF>(ref SystemState state, TF function)
             where TF : unmanaged, IFunction<T>
         {
-            var hash = BurstRuntime.GetHashCode64<TF>();
+            return this.Add(ref state, function, BurstRuntime.GetHashCode64<TF>());
+        }
 
+        /// <summary> Manually add an instance of <see cref="IFunction{T}"/>. </summary>
+        /// <param name="state"> The system state passed to OnCreate. </param>
+        /// <param name="function"> The instance. </param>
+        /// <param name="hash"> Unique hash of the function. </param>
+        /// <typeparam name="TF"> The type of <see cref="IFunction{T}"/>. </typeparam>
+        /// <returns> Itself. </returns>
+        public FunctionsBuilder<T, TO> Add<TF>(ref SystemState state, TF function, long hash)
+            where TF : unmanaged, IFunction<T>
+        {
             var buildData = new BuildData { Hash = hash };
 
             if (this.functions.Contains(buildData))
             {
+                Debug.LogError($"Trying to add function with hash {hash} multiple times");
                 return this;
             }
 
@@ -151,6 +163,21 @@ namespace BovineLabs.Core.Functions
             }
 
             return new Functions<T, TO>(array);
+        }
+
+        /// <summary> Builds the <see cref="Functions{T, TO}"/> to use with all the found <see cref="IFunction{T}"/>. </summary>
+        /// <returns> A new instance of <see cref="Functions{T, TO}"/>. </returns>
+        public FunctionsHash<T, TO> BuildHash()
+        {
+            var hash = new NativeHashMap<long, FunctionData>(this.functions.Count, Allocator.Persistent);
+            using var e = this.functions.GetEnumerator();
+
+            while (e.MoveNext())
+            {
+                hash[e.Current.Hash] = e.Current.FunctionData;
+            }
+
+            return new FunctionsHash<T, TO>(hash);
         }
 
         private FunctionsBuilder<T, TO> AddInternalDefault<TF>(SystemState* state)

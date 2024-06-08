@@ -192,6 +192,11 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                     if (label != "Main" && label != "Authoring")
                     {
                         references.Add($"{nameField}");
+
+                        if (label == "Editor")
+                        {
+                            references.Add($"{nameField}.Authoring");
+                        }
                     }
                     else
                     {
