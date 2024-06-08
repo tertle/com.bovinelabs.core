@@ -1,4 +1,9 @@
 # Changelog
+## [1.2.16] - 2024-06-08
+### Added
+### Changed
+### Fixed
+
 ## [1.2.15] - 2024-06-08
 ### Added
 * CacheImpl which adds an easy way to add a cache to a meta entity
@@ -10,7 +15,7 @@
 * OnlySize option to StableTypeHashAttribute
 * IndexOf and TryGetValue predicate extensions to UnsafeList
 * NativeHashMapFactory and NativeHashSetFactory to control min growth
-* Ref check safety into DynamicHashMaps - they should be passed by ref if you are adding.
+* Ref check safety into DynamicHashMaps - they should be passed by ref if you are adding
 * ConfigVars for setting FixedUpdateTick and TargetFrameRates
 * VFXGraphTemplateWindow
 * Added an Enumerator for Blob[Multi]HashMap
