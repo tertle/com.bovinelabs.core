@@ -45,14 +45,14 @@ namespace BovineLabs.Core.Tests
         private partial struct TestSystem : ISystem
         {
             private NativeArray<Entity> entities;
-            private NativeParallelMultiHashMap<Entity, int> damageInstances;
+            private NativeParallelMultiHashMapFallback<Entity, int> damageInstances;
             private ThreadRandom random;
 
             public void OnCreate(ref SystemState state)
             {
                 var arch = state.EntityManager.CreateArchetype(typeof(DamageBuffer));
                 this.entities = state.EntityManager.CreateEntity(arch, EntityCount, Allocator.Persistent);
-                this.damageInstances = new NativeParallelMultiHashMap<Entity, int>((int)(EntityCount * 0.75f), Allocator.Persistent); // Capacity < count so it'll overflow
+                this.damageInstances = new NativeParallelMultiHashMapFallback<Entity, int>((int)(EntityCount * 0.75f), Allocator.Persistent); // Capacity < count so it'll overflow
                 this.random = new ThreadRandom(1234, Allocator.Persistent);
             }
 
@@ -66,24 +66,22 @@ namespace BovineLabs.Core.Tests
             [BurstCompile]
             public void OnUpdate(ref SystemState state)
             {
-                var fallback = this.damageInstances.WithFallback(state.WorldUpdateAllocator);
-
                 state.Dependency = new WriteDamageJob
                     {
                         Random = this.random,
                         Entities = this.entities,
-                        DamageInstances = fallback.AsWriter(),
+                        DamageInstances = this.damageInstances.AsWriter(),
                     }
                     .ScheduleParallel(state.Dependency);
 
-                state.Dependency = fallback.ApplyAndDispose(state.Dependency);
+                state.Dependency = this.damageInstances.Apply(state.Dependency, out var reader);
 
                 state.Dependency = new ReadDamageJob
                     {
-                        DamageInstances = this.damageInstances,
+                        DamageInstances = reader,
                         DamageBuffers = SystemAPI.GetBufferLookup<DamageBuffer>(),
                     }
-                    .ScheduleParallel(this.damageInstances, 128, state.Dependency);
+                    .ScheduleParallel(reader, 128, state.Dependency);
             }
         }
 
@@ -96,7 +94,7 @@ namespace BovineLabs.Core.Tests
             [ReadOnly]
             public NativeArray<Entity> Entities;
 
-            public NativeParallelMultiHashMapFallback<Entity, int>.Writer DamageInstances;
+            public NativeParallelMultiHashMapFallback<Entity, int>.ParallelWriter DamageInstances;
 
             private void Execute()
             {
@@ -110,7 +108,7 @@ namespace BovineLabs.Core.Tests
         private struct ReadDamageJob : IJobParallelHashMapDefer
         {
             [ReadOnly]
-            public NativeParallelMultiHashMap<Entity, int> DamageInstances;
+            public NativeParallelMultiHashMap<Entity, int>.ReadOnly DamageInstances;
 
             [NativeDisableParallelForRestriction]
             public BufferLookup<DamageBuffer> DamageBuffers;

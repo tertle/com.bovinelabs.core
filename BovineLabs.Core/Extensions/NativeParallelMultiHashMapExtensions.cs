@@ -20,6 +20,13 @@ namespace BovineLabs.Core.Extensions
             return hashMap.m_Writer.m_Buffer->ReserveParallel(length);
         }
 
+        public static bool TryReserve<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap, int length, out int oldLength)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            return hashMap.m_Writer.m_Buffer->TryReserveParallel(length, out oldLength);
+        }
+
         public static UnsafeParallelHashMapBucketData GetUnsafeBucketData<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged

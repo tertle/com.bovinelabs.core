@@ -1,6 +1,12 @@
 # Changelog
-## [1.2.16] - 2024-06-08
+## [1.2.16] - 2024-06-11
 ### Added
+* IJobChunkWorkerBeginEnd
+* ContainsKey to DynamicPerfectHashMap
+
+### Fixed
+* A safety check in Timers
+
 ### Changed
 ### Fixed
 
