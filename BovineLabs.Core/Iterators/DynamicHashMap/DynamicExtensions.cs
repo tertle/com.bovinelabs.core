@@ -153,7 +153,7 @@ namespace BovineLabs.Core.Iterators
         public static DynamicPerfectHashMap<TKey, TValue> AsPerfectHashMap<TBuffer, TKey, TValue>(this DynamicBuffer<TBuffer> buffer)
             where TBuffer : unmanaged, IDynamicPerfectHashMap<TKey, TValue>
             where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
+            where TValue : unmanaged, IEquatable<TValue>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             Assert.AreEqual(1, sizeof(TBuffer));
@@ -189,7 +189,7 @@ namespace BovineLabs.Core.Iterators
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            CheckSize<DynamicHashMapHelper<TKey>>(buffer);
+            CheckSize<DynamicPerfectHashMapHelper<TKey, TValue>>(buffer);
             return (DynamicPerfectHashMapHelper<TKey, TValue>*)buffer.GetPtr();
         }
 

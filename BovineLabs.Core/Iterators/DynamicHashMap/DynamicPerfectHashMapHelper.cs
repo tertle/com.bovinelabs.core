@@ -50,10 +50,10 @@ namespace BovineLabs.Core.Iterators
             var dataKeys = data->Keys;
             var dataValues = data->Values;
 
-            foreach(var kvp in hashMap)
+            foreach (var kvp in hashMap)
             {
                 var index = IndexFor(kvp.Key, data->Size);
-                dataKeys[index]   = kvp.Key;
+                dataKeys[index] = kvp.Key;
                 dataValues[index] = kvp.Value;
             }
         }
@@ -65,10 +65,10 @@ namespace BovineLabs.Core.Iterators
             var dataKeys = data->Keys;
             var dataValues = data->Values;
 
-            foreach(var kvp in hashMap)
+            foreach (var kvp in hashMap)
             {
                 var index = IndexFor(kvp.Key, data->Size);
-                dataKeys[index]   = kvp.Key;
+                dataKeys[index] = kvp.Key;
                 dataValues[index] = kvp.Value;
             }
         }
@@ -117,8 +117,8 @@ namespace BovineLabs.Core.Iterators
             return key.GetHashCode() & (size - 1);
         }
 
-        private static int FindSize(NativeArray<TKey> keys, NativeHashSet<int> unique) {
-
+        private static int FindSize(NativeArray<TKey> keys, NativeHashSet<int> unique)
+        {
             // Find a power of 2 capacity greater than map.size().
             int size = 1; // TODO can this start higher?
 

@@ -86,7 +86,7 @@ namespace BovineLabs.Core.Iterators
 
         /// <summary> Removes all key-value pairs. </summary>
         /// <remarks> Does not change the capacity. </remarks>
-        public void Clear()
+        public readonly void Clear()
         {
             this.buffer.CheckWriteAccess();
             this.RefCheck();
@@ -113,7 +113,7 @@ namespace BovineLabs.Core.Iterators
         /// </summary>
         /// <param name="key">The key to remove.</param>
         /// <returns>The number of elements removed. </returns>
-        public int Remove(TKey key)
+        public readonly int Remove(TKey key)
         {
             this.buffer.CheckWriteAccess();
             this.RefCheck();
@@ -124,14 +124,14 @@ namespace BovineLabs.Core.Iterators
         /// <param name="key">The key to look up.</param>
         /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
         /// <returns>True if the key was present.</returns>*/
-        public bool TryGetFirstValue(TKey key, out TValue item, out HashMapIterator<TKey> it)
+        public readonly bool TryGetFirstValue(TKey key, out TValue item, out HashMapIterator<TKey> it)
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
             return this.helper->TryGetFirstValue(key, out item, out it);
         }
 
-        public bool TryGetNextValue(out TValue item, ref HashMapIterator<TKey> it)
+        public readonly bool TryGetNextValue(out TValue item, ref HashMapIterator<TKey> it)
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
@@ -143,7 +143,7 @@ namespace BovineLabs.Core.Iterators
         /// </summary>
         /// <param name="key">The key to look up.</param>
         /// <returns>True if the key was present.</returns>
-        public bool ContainsKey(TKey key)
+        public readonly bool ContainsKey(TKey key)
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
@@ -153,10 +153,11 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Returns true if a given key and value combination is present in this hash map.
         /// </summary>
-        /// <param name="key">The key to look up.</param>
-        /// <param name="value">The value to look up.</param>
+        /// <param name="key">The key to look up. </param>
+        /// <param name="value">The value to look up. </param>
+        /// <typeparam name="T"> Type type of the value, should match <see cref="TValue"/> it just has an extra IEquatable constraint. </typeparam>
         /// <returns>True if the key and value combination was present.</returns>
-        public bool Contains<T>(TKey key, T value)
+        public readonly bool Contains<T>(TKey key, T value)
             where T : unmanaged, IEquatable<TValue>
         {
             this.buffer.CheckReadAccess();
@@ -173,7 +174,7 @@ namespace BovineLabs.Core.Iterators
             return false;
         }
 
-        public int CountValuesForKey(TKey key)
+        public readonly int CountValuesForKey(TKey key)
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
@@ -213,7 +214,7 @@ namespace BovineLabs.Core.Iterators
         /// <summary> Returns an array with a copy of all this hash map's keys (in no particular order). </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
-        public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+        public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
@@ -223,7 +224,7 @@ namespace BovineLabs.Core.Iterators
         /// <summary> Returns an array with a copy of all this hash map's values (in no particular order). </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
-        public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
+        public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
@@ -234,14 +235,14 @@ namespace BovineLabs.Core.Iterators
         /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
-        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
+        public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
             return this.helper->GetKeyValueArrays<TValue>(allocator);
         }
 
-        public DynamicHashMapKeyEnumerator<TKey, TValue> GetValuesForKey(TKey key)
+        public readonly DynamicHashMapKeyEnumerator<TKey, TValue> GetValuesForKey(TKey key)
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
@@ -252,7 +253,7 @@ namespace BovineLabs.Core.Iterators
         /// Returns an enumerator over the key-value pairs of this hash map.
         /// </summary>
         /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
-        public DynamicHashMapEnumerator<TKey, TValue> GetEnumerator()
+        public readonly DynamicHashMapEnumerator<TKey, TValue> GetEnumerator()
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();

@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Model
         {
             Assert.AreEqual(UnsafeUtility.SizeOf<bool>(), UnsafeUtility.SizeOf<TOn>());
             Assert.AreEqual(UnsafeUtility.SizeOf<float>(), UnsafeUtility.SizeOf<TRemaining>());
-            Assert.AreEqual(UnsafeUtility.SizeOf<float>(), UnsafeUtility.SizeOf<TRemaining>());
+            Assert.AreEqual(UnsafeUtility.SizeOf<float>(), UnsafeUtility.SizeOf<TDuration>());
 
             this.onHandle = state.GetComponentTypeHandle<TOn>();
             this.remainingHandle = state.GetComponentTypeHandle<TRemaining>();
