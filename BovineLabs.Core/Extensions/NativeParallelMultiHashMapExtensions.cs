@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Extensions
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
+    using Unity.Jobs.LowLevel.Unsafe;
 
     /// <summary> Extensions for <see cref="NativeParallelMultiHashMap{TKey,TValue}" />. </summary>
     public static unsafe class NativeParallelMultiHashMapExtensions
@@ -313,7 +314,7 @@ namespace BovineLabs.Core.Extensions
         /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
         /// <param name="hashMap"> The hashmap to clear and add to. </param>
         /// <param name="key"> The key to use. </param>
-        /// <param name="value"> Pointer to the values. </param>
+        /// <param name="values"> Pointer to the values. </param>
         /// <param name="length"> The length of the values. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
@@ -365,9 +366,8 @@ namespace BovineLabs.Core.Extensions
         /// </summary>
         /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
         /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="keys"> Collection of keys </param>
+        /// <param name="keys"> Collection of keys. </param>
         /// <param name="value"> The single value. </param>
-        /// <param name="length"> The length of the values. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>(
@@ -550,6 +550,109 @@ namespace BovineLabs.Core.Extensions
             for (var idx = 0; idx < length; idx++)
             {
                 var bucket = keys[idx].GetHashCode() & data.bucketCapacityMask;
+                nextPtrs[idx] = buckets[bucket];
+                buckets[bucket] = idx;
+            }
+        }
+
+        public static void Add<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, TKey key, TValue item, int hash)
+                    where TKey : unmanaged, IEquatable<TKey>
+                    where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+#endif
+            UnsafeParallelHashMapData* data = hashMap.m_MultiHashMapData.m_Buffer;
+
+            if (!UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(data, key, out _, out _))
+            {
+                // Allocate an entry from the free list
+                int idx;
+                int* nextPtrs;
+
+                if (data->allocatedIndexLength >= data->keyCapacity && data->firstFreeTLS[0] < 0)
+                {
+                    int maxThreadCount = JobsUtility.ThreadIndexCount;
+                    for (int tls = 1; tls < maxThreadCount; ++tls)
+                    {
+                        if (data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] >= 0)
+                        {
+                            idx = data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine];
+                            nextPtrs = (int*)data->next;
+                            data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] = nextPtrs[idx];
+                            nextPtrs[idx] = -1;
+                            data->firstFreeTLS[0] = idx;
+                            break;
+                        }
+                    }
+
+                    if (data->firstFreeTLS[0] < 0)
+                    {
+                        int newCap = UnsafeParallelHashMapData.GrowCapacity(data->keyCapacity);
+                        UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, newCap, UnsafeParallelHashMapData.GetBucketSize(newCap), hashMap.m_MultiHashMapData.m_AllocatorLabel);
+                    }
+                }
+
+                idx = data->firstFreeTLS[0];
+
+                if (idx >= 0)
+                {
+                    data->firstFreeTLS[0] = ((int*)data->next)[idx];
+                }
+                else
+                {
+                    idx = data->allocatedIndexLength++;
+                }
+
+                CheckIndexOutOfBounds(data, idx);
+
+                // Write the new value to the entry
+                UnsafeUtility.WriteArrayElement(data->keys, idx, key);
+                UnsafeUtility.WriteArrayElement(data->values, idx, item);
+
+                int bucket = hash & data->bucketCapacityMask;
+                // Add the index to the hash-map
+                int* buckets = (int*)data->buckets;
+                nextPtrs = (int*)data->next;
+                nextPtrs[idx] = buckets[bucket];
+                buckets[bucket] = idx;
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private static void CheckIndexOutOfBounds(UnsafeParallelHashMapData* data, int idx)
+        {
+            if (idx < 0 || idx >= data->keyCapacity)
+            {
+                throw new InvalidOperationException("Internal HashMap error");
+            }
+        }
+
+
+        /// <summary>
+        /// Recalculates buckets with hashes already temp cached in the next array
+        /// </summary>
+        /// <param name="hashMap"></param>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        public static void RecalculateBucketsCached<TKey, TValue>(
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+#endif
+            var length = hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength;
+
+            var data = hashMap.GetUnsafeBucketData();
+            var buckets = (int*)data.buckets;
+            var nextPtrs = (int*)data.next;
+
+            for (var idx = 0; idx < length; idx++)
+            {
+                var bucket = nextPtrs[idx] & data.bucketCapacityMask;
                 nextPtrs[idx] = buckets[bucket];
                 buckets[bucket] = idx;
             }

@@ -1,8 +1,10 @@
 # Changelog
-## [1.2.16] - 2024-06-11
+## [1.2.16] - 2024-06-13
 ### Added
 * IJobChunkWorkerBeginEnd
 * ContainsKey to DynamicPerfectHashMap
+* Added OnWorkerBegin, OnWorkerEnd, OnBucketEnd to IJobParallelHashMapDefer
+* NativeParallelMultiHashMapFallback now supports hash overrides
 
 ### Fixed
 * A safety check in Timers
