@@ -13,8 +13,6 @@ namespace BovineLabs.Core.Collections
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs;
-    using Unity.Jobs.LowLevel.Unsafe;
-    using Unity.Mathematics;
 
     public unsafe struct NativeParallelMultiHashMapFallback<TKey, TValue> : IDisposable
         where TKey : unmanaged, IEquatable<TKey>
