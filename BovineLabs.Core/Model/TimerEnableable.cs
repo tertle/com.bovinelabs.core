@@ -28,7 +28,7 @@ namespace BovineLabs.Core.Model
         public void OnCreate(ref SystemState state)
         {
             Check.Assume(UnsafeUtility.SizeOf<float>() == UnsafeUtility.SizeOf<TRemaining>());
-            Check.Assume(UnsafeUtility.SizeOf<float>() == UnsafeUtility.SizeOf<TRemaining>());
+            Check.Assume(UnsafeUtility.SizeOf<float>() == UnsafeUtility.SizeOf<TDuration>());
 
             this.onHandle = state.GetComponentTypeHandle<TOn>();
             this.remainingHandle = state.GetComponentTypeHandle<TRemaining>();

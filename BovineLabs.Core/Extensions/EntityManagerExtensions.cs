@@ -253,6 +253,13 @@ namespace BovineLabs.Core.Extensions
             return query.GetSingletonBuffer<T>(isReadOnly);
         }
 
+        public static DynamicBuffer<T> GetSingletonBufferNoSync<T>(this EntityManager em, bool isReadOnly = false)
+            where T : unmanaged, IBufferElementData
+        {
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
+            return query.GetSingletonBufferNoSync<T>(isReadOnly);
+        }
+
         public static bool TryGetSingletonBuffer<T>(this EntityManager em, out DynamicBuffer<T> buffer, bool isReadOnly = false)
             where T : unmanaged, IBufferElementData
         {

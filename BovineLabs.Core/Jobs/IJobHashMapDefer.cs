@@ -158,21 +158,14 @@ namespace BovineLabs.Core.Jobs
             internal T JobData;
 
             private delegate void ExecuteJobFunction(
-                ref JobHashMapVisitKeyValueProducer<T> producer,
-                IntPtr additionalPtr,
-                IntPtr bufferRangePatchData,
-                ref JobRanges ranges,
-                int jobIndex);
+                ref JobHashMapVisitKeyValueProducer<T> producer, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex);
 
             [BurstDiscard]
             internal static void Initialize()
             {
                 if (ReflectionData.Data == IntPtr.Zero)
                 {
-                    ReflectionData.Data = JobsUtility.CreateJobReflectionData(
-                        typeof(JobHashMapVisitKeyValueProducer<T>),
-                        typeof(T),
-                        (ExecuteJobFunction)Execute);
+                    ReflectionData.Data = JobsUtility.CreateJobReflectionData(typeof(JobHashMapVisitKeyValueProducer<T>), typeof(T), (ExecuteJobFunction)Execute);
                 }
             }
 
@@ -182,13 +175,8 @@ namespace BovineLabs.Core.Jobs
             /// <param name="bufferRangePatchData"> BufferRangePatchData. </param>
             /// <param name="ranges"> The job range. </param>
             /// <param name="jobIndex"> The job index. </param>
-            [SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Required by burst.")]
             internal static void Execute(
-                ref JobHashMapVisitKeyValueProducer<T> fullData,
-                IntPtr additionalPtr,
-                IntPtr bufferRangePatchData,
-                ref JobRanges ranges,
-                int jobIndex)
+                ref JobHashMapVisitKeyValueProducer<T> fullData, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
             {
                 while (true)
                 {

@@ -22,7 +22,19 @@ namespace BovineLabs.Core.Jobs
     [JobProducerType(typeof(JobParallelHashMapDefer.JobParallelHashMapVisitKeyValueProducer<>))]
     public interface IJobParallelHashMapDefer
     {
+        void OnWorkerBegin()
+        {
+        }
+
+        void OnWorkerEnd()
+        {
+        }
+
         void ExecuteNext(int entryIndex, int jobIndex);
+
+        void OnBucketEnd()
+        {
+        }
     }
 
     public static class JobParallelHashMapDefer
@@ -254,14 +266,14 @@ namespace BovineLabs.Core.Jobs
             }
 
             /// <summary> Executes the job. </summary>
-            /// <param name="fullData"> The job data. </param>
+            /// <param name="jobWrapper"> The job data. </param>
             /// <param name="additionalPtr"> AdditionalPtr. </param>
             /// <param name="bufferRangePatchData"> BufferRangePatchData. </param>
             /// <param name="ranges"> The job range. </param>
             /// <param name="jobIndex"> The job index. </param>
             [SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Required by burst.")]
             internal static void Execute(
-                ref JobParallelHashMapVisitKeyValueProducer<T> fullData,
+                ref JobParallelHashMapVisitKeyValueProducer<T> jobWrapper,
                 IntPtr additionalPtr,
                 IntPtr bufferRangePatchData,
                 ref JobRanges ranges,
@@ -273,32 +285,52 @@ namespace BovineLabs.Core.Jobs
                     return;
                 }
 
+                var executed = false;
+
                 while (true)
                 {
                     if (!JobsUtility.GetWorkStealingRange(ref ranges, jobIndex, out var begin, out var end))
                     {
-                        return;
+                        break;
                     }
 
-                    // We need bucket capacity but the parallel version stories it as the mask so we need to +1 for the last bucket
-                    if (Hint.Unlikely(end == fullData.HashMap->bucketCapacityMask))
+                    if (!executed)
+                    {
+                        executed = true;
+                        jobWrapper.JobData.OnWorkerBegin();
+                    }
+
+                    // We need bucket capacity but the parallel version stores it as the mask so we need to +1 for the last bucket
+                    if (Hint.Unlikely(end == jobWrapper.HashMap->bucketCapacityMask))
                     {
                         end++;
                     }
 
-                    var buckets = (int*)fullData.HashMap->buckets;
-                    var nextPtrs = (int*)fullData.HashMap->next;
+                    var buckets = (int*)jobWrapper.HashMap->buckets;
+                    var nextPtrs = (int*)jobWrapper.HashMap->next;
 
                     for (var i = begin; i < end; i++)
                     {
                         var entryIndex = buckets[i];
+                        bool anyValid = false;
 
                         while (entryIndex != -1)
                         {
-                            fullData.JobData.ExecuteNext(entryIndex, jobIndex);
+                            anyValid = true;
+                            jobWrapper.JobData.ExecuteNext(entryIndex, jobIndex);
                             entryIndex = nextPtrs[entryIndex];
                         }
+
+                        if (anyValid)
+                        {
+                            jobWrapper.JobData.OnBucketEnd();
+                        }
                     }
+                }
+
+                if (executed)
+                {
+                    jobWrapper.JobData.OnWorkerEnd();
                 }
             }
         }

@@ -28,7 +28,7 @@ namespace BovineLabs.Core.LifeCycle
         }
 
         [BurstCompile]
-        private unsafe struct MarkInitializedJob : IJobChunk
+        private struct MarkInitializedJob : IJobChunk
         {
             public ComponentTypeHandle<InitializeEntity> InitializeEntityHandle;
             public ComponentTypeHandle<InitializeSubSceneEntity> InitializeSubSceneEntityHandle;
@@ -37,17 +37,11 @@ namespace BovineLabs.Core.LifeCycle
             {
                 if (chunk.Has(ref this.InitializeEntityHandle))
                 {
-                    ref var initialized = ref chunk.GetRequiredEnabledBitsRW(ref this.InitializeEntityHandle, out var ptrChunkDisabledCount);
-                    initialized.ULong0 = 0;
-                    initialized.ULong1 = 0;
-                    *ptrChunkDisabledCount = chunk.Count;
+                    chunk.SetComponentEnabledForAll(ref this.InitializeEntityHandle, false);
                 }
                 else
                 {
-                    ref var initialized = ref chunk.GetRequiredEnabledBitsRW(ref this.InitializeSubSceneEntityHandle, out var ptrChunkDisabledCount);
-                    initialized.ULong0 = 0;
-                    initialized.ULong1 = 0;
-                    *ptrChunkDisabledCount = chunk.Count;
+                    chunk.SetComponentEnabledForAll(ref this.InitializeSubSceneEntityHandle, false);
                 }
             }
         }

@@ -11,7 +11,6 @@ namespace BovineLabs.Core.Editor.Settings
     using System.Reflection;
     using BovineLabs.Core.Authoring.Settings;
     using BovineLabs.Core.Editor.Helpers;
-    using BovineLabs.Core.Keys;
     using BovineLabs.Core.Settings;
     using UnityEditor;
     using UnityEngine;
@@ -34,18 +33,18 @@ namespace BovineLabs.Core.Editor.Settings
         }
 
         /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
-        /// <typeparam name="T"> The type. </typeparam>
+        /// <param name="type"> The type. </param>
         /// <returns> The settings instance. </returns>
         /// <exception cref="Exception"> Thrown if more than 1 instance found in project. </exception>
         public static ISettings GetSettings(Type type)
         {
-            if (CachedSettings.TryGetValue(type, out var cached))
+            if (CachedSettings.TryGetValue(type, out var cached) && cached != null)
             {
                 return cached;
             }
 
             var settings = GetOrCreateSettings(type);
-            CachedSettings.Add(type, settings);
+            CachedSettings[type] = settings;
             return settings;
         }
 

@@ -14,12 +14,16 @@ namespace BovineLabs.Core.UI
 
         public BindableButton()
         {
-            this.clicked += () => this.wasClicked = true;
+            this.clicked += () =>
+            {
+                this.wasClicked = true;
+                this.NotifyPropertyChanged(nameof(this.wasClicked));
+            };
         }
 
         [UxmlAttribute]
         [CreateProperty]
-        public bool wasClicked
+        private bool wasClicked
         {
             get
             {
@@ -27,15 +31,7 @@ namespace BovineLabs.Core.UI
                 this.wasClickedField = false;
                 return value;
             }
-
-            set
-            {
-                if (!this.wasClickedField)
-                {
-                    this.wasClickedField = value;
-                    this.NotifyPropertyChanged(nameof(this.wasClicked));
-                }
-            }
+            set => this.wasClickedField = value;
         }
     }
 }

@@ -66,6 +66,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         {
             CheckAutoRef(asset, autoRefMap);
             CheckAutoID(asset, processors);
+            AssetDatabase.SaveAssetIfDirty(asset);
         }
 
         private static void CheckAutoRef(Object asset, Dictionary<Type, AutoRefAttribute> autoRefMap)
@@ -205,6 +206,8 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                     this.map[asset.ID] = count - 1; // update the old ID
                     asset.ID = newId;
                     this.map[newId] = 1;
+
+                    EditorUtility.SetDirty(obj);
                 }
             }
 
@@ -259,6 +262,8 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                     this.map[asset.ID] = count - 1; // update the old ID
                     asset.ID = newId;
                     this.map[newId] = 1;
+
+                    EditorUtility.SetDirty(obj);
                 }
             }
 

@@ -14,7 +14,7 @@ namespace BovineLabs.Core.Authoring.Settings
     /// <summary> Utility for setting up and getting settings. </summary>
     public static class AuthoringSettingsUtility
     {
-        private static Dictionary<Type, ISettings> cachedSettings = new();
+        private static readonly Dictionary<Type, ISettings> CachedSettings = new();
 
         /// <summary> Gets a settings file. </summary>
         /// <typeparam name="T"> The type. </typeparam>
@@ -25,13 +25,13 @@ namespace BovineLabs.Core.Authoring.Settings
         {
             var type = typeof(T);
 
-            if (cachedSettings.TryGetValue(type, out var cached))
+            if (CachedSettings.TryGetValue(type, out var cached))
             {
                 return (T)cached;
             }
 
             var settings = GetSettings<T>(type);
-            cachedSettings.Add(type, settings);
+            CachedSettings.Add(type, settings);
             return settings;
         }
 

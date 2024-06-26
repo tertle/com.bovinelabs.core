@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Iterators
     [DebuggerTypeProxy(typeof(DynamicPerfectHashMapDebuggerTypeProxy<,>))]
     public readonly unsafe struct DynamicPerfectHashMap<TKey, TValue> : IEnumerable<KVPair<TKey, TValue>>
         where TKey : unmanaged, IEquatable<TKey>
-        where TValue : unmanaged
+        where TValue : unmanaged, IEquatable<TValue>
     {
         private readonly DynamicBuffer<byte> buffer;
 
@@ -47,7 +47,6 @@ namespace BovineLabs.Core.Iterators
                 if (Hint.Unlikely(!this.TryGetValue(key, out var value)))
                 {
                     this.ThrowKeyNotPresent(key);
-
                     return default;
                 }
 
@@ -57,7 +56,7 @@ namespace BovineLabs.Core.Iterators
             set
             {
                 this.buffer.CheckWriteAccess();
-                if (!this.TryGetIndex(key, out var index))
+                if (Hint.Unlikely(!this.TryGetIndex(key, out var index)))
                 {
                     this.ThrowKeyNotPresent(key);
                 }
@@ -80,7 +79,19 @@ namespace BovineLabs.Core.Iterators
             }
 
             var value = item = this.helper->Values[index];
-            return UnsafeUtility.MemCmp(&value, &this.helper->NullValue, sizeof(TValue)) != 0;
+            return !value.Equals(this.helper->NullValue);
+        }
+
+        public bool ContainsKey(TKey key)
+        {
+            this.buffer.CheckReadAccess();
+            if (!this.TryGetIndex(key, out var index))
+            {
+                return false;
+            }
+
+            var value = this.helper->Values[index];
+            return !value.Equals(this.helper->NullValue);
         }
 
         public TValue GetNoCheck(TKey key)
@@ -93,18 +104,6 @@ namespace BovineLabs.Core.Iterators
             }
 
             return this.helper->Values[index];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryGetIndex(TKey key, out int index)
-        {
-            index = this.IndexFor(key);
-            return index >= 0 && index < this.helper->Size;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int IndexFor(TKey key) {
-            return key.GetHashCode() & (this.helper->Size - 1);
         }
 
         /// <summary>
@@ -125,6 +124,19 @@ namespace BovineLabs.Core.Iterators
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryGetIndex(TKey key, out int index)
+        {
+            index = this.IndexFor(key);
+            return index >= 0 && index < this.helper->Size;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int IndexFor(TKey key)
+        {
+            return key.GetHashCode() & (this.helper->Size - 1);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -152,7 +164,7 @@ namespace BovineLabs.Core.Iterators
 
     internal sealed unsafe class DynamicPerfectHashMapDebuggerTypeProxy<TKey, TValue>
         where TKey : unmanaged, IEquatable<TKey>
-        where TValue : unmanaged
+        where TValue : unmanaged, IEquatable<TValue>
     {
         private readonly DynamicPerfectHashMapHelper<TKey, TValue>* helper;
 

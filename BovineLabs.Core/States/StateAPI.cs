@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.States
 {
+    using BovineLabs.Core.Assertions;
     using BovineLabs.Core.Keys;
     using Unity.Collections;
     using Unity.Entities;
@@ -22,6 +23,8 @@ namespace BovineLabs.Core.States
             where TState : unmanaged, IComponentData
             where TInstance : unmanaged, IComponentData
         {
+            Check.Assume(!systemState.EntityManager.HasComponent<StateInstance>(systemState.SystemHandle), "Trying to register more than 1 state to a system.");
+
             if (queryDependency)
             {
                 var query = new EntityQueryBuilder(Allocator.Temp).WithAll<TInstance>().Build(ref systemState);

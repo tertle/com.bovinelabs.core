@@ -1,7 +1,7 @@
 # BovineLabs Core
 BovineLabs Core is a library that provides numerous extensions, new containers, and tools for building games with DOTS (Data-Oriented Technology Stack).
 
-For support and discussions, join Discord: https://discord.gg/RTsw6Cxvw3
+For support and discussions, join [Discord](https://discord.gg/RTsw6Cxvw3).
 
 ## Installation
 

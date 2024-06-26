@@ -6,9 +6,27 @@ namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
+    using Unity.Assertions;
     using Unity.Burst.CompilerServices;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+
+    internal unsafe struct ComponentLookupInternal
+    {
+        [NativeDisableUnsafePtrRestriction]
+        public readonly EntityDataAccess* m_Access;
+
+        public LookupCache m_Cache;
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        public AtomicSafetyHandle m_Safety;
+#endif
+        public readonly TypeIndex m_TypeIndex;
+        public uint m_GlobalSystemVersion;
+        public readonly byte m_IsZeroSized; // cache of whether T is zero-sized
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        public readonly byte m_IsReadOnly;
+#endif
+    }
 
     public static unsafe class ComponentLookupExtensions
     {
@@ -95,6 +113,60 @@ namespace BovineLabs.Core.Extensions
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.ListIndex, lookup.GlobalSystemVersion);
         }
 
+        public static bool TryGetComponent<T>(ref this ComponentLookup<T> lookup, ref EntityCache cache, out T componentData)
+            where T : unmanaged, IComponentData
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(lookup.m_Safety);
+#endif
+            ref var lookupInternal = ref UnsafeUtility.As<ComponentLookup<T>, ComponentLookupInternal>(ref lookup);
+
+            if (Hint.Unlikely(!cache.Exists))
+            {
+                componentData = default;
+                return false;
+            }
+
+            if (Hint.Unlikely(lookupInternal.m_IsZeroSized != 0))
+            {
+                componentData = default;
+                return cache.HasComponent(ref lookupInternal.m_Cache, lookupInternal.m_TypeIndex);
+            }
+
+            void* ptr = cache.GetOptionalComponentDataWithTypeRO(lookupInternal.m_TypeIndex, ref lookupInternal.m_Cache);
+            if (ptr == null)
+            {
+                componentData = default;
+                return false;
+            }
+
+            UnsafeUtility.CopyPtrToStructure(ptr, out componentData);
+            return true;
+        }
+
+        public static T GetComponentRequired<T>(ref this ComponentLookup<T> lookup, ref EntityCache cache)
+            where T : unmanaged, IComponentData
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(lookup.m_Safety);
+#endif
+            ref var lookupInternal = ref UnsafeUtility.As<ComponentLookup<T>, ComponentLookupInternal>(ref lookup);
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            Assert.IsTrue(cache.Exists);
+            Assert.IsTrue(cache.HasComponent(ref lookupInternal.m_Cache, lookupInternal.m_TypeIndex));
+#endif
+
+            if (Hint.Unlikely(lookupInternal.m_IsZeroSized != 0))
+            {
+                return default;
+            }
+
+            void* ptr = cache.GetComponentDataWithTypeRO(lookupInternal.m_TypeIndex, ref lookupInternal.m_Cache);
+            UnsafeUtility.CopyPtrToStructure(ptr, out T componentData);
+            return componentData;
+        }
+
         private static SafeBitRef MakeSafeBitRef<T>(in ComponentLookup<T> lookup, ulong* ptr, int offsetInBits)
             where T : unmanaged, IComponentData, IEnableableComponent
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -102,23 +174,6 @@ namespace BovineLabs.Core.Extensions
 #else
             => new(ptr, offsetInBits);
 #endif
-
-        private struct ComponentLookupInternal
-        {
-            [NativeDisableUnsafePtrRestriction]
-            public readonly EntityDataAccess* m_Access;
-
-            public LookupCache m_Cache;
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            public AtomicSafetyHandle m_Safety;
-#endif
-            public readonly TypeIndex m_TypeIndex;
-            public uint m_GlobalSystemVersion;
-            public readonly byte m_IsZeroSized; // cache of whether T is zero-sized
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            public readonly byte m_IsReadOnly;
-#endif
-        }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void AssertExistsNotZeroSize(ref ComponentLookupInternal lookup)

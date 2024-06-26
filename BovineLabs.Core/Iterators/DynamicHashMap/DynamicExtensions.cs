@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Iterators
 {
     using System;
     using System.Diagnostics;
+    using System.Runtime.CompilerServices;
     using BovineLabs.Core.Extensions;
     using Unity.Assertions;
     using Unity.Collections;
@@ -16,6 +17,7 @@ namespace BovineLabs.Core.Iterators
     {
         private const int DefaultMinGrowth = 256;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicBuffer<TBuffer> InitializeHashMap<TBuffer, TKey, TValue>(
             this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
             where TBuffer : unmanaged, IDynamicHashMap<TKey, TValue>
@@ -31,6 +33,7 @@ namespace BovineLabs.Core.Iterators
             return buffer;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicBuffer<TBuffer> InitializeMultiHashMap<TBuffer, TKey, TValue>(
             this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
             where TBuffer : unmanaged, IDynamicMultiHashMap<TKey, TValue>
@@ -46,6 +49,7 @@ namespace BovineLabs.Core.Iterators
             return buffer;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicBuffer<TBuffer> InitializeHashSet<TBuffer, TKey>(this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
             where TBuffer : unmanaged, IDynamicHashSet<TKey>
             where TKey : unmanaged, IEquatable<TKey>
@@ -59,6 +63,7 @@ namespace BovineLabs.Core.Iterators
             return buffer;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicBuffer<TBuffer> InitializePerfectHashMap<TBuffer, TKey, TValue>(
             this DynamicBuffer<TBuffer> buffer, NativeHashMap<TKey, TValue> map, TValue nullValue)
             where TBuffer : unmanaged, IDynamicPerfectHashMap<TKey, TValue>
@@ -74,6 +79,7 @@ namespace BovineLabs.Core.Iterators
             return buffer;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicBuffer<TBuffer> InitializePerfectHashMap<TBuffer, TKey, TValue>(
             this DynamicBuffer<TBuffer> buffer, DynamicHashMap<TKey, TValue> map, TValue nullValue)
             where TBuffer : unmanaged, IDynamicPerfectHashMap<TKey, TValue>
@@ -89,6 +95,7 @@ namespace BovineLabs.Core.Iterators
             return buffer;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicBuffer<TBuffer> InitializePerfectHashMap<TBuffer, TKey, TValue>(
             this DynamicBuffer<TBuffer> buffer, NativeArray<TKey> keys, NativeArray<TValue> values, TValue nullValue)
             where TBuffer : unmanaged, IDynamicPerfectHashMap<TKey, TValue>
@@ -104,6 +111,7 @@ namespace BovineLabs.Core.Iterators
             return buffer;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicBuffer<TBuffer> InitializeUntypedHashMap<TBuffer, TKey>(
             this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
             where TBuffer : unmanaged, IDynamicUntypedHashMap<TKey>
@@ -118,6 +126,7 @@ namespace BovineLabs.Core.Iterators
             return buffer;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicHashMap<TKey, TValue> AsHashMap<TBuffer, TKey, TValue>(this DynamicBuffer<TBuffer> buffer)
             where TBuffer : unmanaged, IDynamicHashMap<TKey, TValue>
             where TKey : unmanaged, IEquatable<TKey>
@@ -129,6 +138,7 @@ namespace BovineLabs.Core.Iterators
             return new DynamicHashMap<TKey, TValue>(buffer.Reinterpret<byte>());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicMultiHashMap<TKey, TValue> AsMultiHashMap<TBuffer, TKey, TValue>(this DynamicBuffer<TBuffer> buffer)
             where TBuffer : unmanaged, IDynamicMultiHashMap<TKey, TValue>
             where TKey : unmanaged, IEquatable<TKey>
@@ -140,6 +150,7 @@ namespace BovineLabs.Core.Iterators
             return new DynamicMultiHashMap<TKey, TValue>(buffer.Reinterpret<byte>());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicHashSet<T> AsHashSet<TBuffer, T>(this DynamicBuffer<TBuffer> buffer)
             where TBuffer : unmanaged, IDynamicHashSet<T>
             where T : unmanaged, IEquatable<T>
@@ -150,10 +161,11 @@ namespace BovineLabs.Core.Iterators
             return new DynamicHashSet<T>(buffer.Reinterpret<byte>());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicPerfectHashMap<TKey, TValue> AsPerfectHashMap<TBuffer, TKey, TValue>(this DynamicBuffer<TBuffer> buffer)
             where TBuffer : unmanaged, IDynamicPerfectHashMap<TKey, TValue>
             where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
+            where TValue : unmanaged, IEquatable<TValue>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             Assert.AreEqual(1, sizeof(TBuffer));
@@ -161,6 +173,7 @@ namespace BovineLabs.Core.Iterators
             return new DynamicPerfectHashMap<TKey, TValue>(buffer.Reinterpret<byte>());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicUntypedHashMap<TKey> AsUntypedHashMap<TBuffer, TKey>(this DynamicBuffer<TBuffer> buffer)
             where TBuffer : unmanaged, IDynamicUntypedHashMap<TKey>
             where TKey : unmanaged, IEquatable<TKey>
@@ -171,6 +184,7 @@ namespace BovineLabs.Core.Iterators
             return new DynamicUntypedHashMap<TKey>(buffer.Reinterpret<byte>());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static DynamicHashMapHelper<TKey>* AsHelper<TKey>(this DynamicBuffer<byte> buffer)
             where TKey : unmanaged, IEquatable<TKey>
         {
@@ -178,6 +192,7 @@ namespace BovineLabs.Core.Iterators
             return (DynamicHashMapHelper<TKey>*)buffer.GetPtr();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static DynamicUntypedHashMapHelper<TKey>* AsUntypedHelper<TKey>(this DynamicBuffer<byte> buffer)
             where TKey : unmanaged, IEquatable<TKey>
         {
@@ -185,11 +200,12 @@ namespace BovineLabs.Core.Iterators
             return (DynamicUntypedHashMapHelper<TKey>*)buffer.GetPtr();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static DynamicPerfectHashMapHelper<TKey, TValue>* AsHelper<TKey, TValue>(this DynamicBuffer<byte> buffer)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            CheckSize<DynamicHashMapHelper<TKey>>(buffer);
+            CheckSize<DynamicPerfectHashMapHelper<TKey, TValue>>(buffer);
             return (DynamicPerfectHashMapHelper<TKey, TValue>*)buffer.GetPtr();
         }
 

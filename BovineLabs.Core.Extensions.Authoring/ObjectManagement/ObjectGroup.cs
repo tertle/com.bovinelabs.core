@@ -6,13 +6,14 @@
 namespace BovineLabs.Core.Authoring.ObjectManagement
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using BovineLabs.Core.ObjectManagement;
     using UnityEngine;
 
     [AutoRef("ObjectManagementSettings", "objectGroups")]
     [AssetCreator("object.groups", "Assets/Settings/Groups", "Group.asset")]
-    public class ObjectGroup : ScriptableObject, IUID
+    public sealed class ObjectGroup : ScriptableObject, IUID
     {
         [HideInInspector] // So the field is not editable even in debug mode.
         [SerializeField]
@@ -54,6 +55,13 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             var uniqueDefinitions = new HashSet<ObjectDefinition>();
             this.GetAllDefinitionsInternal(uniqueGroups, uniqueDefinitions);
             return uniqueDefinitions;
+        }
+
+        public IEnumerable<ScriptableObject> GetAllDependencies()
+        {
+            var uniqueObjects = new HashSet<ScriptableObject>();
+            this.GetAllDependenciesInternal(uniqueObjects);
+            return uniqueObjects;
         }
 
         private void GetAllDefinitionsInternal(ISet<ObjectGroup> allGroups, ISet<ObjectDefinition> uniqueDefinitions)
@@ -109,6 +117,54 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             foreach (var exclude in excludeUniqueDefinitions)
             {
                 uniqueDefinitions.Remove(exclude);
+            }
+        }
+
+        private void GetAllDependenciesInternal(HashSet<ScriptableObject> dependencies)
+        {
+            foreach (var group in this.groups)
+            {
+                if (group == null)
+                {
+                    continue;
+                }
+
+                // Avoid infinite loops by only processing object groups once
+                if (dependencies.Add(group))
+                {
+                    group.GetAllDependenciesInternal(dependencies);
+                }
+            }
+
+            foreach (var definition in this.definitions)
+            {
+                if (definition != null)
+                {
+                    dependencies.Add(definition);
+                }
+            }
+
+            foreach (var definition in this.excludeDefinitions)
+            {
+                if (definition != null)
+                {
+                    dependencies.Add(definition);
+                }
+            }
+
+            // Get all excludes
+            foreach (var group in this.excludeGroups)
+            {
+                if (group == null)
+                {
+                    continue;
+                }
+
+                // Avoid infinite loops by only processing object groups once
+                if (dependencies.Add(group))
+                {
+                    group.GetAllDependenciesInternal(dependencies);
+                }
             }
         }
     }

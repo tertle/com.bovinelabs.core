@@ -81,11 +81,11 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-        internal DynamicHashMapHelper<T>* Helper => this.helper;
+        internal readonly DynamicHashMapHelper<T>* Helper => this.helper;
 
         /// <summary> Removes all key-value pairs. </summary>
         /// <remarks> Does not change the capacity. </remarks>
-        public void Clear()
+        public readonly void Clear()
         {
             this.buffer.CheckWriteAccess();
             this.RefCheck();
@@ -107,7 +107,7 @@ namespace BovineLabs.Core.Iterators
         /// <summary> Removes a particular value. </summary>
         /// <param name="item">The key to remove.</param>
         /// <returns>True if a key-value pair was removed.</returns>
-        public bool Remove(T item)
+        public readonly bool Remove(T item)
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
@@ -117,7 +117,7 @@ namespace BovineLabs.Core.Iterators
         /// <summary> Returns true if a particular value is present. </summary>
         /// <param name="item">The item to look up.</param>
         /// <returns>True if the value was present.</returns>
-        public bool Contains(T item)
+        public readonly bool Contains(T item)
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
@@ -135,7 +135,7 @@ namespace BovineLabs.Core.Iterators
         /// <summary> Returns an array with a copy of this set's values (in no particular order). </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of the set's values.</returns>
-        public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
+        public readonly NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
@@ -146,7 +146,7 @@ namespace BovineLabs.Core.Iterators
         /// Returns an enumerator over the key-value pairs of this hash map.
         /// </summary>
         /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
-        public DynamicHashSetEnumerator<T> GetEnumerator()
+        public readonly DynamicHashSetEnumerator<T> GetEnumerator()
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
