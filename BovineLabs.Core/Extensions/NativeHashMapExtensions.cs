@@ -10,6 +10,8 @@ namespace BovineLabs.Core.Extensions
     using BovineLabs.Core.Assertions;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
+    using Unity.Jobs.LowLevel.Unsafe;
+    using Unity.Mathematics;
 
     public static unsafe class NativeHashMapExtensions
     {
@@ -95,7 +97,6 @@ namespace BovineLabs.Core.Extensions
         public static bool TryGetIndex<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key, out int index)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
-
         {
             index = hashMap.m_Data->Find(key);
             return index != -1;
@@ -111,7 +112,6 @@ namespace BovineLabs.Core.Extensions
         public static bool TryGetIndex<TKey, TValue>(this NativeHashMap<TKey, TValue>.ReadOnly hashMap, TKey key, out int index)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
-
         {
             index = hashMap.m_Data->Find(key);
             return index != -1;
@@ -131,7 +131,7 @@ namespace BovineLabs.Core.Extensions
             if (hashMapHelper.AllocatedIndex >= hashMapHelper.Capacity && hashMapHelper.FirstFreeIdx < 0)
             {
                 int newCap = hashMapHelper.CalcCapacityCeilPow2(hashMapHelper.Capacity + (1 << hashMapHelper.Log2MinGrowth));
-                hashMapHelper.Resize(newCap);
+                hashMapHelper.ResizeMulti(newCap);
             }
 
             var idx = hashMapHelper.FirstFreeIdx;
@@ -216,6 +216,54 @@ namespace BovineLabs.Core.Extensions
             where TKey : unmanaged, IEquatable<TKey>
         {
             return (int)((uint)key.GetHashCode() & (hashMapHelper.BucketCapacity - 1));
+        }
+
+        private static void ResizeMulti<TKey>(this ref HashMapHelper<TKey> hashMapHelper, int newCapacity)
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+            newCapacity = math.max(newCapacity, hashMapHelper.Count);
+            var newBucketCapacity = math.ceilpow2(HashMapHelper<TKey>.GetBucketSize(newCapacity));
+
+            if (hashMapHelper.Capacity == newCapacity && hashMapHelper.BucketCapacity == newBucketCapacity)
+            {
+                return;
+            }
+
+            hashMapHelper.ResizeExactMulti(newCapacity, newBucketCapacity);
+        }
+
+        private static void ResizeExactMulti<TKey>(this ref HashMapHelper<TKey> hashMapHelper, int newCapacity, int newBucketCapacity)
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+            int totalSize = HashMapHelper<TKey>.CalculateDataSize(newCapacity, newBucketCapacity, hashMapHelper.SizeOfTValue, out var keyOffset,
+                out var nextOffset, out var bucketOffset);
+
+            var oldPtr = hashMapHelper.Ptr;
+            var oldKeys = hashMapHelper.Keys;
+            var oldNext = hashMapHelper.Next;
+            var oldBuckets = hashMapHelper.Buckets;
+            var oldBucketCapacity = hashMapHelper.BucketCapacity;
+
+            hashMapHelper.Ptr = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, hashMapHelper.Allocator);
+            hashMapHelper.Keys = (TKey*)(hashMapHelper.Ptr + keyOffset);
+            hashMapHelper.Next = (int*)(hashMapHelper.Ptr + nextOffset);
+            hashMapHelper.Buckets = (int*)(hashMapHelper.Ptr + bucketOffset);
+            hashMapHelper.Capacity = newCapacity;
+            hashMapHelper.BucketCapacity = newBucketCapacity;
+
+            hashMapHelper.Clear();
+
+            for (int i = 0, num = oldBucketCapacity; i < num; ++i)
+            {
+                for (int idx = oldBuckets[i]; idx != -1; idx = oldNext[idx])
+                {
+                    var newIdx = AddNoFindNoResize(ref hashMapHelper, oldKeys[idx]);
+                    UnsafeUtility.MemCpy(
+                        hashMapHelper.Ptr + (hashMapHelper.SizeOfTValue * newIdx), oldPtr + (hashMapHelper.SizeOfTValue * idx), hashMapHelper.SizeOfTValue);
+                }
+            }
+
+            Memory.Unmanaged.Free(oldPtr, hashMapHelper.Allocator);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
