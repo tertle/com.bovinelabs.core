@@ -7,7 +7,6 @@
 namespace BovineLabs.Core.Collections
 {
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using System.Text.RegularExpressions;
@@ -27,21 +26,19 @@ namespace BovineLabs.Core.Collections
         /// <summary> Gets the capacity of this BitArray. This is the number of bits that are usable. </summary>
         uint Capacity { get; }
 
-        /// <summary> Return `true` if all the bits of this BitArray are set to 0. Returns `false` otherwise. </summary>
+        /// <summary> Gets a value indicating whether all bits are 0. </summary>
         bool AllFalse { get; }
 
-        /// <summary> Return `true` if all the bits of this BitArray are set to 1. Returns `false` otherwise. </summary>
+        /// <summary> Gets a value indicating whether all bits are 1. </summary>
         bool AllTrue { get; }
+
+        /// <summary> Gets the bit array in a human-readable form.This is as a string of 0s and 1s packed by 8 bits. This is useful for debugging. </summary>
+        string HumanizedData { get; }
 
         /// <summary> An indexer that allows access to the bit at a given index. This provides both read and write access. </summary>
         /// <param name="index"> Index of the bit. </param>
         /// <returns> State of the bit at the provided index. </returns>
         bool this[uint index] { get; set; }
-
-        /// <summary>
-        /// Writes the bits in the array in a human-readable form. This is as a string of 0s and 1s packed by 8 bits. This is useful for debugging.
-        /// </summary>
-        string HumanizedData { get; }
 
         /// <summary>
         /// Perform an AND bitwise operation between this BitArray and the one you pass into the function and return the result.
@@ -81,7 +78,7 @@ namespace BovineLabs.Core.Collections
     [DebuggerDisplay("{this.GetType().Name} {HumanizedData}")]
     public struct BitArray8 : IBitArray<BitArray8>
     {
-        public static readonly BitArray8 All = new (byte.MaxValue);
+        public static readonly BitArray8 All = new(byte.MaxValue);
         public static readonly BitArray8 None = default;
 
         [SerializeField]
@@ -113,32 +110,30 @@ namespace BovineLabs.Core.Collections
 
         public byte Data
         {
-            get => this.data;
+            readonly get => this.data;
             set => this.data = value;
         }
 
-        /// <summary> Number of elements in the bit array. </summary>
-        public uint Capacity => 8u;
+        /// <inheritdoc/>
+        public readonly uint Capacity => 8u;
 
-        /// <summary> True if all bits are 0. </summary>
-        public bool AllFalse => this.data == 0u;
+        /// <inheritdoc/>
+        public readonly bool AllFalse => this.data == 0u;
 
-        /// <summary> True if all bits are 1. </summary>
-        public bool AllTrue => this.data == byte.MaxValue;
+        /// <inheritdoc/>
+        public readonly bool AllTrue => this.data == byte.MaxValue;
 
-        /// <summary> Returns the bit array in a human readable form. </summary>
-        public string HumanizedData => string.Format("{0, " + this.Capacity + "}", Convert.ToString(this.data, 2)).Replace(' ', '0');
+        /// <inheritdoc/>
+        public readonly string HumanizedData => $"{Convert.ToString(this.data, 2),8}".Replace(' ', '0');
 
-        /// <summary> Returns the state of the bit at a specific index. </summary>
-        /// <param name="index"> Index of the bit. </param>
-        /// <returns> State of the bit at the provided index. </returns>
+        /// <inheritdoc/>
         public bool this[uint index]
         {
-            get => BitArrayUtilities.Get8(index, this.data);
+            readonly get => BitArrayUtilities.Get8(index, this.data);
             set => BitArrayUtilities.Set8(index, ref this.data, value);
         }
 
-        /// <summary> Bit-wise Not operator </summary>
+        /// <summary> Bit-wise Not operator. </summary>
         /// <param name="a"> Bit array with which to do the operation. </param>
         /// <returns> The resulting bit array. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -147,7 +142,7 @@ namespace BovineLabs.Core.Collections
             return new BitArray8((byte)~a.data);
         }
 
-        /// <summary> Bit-wise Or operator </summary>
+        /// <summary> Bit-wise Or operator. </summary>
         /// <param name="a"> First bit array. </param>
         /// <param name="b"> Second bit array. </param>
         /// <returns> The resulting bit array. </returns>
@@ -157,7 +152,7 @@ namespace BovineLabs.Core.Collections
             return new BitArray8((byte)(a.data | b.data));
         }
 
-        /// <summary> Bit-wise And operator </summary>
+        /// <summary> Bit-wise And operator. </summary>
         /// <param name="a"> First bit array. </param>
         /// <param name="b"> Second bit array. </param>
         /// <returns> The resulting bit array. </returns>
@@ -177,9 +172,7 @@ namespace BovineLabs.Core.Collections
             return a.data == b.data;
         }
 
-        /// <summary>
-        /// Inequality operator.
-        /// </summary>
+        /// <summary> Inequality operator. </summary>
         /// <param name="a"> First bit array. </param>
         /// <param name="b"> Second bit array. </param>
         /// <returns> True if the bit arrays are not equals. </returns>
@@ -189,37 +182,29 @@ namespace BovineLabs.Core.Collections
             return a.data != b.data;
         }
 
-        /// <summary> Bit-wise And </summary>
-        /// <param name="other"> Bit array with which to do the operation. </param>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray8 BitAnd(BitArray8 other)
+        public readonly BitArray8 BitAnd(BitArray8 other)
         {
             return this & other;
         }
 
-        /// <summary> Bit-wise Or </summary>
-        /// <param name="other"> Bit array with which to do the operation. </param>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray8 BitOr(BitArray8 other)
+        public readonly BitArray8 BitOr(BitArray8 other)
         {
             return this | other;
         }
 
-        /// <summary>
-        /// Bit-wise Not
-        /// </summary>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray8 BitNot()
+        public readonly BitArray8 BitNot()
         {
             return ~this;
         }
 
-        /// <summary> Count the number of enabled bits. </summary>
-        /// <returns> Number of bits set to 1 within x. </returns>
-        public int CountBits()
+        /// <inheritdoc/>
+        public readonly int CountBits()
         {
             return math.countbits((uint)this.data);
         }
@@ -229,7 +214,7 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         /// <param name="obj"> Bit array to compare to. </param>
         /// <returns> True if the provided bit array is equal to this.. </returns>
-        public override bool Equals(object? obj)
+        public readonly override bool Equals(object? obj)
         {
             return obj is BitArray8 array8 && (array8.data == this.data);
         }
@@ -238,12 +223,12 @@ namespace BovineLabs.Core.Collections
         /// Get the hashcode of the bit array.
         /// </summary>
         /// <returns> Hashcode of the bit array. </returns>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return 1768953197 + this.data.GetHashCode();
         }
 
-        public bool Equals(BitArray8 other)
+        public readonly bool Equals(BitArray8 other)
         {
             return this.data == other.data;
         }
@@ -286,22 +271,21 @@ namespace BovineLabs.Core.Collections
 
         public ushort Data
         {
-            get => this.data;
+            readonly get => this.data;
             set => this.data = value;
         }
 
-        /// <summary> Number of elements in the bit array. </summary>
-        public uint Capacity => 16u;
+        /// <inheritdoc/>
+        public readonly uint Capacity => 16u;
 
-        /// <summary> True if all bits are 0. </summary>
-        public bool AllFalse => this.data == 0u;
+        /// <inheritdoc/>
+        public readonly bool AllFalse => this.data == 0u;
 
-        /// <summary> True if all bits are 1. </summary>
-        public bool AllTrue => this.data == ushort.MaxValue;
+        /// <inheritdoc/>
+        public readonly bool AllTrue => this.data == ushort.MaxValue;
 
-        /// <summary> Returns the bit array in a human readable form. </summary>
-        public string HumanizedData => Regex
-            .Replace(string.Format("{0, " + this.Capacity + "}", Convert.ToString(this.data, 2)).Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
+        /// <inheritdoc/>
+        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString(this.data, 2),16}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         /// <summary>
         /// Returns the state of the bit at a specific index.
@@ -310,7 +294,7 @@ namespace BovineLabs.Core.Collections
         /// <returns> State of the bit at the provided index. </returns>
         public bool this[uint index]
         {
-            get => BitArrayUtilities.Get16(index, this.data);
+            readonly get => BitArrayUtilities.Get16(index, this.data);
             set => BitArrayUtilities.Set16(index, ref this.data, value);
         }
 
@@ -363,35 +347,29 @@ namespace BovineLabs.Core.Collections
             return a.data != b.data;
         }
 
-        /// <summary> Bit-wise And. </summary>
-        /// <param name="other"> Bit array with which to do the operation. </param>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray16 BitAnd(BitArray16 other)
+        public readonly BitArray16 BitAnd(BitArray16 other)
         {
             return this & other;
         }
 
-        /// <summary> Bit-wise Or. </summary>
-        /// <param name="other"> Bit array with which to do the operation. </param>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray16 BitOr(BitArray16 other)
+        public readonly BitArray16 BitOr(BitArray16 other)
         {
             return this | other;
         }
 
-        /// <summary> Bit-wise Not. </summary>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray16 BitNot()
+        public readonly BitArray16 BitNot()
         {
             return ~this;
         }
 
-        /// <summary> Count the number of enabled bits. </summary>
-        /// <returns> Number of bits set to 1 within x. </returns>
-        public int CountBits()
+        /// <inheritdoc/>
+        public readonly int CountBits()
         {
             return math.countbits((uint)this.data);
         }
@@ -399,19 +377,19 @@ namespace BovineLabs.Core.Collections
         /// <summary> Equality operator. </summary>
         /// <param name="obj"> Bit array to compare to. </param>
         /// <returns> True if the provided bit array is equal to this.. </returns>
-        public override bool Equals(object? obj)
+        public readonly override bool Equals(object? obj)
         {
             return obj is BitArray16 array16 && (array16.data == this.data);
         }
 
         /// <summary> Get the hashcode of the bit array. </summary>
         /// <returns> Hashcode of the bit array. </returns>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return 1768953197 + this.data.GetHashCode();
         }
 
-        public bool Equals(BitArray16 other)
+        public readonly bool Equals(BitArray16 other)
         {
             return this.data == other.data;
         }
@@ -454,22 +432,21 @@ namespace BovineLabs.Core.Collections
 
         public uint Data
         {
-            get => this.data;
+            readonly get => this.data;
             set => this.data = value;
         }
 
-        /// <summary> Number of elements in the bit array. </summary>
-        public uint Capacity => 32u;
+        /// <inheritdoc/>
+        public readonly uint Capacity => 32u;
 
-        /// <summary> True if all bits are 0. </summary>
-        public bool AllFalse => this.data == 0u;
+        /// <inheritdoc/>
+        public readonly bool AllFalse => this.data == 0u;
 
-        /// <summary> True if all bits are 1. </summary>
-        public bool AllTrue => this.data == uint.MaxValue;
+        /// <inheritdoc/>
+        public readonly bool AllTrue => this.data == uint.MaxValue;
 
-        /// <summary> Returns the bit array in a human readable form. </summary>
-        public string HumanizedData =>
-            Regex.Replace(string.Format("{0, " + this.Capacity + "}", Convert.ToString(this.data, 2)).Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
+        /// <inheritdoc/>
+        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString(this.data, 2),32}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         /// <summary>
         /// Returns the state of the bit at a specific index.
@@ -478,7 +455,7 @@ namespace BovineLabs.Core.Collections
         /// <returns> State of the bit at the provided index. </returns>
         public bool this[uint index]
         {
-            get => BitArrayUtilities.Get32(index, this.data);
+            readonly get => BitArrayUtilities.Get32(index, this.data);
             set => BitArrayUtilities.Set32(index, ref this.data, value);
         }
 
@@ -531,35 +508,29 @@ namespace BovineLabs.Core.Collections
             return a.data != b.data;
         }
 
-        /// <summary> Bit-wise And. </summary>
-        /// <param name="other"> Bit array with which to do the operation. </param>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray32 BitAnd(BitArray32 other)
+        public readonly BitArray32 BitAnd(BitArray32 other)
         {
             return this & other;
         }
 
-        /// <summary> Bit-wise Or. </summary>
-        /// <param name="other"> Bit array with which to do the operation. </param>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray32 BitOr(BitArray32 other)
+        public readonly BitArray32 BitOr(BitArray32 other)
         {
             return this | other;
         }
 
-        /// <summary> Bit-wise Not. </summary>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray32 BitNot()
+        public readonly BitArray32 BitNot()
         {
             return ~this;
         }
 
-        /// <summary> Count the number of enabled bits. </summary>
-        /// <returns> Number of bits set to 1 within x. </returns>
-        public int CountBits()
+        /// <inheritdoc/>
+        public readonly int CountBits()
         {
             return math.countbits(this.data);
         }
@@ -567,19 +538,19 @@ namespace BovineLabs.Core.Collections
         /// <summary> Equality operator. </summary>
         /// <param name="obj"> Bit array to compare to. </param>
         /// <returns> True if the provided bit array is equal to this.. </returns>
-        public override bool Equals(object? obj)
+        public readonly override bool Equals(object? obj)
         {
             return obj is BitArray32 array32 && (array32.data == this.data);
         }
 
         /// <summary> Get the hashcode of the bit array. </summary>
         /// <returns> Hashcode of the bit array. </returns>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return 1768953197 + this.data.GetHashCode();
         }
 
-        public bool Equals(BitArray32 other)
+        public readonly bool Equals(BitArray32 other)
         {
             return this.data == other.data;
         }
@@ -631,22 +602,21 @@ namespace BovineLabs.Core.Collections
 
         public ulong Data
         {
-            get => this.data;
+            readonly get => this.data;
             set => this.data = value;
         }
 
-        /// <summary> Number of elements in the bit array. </summary>
-        public uint Capacity => 64u;
+        /// <inheritdoc/>
+        public readonly uint Capacity => 64u;
 
-        /// <summary> True if all bits are 0. </summary>
-        public bool AllFalse => this.data == 0uL;
+        /// <inheritdoc/>
+        public readonly bool AllFalse => this.data == 0uL;
 
-        /// <summary> True if all bits are 1. </summary>
-        public bool AllTrue => this.data == ulong.MaxValue;
+        /// <inheritdoc/>
+        public readonly bool AllTrue => this.data == ulong.MaxValue;
 
-        /// <summary> Returns the bit array in a human readable form. </summary>
-        public string HumanizedData =>
-            Regex.Replace(string.Format("{0, " + this.Capacity + "}", Convert.ToString((long)this.data, 2)).Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
+        /// <inheritdoc/>
+        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString((long)this.data, 2),64}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         /// <summary>
         /// Returns the state of the bit at a specific index.
@@ -655,11 +625,11 @@ namespace BovineLabs.Core.Collections
         /// <returns> State of the bit at the provided index. </returns>
         public bool this[uint index]
         {
-            get => BitArrayUtilities.Get64(index, this.data);
+            readonly get => BitArrayUtilities.Get64(index, this.data);
             set => BitArrayUtilities.Set64(index, ref this.data, value);
         }
 
-        /// <summary> Bit-wise Not operator/ </summary>
+        /// <summary> Bit-wise Not operator. </summary>
         /// <param name="a"> Bit array with which to do the operation. </param>
         /// <returns> The resulting bit array. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -708,35 +678,29 @@ namespace BovineLabs.Core.Collections
             return a.data != b.data;
         }
 
-        /// <summary> Bit-wise And. </summary>
-        /// <param name="other"> Bit array with which to do the operation. </param>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray64 BitAnd(BitArray64 other)
+        public readonly BitArray64 BitAnd(BitArray64 other)
         {
             return this & other;
         }
 
-        /// <summary> Bit-wise Or. </summary>
-        /// <param name="other"> Bit array with which to do the operation. </param>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray64 BitOr(BitArray64 other)
+        public readonly BitArray64 BitOr(BitArray64 other)
         {
             return this | other;
         }
 
-        /// <summary> Bit-wise Not. </summary>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray64 BitNot()
+        public readonly BitArray64 BitNot()
         {
             return ~this;
         }
 
-        /// <summary> Count the number of enabled bits. </summary>
-        /// <returns> Number of bits set to 1 within x. </returns>
-        public int CountBits()
+        /// <inheritdoc/>
+        public readonly int CountBits()
         {
             return math.countbits(this.data);
         }
@@ -744,32 +708,30 @@ namespace BovineLabs.Core.Collections
         /// <summary> Equality operator. </summary>
         /// <param name="obj"> Bit array to compare to. </param>
         /// <returns> True if the provided bit array is equal to this.. </returns>
-        public override bool Equals(object? obj)
+        public readonly override bool Equals(object? obj)
         {
             return obj is BitArray64 array64 && (array64.data == this.data);
         }
 
         /// <summary> Get the hashcode of the bit array. </summary>
         /// <returns> Hashcode of the bit array. </returns>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return 1768953197 + this.data.GetHashCode();
         }
 
-        public bool Equals(BitArray64 other)
+        public readonly bool Equals(BitArray64 other)
         {
             return this.data == other.data;
         }
     }
 
-    /// <summary>
-    /// Bit array of size 128.
-    /// </summary>
+    /// <summary> Bit array of size 128. </summary>
     [Serializable]
     [DebuggerDisplay("{this.GetType().Name} {HumanizedData}")]
     public struct BitArray128 : IBitArray<BitArray128>
     {
-        public static readonly BitArray128 All = new (ulong.MaxValue, ulong.MaxValue);
+        public static readonly BitArray128 All = new(ulong.MaxValue, ulong.MaxValue);
         public static readonly BitArray128 None = default;
 
         [SerializeField]
@@ -824,30 +786,30 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        public ulong Data1 => this.data1;
+        public readonly ulong Data1 => this.data1;
 
-        public ulong Data2 => this.data2;
+        public readonly ulong Data2 => this.data2;
 
-        /// <summary> Number of elements in the bit array. </summary>
-        public uint Capacity => 128u;
+        /// <inheritdoc/>
+        public readonly uint Capacity => 128u;
 
-        /// <summary> True if all bits are 0. </summary>
-        public bool AllFalse => (this.data1 == 0uL) && (this.data2 == 0uL);
+        /// <inheritdoc/>
+        public readonly bool AllFalse => (this.data1 == 0uL) && (this.data2 == 0uL);
 
-        /// <summary> True if all bits are 1. </summary>
-        public bool AllTrue => (this.data1 == ulong.MaxValue) && (this.data2 == ulong.MaxValue);
+        /// <inheritdoc/>
+        public readonly bool AllTrue => (this.data1 == ulong.MaxValue) && (this.data2 == ulong.MaxValue);
 
-        /// <summary> Returns the bit array in a human readable form. </summary>
-        public string HumanizedData =>
-            Regex.Replace(string.Format("{0, " + 64u + "}", Convert.ToString((long)this.data2, 2)).Replace(' ', '0'), ".{8}", "$0.")
-            + Regex.Replace(string.Format("{0, " + 64u + "}", Convert.ToString((long)this.data1, 2)).Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
+        /// <inheritdoc/>
+        public readonly string HumanizedData =>
+            Regex.Replace($"{Convert.ToString((long)this.data2, 2),64}".Replace(' ', '0'), ".{8}", "$0.")
+            + Regex.Replace($"{Convert.ToString((long)this.data1, 2),64}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         /// <summary> Returns the state of the bit at a specific index. </summary>
         /// <param name="index"> Index of the bit. </param>
         /// <returns> State of the bit at the provided index. </returns>
         public bool this[uint index]
         {
-            get => BitArrayUtilities.Get128(index, this.data1, this.data2);
+            readonly get => BitArrayUtilities.Get128(index, this.data1, this.data2);
             set => BitArrayUtilities.Set128(index, ref this.data1, ref this.data2, value);
         }
 
@@ -856,11 +818,11 @@ namespace BovineLabs.Core.Collections
         /// <returns> State of the bit at the provided index. </returns>
         public bool this[int index]
         {
-            get => BitArrayUtilities.Get128(index, this.data1, this.data2);
+            readonly get => BitArrayUtilities.Get128(index, this.data1, this.data2);
             set => BitArrayUtilities.Set128(index, ref this.data1, ref this.data2, value);
         }
 
-        /// <summary> Bit-wise Not operator </summary>
+        /// <summary> Bit-wise Not operator. </summary>
         /// <param name="a"> First bit array. </param>
         /// <returns> The resulting bit array. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -869,9 +831,7 @@ namespace BovineLabs.Core.Collections
             return new BitArray128(~a.data1, ~a.data2);
         }
 
-        /// <summary>
-        /// Bit-wise Or operator
-        /// </summary>
+        /// <summary> Bit-wise Or operator. </summary>
         /// <param name="a"> First bit array. </param>
         /// <param name="b"> Second bit array. </param>
         /// <returns> The resulting bit array. </returns>
@@ -881,9 +841,7 @@ namespace BovineLabs.Core.Collections
             return new BitArray128(a.data1 | b.data1, a.data2 | b.data2);
         }
 
-        /// <summary>
-        /// Bit-wise And operator
-        /// </summary>
+        /// <summary> Bit-wise And operator. </summary>
         /// <param name="a"> First bit array. </param>
         /// <param name="b"> Second bit array. </param>
         /// <returns> The resulting bit array. </returns>
@@ -917,41 +875,29 @@ namespace BovineLabs.Core.Collections
             return (a.data1 != b.data1) || (a.data2 != b.data2);
         }
 
-        /// <summary>
-        /// Bit-wise And
-        /// </summary>
-        /// <param name="other"> Bit array with which to do the operation. </param>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray128 BitAnd(BitArray128 other)
+        public readonly BitArray128 BitAnd(BitArray128 other)
         {
             return this & other;
         }
 
-        /// <summary>
-        /// Bit-wise Or
-        /// </summary>
-        /// <param name="other"> Bit array with which to do the operation. </param>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray128 BitOr(BitArray128 other)
+        public readonly BitArray128 BitOr(BitArray128 other)
         {
             return this | other;
         }
 
-        /// <summary>
-        /// Bit-wise Not
-        /// </summary>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray128 BitNot()
+        public readonly BitArray128 BitNot()
         {
             return ~this;
         }
 
-        /// <summary> Count the number of enabled bits. </summary>
-        /// <returns> Number of bits set to 1 within x. </returns>
-        public int CountBits()
+        /// <inheritdoc/>
+        public readonly int CountBits()
         {
             return math.countbits(this.data1) + math.countbits(this.data2);
         }
@@ -961,7 +907,7 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         /// <param name="obj"> Bit array to compare to. </param>
         /// <returns> True if the provided bit array is equal to this.. </returns>
-        public override bool Equals(object? obj)
+        public readonly override bool Equals(object? obj)
         {
             return obj is BitArray128 array128 && this.data1.Equals(array128.data1) && this.data2.Equals(array128.data2);
         }
@@ -970,7 +916,7 @@ namespace BovineLabs.Core.Collections
         /// Get the hashcode of the bit array.
         /// </summary>
         /// <returns> Hashcode of the bit array. </returns>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             var hashCode = 1755735569;
             hashCode = (hashCode * -1521134295) + this.data1.GetHashCode();
@@ -978,7 +924,7 @@ namespace BovineLabs.Core.Collections
             return hashCode;
         }
 
-        public bool Equals(BitArray128 other)
+        public readonly bool Equals(BitArray128 other)
         {
             return this.data1 == other.data1 && this.data2 == other.data2;
         }
@@ -1058,50 +1004,44 @@ namespace BovineLabs.Core.Collections
         }
 
         [CreateProperty]
-        public ulong Data1 => this.data1;
+        public readonly ulong Data1 => this.data1;
 
         [CreateProperty]
-        public ulong Data2 => this.data2;
+        public readonly ulong Data2 => this.data2;
 
         [CreateProperty]
-        public ulong Data3 => this.data3;
+        public readonly ulong Data3 => this.data3;
 
         [CreateProperty]
-        public ulong Data4 => this.data4;
+        public readonly ulong Data4 => this.data4;
 
-        /// <summary> Number of elements in the bit array. </summary>
-        public uint Capacity => 256u;
+        /// <inheritdoc/>
+        public readonly uint Capacity => 256u;
 
-        /// <summary> True if all bits are 0. </summary>
-        public bool AllFalse => (this.data1 == 0uL) && (this.data2 == 0uL) && (this.data3 == 0uL) && (this.data4 == 0uL);
+        /// <inheritdoc/>
+        public readonly bool AllFalse => (this.data1 == 0uL) && (this.data2 == 0uL) && (this.data3 == 0uL) && (this.data4 == 0uL);
 
-        /// <summary> True if all bits are 1. </summary>
-        public bool AllTrue => (this.data1 == ulong.MaxValue) && (this.data2 == ulong.MaxValue) && (this.data3 == ulong.MaxValue) &&
-                               (this.data4 == ulong.MaxValue);
+        /// <inheritdoc/>
+        public readonly bool AllTrue => (this.data1 == ulong.MaxValue) && (this.data2 == ulong.MaxValue) && (this.data3 == ulong.MaxValue) &&
+                                        (this.data4 == ulong.MaxValue);
 
-        public bool IsPowerOf2()
-        {
-            // Means only 1 bit set
-            return math.countbits(this.data1) + math.countbits(this.data2) + math.countbits(this.data3) + math.countbits(this.data4) == 1;
-        }
-
-        /// <summary> Gets the bit array in a human readable form. </summary>
-        public string HumanizedData =>
-            Regex.Replace(string.Format("{0, " + 64u + "}", Convert.ToString((long)this.data4, 2)).Replace(' ', '0'), ".{8}", "$0.")
-            + Regex.Replace(string.Format("{0, " + 64u + "}", Convert.ToString((long)this.data3, 2)).Replace(' ', '0'), ".{8}", "$0.")
-            + Regex.Replace(string.Format("{0, " + 64u + "}", Convert.ToString((long)this.data2, 2)).Replace(' ', '0'), ".{8}", "$0.")
-            + Regex.Replace(string.Format("{0, " + 64u + "}", Convert.ToString((long)this.data1, 2)).Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
+        /// <inheritdoc/>
+        public readonly string HumanizedData =>
+            Regex.Replace($"{Convert.ToString((long)this.data4, 2),64}".Replace(' ', '0'), ".{8}", "$0.")
+            + Regex.Replace($"{Convert.ToString((long)this.data3, 2),64}".Replace(' ', '0'), ".{8}", "$0.")
+            + Regex.Replace($"{Convert.ToString((long)this.data2, 2),64}".Replace(' ', '0'), ".{8}", "$0.")
+            + Regex.Replace($"{Convert.ToString((long)this.data1, 2),64}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         /// <summary> Returns the state of the bit at a specific index. </summary>
         /// <param name="index"> Index of the bit. </param>
         /// <returns> State of the bit at the provided index. </returns>
         public bool this[uint index]
         {
-            get => BitArrayUtilities.Get256(index, this.data1, this.data2, this.data3, this.data4);
+            readonly get => BitArrayUtilities.Get256(index, this.data1, this.data2, this.data3, this.data4);
             set => BitArrayUtilities.Set256(index, ref this.data1, ref this.data2, ref this.data3, ref this.data4, value);
         }
 
-        /// <summary> Bit-wise Not operator </summary>
+        /// <summary> Bit-wise Not operator. </summary>
         /// <param name="a"> Bit array with which to do the operation. </param>
         /// <returns> The resulting bit array. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1110,7 +1050,7 @@ namespace BovineLabs.Core.Collections
             return new BitArray256(~a.data1, ~a.data2, ~a.data3, ~a.data4);
         }
 
-        /// <summary> Bit-wise Or operator </summary>
+        /// <summary> Bit-wise Or operator. </summary>
         /// <param name="a"> First bit array. </param>
         /// <param name="b"> Second bit array. </param>
         /// <returns> The resulting bit array. </returns>
@@ -1120,7 +1060,7 @@ namespace BovineLabs.Core.Collections
             return new BitArray256(a.data1 | b.data1, a.data2 | b.data2, a.data3 | b.data3, a.data4 | b.data4);
         }
 
-        /// <summary> Bit-wise And operator </summary>
+        /// <summary> Bit-wise And operator. </summary>
         /// <param name="a"> First bit array. </param>
         /// <param name="b"> Second bit array. </param>
         /// <returns> The resulting bit array. </returns>
@@ -1150,37 +1090,35 @@ namespace BovineLabs.Core.Collections
             return (a.data1 != b.data1) || (a.data2 != b.data2) || (a.data3 != b.data3) || (a.data4 != b.data4);
         }
 
-        /// <summary> Bit-wise And </summary>
-        /// <param name="other"> Bit array with which to do the operation. </param>
-        /// <returns> The resulting bit array. </returns>
+        public readonly bool IsPowerOf2()
+        {
+            // Means only 1 bit set
+            return math.countbits(this.data1) + math.countbits(this.data2) + math.countbits(this.data3) + math.countbits(this.data4) == 1;
+        }
+
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray256 BitAnd(BitArray256 other)
+        public readonly BitArray256 BitAnd(BitArray256 other)
         {
             return this & other;
         }
 
-        /// <summary> Bit-wise Or </summary>
-        /// <param name="other"> Bit array with which to do the operation. </param>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray256 BitOr(BitArray256 other)
+        public readonly BitArray256 BitOr(BitArray256 other)
         {
             return this | other;
         }
 
-        /// <summary>
-        /// Bit-wise Not
-        /// </summary>
-        /// <returns> The resulting bit array. </returns>
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray256 BitNot()
+        public readonly BitArray256 BitNot()
         {
             return ~this;
         }
 
-        /// <summary> Count the number of enabled bits. </summary>
-        /// <returns> Number of bits set to 1 within x. </returns>
-        public int CountBits()
+        /// <inheritdoc/>
+        public readonly int CountBits()
         {
             return math.countbits(this.data1) + math.countbits(this.data2) + math.countbits(this.data3) + math.countbits(this.data4);
         }
@@ -1188,7 +1126,7 @@ namespace BovineLabs.Core.Collections
         /// <summary> Equality operator. </summary>
         /// <param name="obj"> Bit array to compare to. </param>
         /// <returns> True if the provided bit array is equal to this.. </returns>
-        public override bool Equals(object? obj)
+        public readonly override bool Equals(object? obj)
         {
             return obj is BitArray256 array256
                    && this.data1.Equals(array256.data1)
@@ -1199,7 +1137,7 @@ namespace BovineLabs.Core.Collections
 
         /// <summary> Get the hashcode of the bit array. </summary>
         /// <returns> Hashcode of the bit array. </returns>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             var hashCode = 1870826326;
             hashCode = (hashCode * -1521134295) + this.data1.GetHashCode();
@@ -1209,7 +1147,7 @@ namespace BovineLabs.Core.Collections
             return hashCode;
         }
 
-        public bool Equals(BitArray256 other)
+        public readonly bool Equals(BitArray256 other)
         {
             return this.data1 == other.data1 && this.data2 == other.data2 && this.data3 == other.data3 && this.data4 == other.data4;
         }
@@ -1220,11 +1158,7 @@ namespace BovineLabs.Core.Collections
     /// </summary>
     public static class BitArrayUtilities
     {
-        // written here to not duplicate the serialized accessor and runtime accessor
-
-        /// <summary>
-        /// Get a bit at a specific index.
-        /// </summary>
+        /// <summary> Get a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data"> Bit array data. </param>
         /// <returns> The value of the bit at the specific index. </returns>
@@ -1234,9 +1168,7 @@ namespace BovineLabs.Core.Collections
             return (data & (1u << (int)index)) != 0u;
         }
 
-        /// <summary>
-        /// Get a bit at a specific index.
-        /// </summary>
+        /// <summary> Get a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data"> Bit array data. </param>
         /// <returns> The value of the bit at the specific index. </returns>
@@ -1246,9 +1178,7 @@ namespace BovineLabs.Core.Collections
             return (data & (1u << (int)index)) != 0u;
         }
 
-        /// <summary>
-        /// Get a bit at a specific index.
-        /// </summary>
+        /// <summary> Get a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data"> Bit array data. </param>
         /// <returns> The value of the bit at the specific index. </returns>
@@ -1258,9 +1188,7 @@ namespace BovineLabs.Core.Collections
             return (data & (1u << (int)index)) != 0u;
         }
 
-        /// <summary>
-        /// Get a bit at a specific index.
-        /// </summary>
+        /// <summary> Get a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data"> Bit array data. </param>
         /// <returns> The value of the bit at the specific index. </returns>
@@ -1270,9 +1198,7 @@ namespace BovineLabs.Core.Collections
             return (data & (1uL << (int)index)) != 0uL;
         }
 
-        /// <summary>
-        /// Get a bit at a specific index.
-        /// </summary>
+        /// <summary> Get a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data1"> Bit array data 1. </param>
         /// <param name="data2"> Bit array data 2. </param>
@@ -1283,9 +1209,7 @@ namespace BovineLabs.Core.Collections
             return Get128((int)index, data1, data2);
         }
 
-        /// <summary>
-        /// Get a bit at a specific index.
-        /// </summary>
+        /// <summary> Get a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data1"> Bit array data 1. </param>
         /// <param name="data2"> Bit array data 2. </param>
@@ -1298,9 +1222,7 @@ namespace BovineLabs.Core.Collections
                 : (data2 & (1uL << (index - 64))) != 0uL;
         }
 
-        /// <summary>
-        /// Get a bit at a specific index.
-        /// </summary>
+        /// <summary> Get a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data1"> Bit array data 1. </param>
         /// <param name="data2"> Bit array data 2. </param>
@@ -1319,9 +1241,7 @@ namespace BovineLabs.Core.Collections
                     : (data4 & (1uL << (int)(index - 192u))) != 0uL;
         }
 
-        /// <summary>
-        /// Set a bit at a specific index.
-        /// </summary>
+        /// <summary> Set a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data"> Bit array data. </param>
         /// <param name="value"> Value to set the bit to. </param>
@@ -1331,9 +1251,7 @@ namespace BovineLabs.Core.Collections
             data = (byte)(value ? data | (1u << (int)index) : data & ~(1u << (int)index));
         }
 
-        /// <summary>
-        /// Set a bit at a specific index.
-        /// </summary>
+        /// <summary> Set a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data"> Bit array data. </param>
         /// <param name="value"> Value to set the bit to. </param>
@@ -1343,9 +1261,7 @@ namespace BovineLabs.Core.Collections
             data = (ushort)(value ? data | (1u << (int)index) : data & ~(1u << (int)index));
         }
 
-        /// <summary>
-        /// Set a bit at a specific index.
-        /// </summary>
+        /// <summary> Set a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data"> Bit array data. </param>
         /// <param name="value"> Value to set the bit to. </param>
@@ -1355,9 +1271,7 @@ namespace BovineLabs.Core.Collections
             data = value ? data | (1u << (int)index) : data & ~(1u << (int)index);
         }
 
-        /// <summary>
-        /// Set a bit at a specific index.
-        /// </summary>
+        /// <summary> Set a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data"> Bit array data. </param>
         /// <param name="value"> Value to set the bit to. </param>
@@ -1367,9 +1281,7 @@ namespace BovineLabs.Core.Collections
             data = value ? data | (1uL << (int)index) : data & ~(1uL << (int)index);
         }
 
-        /// <summary>
-        /// Set a bit at a specific index.
-        /// </summary>
+        /// <summary> Set a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data1"> Bit array data 1. </param>
         /// <param name="data2"> Bit array data 2. </param>
@@ -1380,9 +1292,7 @@ namespace BovineLabs.Core.Collections
             Set128((int)index, ref data1, ref data2, value);
         }
 
-        /// <summary>
-        /// Set a bit at a specific index.
-        /// </summary>
+        /// <summary> Set a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data1"> Bit array data 1. </param>
         /// <param name="data2"> Bit array data 2. </param>
@@ -1396,14 +1306,11 @@ namespace BovineLabs.Core.Collections
             }
             else
             {
-                data2 = value ? data2 | (1uL << (index - 64)) : data2 & ~((1uL << index - 64));
+                data2 = value ? data2 | (1uL << (index - 64)) : data2 & ~(1uL << (index - 64));
             }
         }
 
-
-        /// <summary>
-        /// Set a bit at a specific index.
-        /// </summary>
+        /// <summary> Set a bit at a specific index. </summary>
         /// <param name="index"> Bit index. </param>
         /// <param name="data1"> Bit array data 1. </param>
         /// <param name="data2"> Bit array data 2. </param>

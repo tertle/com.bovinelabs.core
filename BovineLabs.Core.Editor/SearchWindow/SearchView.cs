@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_6000_0_OR_NEWER
 #nullable disable
 namespace BovineLabs.Core.Editor.SearchWindow
 {
@@ -247,14 +246,36 @@ namespace BovineLabs.Core.Editor.SearchWindow
             }
         }
 
-        public struct Item
+        public struct Item : IEquatable<Item>
         {
             public string Path;
             public Texture2D Icon;
             public object Data;
 
             public string Name => System.IO.Path.GetFileName(this.Path);
+
+            public bool Equals(Item other)
+            {
+                return this.Path == other.Path &&
+                       Equals(this.Icon, other.Icon) &&
+                       Equals(this.Data, other.Data);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is Item other && this.Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    var hashCode = this.Path != null ? this.Path.GetHashCode() : 0;
+                    hashCode = (hashCode * 397) ^ (this.Icon != null ? this.Icon.GetHashCode() : 0);
+                    hashCode = (hashCode * 397) ^ (this.Data != null ? this.Data.GetHashCode() : 0);
+                    return hashCode;
+                }
+            }
         }
     }
 }
-#endif

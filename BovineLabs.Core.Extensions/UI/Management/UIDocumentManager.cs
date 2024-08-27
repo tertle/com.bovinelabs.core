@@ -193,8 +193,8 @@ namespace BovineLabs.Core.UI
 
         private class NullDocumentManager : IUIDocumentManager
         {
+            private readonly Dictionary<int, IBindingObject> bindingObjects = new();
             private VisualElement root;
-            private Dictionary<int, IBindingObject> bindingObjects = new();
 
 #if UNITY_EDITOR
 #pragma warning disable CS0067
@@ -212,7 +212,8 @@ namespace BovineLabs.Core.UI
             {
             }
 
-            public T AddPanel<T>(int key, int priority = 0) where T : class, IBindingObject, new()
+            public T AddPanel<T>(int key, int priority = 0)
+                where T : class, IBindingObject, new()
             {
                 var t = new T();
                 this.bindingObjects.Add(key, t);

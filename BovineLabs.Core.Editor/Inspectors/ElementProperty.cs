@@ -43,7 +43,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
                     if (!rootProperty.displayName.StartsWith("Element "))
                     {
-                        var label = new Label(rootProperty.displayName);
+                        var label = new Label(this.GetDisplayName(rootProperty));
                         label.AddToClassList("unity-header-drawer__label");
                         this.Parent.Add(label);
                     }
@@ -51,7 +51,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             }
             else
             {
-                this.parent = new Foldout { text = rootProperty.displayName };
+                this.parent = new Foldout { text = this.GetDisplayName(rootProperty) };
                 this.parent.AddToClassList("unity-collection-view");
                 this.parent.AddToClassList("unity-list-view");
             }
@@ -88,6 +88,11 @@ namespace BovineLabs.Core.Editor.Inspectors
             return this.Parent;
         }
 
+        protected static PropertyField CreatePropertyField(SerializedProperty property)
+        {
+            return PropertyUtil.CreateProperty(property, property.serializedObject);
+        }
+
         protected static PropertyField CreatePropertyField(SerializedProperty property, SerializedObject serializedObject)
         {
             return PropertyUtil.CreateProperty(property, serializedObject);
@@ -102,6 +107,11 @@ namespace BovineLabs.Core.Editor.Inspectors
             }
 
             return (T)cache;
+        }
+
+        protected virtual string GetDisplayName(SerializedProperty property)
+        {
+            return property.displayName;
         }
 
         protected virtual VisualElement? CreateElement(SerializedProperty property)

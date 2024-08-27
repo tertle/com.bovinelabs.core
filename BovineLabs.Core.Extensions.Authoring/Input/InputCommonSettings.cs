@@ -43,7 +43,7 @@ namespace BovineLabs.Core.Authoring.Input
 #endif
 
         /// <inheritdoc />
-        public override void Bake(IBaker baker)
+        public override void Bake(Baker<SettingsAuthoring> baker)
         {
             var entity = baker.GetEntity(TransformUsageFlags.None);
 

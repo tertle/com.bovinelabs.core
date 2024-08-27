@@ -13,21 +13,30 @@ namespace BovineLabs.Core.Authoring.LifeCycle
     [DisallowMultipleComponent]
     public class LifeCycleAuthoring : MonoBehaviour
     {
-        public static void AddComponents(IBaker baker, Entity entity, bool isPrefab)
+        public bool AddInitialize = true;
+        public bool AddDestroy = true;
+
+        public static void AddComponents(IBaker baker, Entity entity, bool isPrefab, bool addInitialize, bool addDestroy)
         {
-            if (isPrefab)
+            if (addInitialize)
             {
-                baker.AddComponent<InitializeEntity>(entity);
-                baker.SetComponentEnabled<InitializeEntity>(entity, true);
-            }
-            else
-            {
-                baker.AddComponent<InitializeSubSceneEntity>(entity);
-                baker.SetComponentEnabled<InitializeSubSceneEntity>(entity, true);
+                if (isPrefab)
+                {
+                    baker.AddComponent<InitializeEntity>(entity);
+                    baker.SetComponentEnabled<InitializeEntity>(entity, true);
+                }
+                else
+                {
+                    baker.AddComponent<InitializeSubSceneEntity>(entity);
+                    baker.SetComponentEnabled<InitializeSubSceneEntity>(entity, true);
+                }
             }
 
-            baker.AddComponent<DestroyEntity>(entity);
-            baker.SetComponentEnabled<DestroyEntity>(entity, false);
+            if (addDestroy)
+            {
+                baker.AddComponent<DestroyEntity>(entity);
+                baker.SetComponentEnabled<DestroyEntity>(entity, false);
+            }
         }
 
         private class Baker : Baker<LifeCycleAuthoring>
@@ -38,7 +47,7 @@ namespace BovineLabs.Core.Authoring.LifeCycle
                 var entity = this.GetEntity(TransformUsageFlags.None);
                 var isPrefab = authoring.IsPrefab();
 
-                AddComponents(this, entity, isPrefab);
+                AddComponents(this, entity, isPrefab, authoring.AddInitialize, authoring.AddDestroy);
             }
         }
     }

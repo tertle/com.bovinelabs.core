@@ -411,6 +411,57 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
+        /// Efficiently adds a collection of values for keys and single value to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
+        /// This is much faster than iterating and using Add.
+        /// </summary>
+        /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
+        /// <param name="hashMap"> The hashmap to clear and add to. </param>
+        /// <param name="keys"> Collection of keys. </param>
+        /// <param name="value"> The single value. </param>
+        /// <typeparam name="TKey"> The key type. </typeparam>
+        /// <typeparam name="TValue"> The value type. </typeparam>
+        public static void AddBatchUnsafe<TKey, TValue>(
+            [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap,
+            NativeSlice<TKey> keys,
+            TValue value)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+#endif
+
+            var oldLength = hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength;
+            var newLength = oldLength + keys.Length;
+
+            if (hashMap.Capacity < newLength)
+            {
+                hashMap.Capacity = newLength;
+            }
+
+            var data = hashMap.GetUnsafeBucketData();
+
+            var keyPtr = (TKey*)data.keys + oldLength;
+            var valuePtr = (TValue*)data.values + oldLength;
+
+            UnsafeUtility.MemCpyStride(
+                keyPtr, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), keys.Length);
+            UnsafeUtility.MemCpyReplicate(valuePtr, &value, UnsafeUtility.SizeOf<TValue>(), keys.Length);
+
+            var buckets = (int*)data.buckets;
+            var nextPtrs = (int*)data.next + oldLength;
+
+            for (var idx = 0; idx < keys.Length; idx++)
+            {
+                var bucket = keyPtr[idx].GetHashCode() & data.bucketCapacityMask;
+                nextPtrs[idx] = buckets[bucket];
+                buckets[bucket] = oldLength + idx;
+            }
+
+            hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength += keys.Length;
+        }
+
+        /// <summary>
         /// Efficiently adds a collection of values for a single key and values to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
         /// This is much faster than iterating and using Add.
         /// </summary>

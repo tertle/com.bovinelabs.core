@@ -12,25 +12,29 @@ PluginImporter:
   validateReferences: 1
   platformData:
   - first:
+      : 
+    second:
+      enabled: 0
+      settings: {}
+  - first:
       : Any
     second:
       enabled: 0
       settings:
         Exclude Android: 1
         Exclude Editor: 1
-        Exclude GameCoreScarlett: 1
-        Exclude GameCoreXboxOne: 1
         Exclude Linux64: 0
-        Exclude OSXUniversal: 0
-        Exclude PS4: 1
-        Exclude WebGL: 1
+        Exclude OSXUniversal: 1
         Exclude Win: 0
         Exclude Win64: 0
+        Exclude iOS: 1
   - first:
-      Any: 
+      Android: Android
     second:
       enabled: 0
-      settings: {}
+      settings:
+        AndroidSharedLibraryType: Executable
+        CPU: ARMv7
   - first:
       Editor: Editor
     second:
@@ -44,11 +48,11 @@ PluginImporter:
     second:
       enabled: 1
       settings:
-        CPU: None
+        CPU: AnyCPU
   - first:
       Standalone: OSXUniversal
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
   - first:
@@ -56,13 +60,22 @@ PluginImporter:
     second:
       enabled: 1
       settings:
-        CPU: None
+        CPU: AnyCPU
   - first:
       Standalone: Win64
     second:
       enabled: 1
       settings:
-        CPU: None
+        CPU: AnyCPU
+  - first:
+      iPhone: iOS
+    second:
+      enabled: 0
+      settings:
+        AddToEmbeddedBinaries: false
+        CPU: AnyCPU
+        CompileFlags: 
+        FrameworkDependencies: 
   userData: 
   assetBundleName: 
   assetBundleVariant: 

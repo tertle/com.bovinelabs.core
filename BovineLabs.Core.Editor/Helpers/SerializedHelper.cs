@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Editor.Helpers
 {
     using System;
     using System.Collections.Generic;
+    using System.Reflection;
     using BovineLabs.Core.Utility;
     using UnityEditor;
 
@@ -96,9 +97,15 @@ namespace BovineLabs.Core.Editor.Helpers
 
         public static Type? GetFieldType(this SerializedProperty property)
         {
-            var parentType = property.serializedObject.targetObject.GetType();
-            var fi = parentType.GetFieldInBase(property.propertyPath);
+            var fi = GetFieldInfo(property);
             return fi?.FieldType ?? null;
+        }
+
+        // This only works on root objects.
+        public static FieldInfo? GetFieldInfo(this SerializedProperty property)
+        {
+            var parentType = property.serializedObject.targetObject.GetType();
+            return parentType.GetFieldInBase(property.propertyPath);
         }
     }
 }

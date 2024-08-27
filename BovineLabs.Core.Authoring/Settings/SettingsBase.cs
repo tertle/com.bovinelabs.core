@@ -15,6 +15,9 @@ namespace BovineLabs.Core.Authoring.Settings
     [SuppressMessage("ReSharper", "Unity.RedundantSerializeFieldAttribute", Justification = "Required.")]
     public abstract class SettingsBase : ScriptableObject, ISettings
     {
-        public abstract void Bake(IBaker baker);
+        /// <summary> Called in the baking process to bake the authoring component. </summary>
+        /// <remarks> This method will be called by the <see cref="Baker{T}"/> for <see cref="SettingsAuthoring"/>. </remarks>
+        /// <param name="baker"> The <see cref="SettingsAuthoring"/> baker that is invoking this. </param>
+        public abstract void Bake(Baker<SettingsAuthoring> baker);
     }
 }

@@ -88,6 +88,9 @@ namespace BovineLabs.Core.Keys
         }
 #endif
 
+#if UNITY_EDITOR
+        [UnityEditor.InitializeOnLoadMethod]
+#endif
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void LoadAll()
         {

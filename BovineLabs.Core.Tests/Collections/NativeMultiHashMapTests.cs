@@ -8,6 +8,8 @@ namespace BovineLabs.Core.Tests.Collections
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Mathematics;
+    using UnityEngine;
+    using Random = Unity.Mathematics.Random;
 
     public class NativeMultiHashMapTests
     {
@@ -76,6 +78,40 @@ namespace BovineLabs.Core.Tests.Collections
             }
 
             UnsafeUtility.FreeTracked(hashMaps, Allocator.Persistent);
+        }
+
+        [Test]
+        public void ItDoesNotLoseValues()
+        {
+            var hashmap = new NativeMultiHashMap<ulong, ulong>(4, Allocator.Temp);
+
+            int keys = 66000;
+            int values = 3;
+
+            hashmap.Add(0, 0);
+            hashmap.Add(0, 1);
+            hashmap.Add(0, 2);
+
+            for (int i = 1; i < keys; i++)
+            {
+                for (int j = 0; j < values; j++)
+                {
+                    hashmap.Add((ulong)i, (ulong)j);
+                }
+
+                var sizeOfKey0 = 0;
+                if (hashmap.TryGetFirstValue(0, out _, out var it))
+                {
+                    do
+                    {
+                        sizeOfKey0++;
+                    }
+                    while (hashmap.TryGetNextValue(out _, ref it));
+
+                    Debug.Log($"i: {i}, sizeOfKey0: {sizeOfKey0}");
+                    Assert.AreEqual(3, sizeOfKey0);
+                }
+            }
         }
 
         private struct Section

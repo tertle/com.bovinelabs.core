@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Authoring.Settings
         }
 
         /// <inheritdoc />
-        public sealed override void Bake(IBaker baker)
+        public sealed override void Bake(Baker<SettingsAuthoring> baker)
         {
             var entityBuffer = baker.AddBuffer<T>(baker.GetEntity(TransformUsageFlags.None));
             foreach (var b in this.buffer)

@@ -43,7 +43,7 @@ namespace BovineLabs.Core
 #if UNITY_NETCODE
         public override bool Initialize(string defaultWorldName)
 #else
-        public bool Initialize(string defaultWorldName)
+        public virtual bool Initialize(string defaultWorldName)
 #endif
         {
             gameWorld = null;

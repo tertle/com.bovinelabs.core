@@ -12,6 +12,7 @@ namespace BovineLabs.Core.Editor.Settings
     using BovineLabs.Core.Authoring.Settings;
     using BovineLabs.Core.Editor.Helpers;
     using BovineLabs.Core.Settings;
+    using Unity.Assertions;
     using UnityEditor;
     using UnityEngine;
     using Object = UnityEngine.Object;
@@ -135,6 +136,8 @@ namespace BovineLabs.Core.Editor.Settings
                 }
             }
 
+            Assert.IsNotNull(instance, $"{type.Name} returned null from asset database. Might need to reimport something.");
+
             TryAddToSettingsAuthoring(instance);
 
             return (ISettings)instance;
@@ -177,18 +180,23 @@ namespace BovineLabs.Core.Editor.Settings
             var so = new SerializedObject(authoring);
             var settingsProperty = so.FindProperty("settings");
 
-            for (var index = 0; index < settingsProperty.arraySize; index++)
+            // Clear up null references
+            for (var index = settingsProperty.arraySize - 1; index >= 0; index--)
             {
                 var element = settingsProperty.GetArrayElementAtIndex(index);
-
-                var obj = element.objectReferenceValue;
-
-                if (obj == null)
+                if (element.objectReferenceValue != null)
                 {
                     continue;
                 }
 
-                if (obj == settingsBase)
+                settingsProperty.DeleteArrayElementAtIndex(index);
+            }
+
+            // Early out if it already exists
+            for (var index = 0; index < settingsProperty.arraySize; index++)
+            {
+                var element = settingsProperty.GetArrayElementAtIndex(index);
+                if (element.objectReferenceValue == settingsBase)
                 {
                     return;
                 }

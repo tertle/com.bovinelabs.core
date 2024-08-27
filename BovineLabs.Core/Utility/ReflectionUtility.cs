@@ -90,6 +90,17 @@ namespace BovineLabs.Core.Utility
                 .Where(t => type.IsAssignableFrom(t));
         }
 
+        /// <summary> Searches all assemblies to find all types that have an attribute. </summary>
+        /// <typeparam name="T"> The attribute to search for. </typeparam>
+        /// <returns> All the types. </returns>
+        public static IEnumerable<Type> GetAllWithAttribute<T>()
+            where T : Attribute
+        {
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetTypes())
+                .Where(t => t.GetCustomAttribute<T>() != null);
+        }
+
         /// <summary> Searches all assemblies to find all types that implement both 2 types. </summary>
         /// <typeparam name="T1"> The first base type that is inherited from. </typeparam>
         /// <typeparam name="T2"> The second base type that is inherited from. </typeparam>

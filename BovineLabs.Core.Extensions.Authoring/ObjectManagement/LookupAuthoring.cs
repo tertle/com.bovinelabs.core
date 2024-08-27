@@ -18,39 +18,49 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         void Bake(IBaker baker, Entity entity, ObjectDefinition id, Dictionary<Type, object> map);
     }
 
-    public interface ILookupAuthoring<TMap, out TValue> : ILookupAuthoring
+    public interface ILookupAuthoring<TMap, TValue> : ILookupAuthoring
         where TMap : unmanaged, IDynamicHashMap<ObjectId, TValue>
         where TValue : unmanaged
     {
-        TValue GetValue();
+        bool TryGetInitialization(out TValue value);
 
         void ILookupAuthoring.Bake(IBaker baker, Entity entity, ObjectDefinition id, Dictionary<Type, object> map)
         {
+            if (!this.TryGetInitialization(out var value))
+            {
+                return;
+            }
+
             if (!map.TryGetValue(typeof(TMap), out var wrapper))
             {
                 map[typeof(TMap)] = wrapper = new ManagedBuffer<TMap, TValue>(baker, entity);
             }
 
             var genericWrapper = (ManagedBuffer<TMap, TValue>)wrapper;
-            genericWrapper.Add(id, this.GetValue());
+            genericWrapper.Add(id, value);
         }
     }
 
-    public interface ILookupMultiAuthoring<TMap, out TValue> : ILookupAuthoring
+    public interface ILookupMultiAuthoring<TMap, TValue> : ILookupAuthoring
         where TMap : unmanaged, IDynamicMultiHashMap<ObjectId, TValue>
         where TValue : unmanaged
     {
-        TValue GetValue();
+        bool TryGetInitialization(out TValue value);
 
         void ILookupAuthoring.Bake(IBaker baker, Entity entity, ObjectDefinition id, Dictionary<Type, object> map)
         {
+            if (!this.TryGetInitialization(out var value))
+            {
+                return;
+            }
+
             if (!map.TryGetValue(typeof(TMap), out var wrapper))
             {
                 map[typeof(TMap)] = wrapper = new ManagedMultiBuffer<TMap, TValue>(baker, entity);
             }
 
             var genericWrapper = (ManagedMultiBuffer<TMap, TValue>)wrapper;
-            genericWrapper.Add(id, this.GetValue());
+            genericWrapper.Add(id, value);
         }
     }
 
@@ -99,7 +109,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         where TMap : unmanaged, IDynamicHashMap<ObjectId, TValue>
         where TValue : unmanaged
     {
-        public abstract TValue GetValue();
+        public abstract bool TryGetInitialization(out TValue value);
     }
 
     [RequireComponent(typeof(LifeCycleAuthoring))]
@@ -107,7 +117,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         where TMap : unmanaged, IDynamicMultiHashMap<ObjectId, TValue>
         where TValue : unmanaged
     {
-        public abstract TValue GetValue();
+        public abstract bool TryGetInitialization(out TValue value);
     }
 }
 #endif

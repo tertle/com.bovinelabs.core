@@ -154,7 +154,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Distinct() // In case multi of same type on same path
                 .SelectMany(AssetDatabase.LoadAllAssetsAtPath)
-                .Where(s => s.GetType() == type)
+                .Where(s => s != null && s.GetType() == type)
                 .ToList();
 
             sp.arraySize = objects.Count;

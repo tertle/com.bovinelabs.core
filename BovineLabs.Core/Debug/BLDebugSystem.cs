@@ -60,13 +60,18 @@ namespace BovineLabs.Core
             managerParameters.InitialBufferCapacity = 1024 * 512;
 #endif
 
-            var logger = new LoggerConfig()
-                .SyncMode.FatalIsSync()
-                .WriteTo.JsonFile(
+            var loggerConfig = new LoggerConfig()
+                .SyncMode.FatalIsSync();
+
+            if (!string.IsNullOrWhiteSpace(logDir))
+            {
+                loggerConfig = loggerConfig.WriteTo.JsonFile(
                     Path.Combine(logDir, "Output.log.json"),
                     minLevel: MinLogLevel,
-                    outputTemplate: $"[{{Timestamp}}] {{Level}} | {world} | {{Message}}")
-                .WriteTo.UnityDebugLog(
+                    outputTemplate: $"[{{Timestamp}}] {{Level}} | {world} | {{Message}}");
+            }
+
+            var logger = loggerConfig.WriteTo.UnityDebugLog(
                     minLevel: this.currentLogLevel,
                     outputTemplate: $"{{Level}} | {world} | {{Message}}")
                 .CreateLogger(managerParameters);
@@ -113,20 +118,33 @@ namespace BovineLabs.Core
         /// <summary> <see cref="Unity.Logging.DefaultSettings.GetLogDirectory" />. </summary>
         private static string GetCurrentAbsoluteLogDirectory()
         {
-#if UNITY_EDITOR
+#if !UNITY_EDITOR
             var dataDir = Path.GetDirectoryName(Application.dataPath)!;
             var logDir = Path.Combine(dataDir, "Logs");
             Directory.CreateDirectory(logDir);
             return logDir;
-
 #else
-            var logPath = string.IsNullOrEmpty(Application.consoleLogPath)
-                ? Application.persistentDataPath
-                : Application.consoleLogPath;
+            var logPath = Application.consoleLogPath;
 
-            var logDir = Path.Combine(Path.GetDirectoryName(logPath)!, "Logs");
-            Directory.CreateDirectory(logDir);
-            return logDir;
+            if (string.IsNullOrWhiteSpace(logPath))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                var logDir = Path.Combine(Path.GetDirectoryName(logPath)!, "Logs");
+                if (!Directory.Exists(logDir))
+                {
+                    Directory.CreateDirectory(logDir);
+                }
+
+                return logDir;
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
 #endif
         }
 

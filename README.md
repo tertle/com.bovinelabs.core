@@ -31,6 +31,9 @@ Features I have documented are listed below. This is but a tiny fraction of the 
 | [States](Documentation~/States.md)                               | Provides states on entities by mapping a bit field to components automatically.                                           |
 | [SubScenes](Documentation~/SubScenes.md)                         | Provides convenient features for SubScene loading.                                                                        |
 
+## Sample
+A default project is setup with all features enabled via the package manager samples.
+
 ## Toggle Features
 
 The Core library strives to maintain the status quo in your project by default. However, there is a collection of powerful features that can be manually enabled, which may require changes to your workflow. To enable these features, navigate to the `BovineLabs -> Toggle Features` menu.

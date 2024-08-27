@@ -1,0 +1,30 @@
+{
+    "name": "BovineLabs.Sample.Extension",
+    "rootNamespace": "",
+    "references": [
+        "BovineLabs.Core",
+        "BovineLabs.Core.Extensions",
+        "BovineLabs.Core.UI",
+        "BovineLabs.Sample.Extension.Data",
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Entities.Graphics",
+        "Unity.Entities.Hybrid",
+        "Unity.InputSystem",
+        "Unity.Logging",
+        "Unity.Mathematics",
+        "Unity.Mathematics.Extensions",
+        "Unity.Physics",
+        "Unity.Transforms"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

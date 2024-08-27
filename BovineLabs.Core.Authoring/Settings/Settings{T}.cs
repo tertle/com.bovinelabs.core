@@ -33,7 +33,7 @@ namespace BovineLabs.Core.Authoring.Settings
 #endif
 
         /// <inheritdoc />
-        public sealed override void Bake(IBaker baker)
+        public sealed override void Bake(Baker<SettingsAuthoring> baker)
         {
             baker.AddComponent(baker.GetEntity(TransformUsageFlags.None), this.component);
 

@@ -12,6 +12,7 @@ namespace BovineLabs.Core.Utility
     /// <summary> Serializer that convert usable data into a byte array. </summary>
     public unsafe struct Serializer : IDisposable
     {
+        [NativeDisableUnsafePtrRestriction]
         private UnsafeList<byte>* data;
 
         public Serializer(int capacity, Allocator allocator)

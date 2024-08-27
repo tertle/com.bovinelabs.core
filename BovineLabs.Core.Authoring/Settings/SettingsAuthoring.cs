@@ -14,8 +14,10 @@ namespace BovineLabs.Core.Authoring.Settings
         [SerializeField]
         private SettingsBase[] settings = Array.Empty<SettingsBase>();
 
+        /// <inheritdoc />
         private class Baker : Baker<SettingsAuthoring>
         {
+            /// <inheritdoc/>
             public override void Bake(SettingsAuthoring authoring)
             {
                 foreach (var setting in authoring.settings.Distinct())

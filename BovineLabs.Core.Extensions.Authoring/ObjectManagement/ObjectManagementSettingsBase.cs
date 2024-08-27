@@ -47,7 +47,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             }
         }
 
-        public override void Bake(IBaker baker)
+        public override void Bake(Baker<SettingsAuthoring> baker)
         {
             this.SetupRegistry(baker);
             this.SetupGroups(baker);

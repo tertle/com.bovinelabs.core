@@ -176,7 +176,7 @@ namespace BovineLabs.Core.Iterators
             var oldKeys = (TKey*)UnsafeUtility.Malloc(data->Capacity * sizeof(TKey), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
             var oldNext = (int*)UnsafeUtility.Malloc(data->Capacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
             var oldBuckets = (int*)UnsafeUtility.Malloc(data->BucketCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
-            var oldData = (int*)UnsafeUtility.Malloc(data->DataCapacity, UnsafeUtility.AlignOf<int>(), Allocator.Temp);
+            var oldData = (int*)UnsafeUtility.Malloc(data->DataCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
 
             UnsafeUtility.MemCpy(oldValue, data->Values, data->Capacity * sizeof(int));
             UnsafeUtility.MemCpy(oldKeys, data->Keys, data->Capacity * sizeof(TKey));
@@ -261,8 +261,10 @@ namespace BovineLabs.Core.Iterators
             where TValue : unmanaged
         {
             var idx = data->Find(key);
+            var isLarge = sizeof(TValue) > sizeof(int);
+            var add = idx == -1;
 
-            if (data->Find(key) == -1)
+            if (add)
             {
                 // Allocate an entry from the free list
                 if (data->Count == data->Capacity)
@@ -285,28 +287,63 @@ namespace BovineLabs.Core.Iterators
                 data->Buckets[bucket] = idx;
             }
 
-            var isLarge = sizeof(TValue) > sizeof(int);
             if (isLarge)
             {
-                if ((data->DataAllocatedIndex * sizeof(int)) + sizeof(TValue) > data->DataCapacity * sizeof(int))
+                int dataAllocatedIndex;
+
+                // Sets don't need to allocate, element should already exist
+                if (add)
                 {
-                    var newCap = CalcCapacityCeilPow2(data->DataCapacity + (1 << data->Log2MinGrowth), data->Log2MinGrowth);
-                    ResizeData(buffer, ref data, newCap);
+                    var minNewCapacity = (data->DataAllocatedIndex * sizeof(int)) + sizeof(TValue);
+                    if (minNewCapacity > data->DataCapacity * sizeof(int))
+                    {
+                        var newCap = data->DataCapacity;
+                        do
+                        {
+                            newCap = CalcCapacityCeilPow2(newCap + (1 << data->Log2MinGrowth), data->Log2MinGrowth);
+                        }
+                        while (newCap < minNewCapacity);
+
+                        ResizeData(buffer, ref data, newCap);
+                    }
+
+                    dataAllocatedIndex = data->DataAllocatedIndex;
+
+                    var dst = (int*)data->Values + idx;
+                    *dst = data->DataAllocatedIndex;
+
+                    Check.Assume(sizeof(TValue) % sizeof(int) == 0);
+                    data->DataAllocatedIndex += sizeof(TValue) / sizeof(int);
+                }
+                else
+                {
+                    // Set, just read the stored address
+                    dataAllocatedIndex = *((int*)data->Values + idx);
                 }
 
-                int* ptr = data->Data + data->DataAllocatedIndex;
-
+                var ptr = data->Data + dataAllocatedIndex;
                 UnsafeUtility.MemCpy(ptr, &value, sizeof(TValue));
-
-                Check.Assume(sizeof(TValue) % sizeof(int) == 0);
-
-                UnsafeUtility.WriteArrayElement(data->Values, idx, data->DataAllocatedIndex);
-                data->DataAllocatedIndex += sizeof(TValue) / sizeof(int);
             }
             else
             {
-                UnsafeUtility.WriteArrayElement(data->Values, idx, value);
+                var dst = (TValue*)(data->Values + (idx * sizeof(int)));
+                *dst = value;
             }
+        }
+
+        internal static ref TValue GetValue<TValue>(DynamicUntypedHashMapHelper<TKey>* data, int idx)
+            where TValue : unmanaged
+        {
+            var isLarge = sizeof(TValue) > sizeof(int);
+            if (isLarge)
+            {
+                var dst = (int*)data->Values + idx;
+                var dataAllocatedIndex = *dst;
+
+                return ref UnsafeUtility.AsRef<TValue>(data->Data + dataAllocatedIndex);
+            }
+
+            return ref UnsafeUtility.AsRef<TValue>(data->Values + (idx * sizeof(int)));
         }
 
         internal static void AddUnique<TValue>(DynamicBuffer<byte> buffer, ref DynamicUntypedHashMapHelper<TKey>* data, in TKey key, TValue value)
@@ -337,9 +374,16 @@ namespace BovineLabs.Core.Iterators
             var isLarge = sizeof(TValue) > sizeof(int);
             if (isLarge)
             {
-                if ((data->DataAllocatedIndex * sizeof(int)) + sizeof(TValue) > data->DataCapacity * sizeof(int))
+                var minNewCapacity = (data->DataAllocatedIndex * sizeof(int)) + sizeof(TValue);
+                if (minNewCapacity > data->DataCapacity * sizeof(int))
                 {
-                    var newCap = CalcCapacityCeilPow2(data->DataCapacity + (1 << data->Log2MinGrowth), data->Log2MinGrowth);
+                    var newCap = data->DataCapacity;
+                    do
+                    {
+                        newCap += CalcCapacityCeilPow2(newCap + (1 << data->Log2MinGrowth), data->Log2MinGrowth);
+                    }
+                    while (newCap < minNewCapacity);
+
                     ResizeData(buffer, ref data, newCap);
                 }
 
@@ -348,12 +392,15 @@ namespace BovineLabs.Core.Iterators
 
                 Check.Assume(sizeof(TValue) % sizeof(int) == 0);
 
-                UnsafeUtility.WriteArrayElement(data->Values, idx, data->DataAllocatedIndex);
+                var dst = (int*)data->Values + idx;
+                *dst = data->DataAllocatedIndex;
+
                 data->DataAllocatedIndex += sizeof(TValue) / sizeof(int);
             }
             else
             {
-                UnsafeUtility.WriteArrayElement(data->Values, idx, value);
+                var dst = (TValue*)(data->Values + (idx * sizeof(int)));
+                *dst = value;
             }
         }
 

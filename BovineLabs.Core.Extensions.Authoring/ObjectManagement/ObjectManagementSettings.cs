@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 {
     using System;
     using System.Collections.Generic;
+    using BovineLabs.Core.Authoring.Settings;
     using BovineLabs.Core.Keys;
     using BovineLabs.Core.ObjectManagement;
     using BovineLabs.Core.Settings;
@@ -28,7 +29,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
         public override IReadOnlyCollection<ObjectGroup> ObjectGroups => this.objectGroups;
 
-        public override void Bake(IBaker baker)
+        public override void Bake(Baker<SettingsAuthoring> baker)
         {
             base.Bake(baker);
 

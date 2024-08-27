@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <BovineLabs.Core.UI.BindableButton text="Start Game" name="Start" data-source-type="BovineLabs.Sample.Extension.UI.UIMenuBinding, BovineLabs.Sample.Extension" style="width: 200px; height: 50px; position: absolute; top: 50%; left: 50%; bottom: 50%; right: 50%; translate: -50% -50%;">
+        <Bindings>
+            <ui:DataBinding property="wasClicked" data-source-path="Play" binding-mode="ToSource" />
+        </Bindings>
+    </BovineLabs.Core.UI.BindableButton>
+</ui:UXML>

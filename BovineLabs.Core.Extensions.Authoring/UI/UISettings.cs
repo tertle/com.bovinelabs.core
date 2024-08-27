@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Authoring.UI
     public class UISettings : SettingsBase
     {
         /// <inheritdoc />
-        public override void Bake(IBaker baker)
+        public override void Bake(Baker<SettingsAuthoring> baker)
         {
             var entity = baker.GetEntity(TransformUsageFlags.None);
 

@@ -11,6 +11,7 @@ namespace BovineLabs.Core.ToolbarTabs
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Properties;
+    using UnityEngine;
     using UnityEngine.UIElements;
 
     public class FPSToolbarBindings : IBindingObjectNotify<FPSToolbarBindings.Data>
@@ -36,7 +37,11 @@ namespace BovineLabs.Core.ToolbarTabs
         [CreateProperty]
         public float MaxFPS => this.data.MaxFPS;
 
-        [Initialize]
+#if UNITY_EDITOR
+        [UnityEditor.InitializeOnLoadMethod]
+#else
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+#endif
         public static void RegisterConverters()
         {
             var groupFPS = new ConverterGroup("Value to fps");

@@ -2,15 +2,18 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_6000_0_OR_NEWER
 #nullable disable
 namespace BovineLabs.Core.Editor.SearchWindow
 {
     using BovineLabs.Core.Editor.UI;
     using UnityEngine.UIElements;
 
+#if UNITY_6000_0_OR_NEWER
     [UxmlElement]
     internal partial class SearchField : TextField
+#else
+    internal class SearchField : TextField
+#endif
     {
         private static readonly UITemplate SearchFieldTemplate = new(SearchWindow.RootUIPath + "SearchField");
 
@@ -49,6 +52,11 @@ namespace BovineLabs.Core.Editor.SearchWindow
 
             this.RegisterCallback<FocusOutEvent>(_ => { this.searchContainer.style.display = this.value.Length == 0 ? DisplayStyle.Flex : DisplayStyle.None; });
         }
+
+#if !UNITY_6000_0_OR_NEWER
+        internal new class UxmlFactory : UxmlFactory<SearchField, UxmlTraits>
+        {
+        }
+#endif
     }
 }
-#endif

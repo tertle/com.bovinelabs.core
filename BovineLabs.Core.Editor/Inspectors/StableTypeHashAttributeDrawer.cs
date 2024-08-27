@@ -70,7 +70,6 @@ namespace BovineLabs.Core.Editor.Inspectors
                     continue;
                 }
 
-
                 if (!att.AllowEditorAssemblies && (type.Assembly.IsAssemblyEditorAssembly() || type.Assembly.IsTestEditorAssembly()))
                 {
                     continue;

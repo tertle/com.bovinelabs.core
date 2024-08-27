@@ -30,10 +30,7 @@ namespace BovineLabs.Core.LifeCycle
                 return;
             }
 
-            foreach (var e in query.ToEntityArray(state.WorldUpdateAllocator))
-            {
-                state.EntityManager.DestroyEntity(e);
-            }
+            state.EntityManager.DestroyEntity(query.ToEntityArray(state.WorldUpdateAllocator));
         }
     }
 }

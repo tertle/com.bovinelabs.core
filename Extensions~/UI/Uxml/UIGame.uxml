@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <BovineLabs.Core.UI.BindableButton text="Return to Menu" name="Start" data-source-type="BovineLabs.Sample.Extension.UI.UIGameBinding, BovineLabs.Sample.Extension" style="width: 200px; height: 50px;">
+        <Bindings>
+            <ui:DataBinding property="wasClicked" data-source-path="Quit" binding-mode="ToSource" />
+        </Bindings>
+    </BovineLabs.Core.UI.BindableButton>
+</ui:UXML>

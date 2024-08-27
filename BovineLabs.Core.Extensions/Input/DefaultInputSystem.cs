@@ -74,7 +74,7 @@ namespace BovineLabs.Core.Input
             this.inputCommon.CursorCameraViewPoint = ((float3)camera.ScreenToViewportPoint((Vector2)this.inputCommon.CursorScreenPoint)).xy;
             this.inputCommon.CursorInCameraViewPort = InViewPort(this.inputCommon.CursorCameraViewPoint);
 
-            this.inputCommon.InputOverUI = EventSystem.current.IsPointerOverGameObject();
+            this.inputCommon.InputOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
 
             this.inputCommon.ApplicationFocus = this.focus.Value;
 

@@ -11,6 +11,7 @@ namespace BovineLabs.Core.ToolbarTabs
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Properties;
+    using UnityEngine;
     using UnityEngine.UIElements;
 
     public class MemoryToolbarBindings : IBindingObjectNotify<MemoryToolbarBindings.Data>
@@ -33,7 +34,11 @@ namespace BovineLabs.Core.ToolbarTabs
         [CreateProperty]
         public long AllocatedMemoryForGraphics => this.data.AllocatedMemoryForGraphics;
 
-        [Initialize]
+#if UNITY_EDITOR
+        [UnityEditor.InitializeOnLoadMethod]
+#else
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+#endif
         public static void RegisterConverters()
         {
             const float megaByte = 1024 * 1024;

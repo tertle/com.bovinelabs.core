@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_6000_0_OR_NEWER
 #nullable disable
 namespace BovineLabs.Core.Editor.SearchWindow
 {
@@ -77,4 +76,3 @@ namespace BovineLabs.Core.Editor.SearchWindow
         }
     }
 }
-#endif

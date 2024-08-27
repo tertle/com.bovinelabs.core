@@ -1,4 +1,33 @@
 # Changelog
+## [1.3.1] - 2024-08-28
+### Added
+* SearchWindow now works on 2022.3
+* AddEnabledComponent and AddEnabledBuffer Baker extension
+* ElementProperty now provides ability to override DisplayName to automatically support names on List elements instead of Element 0 etc
+* Added MinMaxAttribute for Vector2 and Vector2Int
+* LifeCycle can now conditionally exclude Initialize or Destroy
+* InputAPI
+* UIAPI
+* AppAPI
+* Added Construct methods to BlobCurveX so they can be added to your own BlobAssetReference
+
+### Changed
+* LookupAuthoring now allows for optional values
+* SettingsBase.Bake(IBaker) changed to SettingsBase.Bake(Baker<SettingsAuthoring>)
+* Cleaned up BitArray, made more consistent, improved documentation, readonlys
+
+### Fixed
+* DynamicUntypedHashMap was writing to wrong index on smaller data types
+* liblz4 on linux
+* NativeMultiHashMap becoming unique when exceeded 256 elements
+* DynamicUntypedHashMap growing in memory when using large data
+
+### Removed
+* InitializeAttribute as newer version of Unity seem to have broken it
+
+### Documentation
+* Added an Extension sample with everything setup
+
 ## [1.3.0] - 2024-06-26
 ### Added
 * IJobChunkWorkerBeginEnd
@@ -15,9 +44,6 @@
 * A safety check in Timers
 * Settings that are deleted should regenerate without a domain reload.
 * IUID issues with duplication
-
-### Changed
-### Fixed
 
 ## [1.2.15] - 2024-06-08
 ### Added

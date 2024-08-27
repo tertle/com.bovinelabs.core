@@ -5,6 +5,7 @@
 #if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.Authoring
 {
+    using BovineLabs.Core.Authoring.Settings;
     using BovineLabs.Core.Settings;
     using BovineLabs.Core.SubScenes;
     using Unity.Entities;
@@ -24,7 +25,7 @@ namespace BovineLabs.Core.Authoring
         private float unloadMaxDistance = 144;
 
         /// <inheritdoc />
-        public override void Bake(IBaker baker)
+        public override void Bake(Baker<SettingsAuthoring> baker)
         {
             baker.AddComponent(
                 baker.GetEntity(TransformUsageFlags.None),

@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Input
 {
     using Unity.Collections;
     using Unity.Entities;
-    using UnityEngine;
     using UnityEngine.InputSystem;
 
     [UpdateInGroup(typeof(InputSystemGroup), OrderFirst = true)]
