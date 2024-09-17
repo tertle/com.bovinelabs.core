@@ -54,6 +54,21 @@ namespace BovineLabs.Core.Extensions
             return char.ToUpper(input[0]) + input[1..];
         }
 
+        /// <summary> Trim a string from the start of a string. </summary>
+        /// <param name="source"> The source string. </param>
+        /// <param name="value"> The string to trim. </param>
+        /// <returns> The trimmed string. </returns>
+        /// <example> source=TestString, value=String, result=Test. </example>
+        public static string TrimStart(this string source, string value)
+        {
+            if (!source.StartsWith(value))
+            {
+                return source;
+            }
+
+            return source.Remove(source.IndexOf(value, StringComparison.Ordinal), value.Length);
+        }
+
         /// <summary> Trim a string from the end of a string. </summary>
         /// <param name="source"> The source string. </param>
         /// <param name="value"> The string to trim. </param>

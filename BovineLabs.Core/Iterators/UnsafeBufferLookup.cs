@@ -82,7 +82,7 @@ namespace BovineLabs.Core.Iterators
         public bool HasBuffer(Entity entity)
         {
             var ecs = this.access->EntityComponentStore;
-            return ecs->HasComponent(entity, this.typeIndex, ref this.cache);
+            return ecs->HasComponent(entity, this.typeIndex, ref this.cache, out _);
         }
 
         /// <summary> Obsolete. Use <see cref="HasBuffer(Unity.Entities.Entity)"/> instead.</summary>

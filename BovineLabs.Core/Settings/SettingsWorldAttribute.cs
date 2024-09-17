@@ -10,13 +10,13 @@ namespace BovineLabs.Core.Settings
     public class SettingsWorldAttribute : Attribute
     {
         /// <summary> Initializes a new instance of the <see cref="SettingsWorldAttribute"/> class. </summary>
-        /// <param name="world"> The key matching EditorSettings. Not case-sensitive. </param>
-        public SettingsWorldAttribute(string world)
+        /// <param name="worlds"> The key matching EditorSettings. Not case-sensitive. </param>
+        public SettingsWorldAttribute(params string[] worlds)
         {
-            this.World = world;
+            this.Worlds = worlds;
         }
 
         /// <summary> Gets the key matching EditorSettings. Not case-sensitive. </summary>
-        public string World { get; }
+        public string[] Worlds { get; }
     }
 }

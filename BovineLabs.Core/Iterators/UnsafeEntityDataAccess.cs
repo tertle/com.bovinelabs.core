@@ -88,12 +88,12 @@ namespace BovineLabs.Core.Iterators
 
         public readonly bool HasComponent(Entity entity, ComponentType componentType)
         {
-            return this.access->EntityComponentStore->HasComponent(entity, componentType);
+            return this.access->EntityComponentStore->HasComponent(entity, componentType, out _);
         }
 
         public readonly bool HasComponent(Entity entity, TypeIndex typeIndex)
         {
-            return this.access->EntityComponentStore->HasComponent(entity, typeIndex);
+            return this.access->EntityComponentStore->HasComponent(entity, typeIndex, out _);
         }
 
         /// <summary> Reports whether the specified <see cref="Entity"/> instance still refers to a valid entity. </summary>

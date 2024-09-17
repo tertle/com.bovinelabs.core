@@ -66,7 +66,7 @@ namespace BovineLabs.Core.Iterators
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
 #endif
-            return m_Access->EntityComponentStore->HasComponent(entity, this.m_TypeIndex);
+            return m_Access->EntityComponentStore->HasComponent(entity, this.m_TypeIndex, out _);
         }
 
         public bool TryGetComponent(Entity entity, out T sharedComponentData)

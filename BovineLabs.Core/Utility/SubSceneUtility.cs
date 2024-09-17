@@ -69,6 +69,36 @@ namespace BovineLabs.Core.Utility
             }
         }
 
+        public static bool IsLoadingOrLoaded(ref SystemState state, Entity entity)
+        {
+            if (!state.EntityManager.HasComponent<SceneReference>(entity))
+            {
+                return false;
+            }
+
+            if (!state.EntityManager.HasComponent<ResolvedSectionEntity>(entity))
+            {
+                return false;
+            }
+
+            var resolvedSectionEntities = state.EntityManager.GetBuffer<ResolvedSectionEntity>(entity);
+
+            if (resolvedSectionEntities.Length == 0)
+            {
+                return false;
+            }
+
+            foreach (var s in resolvedSectionEntities)
+            {
+                if (!IsSectionLoadingOrLoaded(ref state, s.SectionEntity))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         /// <summary> Check if a subscene is loaded. </summary>
         /// <param name="entity"> The entity with the loading component data.  This is the entity returned by LoadSceneAsync. </param>
         /// <returns> True if the scene is loaded. </returns>
@@ -111,6 +141,17 @@ namespace BovineLabs.Core.Utility
 
             var streamingState = state.EntityManager.GetComponentData<SceneSectionStreamingSystem.StreamingState>(sectionEntity);
             return streamingState.Status == SceneSectionStreamingSystem.StreamingStatus.Loaded;
+        }
+
+        public static bool IsSectionLoadingOrLoaded(ref SystemState state, Entity sectionEntity)
+        {
+            if (!state.EntityManager.HasComponent<SceneSectionStreamingSystem.StreamingState>(sectionEntity))
+            {
+                return false;
+            }
+
+            var streamingState = state.EntityManager.GetComponentData<SceneSectionStreamingSystem.StreamingState>(sectionEntity);
+            return streamingState.Status is SceneSectionStreamingSystem.StreamingStatus.Loaded or SceneSectionStreamingSystem.StreamingStatus.Loading;
         }
 
         public void Update(ref SystemState state)

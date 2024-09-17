@@ -5,8 +5,8 @@
 #if !BL_DISABLE_LIFECYCLE
 namespace BovineLabs.Core.LifeCycle
 {
-    using BovineLabs.Core.App;
     using BovineLabs.Core.Groups;
+    using BovineLabs.Core.SubScenes;
     using Unity.Entities;
 
     [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderFirst = true)]

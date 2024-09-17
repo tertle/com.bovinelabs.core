@@ -9,6 +9,7 @@
         "Unity.Burst",
         "Unity.Collections",
         "Unity.Entities",
+        "Unity.Logging",
         "Unity.Mathematics",
         "Unity.Mathematics.Extensions",
         "Unity.PerformanceTesting",

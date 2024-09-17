@@ -5,12 +5,14 @@
 #if !BL_DISABLE_TIME
 namespace BovineLabs.Core.Time
 {
+    using BovineLabs.Core.Extensions;
     using Unity.Burst;
     using Unity.Core;
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
 
+    /// <summary> Replaces the <see cref="UpdateWorldTimeSystem"/> but burst compiles it and adds support to Service world. </summary>
     [UpdateInGroup(typeof(InitializationSystemGroup), OrderFirst = true)]
     [UpdateAfter(typeof(BeginInitializationEntityCommandBufferSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | Worlds.Service)]
@@ -26,8 +28,14 @@ namespace BovineLabs.Core.Time
             timeTypes[0] = ComponentType.ReadWrite<WorldTime>();
             timeTypes[1] = ComponentType.ReadWrite<WorldTimeQueue>();
             this.timeSingleton = state.EntityManager.CreateEntity(state.EntityManager.CreateArchetype(timeTypes, 2));
+
+            if (state.WorldUnmanaged.SystemExists<Unity.Entities.UpdateWorldTimeSystem>())
+            {
+                state.WorldUnmanaged.GetExistingSystemState<Unity.Entities.UpdateWorldTimeSystem>().Enabled = false;
+            }
         }
 
+        /// <inheritdoc/>
         [BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
@@ -38,6 +46,7 @@ namespace BovineLabs.Core.Time
             this.SetTime(ref state, timeData);
         }
 
+        /// <inheritdoc/>
         public void OnStopRunning(ref SystemState state)
         {
         }
@@ -46,6 +55,12 @@ namespace BovineLabs.Core.Time
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+#if UNITY_EDITOR
+            if (state.WorldUnmanaged.SystemExists<Unity.Entities.UpdateWorldTimeSystem>())
+            {
+                state.WorldUnmanaged.GetExistingSystemState<Unity.Entities.UpdateWorldTimeSystem>().Enabled = false;
+            }
+#endif
             var currentElapsedTime = SystemAPI.Time.ElapsedTime;
             var deltaTime = math.min(Time.deltaTime, state.WorldUnmanaged.MaximumDeltaTime);
             this.SetTime(ref state, new TimeData(elapsedTime: currentElapsedTime + deltaTime, deltaTime: deltaTime));
@@ -53,7 +68,7 @@ namespace BovineLabs.Core.Time
 
         private void SetTime(ref SystemState state, TimeData newTimeData)
         {
-            state.EntityManager.SetComponentData(timeSingleton, new WorldTime {Time = newTimeData});
+            state.EntityManager.SetComponentData(this.timeSingleton, new WorldTime {Time = newTimeData});
             state.WorldUnmanaged.Time = newTimeData;
         }
     }

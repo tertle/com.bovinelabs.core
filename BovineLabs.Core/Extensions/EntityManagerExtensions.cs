@@ -157,7 +157,7 @@ namespace BovineLabs.Core.Extensions
         {
             using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
 
-            if (query.CalculateChunkCount() != 1)
+            if (query.CalculateEntityCount() != 1)
             {
                 entity = Entity.Null;
 
@@ -173,7 +173,7 @@ namespace BovineLabs.Core.Extensions
         {
             using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
 
-            return query.CalculateChunkCount() == 1;
+            return query.CalculateEntityCount() == 1;
         }
 
         public static T GetSingleton<T>(this EntityManager em, bool completeDependency = true)
@@ -312,6 +312,7 @@ namespace BovineLabs.Core.Extensions
             return true;
         }
 #endif
+
         internal static SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
             where T : struct, ISharedComponentData
         {

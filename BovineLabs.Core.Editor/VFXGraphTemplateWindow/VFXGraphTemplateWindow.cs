@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Editor.VFXGraphTemplateWindow
         private TextField? categoryField;
         private TextField? descriptionField;
 
-        [MenuItem("BovineLabs/Tools/Create VFX Template", priority = -5)]
+        [MenuItem("BovineLabs/Tools/Create VFX Template", priority = -15)]
         private static void ShowWindow()
         {
             // Get existing open window or if none, make a new one:

@@ -61,17 +61,24 @@ namespace BovineLabs.Core
 #endif
 
             var loggerConfig = new LoggerConfig()
+                .RedirectUnityLogs(false)
                 .SyncMode.FatalIsSync();
 
             if (!string.IsNullOrWhiteSpace(logDir))
             {
-                loggerConfig = loggerConfig.WriteTo.JsonFile(
+                loggerConfig = loggerConfig
+                    .CaptureStacktrace(false)
+                    .WriteTo.JsonFile(
                     Path.Combine(logDir, "Output.log.json"),
                     minLevel: MinLogLevel,
                     outputTemplate: $"[{{Timestamp}}] {{Level}} | {world} | {{Message}}");
             }
 
-            var logger = loggerConfig.WriteTo.UnityDebugLog(
+            var logger = loggerConfig
+#if UNITY_EDITOR
+                .CaptureStacktrace()
+#endif
+                .WriteTo.UnityDebugLog(
                     minLevel: this.currentLogLevel,
                     outputTemplate: $"{{Level}} | {world} | {{Message}}")
                 .CreateLogger(managerParameters);

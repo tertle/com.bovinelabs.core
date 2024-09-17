@@ -15,11 +15,16 @@ namespace BovineLabs.Core.Editor
     {
         static SetWorldToEditorWindows()
         {
-            BovineLabsBootstrap.GameWorldCreated += SetWorldToDOTSEditorWindow;
+            BovineLabsServiceBootstrap.GameWorldCreated += SetWorldToDOTSEditorWindow;
         }
 
         private static void SetWorldToDOTSEditorWindow(World world)
         {
+            if (world != World.DefaultGameObjectInjectionWorld)
+            {
+                return;
+            }
+
             // Insert at index 0 for future windows you open will default to this
             World.s_AllWorlds.Remove(world);
             World.s_AllWorlds.Insert(0, world);

@@ -1,9 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
-    <Style src="project://database/Packages/com.bovinelabs.core/BovineLabs.Core.Extensions.Debug/ToolbarTabs/Assets/TimeGroup.uss?fileID=7433441132597879392&amp;guid=2145bf30b419a8a4f93627f4a99351c4&amp;type=3#TimeGroup" />
-    <BovineLabs.Core.UI.DropdownField data-source-type="BovineLabs.Core.ToolbarTabs.QualityToolbarBindings, BovineLabs.Core.Extensions.Debug" style="width: 120px;">
-        <Bindings>
-            <ui:DataBinding property="choicesExposed" data-source-path="QualityChoices" binding-mode="ToTarget" />
-            <ui:DataBinding property="index" data-source-path="QualityValue" />
-        </Bindings>
-    </BovineLabs.Core.UI.DropdownField>
-</ui:UXML>

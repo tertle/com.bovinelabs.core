@@ -42,6 +42,7 @@ namespace BovineLabs.Core.Editor.Input
             var debugProperty = this.serializedObject.FindProperty(DebugSettingsProperty);
 
             ClearNullReferences(property);
+            ClearNullReferences(debugProperty);
 
             foreach (var type in AppDomain.CurrentDomain.GetAssemblies()
                          .SelectMany(s => s.GetTypes())
@@ -51,7 +52,7 @@ namespace BovineLabs.Core.Editor.Input
             {
                 var isDebug = type.FullName!.Contains("Debug");
 
-                if (TypeExistsInArray(property, type, out int index))
+                if (TypeExistsInArray(property, type, out var index))
                 {
                     if (isDebug)
                     {
@@ -100,7 +101,6 @@ namespace BovineLabs.Core.Editor.Input
             var size = property.arraySize;
             for (var i = size - 1; i >= 0; i--)
             {
-                var element = property.GetArrayElementAtIndex(i);
                 if (property.GetArrayElementAtIndex(i).managedReferenceValue == null)
                 {
                     property.DeleteArrayElementAtIndex(i);

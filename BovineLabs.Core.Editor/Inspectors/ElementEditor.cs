@@ -35,7 +35,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             var createElements = this.PreElementCreation(this.parent);
             if (createElements)
             {
-                foreach (var property in SerializedHelper.IterateAllChildren(this.serializedObject, this.IncludeScript))
+                foreach (var property in SerializedHelper.IterateAllChildren(this.serializedObject, false))
                 {
                     var element = this.CreateElement(property);
                     if (element != null)

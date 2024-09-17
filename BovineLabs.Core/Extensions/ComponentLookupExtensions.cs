@@ -111,6 +111,14 @@ namespace BovineLabs.Core.Extensions
 
             var typeIndexInArchetype = lookupInternal.m_Cache.IndexInArchetype;
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.ListIndex, lookup.GlobalSystemVersion);
+
+#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+            if (Hint.Unlikely(lookupInternal.m_Access->EntityComponentStore->m_RecordToJournal != 0))
+            {
+                lookupInternal.m_Access->EntityComponentStore->GetComponentDataWithTypeRW(entity, lookupInternal.m_TypeIndex,
+                    lookupInternal.m_GlobalSystemVersion, ref lookupInternal.m_Cache);
+            }
+#endif
         }
 
         public static bool TryGetComponent<T>(ref this ComponentLookup<T> lookup, ref EntityCache cache, out T componentData)

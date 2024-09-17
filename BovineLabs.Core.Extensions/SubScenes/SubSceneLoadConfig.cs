@@ -6,6 +6,7 @@
 namespace BovineLabs.Core.SubScenes
 {
     using Unity.Entities;
+    using Unity.Entities.Serialization;
     using Unity.Mathematics;
     using Unity.Scenes;
     using UnityEngine;
@@ -16,6 +17,7 @@ namespace BovineLabs.Core.SubScenes
     [DefaultExecutionOrder(-1)] // just needs to execute before SubScene to stop autoload
     public class SubSceneLoadConfig : MonoBehaviour
     {
+        [Tooltip("The target world to load the SubScene into.")]
         [SerializeField]
 #if UNITY_NETCODE
         private SubSceneLoadFlags targetWorld = SubSceneLoadFlags.ThinClient | SubSceneLoadFlags.Client | SubSceneLoadFlags.Server;
@@ -23,6 +25,7 @@ namespace BovineLabs.Core.SubScenes
         private SubSceneLoadFlags targetWorld = SubSceneLoadFlags.Game;
 #endif
 
+        [Tooltip("The loading mode to load theSubScene.")]
         [SerializeField]
         private SubSceneLoadMode loadMode = SubSceneLoadMode.BoundingVolume;
 
@@ -30,33 +33,34 @@ namespace BovineLabs.Core.SubScenes
         private bool isRequired;
 
         [Min(0)]
+        [Tooltip("The distance value for loading a BoundingVolume. A value less than or equal to zero will fall back to the GameConfig.LoadMaxDistance")]
         [SerializeField]
         private float loadMaxDistanceOverride;
 
         [Min(0)]
+        [Tooltip("The distance value for unloading a BoundingVolume A value less than or equal to zero will fall back to the GameConfig.UnloadMaxDistance")]
         [SerializeField]
         private float unloadMaxDistanceOverride;
 
-        /// <summary> Gets the target world to load the <see cref="SubScene" /> into. </summary>
-        public WorldFlags TargetWorld => this.ConvertFlags();
-
-        /// <summary> Gets the loading mode to load the <see cref="SubScene" />. </summary>
-        public SubSceneLoadMode LoadingMode => this.loadMode;
-
-        /// <summary> Gets a value indicating whether asynchronous streaming should be disabled. </summary>
-        public bool IsRequired => this.isRequired;
-
-        /// <summary>
-        /// Gets the distance value for loading a <see cref="SubSceneLoadMode.BoundingVolume" />.
-        /// A value less than or equal to zero will fall back to the <see cref="GameConfig.LoadMaxDistance" />.
-        /// </summary>
-        public float LoadMaxDistanceOverride => this.loadMaxDistanceOverride;
-
-        /// <summary>
-        /// Gets the distance value for unloading a <see cref="SubSceneLoadMode.BoundingVolume" />.
-        /// A value less than or equal to zero will fall back to the <see cref="GameConfig.UnloadMaxDistance" />.
-        /// </summary>
-        public float UnloadMaxDistanceOverride => this.unloadMaxDistanceOverride;
+        public SubSceneLoad SubSceneLoad
+        {
+            get
+            {
+                var subScene = this.GetComponent<SubScene>();
+                return new SubSceneLoad
+                {
+#if UNITY_EDITOR
+                    Name = subScene.SceneAsset.name,
+#endif
+                    Scene = new EntitySceneReference(subScene.SceneGUID, 0),
+                    TargetWorld = SubSceneLoadUtil.ConvertFlags(this.targetWorld),
+                    LoadingMode = this.loadMode,
+                    IsRequired = this.isRequired,
+                    LoadMaxDistanceOverride = this.loadMaxDistanceOverride,
+                    UnloadMaxDistanceOverride = this.unloadMaxDistanceOverride,
+                };
+            }
+        }
 
         private void Awake()
         {
@@ -66,40 +70,6 @@ namespace BovineLabs.Core.SubScenes
         private void OnValidate()
         {
             this.unloadMaxDistanceOverride = math.max(this.unloadMaxDistanceOverride, this.loadMaxDistanceOverride);
-        }
-
-        private WorldFlags ConvertFlags()
-        {
-            var flags = WorldFlags.None;
-#if UNITY_NETCODE
-            if ((this.targetWorld & SubSceneLoadFlags.Client) != 0)
-            {
-                flags |= WorldFlags.GameClient;
-            }
-
-            if ((this.targetWorld & SubSceneLoadFlags.Server) != 0)
-            {
-                flags |= WorldFlags.GameServer;
-            }
-
-            if ((this.targetWorld & SubSceneLoadFlags.ThinClient) != 0)
-            {
-                flags |= WorldFlags.GameThinClient;
-            }
-#else
-            if ((this.targetWorld & SubSceneLoadFlags.Game) != 0)
-            {
-                flags |= WorldFlags.Game;
-            }
-#endif
-            if ((this.targetWorld & SubSceneLoadFlags.Service) != 0)
-            {
-                flags |= Worlds.ServiceWorld;
-            }
-
-            // Remove the live flag
-            flags &= ~WorldFlags.Live;
-            return flags;
         }
     }
 }

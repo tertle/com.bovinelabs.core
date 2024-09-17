@@ -22,7 +22,9 @@
         "Unity.Physics.Hybrid",
         "Unity.Scenes",
         "Unity.ResourceManager",
-        "Unity.Transforms"
+        "Unity.Transforms",
+        "Unity.AppUI.MVVM",
+        "Unity.AppUI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

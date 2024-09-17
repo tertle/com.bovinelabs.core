@@ -10,9 +10,7 @@ namespace BovineLabs.Core.Extensions
     {
         public static bool SystemExists<T>(this WorldUnmanaged world)
         {
-            ref var r = ref world.GetImpl();
             var typeIndex = TypeManager.GetSystemTypeIndex<T>();
-
             return world.GetExistingUnmanagedSystem(typeIndex) != SystemHandle.Null;
         }
     }

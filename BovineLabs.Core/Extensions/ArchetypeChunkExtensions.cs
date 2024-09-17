@@ -69,11 +69,6 @@ namespace BovineLabs.Core.Extensions
             NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref result, typeHandle.m_Safety);
 #endif
 
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
-            if (Hint.Unlikely(archetypeChunk.m_EntityComponentStore->m_RecordToJournal != 0) && !typeHandle.IsReadOnly)
-                archetypeChunk.JournalAddRecordGetComponentDataRW(ref typeHandle, ptr, typeHandle.m_SizeInChunk * archetypeChunk.Count);
-#endif
-
             return result.AsReadOnly();
         }
 

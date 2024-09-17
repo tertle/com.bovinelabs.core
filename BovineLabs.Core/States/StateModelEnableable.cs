@@ -12,7 +12,6 @@ namespace BovineLabs.Core.States
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-    using UnityEngine;
 
     /// <summary> A generic general purpose state system that ensures only a single state component exists on an entity but driven from a byte field. </summary>
     public struct StateModelEnableable
@@ -72,6 +71,7 @@ namespace BovineLabs.Core.States
                 StateType = this.impl.StateType,
                 PreviousStateType = this.impl.PreviousStateType,
                 UnsafeEnableableLookup = state.GetUnsafeEnableableLookup(),
+                Debug = this.impl.Debug,
             };
         }
 
@@ -90,6 +90,8 @@ namespace BovineLabs.Core.States
             public DynamicComponentTypeHandle PreviousStateType;
 
             public UnsafeEnableableLookup UnsafeEnableableLookup;
+
+            public BLDebug Debug;
 
             /// <inheritdoc />
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
@@ -125,7 +127,7 @@ namespace BovineLabs.Core.States
                         }
                         else
                         {
-                            Debug.LogWarning($"State {state} not setup");
+                            this.Debug.Warning($"State {state} not setup");
                         }
                     }
 

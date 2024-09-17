@@ -71,7 +71,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
 
                 this.typeTracks[i] = new TypeTrack
                 {
-                    TypeName = TypeManager.GetTypeNameFixed(componentType.TypeIndex),
+                    TypeName = TypeManagerEx.GetTypeName(componentType.TypeIndex),
                     DynamicTypeHandle = state.GetDynamicComponentTypeHandle(componentType),
                     Query = state.GetEntityQuery(componentType),
                     Changed = new NativeArray<int>(FramesToTrack, Allocator.Persistent),

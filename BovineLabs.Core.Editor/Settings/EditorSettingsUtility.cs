@@ -151,80 +151,93 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             var editorSettings = GetEditorSettings();
-            if (editorSettings == null)
+            if (editorSettings == null || editorSettings.DefaultSettingsAuthoring == null)
             {
                 return;
             }
 
-            var world = settings.GetType().GetCustomAttribute<SettingsWorldAttribute>()?.World;
+            var worlds = settings.GetType().GetCustomAttribute<SettingsWorldAttribute>()?.Worlds;
 
-            SettingsAuthoring? authoring;
+            var authorings = new HashSet<SettingsAuthoring>();
 
-            if (string.IsNullOrWhiteSpace(world))
+            if (worlds == null)
             {
-                authoring = editorSettings.DefaultSettingsAuthoring;
+                authorings.Add(editorSettings.DefaultSettingsAuthoring);
             }
             else
             {
-                if (!editorSettings.TryGetAuthoring(world!, out authoring))
+                foreach (var world in worlds)
                 {
-                    Debug.LogError($"No authoring found for {world} in {nameof(EditorSettings)}");
+                    SettingsAuthoring? authoring;
+
+                    if (string.IsNullOrWhiteSpace(world))
+                    {
+                        authoring = editorSettings.DefaultSettingsAuthoring;
+                    }
+                    else
+                    {
+                        editorSettings.TryGetAuthoring(world, out authoring);
+                    }
+
+                    if (authoring == null)
+                    {
+                        continue;
+                    }
+
+                    authorings.Add(authoring);
                 }
             }
 
-            if (authoring == null)
+            foreach (var authoring in authorings)
             {
-                return;
-            }
+                var so = new SerializedObject(authoring);
+                var settingsProperty = so.FindProperty("settings");
 
-            var so = new SerializedObject(authoring);
-            var settingsProperty = so.FindProperty("settings");
-
-            // Clear up null references
-            for (var index = settingsProperty.arraySize - 1; index >= 0; index--)
-            {
-                var element = settingsProperty.GetArrayElementAtIndex(index);
-                if (element.objectReferenceValue != null)
+                // Clear up null references
+                for (var index = settingsProperty.arraySize - 1; index >= 0; index--)
                 {
-                    continue;
+                    var element = settingsProperty.GetArrayElementAtIndex(index);
+                    if (element.objectReferenceValue != null)
+                    {
+                        continue;
+                    }
+
+                    settingsProperty.DeleteArrayElementAtIndex(index);
                 }
 
-                settingsProperty.DeleteArrayElementAtIndex(index);
-            }
-
-            // Early out if it already exists
-            for (var index = 0; index < settingsProperty.arraySize; index++)
-            {
-                var element = settingsProperty.GetArrayElementAtIndex(index);
-                if (element.objectReferenceValue == settingsBase)
+                // Early out if it already exists
+                for (var index = 0; index < settingsProperty.arraySize; index++)
                 {
-                    return;
-                }
-            }
-
-            var insert = settingsProperty.arraySize;
-            settingsProperty.InsertArrayElementAtIndex(insert);
-            settingsProperty.GetArrayElementAtIndex(insert).objectReferenceValue = settingsBase;
-
-            var length = settingsProperty.arraySize;
-
-            // Insertion sort
-            for (var i = 1; i < length; i++)
-            {
-                var key = settingsProperty.GetArrayElementAtIndex(i).objectReferenceValue;
-                var j = i - 1;
-
-                while (j >= 0 && Compare(settingsProperty.GetArrayElementAtIndex(j).objectReferenceValue, key))
-                {
-                    settingsProperty.GetArrayElementAtIndex(j + 1).objectReferenceValue = settingsProperty.GetArrayElementAtIndex(j).objectReferenceValue;
-                    j -= 1;
+                    var element = settingsProperty.GetArrayElementAtIndex(index);
+                    if (element.objectReferenceValue == settingsBase)
+                    {
+                        return;
+                    }
                 }
 
-                settingsProperty.GetArrayElementAtIndex(j + 1).objectReferenceValue = key;
-            }
+                var insert = settingsProperty.arraySize;
+                settingsProperty.InsertArrayElementAtIndex(insert);
+                settingsProperty.GetArrayElementAtIndex(insert).objectReferenceValue = settingsBase;
 
-            so.ApplyModifiedProperties();
-            AssetDatabase.SaveAssetIfDirty(authoring);
+                var length = settingsProperty.arraySize;
+
+                // Insertion sort
+                for (var i = 1; i < length; i++)
+                {
+                    var key = settingsProperty.GetArrayElementAtIndex(i).objectReferenceValue;
+                    var j = i - 1;
+
+                    while (j >= 0 && Compare(settingsProperty.GetArrayElementAtIndex(j).objectReferenceValue, key))
+                    {
+                        settingsProperty.GetArrayElementAtIndex(j + 1).objectReferenceValue = settingsProperty.GetArrayElementAtIndex(j).objectReferenceValue;
+                        j -= 1;
+                    }
+
+                    settingsProperty.GetArrayElementAtIndex(j + 1).objectReferenceValue = key;
+                }
+
+                so.ApplyModifiedProperties();
+            }
         }
 
         private static bool Compare(Object obj1, Object obj2)

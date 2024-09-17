@@ -1,4 +1,22 @@
 # Changelog
+## [1.3.2] - 2024-09-18
+### Added
+* SubSceneLoadAuthoring for weak referenced subscene loading and stripping
+* Better SubSceneLoading netcode support
+* Journaling to SetFilter methods
+
+### Changed
+* Updated to Entities 1.3.2
+* Pause now uses a rate manager on non-multiplayer worlds to stop OnStartRunning and OnStopRunning triggering
+* Cleaned up BovineLabs menu
+
+### Fixed
+* Sample missing runtime style
+* InputCommonSettings refresh null exception without any debug
+
+### Removed
+* UI and Toolbar removed from core but I have a new standalone project called Anchor https://gitlab.com/tertle/com.bovinelabs.anchor
+
 ## [1.3.1] - 2024-08-28
 ### Added
 * SearchWindow now works on 2022.3

@@ -54,6 +54,11 @@
             "name": "com.unity.localization",
             "expression": "",
             "define": "UNITY_LOCALIZATION"
+        },
+        {
+            "name": "com.unity.dt.app-ui",
+            "expression": "",
+            "define": "UNITY_APPUI"
         }
     ],
     "noEngineReferences": false

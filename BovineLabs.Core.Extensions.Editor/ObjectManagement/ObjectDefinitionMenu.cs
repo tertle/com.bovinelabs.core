@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     {
         private const string DefaultDirectory = "Assets/Settings/Definitions";
 
-        [MenuItem("BovineLabs/Utility/Create Definitions from Assets")]
+        [MenuItem("BovineLabs/Tools/Create Definitions from Assets", priority = -17)]
         public static void CreateDefinitionsFromAssets()
         {
             if (Selection.gameObjects == null)
