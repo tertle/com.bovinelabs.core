@@ -5,7 +5,6 @@
 #if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
-    using Unity.Entities;
     using Unity.Entities.Serialization;
     using Unity.Mathematics;
     using Unity.Scenes;
@@ -33,20 +32,32 @@ namespace BovineLabs.Core.SubScenes
         private bool isRequired;
 
         [Min(0)]
-        [Tooltip("The distance value for loading a BoundingVolume. A value less than or equal to zero will fall back to the GameConfig.LoadMaxDistance")]
+        [Tooltip("The distance value for loading a BoundingVolume.")]
         [SerializeField]
-        private float loadMaxDistanceOverride;
+        private float loadMaxDistance = 128;
 
         [Min(0)]
-        [Tooltip("The distance value for unloading a BoundingVolume A value less than or equal to zero will fall back to the GameConfig.UnloadMaxDistance")]
+        [Tooltip("The distance value for unloading a BoundingVolume.")]
         [SerializeField]
-        private float unloadMaxDistanceOverride;
+        private float unloadMaxDistance = 144;
 
-        public SubSceneLoad SubSceneLoad
+        public bool IsValid
         {
             get
             {
                 var subScene = this.GetComponent<SubScene>();
+                return subScene != null && subScene.SceneGUID != default;
+            }
+        }
+
+        public SubSceneLoad GetSubSceneLoad()
+        {
+                var subScene = this.GetComponent<SubScene>();
+                if (subScene == null || subScene.SceneGUID == default)
+                {
+                    return default;
+                }
+
                 return new SubSceneLoad
                 {
 #if UNITY_EDITOR
@@ -56,10 +67,9 @@ namespace BovineLabs.Core.SubScenes
                     TargetWorld = SubSceneLoadUtil.ConvertFlags(this.targetWorld),
                     LoadingMode = this.loadMode,
                     IsRequired = this.isRequired,
-                    LoadMaxDistanceOverride = this.loadMaxDistanceOverride,
-                    UnloadMaxDistanceOverride = this.unloadMaxDistanceOverride,
+                    LoadMaxDistance = this.loadMaxDistance,
+                    UnloadMaxDistance = this.unloadMaxDistance,
                 };
-            }
         }
 
         private void Awake()
@@ -69,7 +79,7 @@ namespace BovineLabs.Core.SubScenes
 
         private void OnValidate()
         {
-            this.unloadMaxDistanceOverride = math.max(this.unloadMaxDistanceOverride, this.loadMaxDistanceOverride);
+            this.unloadMaxDistance = math.max(this.unloadMaxDistance, this.loadMaxDistance);
         }
     }
 }

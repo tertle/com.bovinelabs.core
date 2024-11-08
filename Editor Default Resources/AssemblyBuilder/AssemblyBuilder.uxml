@@ -23,10 +23,11 @@
                     <ui:Toggle label="Unity.Transforms" value="true" />
                 </ui:VisualElement>
                 <ui:Label text="Assemblies" style="font-size: 14px; -unity-font-style: bold;" />
-                <ui:VisualElement>
+                <ui:VisualElement name="toggleCommon">
                     <ui:Toggle label="Main" value="true" class="assembly" />
                     <ui:Toggle label="Data" value="true" class="assembly" />
                     <ui:Toggle label="Authoring" value="true" class="assembly" />
+                    <ui:Toggle label="Server" value="false" class="assembly" />
                     <ui:Toggle label="Debug" value="false" class="assembly" />
                     <ui:Toggle label="Editor" value="false" class="assembly" />
                     <ui:Toggle label="Tests" value="false" class="assembly" />

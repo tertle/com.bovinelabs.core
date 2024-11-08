@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.Authoring.SubScenes
 {
     using System;
@@ -20,7 +21,7 @@ namespace BovineLabs.Core.Authoring.SubScenes
         {
             public override void Bake(SubSceneLoadAuthoring authoring)
             {
-                var buffer = this.AddBuffer<SubSceneLoad>(this.GetEntity(TransformUsageFlags.None));
+                DynamicBuffer<SubSceneLoad> buffer = default;
 
                 foreach (var s in authoring.subScenes)
                 {
@@ -34,6 +35,11 @@ namespace BovineLabs.Core.Authoring.SubScenes
                         continue;
                     }
 
+                    if (!buffer.IsCreated)
+                    {
+                        buffer = this.AddBuffer<SubSceneLoad>(this.GetEntity(TransformUsageFlags.None));
+                    }
+
                     // Depends on shouldn't be required as we don't care if the scene asset actually changes, only if our own references change
                     buffer.Add(new SubSceneLoad
                     {
@@ -45,26 +51,10 @@ namespace BovineLabs.Core.Authoring.SubScenes
                     });
                 }
             }
-
-            private bool IncludeScene(SubSceneLoadFlags flags)
-            {
-#if UNITY_NETCODE
-                if (this.IsClient())
-                {
-                    return flags != SubSceneLoadFlags.Server;
-                }
-
-                if (this.IsServer())
-                {
-                    return flags != SubSceneLoadFlags.Client && flags != SubSceneLoadFlags.ThinClient;
-                }
-#endif
-                return true;
-            }
         }
 
         [Serializable]
-        private class Data
+        internal class Data
         {
             public SceneAsset? SceneAsset;
 
@@ -78,5 +68,5 @@ namespace BovineLabs.Core.Authoring.SubScenes
             public bool IsRequired = true;
         }
     }
-
 }
+#endif

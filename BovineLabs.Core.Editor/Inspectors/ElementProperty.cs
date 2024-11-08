@@ -29,6 +29,7 @@ namespace BovineLabs.Core.Editor.Inspectors
         public sealed override VisualElement CreatePropertyGUI(SerializedProperty rootProperty)
         {
             this.RootProperty = rootProperty;
+            this.serializedObject = rootProperty.serializedObject;
 
             var iterateChildren = rootProperty.propertyType == SerializedPropertyType.Generic;
 
@@ -56,7 +57,6 @@ namespace BovineLabs.Core.Editor.Inspectors
                 this.parent.AddToClassList("unity-list-view");
             }
 
-            this.serializedObject = rootProperty.serializedObject;
 
             var createElements = this.PreElementCreation(this.parent);
 

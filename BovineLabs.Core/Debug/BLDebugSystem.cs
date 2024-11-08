@@ -74,13 +74,19 @@ namespace BovineLabs.Core
                     outputTemplate: $"[{{Timestamp}}] {{Level}} | {world} | {{Message}}");
             }
 
+#if UNITY_EDITOR
+            var template = $"{{Level}} | {world} | {{Message}}{{NewLine}}{{Stacktrace}}";
+#else
+            var template = $"{{Level}} | {world} | {{Message}}";
+#endif
+
             var logger = loggerConfig
 #if UNITY_EDITOR
                 .CaptureStacktrace()
 #endif
                 .WriteTo.UnityDebugLog(
                     minLevel: this.currentLogLevel,
-                    outputTemplate: $"{{Level}} | {world} | {{Message}}")
+                    outputTemplate: template)
                 .CreateLogger(managerParameters);
 
             this.loggerHandle = logger.Handle;

@@ -8,11 +8,10 @@ namespace BovineLabs.Core.Camera
     using Unity.Entities;
     using Unity.Mathematics;
 
-    // First 4 near plane, second 4 far plane
-    [InternalBufferCapacity(8)]
-    public struct CameraFrustumCorners : IBufferElementData
+    public struct CameraFrustumCorners : IComponentData
     {
-        public float3 Value;
+        public float3x4 NearPlane;
+        public float3x4 FarPlane;
     }
 }
 #endif

@@ -6,7 +6,9 @@
 namespace BovineLabs.Core.Camera
 {
     using Unity.Entities;
+    using Unity.NetCode;
 
+    [GhostComponent(PrefabType = GhostPrefabType.Client)]
     public struct CameraMain : IComponentData
     {
     }

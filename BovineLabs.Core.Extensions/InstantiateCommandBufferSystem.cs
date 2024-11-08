@@ -9,6 +9,7 @@ namespace BovineLabs.Core
     using Unity.Entities;
     using Unity.Scenes;
 
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | Worlds.Service)]
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     [UpdateBefore(typeof(SceneSystemGroup))]
     public partial class InstantiateCommandBufferSystem : EntityCommandBufferSystem

@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Editor
     {
         static SetWorldToEditorWindows()
         {
-            BovineLabsServiceBootstrap.GameWorldCreated += SetWorldToDOTSEditorWindow;
+            BovineLabsBootstrap.GameWorldCreated += SetWorldToDOTSEditorWindow;
         }
 
         private static void SetWorldToDOTSEditorWindow(World world)

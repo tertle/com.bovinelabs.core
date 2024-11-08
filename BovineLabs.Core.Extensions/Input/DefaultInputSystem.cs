@@ -8,10 +8,9 @@ namespace BovineLabs.Core.Input
     using System;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Camera;
-    using BovineLabs.Core.Extensions;
+    using BovineLabs.Core.Groups;
     using Unity.Entities;
     using Unity.Mathematics;
-    using Unity.Transforms;
     using UnityEngine;
     using UnityEngine.EventSystems;
     using UnityEngine.InputSystem;
@@ -19,7 +18,10 @@ namespace BovineLabs.Core.Input
     using Object = UnityEngine.Object;
     using Ray = Unity.Physics.Ray;
 
-    [UpdateInGroup(typeof(InputSystemGroup))]
+    [WorldSystemFilter(WorldSystemFilterFlags.Presentation)]
+    [UpdateAfter(typeof(CameraFrustumSystem))]
+    [UpdateAfter(typeof(CameraMainSystem))]
+    [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
     public partial class DefaultInputSystem : SystemBase
     {
         private InputDefault input;

@@ -35,11 +35,11 @@ namespace BovineLabs.Core.Editor.SubScenes
                     this.isRequired = CreatePropertyField(property);
                     return this.isRequired;
 
-                case "loadMaxDistanceOverride":
+                case "loadMaxDistance":
                     this.loadMaxDistanceOverride = CreatePropertyField(property);
                     return this.loadMaxDistanceOverride;
 
-                case "unloadMaxDistanceOverride":
+                case "unloadMaxDistance":
                     this.unloadMaxDistanceOverride = CreatePropertyField(property);
                     return this.unloadMaxDistanceOverride;
             }

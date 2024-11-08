@@ -1,4 +1,42 @@
 # Changelog
+## [1.3.3] - 2024-11-09
+### Added
+* WorldAllocator
+* A button to prefabs to bake and load them into a world; this can be enabled from BovineLabs/Tools/Load Prefabs as Entities
+* Ability to prebake subscenes
+* More hashmap extensions
+* Entity overloads to IEntityCommands
+* String variations to BLDebug
+* GetEntity(Object) extension to IBaker 
+* Connection approval to bootstrap
+* Input now supports generating for NetCode IInputComponentData
+* IUpdateWhilePaused which allows a ComponentSystemGroup to continue to Update when the game is paused
+* StripLocalAttribute to strip network only components in Local Simulation world
+* Support for Unity 6.1
+
+### Changed
+* Requires Unity 6+
+* Updated to Entities 1.3.5
+* SubSceneLoadFlags numbers have been changed, this may require you to set them again
+* SubScene Loading now works with normally loaded SubSceneLoadConfig in normally loaded Scenes instead of only at start. This ensure compatibility with things like Unity's Multiplayer Play Mode package scenarios
+* BovineLabsBootstrap.Netcode being more fleshed out
+* CameraMainAuthoring renamed to CameraAuthoring
+* BLDebug now implements a CustomLog to avoid having to use 4096 fixed string every time
+* InitializeSystemGroup moved to BeginSimulationGroup to support NetCode ghosts
+* Renamed InitializationRequireSubScenesSystemGroup to RequireSubScenesSystemGroup
+* Pause now uses the same RateManager on multiplayer worlds as well
+* CameraFrustumCorners and CameraFrustumPlanes are now IComponentData
+
+### Fixed
+* SubSceneLoadAuthoring missing BL_DISABLE_SUBSCENE check
+* A few defines
+
+### Removed
+* GameSettings and a default bounding volume distance. Now must be set per subscene
+* AssetCreatorAttribute, data is now specified in AssetCreator 
+* Ability to set lifecycle components, now always added to reduce chance of bugs
+* CameraFrustrumAuthroing as it's now included in CameraAuthoring
+
 ## [1.3.2] - 2024-09-18
 ### Added
 * SubSceneLoadAuthoring for weak referenced subscene loading and stripping

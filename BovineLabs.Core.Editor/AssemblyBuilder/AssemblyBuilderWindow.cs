@@ -102,11 +102,19 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             this.rootVisualElement.Q<TextField>("directory").SetEnabled(false);
 
 #if !UNITY_NETCODE
-            foreach (var toggle in this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>())
+            foreach (var toggle in this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().ToList())
             {
                 if (toggle.label is "Unity.NetCode" or "Unity.Networking.Transport")
                 {
-                    toggle.value = false;
+                    toggle.RemoveFromHierarchy();
+                }
+            }
+
+            foreach (var toggle in this.rootVisualElement.Q("toggleCommon").Children().OfType<Toggle>().ToList())
+            {
+                if (toggle.label == "Server")
+                {
+                    toggle.RemoveFromHierarchy();
                 }
             }
 #endif
@@ -136,8 +144,8 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             // Sort so Data is first, Systems is second, so it can be added to other packages
             assemblyToggles.Sort((t1, t2) => t1.label == "Data" ? -1
                 : t2.label == "Data" ? 1
-                : t1.label == "Main" ? -1
-                : t2.label == "Main" ? 1 : 0);
+                : t1.label is "Main" or "Server" ? -1
+                : t2.label is "Main" or "Server" ? 1 : 0);
 
             var nameField = this.rootVisualElement.Q<TextField>("name").value;
 
@@ -185,11 +193,11 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 }
                 else
                 {
-                    // And the data assembly
+                    // Add the data assembly
                     references.Add($"{nameField}.Data");
 
                     // Add the systems reference to other assemblies that isn't authoring or itself
-                    if (label != "Main" && label != "Authoring")
+                    if (label != "Main" && label != "System" && label != "Authoring")
                     {
                         references.Add($"{nameField}");
 
@@ -206,6 +214,10 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                             {
                                 this.AddInternalAccess(nameField, folder, "Data", "Main", "Authoring");
                             }
+                            else if (label == "Server")
+                            {
+                                this.AddInternalAccess(nameField, folder, "Data", "Main", "Server", "Authoring");
+                            }
                             else if (label == "Authoring")
                             {
                                 this.AddInternalAccess(nameField, folder, "Data", "Main", "Authoring", "Debug");
@@ -218,7 +230,15 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                         case "Main":
                             break;
 
+                        case "Server":
+                            definition.defineConstraints.Add("!UNITY_CLIENT");
+                            break;
+
                         case "Debug":
+                            references.Add("BovineLabs.Anchor");
+                            references.Add("Unity.AppUI");
+                            references.Add("Unity.AppUI.MVVM");
+                            references.Add("Unity.AppUI.Redux");
                             definition.defineConstraints.Add("UNITY_EDITOR || BL_DEBUG");
                             break;
 

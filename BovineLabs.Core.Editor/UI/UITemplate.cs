@@ -1,5 +1,5 @@
 ﻿// <copyright file="UITemplate.cs" company="BovineLabs">
-// Copyright (c) BovineLabs. All rights reserved.
+//     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 namespace BovineLabs.Core.Editor.UI

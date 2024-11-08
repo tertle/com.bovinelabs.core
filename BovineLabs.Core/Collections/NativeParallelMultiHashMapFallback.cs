@@ -17,48 +17,48 @@ namespace BovineLabs.Core.Collections
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-        private NativeParallelMultiHashMap<TKey, TValue> hashMap;
-        private NativeQueue<FallbackData> fallback;
+        public NativeParallelMultiHashMap<TKey, TValue> HashMap;
+        public NativeQueue<FallbackData> Fallback;
 
         public NativeParallelMultiHashMapFallback(int capacity, Allocator allocator)
         {
-            this.hashMap = new NativeParallelMultiHashMap<TKey, TValue>(capacity, allocator);
-            this.fallback = new NativeQueue<FallbackData>(allocator);
+            this.HashMap = new NativeParallelMultiHashMap<TKey, TValue>(capacity, allocator);
+            this.Fallback = new NativeQueue<FallbackData>(allocator);
         }
 
         public ParallelWriter AsWriter()
         {
-            return new ParallelWriter(this.hashMap.AsParallelWriter(), this.fallback.AsParallelWriter());
+            return new ParallelWriter(this.HashMap.AsParallelWriter(), this.Fallback.AsParallelWriter());
         }
 
         public void Dispose()
         {
-            this.hashMap.Dispose();
-            this.fallback.Dispose();
+            this.HashMap.Dispose();
+            this.Fallback.Dispose();
         }
 
         public void Clear()
         {
-            this.hashMap.Clear();
+            this.HashMap.Clear();
         }
 
         public JobHandle Apply(JobHandle jobHandle, out NativeParallelMultiHashMap<TKey, TValue>.ReadOnly reader, ApplyJob job = default)
         {
-            job.HashMap = this.hashMap;
-            job.Fallback = this.fallback;
+            job.HashMap = this.HashMap;
+            job.Fallback = this.Fallback;
             jobHandle = job.Schedule(jobHandle);
-            reader = this.hashMap.AsReadOnly();
+            reader = this.HashMap.AsReadOnly();
             return jobHandle;
         }
 
         public JobHandle Dispose(JobHandle jobHandle)
         {
-            return this.fallback.Dispose(jobHandle);
+            return this.Fallback.Dispose(jobHandle);
         }
 
         public JobHandle Clear(JobHandle dependency, ClearNativeParallelMultiHashMapJob<TKey, TValue> job = default)
         {
-            job.HashMap = this.hashMap;
+            job.HashMap = this.HashMap;
             return job.Schedule(dependency);
         }
 
@@ -208,7 +208,7 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        internal readonly struct FallbackData
+        public readonly struct FallbackData
         {
             public readonly TKey Key;
             public readonly TValue Value;

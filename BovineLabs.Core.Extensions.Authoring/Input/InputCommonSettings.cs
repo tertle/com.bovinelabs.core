@@ -17,6 +17,7 @@ namespace BovineLabs.Core.Authoring.Input
     using Object = UnityEngine.Object;
 
     [SettingsGroup("Core")]
+    [SettingsWorld("Client")]
     public class InputCommonSettings : SettingsBase
     {
         [SerializeField]

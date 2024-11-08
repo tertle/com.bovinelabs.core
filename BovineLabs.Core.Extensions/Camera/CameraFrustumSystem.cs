@@ -10,8 +10,9 @@ namespace BovineLabs.Core.Camera
     using Unity.Mathematics;
     using UnityEngine;
 
+    [WorldSystemFilter(WorldSystemFilterFlags.Presentation)]
     [UpdateAfter(typeof(CameraMainSystem))]
-    [UpdateInGroup(typeof(AfterSceneSystemGroup))]
+    [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
     public partial class CameraFrustumSystem : SystemBase
     {
         private readonly Plane[] sourcePlanes = new Plane[6];
@@ -21,7 +22,7 @@ namespace BovineLabs.Core.Camera
         protected override void OnUpdate()
         {
             foreach (var (frustumPlanes, frustumCorners, cameraWrapper) in SystemAPI.Query<
-                         DynamicBuffer<CameraFrustumPlanes>, DynamicBuffer<CameraFrustumCorners>, SystemAPI.ManagedAPI.UnityEngineComponent<Camera>>())
+                         RefRW<CameraFrustumPlanes>, RefRW<CameraFrustumCorners>, SystemAPI.ManagedAPI.UnityEngineComponent<Camera>>())
             {
                 var camera = cameraWrapper.Value;
 
@@ -43,20 +44,24 @@ namespace BovineLabs.Core.Camera
 
                 for (var i = 0; i < 6; ++i)
                 {
-                    frustumPlanes.ElementAt(i) = new CameraFrustumPlanes { Value = new float4(this.sourcePlanes[i].normal, this.sourcePlanes[i].distance) };
+                    frustumPlanes.ValueRW[i] = new float4(this.sourcePlanes[i].normal, this.sourcePlanes[i].distance);
                 }
 
                 camera.CalculateFrustumCorners(new Rect(0, 0, 1, 1), camera.nearClipPlane, Camera.MonoOrStereoscopicEye.Mono, this.frustumCornerArray);
-                for (var i = 0; i < 4; i++)
-                {
-                    frustumCorners.ElementAt(i) = new CameraFrustumCorners { Value = camera.transform.TransformPoint(this.frustumCornerArray[i]) };
-                }
+
+                ref var nearPlane = ref frustumCorners.ValueRW.NearPlane;
+                nearPlane.c0 = camera.transform.TransformPoint(this.frustumCornerArray[0]);
+                nearPlane.c1 = camera.transform.TransformPoint(this.frustumCornerArray[1]);
+                nearPlane.c2 = camera.transform.TransformPoint(this.frustumCornerArray[2]);
+                nearPlane.c3 = camera.transform.TransformPoint(this.frustumCornerArray[3]);
 
                 camera.CalculateFrustumCorners(new Rect(0, 0, 1, 1), camera.farClipPlane, Camera.MonoOrStereoscopicEye.Mono, this.frustumCornerArray);
-                for (var i = 0; i < 4; i++)
-                {
-                    frustumCorners.ElementAt(i + 4) = new CameraFrustumCorners { Value = camera.transform.TransformPoint(this.frustumCornerArray[i]) };
-                }
+
+                ref var farPlane = ref frustumCorners.ValueRW.FarPlane;
+                farPlane.c0 = camera.transform.TransformPoint(this.frustumCornerArray[0]);
+                farPlane.c1 = camera.transform.TransformPoint(this.frustumCornerArray[1]);
+                farPlane.c2 = camera.transform.TransformPoint(this.frustumCornerArray[2]);
+                farPlane.c3 = camera.transform.TransformPoint(this.frustumCornerArray[3]);
             }
         }
     }

@@ -43,7 +43,6 @@ namespace BovineLabs.Core.ObjectManagement
             return idComparison != 0 ? idComparison : this.Mod.CompareTo(other.Mod);
         }
 
-
         public override string ToString()
         {
             return $"Mod:{this.Mod}, ID:{this.ID}";

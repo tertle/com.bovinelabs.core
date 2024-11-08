@@ -19,15 +19,19 @@ namespace BovineLabs.Core
         {
             Application.quitting -= OnQuit;
 
+            // ReSharper disable once ForCanBeConvertedToForeach
             for (var index = 0; index < World.All.Count; index++)
             {
                 var world = World.All[index];
-                if (world.IsCreated && (world.Flags & WorldFlags.Live) != 0)
+                if (!world.IsCreated || (world.Flags & WorldFlags.Live) == 0)
                 {
-                    TryDisableUpdateSystemGroup<InitializationSystemGroup>(world);
-                    TryDisableUpdateSystemGroup<SimulationSystemGroup>(world);
-                    TryDisableUpdateSystemGroup<PresentationSystemGroup>(world);
+                    continue;
                 }
+
+                // world.EntityManager.CompleteAllTrackedJobs(); // TODO this would be safer but hides potential issues
+                TryDisableUpdateSystemGroup<InitializationSystemGroup>(world);
+                TryDisableUpdateSystemGroup<SimulationSystemGroup>(world);
+                TryDisableUpdateSystemGroup<PresentationSystemGroup>(world);
             }
         }
 

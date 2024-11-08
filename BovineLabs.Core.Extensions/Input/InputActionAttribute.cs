@@ -14,5 +14,13 @@ namespace BovineLabs.Core.Input
     public class InputActionDeltaAttribute : Attribute
     {
     }
+
+    public class InputActionDownAttribute : Attribute
+    {
+    }
+
+    public class InputActionUpAttribute : Attribute
+    {
+    }
 }
 #endif

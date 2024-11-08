@@ -110,16 +110,16 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
         private static void UpdateAutoRef(Type type, AutoRefAttribute attribute)
         {
-            var managerGuid = AssetDatabase.FindAssets($"t:{attribute.Manager}");
+            var managerGuid = AssetDatabase.FindAssets($"t:{attribute.ManagerType}");
             if (managerGuid.Length == 0)
             {
-                Debug.LogError($"No manager found for {attribute.Manager}");
+                Debug.LogError($"No manager found for {attribute.ManagerType}");
                 return;
             }
 
             if (managerGuid.Length > 1)
             {
-                Debug.LogError($"More than one manager found for {attribute.Manager}");
+                Debug.LogError($"More than one manager found for {attribute.ManagerType}");
                 return;
             }
 
@@ -131,22 +131,22 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             }
 
             var so = new SerializedObject(manager);
-            var sp = so.FindProperty(attribute.Property);
+            var sp = so.FindProperty(attribute.FieldName);
             if (sp == null)
             {
-                Debug.LogError($"Property {attribute.Property} not found for {attribute.Manager}");
+                Debug.LogError($"Property {attribute.FieldName} not found for {attribute.ManagerType}");
                 return;
             }
 
             if (!sp.isArray)
             {
-                Debug.LogError($"Property {attribute.Property} was not type of array for {attribute.Manager}");
+                Debug.LogError($"Property {attribute.FieldName} was not type of array for {attribute.ManagerType}");
                 return;
             }
 
             if (sp.arrayElementType != $"PPtr<${type.Name}>")
             {
-                Debug.LogError($"Property {attribute.Property} was not type of {type.Name} for {attribute.Manager}");
+                Debug.LogError($"Property {attribute.FieldName} was not type of {type.Name} for {attribute.ManagerType}");
                 return;
             }
 

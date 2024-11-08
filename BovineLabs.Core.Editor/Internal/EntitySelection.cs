@@ -19,6 +19,11 @@ namespace BovineLabs.Core.Editor.Internal
 
         public static Entity Entity => ((EntitySelectionProxy)Selection.activeObject).Entity;
 
+        public static void SelectEntity(World world, Entity entity)
+        {
+            EntitySelectionProxy.SelectEntity(world, entity);
+        }
+
         public static IEnumerable<(World World, Entity Entity)> GetAllSelections()
         {
             foreach (var s in Selection.objects)

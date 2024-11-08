@@ -20,6 +20,11 @@ namespace BovineLabs.Core.Editor.Settings
         public const string DefaultSettingsDirectory = "Assets/Settings/Settings";
         public const string DefaultSettingsResourceDirectory = "Assets/Settings/";
 
+#if !BL_DISABLE_SUBSCENE
+        [SerializeField]
+        private SceneAsset[] prebakeScenes = Array.Empty<SceneAsset>();
+#endif
+
         [SerializeField]
         private KeyPath[] paths = Array.Empty<KeyPath>();
 
@@ -28,6 +33,10 @@ namespace BovineLabs.Core.Editor.Settings
 
         [SerializeField]
         private KeyAuthoring[] settingAuthoring = { new() { World = "service" }, new() { World = "shared" } };
+
+#if !BL_DISABLE_SUBSCENE
+        public System.Collections.Generic.IReadOnlyList<SceneAsset> PrebakeScenes => this.prebakeScenes;
+#endif
 
         public SettingsAuthoring? DefaultSettingsAuthoring => this.defaultSettingsAuthoring;
 

@@ -25,21 +25,19 @@ namespace Unity.NetCode
     }
 
     /// <summary>
-    /// Attribute used to specify how and which fields and properties of <see cref="Unity.Entities.IComponentData" /> or
-    /// <see cref="Unity.Entities.IBufferElementData" /> should be replicated.
-    /// When a component or buffer contains at least one field that is annotated with a <see cref="GhostFieldAttribute" />,
+    /// Attribute used to specify how and which fields and properties of <see cref="Unity.Entities.IComponentData"/> or
+    /// <see cref="Unity.Entities.IBufferElementData"/> should be replicated.
+    /// When a component or buffer contains at least one field that is annotated with a <see cref="GhostFieldAttribute"/>,
     /// a struct implementing the component serialization is automatically code-generated.
     /// </summary>
-    /// <remarks>
-    /// Note that "enableable components" (<see cref="Unity.Entities.IEnableableComponent" />) will still have their fields replicated, even when disabled.
-    /// See <see cref="GhostEnabledBitAttribute" /> to replicate the enabled flag itself.
-    /// </remarks>
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    /// <remarks>Note that "enableable components" (<see cref="Unity.Entities.IEnableableComponent"/>) will still have their fields replicated, even when disabled.
+    /// See <see cref="GhostEnabledBitAttribute"/> to replicate the enabled flag itself.</remarks>
+    [AttributeUsage(AttributeTargets.Field|AttributeTargets.Property)]
     public class GhostFieldAttribute : Attribute
     {
         /// <summary>
         /// Floating point numbers will be multiplied by this number and rounded to an integer, enabling better delta-compression via huffman encoding.
-        /// Specifying a Quantization is mandatory for floating point numbers and not supported for integer numbers.
+        /// Quantization is not supported for integer numbers and is disabled by default for floats.
         /// To send a floating point number unquantized, use 0.
         /// Examples:
         /// Quantization=0 implies full precision.
@@ -63,15 +61,14 @@ namespace Unity.NetCode
         public bool Composite { get; set; } = false;
 
         /// <summary>
-        /// <inheritdoc cref="SmoothingAction" />
-        /// Default is <see cref="SmoothingAction.Clamp" />.
+        /// Default is <see cref="SmoothingAction.Clamp"/>.
         /// </summary>
+        /// <inheritdoc cref="SmoothingAction"/>
         public SmoothingAction Smoothing { get; set; } = SmoothingAction.Clamp;
 
-        /// <summary> Allows you to specify a custom serializer for this GhostField using the <see cref="GhostFieldSubType" /> API. </summary>
-        /// <inheritdoc cref="GhostFieldSubType" />
+        /// <summary>Allows you to specify a custom serializer for this GhostField using the <see cref="GhostFieldSubType"/> API.</summary>
+        /// <inheritdoc cref="GhostFieldSubType"/>
         public int SubType { get; set; } = 0;
-
         /// <summary>
         /// Default true. If unset (false), instructs code-generation to not include this field in the serialization data.
         /// I.e. Do not replicate this field.
@@ -92,10 +89,21 @@ namespace Unity.NetCode
     }
 
     /// <summary>
-    /// Add the attribute to prevent a field ICommandData struct to be serialized
+    /// Attribute denoting that an <see cref="Unity.Entities.IEnableableComponent"/> should have its enabled flag replicated.
+    /// And thus, this is only valid on enableable component types. You'll get compiler errors if it's not.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-    public class DontSerializeForCommand : Attribute
+    /// <remarks>A type will not replicate its enableable flag unless it has this attribute attached to the class.
+    /// This can (and should) also be added to variants that serialize enable bits.</remarks>
+    [AttributeUsage(AttributeTargets.Struct | AttributeTargets.Class)]
+    public sealed class GhostEnabledBitAttribute : Attribute
+    {
+    }
+
+    /// <summary>
+    /// Add the attribute to prevent a field ICommandData struct to be serialized.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Field|AttributeTargets.Property, Inherited = true)]
+    public class DontSerializeForCommandAttribute : Attribute
     {
     }
 }

@@ -54,6 +54,19 @@ namespace BovineLabs.Core.Extensions
             return char.ToUpper(input[0]) + input[1..];
         }
 
+        /// <summary> Lower case the first character in a string. </summary>
+        /// <param name="input"> The string to modify. </param>
+        /// <returns> The string with first character in lower case. </returns>
+        public static string FirstCharToLower(this string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return input;
+            }
+
+            return char.ToLower(input[0]) + input[1..];
+        }
+
         /// <summary> Trim a string from the start of a string. </summary>
         /// <param name="source"> The source string. </param>
         /// <param name="value"> The string to trim. </param>

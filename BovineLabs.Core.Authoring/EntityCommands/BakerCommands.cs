@@ -11,24 +11,24 @@ namespace BovineLabs.Core.Authoring.EntityCommands
     public struct BakerCommands : IEntityCommands
     {
         private readonly IBaker baker;
-        private Entity entity;
+        private Entity localEntity;
 
-        public BakerCommands(IBaker baker, Entity entity)
+        public BakerCommands(IBaker baker, Entity localEntity)
         {
             this.baker = baker;
-            this.entity = entity;
+            this.localEntity = localEntity;
         }
 
         public Entity Entity
         {
-            get => this.entity;
-            set => this.entity = value;
+            get => this.localEntity;
+            set => this.localEntity = value;
         }
 
         public Entity CreateEntity()
         {
-            this.entity = this.baker.CreateAdditionalEntity(TransformUsageFlags.None);
-            return this.entity;
+            this.localEntity = this.baker.CreateAdditionalEntity(TransformUsageFlags.None);
+            return this.localEntity;
         }
 
         public Entity Instantiate(Entity prefab)
@@ -45,46 +45,77 @@ namespace BovineLabs.Core.Authoring.EntityCommands
         public void AddComponent<T>()
             where T : unmanaged, IComponentData
         {
-            this.baker.AddComponent<T>(this.entity);
+            this.AddComponent<T>(this.localEntity);
+        }
+
+        public void AddComponent<T>(Entity entity) where T : unmanaged, IComponentData
+        {
+            this.baker.AddComponent<T>(entity);
         }
 
         public void AddComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            this.baker.AddComponent(this.entity, component);
+            this.AddComponent(this.localEntity, component);
+        }
+
+        public void AddComponent<T>(Entity entity, in T component)
+            where T : unmanaged, IComponentData
+        {
+            this.baker.AddComponent(entity, component);
         }
 
         public void AddComponent(in ComponentTypeSet components)
         {
-            this.baker.AddComponent(this.entity, components);
+            this.AddComponent(this.localEntity, components);
         }
 
-        public void AddComponentObject<T>(in T component)
-            where T : class
+        public void AddComponent(Entity entity, in ComponentTypeSet components)
         {
-            this.baker.AddComponentObject(this.entity, component);
+            this.baker.AddComponent(entity, components);
         }
 
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            this.baker.SetComponent(this.entity, component);
+            this.SetComponent(this.localEntity, component);
+        }
+
+        public void SetComponent<T>(Entity entity, in T component)
+            where T : unmanaged, IComponentData
+        {
+            this.baker.SetComponent(entity, component);
         }
 
         public DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            return this.baker.AddBuffer<T>(this.entity);
+            return this.AddBuffer<T>(this.localEntity);
+        }
+
+        public DynamicBuffer<T> AddBuffer<T>(Entity entity) where T : unmanaged, IBufferElementData
+        {
+            return this.baker.AddBuffer<T>(entity);
         }
 
         public DynamicBuffer<T> SetBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            return this.baker.SetBuffer<T>(this.entity);
+            return this.SetBuffer<T>(this.localEntity);
+        }
+
+        public DynamicBuffer<T> SetBuffer<T>(Entity entity) where T : unmanaged, IBufferElementData
+        {
+            return this.baker.SetBuffer<T>(entity);
         }
 
         public void AppendToBuffer<T>(in T element)
             where T : unmanaged, IBufferElementData
+        {
+            this.AppendToBuffer(this.localEntity, element);
+        }
+
+        public void AppendToBuffer<T>(Entity entity, in T element) where T : unmanaged, IBufferElementData
         {
             throw new NotImplementedException("Can't append to buffer in a baker, use Add/Set");
         }
@@ -92,7 +123,12 @@ namespace BovineLabs.Core.Authoring.EntityCommands
         public void SetComponentEnabled<T>(bool enabled)
             where T : unmanaged, IEnableableComponent
         {
-            this.baker.SetComponentEnabled<T>(this.entity, enabled);
+            this.SetComponentEnabled<T>(this.localEntity, enabled);
+        }
+
+        public void SetComponentEnabled<T>(Entity entity, bool enabled) where T : unmanaged, IEnableableComponent
+        {
+            this.baker.SetComponentEnabled<T>(entity, enabled);
         }
     }
 }

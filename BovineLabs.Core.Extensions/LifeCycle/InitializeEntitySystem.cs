@@ -5,7 +5,6 @@
 #if !BL_DISABLE_LIFECYCLE
 namespace BovineLabs.Core.LifeCycle
 {
-    using BovineLabs.Core.Extensions;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Entities;

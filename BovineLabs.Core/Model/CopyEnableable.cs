@@ -21,9 +21,8 @@ namespace BovineLabs.Core.Model
         public void OnCreate(ref SystemState state)
         {
             this.query = new EntityQueryBuilder(Allocator.Temp)
-                .WithAllRW<TTo>()
-                .WithAll<TFrom>()
-                .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState)
+                .WithPresentRW<TTo>()
+                .WithPresent<TFrom>()
                 .Build(ref state);
 
             this.query.AddChangedVersionFilter(ComponentType.ReadOnly<TFrom>());

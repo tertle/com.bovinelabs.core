@@ -1,5 +1,5 @@
 ﻿// <copyright file="StateAPI.cs" company="BovineLabs">
-// Copyright (c) BovineLabs. All rights reserved.
+//     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 namespace BovineLabs.Core.States
@@ -11,12 +11,13 @@ namespace BovineLabs.Core.States
 
     public static class StateAPI
     {
-        public static void Register<TState, TInstance, TSettings>(ref SystemState systemState, string stateName, bool queryDependency = true)
+        public static byte Register<TState, TInstance, TSettings>(ref SystemState systemState, string stateName, bool queryDependency = true)
             where TState : unmanaged, IComponentData
             where TInstance : unmanaged, IComponentData
         {
             var stateKey = (byte)K<TSettings>.NameToKey(stateName);
             Register<TState, TInstance>(ref systemState, stateKey, queryDependency);
+            return stateKey;
         }
 
         public static void Register<TState, TInstance>(ref SystemState systemState, byte stateKey, bool queryDependency = true)

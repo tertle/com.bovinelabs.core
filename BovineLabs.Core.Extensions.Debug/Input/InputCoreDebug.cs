@@ -9,11 +9,11 @@ namespace BovineLabs.Core.Input
 
     public partial struct InputCoreDebug : IComponentData
     {
-        [InputAction]
-        public ButtonState TimeScaleDouble;
+        [InputActionDown]
+        public bool TimeScaleDouble;
 
-        [InputAction]
-        public ButtonState TimeScaleHalve;
+        [InputActionDown]
+        public bool TimeScaleHalve;
     }
 }
 #endif

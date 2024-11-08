@@ -7,11 +7,13 @@ namespace BovineLabs.Core.Camera
 {
     using BovineLabs.Core;
     using BovineLabs.Core.Groups;
+    using BovineLabs.Core.Input;
     using Unity.Entities;
     using Unity.Transforms;
     using UnityEngine;
 
-    [UpdateInGroup(typeof(AfterSceneSystemGroup))]
+    [WorldSystemFilter(WorldSystemFilterFlags.Presentation)]
+    [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
     public partial class CameraMainSystem : SystemBase
     {
         protected override void OnCreate()

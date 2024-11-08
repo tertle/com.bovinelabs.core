@@ -7,29 +7,24 @@ namespace BovineLabs.Core.Pause
 {
     using Unity.Entities;
 
-    [UpdateInGroup(typeof(InitializationSystemGroup), OrderFirst = true)]
-    [WorldSystemFilter(Worlds.Service | WorldSystemFilterFlags.LocalSimulation)]
+    [UpdateAfter(typeof(EndInitializationEntityCommandBufferSystem))]
+    [UpdateInGroup(typeof(InitializationSystemGroup), OrderLast = true)]
+    [WorldSystemFilter(Worlds.Service | Worlds.SimulationThin)]
     public partial class PauseLimitSystem : SystemBase
     {
         /// <inheritdoc/>
-        protected override void OnCreate()
+        protected override void OnUpdate()
         {
             var simulationSystemGroup = this.World.GetExistingSystemManaged<SimulationSystemGroup>();
-            simulationSystemGroup.RateManager = new PauseRateManager(simulationSystemGroup, false);
+            simulationSystemGroup.RateManager = new PauseRateManager(simulationSystemGroup, simulationSystemGroup.RateManager, false);
 
             var presentationSystemGroup = this.World.GetExistingSystemManaged<PresentationSystemGroup>();
             if (presentationSystemGroup != null)
             {
-                presentationSystemGroup.RateManager = new PauseRateManager(presentationSystemGroup, true);
+                presentationSystemGroup.RateManager = new PauseRateManager(presentationSystemGroup, presentationSystemGroup.RateManager, true);
             }
 
-            this.Enabled = false;
-        }
-
-        /// <inheritdoc/>
-        protected override void OnUpdate()
-        {
-            // NO-OP
+            this.World.GetExistingSystemManaged<InitializationSystemGroup>().RemoveSystemFromUpdateList(this);
         }
     }
 }

@@ -11,6 +11,7 @@ namespace BovineLabs.Core.Pause
 
     public class PauseRateManager : IRateManager
     {
+        private readonly IRateManager existingRateManager;
         private readonly bool isPresentation;
         private EntityQuery pauseQuery;
         private EntityQuery debugQuery;
@@ -19,10 +20,11 @@ namespace BovineLabs.Core.Pause
         private bool hasUpdatedThisFrame;
         private double pauseTime;
 
-        public PauseRateManager(ComponentSystemGroup group, bool isPresentation)
+        public PauseRateManager(ComponentSystemGroup group, IRateManager existingRateManager, bool isPresentation)
         {
             this.pauseQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<PauseGame>().WithOptions(EntityQueryOptions.IncludeSystems).Build(group);
             this.debugQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<BLDebug>().Build(group);
+            this.existingRateManager = existingRateManager;
             this.isPresentation = isPresentation;
         }
 
@@ -32,6 +34,11 @@ namespace BovineLabs.Core.Pause
         {
             if (this.hasUpdatedThisFrame)
             {
+                if (this.existingRateManager?.ShouldGroupUpdate(group) ?? false)
+                {
+                    return true;
+                }
+
                 this.hasUpdatedThisFrame = false;
                 return false;
             }
@@ -58,13 +65,21 @@ namespace BovineLabs.Core.Pause
             // Became paused this frame
             if (isPaused && !this.wasPaused)
             {
-                this.debugQuery.GetSingleton<BLDebug>().Info("Game Paused: true");
+                if (!this.isPresentation)
+                {
+                    this.debugQuery.GetSingleton<BLDebug>().Debug("World Paused: true");
+                }
+
                 this.pauseTime = group.World.Time.ElapsedTime;
                 this.wasPaused = true;
             }
             else if (!isPaused && this.wasPaused)
             {
-                this.debugQuery.GetSingleton<BLDebug>().Info("Game Paused: false");
+                if (!this.isPresentation)
+                {
+                    this.debugQuery.GetSingleton<BLDebug>().Debug("World Paused: false");
+                }
+
                 this.wasPaused = false;
             }
 
@@ -72,6 +87,14 @@ namespace BovineLabs.Core.Pause
             {
                 // Game time progress needs to be paused to stop fixed step catchup after unpausing
                 group.World.Time = new TimeData(this.pauseTime, group.World.Time.DeltaTime);
+                PauseUtility.UpdateAlwaysSystems(group);
+
+                this.Timestep = 0;
+                return false;
+            }
+
+            if (!this.existingRateManager?.ShouldGroupUpdate(group) ?? false)
+            {
                 this.Timestep = 0;
                 return false;
             }

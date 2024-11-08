@@ -14,11 +14,13 @@
         "Unity.Mathematics",
         "Unity.Mathematics.Extensions",
         "Unity.NetCode",
+        "Unity.Networking.Transport",
         "Unity.Physics",
         "Unity.ResourceManager",
         "Unity.Scenes",
         "Unity.Transforms",
-        "Unity.Transforms.Hybrid"
+        "Unity.Transforms.Hybrid",
+        "Unity.Physics.Custom"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

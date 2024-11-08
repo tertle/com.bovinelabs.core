@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_6000_0_OR_NEWER && BL_TYPEMANAGER_OVERRIDE
+#if BL_TYPEMANAGER_OVERRIDE
 namespace BovineLabs.Core.Utility
 {
     using System;

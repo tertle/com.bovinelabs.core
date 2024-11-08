@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_6000_0_OR_NEWER && UNITY_VFX_GRAPH
+#if UNITY_VFX_GRAPH
 namespace BovineLabs.Core.Editor.VFXGraphTemplateWindow
 {
     using BovineLabs.Core.Editor.UI;

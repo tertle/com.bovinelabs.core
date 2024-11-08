@@ -6,44 +6,43 @@ namespace BovineLabs.Core.EntityCommands
 {
     using System;
     using BovineLabs.Core.Assertions;
-    using Unity.Burst;
     using Unity.Entities;
 
     public struct CommandBufferParallelCommands : IEntityCommands
     {
         private readonly int sortKey;
-        private Entity entity;
+        private Entity localEntity;
         private EntityCommandBuffer.ParallelWriter commandBuffer;
         private BlobAssetStore blobAssetStore;
 
         public CommandBufferParallelCommands(
             EntityCommandBuffer.ParallelWriter commandBuffer,
             int sortKey,
-            Entity entity = default,
+            Entity localEntity = default,
             BlobAssetStore blobAssetStore = default)
         {
             this.commandBuffer = commandBuffer;
             this.sortKey = sortKey;
-            this.entity = entity;
+            this.localEntity = localEntity;
             this.blobAssetStore = blobAssetStore;
         }
 
         public Entity Entity
         {
-            get => this.entity;
-            set => this.entity = value;
+            get => this.localEntity;
+            set => this.localEntity = value;
         }
 
         public Entity CreateEntity()
         {
-            this.entity = this.commandBuffer.CreateEntity(this.sortKey);
-            return this.entity;
+            this.localEntity = this.commandBuffer.CreateEntity(this.sortKey);
+            return this.localEntity;
         }
 
         public Entity Instantiate(Entity prefab)
         {
-            this.entity = this.commandBuffer.Instantiate(this.sortKey, prefab);
-            return this.entity;
+            this.localEntity = this.commandBuffer.Instantiate(this.sortKey, prefab);
+            return this.localEntity;
         }
 
         public void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)
@@ -62,64 +61,94 @@ namespace BovineLabs.Core.EntityCommands
         public void AddComponent<T>()
             where T : unmanaged, IComponentData
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            this.commandBuffer.AddComponent<T>(this.sortKey, this.entity);
+            this.AddComponent<T>(this.localEntity);
+        }
+
+        public void AddComponent<T>(Entity entity) where T : unmanaged, IComponentData
+        {
+            this.commandBuffer.AddComponent<T>(this.sortKey, entity);
         }
 
         public void AddComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            this.commandBuffer.AddComponent(this.sortKey, this.entity, component);
+            this.AddComponent(this.localEntity, component);
+        }
+
+        public void AddComponent<T>(Entity entity, in T component)
+            where T : unmanaged, IComponentData
+        {
+            this.commandBuffer.AddComponent(this.sortKey, entity, component);
         }
 
         public void AddComponent(in ComponentTypeSet components)
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            this.commandBuffer.AddComponent(this.sortKey, this.entity, components);
+            this.AddComponent(this.localEntity, components);
         }
 
-        [BurstDiscard]
-        public void AddComponentObject<T>(in T component)
-            where T : class
+        public void AddComponent(Entity entity, in ComponentTypeSet components)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-            throw new NotImplementedException("Can't AddComponentObject from a command buffer");
-#endif
+            this.commandBuffer.AddComponent(this.sortKey, entity, components);
         }
 
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            this.commandBuffer.SetComponent(this.sortKey, this.entity, component);
+            this.SetComponent(this.localEntity, component);
+        }
+
+        public void SetComponent<T>(Entity entity, in T component)
+            where T : unmanaged, IComponentData
+        {
+            this.commandBuffer.SetComponent(this.sortKey, entity, component);
         }
 
         public DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            return this.commandBuffer.AddBuffer<T>(this.sortKey, this.entity);
+            return this.AddBuffer<T>(this.localEntity);
+        }
+
+        public DynamicBuffer<T> AddBuffer<T>(Entity entity)
+            where T : unmanaged, IBufferElementData
+        {
+            return this.commandBuffer.AddBuffer<T>(this.sortKey, entity);
         }
 
         public DynamicBuffer<T> SetBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            return this.commandBuffer.SetBuffer<T>(this.sortKey, this.entity);
+            return this.SetBuffer<T>(this.localEntity);
+        }
+
+        public DynamicBuffer<T> SetBuffer<T>(Entity entity)
+            where T : unmanaged, IBufferElementData
+        {
+            return this.commandBuffer.SetBuffer<T>(this.sortKey, entity);
         }
 
         public void AppendToBuffer<T>(in T element)
             where T : unmanaged, IBufferElementData
         {
-            this.commandBuffer.AppendToBuffer(this.sortKey, this.entity, element);
+            this.AppendToBuffer(this.localEntity, element);
+        }
+
+        public void AppendToBuffer<T>(Entity entity, in T element)
+            where T : unmanaged, IBufferElementData
+        {
+            this.commandBuffer.AppendToBuffer(this.sortKey, entity, element);
         }
 
         public void SetComponentEnabled<T>(bool enabled)
             where T : unmanaged, IEnableableComponent
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            this.commandBuffer.SetComponentEnabled<T>(this.sortKey, this.entity, enabled);
+            this.SetComponentEnabled<T>(this.localEntity, enabled);
+        }
+
+        public void SetComponentEnabled<T>(Entity entity, bool enabled)
+            where T : unmanaged, IEnableableComponent
+        {
+            this.commandBuffer.SetComponentEnabled<T>(this.sortKey, entity, enabled);
         }
     }
 }

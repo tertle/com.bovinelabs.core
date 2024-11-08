@@ -17,18 +17,14 @@ namespace BovineLabs.Core.Authoring.Entities
         [SerializeField]
         private bool setVelocityToZero;
 
-        public bool IsKinematic => this.isKinematic;
-
-        public bool SetVelocityToZero => this.setVelocityToZero;
-
         private class Baker : Baker<PhysicsMassOverrideAuthoring>
         {
             public override void Bake(PhysicsMassOverrideAuthoring authoring)
             {
                 this.AddComponent(this.GetEntity(TransformUsageFlags.None), new PhysicsMassOverride
                 {
-                    IsKinematic = (byte)(authoring.IsKinematic ? 1 : 0),
-                    SetVelocityToZero = (byte)(authoring.SetVelocityToZero ? 1 : 0),
+                    IsKinematic = (byte)(authoring.isKinematic ? 1 : 0),
+                    SetVelocityToZero = (byte)(authoring.setVelocityToZero ? 1 : 0),
                 });
             }
         }

@@ -18,8 +18,10 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         {
             return property.name switch
             {
-                "objectDefinitions" => new AssetCreator<ObjectDefinition>(this.serializedObject, property).Element,
-                "objectGroups" => new AssetCreator<ObjectGroup>(this.serializedObject, property).Element,
+                "objectDefinitions" => new AssetCreator<ObjectDefinition>(
+                    this.serializedObject, property, "object.definitions", "Assets/Settings/Definitions", "Definition.asset").Element,
+                "objectGroups" => new AssetCreator<ObjectGroup>(
+                    this.serializedObject, property, "object.groups", "Assets/Settings/Groups", "Group.asset").Element,
                 _ => CreatePropertyField(property),
             };
         }

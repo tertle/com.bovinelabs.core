@@ -6,7 +6,6 @@ namespace BovineLabs.Core
 {
     using Unity.Entities;
 
-    // TODO add support for multi selections?
     public struct SelectedEntity : IComponentData
     {
         public Entity Value;

@@ -10,6 +10,7 @@ namespace BovineLabs.Core.Extensions
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
+    using Unity.Jobs.LowLevel.Unsafe;
 
     public static unsafe class UnsafeParallelHashMapExtensions
     {
@@ -23,6 +24,73 @@ namespace BovineLabs.Core.Extensions
             writer.m_Buffer = hashMap.m_Buffer;
 
             return writer;
+        }
+
+        public static ref TValue GetOrAddRef<TKey, TValue>(this UnsafeParallelHashMap<TKey, TValue> hashMap, TKey key, TValue defaultValue = default)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            var data = hashMap.m_Buffer;
+
+            if (UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(data, key, out _, out var tempIt))
+            {
+                return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, tempIt.EntryIndex);
+            }
+
+            // Allocate an entry from the free list
+            int idx;
+            int* nextPtrs;
+
+            if (data->allocatedIndexLength >= data->keyCapacity && data->firstFreeTLS[0] < 0)
+            {
+                int maxThreadCount = JobsUtility.ThreadIndexCount;
+
+                for (int tls = 1; tls < maxThreadCount; ++tls)
+                {
+                    if (data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] >= 0)
+                    {
+                        idx = data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine];
+                        nextPtrs = (int*)data->next;
+                        data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] = nextPtrs[idx];
+                        nextPtrs[idx] = -1;
+                        data->firstFreeTLS[0] = idx;
+                        break;
+                    }
+                }
+
+                if (data->firstFreeTLS[0] < 0)
+                {
+                    var newCap = UnsafeParallelHashMapData.GrowCapacity(data->keyCapacity);
+                    UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, newCap, UnsafeParallelHashMapData.GetBucketSize(newCap), hashMap.m_AllocatorLabel);
+                }
+            }
+
+            idx = data->firstFreeTLS[0];
+
+            if (idx >= 0)
+            {
+                data->firstFreeTLS[0] = ((int*)data->next)[idx];
+            }
+            else
+            {
+                idx = data->allocatedIndexLength++;
+            }
+
+            CheckIndexOutOfBounds(data, idx);
+
+            // Write the new value to the entry
+            UnsafeUtility.WriteArrayElement(data->keys, idx, key);
+            UnsafeUtility.WriteArrayElement(data->values, idx, defaultValue);
+
+            int bucket = key.GetHashCode() & data->bucketCapacityMask;
+
+            // Add the index to the hash-map
+            var buckets = (int*)data->buckets;
+            nextPtrs = (int*)data->next;
+            nextPtrs[idx] = buckets[bucket];
+            buckets[bucket] = idx;
+
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, idx);
         }
 
         public static ref TValue GetOrAddRef<TKey, TValue>(this UnsafeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, TKey key, TValue defaultValue = default)
@@ -74,6 +142,20 @@ namespace BovineLabs.Core.Extensions
             }
 
             return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, idx);
+        }
+
+        public static ref TValue GetRef<TKey, TValue>(this UnsafeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, TKey key)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            var data = hashMap.m_Buffer;
+
+            if (UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(data, key, out _, out var tempIt))
+            {
+                return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, tempIt.EntryIndex);
+            }
+
+            throw new NullReferenceException();
         }
 
         public static unsafe void ClearAndAddBatchUnsafe<TKey, TValue>(
@@ -170,6 +252,16 @@ namespace BovineLabs.Core.Extensions
                 throw new ArgumentException("Key and value array don't match");
             }
 #endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private static void CheckIndexOutOfBounds(UnsafeParallelHashMapData* data, int idx)
+        {
+            if (idx < 0 || idx >= data->keyCapacity)
+            {
+                throw new InvalidOperationException("Internal HashMap error");
+            }
         }
     }
 }

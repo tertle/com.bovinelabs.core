@@ -87,8 +87,8 @@ namespace BovineLabs.Core.Editor.Settings
 
             this.CleanupUI();
 
-            var flexGrow = this.splitter!.Children().First().resolvedStyle.flexGrow;
-            EditorPrefs.SetFloat(this.SplitterKey, flexGrow);
+            // var flexGrow = this.splitter!.Children().First().resolvedStyle.flexGrow;
+            // EditorPrefs.SetFloat(this.SplitterKey, flexGrow);
 
             EditorApplication.playModeStateChanged -= this.EditorApplicationOnplayModeStateChanged;
         }
@@ -202,11 +202,10 @@ namespace BovineLabs.Core.Editor.Settings
             this.tree.makeItem = () => new Label();
             this.tree.bindItem = (element, index) => ((Label)element).text = this.tree.GetItemDataForIndex<IPanelOrGroup>(index).Name;
             this.tree.selectionChanged += this.SelectionChanged;
-            this.tree.style.flexGrow = this.splitterFlex;
             this.tree.fixedItemHeight = 16;
 
             var contentsView = root.Q<ScrollView>("scroll");
-            contentsView.style.flexGrow = 1 - this.splitterFlex;
+            contentsView.style.flexGrow = 1;
             this.contents = contentsView.Q<VisualElement>("contents");
 
             this.contentTitle = contentsView.Q<Label>("title");

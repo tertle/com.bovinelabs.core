@@ -5,11 +5,15 @@
         <uie:ToolbarToggle label="Show Empty" enabled="true" name="empty" style="max-width: 85px;" />
         <uie:ToolbarSearchField name="search" />
     </uie:Toolbar>
-    <uie:VisualSplitter name="splitter" class="unity-visual-splitter settings-splitter">
-        <ui:TreeView name="list" item-height="16" class="settings-list" style="width: initial;" />
-        <ui:ScrollView name="scroll" class="settings-scrollview">
-            <ui:Label name="title" class="settings-title" style="padding-bottom: 0; margin-bottom: 8px;" />
-            <ui:VisualElement name="contents" class="settings-content" />
-        </ui:ScrollView>
-    </uie:VisualSplitter>
+    <ui:TwoPaneSplitView name="splitter" class="unity-visual-splitter settings-splitter" fixed-pane-initial-dimension="300">
+        <ui:VisualElement name="left" style="min-width: 200px;">
+            <ui:TreeView name="list" item-height="16" class="settings-list" style="width: initial;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="right" style="min-width: 200px;">
+            <ui:ScrollView name="scroll" class="settings-scrollview">
+                <ui:Label name="title" class="settings-title" style="padding-bottom: 0; margin-bottom: 8px;" />
+                <ui:VisualElement name="contents" class="settings-content" />
+            </ui:ScrollView>
+        </ui:VisualElement>
+    </ui:TwoPaneSplitView>
 </ui:UXML>

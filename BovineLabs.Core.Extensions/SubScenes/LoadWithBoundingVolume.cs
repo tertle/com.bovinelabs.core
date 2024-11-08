@@ -11,8 +11,8 @@ namespace BovineLabs.Core.SubScenes
     public struct LoadWithBoundingVolume : IComponentData
     {
         public AABB Bounds;
-        public float LoadMaxDistanceOverrideSq;
-        public float UnloadMaxDistanceOverrideSq;
+        public float LoadMaxDistanceSq;
+        public float UnloadMaxDistanceSq;
     }
 }
 #endif

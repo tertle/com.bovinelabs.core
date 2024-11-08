@@ -22,10 +22,10 @@ namespace BovineLabs.Core.ObjectManagement
 
         public IReadOnlyCollection<ComponentMap> Components => this.keys;
 
-        public override IReadOnlyList<NameValue> Keys => this.keys.Select(k => new NameValue() { Name = k.Name, Value = k.Value }).ToArray();
+        public override IReadOnlyList<NameValue> Keys => this.keys.Select(k => new NameValue { Name = k.Name, Value = k.Value }).ToArray();
 
         /// <inheritdoc/>
-        protected override void Init()
+        protected override void Initialize()
         {
             K<ObjectCategories>.Initialize(this.Keys);
         }

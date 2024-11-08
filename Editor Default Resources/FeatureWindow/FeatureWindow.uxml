@@ -33,12 +33,12 @@
             <ui:Label tabindex="-1" text="Physics States" display-tooltip-when-elided="true" name="BL_DISABLE_PHYSICS_STATES" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
         </ui:VisualElement>
-        <ui:VisualElement tooltip="Adds support for ensuring certain subscenes have loaded before the simulation starts running. Requires Pause to be enabled." class="feature-group">
-            <ui:Label tabindex="-1" text="Subscene Loading" display-tooltip-when-elided="true" name="BL_DISABLE_SUBSCENE" />
+        <ui:VisualElement tooltip="Attribute based support for stripping network components in Local Simulation worlds." class="feature-group">
+            <ui:Label tabindex="-1" text="Strip Local" display-tooltip-when-elided="true" name="BL_DISABLE_STRIP" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
         </ui:VisualElement>
-        <ui:VisualElement tooltip="Adds flexible debug toolbar panel. Requires UI to be enabled." class="feature-group">
-            <ui:Label tabindex="-1" text="Toolbar" display-tooltip-when-elided="true" name="BL_DISABLE_TOOLBAR" />
+        <ui:VisualElement tooltip="Adds support for ensuring certain subscenes have loaded before the simulation starts running. Requires Pause to be enabled." class="feature-group">
+            <ui:Label tabindex="-1" text="Subscene Loading" display-tooltip-when-elided="true" name="BL_DISABLE_SUBSCENE" />
             <ui:Button text="Enabled" display-tooltip-when-elided="true" class="feature-button" />
         </ui:VisualElement>
     </ui:ScrollView>

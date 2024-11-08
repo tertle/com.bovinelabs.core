@@ -18,10 +18,26 @@ namespace BovineLabs.Core.Utility
     /// <summary> Common reflection helpers. </summary>
     public static class ReflectionUtility
     {
+        private static System.Reflection.Assembly[]? allAssemblies;
+        private static Type[]? allTypes;
+        private static Type[]? allTypesWithImplementation;
+        private static Type[]? allTypesWithImplementationNoGeneric;
+        private static MethodInfo[]? allMethods;
+
 #if UNITY_EDITOR
         private static Dictionary<string, Assembly> AssembliesMap { get; }
             = CompilationPipeline.GetAssemblies().ToDictionary(r => r.name, r => r);
 #endif
+
+        private static System.Reflection.Assembly[] AllAssemblies => allAssemblies ??= AppDomain.CurrentDomain.GetAssemblies();
+
+        private static Type[] AllTypes => allTypes ??= AllAssemblies.SelectMany(s => s.GetTypes()).ToArray();
+
+        private static Type[] AllTypesWithImplementation => allTypesWithImplementation ??= AllTypes.Where(t => !t.IsAbstract && !t.IsInterface).ToArray();
+
+        private static Type[] AllTypesWithImplementationNoGeneric => allTypesWithImplementationNoGeneric ??= AllTypesWithImplementation.Where(t => !t.ContainsGenericParameters).ToArray();
+
+        private static MethodInfo[] AllPublicMethods => allMethods ??= AllTypes.SelectMany(s => s.GetMethods()).ToArray();
 
         /// <summary> Searches all assemblies to find all types that implement a type. </summary>
         /// <typeparam name="T"> The base type that is inherited from. </typeparam>
@@ -29,7 +45,7 @@ namespace BovineLabs.Core.Utility
         public static IEnumerable<T> GetAllAssemblyAttributes<T>()
             where T : Attribute
         {
-            return AppDomain.CurrentDomain.GetAssemblies()
+            return AllAssemblies
                 .SelectMany(s => s.GetCustomAttributes(typeof(T), true))
                 .Cast<T>();
         }
@@ -64,8 +80,7 @@ namespace BovineLabs.Core.Utility
         /// <returns> An enumeration of the types. </returns>
         public static IEnumerable<Type> GetAllWithGenericDefinition(Type type)
         {
-            var types = from t in AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes())
-                where !t.IsAbstract && !t.IsInterface
+            var types = from t in AllTypesWithImplementation
                 let i = t.BaseType
                 where (i != null) && i.IsGenericType &&
                       (i.GetGenericTypeDefinition() == type) &&
@@ -76,6 +91,16 @@ namespace BovineLabs.Core.Utility
         }
 
         /// <summary> Searches all assemblies to find all types that implement a type. </summary>
+        /// <param name="type"> The base type that is inherited from. </param>
+        /// <returns> All the types. </returns>
+        public static IEnumerable<Type> GetAllImplementations(Type type)
+        {
+            return AllTypesWithImplementation
+                .Where(t => t != type)
+                .Where(type.IsAssignableFrom);
+        }
+
+        /// <summary> Searches all assemblies to find all types that implement a type. </summary>
         /// <typeparam name="T"> The base type that is inherited from. </typeparam>
         /// <returns> All the types. </returns>
         public static IEnumerable<Type> GetAllImplementations<T>()
@@ -83,11 +108,20 @@ namespace BovineLabs.Core.Utility
         {
             var type = typeof(T);
 
-            return AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
+            return AllTypesWithImplementation
                 .Where(t => t != type)
-                .Where(t => !t.IsInterface && !t.IsAbstract)
-                .Where(t => type.IsAssignableFrom(t));
+                .Where(type.IsAssignableFrom);
+        }
+
+        public static IEnumerable<Type> GetAllOpenGenericImplementations(Type type)
+        {
+            return AllTypesWithImplementation
+                .Where(s =>
+                {
+                    var baseType = s.BaseType;
+                    return (baseType is { IsGenericType: true } && type.IsAssignableFrom(baseType.GetGenericTypeDefinition())) ||
+                           s.GetInterfaces().Any(z => z.IsGenericType && type.IsAssignableFrom(z.GetGenericTypeDefinition()));
+                });
         }
 
         /// <summary> Searches all assemblies to find all types that have an attribute. </summary>
@@ -96,9 +130,13 @@ namespace BovineLabs.Core.Utility
         public static IEnumerable<Type> GetAllWithAttribute<T>()
             where T : Attribute
         {
-            return AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(t => t.GetCustomAttribute<T>() != null);
+            return AllTypes.Where(t => t.GetCustomAttribute<T>() != null);
+        }
+
+        public static IEnumerable<MethodInfo> GetAllMethodsWithAttribute<T>()
+            where T : Attribute
+        {
+            return AllPublicMethods.Where(t => t.GetCustomAttribute<T>() != null);
         }
 
         /// <summary> Searches all assemblies to find all types that implement both 2 types. </summary>
@@ -112,11 +150,8 @@ namespace BovineLabs.Core.Utility
             var type1 = typeof(T1);
             var type2 = typeof(T2);
 
-            return AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
+            return AllTypesWithImplementationNoGeneric
                 .Where(t => (t != type1) && (t != type2))
-                .Where(t => !t.IsInterface && !t.IsAbstract)
-                .Where(t => !t.ContainsGenericParameters)
                 .Where(t => type1.IsAssignableFrom(t) && type2.IsAssignableFrom(t));
         }
 
@@ -131,11 +166,8 @@ namespace BovineLabs.Core.Utility
             var type1 = typeof(T1);
             var type2 = typeof(T2);
 
-            var all = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
+            var all = AllTypesWithImplementationNoGeneric
                 .Where(t => (t != type1) && (t != type2))
-                .Where(t => !t.IsInterface && !t.IsAbstract)
-                .Where(t => !t.ContainsGenericParameters)
                 .Where(t => type1.IsAssignableFrom(t) && type2.IsAssignableFrom(t))
                 .ToList();
 
@@ -246,7 +278,7 @@ namespace BovineLabs.Core.Utility
         /// <returns> The name of all the assemblies. </returns>
         public static IEnumerable<System.Reflection.Assembly> GetAllAssemblyWithReference(System.Reflection.Assembly reference)
         {
-            return AppDomain.CurrentDomain.GetAssemblies().Where(a => IsAssemblyReferencingAssembly(a, reference));
+            return AllAssemblies.Where(a => IsAssemblyReferencingAssembly(a, reference));
         }
 
         public static FieldInfo? GetFieldInBase(this Type? type, string name)
@@ -280,9 +312,8 @@ namespace BovineLabs.Core.Utility
                 throw new ArgumentException("T should be an interface.", nameof(T));
             }
 
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => !p.IsAbstract && !p.IsInterface && type.IsAssignableFrom(p))
+            var types = AllTypesWithImplementation
+                .Where(p => type.IsAssignableFrom(p))
                 .ToList();
 
             switch (types.Count)

@@ -8,8 +8,8 @@ namespace Unity.NetCode
     using System;
 
     /// <summary>
-    /// Assign to every <see cref="GhostComponent"/>, and denotes which Ghost prefab version this component is allowed to exist on.
-    /// <example>Use this to disable rendering components on the Server version of the Ghost.</example>
+    /// Assign to every <see cref="GhostInstance"/>, and denotes which Ghost prefab version this component is allowed to exist on.
+    /// Use this to disable rendering components on the Server version of the Ghost.
     /// If you cannot change the ComponentType, use the `GhostAuthoringInspectionComponent` to manually override on a specific Ghost prefab.
     /// </summary>
     [Flags]
@@ -72,7 +72,7 @@ namespace Unity.NetCode
     /// <para><b>Meta-data of a <see cref="ICommandData"/> component, denoting whether or not the server should replicate the
     /// input commands back down to clients.
     /// Configure via <see cref="GhostComponentAttribute"/>.</b></para>
-    /// <para>Docs for ICommandData:<inheritdoc cref="ICommandData"/></para>
+    /// <para>See the documentation for ICommandData:<see cref="ICommandData"/></para>
     /// </summary>
     [Flags]
     public enum SendToOwnerType
@@ -91,6 +91,9 @@ namespace Unity.NetCode
     /// <summary>
     /// This attribute can be used to tag components to control which ghost prefab variants they are included in and where they are sent for owner predicted ghosts.
     /// </summary>
+    /// <remarks>
+    /// GhostComponent is not enough to make your component replicated. Make sure to use <see cref="GhostFieldAttribute"/> on each replicated field.
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Class|AttributeTargets.Struct)]
     public class GhostComponentAttribute : Attribute
     {
@@ -98,7 +101,6 @@ namespace Unity.NetCode
         /// Gets or sets the type of prefab where this component should be included on the main entity of the prefab.
         /// </summary>
         public GhostPrefabType PrefabType { get; set; } = GhostPrefabType.All;
-
         /// <summary>
         /// Gets or sets the type of ghost this component should be sent to if the ghost is owner predicted.
         /// Formerly: "OwnerPredictedSendType".
@@ -106,13 +108,13 @@ namespace Unity.NetCode
         public GhostSendType SendTypeOptimization { get; set; } = GhostSendType.AllClients;
 
         /// <summary>
-        /// Gets or sets get or sets if a component should be be sent to the prediction owner or not. Some combination
+        /// Get or sets if a component should be be sent to the prediction owner or not. Some combination
         /// of the parameters and OwnerSendType may result in an error or warning at code-generation time.
         /// </summary>
         public SendToOwnerType OwnerSendType { get; set; } = SendToOwnerType.All;
 
         /// <summary>
-        /// Gets or sets a value indicating whether denotes whether or not this component - when added to a child entity - should send (i.e. replicate) its data.
+        /// Denotes whether or not this component - when added to a child entity - should send (i.e. replicate) its data.
         /// The default behaviour is that Netcode will NOT replicate component and buffer data on children.
         /// Why not? It's expensive, as it involves finding child entities in other chunks.
         /// Thus, setting this flag to true will enable this (more expensive) serialization of child entities (unless overridden via another "Variant").

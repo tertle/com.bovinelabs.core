@@ -9,9 +9,10 @@ namespace BovineLabs.Core.LifeCycle
     using BovineLabs.Core.SubScenes;
     using Unity.Entities;
 
-    [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderFirst = true)]
-    public partial class InitializeSystemGroup : InitializationRequireSubScenesSystemGroup
+    [UpdateInGroup(typeof(BeginSimulationSystemGroup), OrderFirst = true)]
+    public partial class InitializeSystemGroup : AlwaysUpdateSystemGroup
     {
+        /// <inheritdoc/>
         protected override void OnUpdate()
         {
             var query = SystemAPI.QueryBuilder().WithAny<InitializeEntity, InitializeSubSceneEntity>().Build();

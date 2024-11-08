@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
     using Unity.Entities;
@@ -11,6 +12,17 @@ namespace BovineLabs.Core.SubScenes
         public static WorldFlags ConvertFlags(SubSceneLoadFlags targetWorld)
         {
             var flags = WorldFlags.None;
+
+            if ((targetWorld & SubSceneLoadFlags.Game) != 0)
+            {
+                flags |= WorldFlags.Game;
+            }
+
+            if ((targetWorld & SubSceneLoadFlags.Service) != 0)
+            {
+                flags |= Worlds.ServiceWorld;
+            }
+
 #if UNITY_NETCODE
             if ((targetWorld & SubSceneLoadFlags.Client) != 0)
             {
@@ -26,16 +38,7 @@ namespace BovineLabs.Core.SubScenes
             {
                 flags |= WorldFlags.GameThinClient;
             }
-#else
-            if ((targetWorld & SubSceneLoadFlags.Game) != 0)
-            {
-                flags |= WorldFlags.Game;
-            }
 #endif
-            if ((targetWorld & SubSceneLoadFlags.Service) != 0)
-            {
-                flags |= Worlds.ServiceWorld;
-            }
 
             // Remove the live flag
             flags &= ~WorldFlags.Live;
@@ -43,3 +46,4 @@ namespace BovineLabs.Core.SubScenes
         }
     }
 }
+#endif

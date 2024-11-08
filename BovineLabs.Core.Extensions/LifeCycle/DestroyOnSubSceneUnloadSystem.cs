@@ -22,7 +22,8 @@ namespace BovineLabs.Core.LifeCycle
         public void OnUpdate(ref SystemState state)
         {
             foreach (var s in SystemAPI.Query<SceneSectionData>()
-                         .WithAll<SceneEntityReference, SceneSectionStreamingSystem.StreamingState>().WithNone<RequestSceneLoaded, DisableSceneResolveAndLoad>())
+                         .WithAll<SceneEntityReference, SceneSectionStreamingSystem.StreamingState>()
+                         .WithNone<RequestSceneLoaded, DisableSceneResolveAndLoad>())
             {
                 var destroyQuery = SystemAPI.QueryBuilder().WithDisabled<DestroyEntity>().WithAll<SceneSection>().Build();
                 destroyQuery.SetSharedComponentFilter(new SceneSection { SceneGUID = s.SceneGUID, Section = s.SubSectionIndex });

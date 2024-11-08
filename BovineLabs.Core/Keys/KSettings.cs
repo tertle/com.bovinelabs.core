@@ -13,42 +13,6 @@ namespace BovineLabs.Core.Keys
     using Unity.Mathematics;
     using UnityEngine;
 
-    /// <summary> Generic implementation of <see cref="KSettings" /> to allow calling the generic <see cref="K{T}" />. </summary>
-    /// <typeparam name="T"> Itself. </typeparam>
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Makes sense")]
-    public abstract class KSettings<T> : KSettings
-        where T : KSettings<T>
-    {
-        [SerializeField]
-        private NameValue[] keys = Array.Empty<NameValue>();
-
-        public override IReadOnlyList<NameValue> Keys => this.keys;
-
-        /// <inheritdoc />
-        protected sealed override void Init()
-        {
-            K<T>.Initialize(this.keys);
-        }
-
-        protected virtual IEnumerable<NameValue> SetReset()
-        {
-            return Enumerable.Empty<NameValue>();
-        }
-
-#if UNITY_EDITOR
-        protected virtual void OnValidate()
-        {
-            Validate(ref this.keys);
-        }
-
-        private void Reset()
-        {
-            this.keys = this.SetReset().ToArray();
-        }
-#endif
-
-    }
-
     /// <summary>
     /// The base KSettings file for defining custom enums, layers, keys. Do not implement this directly, implement <see cref="KSettings{T}" />.
     /// </summary>
@@ -65,7 +29,7 @@ namespace BovineLabs.Core.Keys
 
         public abstract IReadOnlyList<NameValue> Keys { get; }
 
-        protected abstract void Init();
+        protected abstract void Initialize();
 
 #if UNITY_EDITOR
         protected static void Validate<T>(ref T[] keys)
@@ -98,7 +62,7 @@ namespace BovineLabs.Core.Keys
 
             foreach (var setting in kvSettings)
             {
-                setting.Init();
+                setting.Initialize();
             }
         }
     }

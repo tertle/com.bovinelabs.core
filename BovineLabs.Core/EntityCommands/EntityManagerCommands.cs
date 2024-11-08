@@ -4,38 +4,37 @@
 
 namespace BovineLabs.Core.EntityCommands
 {
-    using BovineLabs.Core.Assertions;
     using Unity.Entities;
 
     public struct EntityManagerCommands : IEntityCommands
     {
-        private Entity entity;
+        private Entity localEntity;
         private EntityManager entityManager;
         private BlobAssetStore blobAssetStore;
 
-        public EntityManagerCommands(EntityManager entityManager, Entity entity = default, BlobAssetStore blobAssetStore = default)
+        public EntityManagerCommands(EntityManager entityManager, Entity localEntity = default, BlobAssetStore blobAssetStore = default)
         {
             this.entityManager = entityManager;
-            this.entity = entity;
+            this.localEntity = localEntity;
             this.blobAssetStore = blobAssetStore;
         }
 
         public Entity Entity
         {
-            get => this.entity;
-            set => this.entity = value;
+            get => this.localEntity;
+            set => this.localEntity = value;
         }
 
         public Entity CreateEntity()
         {
-            this.entity = this.entityManager.CreateEntity();
-            return this.entity;
+            this.localEntity = this.entityManager.CreateEntity();
+            return this.localEntity;
         }
 
         public Entity Instantiate(Entity prefab)
         {
-            this.entity = this.entityManager.Instantiate(prefab);
-            return this.entity;
+            this.localEntity = this.entityManager.Instantiate(prefab);
+            return this.localEntity;
         }
 
         public void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)
@@ -54,49 +53,71 @@ namespace BovineLabs.Core.EntityCommands
         public void AddComponent<T>()
             where T : unmanaged, IComponentData
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            this.entityManager.AddComponent<T>(this.entity);
+            this.AddComponent<T>(this.localEntity);
+        }
+
+        public void AddComponent<T>(Entity entity)
+            where T : unmanaged, IComponentData
+        {
+            this.entityManager.AddComponent<T>(entity);
         }
 
         public void AddComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            this.entityManager.AddComponentData(this.entity, component);
+            this.AddComponent(this.localEntity, component);
+        }
+
+        public void AddComponent<T>(Entity entity, in T component)
+            where T : unmanaged, IComponentData
+        {
+            this.entityManager.AddComponentData(entity, component);
         }
 
         public void AddComponent(in ComponentTypeSet components)
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            this.entityManager.AddComponent(this.entity, components);
+            this.AddComponent(this.localEntity, components);
         }
 
-        public void AddComponentObject<T>(in T component)
-            where T : class
+        public void AddComponent(Entity entity, in ComponentTypeSet components)
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            this.entityManager.AddComponentObject(this.entity, component);
+            this.entityManager.AddComponent(entity, components);
         }
 
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            this.entityManager.SetComponentData(this.entity, component);
+            this.SetComponent(this.localEntity, component);
+        }
+
+        public void SetComponent<T>(Entity entity, in T component)
+            where T : unmanaged, IComponentData
+        {
+            this.entityManager.SetComponentData(entity, component);
         }
 
         public DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            return this.entityManager.AddBuffer<T>(this.entity);
+            return this.AddBuffer<T>(this.localEntity);
+        }
+
+        public DynamicBuffer<T> AddBuffer<T>(Entity entity)
+            where T : unmanaged, IBufferElementData
+        {
+            return this.entityManager.AddBuffer<T>(entity);
         }
 
         public DynamicBuffer<T> SetBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            var buffer = this.entityManager.GetBuffer<T>(this.entity);
+            return this.SetBuffer<T>(this.localEntity);
+        }
+
+        public DynamicBuffer<T> SetBuffer<T>(Entity entity)
+            where T : unmanaged, IBufferElementData
+        {
+            var buffer = this.entityManager.GetBuffer<T>(entity);
             buffer.Clear();
             return buffer;
         }
@@ -104,14 +125,25 @@ namespace BovineLabs.Core.EntityCommands
         public void AppendToBuffer<T>(in T element)
             where T : unmanaged, IBufferElementData
         {
-            this.entityManager.GetBuffer<T>(this.entity).Add(element);
+            this.AppendToBuffer(this.localEntity, element);
+        }
+
+        public void AppendToBuffer<T>(Entity entity, in T element)
+            where T : unmanaged, IBufferElementData
+        {
+            this.entityManager.GetBuffer<T>(entity).Add(element);
         }
 
         public void SetComponentEnabled<T>(bool enabled)
             where T : unmanaged, IEnableableComponent
         {
-            Check.Assume(!this.entity.Equals(Entity.Null));
-            this.entityManager.SetComponentEnabled<T>(this.entity, enabled);
+            this.SetComponentEnabled<T>(this.localEntity, enabled);
+        }
+
+        public void SetComponentEnabled<T>(Entity entity, bool enabled)
+            where T : unmanaged, IEnableableComponent
+        {
+            this.entityManager.SetComponentEnabled<T>(entity, enabled);
         }
     }
 }

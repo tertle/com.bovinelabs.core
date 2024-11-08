@@ -17,8 +17,8 @@ namespace BovineLabs.Core.SubScenes
         public WorldFlags TargetWorld;
         public SubSceneLoadMode LoadingMode;
         public bool IsRequired;
-        public float LoadMaxDistanceOverride;
-        public float UnloadMaxDistanceOverride;
+        public float LoadMaxDistance;
+        public float UnloadMaxDistance;
     }
 }
 #endif

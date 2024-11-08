@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_6000_0_OR_NEWER
 namespace BovineLabs.Core.Editor.UI
 {
     using BovineLabs.Core.Collections;
@@ -26,4 +25,3 @@ namespace BovineLabs.Core.Editor.UI
         }
     }
 }
-#endif

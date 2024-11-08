@@ -1,4 +1,4 @@
-﻿// <copyright file="UnityTimeSystem.cs" company="BovineLabs">
+﻿// <copyright file="UpdateWorldTimeSystem.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -13,6 +13,7 @@ namespace BovineLabs.Core.Time
     using UnityEngine;
 
     /// <summary> Replaces the <see cref="UpdateWorldTimeSystem"/> but burst compiles it and adds support to Service world. </summary>
+    [UpdateBefore(typeof(Unity.Entities.UpdateWorldTimeSystem))] // To ensure we update before any system that is updating after this.
     [UpdateInGroup(typeof(InitializationSystemGroup), OrderFirst = true)]
     [UpdateAfter(typeof(BeginInitializationEntityCommandBufferSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | Worlds.Service)]
@@ -68,7 +69,7 @@ namespace BovineLabs.Core.Time
 
         private void SetTime(ref SystemState state, TimeData newTimeData)
         {
-            state.EntityManager.SetComponentData(this.timeSingleton, new WorldTime {Time = newTimeData});
+            state.EntityManager.SetComponentData(this.timeSingleton, new WorldTime { Time = newTimeData });
             state.WorldUnmanaged.Time = newTimeData;
         }
     }

@@ -10,14 +10,13 @@ namespace BovineLabs.Core.SubScenes
     [Flags]
     public enum SubSceneLoadFlags : byte
     {
+        Game = 1 << 0,
+        Service = 1 << 1,
 #if UNITY_NETCODE
-        Server = 1 << 0,
-        Client = 1 << 1,
-        ThinClient = 1 << 2,
-#else
-        Game = 1 << 3,
+        Client = 1 << 2,
+        Server = 1 << 3,
+        ThinClient = 1 << 4,
 #endif
-        Service = 1 << 4,
     }
 }
 #endif

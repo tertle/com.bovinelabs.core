@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Editor.Settings
         private readonly Dictionary<Type, Type> settingsPanelMap = new();
 
         /// <inheritdoc />
-        protected override string TitleText { get; } = "Settings";
+        protected override string TitleText => "Settings";
 
         [MenuItem("BovineLabs/Settings", priority = -30)]
         internal static void OpenSettings()

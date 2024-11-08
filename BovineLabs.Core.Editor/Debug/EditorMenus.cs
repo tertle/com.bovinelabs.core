@@ -5,6 +5,7 @@
 
 namespace BovineLabs.Core.Editor
 {
+    using BovineLabs.Core.Editor.Utility;
     using Unity.Editor.Bridge;
     using Unity.Entities.Editor;
     using Unity.Logging;
@@ -14,7 +15,10 @@ namespace BovineLabs.Core.Editor
 
     public static class EditorMenus
     {
-        private const string LogLevelBLMenu = "BovineLabs/Logging/";
+        private const string RootMenu = "BovineLabs/";
+        private const string RootToolsMenu = RootMenu + "Tools/";
+
+        private const string LogLevelBLMenu = RootMenu + "Logging/";
         private const string DebugLevelVerboseBLMenuEnabled = LogLevelBLMenu + "0. Verbose";
         private const string DebugLevelDebugBLMenuEnabled = LogLevelBLMenu + "1. Debug";
         private const string DebugLevelInfoBLMenuEnabled = LogLevelBLMenu + "2. Info";
@@ -22,7 +26,7 @@ namespace BovineLabs.Core.Editor
         private const string DebugLevelErrorBLMenuEnabled = LogLevelBLMenu + "4. Error";
         private const string DebugLevelFatalBLMenuEnabled = LogLevelBLMenu + "5. Fatal";
 
-        private const string DataModeSharedMenu = "BovineLabs/Tools/DataMode/";
+        private const string DataModeSharedMenu = RootToolsMenu + "DataMode/";
 
         private const string DataModeMenu = DataModeSharedMenu + "Inspector/";
         private const string DataModeDisabled = DataModeMenu + "Automatic";
@@ -35,6 +39,8 @@ namespace BovineLabs.Core.Editor
         private const string DataModeHierarchyAuthoring = DataModeHierarchyMenu + "Authoring";
         private const string DataModeHierarchyMixed = DataModeHierarchyMenu + "Mixed";
         private const string DataModeHierarchyRuntime = DataModeHierarchyMenu + "Runtime";
+
+        private const string PrefabLoading = RootToolsMenu + "Load Prefabs as Entities";
 
         private static LogLevel defaultLevel;
 
@@ -200,6 +206,19 @@ namespace BovineLabs.Core.Editor
             {
                 hierarchyWindow.dataModeController.TryChangeDataMode(dataMode);
             }
+        }
+
+        [MenuItem(PrefabLoading, false, priority = -45)]
+        private static void PrefabLoadingMenu()
+        {
+            LoadPrefabsAsEntities.Enabled = !LoadPrefabsAsEntities.Enabled;
+        }
+
+        [MenuItem(PrefabLoading, true)]
+        private static bool PrefabLoadingMenuValidate()
+        {
+            Menu.SetChecked(PrefabLoading, LoadPrefabsAsEntities.Enabled);
+            return true;
         }
     }
 }

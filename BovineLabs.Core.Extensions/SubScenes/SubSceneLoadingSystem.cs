@@ -13,14 +13,13 @@ namespace BovineLabs.Core.SubScenes
     using Unity.Entities;
     using Unity.Mathematics;
     using Unity.Scenes;
-    using UnityEngine;
     using Hash128 = Unity.Entities.Hash128;
 
     /// <summary> System that loads our SubScenes depending on the world and the SubScene load mode. </summary>
     [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderFirst = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | Worlds.Service)]
     [CreateAfter(typeof(BLDebugSystem))]
-    public partial struct SubSceneLoadingSystem : ISystem, ISystemStartStop
+    public partial struct SubSceneLoadingSystem : ISystem
     {
         private NativeList<Volume> volumes;
         private NativeList<Entity> requiredScenes;
@@ -43,17 +42,6 @@ namespace BovineLabs.Core.SubScenes
             this.requiredScenes.Dispose();
             this.waitingForLoad.Dispose();
             this.scenes.Dispose();
-        }
-
-        /// <inheritdoc />
-        public void OnStartRunning(ref SystemState state)
-        {
-            this.LoadSubSceneGameObjects(ref state);
-        }
-
-        /// <inheritdoc />
-        public void OnStopRunning(ref SystemState state)
-        {
         }
 
         /// <inheritdoc />
@@ -93,49 +81,6 @@ namespace BovineLabs.Core.SubScenes
             return SceneSystem.IsSceneLoaded(state.WorldUnmanaged, entity);
         }
 
-        private void LoadSubSceneGameObjects(ref SystemState state)
-        {
-            var scenesToLoad = new NativeList<SceneLoadData>(state.WorldUpdateAllocator);
-            var subScenes = Object.FindObjectsByType<SubScene>(FindObjectsSortMode.None);
-
-            foreach (var subScene in subScenes)
-            {
-                if (subScene.SceneGUID == default)
-                {
-                    continue;
-                }
-
-                var subSceneLoadConfig = subScene.GetComponent<SubSceneLoadConfig>();
-
-                if (subSceneLoadConfig == null)
-                {
-                    continue;
-                }
-
-                scenesToLoad.Add(new SceneLoadData { Data = subSceneLoadConfig.SubSceneLoad });
-            }
-
-            this.LoadScenes(ref state, scenesToLoad.AsArray());
-
-            var index = 0;
-            foreach (var subScene in subScenes)
-            {
-                if (subScene.SceneGUID == default || subScene.GetComponent<SubSceneLoadConfig>() == null)
-                {
-                    continue;
-                }
-
-                var entity = scenesToLoad[index++].Entity;
-
-                if (entity == Entity.Null)
-                {
-                    continue;
-                }
-
-                state.EntityManager.AddComponentObject(entity, subScene);
-            }
-        }
-
         private void LoadSubSceneEntities(ref SystemState state)
         {
             var query = SystemAPI.QueryBuilder().WithAll<SubSceneLoad>().Build();
@@ -146,7 +91,7 @@ namespace BovineLabs.Core.SubScenes
             }
 
             var scenesToLoad = new NativeList<SceneLoadData>(state.WorldUpdateAllocator);
-            using var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
+            var ecb = SystemAPI.GetSingleton<InstantiateCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
 
             var entityHandle = SystemAPI.GetEntityTypeHandle();
             var subSceneLoadWeakReferenceHandle = SystemAPI.GetBufferTypeHandle<SubSceneLoad>(true);
@@ -166,11 +111,9 @@ namespace BovineLabs.Core.SubScenes
                         scenesToLoad.Add(new SceneLoadData { Data = scene });
                     }
 
-                    ecb.DestroyEntity(entities[i]);
+                    ecb.AddComponent<Disabled>(entities[i]);
                 }
             }
-
-            ecb.Playback(state.EntityManager);
 
             this.LoadScenes(ref state, scenesToLoad.AsArray());
         }
@@ -216,6 +159,7 @@ namespace BovineLabs.Core.SubScenes
                 var loadingParams = default(SceneSystem.LoadParameters);
                 loadingParams.AutoLoad = (isServer && loadingMode != SubSceneLoadMode.OnDemand) || loadingMode == SubSceneLoadMode.AutoLoad;
                 subScene.Entity = SceneSystem.LoadSceneAsync(state.WorldUnmanaged, sceneGuid, loadingParams);
+                state.EntityManager.AddComponentData(subScene.Entity, new RequestSceneLoaded { LoadFlags = loadingParams.Flags });
 
 #if UNITY_EDITOR
                 state.EntityManager.SetName(subScene.Entity, subScene.Data.Name);
@@ -229,19 +173,13 @@ namespace BovineLabs.Core.SubScenes
                     state.EntityManager.AddComponent<RequiredSubScene>(subScene.Entity);
                 }
 
-                // We want to create the subscene entity but not request scene loading for volumes
-                if (!loadingParams.AutoLoad)
-                {
-                    state.EntityManager.RemoveComponent<RequestSceneLoaded>(subScene.Entity);
-                }
-
                 if (!isServer && loadingMode == SubSceneLoadMode.BoundingVolume)
                 {
                     this.volumes.Add(new Volume
                     {
                         Entity = subScene.Entity,
-                        LoadMaxDistanceOverride = subScene.Data.LoadMaxDistanceOverride,
-                        UnloadMaxDistanceOverride = subScene.Data.UnloadMaxDistanceOverride,
+                        LoadMaxDistance = subScene.Data.LoadMaxDistance,
+                        UnloadMaxDistance = subScene.Data.UnloadMaxDistance,
                     });
                 }
             }
@@ -295,8 +233,8 @@ namespace BovineLabs.Core.SubScenes
                     state.EntityManager.AddComponentData(subScene.Entity, new LoadWithBoundingVolume
                     {
                         Bounds = bounds,
-                        LoadMaxDistanceOverrideSq = subScene.LoadMaxDistanceOverride * subScene.LoadMaxDistanceOverride,
-                        UnloadMaxDistanceOverrideSq = subScene.UnloadMaxDistanceOverride * subScene.UnloadMaxDistanceOverride,
+                        LoadMaxDistanceSq = subScene.LoadMaxDistance * subScene.LoadMaxDistance,
+                        UnloadMaxDistanceSq = subScene.UnloadMaxDistance * subScene.UnloadMaxDistance,
                     });
                 }
 
@@ -342,8 +280,8 @@ namespace BovineLabs.Core.SubScenes
         private struct Volume
         {
             public Entity Entity;
-            public float LoadMaxDistanceOverride;
-            public float UnloadMaxDistanceOverride;
+            public float LoadMaxDistance;
+            public float UnloadMaxDistance;
         }
 
         private struct SceneLoadData

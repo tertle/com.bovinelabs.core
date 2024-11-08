@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Extensions
     using System;
     using System.Diagnostics;
     using System.Runtime.InteropServices;
+    using BovineLabs.Core.Cache;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -27,11 +28,37 @@ namespace BovineLabs.Core.Extensions
             return hashMap.m_Writer.m_Buffer->GetBucketData();
         }
 
+        public static ref TValue GetOrAddRef<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> hashMap, TKey key, TValue defaultValue = default)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.m_Safety);
+#endif
+
+            return ref hashMap.m_HashMapData.GetOrAddRef(key, defaultValue);
+        }
+
         public static ref TValue GetOrAddRef<TKey, TValue>(this NativeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, TKey key, TValue defaultValue = default)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.m_Safety);
+#endif
+
             return ref hashMap.m_Writer.GetOrAddRef(key, defaultValue);
+        }
+
+        public static ref TValue GetRef<TKey, TValue>(this NativeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, TKey key)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.m_Safety);
+#endif
+
+            return ref hashMap.m_Writer.GetRef(key);
         }
 
         public static void ClearLengthBuckets<TKey, TValue>([NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap)

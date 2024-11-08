@@ -9,33 +9,30 @@ namespace BovineLabs.Core.Entropy
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
+    using UnityEngine;
 
     [UpdateInGroup(typeof(InitializationSystemGroup))]
-    public partial struct EntropySystem : ISystem
+    public partial class EntropySystem : SystemBase
     {
         private ThreadRandom threadRandom;
 
         /// <inheritdoc/>
-        [BurstCompile]
-        public void OnCreate(ref SystemState state)
+        protected override void OnCreate()
         {
-            state.Enabled = false;
-            this.threadRandom = new ThreadRandom((uint)UnityEngine.Random.Range(0, int.MaxValue), Allocator.Persistent);
-            state.EntityManager.AddComponentData(state.SystemHandle, new Entropy { Random = this.threadRandom });
+            this.threadRandom = new ThreadRandom((uint)Random.Range(0, int.MaxValue), Allocator.Persistent);
+            this.EntityManager.AddComponentData(this.SystemHandle, new Entropy { Random = this.threadRandom });
         }
 
         /// <inheritdoc/>
-        [BurstCompile]
-        public void OnDestroy(ref SystemState state)
+        protected override void OnDestroy()
         {
             this.threadRandom.Dispose();
         }
 
         /// <inheritdoc/>
-        [BurstCompile]
-        public void OnUpdate(ref SystemState state)
+        protected override void OnUpdate()
         {
-            // NO-OP
+            this.World.GetExistingSystemManaged<InitializationSystemGroup>().RemoveSystemFromUpdateList(this);
         }
     }
 }

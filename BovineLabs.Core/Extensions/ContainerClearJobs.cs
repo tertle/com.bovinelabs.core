@@ -22,7 +22,7 @@ namespace BovineLabs.Core.Extensions
     }
 
     [BurstCompile]
-    public struct ClearHashSetJob<T> : IJob
+    public struct ClearParallelHashSetJob<T> : IJob
         where T : unmanaged, IEquatable<T>
     {
         public NativeParallelHashSet<T> HashSet;
@@ -32,6 +32,19 @@ namespace BovineLabs.Core.Extensions
             this.HashSet.Clear();
         }
     }
+
+    [BurstCompile]
+    public struct ClearHashSetJob<T> : IJob
+        where T : unmanaged, IEquatable<T>
+    {
+        public NativeHashSet<T> HashSet;
+
+        public void Execute()
+        {
+            this.HashSet.Clear();
+        }
+    }
+
 
     [BurstCompile]
     public struct ClearNativeHashMapJob<TKey, TValue> : IJob

@@ -6,9 +6,21 @@ namespace BovineLabs.Core.Editor.UI
 {
     using System;
     using System.Reflection;
+    using BovineLabs.Core.Utility;
     using UnityEditor;
+    using UnityEditor.Toolbars;
     using UnityEngine;
     using UnityEngine.UIElements;
+
+    public enum EditorToolbarPosition : byte
+    {
+        RightLeft,
+        RightCenter,
+        RightRight,
+        LeftLeft,
+        LeftCenter,
+        LeftRight,
+    }
 
     public static class EditorToolbar
     {
@@ -97,7 +109,7 @@ namespace BovineLabs.Core.Editor.UI
 
         private static VisualElement CreateSectionElement()
         {
-            return new VisualElement
+            var ve = new VisualElement
             {
                 style =
                 {
@@ -105,6 +117,10 @@ namespace BovineLabs.Core.Editor.UI
                     flexDirection = FlexDirection.Row,
                 },
             };
+
+            ve.AddToClassList("unity-editor-main-toolbar");
+            ve.name = "PlayMode";
+            return ve;
         }
     }
 }

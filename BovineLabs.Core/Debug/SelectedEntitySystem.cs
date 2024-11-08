@@ -12,15 +12,18 @@ namespace BovineLabs.Core
     /// In editor this is handled by SelectedEntityEditorSystem.
     /// </summary>
     [UpdateInGroup(typeof(InitializationSystemGroup))]
-    public partial struct SelectedEntitySystem : ISystem
+    public partial class SelectedEntitySystem : SystemBase
     {
         /// <inheritdoc/>
-        public void OnCreate(ref SystemState state)
+        protected override void OnCreate()
         {
-            state.EntityManager.CreateEntity(typeof(SelectedEntity), typeof(SelectedEntities));
+            this.EntityManager.CreateEntity(typeof(SelectedEntity), typeof(SelectedEntities));
+        }
 
+        protected override void OnUpdate()
+        {
             // In debug builds you can't select entities, at least not via this system
-            state.Enabled = false;
+            this.World.GetExistingSystemManaged<InitializationSystemGroup>().RemoveSystemFromUpdateList(this);
         }
     }
 }

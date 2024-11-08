@@ -12,7 +12,7 @@ namespace BovineLabs.Core.LifeCycle
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     [UpdateAfter(typeof(InstantiateCommandBufferSystem))]
     [UpdateBefore(typeof(SceneSystemGroup))]
-    public partial class DestroySystemGroup : InitializationRequireSubScenesSystemGroup
+    public partial class DestroySystemGroup : AlwaysUpdateSystemGroup
     {
         protected override void OnUpdate()
         {
