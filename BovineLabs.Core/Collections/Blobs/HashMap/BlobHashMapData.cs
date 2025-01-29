@@ -60,9 +60,9 @@ namespace BovineLabs.Core.Collections
     }
 
     /// <summary> A key-value pair. </summary>
-    /// <remarks>Used for enumerators.</remarks>
-    /// <typeparam name="TKey">The type of the keys.</typeparam>
-    /// <typeparam name="TValue">The type of the values.</typeparam>
+    /// <remarks> Used for enumerators. </remarks>
+    /// <typeparam name="TKey"> The type of the keys. </typeparam>
+    /// <typeparam name="TValue"> The type of the values. </typeparam>
     [DebuggerDisplay("Key = {Key}, Value = {Value}")]
     [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
     public readonly unsafe struct KVPair<TKey, TValue>
@@ -81,7 +81,7 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// The key.
         /// </summary>
-        /// <value>The key. If this KeyValue is Null, returns the default of TKey.</value>
+        /// <value> The key. If this KeyValue is Null, returns the default of TKey. </value>
         public ref TKey Key
         {
             get

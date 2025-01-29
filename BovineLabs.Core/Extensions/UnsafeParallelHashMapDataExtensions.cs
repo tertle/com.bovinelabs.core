@@ -34,9 +34,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         internal static void AddBatchUnsafeParallel<TKey, TValue>(
-            [NoAlias] this ref UnsafeParallelHashMapData data,
-            [NoAlias] NativeArray<TKey> keys,
-            [NoAlias] NativeSlice<TValue> values)
+            [NoAlias] this ref UnsafeParallelHashMapData data, [NoAlias] NativeArray<TKey> keys, [NoAlias] NativeSlice<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -51,8 +49,8 @@ namespace BovineLabs.Core.Extensions
             var valuePtr = (TValue*)data.values + oldLength;
 
             UnsafeUtility.MemCpy(keyPtr, keys.GetUnsafeReadOnlyPtr(), keys.Length * UnsafeUtility.SizeOf<TKey>());
-            UnsafeUtility.MemCpyStride(
-                valuePtr, UnsafeUtility.SizeOf<TValue>(), values.GetUnsafeReadOnlyPtr(), values.Stride, UnsafeUtility.SizeOf<TValue>(), values.Length);
+            UnsafeUtility.MemCpyStride(valuePtr, UnsafeUtility.SizeOf<TValue>(), values.GetUnsafeReadOnlyPtr(), values.Stride, UnsafeUtility.SizeOf<TValue>(),
+                values.Length);
 
             var buckets = (int*)data.buckets;
             var nextPtrs = (int*)data.next + oldLength;
@@ -67,10 +65,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         internal static bool TryAddBatchUnsafeParallel<TKey, TValue>(
-            [NoAlias] this ref UnsafeParallelHashMapData data,
-            [NoAlias] TKey* keys,
-            [NoAlias] TValue* values,
-            int length)
+            [NoAlias] this ref UnsafeParallelHashMapData data, [NoAlias] TKey* keys, [NoAlias] TValue* values, int length)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -105,9 +100,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         internal static void AddBatchUnsafeParallel<TKey, TValue>(
-            [NoAlias] this ref UnsafeParallelHashMapData data,
-            [NoAlias] NativeSlice<TKey> keys,
-            [NoAlias] NativeArray<TValue> values)
+            [NoAlias] this ref UnsafeParallelHashMapData data, [NoAlias] NativeSlice<TKey> keys, [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -121,8 +114,9 @@ namespace BovineLabs.Core.Extensions
             var keyPtr = (TKey*)data.keys + oldLength;
             var valuePtr = (TValue*)data.values + oldLength;
 
-            UnsafeUtility.MemCpyStride(
-                keyPtr, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), keys.Length);
+            UnsafeUtility.MemCpyStride(keyPtr, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(),
+                keys.Length);
+
             UnsafeUtility.MemCpy(valuePtr, values.GetUnsafeReadOnlyPtr(), values.Length * UnsafeUtility.SizeOf<TValue>());
 
             var buckets = (int*)data.buckets;
@@ -138,10 +132,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         internal static void AddBatchUnsafeParallel<TKey, TValue>(
-            [NoAlias] this ref UnsafeParallelHashMapData data,
-            [NoAlias] TKey* keys,
-            [NoAlias] TValue* values,
-            int length)
+            [NoAlias] this ref UnsafeParallelHashMapData data, [NoAlias] TKey* keys, [NoAlias] TValue* values, int length)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -170,10 +161,7 @@ namespace BovineLabs.Core.Extensions
             }
         }
 
-        internal static void AddBatchUnsafeParallel<TKey>(
-            [NoAlias] this ref UnsafeParallelHashMapData data,
-            [NoAlias] TKey* keys,
-            int length)
+        internal static void AddBatchUnsafeParallel<TKey>([NoAlias] this ref UnsafeParallelHashMapData data, [NoAlias] TKey* keys, int length)
             where TKey : unmanaged, IEquatable<TKey>
         {
             if (length == 0)
@@ -200,10 +188,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         internal static void AddBatchUnsafeParallel<TKey, TValue>(
-            [NoAlias] this ref UnsafeParallelHashMapData data,
-            [NoAlias] TKey* keys,
-            [NoAlias] TValue value,
-            int length)
+            [NoAlias] this ref UnsafeParallelHashMapData data, [NoAlias] TKey* keys, [NoAlias] TValue value, int length)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -253,7 +238,7 @@ namespace BovineLabs.Core.Extensions
             {
                 entryIdx = nextPtrs[entryIdx];
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                if ((entryIdx < 0) || (entryIdx >= data.keyCapacity))
+                if (entryIdx < 0 || entryIdx >= data.keyCapacity)
                 {
                     throw new KeyNotFoundException();
                 }

@@ -121,17 +121,35 @@ namespace BovineLabs.Core.PhysicsStates
                 StatefulCollisionEvent.Details GetDetails(ref PhysicsWorld physicsWorld, in CollisionEvent collisionEvent);
             }
 
-            public BufferTypeHandle<StatefulCollisionEvent> StatefulNewEventHandle { set => this.statefulNewEventHandle = value; }
+            public BufferTypeHandle<StatefulCollisionEvent> StatefulNewEventHandle
+            {
+                set => this.statefulNewEventHandle = value;
+            }
 
-            public EntityTypeHandle EntityHandle { set => this.entityHandle = value; }
+            public EntityTypeHandle EntityHandle
+            {
+                set => this.entityHandle = value;
+            }
 
-            public NativeMultiHashMap<Entity, StatefulCollisionEventContainer> CurrentEventMap { set => this.currentEventMap = value; }
+            public NativeMultiHashMap<Entity, StatefulCollisionEventContainer> CurrentEventMap
+            {
+                set => this.currentEventMap = value;
+            }
 
-            public NativeMultiHashMap<Entity, StatefulCollisionEventContainer> PreviousEventMap { set => this.previousEventMap = value; }
+            public NativeMultiHashMap<Entity, StatefulCollisionEventContainer> PreviousEventMap
+            {
+                set => this.previousEventMap = value;
+            }
 
-            public NativeHashSet<StatefulCollisionEventContainer> CurrentEvents { set => this.currentEvents = value; }
+            public NativeHashSet<StatefulCollisionEventContainer> CurrentEvents
+            {
+                set => this.currentEvents = value;
+            }
 
-            public NativeHashSet<StatefulCollisionEventContainer> PreviousEvents { set => this.previousEvents = value; }
+            public NativeHashSet<StatefulCollisionEventContainer> PreviousEvents
+            {
+                set => this.previousEvents = value;
+            }
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
@@ -162,7 +180,8 @@ namespace BovineLabs.Core.PhysicsStates
                 }
             }
 
-            private bool IterateEvents<T>(in ArchetypeChunk chunk, in BufferAccessor<StatefulCollisionEvent> statefulNewEventAccessor, Entity* entities, T details)
+            private bool IterateEvents<T>(
+                in ArchetypeChunk chunk, in BufferAccessor<StatefulCollisionEvent> statefulNewEventAccessor, Entity* entities, T details)
                 where T : IDetails
             {
                 var changed = false;
@@ -208,7 +227,8 @@ namespace BovineLabs.Core.PhysicsStates
                 return changed;
             }
 
-            private static CollisionEvent.Details CalculateDetails(ref PhysicsWorld physicsWorld, NativeList<ContactPoint> contactPoints, in CollisionEvent collisionEvent)
+            private static CollisionEvent.Details CalculateDetails(
+                ref PhysicsWorld physicsWorld, NativeList<ContactPoint> contactPoints, in CollisionEvent collisionEvent)
             {
                 var eventData = collisionEvent.EventData;
                 var numContactPoints = eventData.Value.NumNarrowPhaseContactPoints;
@@ -216,12 +236,13 @@ namespace BovineLabs.Core.PhysicsStates
                 contactPoints.ResizeUninitialized(numContactPoints);
 
                 var contactPointsArray = contactPoints.AsArray();
-                for (int i = 0; i < numContactPoints; i++)
+                for (var i = 0; i < numContactPoints; i++)
                 {
                     contactPointsArray[i] = eventData.Value.AccessContactPoint(i);
                 }
 
-                return eventData.Value.CalculateDetails(ref physicsWorld, collisionEvent.TimeStep, collisionEvent.InputVelocityA, collisionEvent.InputVelocityB, contactPointsArray);
+                return eventData.Value.CalculateDetails(ref physicsWorld, collisionEvent.TimeStep, collisionEvent.InputVelocityA, collisionEvent.InputVelocityB,
+                    contactPointsArray);
             }
 
             private readonly struct NoDetails : IDetails
@@ -247,9 +268,7 @@ namespace BovineLabs.Core.PhysicsStates
                 {
                     var details = CalculateDetails(ref physicsWorld, this.contactPoints, collisionEvent);
 
-                    return new StatefulCollisionEvent.Details(
-                        details.EstimatedContactPointPositions.Length,
-                        details.EstimatedImpulse,
+                    return new StatefulCollisionEvent.Details(details.EstimatedContactPointPositions.Length, details.EstimatedImpulse,
                         details.AverageContactPointPosition);
                 }
             }

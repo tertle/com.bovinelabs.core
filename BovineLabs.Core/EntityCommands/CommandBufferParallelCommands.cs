@@ -4,45 +4,35 @@
 
 namespace BovineLabs.Core.EntityCommands
 {
-    using System;
-    using BovineLabs.Core.Assertions;
     using Unity.Entities;
 
     public struct CommandBufferParallelCommands : IEntityCommands
     {
         private readonly int sortKey;
-        private Entity localEntity;
         private EntityCommandBuffer.ParallelWriter commandBuffer;
         private BlobAssetStore blobAssetStore;
 
         public CommandBufferParallelCommands(
-            EntityCommandBuffer.ParallelWriter commandBuffer,
-            int sortKey,
-            Entity localEntity = default,
-            BlobAssetStore blobAssetStore = default)
+            EntityCommandBuffer.ParallelWriter commandBuffer, int sortKey, Entity localEntity = default, BlobAssetStore blobAssetStore = default)
         {
             this.commandBuffer = commandBuffer;
             this.sortKey = sortKey;
-            this.localEntity = localEntity;
+            this.Entity = localEntity;
             this.blobAssetStore = blobAssetStore;
         }
 
-        public Entity Entity
-        {
-            get => this.localEntity;
-            set => this.localEntity = value;
-        }
+        public Entity Entity { get; set; }
 
         public Entity CreateEntity()
         {
-            this.localEntity = this.commandBuffer.CreateEntity(this.sortKey);
-            return this.localEntity;
+            this.Entity = this.commandBuffer.CreateEntity(this.sortKey);
+            return this.Entity;
         }
 
         public Entity Instantiate(Entity prefab)
         {
-            this.localEntity = this.commandBuffer.Instantiate(this.sortKey, prefab);
-            return this.localEntity;
+            this.Entity = this.commandBuffer.Instantiate(this.sortKey, prefab);
+            return this.Entity;
         }
 
         public void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)
@@ -61,10 +51,11 @@ namespace BovineLabs.Core.EntityCommands
         public void AddComponent<T>()
             where T : unmanaged, IComponentData
         {
-            this.AddComponent<T>(this.localEntity);
+            this.AddComponent<T>(this.Entity);
         }
 
-        public void AddComponent<T>(Entity entity) where T : unmanaged, IComponentData
+        public void AddComponent<T>(Entity entity)
+            where T : unmanaged, IComponentData
         {
             this.commandBuffer.AddComponent<T>(this.sortKey, entity);
         }
@@ -72,7 +63,7 @@ namespace BovineLabs.Core.EntityCommands
         public void AddComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            this.AddComponent(this.localEntity, component);
+            this.AddComponent(this.Entity, component);
         }
 
         public void AddComponent<T>(Entity entity, in T component)
@@ -83,7 +74,7 @@ namespace BovineLabs.Core.EntityCommands
 
         public void AddComponent(in ComponentTypeSet components)
         {
-            this.AddComponent(this.localEntity, components);
+            this.AddComponent(this.Entity, components);
         }
 
         public void AddComponent(Entity entity, in ComponentTypeSet components)
@@ -94,7 +85,7 @@ namespace BovineLabs.Core.EntityCommands
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            this.SetComponent(this.localEntity, component);
+            this.SetComponent(this.Entity, component);
         }
 
         public void SetComponent<T>(Entity entity, in T component)
@@ -106,7 +97,7 @@ namespace BovineLabs.Core.EntityCommands
         public DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            return this.AddBuffer<T>(this.localEntity);
+            return this.AddBuffer<T>(this.Entity);
         }
 
         public DynamicBuffer<T> AddBuffer<T>(Entity entity)
@@ -118,7 +109,7 @@ namespace BovineLabs.Core.EntityCommands
         public DynamicBuffer<T> SetBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            return this.SetBuffer<T>(this.localEntity);
+            return this.SetBuffer<T>(this.Entity);
         }
 
         public DynamicBuffer<T> SetBuffer<T>(Entity entity)
@@ -130,7 +121,7 @@ namespace BovineLabs.Core.EntityCommands
         public void AppendToBuffer<T>(in T element)
             where T : unmanaged, IBufferElementData
         {
-            this.AppendToBuffer(this.localEntity, element);
+            this.AppendToBuffer(this.Entity, element);
         }
 
         public void AppendToBuffer<T>(Entity entity, in T element)
@@ -142,7 +133,7 @@ namespace BovineLabs.Core.EntityCommands
         public void SetComponentEnabled<T>(bool enabled)
             where T : unmanaged, IEnableableComponent
         {
-            this.SetComponentEnabled<T>(this.localEntity, enabled);
+            this.SetComponentEnabled<T>(this.Entity, enabled);
         }
 
         public void SetComponentEnabled<T>(Entity entity, bool enabled)

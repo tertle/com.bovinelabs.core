@@ -59,8 +59,7 @@ namespace BovineLabs.Core.Extensions
             hashMap.m_Data.AddBatchUnsafe(values, length);
         }
 
-        public static void RecalculateBuckets<TKey>(
-            [NoAlias] this NativeParallelHashSet<TKey> hashMap)
+        public static void RecalculateBuckets<TKey>([NoAlias] this NativeParallelHashSet<TKey> hashMap)
             where TKey : unmanaged, IEquatable<TKey>
         {
             hashMap.m_Data.RecalculateBuckets();

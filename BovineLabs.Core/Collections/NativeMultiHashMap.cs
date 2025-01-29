@@ -3,6 +3,7 @@
 // </copyright>
 
 // ReSharper disable once CheckNamespace
+
 namespace Unity.Collections
 {
     using System;
@@ -19,9 +20,9 @@ namespace Unity.Collections
     using Unity.Jobs;
 
     /// <summary> An unordered, expandable associative multi array. </summary>
-    /// <remarks> Not suitable for parallel write access. Use <see cref="NativeParallelMultiHashMap{TKey, TValue}"/> instead. </remarks>
-    /// <typeparam name="TKey">The type of the keys.</typeparam>
-    /// <typeparam name="TValue">The type of the values.</typeparam>
+    /// <remarks> Not suitable for parallel write access. Use <see cref="NativeParallelMultiHashMap{TKey, TValue}" /> instead. </remarks>
+    /// <typeparam name="TKey"> The type of the keys. </typeparam>
+    /// <typeparam name="TValue"> The type of the values. </typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
     [DebuggerTypeProxy(typeof(NativeMultiHashMapDebuggerTypeProxy<,>))]
@@ -35,12 +36,12 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
-        static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeMultiHashMap<TKey, TValue>>();
+        private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeMultiHashMap<TKey, TValue>>();
 #endif
 
-        /// <summary>Initializes a new instance of the <see cref="NativeMultiHashMap{TKey, TValue}"/> struct.</summary>
-        /// <param name="initialCapacity">The number of key-value pairs that should fit in the initial allocation.</param>
-        /// <param name="allocator">The allocator to use.</param>
+        /// <summary> Initializes a new instance of the <see cref="NativeMultiHashMap{TKey, TValue}" /> struct. </summary>
+        /// <param name="initialCapacity"> The number of key-value pairs that should fit in the initial allocation. </param>
+        /// <param name="allocator"> The allocator to use. </param>
         public NativeMultiHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
         {
             this.data = HashMapHelper<TKey>.Alloc(initialCapacity, sizeof(TValue), HashMapHelper<TKey>.kMinimumCapacity, allocator);
@@ -59,7 +60,7 @@ namespace Unity.Collections
         }
 
         /// <summary> Gets a value indicating whether whether this hash map has been allocated (and not yet deallocated). </summary>
-        /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+        /// <value> True if this hash map has been allocated (and not yet deallocated). </value>
         public readonly bool IsCreated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -67,7 +68,7 @@ namespace Unity.Collections
         }
 
         /// <summary> Gets a value indicating whether whether this hash map is empty. </summary>
-        /// <value>True if this hash map is empty or if the map has not been constructed.</value>
+        /// <value> True if this hash map is empty or if the map has not been constructed. </value>
         public readonly bool IsEmpty
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -84,7 +85,7 @@ namespace Unity.Collections
         }
 
         /// <summary> Gets the current number of key-value pairs in this hash map. </summary>
-        /// <returns>The current number of key-value pairs in this hash map.</returns>
+        /// <returns> The current number of key-value pairs in this hash map. </returns>
         public readonly int Count
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,7 +97,7 @@ namespace Unity.Collections
         }
 
         /// <summary> Gets or sets the number of key-value pairs that fit in the current allocation. </summary>
-        /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
+        /// <param name="value"> A new capacity. Must be larger than the current capacity. </param>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -140,8 +141,8 @@ namespace Unity.Collections
         /// <summary>
         /// Creates and schedules a job that will dispose this hash map.
         /// </summary>
-        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
-        /// <returns>The handle of a new job that will dispose this hash map.</returns>
+        /// <param name="inputDeps"> A job handle. The newly scheduled job will depend upon this handle. </param>
+        /// <returns> The handle of a new job that will dispose this hash map. </returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -156,10 +157,19 @@ namespace Unity.Collections
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var jobHandle = new NativeHashMapDisposeJob { Data = new NativeHashMapDispose { m_HashMapData = (UnsafeHashMap<int, int>*)this.data, m_Safety = this.m_Safety } }.Schedule(inputDeps);
+            var jobHandle = new NativeHashMapDisposeJob
+            {
+                Data = new NativeHashMapDispose
+                {
+                    m_HashMapData = (UnsafeHashMap<int, int>*)this.data,
+                    m_Safety = this.m_Safety,
+                },
+            }.Schedule(inputDeps);
+
             AtomicSafetyHandle.Release(this.m_Safety);
 #else
-            var jobHandle = new NativeHashMapDisposeJob { Data = new NativeHashMapDispose { m_HashMapData = (UnsafeHashMap<int, int>*)this.data } }.Schedule(inputDeps);
+            var jobHandle =
+                new NativeHashMapDisposeJob { Data = new NativeHashMapDispose { m_HashMapData = (UnsafeHashMap<int, int>*)this.data } }.Schedule(inputDeps);
 #endif
             this.data = null;
 
@@ -169,7 +179,7 @@ namespace Unity.Collections
         /// <summary>
         /// Removes all key-value pairs.
         /// </summary>
-        /// <remarks>Does not change the capacity.</remarks>
+        /// <remarks> Does not change the capacity. </remarks>
         public void Clear()
         {
             this.CheckWrite();
@@ -179,8 +189,8 @@ namespace Unity.Collections
         /// <summary>
         /// Adds a new key-value pair.
         /// </summary>
-        /// <param name="key">The key to add.</param>
-        /// <param name="item">The value to add.</param>
+        /// <param name="key"> The key to add. </param>
+        /// <param name="item"> The value to add. </param>
         public void Add(TKey key, TValue item)
         {
             this.CheckWrite();
@@ -192,8 +202,8 @@ namespace Unity.Collections
         /// <summary>
         /// Removes a key and its associated value(s).
         /// </summary>
-        /// <param name="key">The key to remove.</param>
-        /// <returns>The number of removed key-value pairs. If the key was not present, returns 0.</returns>
+        /// <param name="key"> The key to remove. </param>
+        /// <returns> The number of removed key-value pairs. If the key was not present, returns 0. </returns>
         public int Remove(TKey key)
         {
             this.CheckWrite();
@@ -201,10 +211,10 @@ namespace Unity.Collections
         }
 
         /// <summary> Returns the value associated with a key. </summary>
-        /// <param name="key">The key to look up.</param>
-        /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
-        /// <param name="it">A reference to the iterator to advance.</param>
-        /// <returns>True if the key was present.</returns>
+        /// <param name="key"> The key to look up. </param>
+        /// <param name="item"> Outputs the value associated with the key. Outputs default if the key was not present. </param>
+        /// <param name="it"> A reference to the iterator to advance. </param>
+        /// <returns> True if the key was present. </returns>
         public readonly bool TryGetFirstValue(TKey key, out TValue item, out HashMapIterator<TKey> it)
         {
             this.CheckRead();
@@ -212,9 +222,9 @@ namespace Unity.Collections
         }
 
         /// <summary> Advances an iterator to the next value associated with its key. </summary>
-        /// <param name="item">Outputs the next value.</param>
-        /// <param name="it">A reference to the iterator to advance.</param>
-        /// <returns>True if the key was present and had another value.</returns>
+        /// <param name="item"> Outputs the next value. </param>
+        /// <param name="it"> A reference to the iterator to advance. </param>
+        /// <returns> True if the key was present and had another value. </returns>
         public readonly bool TryGetNextValue(out TValue item, ref HashMapIterator<TKey> it)
         {
             this.CheckRead();
@@ -224,8 +234,8 @@ namespace Unity.Collections
         /// <summary>
         /// Returns true if a given key is present in this hash map.
         /// </summary>
-        /// <param name="key">The key to look up.</param>
-        /// <returns>True if the key was present.</returns>
+        /// <param name="key"> The key to look up. </param>
+        /// <returns> True if the key was present. </returns>
         public readonly bool ContainsKey(TKey key)
         {
             this.CheckRead();
@@ -244,8 +254,8 @@ namespace Unity.Collections
         /// <summary>
         /// Returns an array with a copy of all this hash map's keys (in no particular order).
         /// </summary>
-        /// <param name="allocator">The allocator to use.</param>
-        /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
+        /// <param name="allocator"> The allocator to use. </param>
+        /// <returns> An array with a copy of all this hash map's keys (in no particular order). </returns>
         public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.CheckRead();
@@ -253,10 +263,20 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Returns an array with a copy of all this hash map's keys (in no particular order).
+        /// </summary>
+        /// <param name="keys"> The list to store the keys in. </param>
+        public readonly void GetKeyArray(NativeList<TKey> keys)
+        {
+            this.CheckRead();
+            this.data->GetKeyArray(keys);
+        }
+
+        /// <summary>
         /// Returns an array with a copy of all this hash map's values (in no particular order).
         /// </summary>
-        /// <param name="allocator">The allocator to use.</param>
-        /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
+        /// <param name="allocator"> The allocator to use. </param>
+        /// <returns> An array with a copy of all this hash map's values (in no particular order). </returns>
         public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.CheckRead();
@@ -266,9 +286,9 @@ namespace Unity.Collections
         /// <summary>
         /// Returns a NativeKeyValueArrays with a copy of all this hash map's keys and values.
         /// </summary>
-        /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
-        /// <param name="allocator">The allocator to use.</param>
-        /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
+        /// <remarks> The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`. </remarks>
+        /// <param name="allocator"> The allocator to use. </param>
+        /// <returns> A NativeKeyValueArrays with a copy of all this hash map's keys and values. </returns>
         public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
             this.CheckRead();
@@ -278,7 +298,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns an enumerator over the key-value pairs of this hash map.
         /// </summary>
-        /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
+        /// <returns> An enumerator over the key-value pairs of this hash map. </returns>
         public readonly NativeHashMap<TKey, TValue>.Enumerator GetEnumerator()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -296,20 +316,20 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// This method is not implemented. Use <see cref="GetEnumerator" /> instead.
         /// </summary>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        /// <returns> Throws NotImplementedException. </returns>
+        /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
         IEnumerator<KVPair<TKey, TValue>> IEnumerable<KVPair<TKey, TValue>>.GetEnumerator()
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// This method is not implemented. Use <see cref="GetEnumerator" /> instead.
         /// </summary>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        /// <returns> Throws NotImplementedException. </returns>
+        /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();
@@ -336,8 +356,8 @@ namespace Unity.Collections
         /// <summary>
         /// Returns a readonly version of this NativeHashMap instance.
         /// </summary>
-        /// <remarks>ReadOnly containers point to the same underlying data as the NativeHashMap it is made from.</remarks>
-        /// <returns>ReadOnly instance for this.</returns>
+        /// <remarks> ReadOnly containers point to the same underlying data as the NativeHashMap it is made from. </remarks>
+        /// <returns> ReadOnly instance for this. </returns>
         public ReadOnly AsReadOnly()
         {
             return new ReadOnly(ref this);
@@ -349,8 +369,7 @@ namespace Unity.Collections
         [NativeContainer]
         [NativeContainerIsReadOnly]
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
-        public readonly struct ReadOnly
-            : IEnumerable<KVPair<TKey, TValue>>
+        public readonly struct ReadOnly : IEnumerable<KVPair<TKey, TValue>>
         {
             [NativeDisableUnsafePtrRestriction]
             private readonly HashMapHelper<TKey>* data;
@@ -372,13 +391,13 @@ namespace Unity.Collections
             /// <summary>
             /// Whether this hash map has been allocated (and not yet deallocated).
             /// </summary>
-            /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+            /// <value> True if this hash map has been allocated (and not yet deallocated). </value>
             public readonly bool IsCreated
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
-                    CheckRead();
+                    this.CheckRead();
                     return this.data->IsCreated;
                 }
             }
@@ -386,13 +405,13 @@ namespace Unity.Collections
             /// <summary>
             /// Whether this hash map is empty.
             /// </summary>
-            /// <value>True if this hash map is empty or if the map has not been constructed.</value>
+            /// <value> True if this hash map is empty or if the map has not been constructed. </value>
             public readonly bool IsEmpty
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
-                    CheckRead();
+                    this.CheckRead();
                     if (!this.data->IsCreated)
                     {
                         return true;
@@ -405,13 +424,13 @@ namespace Unity.Collections
             /// <summary>
             /// The current number of key-value pairs in this hash map.
             /// </summary>
-            /// <returns>The current number of key-value pairs in this hash map.</returns>
+            /// <returns> The current number of key-value pairs in this hash map. </returns>
             public readonly int Count
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
-                    CheckRead();
+                    this.CheckRead();
                     return this.data->Count;
                 }
             }
@@ -419,22 +438,22 @@ namespace Unity.Collections
             /// <summary>
             /// The number of key-value pairs that fit in the current allocation.
             /// </summary>
-            /// <value>The number of key-value pairs that fit in the current allocation.</value>
+            /// <value> The number of key-value pairs that fit in the current allocation. </value>
             public readonly int Capacity
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
-                    CheckRead();
+                    this.CheckRead();
                     return this.data->Capacity;
                 }
             }
 
             /// <summary> Returns the value associated with a key. </summary>
-            /// <param name="key">The key to look up.</param>
-            /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
-            /// <param name="it">A reference to the iterator to advance.</param>
-            /// <returns>True if the key was present.</returns>
+            /// <param name="key"> The key to look up. </param>
+            /// <param name="item"> Outputs the value associated with the key. Outputs default if the key was not present. </param>
+            /// <param name="it"> A reference to the iterator to advance. </param>
+            /// <returns> True if the key was present. </returns>
             public bool TryGetFirstValue(TKey key, out TValue item, out HashMapIterator<TKey> it)
             {
                 this.CheckRead();
@@ -442,9 +461,9 @@ namespace Unity.Collections
             }
 
             /// <summary> Advances an iterator to the next value associated with its key. </summary>
-            /// <param name="item">Outputs the next value.</param>
-            /// <param name="it">A reference to the iterator to advance.</param>
-            /// <returns>True if the key was present and had another value.</returns>
+            /// <param name="item"> Outputs the next value. </param>
+            /// <param name="it"> A reference to the iterator to advance. </param>
+            /// <returns> True if the key was present and had another value. </returns>
             public bool TryGetNextValue(out TValue item, ref HashMapIterator<TKey> it)
             {
                 this.CheckRead();
@@ -454,8 +473,8 @@ namespace Unity.Collections
             /// <summary>
             /// Returns true if a given key is present in this hash map.
             /// </summary>
-            /// <param name="key">The key to look up.</param>
-            /// <returns>True if the key was present.</returns>
+            /// <param name="key"> The key to look up. </param>
+            /// <returns> True if the key was present. </returns>
             public readonly bool ContainsKey(TKey key)
             {
                 this.CheckRead();
@@ -465,20 +484,20 @@ namespace Unity.Collections
             /// <summary>
             /// Gets values by key.
             /// </summary>
-            /// <remarks>Getting a key that is not present will throw.</remarks>
-            /// <param name="key">The key to look up.</param>
-            /// <value>The value associated with the key.</value>
-            /// <exception cref="ArgumentException">For getting, thrown if the key was not present.</exception>
+            /// <remarks> Getting a key that is not present will throw. </remarks>
+            /// <param name="key"> The key to look up. </param>
+            /// <value> The value associated with the key. </value>
+            /// <exception cref="ArgumentException"> For getting, thrown if the key was not present. </exception>
             public readonly TValue this[TKey key]
             {
                 get
                 {
-                    CheckRead();
+                    this.CheckRead();
 
                     TValue result;
                     if (!this.data->TryGetValue(key, out result))
                     {
-                        ThrowKeyNotPresent(key);
+                        this.ThrowKeyNotPresent(key);
                     }
 
                     return result;
@@ -488,49 +507,49 @@ namespace Unity.Collections
             /// <summary>
             /// Returns an array with a copy of all this hash map's keys (in no particular order).
             /// </summary>
-            /// <param name="allocator">The allocator to use.</param>
-            /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
+            /// <param name="allocator"> The allocator to use. </param>
+            /// <returns> An array with a copy of all this hash map's keys (in no particular order). </returns>
             public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
             {
-                CheckRead();
+                this.CheckRead();
                 return this.data->GetKeyArray(allocator);
             }
 
             /// <summary>
             /// Returns an array with a copy of all this hash map's values (in no particular order).
             /// </summary>
-            /// <param name="allocator">The allocator to use.</param>
-            /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
+            /// <param name="allocator"> The allocator to use. </param>
+            /// <returns> An array with a copy of all this hash map's values (in no particular order). </returns>
             public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
             {
-                CheckRead();
+                this.CheckRead();
                 return this.data->GetValueArray<TValue>(allocator);
             }
 
             /// <summary>
             /// Returns a NativeKeyValueArrays with a copy of all this hash map's keys and values.
             /// </summary>
-            /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
-            /// <param name="allocator">The allocator to use.</param>
-            /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
+            /// <remarks> The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`. </remarks>
+            /// <param name="allocator"> The allocator to use. </param>
+            /// <returns> A NativeKeyValueArrays with a copy of all this hash map's keys and values. </returns>
             public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
             {
-                CheckRead();
+                this.CheckRead();
                 return this.data->GetKeyValueArrays<TValue>(allocator);
             }
 
             /// <summary>
             /// Returns an enumerator over the key-value pairs of this hash map.
             /// </summary>
-            /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
-            public readonly  NativeHashMap<TKey, TValue>.Enumerator GetEnumerator()
+            /// <returns> An enumerator over the key-value pairs of this hash map. </returns>
+            public readonly NativeHashMap<TKey, TValue>.Enumerator GetEnumerator()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Safety);
-                var ash = m_Safety;
+                AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(this.m_Safety);
+                var ash = this.m_Safety;
                 AtomicSafetyHandle.UseSecondaryVersion(ref ash);
 #endif
-                return new  NativeHashMap<TKey, TValue>.Enumerator
+                return new NativeHashMap<TKey, TValue>.Enumerator
                 {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     m_Safety = ash,
@@ -540,20 +559,20 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+            /// This method is not implemented. Use <see cref="GetEnumerator" /> instead.
             /// </summary>
-            /// <returns>Throws NotImplementedException.</returns>
-            /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+            /// <returns> Throws NotImplementedException. </returns>
+            /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
             IEnumerator<KVPair<TKey, TValue>> IEnumerable<KVPair<TKey, TValue>>.GetEnumerator()
             {
                 throw new NotImplementedException();
             }
 
             /// <summary>
-            /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+            /// This method is not implemented. Use <see cref="GetEnumerator" /> instead.
             /// </summary>
-            /// <returns>Throws NotImplementedException.</returns>
-            /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+            /// <returns> Throws NotImplementedException. </returns>
+            /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
             IEnumerator IEnumerable.GetEnumerator()
             {
                 throw new NotImplementedException();
@@ -561,15 +580,16 @@ namespace Unity.Collections
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            readonly void CheckRead()
+            private readonly void CheckRead()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
 #endif
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-            readonly void ThrowKeyNotPresent(TKey key)
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("UNITY_DOTS_DEBUG")]
+            private readonly void ThrowKeyNotPresent(TKey key)
             {
                 throw new ArgumentException($"Key: {key} is not present.");
             }
@@ -652,6 +672,16 @@ namespace Unity.Collections
         {
             return (TValue*)hashMap.data->Ptr;
         }
+
+        public static void GetUniqueKeyArray<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container, NativeList<TKey> keys)
+            where TKey : unmanaged, IEquatable<TKey>, IComparable<TKey>
+            where TValue : unmanaged
+        {
+            container.GetKeyArray(keys);
+            keys.Sort();
+            var uniques = keys.AsArray().Unique();
+            keys.ResizeUninitialized(uniques);
+        }
     }
 
     internal static unsafe class HashMapHelperExtensions
@@ -686,7 +716,7 @@ namespace Unity.Collections
                         }
 
                         // And free the index
-                        int nextIdx = hashMapHelper.Next[entryIdx];
+                        var nextIdx = hashMapHelper.Next[entryIdx];
                         hashMapHelper.Next[entryIdx] = hashMapHelper.FirstFreeIdx;
                         hashMapHelper.FirstFreeIdx = entryIdx;
                         entryIdx = nextIdx;
@@ -737,7 +767,7 @@ namespace Unity.Collections
                         }
 
                         // And free the index
-                        int nextIdx = hashMapHelper.Next[entryIdx];
+                        var nextIdx = hashMapHelper.Next[entryIdx];
                         hashMapHelper.Next[entryIdx] = hashMapHelper.FirstFreeIdx;
                         hashMapHelper.FirstFreeIdx = entryIdx;
                         entryIdx = nextIdx;
@@ -853,6 +883,23 @@ namespace Unity.Collections
             it.EntryIndex = entryIdx;
             item = UnsafeUtility.ReadArrayElement<TValue>(hashMapHelper.Ptr, entryIdx);
             return true;
+        }
+
+        internal static void GetKeyArray<TKey>(this in HashMapHelper<TKey> hashMapHelper, NativeList<TKey> result)
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+            result.ResizeUninitialized(hashMapHelper.Count);
+
+            for (int i = 0, count = 0, max = result.Length, capacity = hashMapHelper.BucketCapacity; i < capacity && count < max; ++i)
+            {
+                var bucket = hashMapHelper.Buckets[i];
+
+                while (bucket != -1)
+                {
+                    result[count++] = UnsafeUtility.ReadArrayElement<TKey>(hashMapHelper.Keys, bucket);
+                    bucket = hashMapHelper.Next[bucket];
+                }
+            }
         }
     }
 

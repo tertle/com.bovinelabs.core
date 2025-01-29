@@ -45,7 +45,6 @@ namespace BovineLabs.Core.Extensions
         }
     }
 
-
     [BurstCompile]
     public struct ClearNativeHashMapJob<TKey, TValue> : IJob
         where TKey : unmanaged, IEquatable<TKey>

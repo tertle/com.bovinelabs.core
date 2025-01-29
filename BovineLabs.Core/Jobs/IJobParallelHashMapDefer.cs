@@ -40,10 +40,7 @@ namespace BovineLabs.Core.Jobs
     public static class JobParallelHashMapDefer
     {
         public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
-            this TJob jobData,
-            NativeParallelMultiHashMap<TKey, TValue> hashMap,
-            int minIndicesPerJobCount,
-            JobHandle dependsOn = default)
+            this TJob jobData, NativeParallelMultiHashMap<TKey, TValue> hashMap, int minIndicesPerJobCount, JobHandle dependsOn = default)
             where TJob : unmanaged, IJobParallelHashMapDefer
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -62,10 +59,7 @@ namespace BovineLabs.Core.Jobs
         }
 
         public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
-            this TJob jobData,
-            NativeParallelMultiHashMap<TKey, TValue>.ReadOnly hashMap,
-            int minIndicesPerJobCount,
-            JobHandle dependsOn = default)
+            this TJob jobData, NativeParallelMultiHashMap<TKey, TValue>.ReadOnly hashMap, int minIndicesPerJobCount, JobHandle dependsOn = default)
             where TJob : unmanaged, IJobParallelHashMapDefer
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -74,8 +68,9 @@ namespace BovineLabs.Core.Jobs
             // DOTS Runtime can validate the deferred list statically similar to the reflection based
             // validation in Big Unity.
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var safety = UnsafeUtility.As<NativeParallelMultiHashMap<TKey, TValue>.ReadOnly, NativeParallelMultiHashMapReadOnly<TKey, TValue>>(
-                ref hashMap).Safety;
+            var safety = UnsafeUtility.As<NativeParallelMultiHashMap<TKey, TValue>.ReadOnly, NativeParallelMultiHashMapReadOnly<TKey, TValue>>(ref hashMap)
+                .Safety;
+
             var atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #else
             void* atomicSafetyHandlePtr = null;
@@ -85,10 +80,7 @@ namespace BovineLabs.Core.Jobs
         }
 
         public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
-            this TJob jobData,
-            NativeParallelHashMap<TKey, TValue> hashMap,
-            int minIndicesPerJobCount,
-            JobHandle dependsOn = default)
+            this TJob jobData, NativeParallelHashMap<TKey, TValue> hashMap, int minIndicesPerJobCount, JobHandle dependsOn = default)
             where TJob : unmanaged, IJobParallelHashMapDefer
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -107,10 +99,7 @@ namespace BovineLabs.Core.Jobs
         }
 
         public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
-            this TJob jobData,
-            NativeParallelHashMap<TKey, TValue>.ReadOnly hashMap,
-            int minIndicesPerJobCount,
-            JobHandle dependsOn = default)
+            this TJob jobData, NativeParallelHashMap<TKey, TValue>.ReadOnly hashMap, int minIndicesPerJobCount, JobHandle dependsOn = default)
             where TJob : unmanaged, IJobParallelHashMapDefer
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -129,11 +118,7 @@ namespace BovineLabs.Core.Jobs
         }
 
         private static unsafe JobHandle ScheduleParallelInternal<TJob>(
-            TJob jobData,
-            UnsafeParallelHashMapData* hashMap,
-            void* atomicSafetyHandlePtr,
-            int minIndicesPerJobCount,
-            JobHandle dependsOn)
+            TJob jobData, UnsafeParallelHashMapData* hashMap, void* atomicSafetyHandlePtr, int minIndicesPerJobCount, JobHandle dependsOn)
             where TJob : unmanaged, IJobParallelHashMapDefer
         {
             var jobProducer = new JobParallelHashMapVisitKeyValueProducer<TJob>
@@ -147,10 +132,7 @@ namespace BovineLabs.Core.Jobs
             CollectionHelper.CheckReflectionDataCorrect<TJob>(reflectionData);
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(
-                UnsafeUtility.AddressOf(ref jobProducer),
-                reflectionData,
-                dependsOn,
-                ScheduleMode.Parallel);
+                UnsafeUtility.AddressOf(ref jobProducer), reflectionData, dependsOn, ScheduleMode.Parallel);
 
             var lengthPtr = (byte*)&hashMap->bucketCapacityMask - sizeof(void*);
 
@@ -247,11 +229,7 @@ namespace BovineLabs.Core.Jobs
             internal T JobData;
 
             private delegate void ExecuteJobFunction(
-                ref JobParallelHashMapVisitKeyValueProducer<T> producer,
-                IntPtr additionalPtr,
-                IntPtr bufferRangePatchData,
-                ref JobRanges ranges,
-                int jobIndex);
+                ref JobParallelHashMapVisitKeyValueProducer<T> producer, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex);
 
             [BurstDiscard]
             internal static void Initialize()
@@ -259,9 +237,7 @@ namespace BovineLabs.Core.Jobs
                 if (ReflectionData.Data == IntPtr.Zero)
                 {
                     ReflectionData.Data = JobsUtility.CreateJobReflectionData(
-                        typeof(JobParallelHashMapVisitKeyValueProducer<T>),
-                        typeof(T),
-                        (ExecuteJobFunction)Execute);
+                        typeof(JobParallelHashMapVisitKeyValueProducer<T>), typeof(T), (ExecuteJobFunction)Execute);
                 }
             }
 
@@ -273,10 +249,7 @@ namespace BovineLabs.Core.Jobs
             /// <param name="jobIndex"> The job index. </param>
             [SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Required by burst.")]
             internal static void Execute(
-                ref JobParallelHashMapVisitKeyValueProducer<T> jobWrapper,
-                IntPtr additionalPtr,
-                IntPtr bufferRangePatchData,
-                ref JobRanges ranges,
+                ref JobParallelHashMapVisitKeyValueProducer<T> jobWrapper, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges,
                 int jobIndex)
             {
                 // If we have 0 capacity, the mask is -1
@@ -312,7 +285,7 @@ namespace BovineLabs.Core.Jobs
                     for (var i = begin; i < end; i++)
                     {
                         var entryIndex = buckets[i];
-                        bool anyValid = false;
+                        var anyValid = false;
 
                         while (entryIndex != -1)
                         {

@@ -164,7 +164,7 @@ namespace BovineLabs.Core.Utility
         public static bool IsSectionLoadingOrLoaded(ref SystemState state, Entity sectionEntity)
         {
             return state.EntityManager.HasComponent<RequestSceneLoaded>(sectionEntity) ||
-                   state.EntityManager.HasComponent<SceneSectionStreamingSystem.StreamingState>(sectionEntity);
+                state.EntityManager.HasComponent<SceneSectionStreamingSystem.StreamingState>(sectionEntity);
         }
 
         public void Update(ref SystemState state)
@@ -237,7 +237,6 @@ namespace BovineLabs.Core.Utility
 
             return true;
         }
-
 
         /// <summary> Check if a subscene is loaded. </summary>
         /// <param name="entity"> The entity with the loading component data. This is the entity returned by LoadSceneAsync. </param>
@@ -344,13 +343,15 @@ namespace BovineLabs.Core.Utility
     {
         public static EntityQueryBuilder WithSceneLoadRequest(this EntityQueryBuilder builder)
         {
-            return builder.WithAll<RequestSceneLoaded, SceneSectionData, ResolvedSectionPath>()
+            return builder
+                .WithAll<RequestSceneLoaded, SceneSectionData, ResolvedSectionPath>()
                 .WithNone<SceneSectionStreamingSystem.StreamingState, DisableSceneResolveAndLoad>();
         }
 
         public static EntityQueryBuilder WithSceneUnloadRequest(this EntityQueryBuilder builder)
         {
-            return builder.WithAll<SceneSectionStreamingSystem.StreamingState, SceneSectionData, SceneEntityReference>()
+            return builder
+                .WithAll<SceneSectionStreamingSystem.StreamingState, SceneSectionData, SceneEntityReference>()
                 .WithNone<RequestSceneLoaded, DisableSceneResolveAndLoad>();
         }
     }

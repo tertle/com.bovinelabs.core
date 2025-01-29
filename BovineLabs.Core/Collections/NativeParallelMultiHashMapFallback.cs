@@ -75,8 +75,8 @@ namespace BovineLabs.Core.Collections
 
             /// <summary> Adds a new key-value pair. </summary>
             /// <remarks> If a key-value pair with this key is already present, an additional separate key-value pair is added. </remarks>
-            /// <param name="key">The key to add.</param>
-            /// <param name="item">The value to add.</param>
+            /// <param name="key"> The key to add. </param>
+            /// <param name="item"> The value to add. </param>
             public void Add(TKey key, TValue item)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -134,9 +134,9 @@ namespace BovineLabs.Core.Collections
 
             /// <summary> Adds a new key-value pair. </summary>
             /// <remarks> If a key-value pair with this key is already present, an additional separate key-value pair is added. </remarks>
-            /// <param name="key">The key to add.</param>
-            /// <param name="item">The value to add.</param>
-            /// <param name="hash">A custom hash value.</param>
+            /// <param name="key"> The key to add. </param>
+            /// <param name="item"> The value to add. </param>
+            /// <param name="hash"> A custom hash value. </param>
             public void Add(TKey key, TValue item, int hash)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

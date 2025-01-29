@@ -126,28 +126,26 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
                 track.DynamicTypeHandle.Update(ref state);
 
                 this.jobHandles[index] = new DidChangeJob
-                    {
-                        DynamicTypeHandle = track.DynamicTypeHandle,
-                        Changed = track.Changed,
-                        Chunks = track.Chunks,
-                        Index = currentFrameIndex,
-                        LastSystemVersion = state.LastSystemVersion,
-                    }
-                    .Schedule(track.Query, state.Dependency);
+                {
+                    DynamicTypeHandle = track.DynamicTypeHandle,
+                    Changed = track.Changed,
+                    Chunks = track.Chunks,
+                    Index = currentFrameIndex,
+                    LastSystemVersion = state.LastSystemVersion,
+                }.Schedule(track.Query, state.Dependency);
 
                 this.jobHandles[index] = new ValidateChangeFilterJob
-                    {
-                        Changed = track.Changed,
-                        Chunks = track.Chunks,
-                        Result = track.Result,
-                        HasWarned = track.HasWarned,
-                        TypeName = track.TypeName,
-                        Short = track.Short,
-                        Long = track.Long,
-                        Index = currentFrameIndex,
-                        Debug = debug,
-                    }
-                    .Schedule(this.jobHandles[index]);
+                {
+                    Changed = track.Changed,
+                    Chunks = track.Chunks,
+                    Result = track.Result,
+                    HasWarned = track.HasWarned,
+                    TypeName = track.TypeName,
+                    Short = track.Short,
+                    Long = track.Long,
+                    Index = currentFrameIndex,
+                    Debug = debug,
+                }.Schedule(this.jobHandles[index]);
             }
 
             state.Dependency = JobHandle.CombineDependencies(this.jobHandles);
@@ -229,7 +227,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
 
                 if ((this.Index + 1) % ShortUpdateTime == 0)
                 {
-                    var total = mathex.sum(this.Result.GetSubArray(this.Index - ShortUpdateTime + 1, ShortUpdateTime));
+                    var total = mathex.sum(this.Result.GetSubArray((this.Index - ShortUpdateTime) + 1, ShortUpdateTime));
                     var averageChange = total / ShortUpdateTime;
                     this.Short.Value = averageChange;
                 }

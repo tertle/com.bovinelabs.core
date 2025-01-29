@@ -1,40 +1,40 @@
 {
-    "name": "BovineLabs.Core.Extensions.Editor",
-    "rootNamespace": "BovineLabs.Core.Editor",
-    "references": [
-        "BovineLabs.Core",
-        "BovineLabs.Core.Authoring",
-        "BovineLabs.Core.Editor",
-        "BovineLabs.Core.Extensions",
-        "BovineLabs.Core.Extensions.Authoring",
-        "Unity.Burst",
-        "Unity.Collections",
-        "Unity.Entities",
-        "Unity.Entities.Editor",
-        "Unity.Entities.Hybrid",
-        "Unity.Entities.UI.Editor",
-        "Unity.InternalAPIEditorBridge.002",
-        "Unity.InputSystem",
-        "Unity.Logging",
-        "Unity.Mathematics",
-        "Unity.Mathematics.Extensions",
-        "Unity.NetCode",
-        "Unity.Physics",
-        "Unity.Scenes",
-        "Unity.Scenes.Editor",
-        "Unity.Transforms"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
-    "excludePlatforms": [],
-    "allowUnsafeCode": true,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [
-        "BL_CORE_EXTENSIONS"
-    ],
-    "versionDefines": [],
-    "noEngineReferences": false
+  "name": "BovineLabs.Core.Extensions.Editor",
+  "rootNamespace": "BovineLabs.Core.Editor",
+  "references": [
+    "BovineLabs.Core",
+    "BovineLabs.Core.Authoring",
+    "BovineLabs.Core.Editor",
+    "BovineLabs.Core.Extensions",
+    "BovineLabs.Core.Extensions.Authoring",
+    "Unity.Burst",
+    "Unity.Collections",
+    "Unity.Entities",
+    "Unity.Entities.Editor",
+    "Unity.Entities.Hybrid",
+    "Unity.Entities.UI.Editor",
+    "Unity.InternalAPIEditorBridge.002",
+    "Unity.InputSystem",
+    "Unity.Logging",
+    "Unity.Mathematics",
+    "Unity.Mathematics.Extensions",
+    "Unity.NetCode",
+    "Unity.Physics",
+    "Unity.Scenes",
+    "Unity.Scenes.Editor",
+    "Unity.Transforms"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": true,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "BL_CORE_EXTENSIONS"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

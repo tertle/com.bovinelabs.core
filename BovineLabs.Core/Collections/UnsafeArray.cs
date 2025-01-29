@@ -103,6 +103,7 @@ namespace BovineLabs.Core.Collections
                         AllocatorLabel = this.allocatorLabel,
                     },
                 }.Schedule(inputDeps);
+
                 this.buffer = null;
                 this.allocatorLabel = Allocator.Invalid;
                 return jobHandle;
@@ -163,12 +164,12 @@ namespace BovineLabs.Core.Collections
 
         public unsafe bool Equals(UnsafeArray<T> other)
         {
-            return (this.buffer == other.buffer) && (this.Length == other.Length);
+            return this.buffer == other.buffer && this.Length == other.Length;
         }
 
         public override bool Equals(object obj)
         {
-            return (obj != null) && obj is UnsafeArray<T> other && this.Equals(other);
+            return obj != null && obj is UnsafeArray<T> other && this.Equals(other);
         }
 
         public override unsafe int GetHashCode()
@@ -209,12 +210,7 @@ namespace BovineLabs.Core.Collections
             CopySafe(src, 0, dst, 0, length);
         }
 
-        public static void Copy(
-            UnsafeArray<T> src,
-            int srcIndex,
-            UnsafeArray<T> dst,
-            int dstIndex,
-            int length)
+        public static void Copy(UnsafeArray<T> src, int srcIndex, UnsafeArray<T> dst, int dstIndex, int length)
         {
             CopySafe(src, srcIndex, dst, dstIndex, length);
         }
@@ -269,52 +265,33 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        private static unsafe void CopySafe(
-            UnsafeArray<T> src,
-            int srcIndex,
-            UnsafeArray<T> dst,
-            int dstIndex,
-            int length)
+        private static unsafe void CopySafe(UnsafeArray<T> src, int srcIndex, UnsafeArray<T> dst, int dstIndex, int length)
         {
             CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
-            UnsafeUtility.MemCpy(
-                (void*)((IntPtr)dst.buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
-                (void*)((IntPtr)src.buffer + (srcIndex * UnsafeUtility.SizeOf<T>())),
-                length * UnsafeUtility.SizeOf<T>());
+            UnsafeUtility.MemCpy((void*)((IntPtr)dst.buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
+                (void*)((IntPtr)src.buffer + (srcIndex * UnsafeUtility.SizeOf<T>())), length * UnsafeUtility.SizeOf<T>());
         }
 
-        private static unsafe void CopySafe(
-            T[] src,
-            int srcIndex,
-            UnsafeArray<T> dst,
-            int dstIndex,
-            int length)
+        private static unsafe void CopySafe(T[] src, int srcIndex, UnsafeArray<T> dst, int dstIndex, int length)
         {
             CheckCopyPtr(src);
             CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
             var gcHandle = GCHandle.Alloc(src, GCHandleType.Pinned);
             var num = gcHandle.AddrOfPinnedObject();
-            UnsafeUtility.MemCpy(
-                (void*)((IntPtr)dst.buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
-                (void*)((IntPtr)(void*)num + (srcIndex * UnsafeUtility.SizeOf<T>())),
-                length * UnsafeUtility.SizeOf<T>());
+            UnsafeUtility.MemCpy((void*)((IntPtr)dst.buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
+                (void*)((IntPtr)(void*)num + (srcIndex * UnsafeUtility.SizeOf<T>())), length * UnsafeUtility.SizeOf<T>());
+
             gcHandle.Free();
         }
 
-        private static unsafe void CopySafe(
-            UnsafeArray<T> src,
-            int srcIndex,
-            T[] dst,
-            int dstIndex,
-            int length)
+        private static unsafe void CopySafe(UnsafeArray<T> src, int srcIndex, T[] dst, int dstIndex, int length)
         {
             CheckCopyPtr(dst);
             CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
             var gcHandle = GCHandle.Alloc(dst, GCHandleType.Pinned);
-            UnsafeUtility.MemCpy(
-                (void*)((IntPtr)(void*)gcHandle.AddrOfPinnedObject() + (dstIndex * UnsafeUtility.SizeOf<T>())),
-                (void*)((IntPtr)src.buffer + (srcIndex * UnsafeUtility.SizeOf<T>())),
-                length * UnsafeUtility.SizeOf<T>());
+            UnsafeUtility.MemCpy((void*)((IntPtr)(void*)gcHandle.AddrOfPinnedObject() + (dstIndex * UnsafeUtility.SizeOf<T>())),
+                (void*)((IntPtr)src.buffer + (srcIndex * UnsafeUtility.SizeOf<T>())), length * UnsafeUtility.SizeOf<T>());
+
             gcHandle.Free();
         }
 
@@ -337,32 +314,26 @@ namespace BovineLabs.Core.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckCopyArguments(
-            int srcLength,
-            int srcIndex,
-            int dstLength,
-            int dstIndex,
-            int length)
+        private static void CheckCopyArguments(int srcLength, int srcIndex, int dstLength, int dstIndex, int length)
         {
             if (length < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(length), "length must be equal or greater than zero.");
             }
 
-            if ((srcIndex < 0) || (srcIndex > srcLength) || ((srcIndex == srcLength) && (srcLength > 0)))
+            if (srcIndex < 0 || srcIndex > srcLength || (srcIndex == srcLength && srcLength > 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(srcIndex), "srcIndex is outside the range of valid indexes for the source UnsafeArray.");
             }
 
-            if ((dstIndex < 0) || (dstIndex > dstLength) || ((dstIndex == dstLength) && (dstLength > 0)))
+            if (dstIndex < 0 || dstIndex > dstLength || (dstIndex == dstLength && dstLength > 0))
             {
                 throw new ArgumentOutOfRangeException(nameof(dstIndex), "dstIndex is outside the range of valid indexes for the destination UnsafeArray.");
             }
 
             if (srcIndex + length > srcLength)
             {
-                throw new ArgumentException(
-                    "length is greater than the number of elements from srcIndex to the end of the source UnsafeArray.",
+                throw new ArgumentException("length is greater than the number of elements from srcIndex to the end of the source UnsafeArray.",
                     nameof(length));
             }
 
@@ -373,8 +344,7 @@ namespace BovineLabs.Core.Collections
 
             if (dstIndex + length > dstLength)
             {
-                throw new ArgumentException(
-                    "length is greater than the number of elements from dstIndex to the end of the destination UnsafeArray.",
+                throw new ArgumentException("length is greater than the number of elements from dstIndex to the end of the destination UnsafeArray.",
                     nameof(length));
             }
 

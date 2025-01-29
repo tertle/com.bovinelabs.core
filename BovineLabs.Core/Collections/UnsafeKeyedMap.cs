@@ -350,7 +350,7 @@ namespace BovineLabs.Core.Collections
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckKeyOutOfBounds(KeyedMapData* data, int key)
         {
-            if ((key < 0) || (key >= data->BucketCapacity))
+            if (key < 0 || key >= data->BucketCapacity)
             {
                 throw new InvalidOperationException("key < 0 || key >= data->BucketCapacity");
             }
@@ -359,7 +359,7 @@ namespace BovineLabs.Core.Collections
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckIndexOutOfBounds(KeyedMapData* data, int idx)
         {
-            if ((idx < 0) || (idx >= data->KeyCapacity))
+            if (idx < 0 || idx >= data->KeyCapacity)
             {
                 throw new InvalidOperationException("Internal Map error");
             }

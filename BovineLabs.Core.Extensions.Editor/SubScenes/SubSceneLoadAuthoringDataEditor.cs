@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.Editor.SubScenes
 {
     using BovineLabs.Core.Authoring.SubScenes;
@@ -11,7 +12,7 @@ namespace BovineLabs.Core.Editor.SubScenes
     [CustomPropertyDrawer(typeof(SubSceneLoadAuthoring.Data))]
     public class SubSceneLoadAuthoringDataEditor : ElementProperty
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override string GetDisplayName(SerializedProperty property)
         {
             var asset = property.FindPropertyRelative(nameof(SubSceneLoadAuthoring.Data.SceneAsset)).objectReferenceValue;
@@ -19,3 +20,4 @@ namespace BovineLabs.Core.Editor.SubScenes
         }
     }
 }
+#endif

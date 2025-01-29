@@ -82,8 +82,7 @@ namespace BovineLabs.Core
 
         private static AllocatorHelper<AutoFreeAllocator> GetHelper(in WorldUnmanaged worldUnmanaged)
         {
-            Assert.IsTrue(
-                Core.WorldAllocator.Allocators.Data.IsCreated,
+            Assert.IsTrue(Core.WorldAllocator.Allocators.Data.IsCreated,
                 "Allocators not setup. WorldAllocator must be used with BovineLabsBootstrap or initialized yourself");
 
             var result = Core.WorldAllocator.Allocators.Data.TryGetValue(worldUnmanaged.SequenceNumber, out var helper);

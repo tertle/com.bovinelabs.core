@@ -42,7 +42,7 @@ namespace BovineLabs.Core.Utility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool isodd(int x)
         {
-            return (x % 2) != 0;
+            return x % 2 != 0;
         }
 
         /// <summary> Calculates the maximum value. </summary>
@@ -231,7 +231,11 @@ namespace BovineLabs.Core.Utility
                 maxValue = math.max(maxValue, value);
             }
 
-            minMax = new MinMaxAABB { Min = minValue, Max = maxValue };
+            minMax = new MinMaxAABB
+            {
+                Min = minValue,
+                Max = maxValue,
+            };
         }
 
         /// <summary> Calculates the sum of values. </summary>
@@ -526,7 +530,7 @@ namespace BovineLabs.Core.Utility
             var result = target + ((change + temp) * exp);
 
             // Prevent overshooting
-            if (originalTo - current > 0.0F == result > originalTo)
+            if ((originalTo - current > 0.0F) == (result > originalTo))
             {
                 result = originalTo;
                 currentVelocity = (result - originalTo) / deltaTime;
@@ -538,9 +542,9 @@ namespace BovineLabs.Core.Utility
         /// <summary>
         /// Radians
         /// </summary>
-        /// <param name="current"></param>
-        /// <param name="target"></param>
-        /// <returns></returns>
+        /// <param name="current"> </param>
+        /// <param name="target"> </param>
+        /// <returns> </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float DeltaAngle(float current, float target)
         {
@@ -583,7 +587,7 @@ namespace BovineLabs.Core.Utility
         }
 
         /// <summary> Rotates a vector by angle in radians. </summary>
-        /// <remarks>From https://matthew-brett.github.io/teaching/rotation_2d.html.</remarks>
+        /// <remarks> From https://matthew-brett.github.io/teaching/rotation_2d.html. </remarks>
         /// <param name="direction"> The original vector to rotate. </param>
         /// <param name="angle"> The angle to rotate by in radians. </param>
         /// <returns> The rotated vector. </returns>
@@ -603,13 +607,13 @@ namespace BovineLabs.Core.Utility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Approximately(float2 f1, float2 f2, float delta = 0.01f)
         {
-            return (math.abs(f1.x - f2.x) < delta) && (math.abs(f1.y - f2.y) < delta);
+            return math.abs(f1.x - f2.x) < delta && math.abs(f1.y - f2.y) < delta;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Approximately(float3 f1, float3 f2, float delta = 0.01f)
         {
-            return (math.abs(f1.x - f2.x) < delta) && (math.abs(f1.y - f2.y) < delta) && (math.abs(f1.z - f2.z) < delta);
+            return math.abs(f1.x - f2.x) < delta && math.abs(f1.y - f2.y) < delta && math.abs(f1.z - f2.z) < delta;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -649,7 +653,7 @@ namespace BovineLabs.Core.Utility
             return lengthSq * invLength;
         }
 
-        /// <summary>  Return two normals perpendicular to the input vector. </summary>
+        /// <summary> Return two normals perpendicular to the input vector. </summary>
         public static void CalculatePerpendicularNormalized(float3 v, out float3 p, out float3 q)
         {
             var vSquared = v * v;
@@ -682,19 +686,22 @@ namespace BovineLabs.Core.Utility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float cross(float2 a, float2 b)
         {
-            return a.x * b.y - a.y * b.x;
+            return (a.x * b.y) - (a.y * b.x);
         }
 
         /// <summary> Implementation of the Box-Muller transform to generate normal distribution. </summary>
         /// <remarks> https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform </remarks>
-        /// <param name="random"></param>
+        /// <param name="random"> </param>
         /// <param name="mu"> Mean of the distribution. </param>
         /// <param name="sigma"> The standard deviation. </param>
-        /// <returns> Two independent random variable with a standard normal distribution.</returns>
+        /// <returns> Two independent random variable with a standard normal distribution. </returns>
         public static (float z0, float z1) GenerateGaussianNoise(ref Random random, float mu, float sigma)
         {
             float u1;
-            do u1 = random.NextFloat();
+            do
+            {
+                u1 = random.NextFloat();
+            }
             while (Hint.Unlikely(u1 == 0)); // 0 is infinite
 
             var u2 = random.NextFloat();
@@ -702,8 +709,8 @@ namespace BovineLabs.Core.Utility
             var R = sigma * math.sqrt(-2 * math.log(u1));
             var theta = math.PI2 * u2;
 
-            var z0 = R * math.cos(theta) + mu;
-            var z1 = R * math.sin(theta) + mu;
+            var z0 = (R * math.cos(theta)) + mu;
+            var z1 = (R * math.sin(theta)) + mu;
 
             return (z0, z1);
         }
@@ -751,19 +758,19 @@ namespace BovineLabs.Core.Utility
             if (shape < 1f)
             {
                 a = shape + 1f;
-                alphafix = math.pow(random.NextFloat(), 1f/shape);
+                alphafix = math.pow(random.NextFloat(), 1f / shape);
             }
 
-            var d = a - (1f/3f);
+            var d = a - (1f / 3f);
             var c = 1f / math.sqrt(9f * d);
             while (true)
             {
                 var x = NormalDistribution(ref random, 0f, 1f);
-                var v = 1f + c * x;
+                var v = 1f + (c * x);
                 while (v <= 0.0)
                 {
                     x = NormalDistribution(ref random, 0f, 1f);
-                    v = 1f + c * x;
+                    v = 1f + (c * x);
                 }
 
                 v = v * v * v;
@@ -771,12 +778,12 @@ namespace BovineLabs.Core.Utility
                 x = x * x;
                 if (u < 1f - (0.0331f * x * x))
                 {
-                    return alphafix * d * v / rate;
+                    return (alphafix * d * v) / rate;
                 }
 
-                if (math.log(u) < (0.5f * x) + (d * (1f - v + math.log(v))))
+                if (math.log(u) < (0.5f * x) + (d * ((1f - v) + math.log(v))))
                 {
-                    return alphafix * d * v / rate;
+                    return (alphafix * d * v) / rate;
                 }
             }
         }
@@ -789,15 +796,15 @@ namespace BovineLabs.Core.Utility
             {
             }
 
-            return mean + stddev * x;
+            return mean + (stddev * x);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool PolarTransform(float a, float b, out float x, out float y)
         {
-            var v1 = (2f*a) - 1f;
-            var v2 = (2f*b) - 1f;
-            var r = (v1*v1) + (v2*v2);
+            var v1 = (2f * a) - 1f;
+            var v2 = (2f * b) - 1f;
+            var r = (v1 * v1) + (v2 * v2);
             if (r is >= 1f or 0f)
             {
                 x = 0;
@@ -805,9 +812,9 @@ namespace BovineLabs.Core.Utility
                 return false;
             }
 
-            var fac = math.sqrt(-2f * math.log(r) / r);
-            x = v1*fac;
-            y = v2*fac;
+            var fac = math.sqrt((-2f * math.log(r)) / r);
+            x = v1 * fac;
+            y = v2 * fac;
             return true;
         }
 
@@ -830,6 +837,5 @@ namespace BovineLabs.Core.Utility
                     return euler;
             }
         }
-
     }
 }

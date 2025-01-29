@@ -20,10 +20,9 @@ namespace BovineLabs.Core
     using Unity.Mathematics;
     using UnityEngine;
 
-    [BurstCompile]
+    [Configurable]
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | WorldSystemFilterFlags.Editor)]
-    [Configurable]
     public partial class BLDebugSystem : SystemBase
     {
         internal const string LogLevelName = "debug.loglevel";
@@ -41,7 +40,7 @@ namespace BovineLabs.Core
         private LoggerHandle loggerHandle;
         private LogLevel currentLogLevel;
 
-        private static event Action? Quitting;
+        private static event Action Quitting;
 
         /// <inheritdoc />
         protected override void OnCreate()
@@ -56,22 +55,19 @@ namespace BovineLabs.Core
 
             var managerParameters = LogMemoryManagerParameters.Default;
 #if UNITY_EDITOR
-            // In editor we increase the default (64) capacity to allow verbose spamming
+            // In the editor we increase the default (64) capacity to allow verbose spamming
             managerParameters.InitialBufferCapacity = 1024 * 512;
 #endif
 
-            var loggerConfig = new LoggerConfig()
-                .RedirectUnityLogs(false)
-                .SyncMode.FatalIsSync();
+            var loggerConfig = new LoggerConfig().RedirectUnityLogs(false).SyncMode.FatalIsSync();
 
             if (!string.IsNullOrWhiteSpace(logDir))
             {
                 loggerConfig = loggerConfig
                     .CaptureStacktrace(false)
-                    .WriteTo.JsonFile(
-                    Path.Combine(logDir, "Output.log.json"),
-                    minLevel: MinLogLevel,
-                    outputTemplate: $"[{{Timestamp}}] {{Level}} | {world} | {{Message}}");
+                    .WriteTo
+                    .JsonFile(Path.Combine(logDir, "Output.log.json"), minLevel: MinLogLevel,
+                        outputTemplate: $"[{{Timestamp}}] {{Level}} | {world} | {{Message}}");
             }
 
 #if UNITY_EDITOR
@@ -84,13 +80,17 @@ namespace BovineLabs.Core
 #if UNITY_EDITOR
                 .CaptureStacktrace()
 #endif
-                .WriteTo.UnityDebugLog(
-                    minLevel: this.currentLogLevel,
-                    outputTemplate: template)
+                .WriteTo
+                .UnityDebugLog(minLevel: this.currentLogLevel, outputTemplate: template)
                 .CreateLogger(managerParameters);
 
             this.loggerHandle = logger.Handle;
-            var blDebug = new BLDebug { LoggerHandle = this.loggerHandle, Enabled = true };
+            var blDebug = new BLDebug
+            {
+                LoggerHandle = this.loggerHandle,
+                Enabled = true,
+            };
+
             this.EntityManager.SetComponentData(netDebugEntity, blDebug);
 
 #if !BL_DEBUG_UPDATE
@@ -131,27 +131,20 @@ namespace BovineLabs.Core
         /// <summary> <see cref="Unity.Logging.DefaultSettings.GetLogDirectory" />. </summary>
         private static string GetCurrentAbsoluteLogDirectory()
         {
-#if !UNITY_EDITOR
+#if UNITY_EDITOR
             var dataDir = Path.GetDirectoryName(Application.dataPath)!;
             var logDir = Path.Combine(dataDir, "Logs");
             Directory.CreateDirectory(logDir);
             return logDir;
 #else
-            var logPath = Application.consoleLogPath;
-
-            if (string.IsNullOrWhiteSpace(logPath))
-            {
-                return string.Empty;
-            }
-
             try
             {
-                var logDir = Path.Combine(Path.GetDirectoryName(logPath)!, "Logs");
-                if (!Directory.Exists(logDir))
-                {
-                    Directory.CreateDirectory(logDir);
-                }
+                var logPath = string.IsNullOrEmpty(Application.consoleLogPath)
+                    ? Application.persistentDataPath
+                    : Application.consoleLogPath;
 
+                var logDir = Path.Combine(Path.GetDirectoryName(logPath)!, "Logs");
+                Directory.CreateDirectory(logDir);
                 return logDir;
             }
             catch (Exception)

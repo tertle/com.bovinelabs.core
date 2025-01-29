@@ -38,7 +38,11 @@ namespace BovineLabs.Core
                         continue;
                     }
 
-                    this.keys.Add(new NameValue { Name = tag, Value = i });
+                    this.keys.Add(new NameValue
+                    {
+                        Name = tag,
+                        Value = i,
+                    });
                 }
 
                 return this.keys;

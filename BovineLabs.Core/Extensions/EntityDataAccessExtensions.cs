@@ -13,12 +13,15 @@ namespace BovineLabs.Core.Extensions
 
     public static unsafe class EntityDataAccessExtensions
     {
-        internal static byte* GetComponentDataWithTypeRO(ref this EntityDataAccess access, ChunkIndex chunk, Archetype* archetype, int indexInChunk, TypeIndex typeIndex, ref LookupCache cache)
+        internal static byte* GetComponentDataWithTypeRO(
+            ref this EntityDataAccess access, ChunkIndex chunk, Archetype* archetype, int indexInChunk, TypeIndex typeIndex, ref LookupCache cache)
         {
             return ChunkDataUtility.GetComponentDataWithTypeRO(chunk, archetype, indexInChunk, typeIndex, ref cache);
         }
 
-        internal static byte* GetComponentDataWithTypeRW(ref this EntityDataAccess access, ChunkIndex chunk, Archetype* archetype, int indexInChunk, Entity entity, TypeIndex typeIndex, uint globalVersion, ref LookupCache cache)
+        internal static byte* GetComponentDataWithTypeRW(
+            ref this EntityDataAccess access, ChunkIndex chunk, Archetype* archetype, int indexInChunk, Entity entity, TypeIndex typeIndex, uint globalVersion,
+            ref LookupCache cache)
         {
             var data = ChunkDataUtility.GetComponentDataWithTypeRW(chunk, archetype, indexInChunk, typeIndex, globalVersion, ref cache);
 
@@ -34,11 +37,7 @@ namespace BovineLabs.Core.Extensions
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal static UntypedDynamicBuffer GetUntypedBuffer(
-            ref this EntityDataAccess access,
-            ComponentType componentType,
-            Entity entity,
-            AtomicSafetyHandle safety,
-            AtomicSafetyHandle arrayInvalidationSafety,
+            ref this EntityDataAccess access, ComponentType componentType, Entity entity, AtomicSafetyHandle safety, AtomicSafetyHandle arrayInvalidationSafety,
             bool isReadOnly = false)
 #else
         internal static UntypedDynamicBuffer GetUntypedBuffer(
@@ -77,19 +76,19 @@ namespace BovineLabs.Core.Extensions
             }
             else
             {
-                header = (BufferHeader*)access.EntityComponentStore->GetComponentDataWithTypeRW(
-                    entity, typeIndex, access.EntityComponentStore->GlobalSystemVersion);
+                header = (BufferHeader*)access.EntityComponentStore->GetComponentDataWithTypeRW(entity, typeIndex,
+                    access.EntityComponentStore->GlobalSystemVersion);
             }
 
-            int internalCapacity = TypeManager.GetTypeInfo(typeIndex).BufferCapacity;
+            var internalCapacity = TypeManager.GetTypeInfo(typeIndex).BufferCapacity;
             var typeInfo = TypeManager.GetTypeInfo(typeIndex);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             var useMemoryInit = access.EntityComponentStore->useMemoryInitPattern != 0;
-            byte memoryInitPattern = access.EntityComponentStore->memoryInitPattern;
+            var memoryInitPattern = access.EntityComponentStore->memoryInitPattern;
 
-            return new UntypedDynamicBuffer(
-                header, safety, arrayInvalidationSafety, isReadOnly, useMemoryInit, memoryInitPattern, internalCapacity, typeInfo.ElementSize, UntypedDynamicBuffer.AlignOf);
+            return new UntypedDynamicBuffer(header, safety, arrayInvalidationSafety, isReadOnly, useMemoryInit, memoryInitPattern, internalCapacity,
+                typeInfo.ElementSize, UntypedDynamicBuffer.AlignOf);
 #else
             return new UntypedDynamicBuffer(header, internalCapacity, typeInfo.ElementSize, UntypedDynamicBuffer.AlignOf);
 #endif
@@ -101,13 +100,14 @@ namespace BovineLabs.Core.Extensions
         {
             EntitiesJournaling.RecordType recordType;
             void* recordData = null;
-            int recordDataLength = 0;
+            var recordDataLength = 0;
             if (TypeManager.IsSharedComponentType(typeIndex))
             {
                 // Getting RW data pointer on shared components should not be allowed
                 return;
             }
-            else if (TypeManager.IsManagedComponent(typeIndex))
+
+            if (TypeManager.IsManagedComponent(typeIndex))
             {
                 recordType = EntitiesJournaling.RecordType.GetComponentObjectRW;
             }
@@ -122,30 +122,17 @@ namespace BovineLabs.Core.Extensions
                 recordDataLength = TypeManager.GetTypeInfo(typeIndex).TypeSize;
             }
 
-            EntitiesJournaling.AddRecord(
-                recordType: recordType,
-                entityComponentStore: store,
-                globalSystemVersion: version,
-                entities: &entity,
-                entityCount: 1,
-                types: &typeIndex,
-                typeCount: 1,
-                data: recordData,
+            EntitiesJournaling.AddRecord(recordType, store, version, &entity, 1, types: &typeIndex, typeCount: 1, data: recordData,
                 dataLength: recordDataLength);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void SetComponentEnabled(ref this EntityDataAccess access, in SystemHandle originSystem, Entity* entities, int entityCount, TypeIndex type, bool value)
+        internal static void SetComponentEnabled(
+            ref this EntityDataAccess access, in SystemHandle originSystem, Entity* entities, int entityCount, TypeIndex type, bool value)
         {
-            EntitiesJournaling.AddRecord(
-                recordType: value ? EntitiesJournaling.RecordType.EnableComponent : EntitiesJournaling.RecordType.DisableComponent,
-                worldSequenceNumber: access.m_WorldUnmanaged.SequenceNumber,
-                executingSystem: access.m_WorldUnmanaged.ExecutingSystem,
-                originSystem: in originSystem,
-                entities: entities,
-                entityCount: entityCount,
-                types: &type,
-                typeCount: 1);
+            EntitiesJournaling.AddRecord(value ? EntitiesJournaling.RecordType.EnableComponent : EntitiesJournaling.RecordType.DisableComponent,
+                access.m_WorldUnmanaged.SequenceNumber, access.m_WorldUnmanaged.ExecutingSystem, originSystem: in originSystem, entities: entities,
+                entityCount: entityCount, types: &type, typeCount: 1);
         }
 #endif
     }

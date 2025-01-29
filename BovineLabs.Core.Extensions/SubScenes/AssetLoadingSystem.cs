@@ -7,7 +7,6 @@ namespace BovineLabs.Core.SubScenes
 {
     using System.Collections.Generic;
     using BovineLabs.Core.Groups;
-    using Unity.Collections;
     using Unity.Entities;
     using UnityEngine;
 
@@ -17,13 +16,13 @@ namespace BovineLabs.Core.SubScenes
     {
         private readonly Dictionary<GameObject, GameObject> objects = new();
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnCreate()
         {
             this.RequireForUpdate<AssetLoad>();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnDestroy()
         {
             foreach (var o in this.objects)
@@ -32,7 +31,7 @@ namespace BovineLabs.Core.SubScenes
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
             var flags = this.World.Flags;

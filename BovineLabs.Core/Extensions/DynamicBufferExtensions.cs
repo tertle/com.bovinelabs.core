@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Extensions
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Assertions;
-    using BovineLabs.Core.Collections;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -58,9 +57,9 @@ namespace BovineLabs.Core.Extensions
 
         /// <summary> Gets a readonly reference to the element at the given index. </summary>
         /// <param name="buffer"> The dynamic buffer to get the element from. </param>
-        /// <param name="index">The zero-based index.</param>
+        /// <param name="index"> The zero-based index. </param>
         /// <typeparam name="T"> The buffer type. </typeparam>
-        /// <returns>Returns the reference to the element at the index.</returns>
+        /// <returns> Returns the reference to the element at the index. </returns>
         public static ref readonly T ElementAtRO<T>(this in DynamicBuffer<T> buffer, int index)
             where T : unmanaged
         {
@@ -69,10 +68,10 @@ namespace BovineLabs.Core.Extensions
             return ref UnsafeUtility.ArrayElementAsRef<T>(buffer.GetUnsafeReadOnlyPtr(), index);
         }
 
-        /// <summary> Gets an <see langword="unsafe"/> read-only pointer to the contents of the buffer. </summary>
+        /// <summary> Gets an <see langword="unsafe" /> read-only pointer to the contents of the buffer. </summary>
         /// <param name="buffer"> The dynamic buffer to get the element from. </param>
-        /// <remarks>This function can only be called in unsafe code contexts.</remarks>
-        /// <returns>A typed, unsafe pointer to the first element in the buffer.</returns>
+        /// <remarks> This function can only be called in unsafe code contexts. </remarks>
+        /// <returns> A typed, unsafe pointer to the first element in the buffer. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void* GetPtr<T>(this DynamicBuffer<T> buffer)
             where T : unmanaged

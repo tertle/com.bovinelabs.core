@@ -71,6 +71,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                     objectType = typeof(ObjectDefinition),
                     value = definition,
                 };
+
                 field.SetEnabled(false);
                 foldout.Add(field);
             }

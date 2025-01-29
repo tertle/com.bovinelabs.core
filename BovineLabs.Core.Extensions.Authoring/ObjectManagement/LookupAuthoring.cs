@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_OBJECT_DEFINITION
+#if !BL_DISABLE_OBJECT_DEFINITION && !BL_DISABLE_LIFECYCLE
 namespace BovineLabs.Core.Authoring.ObjectManagement
 {
     using System;
@@ -22,8 +22,6 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         where TMap : unmanaged, IDynamicHashMap<ObjectId, TValue>
         where TValue : unmanaged
     {
-        bool TryGetInitialization(out TValue value);
-
         void ILookupAuthoring.Bake(IBaker baker, Entity entity, ObjectDefinition id, Dictionary<Type, object> map)
         {
             if (!this.TryGetInitialization(out var value))
@@ -39,14 +37,14 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             var genericWrapper = (ManagedBuffer<TMap, TValue>)wrapper;
             genericWrapper.Add(id, value);
         }
+
+        bool TryGetInitialization(out TValue value);
     }
 
     public interface ILookupMultiAuthoring<TMap, TValue> : ILookupAuthoring
         where TMap : unmanaged, IDynamicMultiHashMap<ObjectId, TValue>
         where TValue : unmanaged
     {
-        bool TryGetInitialization(out TValue value);
-
         void ILookupAuthoring.Bake(IBaker baker, Entity entity, ObjectDefinition id, Dictionary<Type, object> map)
         {
             if (!this.TryGetInitialization(out var value))
@@ -62,6 +60,8 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             var genericWrapper = (ManagedMultiBuffer<TMap, TValue>)wrapper;
             genericWrapper.Add(id, value);
         }
+
+        bool TryGetInitialization(out TValue value);
     }
 
     internal class ManagedBuffer<TMap, TValue>

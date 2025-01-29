@@ -19,7 +19,6 @@ namespace BovineLabs.Core.SingletonCollection
         where T : unmanaged, ISingletonCollection<TC>
         where TC : unmanaged
     {
-        private readonly UnsafeList<TC>* containers;
         private DoubleRewindableAllocators allocator;
         private EntityQuery query;
 
@@ -27,11 +26,11 @@ namespace BovineLabs.Core.SingletonCollection
         {
             this.allocator = new DoubleRewindableAllocators(allocator, initialSizeInBytes);
 
-            this.containers = UnsafeList<TC>.Create(1, Allocator.Persistent);
+            this.ContainersUnsafe = UnsafeList<TC>.Create(1, Allocator.Persistent);
 
             var singleton = new T
             {
-                Collections = this.containers,
+                Collections = this.ContainersUnsafe,
                 Allocator = this.allocator.Allocator.ToAllocator,
             };
 
@@ -42,14 +41,14 @@ namespace BovineLabs.Core.SingletonCollection
 
         public Allocator CurrentAllocator => this.allocator.Allocator.ToAllocator;
 
-        public UnsafeList<TC>.ReadOnly Containers => this.containers->AsReadOnly();
+        public UnsafeList<TC>.ReadOnly Containers => this.ContainersUnsafe->AsReadOnly();
 
         /// <summary> Gets the underlying container. Don't use this unless you really know what you're doing. </summary>
-        public UnsafeList<TC>* ContainersUnsafe => this.containers;
+        public UnsafeList<TC>* ContainersUnsafe { get; }
 
         public void ClearRewind()
         {
-            this.containers->Clear();
+            this.ContainersUnsafe->Clear();
 
             this.allocator.Update();
             var s = this.query.GetSingletonRW<T>();
@@ -58,7 +57,7 @@ namespace BovineLabs.Core.SingletonCollection
 
         public void Dispose()
         {
-            UnsafeList<TC>.Destroy(this.containers);
+            UnsafeList<TC>.Destroy(this.ContainersUnsafe);
 
             this.allocator.Dispose();
         }

@@ -43,10 +43,10 @@ namespace BovineLabs.Core.Collections
         /// <summary> Gets a value indicating whether memory for the container is allocated. </summary>
         /// <value> True if this container object's internal storage has been allocated. </value>
         /// <remarks>
-        /// <para>
-        /// Note that the container storage is not created if you use the default constructor.
-        /// You must specify at least an allocation type to construct a usable container.
-        /// </para>
+        ///     <para>
+        ///     Note that the container storage is not created if you use the default constructor.
+        ///     You must specify at least an allocation type to construct a usable container.
+        ///     </para>
         /// </remarks>
         public bool IsCreated => this.stream.IsCreated;
 

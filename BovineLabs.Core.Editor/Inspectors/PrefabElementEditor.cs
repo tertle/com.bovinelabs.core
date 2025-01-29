@@ -47,7 +47,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             return true;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override VisualElement CreateElement(SerializedProperty property)
         {
             if (this.IsPrefab || this.prefabObject == null)
@@ -61,7 +61,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             return CreatePropertyField(prefabProperty, this.prefabObject);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void PostElementCreation(VisualElement root, bool createdElements)
         {
             if (createdElements)

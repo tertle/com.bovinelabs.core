@@ -37,14 +37,7 @@ namespace BovineLabs.Core.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal DynamicBufferAccessor(
-            byte* basePointer,
-            int length,
-            int stride,
-            int elementSize,
-            int elementAlign,
-            int internalCapacity,
-            bool readOnly,
-            AtomicSafetyHandle safety0,
+            byte* basePointer, int length, int stride, int elementSize, int elementAlign, int internalCapacity, bool readOnly, AtomicSafetyHandle safety0,
             AtomicSafetyHandle arrayInvalidationSafety)
         {
             this.pointer = basePointer;
@@ -110,7 +103,7 @@ namespace BovineLabs.Core.Collections
         [Conditional("UNITY_DOTS_DEBUG")]
         private void AssertIndexInRange(int index)
         {
-            if ((index < 0) || (index >= this.Length))
+            if (index < 0 || index >= this.Length)
             {
                 throw new InvalidOperationException($"index {index} out of range in LowLevelBufferAccessor of length {this.Length}");
             }

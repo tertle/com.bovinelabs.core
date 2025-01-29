@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Editor.UI
     {
         static EditorToolbarInitialize()
         {
-            foreach (var m in ReflectionUtility.GetAllMethodsWithAttribute<EditorToolbarAttribute>())
+            foreach (var m in ReflectionUtility.GetAllPublicMethodsWithAttribute<EditorToolbarAttribute>())
             {
                 if (!m.IsStatic)
                 {
@@ -38,7 +38,7 @@ namespace BovineLabs.Core.Editor.UI
 
                 var ve = (VisualElement)m.Invoke(null, null);
 
-                VisualElement parent = m.GetCustomAttribute<EditorToolbarAttribute>().Position switch
+                var parent = m.GetCustomAttribute<EditorToolbarAttribute>().Position switch
                 {
                     EditorToolbarPosition.RightLeft => EditorToolbar.RightLeftParent,
                     EditorToolbarPosition.RightCenter => EditorToolbar.RightCenterParent,

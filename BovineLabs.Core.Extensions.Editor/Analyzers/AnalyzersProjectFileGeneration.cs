@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
- #if !BL_DISABLE_ANALYZERS
+#if !BL_DISABLE_ANALYZERS
 namespace BovineLabs.Core.Editor.Analyzers
 {
     using System;
@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Editor.Analyzers
 
         private static string OnGeneratedCSProject(string path, string contents)
         {
-            XDocument xml = XDocument.Parse(contents);
+            var xml = XDocument.Parse(contents);
 
             UpgradeProjectFile(xml);
 
@@ -42,7 +42,7 @@ namespace BovineLabs.Core.Editor.Analyzers
         }
 
         /// <summary>
-        ///  Add everything from RoslynAnalyzers folder to csproj.
+        /// Add everything from RoslynAnalyzers folder to csproj.
         /// </summary>
         private static void SetRoslynAnalyzers(XElement projectContentElement, XNamespace xmlns)
         {
@@ -92,11 +92,7 @@ namespace BovineLabs.Core.Editor.Analyzers
             projectContentElement.Add(itemGroup);
         }
 
-        private static void SetOrUpdateProperty(
-            XContainer root,
-            XNamespace xmlns,
-            string name,
-            Func<string, string> updater)
+        private static void SetOrUpdateProperty(XContainer root, XNamespace xmlns, string name, Func<string, string> updater)
         {
             var element = root.Elements(xmlns + "PropertyGroup").Elements(xmlns + name).FirstOrDefault();
             if (element != null)
@@ -116,8 +112,7 @@ namespace BovineLabs.Core.Editor.Analyzers
         // Adds a property to the first property group without a condition
         private static void AddProperty(XContainer root, XNamespace xmlns, string name, string content)
         {
-            var propertyGroup = root.Elements(xmlns + "PropertyGroup")
-              .FirstOrDefault(e => !e.Attributes(xmlns + "Condition").Any());
+            var propertyGroup = root.Elements(xmlns + "PropertyGroup").FirstOrDefault(e => !e.Attributes(xmlns + "Condition").Any());
             if (propertyGroup == null)
             {
                 propertyGroup = new XElement(xmlns + "PropertyGroup");

@@ -76,15 +76,16 @@ namespace BovineLabs.Core.Extensions
             if (TypeManager.IsEnableable(typeIndex))
             {
                 var typeName = typeIndex.ToFixedString();
-                throw new InvalidOperationException(
-                    $"Can't call GetSingletonBuffer<{typeName}>() with enableable component type {typeName}.");
+                throw new InvalidOperationException($"Can't call GetSingletonBuffer<{typeName}>() with enableable component type {typeName}.");
             }
 #endif
 
             impl->GetSingletonChunkAndEntity(typeIndex, out var indexInArchetype, out var chunk, out var entityIndexInChunk);
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(impl->_Access->EntityComponentStore->m_RecordToJournal != 0) && !isReadOnly)
+            {
                 impl->RecordSingletonJournalRW(chunk, typeIndex, EntitiesJournaling.RecordType.GetBufferRW);
+            }
 #endif
 
             var archetype = impl->_Access->EntityComponentStore->GetArchetype(chunk);
@@ -113,7 +114,7 @@ namespace BovineLabs.Core.Extensions
         [Conditional("UNITY_DOTS_DEBUG")]
         private static void AssertRange(int index, int count)
         {
-            if ((index < 0) || (index >= count))
+            if (index < 0 || index >= count)
             {
                 throw new ArgumentOutOfRangeException(nameof(index), "Trying to replace shared filter outside of range");
             }

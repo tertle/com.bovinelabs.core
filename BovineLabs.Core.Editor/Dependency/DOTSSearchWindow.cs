@@ -113,7 +113,7 @@ namespace BovineLabs.Core.Editor.Dependency
             searchWindow.Items = Items;
             searchWindow.OnSelection += this.SearchWindowOnOnSelection;
             var rect = focusedWindow.position;
-            Rect worldBounds = this.Button.worldBound;
+            var worldBounds = this.Button.worldBound;
 
             var size = new Rect(rect.x + worldBounds.x, rect.y + worldBounds.y + worldBounds.height, 400, 400);
             searchWindow.position = size;

@@ -55,11 +55,11 @@ namespace BovineLabs.Core.PropertyDrawers
                 return true;
             }
 
-            return (this.Category == other.Category) &&
-                   (this.OnlyZeroSize == other.OnlyZeroSize) &&
-                   (this.OnlyEnableable == other.OnlyEnableable) &&
-                   (this.AllowUnityNamespace == other.AllowUnityNamespace) &&
-                   (this.AllowEditorAssemblies == other.AllowEditorAssemblies);
+            return this.Category == other.Category &&
+                this.OnlyZeroSize == other.OnlyZeroSize &&
+                this.OnlyEnableable == other.OnlyEnableable &&
+                this.AllowUnityNamespace == other.AllowUnityNamespace &&
+                this.AllowEditorAssemblies == other.AllowEditorAssemblies;
         }
 
         public override int GetHashCode()

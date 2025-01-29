@@ -18,11 +18,11 @@ namespace BovineLabs.Core.Camera
         private readonly Plane[] sourcePlanes = new Plane[6];
         private readonly Vector3[] frustumCornerArray = new Vector3[4];
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
-            foreach (var (frustumPlanes, frustumCorners, cameraWrapper) in SystemAPI.Query<
-                         RefRW<CameraFrustumPlanes>, RefRW<CameraFrustumCorners>, SystemAPI.ManagedAPI.UnityEngineComponent<Camera>>())
+            foreach (var (frustumPlanes, frustumCorners, cameraWrapper) in SystemAPI
+                .Query<RefRW<CameraFrustumPlanes>, RefRW<CameraFrustumCorners>, SystemAPI.ManagedAPI.UnityEngineComponent<Camera>>())
             {
                 var camera = cameraWrapper.Value;
 

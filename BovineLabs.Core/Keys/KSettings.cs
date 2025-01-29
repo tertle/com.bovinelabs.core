@@ -6,11 +6,10 @@ namespace BovineLabs.Core.Keys
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Linq;
     using BovineLabs.Core.Settings;
     using JetBrains.Annotations;
     using Unity.Mathematics;
+    using UnityEditor;
     using UnityEngine;
 
     /// <summary>
@@ -53,7 +52,7 @@ namespace BovineLabs.Core.Keys
 #endif
 
 #if UNITY_EDITOR
-        [UnityEditor.InitializeOnLoadMethod]
+        [InitializeOnLoadMethod]
 #endif
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void LoadAll()

@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
     using System.Collections.Generic;
@@ -21,25 +22,25 @@ namespace BovineLabs.Core.SubScenes
         private readonly Dictionary<Hash128, SubScene> loading = new();
 #endif
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnCreate()
         {
             SceneManager.sceneLoaded += this.OnSceneLoaded;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnDestroy()
         {
             SceneManager.sceneLoaded -= this.OnSceneLoaded;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnStartRunning()
         {
             this.LoadAllExistingSubScenes();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
 #if UNITY_EDITOR
@@ -111,3 +112,4 @@ namespace BovineLabs.Core.SubScenes
         }
     }
 }
+#endif

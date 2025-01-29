@@ -20,7 +20,6 @@ namespace BovineLabs.Core.Iterators
 
         private readonly TypeIndex m_TypeIndex;
 
-
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal SharedComponentDataFromIndex(TypeIndex typeIndex, EntityDataAccess* access, bool isReadOnly)
         {

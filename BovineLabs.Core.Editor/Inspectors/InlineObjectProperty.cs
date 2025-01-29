@@ -70,6 +70,5 @@ namespace BovineLabs.Core.Editor.Inspectors
                 this.parent.Add(element);
             }
         }
-
     }
 }

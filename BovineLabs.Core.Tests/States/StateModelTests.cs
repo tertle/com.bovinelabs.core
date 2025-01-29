@@ -67,9 +67,7 @@ namespace BovineLabs.Core.Tests.States
         [BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
-            this.impl = new StateModel(
-                ref state,
-                ComponentType.ReadWrite<StateModelTests.TestState>(),
+            this.impl = new StateModel(ref state, ComponentType.ReadWrite<StateModelTests.TestState>(),
                 ComponentType.ReadWrite<StateModelTests.TestStatePrevious>());
         }
 

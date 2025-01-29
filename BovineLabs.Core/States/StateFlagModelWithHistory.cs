@@ -24,12 +24,8 @@ namespace BovineLabs.Core.States
         private DynamicComponentTypeHandle historyForwardType;
 
         public StateFlagModelWithHistory(
-            ref SystemState state,
-            ComponentType stateComponent,
-            ComponentType previousStateComponent,
-            ComponentType historyBackComponent,
-            ComponentType historyForwardComponent,
-            int maxHistorySize)
+            ref SystemState state, ComponentType stateComponent, ComponentType previousStateComponent, ComponentType historyBackComponent,
+            ComponentType historyForwardComponent, int maxHistorySize)
         {
             this.stateSize = TypeManager.GetTypeInfo(stateComponent.TypeIndex).ElementSize;
 
@@ -208,7 +204,7 @@ namespace BovineLabs.Core.States
                     UnsafeUtility.MemCpy(previousWithState + this.StateSize, &isAdditionOnly, 1);
 
                     // Was it a Pop operation to a previous state
-                    if ((back.Length > 0) && this.Equal(back[^1], stateI))
+                    if (back.Length > 0 && this.Equal(back[^1], stateI))
                     {
                         // Limit capacity
                         if (forward.Length == this.MaxHistory)

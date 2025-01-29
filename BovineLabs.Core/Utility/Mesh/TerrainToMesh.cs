@@ -37,16 +37,16 @@ namespace BovineLabs.Core.Utility
         public static Result ConvertAsync(
             int width, int height, Vector3 heightmapScale, float[,] heightmap, bool[,] holes, Allocator allocator = Allocator.TempJob)
         {
-            int vertexCount = width * height;
+            var vertexCount = width * height;
             var job = default(ComputeTerrainMeshJob);
             job.Heightmap = new NativeArray<float>(vertexCount, allocator);
-            for (int i = 0; i < vertexCount; ++i)
+            for (var i = 0; i < vertexCount; ++i)
             {
                 job.Heightmap[i] = heightmap[i / width, i % width];
             }
 
             job.Holes = new NativeArray<bool>((width - 1) * (height - 1), allocator);
-            for (int i = 0; i < (width - 1) * (height - 1); ++i)
+            for (var i = 0; i < (width - 1) * (height - 1); ++i)
             {
                 job.Holes[i] = holes[i / (width - 1), i % (width - 1)];
             }
@@ -89,7 +89,7 @@ namespace BovineLabs.Core.Utility
             {
                 Check.Assume(this.Done);
 
-                Mesh mesh = new Mesh { indexFormat = IndexFormat.UInt32 };
+                var mesh = new Mesh { indexFormat = IndexFormat.UInt32 };
                 mesh.SetVertices(this.job.Positions);
                 mesh.SetUVs(0, this.job.Uvs);
                 mesh.SetNormals(this.job.Normals);
@@ -120,11 +120,11 @@ namespace BovineLabs.Core.Utility
             private NativeList<int> TriangleIndicesWithoutHoles(Allocator allocator)
             {
                 var trianglesWithoutHoles = new NativeList<int>((this.job.Width - 1) * (this.job.Height - 1) * 6, allocator);
-                for (int i = 0; i < this.job.Indices.Length; i += 3)
+                for (var i = 0; i < this.job.Indices.Length; i += 3)
                 {
-                    int i1 = this.job.Indices[i];
-                    int i2 = this.job.Indices[i + 1];
-                    int i3 = this.job.Indices[i + 2];
+                    var i1 = this.job.Indices[i];
+                    var i2 = this.job.Indices[i + 1];
+                    var i3 = this.job.Indices[i + 2];
 
                     if (i1 != 0 && i2 != 0 && i3 != 0)
                     {
@@ -177,9 +177,9 @@ namespace BovineLabs.Core.Utility
 
             public void Execute(int i)
             {
-                int vertexIndex = i;
-                int x = i % this.Width;
-                int y = i / this.Height;
+                var vertexIndex = i;
+                var x = i % this.Width;
+                var y = i / this.Height;
 
                 var v = new float3(x, this.Heightmap[(y * this.Width) + x], y);
 
@@ -189,12 +189,12 @@ namespace BovineLabs.Core.Utility
 
                 if (x < this.Width - 1 && y < this.Height - 1)
                 {
-                    int i1 = (y * this.Width) + x;
-                    int i2 = i1 + 1;
-                    int i3 = i1 + this.Width;
-                    int i4 = i3 + 1;
+                    var i1 = (y * this.Width) + x;
+                    var i2 = i1 + 1;
+                    var i3 = i1 + this.Width;
+                    var i4 = i3 + 1;
 
-                    int faceIndex = x + (y * (this.Width - 1));
+                    var faceIndex = x + (y * (this.Width - 1));
 
                     if (!this.Holes[faceIndex])
                     {

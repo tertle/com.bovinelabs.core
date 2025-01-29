@@ -177,7 +177,7 @@ namespace BovineLabs.Core.Keys
 
         public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
         {
-            if ((newLength < 0) || (newLength > UTF8MaxLengthInBytes))
+            if (newLength < 0 || newLength > UTF8MaxLengthInBytes)
             {
                 return false;
             }

@@ -10,9 +10,9 @@ namespace BovineLabs.Core.Iterators
     using Unity.Collections.LowLevel.Unsafe;
 
     /// <summary> A key-value pair. </summary>
-    /// <remarks>Used for enumerators.</remarks>
-    /// <typeparam name="TKey">The type of the keys.</typeparam>
-    /// <typeparam name="TValue">The type of the values.</typeparam>
+    /// <remarks> Used for enumerators. </remarks>
+    /// <typeparam name="TKey"> The type of the keys. </typeparam>
+    /// <typeparam name="TValue"> The type of the values. </typeparam>
     [DebuggerDisplay("Key = {Key}, Value = {Value}")]
     [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
     public unsafe struct KVPair<TKey, TValue>
@@ -23,13 +23,13 @@ namespace BovineLabs.Core.Iterators
         internal int Index;
         internal int Next;
 
-        /// <summary>  An invalid KeyValue. </summary>
+        /// <summary> An invalid KeyValue. </summary>
         public static KVPair<TKey, TValue> Null => new() { Index = -1 };
 
         /// <summary>
         /// The key.
         /// </summary>
-        /// <value>The key. If this KeyValue is Null, returns the default of TKey.</value>
+        /// <value> The key. If this KeyValue is Null, returns the default of TKey. </value>
         public TKey Key
         {
             get
@@ -52,7 +52,9 @@ namespace BovineLabs.Core.Iterators
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 if (this.Index == -1)
+                {
                     throw new ArgumentException("must be valid");
+                }
 #endif
 
                 return ref UnsafeUtility.AsRef<TValue>(this.Data->Values + (sizeof(TValue) * this.Index));
@@ -62,9 +64,9 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Gets the key and the value.
         /// </summary>
-        /// <param name="key">Outputs the key. If this KeyValue is Null, outputs the default of TKey.</param>
-        /// <param name="value">Outputs the value. If this KeyValue is Null, outputs the default of TValue.</param>
-        /// <returns>True if the key-value pair is valid.</returns>
+        /// <param name="key"> Outputs the key. If this KeyValue is Null, outputs the default of TKey. </param>
+        /// <param name="value"> Outputs the value. If this KeyValue is Null, outputs the default of TValue. </param>
+        /// <returns> True if the key-value pair is valid. </returns>
         public bool GetKeyValue(out TKey key, out TValue value)
         {
             if (this.Index != -1)

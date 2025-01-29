@@ -20,17 +20,19 @@ namespace BovineLabs.Core.Pause
         private bool hasUpdatedThisFrame;
         private double pauseTime;
 
-        public PauseRateManager(ComponentSystemGroup group, IRateManager existingRateManager, bool isPresentation)
+        public PauseRateManager(ComponentSystemGroup group, bool isPresentation)
         {
             this.pauseQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<PauseGame>().WithOptions(EntityQueryOptions.IncludeSystems).Build(group);
             this.debugQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<BLDebug>().Build(group);
-            this.existingRateManager = existingRateManager;
+            this.existingRateManager = group.RateManager;
             this.isPresentation = isPresentation;
         }
 
-        public float Timestep { get; set; }
+        /// <inheritdoc/>
+        float IRateManager.Timestep { get; set; }
 
-        public bool ShouldGroupUpdate(ComponentSystemGroup group)
+        /// <inheritdoc/>
+        bool IRateManager.ShouldGroupUpdate(ComponentSystemGroup group)
         {
             if (this.hasUpdatedThisFrame)
             {
@@ -89,17 +91,17 @@ namespace BovineLabs.Core.Pause
                 group.World.Time = new TimeData(this.pauseTime, group.World.Time.DeltaTime);
                 PauseUtility.UpdateAlwaysSystems(group);
 
-                this.Timestep = 0;
+                ((IRateManager)this).Timestep = 0;
                 return false;
             }
 
             if (!this.existingRateManager?.ShouldGroupUpdate(group) ?? false)
             {
-                this.Timestep = 0;
+                ((IRateManager)this).Timestep = 0;
                 return false;
             }
 
-            this.Timestep = group.World.Time.DeltaTime;
+            ((IRateManager)this).Timestep = group.World.Time.DeltaTime;
             this.hasUpdatedThisFrame = true;
             return true;
         }

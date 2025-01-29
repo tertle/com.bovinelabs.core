@@ -52,7 +52,9 @@ namespace BovineLabs.Core.Tests
             {
                 var arch = state.EntityManager.CreateArchetype(typeof(DamageBuffer));
                 this.entities = state.EntityManager.CreateEntity(arch, EntityCount, Allocator.Persistent);
-                this.damageInstances = new NativeParallelMultiHashMapFallback<Entity, int>((int)(EntityCount * 0.75f), Allocator.Persistent); // Capacity < count so it'll overflow
+                this.damageInstances =
+                    new NativeParallelMultiHashMapFallback<Entity, int>((int)(EntityCount * 0.75f), Allocator.Persistent); // Capacity < count so it'll overflow
+
                 this.random = new ThreadRandom(1234, Allocator.Persistent);
             }
 
@@ -67,21 +69,19 @@ namespace BovineLabs.Core.Tests
             public void OnUpdate(ref SystemState state)
             {
                 state.Dependency = new WriteDamageJob
-                    {
-                        Random = this.random,
-                        Entities = this.entities,
-                        DamageInstances = this.damageInstances.AsWriter(),
-                    }
-                    .ScheduleParallel(state.Dependency);
+                {
+                    Random = this.random,
+                    Entities = this.entities,
+                    DamageInstances = this.damageInstances.AsWriter(),
+                }.ScheduleParallel(state.Dependency);
 
                 state.Dependency = this.damageInstances.Apply(state.Dependency, out var reader);
 
                 state.Dependency = new ReadDamageJob
-                    {
-                        DamageInstances = reader,
-                        DamageBuffers = SystemAPI.GetBufferLookup<DamageBuffer>(),
-                    }
-                    .ScheduleParallel(reader, 128, state.Dependency);
+                {
+                    DamageInstances = reader,
+                    DamageBuffers = SystemAPI.GetBufferLookup<DamageBuffer>(),
+                }.ScheduleParallel(reader, 128, state.Dependency);
             }
         }
 

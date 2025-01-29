@@ -24,7 +24,7 @@ namespace BovineLabs.Core.Collections
         internal int Size;
         internal TValue NullValue;
 
-        private AllocatorManager.AllocatorHandle allocator;
+        private readonly AllocatorManager.AllocatorHandle allocator;
 
         public UnsafePerfectHashMap(NativeArray<TKey> keys, NativeArray<TValue> values, TValue nullValue, AllocatorManager.AllocatorHandle allocator)
         {
@@ -51,9 +51,12 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        public static UnsafePerfectHashMap<TKey, TValue>* Alloc(NativeArray<TKey> keys, NativeArray<TValue> values, TValue nullValue, AllocatorManager.AllocatorHandle allocator)
+        public static UnsafePerfectHashMap<TKey, TValue>* Alloc(
+            NativeArray<TKey> keys, NativeArray<TValue> values, TValue nullValue, AllocatorManager.AllocatorHandle allocator)
         {
-            var data = (UnsafePerfectHashMap<TKey, TValue>*)Memory.Unmanaged.Allocate(sizeof(UnsafePerfectHashMap<TKey, TValue>), UnsafeUtility.AlignOf<UnsafePerfectHashMap<TKey, TValue>>(), allocator);
+            var data = (UnsafePerfectHashMap<TKey, TValue>*)Memory.Unmanaged.Allocate(sizeof(UnsafePerfectHashMap<TKey, TValue>),
+                UnsafeUtility.AlignOf<UnsafePerfectHashMap<TKey, TValue>>(), allocator);
+
             *data = new UnsafePerfectHashMap<TKey, TValue>(keys, values, nullValue, allocator);
             return data;
         }
@@ -73,7 +76,7 @@ namespace BovineLabs.Core.Collections
         /// <summary>
         /// Whether this hash map has been allocated (and not yet deallocated).
         /// </summary>
-        /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+        /// <value> True if this hash map has been allocated (and not yet deallocated). </value>
         public readonly bool IsCreated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -121,9 +124,9 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary> Returns the value associated with a key. </summary>
-        /// <param name="key">The key to look up.</param>
-        /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
-        /// <returns>True if the key was present.</returns>
+        /// <param name="key"> The key to look up. </param>
+        /// <param name="item"> Outputs the value associated with the key. Outputs default if the key was not present. </param>
+        /// <returns> True if the key was present. </returns>
         public bool TryGetValue(TKey key, out TValue item)
         {
             if (!this.TryGetIndex(key, out var index))
@@ -145,7 +148,7 @@ namespace BovineLabs.Core.Collections
         private static int FindSize(NativeArray<TKey> keys, NativeHashSet<int> unique)
         {
             // Find a power of 2 capacity greater than map.size().
-            int size = 1; // TODO can this start higher?
+            var size = 1; // TODO can this start higher?
 
             while (HasCollisions(size, keys, unique))
             {

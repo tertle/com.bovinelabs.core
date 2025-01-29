@@ -15,9 +15,7 @@ namespace BovineLabs.Core.Utility
             var tMin = math.min(a, math.min(b, c));
             var tMax = math.max(a, math.max(b, c));
 
-            if (tMin.x >= aabb.Max.x || tMax.x <= aabb.Min.x
-                                     || tMin.y >= aabb.Max.y || tMax.y <= aabb.Min.y
-                                     || tMin.z >= aabb.Max.z || tMax.z <= aabb.Min.z)
+            if (tMin.x >= aabb.Max.x || tMax.x <= aabb.Min.x || tMin.y >= aabb.Max.y || tMax.y <= aabb.Min.y || tMin.z >= aabb.Max.z || tMax.z <= aabb.Min.z)
             {
                 return false;
             }
@@ -30,8 +28,8 @@ namespace BovineLabs.Core.Utility
             var ac = a - center;
 
             var n = math.cross(t[0], t[1]);
-            float s = math.dot(n, ac);
-            float r = math.abs(math.dot(h, math.abs(n)));
+            var s = math.dot(n, ac);
+            var r = math.abs(math.dot(h, math.abs(n)));
 
             if (math.abs(s) >= r)
             {
@@ -44,9 +42,9 @@ namespace BovineLabs.Core.Utility
             var cc = c - center;
 
             // eX <cross> t[0]
-            float d1 = (t[0].y * ac.z) - (t[0].z * ac.y);
-            float d2 = (t[0].y * cc.z) - (t[0].z * cc.y);
-            float tc = (d1 + d2) * 0.5f;
+            var d1 = (t[0].y * ac.z) - (t[0].z * ac.y);
+            var d2 = (t[0].y * cc.z) - (t[0].z * cc.y);
+            var tc = (d1 + d2) * 0.5f;
             r = math.abs((h.y * at[0].z) + (h.z * at[0].y));
 
             if (r + math.abs(tc - d1) < math.abs(tc))

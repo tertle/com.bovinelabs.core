@@ -19,7 +19,7 @@ namespace BovineLabs.Core.Editor.SearchWindow
         {
         }
 
-        public TreeNode(T value,  List<TreeNode<T>> children)
+        public TreeNode(T value, List<TreeNode<T>> children)
         {
             this.Value = value;
             this.children = children;

@@ -50,7 +50,8 @@ namespace BovineLabs.Core.Iterators
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DynamicBuffer<TBuffer> InitializeHashSet<TBuffer, TKey>(this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
+        public static DynamicBuffer<TBuffer> InitializeHashSet<TBuffer, TKey>(
+            this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
             where TBuffer : unmanaged, IDynamicHashSet<TKey>
             where TKey : unmanaged, IEquatable<TKey>
         {

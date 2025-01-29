@@ -7,7 +7,6 @@ namespace BovineLabs.Core.ConfigVars
     using System;
     using Unity.Burst;
     using Unity.Collections;
-    using UnityEngine;
 
     /// <summary> Container for setting config var static fields that use FixedString. </summary>
     /// <remarks> This should only be used in debugging tools. </remarks>
@@ -33,16 +32,15 @@ namespace BovineLabs.Core.ConfigVars
         /// <inheritdoc />
         string IConfigVarContainer.StringValue
         {
-            get =>
-                this.field switch
-                {
-                    SharedStatic<FixedString32Bytes> s32 => s32.Data.ToString(),
-                    SharedStatic<FixedString64Bytes> s64 => s64.Data.ToString(),
-                    SharedStatic<FixedString128Bytes> s128 => s128.Data.ToString(),
-                    SharedStatic<FixedString512Bytes> s512 => s512.Data.ToString(),
-                    SharedStatic<FixedString4096Bytes> s4096 => s4096.Data.ToString(),
-                    _ => throw new InvalidOperationException("String config var must be a FixedString type"),
-                };
+            get => this.field switch
+            {
+                SharedStatic<FixedString32Bytes> s32 => s32.Data.ToString(),
+                SharedStatic<FixedString64Bytes> s64 => s64.Data.ToString(),
+                SharedStatic<FixedString128Bytes> s128 => s128.Data.ToString(),
+                SharedStatic<FixedString512Bytes> s512 => s512.Data.ToString(),
+                SharedStatic<FixedString4096Bytes> s4096 => s4096.Data.ToString(),
+                _ => throw new InvalidOperationException("String config var must be a FixedString type"),
+            };
 
             set
             {

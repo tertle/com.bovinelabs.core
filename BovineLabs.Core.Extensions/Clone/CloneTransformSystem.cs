@@ -13,7 +13,7 @@ namespace BovineLabs.Core.Clone
     [UpdateInGroup(typeof(TransformSystemGroup), OrderFirst = true)]
     public partial struct CloneTransformSystem : ISystem
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {

@@ -87,24 +87,42 @@ namespace BovineLabs.Core.PhysicsStates
             [ReadOnly]
             private NativeHashSet<StatefulTriggerEventContainer> previousEvents;
 
-            public BufferTypeHandle<StatefulTriggerEvent> StatefulNewEventHandle { set => this.statefulNewEventHandle = value; }
+            public BufferTypeHandle<StatefulTriggerEvent> StatefulNewEventHandle
+            {
+                set => this.statefulNewEventHandle = value;
+            }
 
-            public EntityTypeHandle EntityHandle { set => this.entityHandle = value; }
+            public EntityTypeHandle EntityHandle
+            {
+                set => this.entityHandle = value;
+            }
 
-            public NativeMultiHashMap<Entity, StatefulTriggerEventContainer> CurrentEventMap { set => this.currentEventMap = value; }
+            public NativeMultiHashMap<Entity, StatefulTriggerEventContainer> CurrentEventMap
+            {
+                set => this.currentEventMap = value;
+            }
 
-            public NativeMultiHashMap<Entity, StatefulTriggerEventContainer> PreviousEventMap { set => this.previousEventMap = value; }
+            public NativeMultiHashMap<Entity, StatefulTriggerEventContainer> PreviousEventMap
+            {
+                set => this.previousEventMap = value;
+            }
 
-            public NativeHashSet<StatefulTriggerEventContainer> CurrentEvents { set => this.currentEvents = value; }
+            public NativeHashSet<StatefulTriggerEventContainer> CurrentEvents
+            {
+                set => this.currentEvents = value;
+            }
 
-            public NativeHashSet<StatefulTriggerEventContainer> PreviousEvents { set => this.previousEvents = value; }
+            public NativeHashSet<StatefulTriggerEventContainer> PreviousEvents
+            {
+                set => this.previousEvents = value;
+            }
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 var statefulNewEventAccessor = chunk.GetBufferAccessorRO(ref this.statefulNewEventHandle);
                 var entities = chunk.GetEntityDataPtrRO(this.entityHandle);
 
-                bool changed = false;
+                var changed = false;
 
                 for (var i = 0; i < chunk.Count; i++)
                 {

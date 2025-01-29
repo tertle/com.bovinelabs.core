@@ -8,10 +8,11 @@ namespace BovineLabs.Core.Camera
     using System;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
+    using Unity.Entities;
     using Unity.Mathematics;
 
     [SuppressMessage("ReSharper", "UnassignedField.Global", Justification = "Reinterpret")]
-    public unsafe struct CameraFrustumPlanes : Unity.Entities.IComponentData, IEquatable<CameraFrustumPlanes>
+    public unsafe struct CameraFrustumPlanes : IComponentData, IEquatable<CameraFrustumPlanes>
     {
         public float4 Left;
         public float4 Right;
@@ -45,9 +46,12 @@ namespace BovineLabs.Core.Camera
 
         public bool Equals(CameraFrustumPlanes other)
         {
-            return this.Left.Equals(other.Left) && this.Right.Equals(other.Right) &&
-                   this.Bottom.Equals(other.Bottom) && this.Top.Equals(other.Top) &&
-                   this.Near.Equals(other.Near) && this.Far.Equals(other.Far);
+            return this.Left.Equals(other.Left) &&
+                this.Right.Equals(other.Right) &&
+                this.Bottom.Equals(other.Bottom) &&
+                this.Top.Equals(other.Top) &&
+                this.Near.Equals(other.Near) &&
+                this.Far.Equals(other.Far);
         }
 
         public override int GetHashCode()

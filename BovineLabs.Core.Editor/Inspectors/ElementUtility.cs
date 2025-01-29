@@ -8,7 +8,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
     public static class ElementUtility
     {
-        /// <summary> Adds appropriate styles to make a label match the default <see cref="BaseField{TValueType}"/> alignment in an inspector. </summary>
+        /// <summary> Adds appropriate styles to make a label match the default <see cref="BaseField{TValueType}" /> alignment in an inspector. </summary>
         /// <param name="label"> The label to apply to. </param>
         public static void AddLabelStyles(Label label)
         {

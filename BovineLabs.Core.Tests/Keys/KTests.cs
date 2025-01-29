@@ -17,10 +17,26 @@ namespace BovineLabs.Core.Tests.Keys
         {
             var kvp = new[]
             {
-                new NameValue { Name = "test1", Value = 1 },
-                new NameValue { Name = "test2", Value = 2 },
-                new NameValue { Name = "test3", Value = 3 },
-                new NameValue { Name = "test4", Value = 4 },
+                new NameValue
+                {
+                    Name = "test1",
+                    Value = 1,
+                },
+                new NameValue
+                {
+                    Name = "test2",
+                    Value = 2,
+                },
+                new NameValue
+                {
+                    Name = "test3",
+                    Value = 3,
+                },
+                new NameValue
+                {
+                    Name = "test4",
+                    Value = 4,
+                },
             };
 
             K<KTests>.Initialize(kvp);

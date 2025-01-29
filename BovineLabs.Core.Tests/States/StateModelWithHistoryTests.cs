@@ -143,13 +143,9 @@ namespace BovineLabs.Core.Tests.States
         [BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
-            this.impl = new StateModelWithHistory(
-                ref state,
-                ComponentType.ReadWrite<StateModelWithHistoryTests.TestState>(),
-                ComponentType.ReadWrite<StateModelWithHistoryTests.TestStatePrevious>(),
-                ComponentType.ReadWrite<StateModelWithHistoryTests.TestStateBack>(),
-                ComponentType.ReadWrite<StateModelWithHistoryTests.TestStateForward>(),
-                4);
+            this.impl = new StateModelWithHistory(ref state, ComponentType.ReadWrite<StateModelWithHistoryTests.TestState>(),
+                ComponentType.ReadWrite<StateModelWithHistoryTests.TestStatePrevious>(), ComponentType.ReadWrite<StateModelWithHistoryTests.TestStateBack>(),
+                ComponentType.ReadWrite<StateModelWithHistoryTests.TestStateForward>(), 4);
         }
 
         /// <inheritdoc />
@@ -173,12 +169,13 @@ namespace BovineLabs.Core.Tests.States
     {
         public void OnCreate(ref SystemState state)
         {
-            state.EntityManager.AddComponentData(state.SystemHandle, new StateInstance
-            {
-                State = TypeManager.GetTypeIndex<StateModelWithHistoryTests.TestState>(),
-                StateKey = 1,
-                StateInstanceComponent = TypeManager.GetTypeIndex<State>(),
-            });
+            state.EntityManager.AddComponentData(state.SystemHandle,
+                new StateInstance
+                {
+                    State = TypeManager.GetTypeIndex<StateModelWithHistoryTests.TestState>(),
+                    StateKey = 1,
+                    StateInstanceComponent = TypeManager.GetTypeIndex<State>(),
+                });
         }
 
         public struct State : IComponentData

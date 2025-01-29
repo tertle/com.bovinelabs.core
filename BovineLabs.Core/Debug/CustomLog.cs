@@ -1,4 +1,8 @@
-﻿#pragma warning disable SA1201
+﻿// <copyright file="CustomLog.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+#pragma warning disable SA1201
 #pragma warning disable SA1202
 #pragma warning disable SA1611
 #pragma warning disable SA1615
@@ -9,6 +13,7 @@ namespace BovineLabs.Core
     using Unity.Collections;
     using Unity.Logging;
     using Unity.Logging.Internal;
+    using Unity.Logging.Internal.Debug;
 
     [BurstCompile]
     [HideInStackTrace]
@@ -41,10 +46,9 @@ namespace BovineLabs.Core
         /* [Burst] [Verbose] (FixedString128Bytes msg) */
 
         [BurstCompile]
-        private static void WriteBurstedVerbose(in FixedString128Bytes msg, ref LogController logController,
-            ref LogControllerScopedLock @lock)
+        private static void WriteBurstedVerbose(in FixedString128Bytes msg, ref LogController logController, ref LogControllerScopedLock @lock)
         {
-            FixedList512Bytes<PayloadHandle> handles = new FixedList512Bytes<PayloadHandle>();
+            var handles = new FixedList512Bytes<PayloadHandle>();
 
             ref var memManager = ref logController.MemoryManager;
 
@@ -68,7 +72,7 @@ namespace BovineLabs.Core
             }
             else
             {
-                Unity.Logging.Internal.Debug.SelfLog.OnFailedToCreateDisjointedBuffer();
+                SelfLog.OnFailedToCreateDisjointedBuffer();
                 Builder.ForceReleasePayloads(handles, ref memManager);
             }
         }
@@ -123,7 +127,7 @@ namespace BovineLabs.Core
         private static void WriteBurstedDebug<T>(in T msg, ref LogController logController, ref LogControllerScopedLock @lock)
             where T : unmanaged, IUTF8Bytes, INativeList<byte>
         {
-            FixedList512Bytes<PayloadHandle> handles = new FixedList512Bytes<PayloadHandle>();
+            var handles = new FixedList512Bytes<PayloadHandle>();
 
             ref var memManager = ref logController.MemoryManager;
 
@@ -147,7 +151,7 @@ namespace BovineLabs.Core
             }
             else
             {
-                Unity.Logging.Internal.Debug.SelfLog.OnFailedToCreateDisjointedBuffer();
+                SelfLog.OnFailedToCreateDisjointedBuffer();
                 Builder.ForceReleasePayloads(handles, ref memManager);
             }
         }
@@ -250,7 +254,7 @@ namespace BovineLabs.Core
         private static void WriteBurstedInfo<T>(in T msg, ref LogController logController, ref LogControllerScopedLock @lock)
             where T : unmanaged, IUTF8Bytes, INativeList<byte>
         {
-            FixedList512Bytes<PayloadHandle> handles = new FixedList512Bytes<PayloadHandle>();
+            var handles = new FixedList512Bytes<PayloadHandle>();
 
             ref var memManager = ref logController.MemoryManager;
 
@@ -274,7 +278,7 @@ namespace BovineLabs.Core
             }
             else
             {
-                Unity.Logging.Internal.Debug.SelfLog.OnFailedToCreateDisjointedBuffer();
+                SelfLog.OnFailedToCreateDisjointedBuffer();
                 Builder.ForceReleasePayloads(handles, ref memManager);
             }
         }
@@ -377,7 +381,7 @@ namespace BovineLabs.Core
         private static void WriteBurstedWarning<T>(in T msg, ref LogController logController, ref LogControllerScopedLock @lock)
             where T : unmanaged, IUTF8Bytes, INativeList<byte>
         {
-            FixedList512Bytes<PayloadHandle> handles = new FixedList512Bytes<PayloadHandle>();
+            var handles = new FixedList512Bytes<PayloadHandle>();
 
             ref var memManager = ref logController.MemoryManager;
 
@@ -401,7 +405,7 @@ namespace BovineLabs.Core
             }
             else
             {
-                Unity.Logging.Internal.Debug.SelfLog.OnFailedToCreateDisjointedBuffer();
+                SelfLog.OnFailedToCreateDisjointedBuffer();
                 Builder.ForceReleasePayloads(handles, ref memManager);
             }
         }
@@ -504,7 +508,7 @@ namespace BovineLabs.Core
         private static void WriteBurstedError<T>(in T msg, ref LogController logController, ref LogControllerScopedLock @lock)
             where T : unmanaged, IUTF8Bytes, INativeList<byte>
         {
-            FixedList512Bytes<PayloadHandle> handles = new FixedList512Bytes<PayloadHandle>();
+            var handles = new FixedList512Bytes<PayloadHandle>();
 
             ref var memManager = ref logController.MemoryManager;
 
@@ -528,7 +532,7 @@ namespace BovineLabs.Core
             }
             else
             {
-                Unity.Logging.Internal.Debug.SelfLog.OnFailedToCreateDisjointedBuffer();
+                SelfLog.OnFailedToCreateDisjointedBuffer();
                 Builder.ForceReleasePayloads(handles, ref memManager);
             }
         }

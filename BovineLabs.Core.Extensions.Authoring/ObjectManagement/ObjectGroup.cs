@@ -6,7 +6,6 @@
 namespace BovineLabs.Core.Authoring.ObjectManagement
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using BovineLabs.Core.ObjectManagement;
     using UnityEngine;
@@ -34,14 +33,14 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         [SerializeField]
         private ObjectDefinition[] excludeDefinitions = Array.Empty<ObjectDefinition>();
 
+        public int AutoGroups => this.autoGroups;
+
         /// <inheritdoc />
         int IUID.ID
         {
             get => this.id;
             set => this.id = new GroupId { ID = (short)value };
         }
-
-        public int AutoGroups => this.autoGroups;
 
         public static implicit operator GroupId(ObjectGroup group)
         {

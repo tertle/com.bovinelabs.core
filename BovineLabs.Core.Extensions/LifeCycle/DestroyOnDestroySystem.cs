@@ -17,12 +17,11 @@ namespace BovineLabs.Core.LifeCycle
         public void OnUpdate(ref SystemState state)
         {
             new DestroyJob
-                {
-                    DestroyEntitys = SystemAPI.GetComponentLookup<DestroyEntity>(),
-                    LinkedEntityGroups = SystemAPI.GetBufferLookup<LinkedEntityGroup>(),
-                    EntityStorageInfoLookup = SystemAPI.GetEntityStorageInfoLookup(),
-                }
-                .ScheduleParallel();
+            {
+                DestroyEntitys = SystemAPI.GetComponentLookup<DestroyEntity>(),
+                LinkedEntityGroups = SystemAPI.GetBufferLookup<LinkedEntityGroup>(),
+                EntityStorageInfoLookup = SystemAPI.GetEntityStorageInfoLookup(),
+            }.ScheduleParallel();
         }
 
         public static void DestroyIterative(

@@ -1,4 +1,8 @@
-﻿namespace BovineLabs.Core.Collections
+﻿// <copyright file="BlobCurveHeader.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Collections
 {
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Assertions;
@@ -30,7 +34,7 @@
             var wrappedTime = math.clamp(time, this.StartTime, this.EndTime);
             var isPrev = wrappedTime < cache.NeighborhoodTimes.x;
             var isPost = wrappedTime > cache.NeighborhoodTimes.y;
-            if (cache.Index >= 0 & !(isPrev | isPost))
+            if ((cache.Index >= 0) & !(isPrev | isPost))
             {
                 var d = cache.NeighborhoodTimes.y - cache.NeighborhoodTimes.x;
                 t = math.select((wrappedTime - cache.NeighborhoodTimes.x) / d, 0, d == 0);
@@ -145,7 +149,7 @@
 
             var isPrev = wrappedTime < cache.NeighborhoodTimes.x;
             var isPost = wrappedTime > cache.NeighborhoodTimes.y;
-            if (cache.Index >= 0 & !(isPrev | isPost))
+            if ((cache.Index >= 0) & !(isPrev | isPost))
             {
                 duration = cache.NeighborhoodTimes.y - cache.NeighborhoodTimes.x;
                 t = math.select((wrappedTime - cache.NeighborhoodTimes.x) / duration, 0, duration == 0);

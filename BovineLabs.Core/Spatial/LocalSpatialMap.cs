@@ -66,31 +66,28 @@ namespace BovineLabs.Core.Spatial
         {
             // Deferred native arrays are supported so we must part it into the job to get the length
             dependency = new ResizeKeys
-                {
-                    Keys = this.keys,
-                    Values = positions,
-                }
-                .Schedule(dependency);
+            {
+                Keys = this.keys,
+                Values = positions,
+            }.Schedule(dependency);
 
             var workers = math.max(1, JobsUtility.JobWorkerCount);
             dependency = new QuantizeJob
-                {
-                    Positions = positions,
-                    Keys = this.keys,
-                    QuantizeStep = this.quantizeStep,
-                    QuantizeWidth = this.quantizeSize,
-                    HalfSize = this.halfSize,
-                    Workers = workers,
-                }
-                .ScheduleParallel(workers, 1, dependency);
+            {
+                Positions = positions,
+                Keys = this.keys,
+                QuantizeStep = this.quantizeStep,
+                QuantizeWidth = this.quantizeSize,
+                HalfSize = this.halfSize,
+                Workers = workers,
+            }.ScheduleParallel(workers, 1, dependency);
 
             dependency = new UpdateMap
-                {
-                    SpatialHashMap = this.map,
-                    Keys = this.keys,
-                    Values = positions,
-                }
-                .Schedule(dependency);
+            {
+                SpatialHashMap = this.map,
+                Keys = this.keys,
+                Values = positions,
+            }.Schedule(dependency);
 
             return dependency;
         }

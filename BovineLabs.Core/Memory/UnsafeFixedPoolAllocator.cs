@@ -89,7 +89,7 @@ namespace BovineLabs.Core.Memory
                 throw new ArgumentException("Null pointer");
             }
 
-            if ((p < this.buffer) || (p >= (T*)this.buffer + this.maxItems))
+            if (p < this.buffer || p >= (T*)this.buffer + this.maxItems)
             {
                 throw new ArgumentException("Ptr not from this allocator");
             }

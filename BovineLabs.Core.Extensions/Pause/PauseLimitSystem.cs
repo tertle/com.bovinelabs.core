@@ -12,16 +12,16 @@ namespace BovineLabs.Core.Pause
     [WorldSystemFilter(Worlds.Service | Worlds.SimulationThin)]
     public partial class PauseLimitSystem : SystemBase
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
             var simulationSystemGroup = this.World.GetExistingSystemManaged<SimulationSystemGroup>();
-            simulationSystemGroup.RateManager = new PauseRateManager(simulationSystemGroup, simulationSystemGroup.RateManager, false);
+            simulationSystemGroup.RateManager = new PauseRateManager(simulationSystemGroup, false);
 
             var presentationSystemGroup = this.World.GetExistingSystemManaged<PresentationSystemGroup>();
             if (presentationSystemGroup != null)
             {
-                presentationSystemGroup.RateManager = new PauseRateManager(presentationSystemGroup, presentationSystemGroup.RateManager, true);
+                presentationSystemGroup.RateManager = new PauseRateManager(presentationSystemGroup, true);
             }
 
             this.World.GetExistingSystemManaged<InitializationSystemGroup>().RemoveSystemFromUpdateList(this);

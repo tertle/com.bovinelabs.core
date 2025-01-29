@@ -36,8 +36,8 @@ namespace BovineLabs.Core
         /// <exception cref="InvalidOperationException"> If there is already a server or client world. </exception>
         public void CreateClientServerWorlds()
         {
-#if !UNITY_CLIENT
             var requestedPlayType = RequestedPlayType;
+#if !UNITY_CLIENT
             if (requestedPlayType != PlayType.Client)
             {
                 this.CreateServerWorld();
@@ -76,14 +76,14 @@ namespace BovineLabs.Core
                 throw new InvalidOperationException("ServerWorld has not been correctly cleaned up");
             }
 
-            var world = ClientServerBootstrap.CreateServerWorld("ServerWorld");
+            var world = CreateServerWorld("ServerWorld");
             WorldAllocator.CreateAllocator(world.Unmanaged.SequenceNumber);
             Assert.IsNotNull(ServerWorld);
 
             World.DefaultGameObjectInjectionWorld = world; // replace default injection world
             InitializeWorld(world);
             InitializeNetCodeWorld(world);
-            ServerListen(world);
+            this.ServerListen(world);
         }
 
         /// <summary> Destroys all server worlds. </summary>
@@ -107,7 +107,7 @@ namespace BovineLabs.Core
                 throw new InvalidOperationException("ClientWorld has not been correctly cleaned up");
             }
 
-            var world = ClientServerBootstrap.CreateClientWorld("ClientWorld");
+            var world = CreateClientWorld("ClientWorld");
             WorldAllocator.CreateAllocator(world.Unmanaged.SequenceNumber);
             Assert.IsNotNull(ClientWorld);
 
@@ -121,7 +121,7 @@ namespace BovineLabs.Core
 
             InitializeWorld(world);
             InitializeNetCodeWorld(world);
-            ClientConnect(world);
+            this.ClientConnect(world);
         }
 
         /// <summary> Creates a new thin client world world. </summary>
@@ -132,7 +132,7 @@ namespace BovineLabs.Core
 
             InitializeWorld(world);
             InitializeNetCodeWorld(world);
-            ClientConnect(world);
+            this.ClientConnect(world);
         }
 
         /// <summary> Destroy all client and thin client worlds. </summary>

@@ -12,7 +12,7 @@ namespace BovineLabs.Core.ObjectManagement
     using Unity.Properties;
 
     /// <summary>
-    /// A <see cref="DynamicHashSet{TKey}"/> of (<see cref="GroupId"/>, <see cref="ObjectId"/>) pairs that can be used to check if an object belongs to a group.
+    /// A <see cref="DynamicHashSet{TKey}" /> of (<see cref="GroupId" />, <see cref="ObjectId" />) pairs that can be used to check if an object belongs to a group.
     /// </summary>
     [InternalBufferCapacity(32)]
     public struct ObjectGroupMatcher : IDynamicHashSet<ObjectGroupKey>
@@ -23,7 +23,7 @@ namespace BovineLabs.Core.ObjectManagement
         byte IDynamicHashSet<ObjectGroupKey>.Value { get; }
     }
 
-    /// <summary> Key value pair of <see cref="GroupId"/> and <see cref="ObjectId"/> used as in <see cref="ObjectGroupMatcher"/>. </summary>
+    /// <summary> Key value pair of <see cref="GroupId" /> and <see cref="ObjectId" /> used as in <see cref="ObjectGroupMatcher" />. </summary>
     public struct ObjectGroupKey : IEquatable<ObjectGroupKey>, IEquatable<(GroupId GroupId, ObjectId ObjectId)>
     {
         public GroupId GroupId;
@@ -31,7 +31,11 @@ namespace BovineLabs.Core.ObjectManagement
 
         public static implicit operator ObjectGroupKey((GroupId GroupId, ObjectId ObjectId) tuple)
         {
-            return new ObjectGroupKey { GroupId = tuple.GroupId, ObjectId = tuple.ObjectId };
+            return new ObjectGroupKey
+            {
+                GroupId = tuple.GroupId,
+                ObjectId = tuple.ObjectId,
+            };
         }
 
         public bool Equals(ObjectGroupKey other)
@@ -53,7 +57,7 @@ namespace BovineLabs.Core.ObjectManagement
         }
     }
 
-    /// <summary> Convenient extensions for <see cref="ObjectGroupMatcher"/>. </summary>
+    /// <summary> Convenient extensions for <see cref="ObjectGroupMatcher" />. </summary>
     public static class ObjectGroupMatcherExtensions
     {
         internal static DynamicBuffer<ObjectGroupMatcher> Initialize(this DynamicBuffer<ObjectGroupMatcher> buffer)
@@ -66,32 +70,38 @@ namespace BovineLabs.Core.ObjectManagement
             return buffer.AsHashSet<ObjectGroupMatcher, ObjectGroupKey>();
         }
 
-        /// <summary> Checks if <see cref="key"/> <see cref="ObjectId"/> is a match inside the group with <see cref="key"/> <see cref="GroupId"/>. </summary>
+        /// <summary> Checks if <see cref="key" /> <see cref="ObjectId" /> is a match inside the group with <see cref="key" /> <see cref="GroupId" />. </summary>
         /// <param name="buffer"> The ObjectGroupMatch singleton buffer. </param>
-        /// <param name="key"> The <see cref="ObjectId"/> to match to the <see cref="GroupId"/>. </param>
-        /// <returns> True if it's part of the group, otherwise false.</returns>
+        /// <param name="key"> The <see cref="ObjectId" /> to match to the <see cref="GroupId" />. </param>
+        /// <returns> True if it's part of the group, otherwise false. </returns>
         public static bool Matches(this DynamicBuffer<ObjectGroupMatcher> buffer, ObjectGroupKey key)
         {
             return buffer.AsHashSet().Contains(key);
         }
 
-        /// <summary> Checks if <see cref="key"/> ObjectID is a match inside the group with <see cref="key"/> <see cref="GroupId"/>. </summary>
+        /// <summary> Checks if <see cref="key" /> ObjectID is a match inside the group with <see cref="key" /> <see cref="GroupId" />. </summary>
         /// <param name="buffer"> The ObjectGroupMatch singleton buffer. </param>
-        /// <param name="key"> The <see cref="ObjectId"/> to match to the <see cref="GroupId"/>. </param>
-        /// <returns> True if it's part of the group, otherwise false.</returns>
+        /// <param name="key"> The <see cref="ObjectId" /> to match to the <see cref="GroupId" />. </param>
+        /// <returns> True if it's part of the group, otherwise false. </returns>
         public static bool Matches(this DynamicBuffer<ObjectGroupMatcher> buffer, (GroupId GroupId, ObjectId ObjectId) key)
         {
             return buffer.AsHashSet().Contains(key);
         }
 
-        /// <summary> Checks if <see cref="objectId"/> is a match inside the group with <see cref="GroupId"/>. </summary>
+        /// <summary> Checks if <see cref="objectId" /> is a match inside the group with <see cref="GroupId" />. </summary>
         /// <param name="buffer"> The ObjectGroupMatch singleton buffer. </param>
         /// <param name="groupId"> The group to check. </param>
         /// <param name="objectId"> The object id to check. </param>
-        /// <returns> True if it's part of the group, otherwise false.</returns>
+        /// <returns> True if it's part of the group, otherwise false. </returns>
         public static bool Matches(this DynamicBuffer<ObjectGroupMatcher> buffer, GroupId groupId, ObjectId objectId)
         {
-            return buffer.AsHashSet().Contains(new ObjectGroupKey { GroupId = groupId, ObjectId = objectId });
+            return buffer
+            .AsHashSet()
+            .Contains(new ObjectGroupKey
+            {
+                GroupId = groupId,
+                ObjectId = objectId,
+            });
         }
     }
 }

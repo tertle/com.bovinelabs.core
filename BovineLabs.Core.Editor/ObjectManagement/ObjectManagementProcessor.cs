@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     using UnityEngine;
     using Object = UnityEngine.Object;
 
-    /// <summary> An <see cref="AssetPostprocessor"/> that ensures <see cref="IUID" /> types always have a unique ID even if 2 branches merge. </summary>
+    /// <summary> An <see cref="AssetPostprocessor" /> that ensures <see cref="IUID" /> types always have a unique ID even if 2 branches merge. </summary>
     public class ObjectManagementProcessor : AssetPostprocessor
     {
         private static GlobalProcessor global = new();
@@ -150,7 +150,8 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 return;
             }
 
-            var objects = AssetDatabase.FindAssets($"t:{type.Name}")
+            var objects = AssetDatabase
+                .FindAssets($"t:{type.Name}")
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Distinct() // In case multi of same type on same path
                 .SelectMany(AssetDatabase.LoadAllAssetsAtPath)

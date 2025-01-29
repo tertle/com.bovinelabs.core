@@ -16,8 +16,8 @@ namespace BovineLabs.Core.Editor.UI
         private readonly string uxmlPath;
         private readonly string ussPath;
 
-        const string k_ProSuffix = "_dark";
-        const string k_PersonalSuffix = "_light";
+        private const string k_ProSuffix = "_dark";
+        private const string k_PersonalSuffix = "_light";
 
         public static string SkinSuffix => EditorGUIUtility.isProSkin ? k_ProSuffix : k_PersonalSuffix;
 
@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Editor.UI
         private StyleSheet StyleSheet => AssetDatabase.LoadAssetAtPath<StyleSheet>(this.ussPath);
 
         /// <summary> Clones the template into the given root element and applies the style sheets from the template. </summary>
-        /// <param name="root">The element that will serve as the root for cloning the template.</param>
+        /// <param name="root"> The element that will serve as the root for cloning the template. </param>
         /// <returns> Returns the updated root for convenience. </returns>
         public VisualElement Clone(VisualElement? root = null)
         {

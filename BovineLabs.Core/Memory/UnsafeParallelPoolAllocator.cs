@@ -23,10 +23,8 @@ namespace BovineLabs.Core.Memory
         public UnsafeParallelPoolAllocator(int countPerChunk, Allocator allocator)
         {
             this.allocator = allocator;
-            this.pools = (UnsafePoolAllocator<T>*)Memory.Unmanaged.Allocate(
-                UnsafeUtility.SizeOf<UnsafePoolAllocator<T>>() * JobsUtility.ThreadIndexCount,
-                UnsafeUtility.AlignOf<UnsafePoolAllocator<T>>(),
-                allocator);
+            this.pools = (UnsafePoolAllocator<T>*)Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<UnsafePoolAllocator<T>>() * JobsUtility.ThreadIndexCount,
+                UnsafeUtility.AlignOf<UnsafePoolAllocator<T>>(), allocator);
 
             for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
             {

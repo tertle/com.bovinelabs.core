@@ -53,9 +53,9 @@ namespace BovineLabs.Core.PhysicsStates
         public bool Equals(StatefulTriggerEventContainer other)
         {
             return this.TriggerEvent.EntityA.Equals(other.EntityA) &&
-                   this.TriggerEvent.EntityB.Equals(other.EntityB) &&
-                   this.TriggerEvent.ColliderKeyA.Equals(this.TriggerEvent.ColliderKeyA) &&
-                   this.TriggerEvent.ColliderKeyB.Equals(this.TriggerEvent.ColliderKeyB);
+                this.TriggerEvent.EntityB.Equals(other.EntityB) &&
+                this.TriggerEvent.ColliderKeyA.Equals(this.TriggerEvent.ColliderKeyA) &&
+                this.TriggerEvent.ColliderKeyB.Equals(this.TriggerEvent.ColliderKeyB);
         }
 
         public override int GetHashCode()

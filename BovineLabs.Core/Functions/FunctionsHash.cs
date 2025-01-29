@@ -20,7 +20,7 @@ namespace BovineLabs.Core.Functions
         [ReadOnly]
         private NativeHashMap<long, FunctionData> functions;
 
-        /// <summary> Initializes a new instance of the <see cref="FunctionsHash{T, TO}"/> struct. </summary>
+        /// <summary> Initializes a new instance of the <see cref="FunctionsHash{T, TO}" /> struct. </summary>
         /// <param name="functions"> The collection of functions. </param>
         internal FunctionsHash(NativeHashMap<long, FunctionData> functions)
         {

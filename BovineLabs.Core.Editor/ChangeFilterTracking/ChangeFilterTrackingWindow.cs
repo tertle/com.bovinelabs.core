@@ -63,7 +63,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
             this.CreateListView(this.root);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
             if (this.world == null)
@@ -111,8 +111,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
                     var t = typeTracks[index];
                     var source = this.sources[index];
 
-                    if (math.abs(source.Short - t.Short.Value) > float.Epsilon ||
-                        math.abs(source.Long - t.Long.Value) > float.Epsilon)
+                    if (math.abs(source.Short - t.Short.Value) > float.Epsilon || math.abs(source.Long - t.Long.Value) > float.Epsilon)
                     {
                         source.Short = t.Short.Value;
                         source.Long = t.Long.Value;
@@ -122,7 +121,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnWorldSelected(World newWorld)
         {
             this.world = newWorld;

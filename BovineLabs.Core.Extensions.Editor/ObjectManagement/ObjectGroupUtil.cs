@@ -21,7 +21,6 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 var index = IndexOf(serializedProperty, targetObject);
                 var changed = false;
 
-
                 var autoGroup = objectGroup.FindProperty("autoGroups").intValue;
 
                 if ((categories & autoGroup) != 0)

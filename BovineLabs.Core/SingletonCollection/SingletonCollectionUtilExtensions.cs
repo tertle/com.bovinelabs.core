@@ -22,13 +22,14 @@ namespace BovineLabs.Core.SingletonCollection
         /// <param name="util"> The ISingletonCollectionUtil. </param>
         /// <param name="state"> The system state. </param>
         /// <param name="handle"> Input dependencies. </param>
-        /// <param name="hashMap"> The <see cref="NativeHashMap{TKey,TValue}"/> to ensure capacity of. </param>
+        /// <param name="hashMap"> The <see cref="NativeHashMap{TKey,TValue}" /> to ensure capacity of. </param>
         /// <typeparam name="T"> The ISingletonCollectionUtil type. </typeparam>
-        /// <typeparam name="TKey"> The key type of the <see cref="NativeHashMap{TKey,TValue}"/> . </typeparam>
-        /// <typeparam name="TValue"> The value type of the <see cref="NativeHashMap{TKey,TValue}"/> . </typeparam>
+        /// <typeparam name="TKey"> The key type of the <see cref="NativeHashMap{TKey,TValue}" /> . </typeparam>
+        /// <typeparam name="TValue"> The value type of the <see cref="NativeHashMap{TKey,TValue}" /> . </typeparam>
         /// <returns> The dependency handle. </returns>
-        public static JobHandle EnsureHashMapCapacity<T, TKey, TValue>(this T util, ref SystemState state, JobHandle handle, NativeParallelHashMap<TKey, TValue> hashMap)
-            where T : unmanaged,  ISingletonCollectionUtil<NativeThreadStream>
+        public static JobHandle EnsureHashMapCapacity<T, TKey, TValue>(
+            this T util, ref SystemState state, JobHandle handle, NativeParallelHashMap<TKey, TValue> hashMap)
+            where T : unmanaged, ISingletonCollectionUtil<NativeThreadStream>
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -36,8 +37,18 @@ namespace BovineLabs.Core.SingletonCollection
             if (streams.Length != 0)
             {
                 var counter = new NativeArray<int>(streams.Length, state.WorldUpdateAllocator);
-                handle = new CountJob { Counter = counter, Streams = streams }.ScheduleParallel(streams.Length, 1, handle);
-                handle = new EnsureHashMapCapacityJob<TKey, TValue> { Counter = counter, HashMap = hashMap }.Schedule(handle);
+                handle = new CountJob
+                {
+                    Counter = counter,
+                    Streams = streams,
+                }.ScheduleParallel(streams.Length, 1, handle);
+
+                handle = new EnsureHashMapCapacityJob<TKey, TValue>
+                {
+                    Counter = counter,
+                    HashMap = hashMap,
+                }.Schedule(handle);
+
                 handle = counter.Dispose(handle);
             }
 
@@ -51,13 +62,14 @@ namespace BovineLabs.Core.SingletonCollection
         /// <param name="util"> The ISingletonCollectionUtil. </param>
         /// <param name="state"> The system state. </param>
         /// <param name="handle"> Input dependencies. </param>
-        /// <param name="hashMap"> The <see cref="NativeHashMap{TKey,TValue}"/> to ensure capacity of. </param>
+        /// <param name="hashMap"> The <see cref="NativeHashMap{TKey,TValue}" /> to ensure capacity of. </param>
         /// <typeparam name="T"> The ISingletonCollectionUtil type. </typeparam>
-        /// <typeparam name="TKey"> The key type of the <see cref="NativeHashMap{TKey,TValue}"/> . </typeparam>
-        /// <typeparam name="TValue"> The value type of the <see cref="NativeHashMap{TKey,TValue}"/> . </typeparam>
+        /// <typeparam name="TKey"> The key type of the <see cref="NativeHashMap{TKey,TValue}" /> . </typeparam>
+        /// <typeparam name="TValue"> The value type of the <see cref="NativeHashMap{TKey,TValue}" /> . </typeparam>
         /// <returns> The dependency handle. </returns>
-        public static JobHandle EnsureHashMapCapacity<T, TKey, TValue>(this T util, ref SystemState state, JobHandle handle, NativeParallelMultiHashMap<TKey, TValue> hashMap)
-            where T : unmanaged,  ISingletonCollectionUtil<NativeThreadStream>
+        public static JobHandle EnsureHashMapCapacity<T, TKey, TValue>(
+            this T util, ref SystemState state, JobHandle handle, NativeParallelMultiHashMap<TKey, TValue> hashMap)
+            where T : unmanaged, ISingletonCollectionUtil<NativeThreadStream>
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -65,8 +77,18 @@ namespace BovineLabs.Core.SingletonCollection
             if (streams.Length != 0)
             {
                 var counter = new NativeArray<int>(streams.Length, state.WorldUpdateAllocator);
-                handle = new CountJob { Counter = counter, Streams = streams }.ScheduleParallel(streams.Length, 1, handle);
-                handle = new EnsureMultiHashMapCapacityJob<TKey, TValue> { Counter = counter, HashMap = hashMap }.Schedule(handle);
+                handle = new CountJob
+                {
+                    Counter = counter,
+                    Streams = streams,
+                }.ScheduleParallel(streams.Length, 1, handle);
+
+                handle = new EnsureMultiHashMapCapacityJob<TKey, TValue>
+                {
+                    Counter = counter,
+                    HashMap = hashMap,
+                }.Schedule(handle);
+
                 handle = counter.Dispose(handle);
             }
 

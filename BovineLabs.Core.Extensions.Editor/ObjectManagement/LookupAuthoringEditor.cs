@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_OBJECT_DEFINITION
+#if !BL_DISABLE_OBJECT_DEFINITION && !BL_DISABLE_LIFECYCLE
 namespace BovineLabs.Core.Editor.ObjectManagement
 {
     using BovineLabs.Core.Authoring.ObjectManagement;

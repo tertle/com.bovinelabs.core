@@ -52,7 +52,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             else
             {
                 var current = property.intValue;
-                int index = 0;
+                var index = 0;
                 for (; index < k.Length; index++)
                 {
                     if (current == k[index].Value)
@@ -73,7 +73,10 @@ namespace BovineLabs.Core.Editor.Inspectors
 
                 return popup;
 
-                string FormatCallback(int i) => k.FirstOrDefault(key => i == key.Value).Name ?? "[None]";
+                string FormatCallback(int i)
+                {
+                    return k.FirstOrDefault(key => i == key.Value).Name ?? "[None]";
+                }
             }
         }
 

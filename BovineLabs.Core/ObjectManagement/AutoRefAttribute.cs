@@ -12,13 +12,13 @@ namespace BovineLabs.Core.ObjectManagement
     /// This is often used in combination with AssetCreator.
     /// </summary>
     /// <example>
-    /// <code>
+    ///     <code>
     /// public class Manager : ScriptableObject
     /// {
     ///     [SerializeField]
     ///     public DataSchema[] Data;
     /// }
-    ///
+    /// 
     /// [AutoRef(nameof(Manager), nameof(Manager.Data))]
     /// public class DataSchema : ScriptableObject
     /// {

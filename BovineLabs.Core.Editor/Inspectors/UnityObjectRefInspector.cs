@@ -19,7 +19,11 @@ namespace BovineLabs.Core.Editor.Inspectors
         {
             var value = this.Target.Value;
             var name = value == null ? this.DisplayName : $"{this.DisplayName} : {value.name}";
-            var field = new Foldout { text = name, value = false };
+            var field = new Foldout
+            {
+                text = name,
+                value = false,
+            };
 
             var id = new IntegerField("Instance Id") { value = this.Target.Id.instanceId };
             id.SetEnabled(false);

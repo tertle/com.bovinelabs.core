@@ -24,16 +24,9 @@ namespace BovineLabs.Core.Collections
         [NativeDisableUnsafePtrRestriction]
         private int* keys;
 
-        [NativeDisableUnsafePtrRestriction]
-        private int* next;
-
-        [NativeDisableUnsafePtrRestriction]
-        private int* buckets;
-
         private int count;
         private int nextCapacity;
         private int bucketCapacity;
-        private AllocatorManager.AllocatorHandle allocator;
 
         public UnsafePartialKeyedMap(int* keys, TValue* values, int length, int bucketCapacity, AllocatorManager.AllocatorHandle allocator)
         {
@@ -44,22 +37,24 @@ namespace BovineLabs.Core.Collections
             this.count = length;
             this.nextCapacity = length;
             this.bucketCapacity = bucketCapacity;
-            this.allocator = allocator;
+            this.Allocator = allocator;
 
             // Allocated separate because buckets are fixed but next can change
-            this.next = (int*)Memory.Unmanaged.Allocate(sizeof(int) * length, JobsUtility.CacheLineSize, allocator);
-            this.buckets = (int*)Memory.Unmanaged.Allocate(sizeof(int) * bucketCapacity, JobsUtility.CacheLineSize, allocator);
+            this.Next = (int*)Memory.Unmanaged.Allocate(sizeof(int) * length, JobsUtility.CacheLineSize, allocator);
+            this.Buckets = (int*)Memory.Unmanaged.Allocate(sizeof(int) * bucketCapacity, JobsUtility.CacheLineSize, allocator);
 
             this.RecalculateBuckets();
         }
 
-        public bool IsCreated => this.buckets != null;
+        public bool IsCreated => this.Buckets != null;
 
-        internal int* Next => this.next;
+        [field: NativeDisableUnsafePtrRestriction]
+        internal int* Next { get; private set; }
 
-        internal int* Buckets => this.buckets;
+        [field: NativeDisableUnsafePtrRestriction]
+        internal int* Buckets { get; private set; }
 
-        internal AllocatorManager.AllocatorHandle Allocator => this.allocator;
+        internal AllocatorManager.AllocatorHandle Allocator { get; }
 
         public TValue this[int i]
         {
@@ -70,7 +65,8 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        public static UnsafePartialKeyedMap<TValue>* Create(int* keys, TValue* values, int length, int bucketCapacity, AllocatorManager.AllocatorHandle allocator)
+        public static UnsafePartialKeyedMap<TValue>* Create(
+            int* keys, TValue* values, int length, int bucketCapacity, AllocatorManager.AllocatorHandle allocator)
         {
             var data = AllocatorManager.Allocate<UnsafePartialKeyedMap<TValue>>(allocator);
             *data = new UnsafePartialKeyedMap<TValue>(keys, values, length, bucketCapacity, allocator);
@@ -87,8 +83,8 @@ namespace BovineLabs.Core.Collections
         public void Dispose()
         {
             // Don't rewrite allocator
-            Memory.Unmanaged.Free(this.buckets, this.allocator);
-            Memory.Unmanaged.Free(this.next, this.allocator);
+            Memory.Unmanaged.Free(this.Buckets, this.Allocator);
+            Memory.Unmanaged.Free(this.Next, this.Allocator);
         }
 
         /// <summary>
@@ -99,14 +95,13 @@ namespace BovineLabs.Core.Collections
         public JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new UnsafePartialKeyedMapDisposeJob
-                {
-                    Next = this.next,
-                    Buckets = this.buckets,
-                    Allocator = this.allocator,
-                }
-                .Schedule(inputDeps);
+            {
+                Next = this.Next,
+                Buckets = this.Buckets,
+                Allocator = this.Allocator,
+            }.Schedule(inputDeps);
 
-            this.buckets = null;
+            this.Buckets = null;
 
             return jobHandle;
         }
@@ -122,9 +117,9 @@ namespace BovineLabs.Core.Collections
             // Check if we need more capacity
             if (this.nextCapacity < newLength)
             {
-                Memory.Unmanaged.Free(this.next, this.allocator);
+                Memory.Unmanaged.Free(this.Next, this.Allocator);
                 this.nextCapacity = newLength;
-                this.next = (int*)Memory.Unmanaged.Allocate(sizeof(int) * this.nextCapacity, JobsUtility.CacheLineSize, this.allocator);
+                this.Next = (int*)Memory.Unmanaged.Allocate(sizeof(int) * this.nextCapacity, JobsUtility.CacheLineSize, this.Allocator);
             }
 
             this.RecalculateBuckets();
@@ -151,7 +146,7 @@ namespace BovineLabs.Core.Collections
             }
 
             // First find the slot based on the hash
-            it.NextEntryIndex = this.buckets[key];
+            it.NextEntryIndex = this.Buckets[key];
             return this.TryGetNextValue(out item, ref it);
         }
 
@@ -170,7 +165,7 @@ namespace BovineLabs.Core.Collections
                 return false;
             }
 
-            var nextPtrs = this.next;
+            var nextPtrs = this.Next;
             it.NextEntryIndex = nextPtrs[it.EntryIndex];
 
             // Read the value
@@ -181,13 +176,13 @@ namespace BovineLabs.Core.Collections
 
         private void RecalculateBuckets()
         {
-            UnsafeUtility.MemSet(this.buckets, 0xff, sizeof(int) * this.bucketCapacity);
+            UnsafeUtility.MemSet(this.Buckets, 0xff, sizeof(int) * this.bucketCapacity);
 
             for (var idx = 0; idx < this.count; idx++)
             {
                 var key = this.keys[idx];
-                this.next[idx] = this.buckets[key];
-                this.buckets[key] = idx;
+                this.Next[idx] = this.Buckets[key];
+                this.Buckets[key] = idx;
             }
         }
 
@@ -203,7 +198,7 @@ namespace BovineLabs.Core.Collections
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckKeyOutOfBounds(int key, int bucketCapacity)
         {
-            if ((key < 0) || (key >= bucketCapacity))
+            if (key < 0 || key >= bucketCapacity)
             {
                 throw new InvalidOperationException($"{nameof(key)} < 0 || {nameof(key)} >= {nameof(bucketCapacity)}");
             }
@@ -212,7 +207,7 @@ namespace BovineLabs.Core.Collections
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckIndexOutOfBounds(int index, int count)
         {
-            if ((index < 0) || (index >= count))
+            if (index < 0 || index >= count)
             {
                 throw new InvalidOperationException($"{nameof(index)} < 0 || {nameof(index)} >= {nameof(count)}");
             }

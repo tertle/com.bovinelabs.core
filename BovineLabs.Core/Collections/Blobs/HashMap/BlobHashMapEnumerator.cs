@@ -46,7 +46,7 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary> Advances the enumerator to the next key-value pair. </summary>
-        /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+        /// <returns> True if <see cref="Current" /> is valid to read after the call. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {

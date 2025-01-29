@@ -95,17 +95,16 @@ namespace BovineLabs.Core.Collections
         public unsafe JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new UnsafeKeyedMapDataDisposeJob
+            {
+                Data = new UnsafeKeyedMapDataDispose
                 {
-                    Data = new UnsafeKeyedMapDataDispose
-                    {
-                        Buffer = this.keyedMapData.buffer,
-                        AllocatorLabel = this.keyedMapData.allocator,
+                    Buffer = this.keyedMapData.buffer,
+                    AllocatorLabel = this.keyedMapData.allocator,
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                        m_Safety = this.m_Safety,
+                    m_Safety = this.m_Safety,
 #endif
-                    },
-                }
-                .Schedule(inputDeps);
+                },
+            }.Schedule(inputDeps);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.Release(this.m_Safety);

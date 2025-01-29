@@ -33,7 +33,7 @@ namespace BovineLabs.Core.Iterators
         }
 
         /// <summary> Gets a value indicating whether whether this hash map has been allocated (and not yet deallocated). </summary>
-        /// <value>True if this hash map has been allocated (and not yet deallocated). </value>
+        /// <value> True if this hash map has been allocated (and not yet deallocated). </value>
         public readonly bool IsCreated => this.buffer.IsCreated;
 
         /// <summary> Gets a value indicating whether whether this hash map is empty. </summary>
@@ -63,7 +63,7 @@ namespace BovineLabs.Core.Iterators
 
         /// <summary> Gets or sets the number of key-value pairs that fit in the current allocation. </summary>
         /// <value> The number of key-value pairs that fit in the current allocation. </value>
-        /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
+        /// <param name="value"> A new capacity. Must be larger than the current capacity. </param>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,10 +96,10 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Adds a new key-value pair.
         /// </summary>
-        /// <remarks>If the key is already present, this method throws without modifying the hash map.</remarks>
-        /// <param name="key">The key to add.</param>
-        /// <param name="item">The value to add.</param>
-        /// <exception cref="ArgumentException">Thrown if the key was already present.</exception>
+        /// <remarks> If the key is already present, this method throws without modifying the hash map. </remarks>
+        /// <param name="key"> The key to add. </param>
+        /// <param name="item"> The value to add. </param>
+        /// <exception cref="ArgumentException"> Thrown if the key was already present. </exception>
         public void Add(TKey key, TValue item)
         {
             this.buffer.CheckWriteAccess();
@@ -111,8 +111,8 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Removes a key-value pair.
         /// </summary>
-        /// <param name="key">The key to remove.</param>
-        /// <returns>The number of elements removed. </returns>
+        /// <param name="key"> The key to remove. </param>
+        /// <returns> The number of elements removed. </returns>
         public readonly int Remove(TKey key)
         {
             this.buffer.CheckWriteAccess();
@@ -141,8 +141,8 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Returns true if a given key is present in this hash map.
         /// </summary>
-        /// <param name="key">The key to look up.</param>
-        /// <returns>True if the key was present.</returns>
+        /// <param name="key"> The key to look up. </param>
+        /// <returns> True if the key was present. </returns>
         public readonly bool ContainsKey(TKey key)
         {
             this.buffer.CheckReadAccess();
@@ -153,10 +153,10 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Returns true if a given key and value combination is present in this hash map.
         /// </summary>
-        /// <param name="key">The key to look up. </param>
-        /// <param name="value">The value to look up. </param>
-        /// <typeparam name="T"> Type type of the value, should match <see cref="TValue"/> it just has an extra IEquatable constraint. </typeparam>
-        /// <returns>True if the key and value combination was present.</returns>
+        /// <param name="key"> The key to look up. </param>
+        /// <param name="value"> The value to look up. </param>
+        /// <typeparam name="T"> Type type of the value, should match <see cref="TValue" /> it just has an extra IEquatable constraint. </typeparam>
+        /// <returns> True if the key and value combination was present. </returns>
         public readonly bool Contains<T>(TKey key, T value)
             where T : unmanaged, IEquatable<TValue>
         {
@@ -212,8 +212,8 @@ namespace BovineLabs.Core.Iterators
         }
 
         /// <summary> Returns an array with a copy of all this hash map's keys (in no particular order). </summary>
-        /// <param name="allocator">The allocator to use.</param>
-        /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
+        /// <param name="allocator"> The allocator to use. </param>
+        /// <returns> An array with a copy of all this hash map's keys (in no particular order). </returns>
         public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
@@ -222,8 +222,8 @@ namespace BovineLabs.Core.Iterators
         }
 
         /// <summary> Returns an array with a copy of all this hash map's values (in no particular order). </summary>
-        /// <param name="allocator">The allocator to use.</param>
-        /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
+        /// <param name="allocator"> The allocator to use. </param>
+        /// <returns> An array with a copy of all this hash map's values (in no particular order). </returns>
         public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
@@ -232,9 +232,9 @@ namespace BovineLabs.Core.Iterators
         }
 
         /// <summary> Returns a NativeKeyValueArrays with a copy of all this hash map's keys and values. </summary>
-        /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
-        /// <param name="allocator">The allocator to use.</param>
-        /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
+        /// <remarks> The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`. </remarks>
+        /// <param name="allocator"> The allocator to use. </param>
+        /// <returns> A NativeKeyValueArrays with a copy of all this hash map's keys and values. </returns>
         public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
@@ -246,13 +246,18 @@ namespace BovineLabs.Core.Iterators
         {
             this.buffer.CheckReadAccess();
             this.RefCheck();
-            return new DynamicHashMapKeyEnumerator<TKey, TValue> { hashmap = this, key = key, isFirst = 1 };
+            return new DynamicHashMapKeyEnumerator<TKey, TValue>
+            {
+                hashmap = this,
+                key = key,
+                isFirst = 1,
+            };
         }
 
         /// <summary>
         /// Returns an enumerator over the key-value pairs of this hash map.
         /// </summary>
-        /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
+        /// <returns> An enumerator over the key-value pairs of this hash map. </returns>
         public readonly DynamicHashMapEnumerator<TKey, TValue> GetEnumerator()
         {
             this.buffer.CheckReadAccess();
@@ -261,20 +266,20 @@ namespace BovineLabs.Core.Iterators
         }
 
         /// <summary>
-        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// This method is not implemented. Use <see cref="GetEnumerator" /> instead.
         /// </summary>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        /// <returns> Throws NotImplementedException. </returns>
+        /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
         IEnumerator<KVPair<TKey, TValue>> IEnumerable<KVPair<TKey, TValue>>.GetEnumerator()
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// This method is not implemented. Use <see cref="GetEnumerator" /> instead.
         /// </summary>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        /// <returns> Throws NotImplementedException. </returns>
+        /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();

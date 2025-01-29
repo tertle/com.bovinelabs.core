@@ -55,8 +55,10 @@ namespace BovineLabs.Core.Editor.Inspectors
             }
         }
 
-        private DynamicHashMap<TKey, TValue> GetMap() =>
-            this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity).AsHashMap<TBuffer, TKey, TValue>();
+        private DynamicHashMap<TKey, TValue> GetMap()
+        {
+            return this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity).AsHashMap<TBuffer, TKey, TValue>();
+        }
 
         public unsafe void Update()
         {

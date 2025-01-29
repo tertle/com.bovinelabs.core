@@ -6,6 +6,7 @@
 namespace BovineLabs.Core.Authoring.ObjectManagement
 {
     using System.Collections.Generic;
+    using BovineLabs.Core.Authoring.Settings;
     using BovineLabs.Core.Editor.Settings;
     using BovineLabs.Core.ObjectManagement;
     using Unity.Entities;
@@ -52,7 +53,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
             private static Dictionary<byte, ComponentType> GetCategories(IBaker baker)
             {
-                var objectCategories = EditorSettingsUtility.GetSettings<ObjectCategories>();
+                var objectCategories = AuthoringSettingsUtility.GetSettings<ObjectCategories>();
                 baker.DependsOn(objectCategories);
 
                 if (categoryToComponentTypes != null)

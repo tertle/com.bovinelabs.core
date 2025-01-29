@@ -36,9 +36,7 @@ namespace BovineLabs.Core.Utility
             }
 #endif
 
-            return row <= column
-                ? (((row * n) - (((row - 1) * row) / 2)) + column) - row
-                : (((column * n) - (((column - 1) * column) / 2)) + row) - column;
+            return row <= column ? (((row * n) - (((row - 1) * row) / 2)) + column) - row : (((column * n) - (((column - 1) * column) / 2)) + row) - column;
         }
     }
 }

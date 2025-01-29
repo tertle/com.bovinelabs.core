@@ -5,7 +5,6 @@
 namespace BovineLabs.Core.Tests.Collections.Blobs
 {
     using BovineLabs.Core.Collections;
-    using BovineLabs.Core.Utility;
     using NUnit.Framework;
     using Unity.Collections;
     using Unity.Entities;
@@ -45,7 +44,7 @@ namespace BovineLabs.Core.Tests.Collections.Blobs
                     Assert.AreEqual(j, b[j]);
                 }
 
-                Assert.IsTrue(t.Value.HashMap.TryGetValue(i, out Ptr<BlobArray<int>> ptr));
+                Assert.IsTrue(t.Value.HashMap.TryGetValue(i, out var ptr));
                 ref var b2 = ref ptr.Ref;
                 Assert.AreEqual(i, b2.Length);
 

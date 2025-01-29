@@ -1,4 +1,8 @@
-﻿namespace BovineLabs.Core.Collections
+﻿// <copyright file="BlobCurveSamplerT.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Collections
 {
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Assertions;
@@ -45,7 +49,7 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T EvaluateIgnoreWrapModeWithoutCache(in float time)
         {
-            var r =  this.Curve.Value.EvaluateIgnoreWrapMode(time);
+            var r = this.Curve.Value.EvaluateIgnoreWrapMode(time);
             return UnsafeUtility.As<float, T>(ref r);
         }
     }

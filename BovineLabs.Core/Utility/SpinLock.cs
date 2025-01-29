@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Utility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Acquire()
         {
-            for (; ;)
+            for (;;)
             {
                 // Optimistically assume the lock is free on the first try.
                 if (Interlocked.CompareExchange(ref this.@lock, 1, 0) == 0)
@@ -29,7 +29,6 @@ namespace BovineLabs.Core.Utility
                 // Wait for lock to be released without generating cache misses.
                 while (Volatile.Read(ref this.@lock) == 1)
                 {
-                    continue;
                 }
 
                 // Future improvement: the 'continue' instruction above could be swapped for a 'pause' intrinsic
@@ -43,7 +42,7 @@ namespace BovineLabs.Core.Utility
         /// <summary>
         /// Try to acquire the lock and immediately return without spinning.
         /// </summary>
-        /// <returns><see langword="true"/> if the lock was acquired, <see langword="false"/> otherwise.</returns>
+        /// <returns> <see langword="true" /> if the lock was acquired, <see langword="false" /> otherwise. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryAcquire()
         {
@@ -51,9 +50,9 @@ namespace BovineLabs.Core.Utility
             return Volatile.Read(ref this.@lock) == 0 && Interlocked.CompareExchange(ref this.@lock, 1, 0) == 0;
         }
 
-        /// <summary> Try to acquire the lock, and spin only if <paramref name="spin"/> is <see langword="true"/>. </summary>
-        /// <param name="spin">Set to true to spin the lock.</param>
-        /// <returns><see langword="true"/> if the lock was acquired, <see langword="false"/> otherwise.</returns>
+        /// <summary> Try to acquire the lock, and spin only if <paramref name="spin" /> is <see langword="true" />. </summary>
+        /// <param name="spin"> Set to true to spin the lock. </param>
+        /// <returns> <see langword="true" /> if the lock was acquired, <see langword="false" /> otherwise. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryAcquire(bool spin)
         {

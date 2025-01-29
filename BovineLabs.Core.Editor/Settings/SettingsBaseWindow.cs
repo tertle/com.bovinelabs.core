@@ -151,7 +151,7 @@ namespace BovineLabs.Core.Editor.Settings
                 panelList.Add(p);
             }
 
-            int id = 0;
+            var id = 0;
 
             foreach (var (groupName, panelList) in map)
             {

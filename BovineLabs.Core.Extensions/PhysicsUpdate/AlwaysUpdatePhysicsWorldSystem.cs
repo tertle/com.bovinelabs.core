@@ -20,7 +20,7 @@ namespace BovineLabs.Core.PhysicsUpdate
         private SystemHandle buildPhysicsWorldDependencyResolver;
         private SystemState* buildPhysicsWorldSystemState;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnCreate()
         {
             this.buildPhysicsWorld = this.World.GetExistingSystem<BuildPhysicsWorld>();
@@ -30,7 +30,7 @@ namespace BovineLabs.Core.PhysicsUpdate
             this.CheckedStateRef.AddDependency(TypeManager.GetTypeIndex<PhysicsWorldSingleton>());
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
             var physicsUpdated = SystemAPI.GetSingletonRW<AlwaysUpdatePhysicsWorld>();

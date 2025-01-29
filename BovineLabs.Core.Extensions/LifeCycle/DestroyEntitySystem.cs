@@ -7,6 +7,9 @@ namespace BovineLabs.Core.LifeCycle
 {
     using Unity.Burst;
     using Unity.Entities;
+#if UNITY_NETCODE
+    using Unity.NetCode;
+#endif
 
     [UpdateBefore(typeof(DestroyEntityCommandBufferSystem))]
     [UpdateInGroup(typeof(DestroySystemGroup), OrderLast = true)]
@@ -18,8 +21,8 @@ namespace BovineLabs.Core.LifeCycle
         {
 #if UNITY_NETCODE
             // Client doesn't destroy ghosts, instead we'll disable them in
-            var query = Unity.NetCode.ClientServerWorldExtensions.IsClient(state.WorldUnmanaged)
-                ? SystemAPI.QueryBuilder().WithAll<DestroyEntity>().WithNone<Unity.NetCode.GhostInstance>().Build()
+            var query = state.WorldUnmanaged.IsClient()
+                ? SystemAPI.QueryBuilder().WithAll<DestroyEntity>().WithNone<GhostInstance>().Build()
                 : SystemAPI.QueryBuilder().WithAll<DestroyEntity>().Build();
 #else
             var query = SystemAPI.QueryBuilder().WithAll<DestroyEntity>().Build();

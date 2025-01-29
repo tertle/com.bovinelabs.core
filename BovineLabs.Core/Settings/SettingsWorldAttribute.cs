@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Settings
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class SettingsWorldAttribute : Attribute
     {
-        /// <summary> Initializes a new instance of the <see cref="SettingsWorldAttribute"/> class. </summary>
+        /// <summary> Initializes a new instance of the <see cref="SettingsWorldAttribute" /> class. </summary>
         /// <param name="worlds"> The key matching EditorSettings. Not case-sensitive. </param>
         public SettingsWorldAttribute(params string[] worlds)
         {

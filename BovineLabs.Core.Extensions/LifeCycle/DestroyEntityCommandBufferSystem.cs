@@ -12,7 +12,7 @@ namespace BovineLabs.Core.LifeCycle
     [UpdateInGroup(typeof(DestroySystemGroup), OrderLast = true)]
     public partial class DestroyEntityCommandBufferSystem : EntityCommandBufferSystem
     {
-        /// <inheritdoc cref="EntityCommandBufferSystem.OnCreate"/>
+        /// <inheritdoc cref="EntityCommandBufferSystem.OnCreate" />
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -21,8 +21,8 @@ namespace BovineLabs.Core.LifeCycle
         }
 
         /// <summary>
-        /// Call <see cref="SystemAPI.GetSingleton{T}"/> to get this component for this system, and then call
-        /// <see cref="CreateCommandBuffer"/> on this singleton to create an ECB to be played back by this system.
+        /// Call <see cref="SystemAPI.GetSingleton{T}" /> to get this component for this system, and then call
+        /// <see cref="CreateCommandBuffer" /> on this singleton to create an ECB to be played back by this system.
         /// </summary>
         /// <remarks>
         /// Useful if you want to record entity commands now, but play them back at a later point in
@@ -36,10 +36,12 @@ namespace BovineLabs.Core.LifeCycle
             /// <summary>
             /// Create a command buffer for the parent system to play back.
             /// </summary>
-            /// <remarks>The command buffers created by this method are automatically added to the system's list of
-            /// pending buffers.</remarks>
-            /// <param name="world">The world in which to play it back.</param>
-            /// <returns>The command buffer to record to.</returns>
+            /// <remarks>
+            /// The command buffers created by this method are automatically added to the system's list of
+            /// pending buffers.
+            /// </remarks>
+            /// <param name="world"> The world in which to play it back. </param>
+            /// <returns> The command buffer to record to. </returns>
             public EntityCommandBuffer CreateCommandBuffer(WorldUnmanaged world)
             {
                 return EntityCommandBufferSystem.CreateCommandBuffer(ref *this.PendingBuffers, this.Allocator, world);
@@ -48,10 +50,12 @@ namespace BovineLabs.Core.LifeCycle
             /// <summary>
             /// Sets the list of command buffers to play back when this system updates.
             /// </summary>
-            /// <remarks>This method is only intended for internal use, but must be in the public API due to language
-            /// restrictions. Command buffers created with <see cref="CreateCommandBuffer"/> are automatically added to
-            /// the system's list of pending buffers to play back.</remarks>
-            /// <param name="buffers">The list of buffers to play back. This list replaces any existing pending command buffers on this system.</param>
+            /// <remarks>
+            /// This method is only intended for internal use, but must be in the public API due to language
+            /// restrictions. Command buffers created with <see cref="CreateCommandBuffer" /> are automatically added to
+            /// the system's list of pending buffers to play back.
+            /// </remarks>
+            /// <param name="buffers"> The list of buffers to play back. This list replaces any existing pending command buffers on this system. </param>
             void IECBSingleton.SetPendingBufferList(ref UnsafeList<EntityCommandBuffer> buffers)
             {
                 this.PendingBuffers = (UnsafeList<EntityCommandBuffer>*)UnsafeUtility.AddressOf(ref buffers);
@@ -60,7 +64,7 @@ namespace BovineLabs.Core.LifeCycle
             /// <summary>
             /// Set the allocator that command buffers created with this singleton should be allocated with.
             /// </summary>
-            /// <param name="allocatorIn">The allocator to use</param>
+            /// <param name="allocatorIn"> The allocator to use </param>
             void IECBSingleton.SetAllocator(Allocator allocatorIn)
             {
                 this.Allocator = allocatorIn;
@@ -69,7 +73,7 @@ namespace BovineLabs.Core.LifeCycle
             /// <summary>
             /// Set the allocator that command buffers created with this singleton should be allocated with.
             /// </summary>
-            /// <param name="allocatorIn">The allocator to use</param>
+            /// <param name="allocatorIn"> The allocator to use </param>
             void IECBSingleton.SetAllocator(AllocatorManager.AllocatorHandle allocatorIn)
             {
                 this.Allocator = allocatorIn;

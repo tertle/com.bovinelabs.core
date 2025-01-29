@@ -104,7 +104,7 @@ namespace BovineLabs.Core.Collections
                     return idx;
                 }
 
-                if ((current == hash) && this.GetKeyAt(idx).Equals(key))
+                if (current == hash && this.GetKeyAt(idx).Equals(key))
                 {
                     return -1;
                 }

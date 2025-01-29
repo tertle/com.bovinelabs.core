@@ -11,15 +11,13 @@ namespace BovineLabs.Core
         public const WorldSystemFilterFlags Service = (WorldSystemFilterFlags)(1 << 21);
 
         public const WorldSystemFilterFlags ClientLocal = WorldSystemFilterFlags.LocalSimulation |
-                                                          WorldSystemFilterFlags.ClientSimulation |
-                                                          WorldSystemFilterFlags.ThinClientSimulation;
+            WorldSystemFilterFlags.ClientSimulation |
+            WorldSystemFilterFlags.ThinClientSimulation;
 
-        public const WorldSystemFilterFlags ServerLocal = WorldSystemFilterFlags.ServerSimulation |
-                                                          WorldSystemFilterFlags.LocalSimulation;
+        public const WorldSystemFilterFlags ServerLocal = WorldSystemFilterFlags.ServerSimulation | WorldSystemFilterFlags.LocalSimulation;
 
-        public const WorldSystemFilterFlags Simulation = WorldSystemFilterFlags.ServerSimulation |
-                                                         WorldSystemFilterFlags.LocalSimulation |
-                                                         WorldSystemFilterFlags.ClientSimulation;
+        public const WorldSystemFilterFlags Simulation =
+            WorldSystemFilterFlags.ServerSimulation | WorldSystemFilterFlags.LocalSimulation | WorldSystemFilterFlags.ClientSimulation;
 
         public const WorldSystemFilterFlags SimulationThin = Simulation | WorldSystemFilterFlags.ThinClientSimulation;
 

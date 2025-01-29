@@ -29,13 +29,13 @@ namespace BovineLabs.Core.Utility
 
         public EntityLock(Allocator allocator)
         {
-             this.allocator = allocator;
-             this.length = JobsUtility.ThreadIndexCount;
-             this.pairs = (LockData*)UnsafeUtility.MallocTracked(sizeof(LockData) * this.length, UnsafeUtility.AlignOf<LockData>(), allocator, 0);
-             this.locksLock = (SpinLock*)UnsafeUtility.MallocTracked(sizeof(SpinLock), UnsafeUtility.AlignOf<SpinLock>(), allocator, 0);
+            this.allocator = allocator;
+            this.length = JobsUtility.ThreadIndexCount;
+            this.pairs = (LockData*)UnsafeUtility.MallocTracked(sizeof(LockData) * this.length, UnsafeUtility.AlignOf<LockData>(), allocator, 0);
+            this.locksLock = (SpinLock*)UnsafeUtility.MallocTracked(sizeof(SpinLock), UnsafeUtility.AlignOf<SpinLock>(), allocator, 0);
 
-             UnsafeUtility.MemClear(this.pairs, sizeof(LockData) * this.length);
-             *this.locksLock = default;
+            UnsafeUtility.MemClear(this.pairs, sizeof(LockData) * this.length);
+            *this.locksLock = default;
         }
 
         public void Dispose()

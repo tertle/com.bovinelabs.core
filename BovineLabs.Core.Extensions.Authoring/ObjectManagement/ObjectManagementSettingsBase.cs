@@ -51,7 +51,23 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         {
             this.SetupRegistry(baker);
             this.SetupGroups(baker);
+
+#if !BL_DISABLE_LIFECYCLE
             this.SetupLookups(baker);
+#endif
+        }
+
+        private void OnValidate()
+        {
+            if (this.objectDefinitionMap == null)
+            {
+                return;
+            }
+
+            if (this.ObjectDefinitions.Count != this.objectDefinitionMap.Count)
+            {
+                this.objectDefinitionMap = null;
+            }
         }
 
         private void SetupRegistry(IBaker baker)
@@ -121,6 +137,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             }
         }
 
+#if !BL_DISABLE_LIFECYCLE
         private void SetupLookups(IBaker baker)
         {
             if (this.ObjectDefinitions.Count == 0)
@@ -133,7 +150,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
             foreach (var d in this.ObjectDefinitions)
             {
-                if (d.Prefab == null)
+                if (d == null || d.Prefab == null)
                 {
                     continue;
                 }
@@ -144,19 +161,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                 }
             }
         }
-
-        private void OnValidate()
-        {
-            if (this.objectDefinitionMap == null)
-            {
-                return;
-            }
-
-            if (this.ObjectDefinitions.Count != this.objectDefinitionMap.Count)
-            {
-                this.objectDefinitionMap = null;
-            }
-        }
+#endif
 
         private struct PrefabDistinct : IEqualityComparer<ObjectDefinition>
         {

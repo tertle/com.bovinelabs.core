@@ -48,7 +48,6 @@ namespace BovineLabs.Core.ObjectManagement
                 }
 
                 return this.objectDefinitions[offset + id.ID];
-
             }
         }
     }

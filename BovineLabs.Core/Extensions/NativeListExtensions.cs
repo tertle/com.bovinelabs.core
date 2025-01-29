@@ -71,8 +71,9 @@ namespace BovineLabs.Core.Extensions
             gcHandle.Free();
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        static void CheckSufficientCapacity(int capacity, int length)
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private static void CheckSufficientCapacity(int capacity, int length)
         {
             if (capacity < length)
             {

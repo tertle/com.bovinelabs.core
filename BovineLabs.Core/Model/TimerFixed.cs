@@ -6,7 +6,6 @@ namespace BovineLabs.Core.Model
 {
     using Unity.Assertions;
     using Unity.Burst;
-    using Unity.Burst.CompilerServices;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -44,12 +43,7 @@ namespace BovineLabs.Core.Model
 
             this.query = state.GetEntityQuery(new EntityQueryDesc
             {
-                All = new[]
-                {
-                    ComponentType.ReadWrite<TRemaining>(),
-                    ComponentType.ReadWrite<TOn>(),
-                    ComponentType.ReadOnly<TActive>(),
-                },
+                All = new[] { ComponentType.ReadWrite<TRemaining>(), ComponentType.ReadWrite<TOn>(), ComponentType.ReadOnly<TActive>() },
             });
         }
 

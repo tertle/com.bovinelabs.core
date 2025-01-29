@@ -7,6 +7,7 @@
 namespace BovineLabs.Core.Camera
 {
     using Unity.Mathematics;
+    using UnityEngine;
 
     public enum IntersectResult
     {
@@ -47,15 +48,27 @@ namespace BovineLabs.Core.Camera
             return inCount == 6 ? IntersectResult.In : IntersectResult.Partial;
         }
 
+        public static bool AnyIntersect(this CameraFrustumPlanes planes, AABB a)
+        {
+            var m = a.Center;
+            var extent = a.Extents;
+
+            for (var i = 0; i < 6; i++)
+            {
+                var normal = planes[i].xyz;
+                var dist = math.dot(normal, m) + planes[i].w;
+                var radius = math.dot(extent, math.abs(normal));
+                if (dist + radius <= 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public static float3 GetNearCenter(this CameraFrustumPlanes planes)
         {
-            // Extract the near plane and other relevant planes
-            // Plane nearPlane = planes[4];
-            // Plane leftPlane = planes[0];
-            // Plane rightPlane = planes[1];
-            // Plane bottomPlane = planes[2];
-            // Plane topPlane = planes[3];
-
             // Calculate the four corner points of the near plane rectangle using plane intersections
             var nearTopLeft = IntersectThreePlanes(planes.Near, planes.Left, planes.Top);
             var nearTopRight = IntersectThreePlanes(planes.Near, planes.Right, planes.Top);
@@ -76,10 +89,10 @@ namespace BovineLabs.Core.Camera
             var cross31 = math.cross(p3.xyz, p1.xyz);
 
             // Calculate the determinant
-            float determinant = math.dot(p1.xyz, cross23);
+            var determinant = math.dot(p1.xyz, cross23);
             if (math.abs(determinant) < math.EPSILON)
             {
-                UnityEngine.Debug.LogError("Planes do not intersect properly (parallel or coincident planes).");
+                Debug.LogError("Planes do not intersect properly (parallel or coincident planes).");
                 return float3.zero;
             }
 

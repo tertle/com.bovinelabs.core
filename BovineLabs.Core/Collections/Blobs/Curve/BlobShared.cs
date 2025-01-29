@@ -11,15 +11,13 @@ namespace BovineLabs.Core.Collections
     public static class BlobShared
     {
         // v0  m0  m1  v1
-        private static readonly float4x4 HermiteMat = new(
-            02, 01, 01, -2, // t^3
+        private static readonly float4x4 HermiteMat = new(02, 01, 01, -2, // t^3
             -3, -2, -1, 03, // t^2
             00, 01, 00, 00, // t^1
             01, 00, 00, 00); // t^0
 
         // p0  p1  p2  p3
-        private static readonly float4x4 BezierMat = new(
-            -1, 03, -3, 01, // t^3
+        private static readonly float4x4 BezierMat = new(-1, 03, -3, 01, // t^3
             03, -6, 03, 00, // t^2
             -3, 03, 00, 00, // t^1
             01, 00, 00, 00); // t^0
@@ -66,6 +64,5 @@ namespace BovineLabs.Core.Collections
             var offset = (p3 - p0) / 3f;
             return BezierFactor(p0, p0 + offset, p3 - offset, p3);
         }
-
     }
 }

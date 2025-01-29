@@ -12,12 +12,7 @@ namespace BovineLabs.Core.Utility
     public static class TransformUtility
     {
         public static void SetupParent<T>(
-            ref T commands,
-            Entity parent,
-            Entity child,
-            in LocalToWorld parentLocalToWorld,
-            in LocalTransform childLocalTransform,
-            DynamicBuffer<Child> childs)
+            ref T commands, Entity parent, Entity child, in LocalToWorld parentLocalToWorld, in LocalTransform childLocalTransform, DynamicBuffer<Child> childs)
             where T : IEntityCommands
         {
             // Setup the child

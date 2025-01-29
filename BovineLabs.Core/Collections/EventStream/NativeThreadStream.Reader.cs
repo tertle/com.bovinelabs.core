@@ -140,7 +140,7 @@ namespace BovineLabs.Core.Collections
                     throw new ArgumentException("Reading out of bounds");
                 }
 
-                if ((this.remainingBlocks == 0) && (size + sizeof(void*) > this.reader.m_LastBlockSize))
+                if (this.remainingBlocks == 0 && size + sizeof(void*) > this.reader.m_LastBlockSize)
                 {
                     throw new ArgumentException("Reading out of bounds");
                 }
@@ -177,8 +177,7 @@ namespace BovineLabs.Core.Collections
 
                 if ((uint)forEachIndex >= (uint)this.ForEachCount)
                 {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(forEachIndex),
+                    throw new ArgumentOutOfRangeException(nameof(forEachIndex),
                         $"foreachIndex: {forEachIndex} must be between 0 and ForEachCount: {this.ForEachCount}");
                 }
 #endif
@@ -189,14 +188,12 @@ namespace BovineLabs.Core.Collections
             {
                 if (this.reader.m_RemainingItemCount != 0)
                 {
-                    throw new ArgumentException(
-                        "Not all elements (Count) have been read. If this is intentional, simply skip calling EndForEachIndex();");
+                    throw new ArgumentException("Not all elements (Count) have been read. If this is intentional, simply skip calling EndForEachIndex();");
                 }
 
                 if (this.reader.m_CurrentBlockEnd != this.reader.m_CurrentPtr)
                 {
-                    throw new ArgumentException(
-                        "Not all data (Data Size) has been read. If this is intentional, simply skip calling EndForEachIndex();");
+                    throw new ArgumentException("Not all data (Data Size) has been read. If this is intentional, simply skip calling EndForEachIndex();");
                 }
             }
         }

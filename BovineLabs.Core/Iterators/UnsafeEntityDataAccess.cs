@@ -16,19 +16,17 @@ namespace BovineLabs.Core.Iterators
         [NativeDisableUnsafePtrRestriction]
         private readonly EntityDataAccess* access;
 
-        private uint globalSystemVersion;
-
         internal UnsafeEntityDataAccess(EntityDataAccess* access)
         {
             this.access = access;
-            this.globalSystemVersion = access->EntityComponentStore->GlobalSystemVersion;
+            this.GlobalSystemVersion = access->EntityComponentStore->GlobalSystemVersion;
         }
 
-        public uint GlobalSystemVersion => this.globalSystemVersion;
+        public uint GlobalSystemVersion { get; private set; }
 
         public void Update(ref SystemState systemState)
         {
-            this.globalSystemVersion = systemState.m_EntityComponentStore->GlobalSystemVersion;
+            this.GlobalSystemVersion = systemState.m_EntityComponentStore->GlobalSystemVersion;
         }
 
         public static byte* GetComponentDataPtrRW(ArchetypeChunk archetypeChunk, ComponentType componentType, uint globalSystemVersion)
@@ -43,7 +41,8 @@ namespace BovineLabs.Core.Iterators
         public static byte* GetChunkComponentDataPtrRW(ArchetypeChunk archetypeChunk, ComponentType componentType, uint globalSystemVersion)
         {
             archetypeChunk.m_EntityComponentStore->AssertEntityHasComponent(archetypeChunk.m_Chunk.MetaChunkEntity, componentType.TypeIndex);
-            return archetypeChunk.m_EntityComponentStore->GetComponentDataWithTypeRW(archetypeChunk.m_Chunk.MetaChunkEntity, componentType.TypeIndex, globalSystemVersion);
+            return archetypeChunk.m_EntityComponentStore->GetComponentDataWithTypeRW(archetypeChunk.m_Chunk.MetaChunkEntity, componentType.TypeIndex,
+                globalSystemVersion);
         }
 
         public static byte* GetChunkComponentDataPtrRO(ArchetypeChunk archetypeChunk, ComponentType componentType)
@@ -96,18 +95,20 @@ namespace BovineLabs.Core.Iterators
             return this.access->EntityComponentStore->HasComponent(entity, typeIndex, out _);
         }
 
-        /// <summary> Reports whether the specified <see cref="Entity"/> instance still refers to a valid entity. </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns>True if the entity exists and is valid, and returns false if
-        /// the Entity instance refers to an entity that has been destroyed.</returns>
+        /// <summary> Reports whether the specified <see cref="Entity" /> instance still refers to a valid entity. </summary>
+        /// <param name="entity"> The entity. </param>
+        /// <returns>
+        /// True if the entity exists and is valid, and returns false if
+        /// the Entity instance refers to an entity that has been destroyed.
+        /// </returns>
         public readonly bool Exists(Entity entity)
         {
             return this.access->EntityComponentStore->Exists(entity);
         }
 
-        /// <summary> Gets an <see cref="EntityStorageInfo"/> for the specified entity. </summary>
-        /// <param name="entity">The entity.</param>
-        /// <exception cref="System.ArgumentException">Thrown if T is zero-size.</exception>
+        /// <summary> Gets an <see cref="EntityStorageInfo" /> for the specified entity. </summary>
+        /// <param name="entity"> The entity. </param>
+        /// <exception cref="System.ArgumentException"> Thrown if T is zero-size. </exception>
         public readonly EntityStorageInfo GetEntityStorageInfo(Entity entity)
         {
             this.access->EntityComponentStore->AssertEntitiesExist(&entity, 1);
@@ -138,11 +139,11 @@ namespace BovineLabs.Core.Iterators
             return this.GetRequiredComponentDataPtrRW(entity, componentType.TypeIndex);
         }
 
-        public readonly byte* GetRequiredComponentDataPtrRW(Entity entity,TypeIndex typeIndex)
+        public readonly byte* GetRequiredComponentDataPtrRW(Entity entity, TypeIndex typeIndex)
         {
             var ecs = this.access->EntityComponentStore;
             ecs->AssertEntityHasComponent(entity, typeIndex);
-            return ecs->GetComponentDataWithTypeRW(entity, typeIndex, this.globalSystemVersion);
+            return ecs->GetComponentDataWithTypeRW(entity, typeIndex, this.GlobalSystemVersion);
         }
 
         public readonly byte* GetComponentDataPtrRO(Entity entity, ComponentType componentType)
@@ -155,7 +156,7 @@ namespace BovineLabs.Core.Iterators
         public readonly byte* GetComponentDataPtrRW(Entity entity, ComponentType componentType)
         {
             return this.HasComponent(entity, componentType)
-                ? this.access->EntityComponentStore->GetComponentDataWithTypeRW(entity, componentType.TypeIndex, this.globalSystemVersion)
+                ? this.access->EntityComponentStore->GetComponentDataWithTypeRW(entity, componentType.TypeIndex, this.GlobalSystemVersion)
                 : null;
         }
 
@@ -175,8 +176,7 @@ namespace BovineLabs.Core.Iterators
         {
             var typeIndex = componentType.TypeIndex;
 
-            var header = (BufferHeader*)this.access->EntityComponentStore->GetComponentDataWithTypeRW(
-                entity, typeIndex, this.globalSystemVersion);
+            var header = (BufferHeader*)this.access->EntityComponentStore->GetComponentDataWithTypeRW(entity, typeIndex, this.GlobalSystemVersion);
 
             var internalCapacity = TypeManager.GetTypeInfo(typeIndex).BufferCapacity;
             var typeInfo = TypeManager.GetTypeInfo(typeIndex);

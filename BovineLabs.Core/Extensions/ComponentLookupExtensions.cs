@@ -43,7 +43,8 @@ namespace BovineLabs.Core.Extensions
             var ecs = lookupInternal.m_Access->EntityComponentStore;
             ecs->AssertEntitiesExist(&entity, 1);
 
-            return (T*)ecs->GetOptionalComponentDataWithTypeRW(entity, lookupInternal.m_TypeIndex, lookupInternal.m_GlobalSystemVersion, ref lookupInternal.m_Cache);
+            return (T*)ecs->GetOptionalComponentDataWithTypeRW(entity, lookupInternal.m_TypeIndex, lookupInternal.m_GlobalSystemVersion,
+                ref lookupInternal.m_Cache);
         }
 
         public static RefRW<T> GetRefRWNoChangeFilter<T>(ref this ComponentLookup<T> lookup, Entity entity)
@@ -79,13 +80,12 @@ namespace BovineLabs.Core.Extensions
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(lookup.m_Safety);
 #endif
-            EntityComponentStore* ecs = lookupInternal.m_Access->EntityComponentStore;
+            var ecs = lookupInternal.m_Access->EntityComponentStore;
             ecs->AssertEntityHasComponent(entity, lookupInternal.m_TypeIndex, ref lookupInternal.m_Cache);
 
             int indexInBitField;
             int* ptrChunkDisabledCount;
-            var ptr = ecs->GetEnabledRawRO(
-                entity, lookupInternal.m_TypeIndex, ref lookupInternal.m_Cache, out indexInBitField, out ptrChunkDisabledCount);
+            var ptr = ecs->GetEnabledRawRO(entity, lookupInternal.m_TypeIndex, ref lookupInternal.m_Cache, out indexInBitField, out ptrChunkDisabledCount);
 
             return new EnabledRefRW<T>(MakeSafeBitRef(lookup, ptr, indexInBitField), ptrChunkDisabledCount);
         }
@@ -175,10 +175,34 @@ namespace BovineLabs.Core.Extensions
             return componentData;
         }
 
+        public static T GetChunkComponent<T>(ref this ComponentLookup<T> lookup, Entity entity)
+            where T : unmanaged, IComponentData
+        {
+            return GetChunkComponent(ref lookup, entity, out _);
+        }
+
+        public static T GetChunkComponent<T>(ref this ComponentLookup<T> lookup, Entity entity, out int indexInChunk)
+            where T : unmanaged, IComponentData
+        {
+            ref var lookupInternal = ref UnsafeUtility.As<ComponentLookup<T>, ComponentLookupInternal>(ref lookup);
+            var ecs = lookupInternal.m_Access->EntityComponentStore;
+
+            var chunk = ecs->GetChunk(entity);
+            // var archetype = ecs->GetArchetype(chunk);
+            var entityInChunk = ecs->GetEntityInChunk(entity);
+
+            indexInChunk = entityInChunk.IndexInChunk;
+
+            var ptr = ecs->GetComponentDataWithTypeRO(chunk.MetaChunkEntity, lookupInternal.m_TypeIndex);
+            UnsafeUtility.CopyPtrToStructure(ptr, out T value);
+            return value;
+        }
+
         private static SafeBitRef MakeSafeBitRef<T>(in ComponentLookup<T> lookup, ulong* ptr, int offsetInBits)
             where T : unmanaged, IComponentData, IEnableableComponent
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            => new(ptr, offsetInBits, lookup.m_Safety);
+            =>
+                new(ptr, offsetInBits, lookup.m_Safety);
 #else
             => new(ptr, offsetInBits);
 #endif

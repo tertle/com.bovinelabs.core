@@ -15,7 +15,12 @@ namespace BovineLabs.Core.Tests.Utility
         [Test]
         public void ExtractArrayFromList()
         {
-            var list = new List<int> { 0, 1, 2 };
+            var list = new List<int>
+            {
+                0,
+                1,
+                2,
+            };
 
             var array = NoAllocHelpers.ExtractArrayFromList(list);
 
@@ -28,7 +33,12 @@ namespace BovineLabs.Core.Tests.Utility
         [Test]
         public void ResizeList()
         {
-            var list = new List<int> { 0, 1, 2 };
+            var list = new List<int>
+            {
+                0,
+                1,
+                2,
+            };
 
             list.Capacity = 16;
 

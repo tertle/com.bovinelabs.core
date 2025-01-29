@@ -81,22 +81,22 @@ namespace BovineLabs.Core.Collections
         }
 
         public static UnsafeParallelMultiHashMap<TKey, TValue>* CreateParallelMultiHashMap<TKey, TValue>(
-	        int initialCapacity, AllocatorManager.AllocatorHandle allocator)
-	        where TKey : unmanaged, IEquatable<TKey>
-	        where TValue : unmanaged
+            int initialCapacity, AllocatorManager.AllocatorHandle allocator)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
-	        var hashMap = AllocatorManager.Allocate<UnsafeParallelMultiHashMap<TKey, TValue>>(allocator);
-	        *hashMap = new UnsafeParallelMultiHashMap<TKey, TValue>(initialCapacity, allocator);
-	        return hashMap;
+            var hashMap = AllocatorManager.Allocate<UnsafeParallelMultiHashMap<TKey, TValue>>(allocator);
+            *hashMap = new UnsafeParallelMultiHashMap<TKey, TValue>(initialCapacity, allocator);
+            return hashMap;
         }
 
         public static void Destroy<TKey, TValue>(UnsafeParallelMultiHashMap<TKey, TValue>* hashMap)
-	        where TKey : unmanaged, IEquatable<TKey>
-	        where TValue : unmanaged
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
-	        var allocator = hashMap->m_AllocatorLabel;
-	        hashMap->Dispose();
-	        AllocatorManager.Free(allocator, hashMap);
+            var allocator = hashMap->m_AllocatorLabel;
+            hashMap->Dispose();
+            AllocatorManager.Free(allocator, hashMap);
         }
 
         public static UnsafeQueue<T>* CreateQueue<T>(AllocatorManager.AllocatorHandle allocator)

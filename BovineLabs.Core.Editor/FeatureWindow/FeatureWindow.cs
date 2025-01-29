@@ -55,7 +55,7 @@ namespace BovineLabs.Core.Editor.FeatureWindow
         {
             var enableExtensions = this.rootVisualElement.Q<Button>("EnableExtensions");
 
-            SetEnabledExtensionState(enableExtensions, this.defines.Contains(ExtensionsEnableKey));
+            this.SetEnabledExtensionState(enableExtensions, this.defines.Contains(ExtensionsEnableKey));
 
             enableExtensions.clicked += () =>
             {
@@ -69,7 +69,7 @@ namespace BovineLabs.Core.Editor.FeatureWindow
                     this.defines.Remove(ExtensionsEnableKey);
                 }
 
-                SetEnabledExtensionState(enableExtensions, enable);
+                this.SetEnabledExtensionState(enableExtensions, enable);
             };
         }
 
@@ -125,7 +125,7 @@ namespace BovineLabs.Core.Editor.FeatureWindow
         {
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
             var targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
-            return UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+            return NamedBuildTarget.FromBuildTargetGroup(targetGroup);
         }
 
         private static string[] GetDefines()

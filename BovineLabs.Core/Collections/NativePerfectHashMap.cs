@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
-        static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<UnsafePerfectHashMap<TKey, TValue>>();
+        private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<UnsafePerfectHashMap<TKey, TValue>>();
 #endif
 
         public NativePerfectHashMap(NativeArray<TKey> keys, NativeArray<TValue> values, TValue nullValue, AllocatorManager.AllocatorHandle allocator)
@@ -69,7 +69,7 @@ namespace BovineLabs.Core.Collections
 
         public void Dispose()
         {
-            #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (!AtomicSafetyHandle.IsDefaultValue(this.m_Safety))
             {
                 AtomicSafetyHandle.CheckExistsAndThrow(this.m_Safety);
@@ -81,7 +81,7 @@ namespace BovineLabs.Core.Collections
                 return;
             }
 
-            #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
 #endif
 
@@ -90,9 +90,9 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary> Returns the value associated with a key. </summary>
-        /// <param name="key">The key to look up.</param>
-        /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
-        /// <returns>True if the key was present.</returns>
+        /// <param name="key"> The key to look up. </param>
+        /// <param name="item"> Outputs the value associated with the key. Outputs default if the key was not present. </param>
+        /// <returns> True if the key was present. </returns>
         public bool TryGetValue(TKey key, out TValue item)
         {
             this.CheckRead();
@@ -124,5 +124,4 @@ namespace BovineLabs.Core.Collections
             throw new ArgumentException($"Key: {key} is not present.");
         }
     }
-
 }

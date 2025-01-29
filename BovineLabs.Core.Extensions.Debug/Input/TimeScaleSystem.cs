@@ -8,11 +8,12 @@ namespace BovineLabs.Core.Input
     using Unity.Burst;
     using Unity.Entities;
     using Unity.Mathematics;
+    using UnityEngine;
 
     [WorldSystemFilter(WorldSystemFilterFlags.LocalSimulation)]
     internal partial struct TimeScaleSystem : ISystem
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
@@ -21,11 +22,11 @@ namespace BovineLabs.Core.Input
             SystemAPI.TryGetSingleton<InputCoreDebug>(out var inputDebug);
             if (inputDebug.TimeScaleDouble)
             {
-                UnityEngine.Time.timeScale = math.clamp(math.ceilpow2((int)(UnityEngine.Time.timeScale * multi * 2)) / multi, 1 / multi, 100);
+                Time.timeScale = math.clamp(math.ceilpow2((int)(Time.timeScale * multi * 2)) / multi, 1 / multi, 100);
             }
             else if (inputDebug.TimeScaleHalve)
             {
-                UnityEngine.Time.timeScale = math.max(math.ceilpow2((int)(UnityEngine.Time.timeScale * multi / 2)) / multi, 0);
+                Time.timeScale = math.max(math.ceilpow2((int)((Time.timeScale * multi) / 2)) / multi, 0);
             }
         }
     }

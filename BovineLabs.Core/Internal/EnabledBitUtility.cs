@@ -10,7 +10,9 @@ namespace BovineLabs.Core.Internal
     public static class EnabledBitUtility
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryGetNextRange(v128 mask, int firstIndexToCheck, out int nextRangeBegin, out int nextRangeEnd) =>
-            Unity.Entities.EnabledBitUtility.TryGetNextRange(mask, firstIndexToCheck, out nextRangeBegin, out nextRangeEnd);
+        public static bool TryGetNextRange(v128 mask, int firstIndexToCheck, out int nextRangeBegin, out int nextRangeEnd)
+        {
+            return Unity.Entities.EnabledBitUtility.TryGetNextRange(mask, firstIndexToCheck, out nextRangeBegin, out nextRangeEnd);
+        }
     }
 }

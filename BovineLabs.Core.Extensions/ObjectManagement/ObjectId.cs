@@ -11,7 +11,8 @@ namespace BovineLabs.Core.ObjectManagement
 
     /// <summary>
     /// Wrapper for the ID of an object. This can be used to store weak references to entities
-    /// that can be instantiated at runtime via <see cref="ObjectDefinitionRegistry"/>. </summary>
+    /// that can be instantiated at runtime via <see cref="ObjectDefinitionRegistry" />.
+    /// </summary>
     [Serializable]
     public readonly struct ObjectId : IComponentData, IEquatable<ObjectId>, IComparable<ObjectId>
     {

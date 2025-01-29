@@ -19,7 +19,7 @@ namespace BovineLabs.Core.Editor.Input
         private const string SettingsProperty = "settings";
         private const string DebugSettingsProperty = "debugSettings";
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override VisualElement CreateElement(SerializedProperty property)
         {
             if (property.name == SettingsProperty)
@@ -44,11 +44,13 @@ namespace BovineLabs.Core.Editor.Input
             ClearNullReferences(property);
             ClearNullReferences(debugProperty);
 
-            foreach (var type in AppDomain.CurrentDomain.GetAssemblies()
-                         .SelectMany(s => s.GetTypes())
-                         .Where(t => t != baseType)
-                         .Where(t => t.IsClass && t is { IsInterface: false, IsAbstract: false })
-                         .Where(t => baseType.IsAssignableFrom(t)))
+            foreach (var type in AppDomain
+                .CurrentDomain
+                .GetAssemblies()
+                .SelectMany(s => s.GetTypes())
+                .Where(t => t != baseType)
+                .Where(t => t.IsClass && t is { IsInterface: false, IsAbstract: false })
+                .Where(t => baseType.IsAssignableFrom(t)))
             {
                 var isDebug = type.FullName!.Contains("Debug");
 

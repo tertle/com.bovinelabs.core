@@ -1,4 +1,8 @@
-﻿namespace BovineLabs.Core.Collections
+﻿// <copyright file="BlobCurve2.cs" company="BovineLabs">
+//     Copyright (c) BovineLabs. All rights reserved.
+// </copyright>
+
+namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Collections.Generic;
@@ -72,8 +76,9 @@
             return builder.CreateBlobAssetReference<BlobCurve2>(allocator);
         }
 
-        public static BlobAssetReference<BlobCurve2> Create(List<float2> vertices, List<float> times, BlobCurveHeader.WrapMode preWrapMode,
-            BlobCurveHeader.WrapMode postWrapMode, Allocator allocator = Allocator.Persistent)
+        public static BlobAssetReference<BlobCurve2> Create(
+            List<float2> vertices, List<float> times, BlobCurveHeader.WrapMode preWrapMode, BlobCurveHeader.WrapMode postWrapMode,
+            Allocator allocator = Allocator.Persistent)
         {
             var builder = new BlobBuilder(Allocator.Temp);
             ref var data = ref builder.ConstructRoot<BlobCurve2>();
@@ -81,8 +86,9 @@
             return builder.CreateBlobAssetReference<BlobCurve2>(allocator);
         }
 
-        public static BlobAssetReference<BlobCurve2> Create(List<float2> vertices, List<float2x2> cvs, List<float> times, BlobCurveHeader.WrapMode preWrapMode,
-            BlobCurveHeader.WrapMode postWrapMode, Allocator allocator = Allocator.Persistent)
+        public static BlobAssetReference<BlobCurve2> Create(
+            List<float2> vertices, List<float2x2> cvs, List<float> times, BlobCurveHeader.WrapMode preWrapMode, BlobCurveHeader.WrapMode postWrapMode,
+            Allocator allocator = Allocator.Persistent)
         {
             var builder = new BlobBuilder(Allocator.Temp);
             ref var data = ref builder.ConstructRoot<BlobCurve2>();
@@ -95,9 +101,9 @@
             InputCurveCheck(curveX, curveY);
             var xKeys = curveX.keys;
             var yKeys = curveY.keys;
-            int keyFrameCount = xKeys.Length;
-            bool hasOnlyOneKeyframe = keyFrameCount == 1;
-            int segmentCount = math.select(keyFrameCount - 1, 1, hasOnlyOneKeyframe);
+            var keyFrameCount = xKeys.Length;
+            var hasOnlyOneKeyframe = keyFrameCount == 1;
+            var segmentCount = math.select(keyFrameCount - 1, 1, hasOnlyOneKeyframe);
 
             blobCurve.header.SegmentCount = segmentCount;
             blobCurve.header.WrapModePrev = BlobShared.ConvertWrapMode(curveX.preWrapMode);
@@ -128,15 +134,16 @@
             }
         }
 
-        public static void Construct(ref BlobBuilder builder, ref BlobCurve2 blobCurve, List<float2> vertices, List<float> times,
-            BlobCurveHeader.WrapMode preWrapMode, BlobCurveHeader.WrapMode postWrapMode)
+        public static void Construct(
+            ref BlobBuilder builder, ref BlobCurve2 blobCurve, List<float2> vertices, List<float> times, BlobCurveHeader.WrapMode preWrapMode,
+            BlobCurveHeader.WrapMode postWrapMode)
         {
-            int vertCount = vertices.Count;
+            var vertCount = vertices.Count;
             Assert.IsTrue(vertCount > 0, "No vertices");
             Assert.IsTrue(vertCount == times.Count, $"Vertex Count{vertCount} and Time count{times.Count} not sync");
 
-            bool hasOnlyOneKeyframe = vertCount == 1;
-            int segmentCount = math.select(vertCount - 1, 1, hasOnlyOneKeyframe);
+            var hasOnlyOneKeyframe = vertCount == 1;
+            var segmentCount = math.select(vertCount - 1, 1, hasOnlyOneKeyframe);
             blobCurve.header.SegmentCount = segmentCount;
             blobCurve.header.WrapModePrev = preWrapMode;
             blobCurve.header.WrapModePost = postWrapMode;
@@ -165,16 +172,17 @@
             }
         }
 
-        public static void Construct(ref BlobBuilder builder, ref BlobCurve2 blobCurve, List<float2> vertices, List<float2x2> cvs,
-            List<float> times, BlobCurveHeader.WrapMode preWrapMode, BlobCurveHeader.WrapMode postWrapMode)
+        public static void Construct(
+            ref BlobBuilder builder, ref BlobCurve2 blobCurve, List<float2> vertices, List<float2x2> cvs, List<float> times,
+            BlobCurveHeader.WrapMode preWrapMode, BlobCurveHeader.WrapMode postWrapMode)
         {
-            int vertCount = vertices.Count;
+            var vertCount = vertices.Count;
             Assert.IsTrue(vertCount > 0, "No vertices");
             Assert.IsTrue(vertCount == times.Count, $"Vertex Count{vertCount} and Time count{times.Count} not sync");
             Assert.IsTrue(cvs.Count == vertCount, $"Vertex Count{vertCount} and Control vertex count{cvs.Count} not sync");
 
-            bool hasOnlyOneKeyframe = vertCount == 1;
-            int segmentCount = math.select(vertCount - 1, 1, hasOnlyOneKeyframe);
+            var hasOnlyOneKeyframe = vertCount == 1;
+            var segmentCount = math.select(vertCount - 1, 1, hasOnlyOneKeyframe);
             blobCurve.header.SegmentCount = segmentCount;
             blobCurve.header.WrapModePrev = preWrapMode;
             blobCurve.header.WrapModePost = postWrapMode;

@@ -6,24 +6,27 @@
 namespace BovineLabs.Core.ObjectManagement
 {
     using BovineLabs.Core.Iterators;
+    using JetBrains.Annotations;
     using Unity.Entities;
 
     [InternalBufferCapacity(0)]
     public struct ObjectGroupRegistry : IDynamicMultiHashMap<GroupId, ObjectId>
     {
+        /// <inheritdoc />
+        [UsedImplicitly]
         byte IDynamicMultiHashMap<GroupId, ObjectId>.Value { get; }
     }
 
     public static class ObjectGroupRegistryExtensions
     {
-        internal static DynamicBuffer<ObjectGroupRegistry> Initialize(this DynamicBuffer<ObjectGroupRegistry> buffer)
-        {
-            return buffer.InitializeMultiHashMap<ObjectGroupRegistry, GroupId, ObjectId>();
-        }
-
         public static DynamicMultiHashMap<GroupId, ObjectId> AsMap(this DynamicBuffer<ObjectGroupRegistry> buffer)
         {
             return buffer.AsMultiHashMap<ObjectGroupRegistry, GroupId, ObjectId>();
+        }
+
+        internal static DynamicBuffer<ObjectGroupRegistry> Initialize(this DynamicBuffer<ObjectGroupRegistry> buffer)
+        {
+            return buffer.InitializeMultiHashMap<ObjectGroupRegistry, GroupId, ObjectId>();
         }
     }
 }

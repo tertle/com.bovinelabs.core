@@ -43,12 +43,9 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static UntypedDynamicBuffer GetUntypedBuffer(
-            this EntityManager entityManager,
-            Entity entity,
-            ComponentType componentType,
-            bool isReadOnly = false)
+            this EntityManager entityManager, Entity entity, ComponentType componentType, bool isReadOnly = false)
         {
-            EntityDataAccess* access = entityManager.GetCheckedEntityDataAccess();
+            var access = entityManager.GetCheckedEntityDataAccess();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             var safetyHandles = &access->DependencyManager->Safety;
@@ -56,12 +53,9 @@ namespace BovineLabs.Core.Extensions
 
             var typeIndex = componentType.TypeIndex;
 
-            return access->GetUntypedBuffer(
-                componentType,
-                entity,
+            return access->GetUntypedBuffer(componentType, entity,
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                safetyHandles->GetSafetyHandle(typeIndex, isReadOnly),
-                safetyHandles->GetBufferSafetyHandle(typeIndex),
+                safetyHandles->GetSafetyHandle(typeIndex, isReadOnly), safetyHandles->GetBufferSafetyHandle(typeIndex),
 #endif
                 isReadOnly);
         }
@@ -290,7 +284,7 @@ namespace BovineLabs.Core.Extensions
             return query.GetSingleton<T>();
         }
 
-        public static bool TryGetManagedSingleton<T>(this EntityManager em, out T? component, bool completeDependency = true)
+        public static bool TryGetManagedSingleton<T>(this EntityManager em, out T component, bool completeDependency = true)
             where T : class
         {
             using var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
@@ -316,7 +310,7 @@ namespace BovineLabs.Core.Extensions
         internal static SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
             where T : struct, ISharedComponentData
         {
-            EntityDataAccess* access = entityManager.GetCheckedEntityDataAccess();
+            var access = entityManager.GetCheckedEntityDataAccess();
             var typeIndex = TypeManager.GetTypeIndex<T>();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

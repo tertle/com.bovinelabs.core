@@ -19,8 +19,18 @@ namespace BovineLabs.Core.Extensions
             var min = bounds.Min;
             var max = bounds.Max;
 
-            aabb = new MinMaxAABB { Min = math.min(aabb.Min, min), Max = math.max(aabb.Max, min) };
-            aabb = new MinMaxAABB { Min = math.min(aabb.Min, max), Max = math.max(aabb.Max, max) };
+            aabb = new MinMaxAABB
+            {
+                Min = math.min(aabb.Min, min),
+                Max = math.max(aabb.Max, min),
+            };
+
+            aabb = new MinMaxAABB
+            {
+                Min = math.min(aabb.Min, max),
+                Max = math.max(aabb.Max, max),
+            };
+
             return aabb;
         }
 
@@ -39,8 +49,7 @@ namespace BovineLabs.Core.Extensions
         /// <returns> True if default. </returns>
         public static bool IsDefault(this AABB aabb)
         {
-            return aabb.Center.Equals(float3.zero) &&
-                   aabb.Extents.Equals(float3.zero);
+            return aabb.Center.Equals(float3.zero) && aabb.Extents.Equals(float3.zero);
         }
 
         /// <summary> Get the right vector from a transformation matrix. </summary>

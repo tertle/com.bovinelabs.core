@@ -85,7 +85,7 @@ namespace BovineLabs.Core.Editor.Dependency
             this.RebuildInternal();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override VisualElement CreateView()
         {
             var listView = new ListView();
@@ -139,22 +139,30 @@ namespace BovineLabs.Core.Editor.Dependency
         private unsafe void FindAllDependencies(ComponentSystemGroup systemGroup, List<SearchView.Item> items)
         {
             var masterUpdateList = systemGroup.m_MasterUpdateList;
-            int updateListLength = masterUpdateList.Length;
-            for (int i = 0; i < updateListLength; ++i)
+            var updateListLength = masterUpdateList.Length;
+            for (var i = 0; i < updateListLength; ++i)
             {
                 var index = masterUpdateList[i];
 
                 if (!index.IsManaged)
                 {
-                    SystemHandle handle = systemGroup.m_UnmanagedSystemsToUpdate[index.Index];
+                    var handle = systemGroup.m_UnmanagedSystemsToUpdate[index.Index];
                     var state = systemGroup.World.Unmanaged.ResolveSystemStateChecked(handle);
-                    items.Add(new SearchView.Item { Path = state->DebugName.ToString().Replace('.', '/'), Data = handle });
+                    items.Add(new SearchView.Item
+                    {
+                        Path = state->DebugName.ToString().Replace('.', '/'),
+                        Data = handle,
+                    });
                 }
                 else
                 {
                     var sys = systemGroup.m_managedSystemsToUpdate[index.Index];
                     var state = sys.CheckedState();
-                    items.Add(new SearchView.Item { Path = state->DebugName.ToString().Replace('.', '/'), Data = sys.SystemHandle });
+                    items.Add(new SearchView.Item
+                    {
+                        Path = state->DebugName.ToString().Replace('.', '/'),
+                        Data = sys.SystemHandle,
+                    });
 
                     if (sys is ComponentSystemGroup subSystemGroup)
                     {
@@ -167,8 +175,8 @@ namespace BovineLabs.Core.Editor.Dependency
         private void IterateAll(ComponentSystemGroup systemGroup)
         {
             var masterUpdateList = systemGroup.m_MasterUpdateList;
-            int updateListLength = masterUpdateList.Length;
-            for (int i = 0; i < updateListLength; ++i)
+            var updateListLength = masterUpdateList.Length;
+            for (var i = 0; i < updateListLength; ++i)
             {
                 var index = masterUpdateList[i];
 

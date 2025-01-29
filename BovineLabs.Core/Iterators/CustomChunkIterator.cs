@@ -32,20 +32,21 @@ namespace BovineLabs.Core.Iterators
 
             if (!useEnabledMask)
             {
-                for (int entityIndexInChunk = 0; entityIndexInChunk < chunkEntityCount; ++entityIndexInChunk)
+                for (var entityIndexInChunk = 0; entityIndexInChunk < chunkEntityCount; ++entityIndexInChunk)
                 {
                     executor.Execute(entityIndexInChunk);
                 }
             }
             else
             {
-                int edgeCount = math.countbits(chunkEnabledMask.ULong0 ^ (chunkEnabledMask.ULong0 << 1)) +
-                    math.countbits(chunkEnabledMask.ULong1 ^ (chunkEnabledMask.ULong1 << 1)) - 1;
+                var edgeCount = (math.countbits(chunkEnabledMask.ULong0 ^ (chunkEnabledMask.ULong0 << 1)) +
+                        math.countbits(chunkEnabledMask.ULong1 ^ (chunkEnabledMask.ULong1 << 1))) -
+                    1;
 
-                bool useRanges = edgeCount <= 4;
+                var useRanges = edgeCount <= 4;
                 if (useRanges)
                 {
-                    int chunkEndIndex = 0;
+                    var chunkEndIndex = 0;
                     while (EnabledBitUtility.TryGetNextRange(chunkEnabledMask, chunkEndIndex, out var entityIndexInChunk, out chunkEndIndex))
                     {
                         while (entityIndexInChunk < chunkEndIndex)
@@ -57,9 +58,9 @@ namespace BovineLabs.Core.Iterators
                 }
                 else
                 {
-                    ulong mask64 = chunkEnabledMask.ULong0;
-                    int count = math.min(64, chunkEntityCount);
-                    for (int entityIndexInChunk = 0; entityIndexInChunk < count; ++entityIndexInChunk)
+                    var mask64 = chunkEnabledMask.ULong0;
+                    var count = math.min(64, chunkEntityCount);
+                    for (var entityIndexInChunk = 0; entityIndexInChunk < count; ++entityIndexInChunk)
                     {
                         if ((mask64 & 1) != 0)
                         {

@@ -27,8 +27,9 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         private readonly string defaultFileName;
         private ListView? listView;
 
-        public AssetCreator(SerializedObject serializedObject, SerializedProperty serializedProperty, Type type,
-            string directoryKey, string defaultDirectory, string defaultFileName)
+        public AssetCreator(
+            SerializedObject serializedObject, SerializedProperty serializedProperty, Type type, string directoryKey, string defaultDirectory,
+            string defaultFileName)
         {
             if (type.GetCustomAttribute<AutoRefAttribute>() == null)
             {
@@ -113,8 +114,8 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     public class AssetCreator<T> : AssetCreator
         where T : ScriptableObject
     {
-        public AssetCreator(SerializedObject serializedObject, SerializedProperty serializedProperty,
-            string directoryKey, string defaultDirectory, string defaultFileName)
+        public AssetCreator(
+            SerializedObject serializedObject, SerializedProperty serializedProperty, string directoryKey, string defaultDirectory, string defaultFileName)
             : base(serializedObject, serializedProperty, typeof(T), directoryKey, defaultDirectory, defaultFileName)
         {
         }

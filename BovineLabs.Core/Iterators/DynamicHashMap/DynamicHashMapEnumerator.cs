@@ -14,8 +14,8 @@ namespace BovineLabs.Core.Iterators
     /// An enumerator over the key-value pairs of a container.
     /// </summary>
     /// <remarks>
-    /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
-    /// From this state, the first <see cref="MoveNext"/> call advances the enumerator to the first key-value pair.
+    /// In an enumerator's initial state, <see cref="Current" /> is not valid to read.
+    /// From this state, the first <see cref="MoveNext" /> call advances the enumerator to the first key-value pair.
     /// </remarks>
     [NativeContainer]
     [NativeContainerIsReadOnly]
@@ -42,7 +42,7 @@ namespace BovineLabs.Core.Iterators
         object IEnumerator.Current => this.Current;
 
         /// <summary> Advances the enumerator to the next key-value pair. </summary>
-        /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+        /// <returns> True if <see cref="Current" /> is valid to read after the call. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {

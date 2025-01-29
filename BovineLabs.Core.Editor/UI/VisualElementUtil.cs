@@ -14,8 +14,7 @@ namespace BovineLabs.Core.Editor.UI
     {
         public static EditorWindow GetEditorWindow(VisualElement ve)
         {
-            var ownerObject = ve.panel?.GetType()
-                .GetProperty("ownerObject", BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+            var ownerObject = ve.panel?.GetType().GetProperty("ownerObject", BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
 
             Assert.IsNotNull(ownerObject);
             var dockArea = ownerObject!.GetValue(ve.panel);

@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Utility
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using Unity;
     using Unity.Collections;
 #if UNITY_EDITOR
     using UnityEditor.Compilation;
@@ -18,26 +19,59 @@ namespace BovineLabs.Core.Utility
     /// <summary> Common reflection helpers. </summary>
     public static class ReflectionUtility
     {
-        private static System.Reflection.Assembly[]? allAssemblies;
-        private static Type[]? allTypes;
-        private static Type[]? allTypesWithImplementation;
-        private static Type[]? allTypesWithImplementationNoGeneric;
-        private static MethodInfo[]? allMethods;
+        private static readonly Dictionary<System.Reflection.Assembly, Type[]> AssemblyTypes = new();
+        private static readonly Dictionary<System.Reflection.Assembly, MethodInfo[]> AssemblyMethods = new();
+
+        private static System.Reflection.Assembly[] allAssemblies;
+        private static Type[] allTypes;
+        private static Type[] allTypesWithImplementation;
+        private static Type[] allTypesWithImplementationNoGeneric;
+        private static MethodInfo[] allMethods;
+
+        public static System.Reflection.Assembly[] AllAssemblies => allAssemblies ??= AppDomain.CurrentDomain.GetAssemblies();
+
+        public static Type[] AllTypes => allTypes ??= AllAssemblies.SelectMany(GetTypes).ToArray();
 
 #if UNITY_EDITOR
-        private static Dictionary<string, Assembly> AssembliesMap { get; }
-            = CompilationPipeline.GetAssemblies().ToDictionary(r => r.name, r => r);
+        private static Dictionary<string, Assembly> AssembliesMap { get; } = CompilationPipeline.GetAssemblies().ToDictionary(r => r.name, r => r);
 #endif
-
-        private static System.Reflection.Assembly[] AllAssemblies => allAssemblies ??= AppDomain.CurrentDomain.GetAssemblies();
-
-        private static Type[] AllTypes => allTypes ??= AllAssemblies.SelectMany(s => s.GetTypes()).ToArray();
 
         private static Type[] AllTypesWithImplementation => allTypesWithImplementation ??= AllTypes.Where(t => !t.IsAbstract && !t.IsInterface).ToArray();
 
-        private static Type[] AllTypesWithImplementationNoGeneric => allTypesWithImplementationNoGeneric ??= AllTypesWithImplementation.Where(t => !t.ContainsGenericParameters).ToArray();
+        private static Type[] AllTypesWithImplementationNoGeneric =>
+            allTypesWithImplementationNoGeneric ??= AllTypesWithImplementation.Where(t => !t.ContainsGenericParameters).ToArray();
 
         private static MethodInfo[] AllPublicMethods => allMethods ??= AllTypes.SelectMany(s => s.GetMethods()).ToArray();
+
+        public static Type[] GetTypes(System.Reflection.Assembly assembly)
+        {
+            if (!AssemblyTypes.TryGetValue(assembly, out var types))
+            {
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException)
+                {
+                    Debug.LogWarning($"Unable to load types for assembly {assembly.FullName}");
+                    types = Array.Empty<Type>();
+                }
+
+                AssemblyTypes[assembly] = types;
+            }
+
+            return types;
+        }
+
+        public static MethodInfo[] GetPublicMethods(System.Reflection.Assembly assembly)
+        {
+            if (!AssemblyMethods.TryGetValue(assembly, out var methods))
+            {
+                AssemblyMethods[assembly] = methods = GetTypes(assembly).SelectMany(t => t.GetMethods()).ToArray();
+            }
+
+            return methods;
+        }
 
         /// <summary> Searches all assemblies to find all types that implement a type. </summary>
         /// <typeparam name="T"> The base type that is inherited from. </typeparam>
@@ -45,9 +79,7 @@ namespace BovineLabs.Core.Utility
         public static IEnumerable<T> GetAllAssemblyAttributes<T>()
             where T : Attribute
         {
-            return AllAssemblies
-                .SelectMany(s => s.GetCustomAttributes(typeof(T), true))
-                .Cast<T>();
+            return AllAssemblies.SelectMany(s => s.GetCustomAttributes(typeof(T), true)).Cast<T>();
         }
 
         /// <summary> Finds an implementation of an interface T in the all assemblies, falling back on TD if no others found. </summary>
@@ -56,7 +88,7 @@ namespace BovineLabs.Core.Utility
         /// <returns> The implementation found. null if default is not set and none were found. </returns>
         /// <exception cref="ArgumentException"> Type is valid. </exception>
         /// <exception cref="InvalidOperationException"> Implementation not found. </exception>
-        public static T? GetCustomImplementation<T, TD>()
+        public static T GetCustomImplementation<T, TD>()
             where TD : T
         {
             return GetCustomImplementation<T>(typeof(TD));
@@ -67,7 +99,7 @@ namespace BovineLabs.Core.Utility
         /// <returns> The implementation found. null if default is not set and none were found. </returns>
         /// <exception cref="ArgumentException"> Type is valid. </exception>
         /// <exception cref="InvalidOperationException"> Implementation not found. </exception>
-        public static T? GetCustomImplementation<T>()
+        public static T GetCustomImplementation<T>()
         {
             return GetCustomImplementation<T>(null);
         }
@@ -82,9 +114,7 @@ namespace BovineLabs.Core.Utility
         {
             var types = from t in AllTypesWithImplementation
                 let i = t.BaseType
-                where (i != null) && i.IsGenericType &&
-                      (i.GetGenericTypeDefinition() == type) &&
-                      (i.GetGenericArguments()[0] == t) // must equal itself
+                where i is { IsGenericType: true } && i.GetGenericTypeDefinition() == type && i.GetGenericArguments()[0] == t // must equal itself
                 select t;
 
             return types;
@@ -92,36 +122,32 @@ namespace BovineLabs.Core.Utility
 
         /// <summary> Searches all assemblies to find all types that implement a type. </summary>
         /// <param name="type"> The base type that is inherited from. </param>
+        /// <param name="includeGenerics"> Determines if generic types should also be returned. </param>
         /// <returns> All the types. </returns>
-        public static IEnumerable<Type> GetAllImplementations(Type type)
+        public static IEnumerable<Type> GetAllImplementations(Type type, bool includeGenerics = true)
         {
-            return AllTypesWithImplementation
-                .Where(t => t != type)
-                .Where(type.IsAssignableFrom);
+            var types = includeGenerics ? AllTypesWithImplementation : AllTypesWithImplementationNoGeneric;
+            return types.Where(t => t != type).Where(type.IsAssignableFrom);
         }
 
         /// <summary> Searches all assemblies to find all types that implement a type. </summary>
         /// <typeparam name="T"> The base type that is inherited from. </typeparam>
+        /// <param name="includeGenerics"> Determines if generic types should also be returned. </param>
         /// <returns> All the types. </returns>
-        public static IEnumerable<Type> GetAllImplementations<T>()
+        public static IEnumerable<Type> GetAllImplementations<T>(bool includeGenerics = true)
             where T : class
         {
-            var type = typeof(T);
-
-            return AllTypesWithImplementation
-                .Where(t => t != type)
-                .Where(type.IsAssignableFrom);
+            return GetAllImplementations(typeof(T), includeGenerics);
         }
 
         public static IEnumerable<Type> GetAllOpenGenericImplementations(Type type)
         {
-            return AllTypesWithImplementation
-                .Where(s =>
-                {
-                    var baseType = s.BaseType;
-                    return (baseType is { IsGenericType: true } && type.IsAssignableFrom(baseType.GetGenericTypeDefinition())) ||
-                           s.GetInterfaces().Any(z => z.IsGenericType && type.IsAssignableFrom(z.GetGenericTypeDefinition()));
-                });
+            return AllTypesWithImplementation.Where(s =>
+            {
+                var baseType = s.BaseType;
+                return (baseType is { IsGenericType: true } && type.IsAssignableFrom(baseType.GetGenericTypeDefinition())) ||
+                    s.GetInterfaces().Any(z => z.IsGenericType && type.IsAssignableFrom(z.GetGenericTypeDefinition()));
+            });
         }
 
         /// <summary> Searches all assemblies to find all types that have an attribute. </summary>
@@ -130,13 +156,51 @@ namespace BovineLabs.Core.Utility
         public static IEnumerable<Type> GetAllWithAttribute<T>()
             where T : Attribute
         {
-            return AllTypes.Where(t => t.GetCustomAttribute<T>() != null);
+            var attributeType = typeof(T);
+            var coreAssembly = attributeType.Assembly;
+
+            foreach (var assembly in AllAssemblies)
+            {
+                if (!assembly.IsAssemblyReferencingAssembly(coreAssembly))
+                {
+                    continue;
+                }
+
+                foreach (var type in GetTypes(assembly))
+                {
+                    if (!type.IsDefined(attributeType, false))
+                    {
+                        continue;
+                    }
+
+                    yield return type;
+                }
+            }
         }
 
-        public static IEnumerable<MethodInfo> GetAllMethodsWithAttribute<T>()
+        public static IEnumerable<MethodInfo> GetAllPublicMethodsWithAttribute<T>()
             where T : Attribute
         {
-            return AllPublicMethods.Where(t => t.GetCustomAttribute<T>() != null);
+            var attributeType = typeof(T);
+            var coreAssembly = attributeType.Assembly;
+
+            foreach (var assembly in AllAssemblies)
+            {
+                if (!assembly.IsAssemblyReferencingAssembly(coreAssembly))
+                {
+                    continue;
+                }
+
+                foreach (var type in GetPublicMethods(assembly))
+                {
+                    if (!type.IsDefined(attributeType, false))
+                    {
+                        continue;
+                    }
+
+                    yield return type;
+                }
+            }
         }
 
         /// <summary> Searches all assemblies to find all types that implement both 2 types. </summary>
@@ -150,9 +214,7 @@ namespace BovineLabs.Core.Utility
             var type1 = typeof(T1);
             var type2 = typeof(T2);
 
-            return AllTypesWithImplementationNoGeneric
-                .Where(t => (t != type1) && (t != type2))
-                .Where(t => type1.IsAssignableFrom(t) && type2.IsAssignableFrom(t));
+            return AllTypesWithImplementationNoGeneric.Where(t => t != type1 && t != type2).Where(t => type1.IsAssignableFrom(t) && type2.IsAssignableFrom(t));
         }
 
         /// <summary> Searches all assemblies to find all types that implement both 2 types but only keep top level inheritance. </summary>
@@ -167,7 +229,7 @@ namespace BovineLabs.Core.Utility
             var type2 = typeof(T2);
 
             var all = AllTypesWithImplementationNoGeneric
-                .Where(t => (t != type1) && (t != type2))
+                .Where(t => t != type1 && t != type2)
                 .Where(t => type1.IsAssignableFrom(t) && type2.IsAssignableFrom(t))
                 .ToList();
 
@@ -175,7 +237,7 @@ namespace BovineLabs.Core.Utility
             for (var i = all.Count - 1; i >= 0; i--)
             {
                 var testing = all[i];
-                if (all.Any(t => (t != testing) && testing.IsAssignableFrom(t)))
+                if (all.Any(t => t != testing && testing.IsAssignableFrom(t)))
                 {
                     all.RemoveAtSwapBack(i);
                 }
@@ -214,7 +276,7 @@ namespace BovineLabs.Core.Utility
         /// <returns> True if referencing. </returns>
         public static bool IsAssemblyReferencingAssembly(this Assembly assembly, Assembly reference)
         {
-            return (assembly == reference) || assembly.assemblyReferences.Any(referenced => referenced.name == reference.name);
+            return assembly == reference || assembly.assemblyReferences.Any(referenced => referenced.name == reference.name);
         }
 
         /// <summary> Gets the name of all assemblies with a specific reference. Ignores editor assemblies. </summary>
@@ -233,7 +295,8 @@ namespace BovineLabs.Core.Utility
         /// <returns> The name of all the assemblies. </returns>
         public static IEnumerable<Assembly> GetAllUnityAssembliesWithReference(Assembly reference)
         {
-            return AssembliesMap.Values
+            return AssembliesMap
+                .Values
                 .Where(asm => (asm.flags & AssemblyFlags.EditorAssembly) == 0)
                 .Where(asm => IsAssemblyReferencingAssembly(asm, reference));
         }
@@ -281,7 +344,7 @@ namespace BovineLabs.Core.Utility
             return AllAssemblies.Where(a => IsAssemblyReferencingAssembly(a, reference));
         }
 
-        public static FieldInfo? GetFieldInBase(this Type? type, string name)
+        public static FieldInfo GetFieldInBase(this Type type, string name)
         {
             while (true)
             {
@@ -290,9 +353,8 @@ namespace BovineLabs.Core.Utility
                     return null;
                 }
 
-                const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic |
-                                           BindingFlags.Static | BindingFlags.Instance |
-                                           BindingFlags.DeclaredOnly;
+                const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance |
+                    BindingFlags.DeclaredOnly;
 
                 var field = type.GetField(name, flags);
                 if (field != null)
@@ -304,7 +366,7 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        private static T? GetCustomImplementation<T>(Type? defaultImplementation)
+        private static T GetCustomImplementation<T>(Type defaultImplementation)
         {
             var type = typeof(T);
             if (!type.IsInterface)
@@ -312,9 +374,7 @@ namespace BovineLabs.Core.Utility
                 throw new ArgumentException("T should be an interface.", nameof(T));
             }
 
-            var types = AllTypesWithImplementation
-                .Where(p => type.IsAssignableFrom(p))
-                .ToList();
+            var types = AllTypesWithImplementation.Where(p => type.IsAssignableFrom(p)).ToList();
 
             switch (types.Count)
             {
@@ -328,6 +388,7 @@ namespace BovineLabs.Core.Utility
                     return default;
                 case 1:
                     return (T)Activator.CreateInstance(types[0]);
+
                 case 2:
                 {
                     if (defaultImplementation != null)

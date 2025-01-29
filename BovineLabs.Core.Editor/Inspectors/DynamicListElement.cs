@@ -156,7 +156,11 @@ namespace BovineLabs.Core.Editor.Inspectors
         private VisualElement InitializeRefreshButton()
         {
             var button = new Toggle
-                { text = "Auto Refresh", tooltip = "Auto refresh the display. This may cause performance issues." };
+            {
+                text = "Auto Refresh",
+                tooltip = "Auto refresh the display. This may cause performance issues.",
+            };
+
             button.AddToClassList("unity-platforms__list-element__add-item-button");
             button.RegisterValueChangedCallback(evt => this.autoRefresh = evt.newValue);
             return button;

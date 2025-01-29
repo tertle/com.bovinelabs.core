@@ -7,13 +7,13 @@ namespace BovineLabs.Core.SubScenes
     using BovineLabs.Core.Pause;
     using Unity.Entities;
 
-    /// <summary> A <see cref="ComponentSystemGroup"/> that still updates while paused except if SubScenes haven't loaded. </summary>
+    /// <summary> A <see cref="ComponentSystemGroup" /> that still updates while paused except if SubScenes haven't loaded. </summary>
     public abstract partial class AlwaysUpdateSystemGroup : ComponentSystemGroup, IUpdateWhilePaused // TODO rename
     {
 #if !BL_DISABLE_SUBSCENE
         private SystemHandle subSceneLoadingSystem;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -21,7 +21,7 @@ namespace BovineLabs.Core.SubScenes
             this.subSceneLoadingSystem = this.World.GetExistingSystem<SubSceneLoadingSystem>();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
             if (SystemAPI.HasComponent<PauseGame>(this.subSceneLoadingSystem))

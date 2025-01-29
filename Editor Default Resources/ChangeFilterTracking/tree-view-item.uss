@@ -1,16 +1,13 @@
-.change-filter-tree-view-item
-{
+.change-filter-tree-view-item {
     flex-grow: 1;
 }
 
-.change-filter-tree-view-item__row
-{
+.change-filter-tree-view-item__row {
     flex-grow: 1;
     flex-direction: row;
 }
 
-.change-filter-tree-view-item__column1
-{
+.change-filter-tree-view-item__column1 {
     flex-grow: 1;
     flex-shrink: 1;
     width: auto;
@@ -19,15 +16,13 @@
     -unity-text-align: middle-left;
 }
 
-.change-filter-tree-view-item__column2
-{
+.change-filter-tree-view-item__column2 {
     width: 100px;
     padding-left: 5px;
     -unity-text-align: middle-left;
 }
 
-.change-filter-tree-view-item__column3
-{
+.change-filter-tree-view-item__column3 {
     width: 100px;
     padding-left: 5px;
     -unity-text-align: middle-left;

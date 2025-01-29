@@ -1,4 +1,4 @@
-// <copyright file="CollectionInternals.cs" company="BovineLabs">
+// <copyright file="CollectionInternal.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -41,7 +41,8 @@ namespace BovineLabs.Core.Internal
 #endif
 
         public static NativeParallelHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeParallelHashMap<TKey, TValue> hashMapData)
-            where TKey : unmanaged, IEquatable<TKey> where TValue : unmanaged
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
             return new NativeParallelHashMap<TKey, TValue> { m_HashMapData = hashMapData };
         }
@@ -57,7 +58,8 @@ namespace BovineLabs.Core.Internal
             return hashMap.m_MultiHashMapData;
         }
 
-        public static UnsafeParallelMultiHashMap<TKey, TValue> GetReadOnlyUnsafeMultiHashMap<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> hashMap)
+        public static UnsafeParallelMultiHashMap<TKey, TValue> GetReadOnlyUnsafeMultiHashMap<TKey, TValue>(
+            this NativeParallelMultiHashMap<TKey, TValue> hashMap)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -87,7 +89,8 @@ namespace BovineLabs.Core.Internal
         }
 
         public static NativeParallelMultiHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeParallelMultiHashMap<TKey, TValue> hashMapData)
-            where TKey : unmanaged, IEquatable<TKey> where TValue : unmanaged
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
         {
             return new NativeParallelMultiHashMap<TKey, TValue> { m_MultiHashMapData = hashMapData };
         }

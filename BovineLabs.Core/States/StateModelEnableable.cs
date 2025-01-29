@@ -28,7 +28,8 @@ namespace BovineLabs.Core.States
             using var e = this.impl.RegisteredStatesMap.GetEnumerator();
             while (e.MoveNext())
             {
-                Assert.IsTrue(TypeManager.GetTypeInfo(e.Current.Value.TypeIndex).EnableableType, $"Non EnableableType {e.Current.Value} trying to be assigned to {stateComponent}");
+                Assert.IsTrue(TypeManager.GetTypeInfo(e.Current.Value.TypeIndex).EnableableType,
+                    $"Non EnableableType {e.Current.Value} trying to be assigned to {stateComponent}");
 
                 // Add all component dependencies to this system
                 state.AddDependency(e.Current.Value.TypeIndex);

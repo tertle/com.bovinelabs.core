@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Stripping
         private NativeArray<ComponentTypeSet> componentsToRemove;
         private NativeArray<EntityQuery> queries;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void OnCreate(ref SystemState state)
         {
             var allComponents = new NativeList<ComponentType>(Allocator.Temp);
@@ -54,6 +54,7 @@ namespace BovineLabs.Core.Stripping
             }
 
             // Add the remainder
+            if (remaining > 0)
             {
                 var startIndex = iterations * maxCapacity;
                 AddComponentTypes(ref components, allComponents, startIndex, remaining);
@@ -74,25 +75,27 @@ namespace BovineLabs.Core.Stripping
                 }
             }
 
-            static void AddQuery(ref SystemState state, NativeArray<ComponentTypeSet> componentsToRemove, NativeArray<EntityQuery> queries,
-                ref EntityQueryBuilder builder, ref FixedList128Bytes<ComponentType> components, int index)
+            static void AddQuery(
+                ref SystemState state, NativeArray<ComponentTypeSet> componentsToRemove, NativeArray<EntityQuery> queries, ref EntityQueryBuilder builder,
+                ref FixedList128Bytes<ComponentType> components, int index)
             {
                 builder.Reset();
                 componentsToRemove[index] = new ComponentTypeSet(components);
-                queries[index] = builder.WithAny(ref components)
+                queries[index] = builder
+                    .WithAny(ref components)
                     .WithOptions(EntityQueryOptions.IncludePrefab | EntityQueryOptions.IgnoreComponentEnabledState)
                     .Build(ref state);
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void OnDestroy(ref SystemState state)
         {
             this.componentsToRemove.Dispose();
             this.queries.Dispose();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {

@@ -12,18 +12,17 @@ namespace BovineLabs.Core.LifeCycle
     [UpdateInGroup(typeof(InitializeSystemGroup), OrderLast = true)]
     public partial struct InitializeEntitySystem : ISystem
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var query = SystemAPI.QueryBuilder().WithAny<InitializeEntity, InitializeSubSceneEntity>().Build();
 
             state.Dependency = new MarkInitializedJob
-                {
-                    InitializeEntityHandle = SystemAPI.GetComponentTypeHandle<InitializeEntity>(),
-                    InitializeSubSceneEntityHandle = SystemAPI.GetComponentTypeHandle<InitializeSubSceneEntity>(),
-                }
-                .ScheduleParallel(query, state.Dependency);
+            {
+                InitializeEntityHandle = SystemAPI.GetComponentTypeHandle<InitializeEntity>(),
+                InitializeSubSceneEntityHandle = SystemAPI.GetComponentTypeHandle<InitializeSubSceneEntity>(),
+            }.ScheduleParallel(query, state.Dependency);
         }
 
         [BurstCompile]

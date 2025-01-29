@@ -28,51 +28,18 @@ namespace BovineLabs.Core.ConfigVars
 
         public static IEnumerable<(ConfigVarAttribute ConfigVar, FieldInfo Field)> FindAllConfigVars()
         {
-            var coreAssembly = typeof(ConfigVarManager).Assembly;
-
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var type in ReflectionUtility.GetAllWithAttribute<ConfigurableAttribute>())
             {
-                if (!assembly.IsAssemblyReferencingAssembly(coreAssembly))
+                foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public))
                 {
-                    continue;
-                }
+                    var configVar = field.GetCustomAttribute<ConfigVarAttribute>();
 
-                Type[] types;
-
-                try
-                {
-                    types = assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException)
-                {
-                    Debug.LogWarning($"Unable to load types for assembly {assembly.FullName}");
-                    continue;
-                }
-
-                foreach (var type in types)
-                {
-                    if (type.GetCustomAttribute<ConfigurableAttribute>() == null)
+                    if (configVar == null)
                     {
                         continue;
                     }
 
-                    foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public))
-                    {
-                        var configVar = field.GetCustomAttribute<ConfigVarAttribute>();
-
-                        if (configVar == null)
-                        {
-                            continue;
-                        }
-
-                        if (!field.IsStatic)
-                        {
-                            Debug.LogError($"Cannot use ConfigVar attribute on non-static fields. Field ({field.Name}) ParentType ({type})");
-                            continue;
-                        }
-
-                        yield return (configVar, field);
-                    }
+                    yield return (configVar, field);
                 }
             }
         }
@@ -113,7 +80,9 @@ namespace BovineLabs.Core.ConfigVars
                     }
                     catch (Exception)
                     {
-                        Debug.LogWarning($"Trying to set a configvar {configVar.Name} value of {value} which is not in the write type format. Faling back to default.");
+                        Debug.LogWarning(
+                            $"Trying to set a configvar {configVar.Name} value of {value} which is not in the write type format. Faling back to default.");
+
                         container.StringValue = configVar.DefaultValue;
                     }
                 }

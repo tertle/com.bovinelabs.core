@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Time
     using Unity.Mathematics;
     using UnityEngine;
 
-    /// <summary> Replaces the <see cref="UpdateWorldTimeSystem"/> but burst compiles it and adds support to Service world. </summary>
+    /// <summary> Replaces the <see cref="UpdateWorldTimeSystem" /> but burst compiles it and adds support to Service world. </summary>
     [UpdateBefore(typeof(Unity.Entities.UpdateWorldTimeSystem))] // To ensure we update before any system that is updating after this.
     [UpdateInGroup(typeof(InitializationSystemGroup), OrderFirst = true)]
     [UpdateAfter(typeof(BeginInitializationEntityCommandBufferSystem))]
@@ -22,7 +22,7 @@ namespace BovineLabs.Core.Time
     {
         private Entity timeSingleton;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public unsafe void OnCreate(ref SystemState state)
         {
             var timeTypes = stackalloc ComponentType[2];
@@ -36,23 +36,23 @@ namespace BovineLabs.Core.Time
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
             var currentElapsedTime = SystemAPI.Time.ElapsedTime;
             var deltaTime = math.min(Time.deltaTime, state.WorldUnmanaged.MaximumDeltaTime);
-            var timeData = new TimeData(elapsedTime: currentElapsedTime - deltaTime, deltaTime: deltaTime);
+            var timeData = new TimeData(currentElapsedTime - deltaTime, deltaTime);
 
             this.SetTime(ref state, timeData);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void OnStopRunning(ref SystemState state)
         {
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
@@ -64,7 +64,7 @@ namespace BovineLabs.Core.Time
 #endif
             var currentElapsedTime = SystemAPI.Time.ElapsedTime;
             var deltaTime = math.min(Time.deltaTime, state.WorldUnmanaged.MaximumDeltaTime);
-            this.SetTime(ref state, new TimeData(elapsedTime: currentElapsedTime + deltaTime, deltaTime: deltaTime));
+            this.SetTime(ref state, new TimeData(currentElapsedTime + deltaTime, deltaTime));
         }
 
         private void SetTime(ref SystemState state, TimeData newTimeData)

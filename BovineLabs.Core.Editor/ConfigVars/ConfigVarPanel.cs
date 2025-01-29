@@ -65,9 +65,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
             }
 
             EditorApplication.playModeStateChanged += this.OnPlayModeStateChanged;
-            this.OnPlayModeStateChanged(EditorApplication.isPlaying
-                ? PlayModeStateChange.EnteredPlayMode
-                : PlayModeStateChange.EnteredEditMode);
+            this.OnPlayModeStateChanged(EditorApplication.isPlaying ? PlayModeStateChange.EnteredPlayMode : PlayModeStateChange.EnteredEditMode);
         }
 
         /// <inheritdoc />

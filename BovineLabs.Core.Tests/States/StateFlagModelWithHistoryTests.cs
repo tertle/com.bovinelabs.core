@@ -119,30 +119,30 @@ namespace BovineLabs.Core.Tests.States
             Assert.IsTrue(backHistory[1].Value[1]);
             Assert.IsTrue(backHistory[2].Value[2]);
         }
+    }
 
-        internal struct TestState : IComponentData
-        {
-            public BitArray16 Value;
-        }
+    internal struct TestState : IComponentData
+    {
+        public BitArray16 Value;
+    }
 
-        internal struct TestStatePrevious : IComponentData
-        {
-            public BitArray16 Value;
-        }
+    internal struct TestStatePrevious : IComponentData
+    {
+        public BitArray16 Value;
+    }
 
-        internal struct TestStateBack : IBufferElementData
-        {
-            public BitArray16 Value;
+    internal struct TestStateBack : IBufferElementData
+    {
+        public BitArray16 Value;
 
-            public bool WasPopup;
-        }
+        public bool WasPopup;
+    }
 
-        internal struct TestStateForward : IBufferElementData
-        {
-            public BitArray16 Value;
+    internal struct TestStateForward : IBufferElementData
+    {
+        public BitArray16 Value;
 
-            public bool WasPopup;
-        }
+        public bool WasPopup;
     }
 
     internal partial struct StateFlagModelWithHistoryTestSystem : ISystem, ISystemStartStop
@@ -153,13 +153,8 @@ namespace BovineLabs.Core.Tests.States
         [BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
-            this.impl = new StateFlagModelWithHistory(
-                ref state,
-                ComponentType.ReadWrite<StateFlagModelWithHistoryTests.TestState>(),
-                ComponentType.ReadWrite<StateFlagModelWithHistoryTests.TestStatePrevious>(),
-                ComponentType.ReadWrite<StateFlagModelWithHistoryTests.TestStateBack>(),
-                ComponentType.ReadWrite<StateFlagModelWithHistoryTests.TestStateForward>(),
-                4);
+            this.impl = new StateFlagModelWithHistory(ref state, ComponentType.ReadWrite<TestState>(), ComponentType.ReadWrite<TestStatePrevious>(),
+                ComponentType.ReadWrite<TestStateBack>(), ComponentType.ReadWrite<TestStateForward>(), 4);
         }
 
         /// <inheritdoc />
@@ -186,7 +181,7 @@ namespace BovineLabs.Core.Tests.States
         {
             state.EntityManager.AddComponentData(state.SystemHandle, new StateInstance
             {
-                State = TypeManager.GetTypeIndex<StateFlagModelWithHistoryTests.TestState>(),
+                State = TypeManager.GetTypeIndex<TestState>(),
                 StateKey = 5,
                 StateInstanceComponent = TypeManager.GetTypeIndex<State>(),
             });
@@ -203,7 +198,7 @@ namespace BovineLabs.Core.Tests.States
         {
             this.EntityManager.AddComponentData(this.SystemHandle, new StateInstance
             {
-                State = TypeManager.GetTypeIndex<StateFlagModelWithHistoryTests.TestState>(),
+                State = TypeManager.GetTypeIndex<TestState>(),
                 StateKey = 13,
                 StateInstanceComponent = TypeManager.GetTypeIndex<State>(),
             });

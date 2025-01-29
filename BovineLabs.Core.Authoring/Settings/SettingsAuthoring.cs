@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Authoring.Settings
         /// <inheritdoc />
         private class Baker : Baker<SettingsAuthoring>
         {
-            /// <inheritdoc/>
+            /// <inheritdoc />
             public override void Bake(SettingsAuthoring authoring)
             {
                 foreach (var setting in authoring.settings.Distinct())

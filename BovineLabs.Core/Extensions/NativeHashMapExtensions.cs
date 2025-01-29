@@ -130,7 +130,7 @@ namespace BovineLabs.Core.Extensions
             // Allocate an entry from the free list
             if (hashMapHelper.AllocatedIndex >= hashMapHelper.Capacity && hashMapHelper.FirstFreeIdx < 0)
             {
-                int newCap = hashMapHelper.CalcCapacityCeilPow2(hashMapHelper.Capacity + (1 << hashMapHelper.Log2MinGrowth));
+                var newCap = hashMapHelper.CalcCapacityCeilPow2(hashMapHelper.Capacity + (1 << hashMapHelper.Log2MinGrowth));
                 hashMapHelper.ResizeMulti(newCap);
             }
 
@@ -235,7 +235,7 @@ namespace BovineLabs.Core.Extensions
         private static void ResizeExactMulti<TKey>(this ref HashMapHelper<TKey> hashMapHelper, int newCapacity, int newBucketCapacity)
             where TKey : unmanaged, IEquatable<TKey>
         {
-            int totalSize = HashMapHelper<TKey>.CalculateDataSize(newCapacity, newBucketCapacity, hashMapHelper.SizeOfTValue, out var keyOffset,
+            var totalSize = HashMapHelper<TKey>.CalculateDataSize(newCapacity, newBucketCapacity, hashMapHelper.SizeOfTValue, out var keyOffset,
                 out var nextOffset, out var bucketOffset);
 
             var oldPtr = hashMapHelper.Ptr;
@@ -255,11 +255,11 @@ namespace BovineLabs.Core.Extensions
 
             for (int i = 0, num = oldBucketCapacity; i < num; ++i)
             {
-                for (int idx = oldBuckets[i]; idx != -1; idx = oldNext[idx])
+                for (var idx = oldBuckets[i]; idx != -1; idx = oldNext[idx])
                 {
                     var newIdx = AddNoFindNoResize(ref hashMapHelper, oldKeys[idx]);
-                    UnsafeUtility.MemCpy(
-                        hashMapHelper.Ptr + (hashMapHelper.SizeOfTValue * newIdx), oldPtr + (hashMapHelper.SizeOfTValue * idx), hashMapHelper.SizeOfTValue);
+                    UnsafeUtility.MemCpy(hashMapHelper.Ptr + (hashMapHelper.SizeOfTValue * newIdx), oldPtr + (hashMapHelper.SizeOfTValue * idx),
+                        hashMapHelper.SizeOfTValue);
                 }
             }
 

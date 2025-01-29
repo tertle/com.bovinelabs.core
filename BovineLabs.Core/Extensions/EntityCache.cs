@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Extensions
     using Unity.Burst.CompilerServices;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-    using UnityEngine;
 
     public readonly unsafe struct EntityCache
     {
@@ -71,12 +70,14 @@ namespace BovineLabs.Core.Extensions
 
         internal byte* GetOptionalComponentDataWithTypeRO(TypeIndex typeIndex, ref LookupCache cache)
         {
-            return ChunkDataUtility.GetOptionalComponentDataWithTypeRO(this.EntityInChunk.Chunk, this.Archetype, this.EntityInChunk.IndexInChunk, typeIndex, ref cache);
+            return ChunkDataUtility.GetOptionalComponentDataWithTypeRO(this.EntityInChunk.Chunk, this.Archetype, this.EntityInChunk.IndexInChunk, typeIndex,
+                ref cache);
         }
 
         internal byte* GetOptionalComponentDataWithTypeRW(TypeIndex typeIndex, uint globalVersion, ref LookupCache cache)
         {
-            var data = ChunkDataUtility.GetOptionalComponentDataWithTypeRW(this.EntityInChunk.Chunk, this.Archetype, this.EntityInChunk.IndexInChunk, typeIndex, globalVersion, ref cache);
+            var data = ChunkDataUtility.GetOptionalComponentDataWithTypeRW(this.EntityInChunk.Chunk, this.Archetype, this.EntityInChunk.IndexInChunk, typeIndex,
+                globalVersion, ref cache);
 
             // TODO SUPPORT?
 // #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
@@ -96,7 +97,8 @@ namespace BovineLabs.Core.Extensions
 
         internal byte* GetComponentDataWithTypeRW(TypeIndex typeIndex, uint globalVersion, ref LookupCache cache)
         {
-            var data = ChunkDataUtility.GetComponentDataWithTypeRW(this.EntityInChunk.Chunk, this.Archetype, this.EntityInChunk.IndexInChunk, typeIndex, globalVersion, ref cache);
+            var data = ChunkDataUtility.GetComponentDataWithTypeRW(this.EntityInChunk.Chunk, this.Archetype, this.EntityInChunk.IndexInChunk, typeIndex,
+                globalVersion, ref cache);
 
             // TODO SUPPORT?
 // #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING

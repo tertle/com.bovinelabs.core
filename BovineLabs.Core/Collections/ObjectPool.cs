@@ -12,10 +12,10 @@ namespace BovineLabs.Core.Collections
     public class ObjectPool<T> : IDisposable
         where T : new()
     {
-        private readonly Func<T>? create;
-        private readonly Action<T>? onDispose;
-        private readonly Action<T>? onGet;
-        private readonly Action<T>? onRelease;
+        private readonly Func<T> create;
+        private readonly Action<T> onDispose;
+        private readonly Action<T> onGet;
+        private readonly Action<T> onRelease;
         private readonly Stack<T> stack = new();
 
         /// <summary> Initializes a new instance of the <see cref="ObjectPool{T}" /> class. </summary>
@@ -23,7 +23,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="onDispose"> Optional callback when disposing the object pool. </param>
         /// <param name="actionOnGet"> Optional callback when an element is retrieved. </param>
         /// <param name="actionOnRelease"> Optional callback when an element is returned. </param>
-        public ObjectPool(Func<T>? create = null, Action<T>? onDispose = null, Action<T>? actionOnGet = null, Action<T>? actionOnRelease = null)
+        public ObjectPool(Func<T> create = null, Action<T> onDispose = null, Action<T> actionOnGet = null, Action<T> actionOnRelease = null)
         {
             this.create = create;
             this.onDispose = onDispose;

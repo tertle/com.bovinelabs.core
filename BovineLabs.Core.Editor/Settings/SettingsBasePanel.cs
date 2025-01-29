@@ -55,7 +55,7 @@ namespace BovineLabs.Core.Editor.Settings
 
         /// <summary> Executed when activate is called from the settings window. Can be used to draw using UIElements. </summary>
         /// <remarks>
-        /// <para> If UIElements is used then the OnGUI drawer will be disabled. </para>
+        ///     <para> If UIElements is used then the OnGUI drawer will be disabled. </para>
         /// </remarks>
         /// <param name="searchContext"> The search context to provide filtering. </param>
         /// <param name="rootElement"> The UI root element. </param>
@@ -118,7 +118,7 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             var groups = IterateAllChildren(this.SerializedObject);
-            bool anyChildren = false;
+            var anyChildren = false;
 
             foreach (var g in groups)
             {

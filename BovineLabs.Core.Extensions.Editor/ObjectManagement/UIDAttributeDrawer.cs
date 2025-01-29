@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     [CustomPropertyDrawer(typeof(UIDAttribute))]
     public class UIDAttributeDrawer : PropertyDrawer
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             if (property.propertyType != SerializedPropertyType.Integer)

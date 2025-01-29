@@ -9,11 +9,16 @@ namespace BovineLabs.Core.Editor.Inspectors
     using Unity.Entities.UI;
     using UnityEngine.UIElements;
 
-    internal unsafe class ArchetypeChunkInspector : PropertyInspector<ArchetypeChunk>
+    internal class ArchetypeChunkInspector : PropertyInspector<ArchetypeChunk>
     {
         public override VisualElement Build()
         {
-            var chunk = new TextField { label = this.DisplayName, value = new IntPtr(this.Target.m_Chunk).ToString() };
+            var chunk = new TextField
+            {
+                label = this.DisplayName,
+                value = new IntPtr(this.Target.m_Chunk).ToString(),
+            };
+
             chunk.SetEnabled(false);
             return chunk;
         }

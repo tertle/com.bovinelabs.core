@@ -10,6 +10,7 @@ namespace BovineLabs.Core.Iterators
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+    using Unity.Mathematics;
 
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct DynamicPerfectHashMapHelper<TKey, TValue>
@@ -113,14 +114,15 @@ namespace BovineLabs.Core.Iterators
             return data;
         }
 
-        private static int IndexFor(TKey key, int size) {
+        private static int IndexFor(TKey key, int size)
+        {
             return key.GetHashCode() & (size - 1);
         }
 
         private static int FindSize(NativeArray<TKey> keys, NativeHashSet<int> unique)
         {
             // Find a power of 2 capacity greater than map.size().
-            int size = 1; // TODO can this start higher?
+            var size = math.ceilpow2(keys.Length);
 
             while (HasCollisions(size, keys, unique))
             {

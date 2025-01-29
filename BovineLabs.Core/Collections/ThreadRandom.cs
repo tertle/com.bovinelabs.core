@@ -18,9 +18,6 @@ namespace BovineLabs.Core.Collections
         [NativeDisableUnsafePtrRestriction]
         private Randoms* buffer;
 
-        [NativeSetThreadIndex]
-        private int threadIndex;
-
         public ThreadRandom(uint seed, AllocatorManager.AllocatorHandle allocator)
         {
             this.allocator = allocator;
@@ -33,15 +30,13 @@ namespace BovineLabs.Core.Collections
             {
                 this.buffer[i].Random = Random.CreateFromIndex((uint)(seed + i));
             }
-
-            this.threadIndex = 0;
         }
 
         public readonly bool IsCreated => this.buffer != null;
 
         public ref Random GetRandomRef()
         {
-            ref var randoms = ref UnsafeUtility.ArrayElementAsRef<Randoms>(this.buffer, this.threadIndex);
+            ref var randoms = ref UnsafeUtility.ArrayElementAsRef<Randoms>(this.buffer, JobsUtility.ThreadIndex);
             return ref randoms.Random;
         }
 
@@ -56,6 +51,7 @@ namespace BovineLabs.Core.Collections
             this.buffer = null;
         }
 
+        // 1 random per cache line to avoid false sharing
         [StructLayout(LayoutKind.Explicit, Size = JobsUtility.CacheLineSize)]
         private struct Randoms
         {

@@ -20,7 +20,6 @@ namespace BovineLabs.Core.Iterators
 
         private readonly TypeIndex m_TypeIndex;
 
-
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal SharedComponentLookup(TypeIndex typeIndex, EntityDataAccess* access, bool isReadOnly)
         {
@@ -66,7 +65,7 @@ namespace BovineLabs.Core.Iterators
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
 #endif
-            return m_Access->EntityComponentStore->HasComponent(entity, this.m_TypeIndex, out _);
+            return this.m_Access->EntityComponentStore->HasComponent(entity, this.m_TypeIndex, out _);
         }
 
         public bool TryGetComponent(Entity entity, out T sharedComponentData)

@@ -41,7 +41,9 @@ namespace BovineLabs.Core.Collections
         {
             this.allocator = allocator.Handle;
             this.queue = (T*)allocator.Allocate(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), maxQueueSize);
-            this.queueWriteHead = (int*)UnsafeUtility.MallocTracked(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator, 0); // TODO allocator?
+            this.queueWriteHead =
+                (int*)UnsafeUtility.MallocTracked(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator, 0); // TODO allocator?
+
             this.queueReadHead = (int*)UnsafeUtility.MallocTracked(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator, 0);
             this.currentRef = (int*)UnsafeUtility.MallocTracked(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator, 0);
 
@@ -101,7 +103,11 @@ namespace BovineLabs.Core.Collections
 
         public JobHandle Update(JobHandle handle)
         {
-            return new UpdateNativeWorkQueueJob { QueueReadHead = this.queueReadHead, QueueWriteHead = this.queueWriteHead }.Schedule(handle);
+            return new UpdateNativeWorkQueueJob
+            {
+                QueueReadHead = this.queueReadHead,
+                QueueWriteHead = this.queueWriteHead,
+            }.Schedule(handle);
         }
 
         /// <summary> Try add some work to the queue. </summary>
@@ -130,7 +136,7 @@ namespace BovineLabs.Core.Collections
             }
             while (Hint.Unlikely(queueRef == 0));
 
-            ptr = this.queue + *this.queueWriteHead - 1;
+            ptr = (this.queue + *this.queueWriteHead) - 1;
             return queueRef;
         }
 
@@ -150,7 +156,7 @@ namespace BovineLabs.Core.Collections
             }
             while (Hint.Unlikely(queueRef == 0));
 
-            return this.queue + *this.queueWriteHead - 1;
+            return (this.queue + *this.queueWriteHead) - 1;
         }
 
         public ParallelReader AsParallelReader()

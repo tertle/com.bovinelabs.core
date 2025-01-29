@@ -37,7 +37,14 @@ namespace BovineLabs.Core.Input
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void InputEnable(ref SystemState systemState, FixedString32Bytes input, bool enabled)
         {
-            systemState.EntityManager.GetSingletonBuffer<InputActionMapEnable>().Add(new InputActionMapEnable { Input = input, Enable = enabled });
+            systemState
+            .EntityManager
+            .GetSingletonBuffer<InputActionMapEnable>()
+            .Add(new InputActionMapEnable
+            {
+                Input = input,
+                Enable = enabled,
+            });
         }
     }
 }

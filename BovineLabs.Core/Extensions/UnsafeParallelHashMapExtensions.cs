@@ -43,9 +43,9 @@ namespace BovineLabs.Core.Extensions
 
             if (data->allocatedIndexLength >= data->keyCapacity && data->firstFreeTLS[0] < 0)
             {
-                int maxThreadCount = JobsUtility.ThreadIndexCount;
+                var maxThreadCount = JobsUtility.ThreadIndexCount;
 
-                for (int tls = 1; tls < maxThreadCount; ++tls)
+                for (var tls = 1; tls < maxThreadCount; ++tls)
                 {
                     if (data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] >= 0)
                     {
@@ -61,7 +61,8 @@ namespace BovineLabs.Core.Extensions
                 if (data->firstFreeTLS[0] < 0)
                 {
                     var newCap = UnsafeParallelHashMapData.GrowCapacity(data->keyCapacity);
-                    UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, newCap, UnsafeParallelHashMapData.GetBucketSize(newCap), hashMap.m_AllocatorLabel);
+                    UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, newCap, UnsafeParallelHashMapData.GetBucketSize(newCap),
+                        hashMap.m_AllocatorLabel);
                 }
             }
 
@@ -82,7 +83,7 @@ namespace BovineLabs.Core.Extensions
             UnsafeUtility.WriteArrayElement(data->keys, idx, key);
             UnsafeUtility.WriteArrayElement(data->values, idx, defaultValue);
 
-            int bucket = key.GetHashCode() & data->bucketCapacityMask;
+            var bucket = key.GetHashCode() & data->bucketCapacityMask;
 
             // Add the index to the hash-map
             var buckets = (int*)data->buckets;
@@ -93,7 +94,8 @@ namespace BovineLabs.Core.Extensions
             return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, idx);
         }
 
-        public static ref TValue GetOrAddRef<TKey, TValue>(this UnsafeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, TKey key, TValue defaultValue = default)
+        public static ref TValue GetOrAddRef<TKey, TValue>(
+            this UnsafeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, TKey key, TValue defaultValue = default)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -105,21 +107,21 @@ namespace BovineLabs.Core.Extensions
             }
 
             // Allocate an entry from the free list
-            int idx = UnsafeParallelHashMapBase<TKey, TValue>.AllocEntry(data, hashMap.ThreadIndex);
+            var idx = UnsafeParallelHashMapBase<TKey, TValue>.AllocEntry(data, hashMap.ThreadIndex);
 
             // Write the new value to the entry
             UnsafeUtility.WriteArrayElement(data->keys, idx, key);
             UnsafeUtility.WriteArrayElement(data->values, idx, defaultValue);
 
-            int bucket = key.GetHashCode() & data->bucketCapacityMask;
+            var bucket = key.GetHashCode() & data->bucketCapacityMask;
             // Add the index to the hash-map
-            int* buckets = (int*)data->buckets;
+            var buckets = (int*)data->buckets;
 
             // Make the bucket's head idx. If the exchange returns something other than -1, then the bucket had
             // a non-null head which means we need to do more checks...
             if (Interlocked.CompareExchange(ref buckets[bucket], idx, -1) != -1)
             {
-                int* nextPtrs = (int*)data->next;
+                var nextPtrs = (int*)data->next;
                 int next;
 
                 do
@@ -158,11 +160,8 @@ namespace BovineLabs.Core.Extensions
             throw new NullReferenceException();
         }
 
-        public static unsafe void ClearAndAddBatchUnsafe<TKey, TValue>(
-            [NoAlias] ref this UnsafeParallelHashMap<TKey, TValue> hashMap,
-            [NoAlias] TKey* keys,
-            [NoAlias] TValue* values,
-            int length)
+        public static void ClearAndAddBatchUnsafe<TKey, TValue>(
+            [NoAlias] ref this UnsafeParallelHashMap<TKey, TValue> hashMap, [NoAlias] TKey* keys, [NoAlias] TValue* values, int length)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -201,10 +200,8 @@ namespace BovineLabs.Core.Extensions
         /// <param name="values"> Collection of values, the length should match the length of keys. </param>
         /// <typeparam name="TKey"> The key type. </typeparam>
         /// <typeparam name="TValue"> The value type. </typeparam>
-        public static unsafe void ClearAndAddBatchUnsafe<TKey, TValue>(
-            [NoAlias] ref this UnsafeParallelHashMap<TKey, TValue> hashMap,
-            [NoAlias] NativeSlice<TKey> keys,
-            [NoAlias] NativeArray<TValue> values)
+        public static void ClearAndAddBatchUnsafe<TKey, TValue>(
+            [NoAlias] ref this UnsafeParallelHashMap<TKey, TValue> hashMap, [NoAlias] NativeSlice<TKey> keys, [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -219,7 +216,9 @@ namespace BovineLabs.Core.Extensions
                 hashMap.Capacity = length;
             }
 
-            UnsafeUtility.MemCpyStride(hashMap.m_Buffer->keys, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride, UnsafeUtility.SizeOf<TKey>(), length);
+            UnsafeUtility.MemCpyStride(hashMap.m_Buffer->keys, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride,
+                UnsafeUtility.SizeOf<TKey>(), length);
+
             UnsafeUtility.MemCpy(hashMap.m_Buffer->values, values.GetUnsafeReadOnlyPtr(), length * UnsafeUtility.SizeOf<TValue>());
 
             var buckets = (int*)hashMap.m_Buffer->buckets;
@@ -236,7 +235,7 @@ namespace BovineLabs.Core.Extensions
             hashMap.m_Buffer->allocatedIndexLength = length;
         }
 
-        public static unsafe bool TryGetFirstKeyValue<TKey, TValue>(ref this UnsafeParallelHashMap<TKey, TValue> map, out TKey key, out TValue value, ref int index)
+        public static bool TryGetFirstKeyValue<TKey, TValue>(ref this UnsafeParallelHashMap<TKey, TValue> map, out TKey key, out TValue value, ref int index)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {

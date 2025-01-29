@@ -22,9 +22,16 @@ namespace BovineLabs.Core.ObjectManagement
 
         public IReadOnlyCollection<ComponentMap> Components => this.keys;
 
-        public override IReadOnlyList<NameValue> Keys => this.keys.Select(k => new NameValue { Name = k.Name, Value = k.Value }).ToArray();
+        public override IReadOnlyList<NameValue> Keys => this
+            .keys
+            .Select(k => new NameValue
+            {
+                Name = k.Name,
+                Value = k.Value,
+            })
+            .ToArray();
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void Initialize()
         {
             K<ObjectCategories>.Initialize(this.Keys);
@@ -59,7 +66,7 @@ namespace BovineLabs.Core.ObjectManagement
 
             public int Value => this.value;
 
-            /// <inheritdoc/>
+            /// <inheritdoc />
             int IKKeyValue.Value
             {
                 get => this.value;

@@ -1,56 +1,56 @@
 {
-    "name": "BovineLabs.Core.Extensions.Authoring",
-    "rootNamespace": "BovineLabs.Core.Authoring",
-    "references": [
-        "BovineLabs.Core",
-        "BovineLabs.Core.Authoring",
-        "BovineLabs.Core.Editor",
-        "BovineLabs.Core.Extensions",
-        "Unity.Burst",
-        "Unity.Collections",
-        "Unity.Entities",
-        "Unity.Entities.Graphics",
-        "Unity.Entities.Hybrid",
-        "Unity.InputSystem",
-        "Unity.Localization",
-        "Unity.Logging",
-        "Unity.Mathematics",
-        "Unity.Mathematics.Extensions",
-        "Unity.Physics",
-        "Unity.Scenes",
-        "Unity.Transforms"
-    ],
-    "includePlatforms": [],
-    "excludePlatforms": [],
-    "allowUnsafeCode": true,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [
-        "UNITY_EDITOR",
-        "BL_CORE_EXTENSIONS"
-    ],
-    "versionDefines": [
-        {
-            "name": "com.bovinelabs.game",
-            "expression": "",
-            "define": "BL_CORE_EXTENSIONS"
-        },
-        {
-            "name": "com.bovinelabs.camera",
-            "expression": "",
-            "define": "BL_CORE_EXTENSIONS"
-        },
-        {
-            "name": "com.unity.localization",
-            "expression": "",
-            "define": "UNITY_LOCALIZATION"
-        },
-        {
-            "name": "com.unity.netcode",
-            "expression": "",
-            "define": "UNITY_NETCODE"
-        }
-    ],
-    "noEngineReferences": false
+  "name": "BovineLabs.Core.Extensions.Authoring",
+  "rootNamespace": "BovineLabs.Core.Authoring",
+  "references": [
+    "BovineLabs.Core",
+    "BovineLabs.Core.Authoring",
+    "BovineLabs.Core.Editor",
+    "BovineLabs.Core.Extensions",
+    "Unity.Burst",
+    "Unity.Collections",
+    "Unity.Entities",
+    "Unity.Entities.Graphics",
+    "Unity.Entities.Hybrid",
+    "Unity.InputSystem",
+    "Unity.Localization",
+    "Unity.Logging",
+    "Unity.Mathematics",
+    "Unity.Mathematics.Extensions",
+    "Unity.Physics",
+    "Unity.Scenes",
+    "Unity.Transforms"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": true,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "UNITY_EDITOR",
+    "BL_CORE_EXTENSIONS"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.bovinelabs.game",
+      "expression": "",
+      "define": "BL_CORE_EXTENSIONS"
+    },
+    {
+      "name": "com.bovinelabs.camera",
+      "expression": "",
+      "define": "BL_CORE_EXTENSIONS"
+    },
+    {
+      "name": "com.unity.localization",
+      "expression": "",
+      "define": "UNITY_LOCALIZATION"
+    },
+    {
+      "name": "com.unity.netcode",
+      "expression": "",
+      "define": "UNITY_NETCODE"
+    }
+  ],
+  "noEngineReferences": false
 }

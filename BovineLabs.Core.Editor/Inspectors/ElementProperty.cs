@@ -57,7 +57,6 @@ namespace BovineLabs.Core.Editor.Inspectors
                 this.parent.AddToClassList("unity-list-view");
             }
 
-
             var createElements = this.PreElementCreation(this.parent);
 
             if (createElements)

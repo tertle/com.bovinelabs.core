@@ -1,4 +1,37 @@
 # Changelog
+## [1.3.4] - 2025-01-28
+### Added
+* Added HashSet support to IJobHashMapDefer
+* GetChunkComponent to ComponentLookup
+* Type safety checks to DynameUntypedhashMap
+* WeakObjectReferenceExtensions and UnityObjectRefExtensions to get internal id
+* BlobPerfectHashMap
+* EntityBlow allowing a single Blob that automatically contains multiple BlobAssetReferences
+* HashSet support to IJobHashMapDefer
+* TypeManagerEx can now provide an index for all unmanaged types
+* GetUniqueKeyArray(NativeList<TKey>) to NativeMultiHashMap and NativeParallelMultiHashMap
+* More Caching to ReflectionUtility
+* Global Random
+* IUpdateWhilePaused support to unmanaged systems
+* PauseUtility.UpdateWhilePaused for 3rd party libraries but use IUpdateWhilePaused for your own systems
+* Support for Entities 1.3.9
+
+### Changed
+* Standardized code
+* Significantly improved attribute reflection speed
+* ObjectDefinitions no longer require LifeCycle (but still have extra support for it.)
+
+### Fixed
+* Logging directory
+* DynameUntypedhashMap.GetOrAddRef on first frame would return wrong value 
+* StripSystem out of range exception
+* UNITY_CLIENT build error
+* Conditional wrapping for SubSceneLoadAuthoringDataEditor
+* A potential error in ObjectDefinitionAuthoring as it was using EditorSettingsUtility not AuthoringSettingsUtility
+
+### Removed
+* Entropy - use GlobalRandom instead
+
 ## [1.3.3] - 2024-11-09
 ### Added
 * WorldAllocator

@@ -18,7 +18,14 @@ namespace BovineLabs.Core.Editor.Inspectors
     {
         protected override List<SearchView.Item> GenerateItems(StableTypeHashAttribute att)
         {
-            var componentTypes = new List<SearchView.Item> { new() { Path = "None", Data = 0UL } };
+            var componentTypes = new List<SearchView.Item>
+            {
+                new()
+                {
+                    Path = "None",
+                    Data = 0UL,
+                },
+            };
 
             if (att.OnlyZeroSize)
             {
@@ -74,7 +81,7 @@ namespace BovineLabs.Core.Editor.Inspectors
                     continue;
                 }
 
-                if (!att.AllowUnityNamespace && (type.Namespace != null) && type.Namespace.StartsWith("Unity"))
+                if (!att.AllowUnityNamespace && type.Namespace != null && type.Namespace.StartsWith("Unity"))
                 {
                     continue;
                 }
@@ -84,7 +91,11 @@ namespace BovineLabs.Core.Editor.Inspectors
                     continue;
                 }
 
-                componentTypes.Add(new SearchView.Item { Path = t.DebugTypeName.ToString().Replace('.', '/'), Data = t.StableTypeHash });
+                componentTypes.Add(new SearchView.Item
+                {
+                    Path = t.DebugTypeName.ToString().Replace('.', '/'),
+                    Data = t.StableTypeHash,
+                });
             }
 
             return componentTypes;

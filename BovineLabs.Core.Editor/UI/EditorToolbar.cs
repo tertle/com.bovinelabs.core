@@ -6,9 +6,7 @@ namespace BovineLabs.Core.Editor.UI
 {
     using System;
     using System.Reflection;
-    using BovineLabs.Core.Utility;
     using UnityEditor;
-    using UnityEditor.Toolbars;
     using UnityEngine;
     using UnityEngine.UIElements;
 

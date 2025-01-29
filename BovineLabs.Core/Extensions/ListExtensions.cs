@@ -91,7 +91,7 @@ namespace BovineLabs.Core.Extensions
 
         public static void Resize<T>(this List<T> list, int size, T element)
         {
-            int count = list.Count;
+            var count = list.Count;
 
             if (size < count)
             {

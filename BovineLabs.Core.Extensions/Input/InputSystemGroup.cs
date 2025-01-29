@@ -6,10 +6,13 @@
 namespace BovineLabs.Core.Input
 {
     using Unity.Entities;
+#if UNITY_NETCODE
+    using Unity.NetCode;
+#endif
 
     [WorldSystemFilter(Worlds.ClientLocal, WorldSystemFilterFlags.Presentation)]
 #if UNITY_NETCODE
-    [UpdateInGroup(typeof(Unity.NetCode.GhostInputSystemGroup))]
+    [UpdateInGroup(typeof(GhostInputSystemGroup))]
 #else
     [UpdateInGroup(typeof(Groups.BeginSimulationSystemGroup))]
 #endif

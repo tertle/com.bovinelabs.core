@@ -6,7 +6,6 @@ namespace BovineLabs.Core.ConfigVars
 {
     using System;
     using Unity.Burst;
-    using UnityEngine;
 
     /// <summary> Container for setting config var static fields. </summary>
     /// <remarks> This should only be used in debugging tools. </remarks>

@@ -11,7 +11,10 @@ namespace BovineLabs.Core.Editor.UI
     [UsedImplicitly]
     public class BitArray256Converter : UxmlAttributeConverter<BitArray256>
     {
-        public override string ToString(BitArray256 value) => $"{value.Data1},{value.Data2},{value.Data3},{value.Data4}";
+        public override string ToString(BitArray256 value)
+        {
+            return $"{value.Data1},{value.Data2},{value.Data3},{value.Data4}";
+        }
 
         public override BitArray256 FromString(string value)
         {
@@ -21,7 +24,9 @@ namespace BovineLabs.Core.Editor.UI
             }
 
             var items = value.Split(',');
-            return items.Length != 4 ? new BitArray256() : new BitArray256(ulong.Parse(items[0]), ulong.Parse(items[1]), ulong.Parse(items[2]), ulong.Parse(items[3]));
+            return items.Length != 4
+                ? new BitArray256()
+                : new BitArray256(ulong.Parse(items[0]), ulong.Parse(items[1]), ulong.Parse(items[2]), ulong.Parse(items[3]));
         }
     }
 }

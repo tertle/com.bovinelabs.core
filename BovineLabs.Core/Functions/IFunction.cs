@@ -22,7 +22,7 @@ namespace BovineLabs.Core.Functions
         /// Should be called from a Systems OnDestroy to cleanup any allocated memory.
         /// Optional, return null if not required.
         /// </summary>
-        DestroyFunction? DestroyFunction { get; }
+        DestroyFunction DestroyFunction { get; }
 
         /// <summary>
         /// Gets the OnUpdate forwarding function which must be a static forwarding function and burst compilable.
@@ -30,7 +30,7 @@ namespace BovineLabs.Core.Functions
         /// As safety will not work, you must use the provided UnsafeComponentLookup and UnsafeBufferLookup.
         /// Optional, return null if not required.
         /// </summary>
-        UpdateFunction? UpdateFunction { get; }
+        UpdateFunction UpdateFunction { get; }
 
         /// <summary>
         /// Gets the OnUpdate forwarding function which must be a static forwarding function and burst compilable.

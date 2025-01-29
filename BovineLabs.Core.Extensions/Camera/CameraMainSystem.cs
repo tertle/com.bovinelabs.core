@@ -5,9 +5,7 @@
 #if !BL_DISABLE_CAMERA
 namespace BovineLabs.Core.Camera
 {
-    using BovineLabs.Core;
     using BovineLabs.Core.Groups;
-    using BovineLabs.Core.Input;
     using Unity.Entities;
     using Unity.Transforms;
     using UnityEngine;
@@ -21,19 +19,12 @@ namespace BovineLabs.Core.Camera
             this.RequireForUpdate<CameraMain>();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
-            var cameraQuery = SystemAPI.QueryBuilder()
-                .WithAllRW<LocalTransform>()
-                .WithAll<CameraMain, Camera, Transform>()
-                .Build();
+            var cameraQuery = SystemAPI.QueryBuilder().WithAllRW<LocalTransform>().WithAll<CameraMain, Camera, Transform>().Build();
 
-            var noCameraQuery = SystemAPI.QueryBuilder()
-                .WithAllRW<LocalTransform>()
-                .WithAll<CameraMain>()
-                .WithNone<Camera, Transform>()
-                .Build();
+            var noCameraQuery = SystemAPI.QueryBuilder().WithAllRW<LocalTransform>().WithAll<CameraMain>().WithNone<Camera, Transform>().Build();
 
             Entity entity;
 

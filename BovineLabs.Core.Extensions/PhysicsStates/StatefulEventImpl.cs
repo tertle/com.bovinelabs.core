@@ -84,33 +84,30 @@ namespace BovineLabs.Core.PhysicsStates
             }
 
             var capacity1 = new EnsureCurrentEventsCapacityJob<T, TC>
-                {
-                    Reader = eventReader.AsReader(),
-                    CurrentEvents = this.currentEvents,
-                    ForeachCount = this.foreachCount,
-                    EventsPerRead = this.eventsPerRead,
-                }
-                .Schedule(state.Dependency);
+            {
+                Reader = eventReader.AsReader(),
+                CurrentEvents = this.currentEvents,
+                ForeachCount = this.foreachCount,
+                EventsPerRead = this.eventsPerRead,
+            }.Schedule(state.Dependency);
 
             var capacity2 = new EnsureCurrentEventsMapCapacityJob<T, TC>
-                {
-                    Reader = eventReader.AsReader(),
-                    CurrentEventMap = this.currentEventMap,
-                    EventsPerRead = this.eventsPerRead,
-                }
-                .Schedule(state.Dependency);
+            {
+                Reader = eventReader.AsReader(),
+                CurrentEventMap = this.currentEventMap,
+                EventsPerRead = this.eventsPerRead,
+            }.Schedule(state.Dependency);
 
             state.Dependency = JobHandle.CombineDependencies(capacity1, capacity2);
 
             state.Dependency = new CollectEventsJob<T, TC, TI>
-                {
-                    Reader = eventReader.AsReader(),
-                    CurrentEventMap = this.currentEventMap,
-                    CurrentEvents = this.currentEvents,
-                    EventCollector = eventCollector,
-                    EventsPerRead = this.eventsPerRead,
-                }
-                .ScheduleParallel(this.foreachCount, 64, state.Dependency);
+            {
+                Reader = eventReader.AsReader(),
+                CurrentEventMap = this.currentEventMap,
+                CurrentEvents = this.currentEvents,
+                EventCollector = eventCollector,
+                EventsPerRead = this.eventsPerRead,
+            }.ScheduleParallel(this.foreachCount, 64, state.Dependency);
 
             var buckets1 = new CalculateEventMapBucketsJob<T, TC> { CurrentEventMap = this.currentEventMap }.Schedule(state.Dependency);
             var buckets2 = new CalculateCurrentEventsBucketsJob<T, TC> { CurrentEvents = this.currentEvents }.Schedule(state.Dependency);

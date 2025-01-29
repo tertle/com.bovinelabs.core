@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Extensions
             var accessor = UnsafeUtility.As<BufferAccessor<T>, InternalBufferAccessor>(ref bufferAccessor);
 
             accessor.AssertIndexInRange(index);
-            BufferHeader* hdr = (BufferHeader*)(accessor.BasePointer + (index * accessor.Stride));
+            var hdr = (BufferHeader*)(accessor.BasePointer + (index * accessor.Stride));
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             return new DynamicBuffer<T>(hdr, accessor.Safety0, accessor.ArrayInvalidationSafety, accessor.IsReadOnly == 1, false, 0, accessor.InternalCapacity);
@@ -33,7 +33,7 @@ namespace BovineLabs.Core.Extensions
             var accessor = UnsafeUtility.As<BufferAccessor<T>, InternalBufferAccessor>(ref bufferAccessor);
 
             accessor.AssertIndexInRange(index);
-            BufferHeader* hdr = (BufferHeader*)(accessor.BasePointer + (index * accessor.Stride));
+            var hdr = (BufferHeader*)(accessor.BasePointer + (index * accessor.Stride));
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             return new DynamicBuffer<T>(hdr, accessor.Safety0, accessor.ArrayInvalidationSafety, false, false, 0, accessor.InternalCapacity);
@@ -41,7 +41,6 @@ namespace BovineLabs.Core.Extensions
             return new DynamicBuffer<T>(hdr, accessor.InternalCapacity);
 #endif
         }
-
 
         [NativeContainer]
         private struct InternalBufferAccessor

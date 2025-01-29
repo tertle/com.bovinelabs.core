@@ -76,12 +76,9 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             var value = categories.Keys[index].Value;
             var settings = EditorSettingsUtility.GetSettings<ObjectManagementSettings>();
 
-            this.definitions = settings.ObjectDefinitions.Where(o => (o.Categories & 1 << value) != 0).Where(o => o.Prefab != null).ToArray();
-            this.components = this.definitions
-                .SelectMany(o => o.Prefab!.GetComponents<Component>())
-                .Select(c => c.GetType())
-                .Distinct()
-                .ToDictionary(c => c.Name, c => c);
+            this.definitions = settings.ObjectDefinitions.Where(o => (o.Categories & (1 << value)) != 0).Where(o => o.Prefab != null).ToArray();
+            this.components =
+                this.definitions.SelectMany(o => o.Prefab!.GetComponents<Component>()).Select(c => c.GetType()).Distinct().ToDictionary(c => c.Name, c => c);
 
             this.componentDropdown!.choices = this.components.Keys.ToList();
         }
@@ -123,7 +120,6 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 title = "Definition",
                 width = 100,
                 makeCell = () => new ObjectField(),
-
                 bindCell = (element, index) =>
                 {
                     var of = (ObjectField)element;
@@ -143,7 +139,6 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                     title = sp.propertyPath,
                     width = 100,
                     makeCell = () => new PropertyField(null, string.Empty),
-
                     bindCell = (element, index) =>
                     {
                         var e = objects[index];

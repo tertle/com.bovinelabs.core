@@ -38,8 +38,8 @@ namespace BovineLabs.Core.Tests.Collections
         [TestCase(10000)]
         public unsafe void ClearTest(int count)
         {
-            var hashMaps = (UnsafeParallelMultiHashMap<int, Section>*)UnsafeUtility.MallocTracked(
-                sizeof(UnsafeParallelMultiHashMap<int, Section>) * count, UnsafeUtility.AlignOf<UnsafeParallelMultiHashMap<int, Section>>(), Allocator.Persistent, 0);
+            var hashMaps = (UnsafeParallelMultiHashMap<int, Section>*)UnsafeUtility.MallocTracked(sizeof(UnsafeParallelMultiHashMap<int, Section>) * count,
+                UnsafeUtility.AlignOf<UnsafeParallelMultiHashMap<int, Section>>(), Allocator.Persistent, 0);
 
             UnsafeUtility.MemClear(hashMaps, sizeof(UnsafeParallelMultiHashMap<uint, Section>) * count);
 
@@ -85,16 +85,16 @@ namespace BovineLabs.Core.Tests.Collections
         {
             var hashmap = new NativeMultiHashMap<ulong, ulong>(4, Allocator.Temp);
 
-            int keys = 66000;
-            int values = 3;
+            var keys = 66000;
+            var values = 3;
 
             hashmap.Add(0, 0);
             hashmap.Add(0, 1);
             hashmap.Add(0, 2);
 
-            for (int i = 1; i < keys; i++)
+            for (var i = 1; i < keys; i++)
             {
-                for (int j = 0; j < values; j++)
+                for (var j = 0; j < values; j++)
                 {
                     hashmap.Add((ulong)i, (ulong)j);
                 }

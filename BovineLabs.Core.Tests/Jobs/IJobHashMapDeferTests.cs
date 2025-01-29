@@ -20,18 +20,16 @@ namespace BovineLabs.Core.Tests.Jobs
             var result = new NativeQueue<byte>(Allocator.Persistent);
 
             var dependency = new ResizeJob
-                {
-                    Count = count,
-                    HashMap = hashMap,
-                }
-                .Schedule();
+            {
+                Count = count,
+                HashMap = hashMap,
+            }.Schedule();
 
             dependency = new CountJob
-                {
-                    HashMap = hashMap,
-                    Count = result.AsParallelWriter(),
-                }
-                .ScheduleParallel(hashMap, 64, dependency);
+            {
+                HashMap = hashMap,
+                Count = result.AsParallelWriter(),
+            }.ScheduleParallel(hashMap, 64, dependency);
 
             dependency.Complete();
 
@@ -49,9 +47,9 @@ namespace BovineLabs.Core.Tests.Jobs
 
             public void Execute()
             {
-                for (var i = 0; i < Count; i++)
+                for (var i = 0; i < this.Count; i++)
                 {
-                    HashMap.Add(i, i);
+                    this.HashMap.Add(i, i);
                 }
             }
         }
@@ -66,7 +64,7 @@ namespace BovineLabs.Core.Tests.Jobs
 
             public void ExecuteNext(int entryIndex, int jobIndex)
             {
-                Count.Enqueue(0);
+                this.Count.Enqueue(0);
             }
         }
     }

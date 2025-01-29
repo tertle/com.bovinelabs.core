@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Input
             this.RequireForUpdate<InputDefault>();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnStartRunning()
         {
             // Disable all action maps by default
@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Input
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
             var enables = SystemAPI.GetSingletonBuffer<InputActionMapEnable>();

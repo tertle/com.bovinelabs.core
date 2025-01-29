@@ -9,13 +9,12 @@ namespace BovineLabs.Core.Editor.SubScenes
     using Unity.Entities;
     using Unity.Scenes;
     using UnityEditor;
-    using UnityEngine;
     using EditorSettings = BovineLabs.Core.Editor.Settings.EditorSettings;
 
     [WorldSystemFilter(WorldSystemFilterFlags.Editor)]
     public partial class SubScenePrebakeSystem : SystemBase
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnCreate()
         {
             foreach (var scene in EditorSettingsUtility.GetSettings<EditorSettings>().PrebakeScenes)
@@ -36,7 +35,7 @@ namespace BovineLabs.Core.Editor.SubScenes
             this.Enabled = false;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
         }

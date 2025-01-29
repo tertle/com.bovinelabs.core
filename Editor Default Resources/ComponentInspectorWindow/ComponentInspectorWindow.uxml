@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
     <ui:DropdownField label="Category" name="Category" />
     <ui:DropdownField label="Components" name="Components" />
     <ui:MultiColumnListView virtualization-method="DynamicHeight" style="flex-grow: 1;">

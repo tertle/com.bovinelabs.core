@@ -24,12 +24,21 @@ namespace BovineLabs.Core.Utility
         public static void ResizeList<T>(List<T> list, int count)
         {
             if (count < 0)
-                throw new ArgumentException("invalid size to resize.", nameof (list));
+            {
+                throw new ArgumentException("invalid size to resize.", nameof(list));
+            }
+
             list.Clear();
             if (list.Capacity < count)
+            {
                 list.Capacity = count;
+            }
+
             if (count == list.Count)
+            {
                 return;
+            }
+
             var privateFieldAccess = UnsafeUtility.As<List<T>, ListPrivateFieldAccess<T>>(ref list);
             privateFieldAccess.Size = count;
             ++privateFieldAccess.Version;
@@ -37,7 +46,7 @@ namespace BovineLabs.Core.Utility
 
         private class ListPrivateFieldAccess<T>
         {
-            internal T[] Items = null!;
+            internal readonly T[] Items = null!;
             internal int Size;
             internal int Version;
         }

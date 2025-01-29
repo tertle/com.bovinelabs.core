@@ -150,7 +150,7 @@ namespace BovineLabs.Core.Editor.Settings
                 return;
             }
 
-            EditorSettings? editorSettings = GetEditorSettings();
+            var editorSettings = GetEditorSettings();
             if (editorSettings == null || editorSettings.DefaultSettingsAuthoring == null)
             {
                 return;
@@ -166,7 +166,7 @@ namespace BovineLabs.Core.Editor.Settings
             }
             else
             {
-                bool any = false;
+                var any = false;
 
                 foreach (var world in worlds)
                 {

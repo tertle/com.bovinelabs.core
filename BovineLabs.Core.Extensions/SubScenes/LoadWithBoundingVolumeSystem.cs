@@ -18,7 +18,7 @@ namespace BovineLabs.Core.SubScenes
         private EntityQuery loadingQuery;
         private SubSceneUtil subSceneUtil;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void OnCreate(ref SystemState state)
         {
             this.loadingQuery = SystemAPI.QueryBuilder().WithAll<LocalTransform, LoadsSubScene>().Build();

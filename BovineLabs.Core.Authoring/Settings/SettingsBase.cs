@@ -16,8 +16,8 @@ namespace BovineLabs.Core.Authoring.Settings
     public abstract class SettingsBase : ScriptableObject, ISettings
     {
         /// <summary> Called in the baking process to bake the authoring component. </summary>
-        /// <remarks> This method will be called by the <see cref="Baker{T}"/> for <see cref="SettingsAuthoring"/>. </remarks>
-        /// <param name="baker"> The <see cref="SettingsAuthoring"/> baker that is invoking this. </param>
+        /// <remarks> This method will be called by the <see cref="Baker{T}" /> for <see cref="SettingsAuthoring" />. </remarks>
+        /// <param name="baker"> The <see cref="SettingsAuthoring" /> baker that is invoking this. </param>
         public abstract void Bake(Baker<SettingsAuthoring> baker);
     }
 }

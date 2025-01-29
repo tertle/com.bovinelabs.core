@@ -19,9 +19,13 @@ namespace BovineLabs.Core.Jobs
     [JobProducerType(typeof(JobChunkWorkerBeginEndExtensions.JobChunkProducer<>))]
     public interface IJobChunkWorkerBeginEnd
     {
-        void OnWorkerBegin() { }
+        void OnWorkerBegin()
+        {
+        }
 
-        void OnWorkerEnd() { }
+        void OnWorkerEnd()
+        {
+        }
 
         void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask);
     }
@@ -33,13 +37,16 @@ namespace BovineLabs.Core.Jobs
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 #pragma warning disable 414
-            [ReadOnly] public EntityQuerySafetyHandles safety;
+            [ReadOnly]
+            public EntityQuerySafetyHandles safety;
 #pragma warning restore
 
             // Only used for JobsUtility.PatchBufferMinMaxRanges; the user must also pass this array into the job struct
             // T if they need these indices inside their Execute() implementation. If null, this array will
             // be ignored.
-            [NativeDisableUnsafePtrRestriction] [ReadOnly] public int* ChunkBaseEntityIndices;
+            [NativeDisableUnsafePtrRestriction]
+            [ReadOnly]
+            public int* ChunkBaseEntityIndices;
 #endif
             public T JobData;
 
@@ -62,103 +69,107 @@ namespace BovineLabs.Core.Jobs
         }
 
         /// <summary>
-        /// Adds an <see cref="IJobChunkWorkerBeginEnd"/> instance to the job scheduler queue for sequential (non-parallel) execution.
+        /// Adds an <see cref="IJobChunkWorkerBeginEnd" /> instance to the job scheduler queue for sequential (non-parallel) execution.
         /// </summary>
-        /// <param name="jobData">An <see cref="IJobChunkWorkerBeginEnd"/> instance.</param>
-        /// <param name="query">The query selecting chunks with the necessary components.</param>
-        /// <param name="dependsOn">The handle identifying already scheduled jobs that must complete before this job is executed.
+        /// <param name="jobData"> An <see cref="IJobChunkWorkerBeginEnd" /> instance. </param>
+        /// <param name="query"> The query selecting chunks with the necessary components. </param>
+        /// <param name="dependsOn">
+        /// The handle identifying already scheduled jobs that must complete before this job is executed.
         /// For example, a job that writes to a component cannot run in parallel with other jobs that read or write that component.
         /// Jobs that only read the same components can run in parallel.
-        ///
-        /// Most frequently, an appropriate value for this parameter is <see cref="SystemState.Dependency"/> to ensure
-        /// that jobs registered with the safety system are taken into account as input dependencies.</param>
-        /// <typeparam name="T">The specific <see cref="IJobChunkWorkerBeginEnd"/> implementation type.</typeparam>
-        /// <returns>A handle that combines the current Job with previous dependencies identified by the <paramref name="dependsOn"/>
-        /// parameter.</returns>
-        public static JobHandle Schedule<T>(
-            this T jobData,
-            EntityQuery query,
-            JobHandle dependsOn)
+        /// Most frequently, an appropriate value for this parameter is <see cref="SystemState.Dependency" /> to ensure
+        /// that jobs registered with the safety system are taken into account as input dependencies.
+        /// </param>
+        /// <typeparam name="T"> The specific <see cref="IJobChunkWorkerBeginEnd" /> implementation type. </typeparam>
+        /// <returns>
+        /// A handle that combines the current Job with previous dependencies identified by the <paramref name="dependsOn" />
+        /// parameter.
+        /// </returns>
+        public static JobHandle Schedule<T>(this T jobData, EntityQuery query, JobHandle dependsOn)
             where T : struct, IJobChunkWorkerBeginEnd
         {
             return ScheduleInternal(ref jobData, query, dependsOn, ScheduleMode.Single, default);
         }
 
         /// <summary>
-        /// Adds an <see cref="IJobChunkWorkerBeginEnd"/> instance to the job scheduler queue for sequential (non-parallel) execution.
+        /// Adds an <see cref="IJobChunkWorkerBeginEnd" /> instance to the job scheduler queue for sequential (non-parallel) execution.
         /// </summary>
-        /// <param name="jobData">An <see cref="IJobChunkWorkerBeginEnd"/> instance. In this variant, the jobData is passed by
-        /// reference, which may be necessary for unusually large job structs.</param>
-        /// <param name="query">The query selecting chunks with the necessary components.</param>
-        /// <param name="dependsOn">The handle identifying already scheduled jobs that must complete before this job is executed.
+        /// <param name="jobData">
+        /// An <see cref="IJobChunkWorkerBeginEnd" /> instance. In this variant, the jobData is passed by
+        /// reference, which may be necessary for unusually large job structs.
+        /// </param>
+        /// <param name="query"> The query selecting chunks with the necessary components. </param>
+        /// <param name="dependsOn">
+        /// The handle identifying already scheduled jobs that must complete before this job is executed.
         /// For example, a job that writes to a component cannot run in parallel with other jobs that read or write that component.
         /// Jobs that only read the same components can run in parallel.
-        ///
-        /// Most frequently, an appropriate value for this parameter is <see cref="SystemState.Dependency"/> to ensure
-        /// that jobs registered with the safety system are taken into account as input dependencies.</param>
-        /// <typeparam name="T">The specific <see cref="IJobChunkWorkerBeginEnd"/> implementation type.</typeparam>
-        /// <returns>A handle that combines the current Job with previous dependencies identified by the <paramref name="dependsOn"/>
-        /// parameter.</returns>
-        public static JobHandle ScheduleByRef<T>(
-            this ref T jobData,
-            EntityQuery query,
-            JobHandle dependsOn)
+        /// Most frequently, an appropriate value for this parameter is <see cref="SystemState.Dependency" /> to ensure
+        /// that jobs registered with the safety system are taken into account as input dependencies.
+        /// </param>
+        /// <typeparam name="T"> The specific <see cref="IJobChunkWorkerBeginEnd" /> implementation type. </typeparam>
+        /// <returns>
+        /// A handle that combines the current Job with previous dependencies identified by the <paramref name="dependsOn" />
+        /// parameter.
+        /// </returns>
+        public static JobHandle ScheduleByRef<T>(this ref T jobData, EntityQuery query, JobHandle dependsOn)
             where T : struct, IJobChunkWorkerBeginEnd
         {
             return ScheduleInternal(ref jobData, query, dependsOn, ScheduleMode.Single, default);
         }
 
         /// <summary>
-        /// Adds an <see cref="IJobChunkWorkerBeginEnd"/> instance to the job scheduler queue for parallel execution.
+        /// Adds an <see cref="IJobChunkWorkerBeginEnd" /> instance to the job scheduler queue for parallel execution.
         /// </summary>
-        /// <param name="jobData">An <see cref="IJobChunkWorkerBeginEnd"/> instance.</param>
-        /// <param name="query">The query selecting chunks with the necessary components.</param>
-        /// <param name="dependsOn">The handle identifying already scheduled jobs that must complete before this job is executed.
+        /// <param name="jobData"> An <see cref="IJobChunkWorkerBeginEnd" /> instance. </param>
+        /// <param name="query"> The query selecting chunks with the necessary components. </param>
+        /// <param name="dependsOn">
+        /// The handle identifying already scheduled jobs that must complete before this job is executed.
         /// For example, a job that writes to a component cannot run in parallel with other jobs that read or write that component.
         /// Jobs that only read the same components can run in parallel.
-        ///
-        /// Most frequently, an appropriate value for this parameter is <see cref="SystemState.Dependency"/> to ensure
-        /// that jobs registered with the safety system are taken into account as input dependencies.</param>
-        /// <typeparam name="T">The specific <see cref="IJobChunkWorkerBeginEnd"/> implementation type.</typeparam>
-        /// <returns>A handle that combines the current Job with previous dependencies identified by the <paramref name="dependsOn"/>
-        /// parameter.</returns>
-        public static JobHandle ScheduleParallel<T>(
-            this T jobData,
-            EntityQuery query,
-            JobHandle dependsOn)
+        /// Most frequently, an appropriate value for this parameter is <see cref="SystemState.Dependency" /> to ensure
+        /// that jobs registered with the safety system are taken into account as input dependencies.
+        /// </param>
+        /// <typeparam name="T"> The specific <see cref="IJobChunkWorkerBeginEnd" /> implementation type. </typeparam>
+        /// <returns>
+        /// A handle that combines the current Job with previous dependencies identified by the <paramref name="dependsOn" />
+        /// parameter.
+        /// </returns>
+        public static JobHandle ScheduleParallel<T>(this T jobData, EntityQuery query, JobHandle dependsOn)
             where T : struct, IJobChunkWorkerBeginEnd
         {
             return ScheduleInternal(ref jobData, query, dependsOn, ScheduleMode.Parallel, default);
         }
 
         /// <summary>
-        /// Adds an <see cref="IJobChunkWorkerBeginEnd"/> instance to the job scheduler queue for parallel execution.
+        /// Adds an <see cref="IJobChunkWorkerBeginEnd" /> instance to the job scheduler queue for parallel execution.
         /// </summary>
-        /// <param name="jobData">An <see cref="IJobChunkWorkerBeginEnd"/> instance. In this variant, the jobData is passed by
-        /// reference, which may be necessary for unusually large job structs.</param>
-        /// <param name="query">The query selecting chunks with the necessary components.</param>
-        /// <param name="dependsOn">The handle identifying already scheduled jobs that must complete before this job is executed.
+        /// <param name="jobData">
+        /// An <see cref="IJobChunkWorkerBeginEnd" /> instance. In this variant, the jobData is passed by
+        /// reference, which may be necessary for unusually large job structs.
+        /// </param>
+        /// <param name="query"> The query selecting chunks with the necessary components. </param>
+        /// <param name="dependsOn">
+        /// The handle identifying already scheduled jobs that must complete before this job is executed.
         /// For example, a job that writes to a component cannot run in parallel with other jobs that read or write that component.
         /// Jobs that only read the same components can run in parallel.
-        ///
-        /// Most frequently, an appropriate value for this parameter is <see cref="SystemState.Dependency"/> to ensure
-        /// that jobs registered with the safety system are taken into account as input dependencies.</param>
-        /// <typeparam name="T">The specific <see cref="IJobChunkWorkerBeginEnd"/> implementation type.</typeparam>
-        /// <returns>A handle that combines the current Job with previous dependencies identified by the <paramref name="dependsOn"/>
-        /// parameter.</returns>
-        public static JobHandle ScheduleParallelByRef<T>(
-            this ref T jobData,
-            EntityQuery query,
-            JobHandle dependsOn)
+        /// Most frequently, an appropriate value for this parameter is <see cref="SystemState.Dependency" /> to ensure
+        /// that jobs registered with the safety system are taken into account as input dependencies.
+        /// </param>
+        /// <typeparam name="T"> The specific <see cref="IJobChunkWorkerBeginEnd" /> implementation type. </typeparam>
+        /// <returns>
+        /// A handle that combines the current Job with previous dependencies identified by the <paramref name="dependsOn" />
+        /// parameter.
+        /// </returns>
+        public static JobHandle ScheduleParallelByRef<T>(this ref T jobData, EntityQuery query, JobHandle dependsOn)
             where T : struct, IJobChunkWorkerBeginEnd
         {
             return ScheduleInternal(ref jobData, query, dependsOn, ScheduleMode.Parallel, default);
         }
 
         /// <summary> Runs the job immediately on the current thread. </summary>
-        /// <param name="jobData">An <see cref="IJobChunkWorkerBeginEnd"/> instance.</param>
-        /// <param name="query">The query selecting chunks with the necessary components.</param>
-        /// <typeparam name="T">The specific <see cref="IJobChunkWorkerBeginEnd"/> implementation type.</typeparam>
+        /// <param name="jobData"> An <see cref="IJobChunkWorkerBeginEnd" /> instance. </param>
+        /// <param name="query"> The query selecting chunks with the necessary components. </param>
+        /// <typeparam name="T"> The specific <see cref="IJobChunkWorkerBeginEnd" /> implementation type. </typeparam>
         public static void Run<T>(this T jobData, EntityQuery query)
             where T : struct, IJobChunkWorkerBeginEnd
         {
@@ -166,10 +177,12 @@ namespace BovineLabs.Core.Jobs
         }
 
         /// <summary> Runs the job immediately on the current thread. </summary>
-        /// <param name="jobData">An <see cref="IJobChunkWorkerBeginEnd"/> instance. In this variant, the jobData is passed by
-        /// reference, which may be necessary for unusually large job structs.</param>
-        /// <param name="query">The query selecting chunks with the necessary components.</param>
-        /// <typeparam name="T">The specific <see cref="IJobChunkWorkerBeginEnd"/> implementation type.</typeparam>
+        /// <param name="jobData">
+        /// An <see cref="IJobChunkWorkerBeginEnd" /> instance. In this variant, the jobData is passed by
+        /// reference, which may be necessary for unusually large job structs.
+        /// </param>
+        /// <param name="query"> The query selecting chunks with the necessary components. </param>
+        /// <typeparam name="T"> The specific <see cref="IJobChunkWorkerBeginEnd" /> implementation type. </typeparam>
         public static void RunByRef<T>(this ref T jobData, EntityQuery query)
             where T : struct, IJobChunkWorkerBeginEnd
         {
@@ -199,8 +212,7 @@ namespace BovineLabs.Core.Jobs
 
                 var chunkIndex = -1;
                 v128 chunkEnabledMask = default;
-                while (chunkCacheIterator.MoveNextChunk(ref chunkIndex, out var archetypeChunk, out _,
-                           out var useEnabledMask, ref chunkEnabledMask))
+                while (chunkCacheIterator.MoveNextChunk(ref chunkIndex, out var archetypeChunk, out _, out var useEnabledMask, ref chunkEnabledMask))
                 {
                     jobData.Execute(archetypeChunk, chunkIndex, useEnabledMask != 0, chunkEnabledMask);
                 }
@@ -226,11 +238,7 @@ namespace BovineLabs.Core.Jobs
         }
 
         internal static unsafe JobHandle ScheduleInternal<T>(
-            ref T jobData,
-            EntityQuery query,
-            JobHandle dependsOn,
-            ScheduleMode mode,
-            NativeArray<int> chunkBaseEntityIndices)
+            ref T jobData, EntityQuery query, JobHandle dependsOn, ScheduleMode mode, NativeArray<int> chunkBaseEntityIndices)
             where T : struct, IJobChunkWorkerBeginEnd
         {
             var queryImpl = query._GetImpl();
@@ -250,28 +258,23 @@ namespace BovineLabs.Core.Jobs
                 safety = new EntityQuerySafetyHandles(queryImpl),
 
                 // If this array exists, it's likely still being written to by a job, so we need to bypass the safety system to get its buffer pointer
-                ChunkBaseEntityIndices = (isParallel && chunkBaseEntityIndices.Length > 0)
+                ChunkBaseEntityIndices = isParallel && chunkBaseEntityIndices.Length > 0
                     ? (int*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(chunkBaseEntityIndices)
                     : null,
 #endif
                 MatchingArchetypes = queryData->MatchingArchetypes,
                 CachedChunks = cachedChunks,
                 Filter = queryImpl->_Filter,
-
                 JobData = jobData,
                 IsParallel = isParallel ? 1 : 0,
-
                 QueryHasEnableableComponents = queryData->HasEnableableComponents != 0 ? 1 : 0,
             };
+
             JobChunkProducer<T>.Initialize();
             var reflectionData = JobChunkProducer<T>.ReflectionData.Data;
             CollectionHelper.CheckReflectionDataCorrect<T>(reflectionData);
 
-            var scheduleParams = new JobsUtility.JobScheduleParameters(
-                UnsafeUtility.AddressOf(ref jobChunkWrapper),
-                reflectionData,
-                dependsOn,
-                mode);
+            var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref jobChunkWrapper), reflectionData, dependsOn, mode);
 
             var result = !isParallel ? JobsUtility.Schedule(ref scheduleParams) : JobsUtility.ScheduleParallelFor(ref scheduleParams, totalChunkCount, 1);
             return result;
@@ -298,8 +301,8 @@ namespace BovineLabs.Core.Jobs
                 ref JobChunkWrapper<T> jobWrapper, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
             {
                 var chunks = jobWrapper.CachedChunks;
-                var chunkCacheIterator = new UnsafeChunkCacheIterator(
-                    jobWrapper.Filter, jobWrapper.QueryHasEnableableComponents != 0, jobWrapper.CachedChunks, jobWrapper.MatchingArchetypes.Ptr);
+                var chunkCacheIterator = new UnsafeChunkCacheIterator(jobWrapper.Filter, jobWrapper.QueryHasEnableableComponents != 0, jobWrapper.CachedChunks,
+                    jobWrapper.MatchingArchetypes.Ptr);
 
                 var isParallel = jobWrapper.IsParallel == 1;
                 var isFiltering = jobWrapper.Filter.RequiresMatchesFilter;
@@ -346,8 +349,8 @@ namespace BovineLabs.Core.Jobs
                             if (Hint.Unlikely(jobWrapper.ChunkBaseEntityIndices != null))
                             {
                                 var chunkBaseEntityIndex = jobWrapper.ChunkBaseEntityIndices[chunkIndex];
-                                JobsUtility.PatchBufferMinMaxRanges(
-                                    bufferRangePatchData, UnsafeUtility.AddressOf(ref jobWrapper), chunkBaseEntityIndex, chunk.Count);
+                                JobsUtility.PatchBufferMinMaxRanges(bufferRangePatchData, UnsafeUtility.AddressOf(ref jobWrapper), chunkBaseEntityIndex,
+                                    chunk.Count);
                             }
                             else if (isParallel)
                             {
@@ -375,17 +378,15 @@ namespace BovineLabs.Core.Jobs
                             if (Hint.Unlikely(jobWrapper.ChunkBaseEntityIndices != null))
                             {
                                 var chunkBaseEntityIndex = jobWrapper.ChunkBaseEntityIndices[chunkIndex];
-                                JobsUtility.PatchBufferMinMaxRanges(
-                                    bufferRangePatchData, UnsafeUtility.AddressOf(ref jobWrapper), chunkBaseEntityIndex, chunk.Count);
+                                JobsUtility.PatchBufferMinMaxRanges(bufferRangePatchData, UnsafeUtility.AddressOf(ref jobWrapper), chunkBaseEntityIndex,
+                                    chunk.Count);
                             }
                             else if (isParallel)
                             {
-                                JobsUtility.PatchBufferMinMaxRanges(
-                                    bufferRangePatchData, UnsafeUtility.AddressOf(ref jobWrapper), chunkIndex, 1);
+                                JobsUtility.PatchBufferMinMaxRanges(bufferRangePatchData, UnsafeUtility.AddressOf(ref jobWrapper), chunkIndex, 1);
                             }
 #endif
-                            jobWrapper.JobData.Execute(chunk, chunkIndex, useEnabledMask != 0,
-                                chunkEnabledMask);
+                            jobWrapper.JobData.Execute(chunk, chunkIndex, useEnabledMask != 0, chunkEnabledMask);
                         }
                     }
 

@@ -42,7 +42,7 @@ namespace BovineLabs.Core.Utility
             var writeGroups = TypeManager.GetWriteGroups(typeInfo);
             var writeGroupCount = typeInfo.WriteGroupCount;
 
-            int enableComponentCount = 0;
+            var enableComponentCount = 0;
 
             for (var i = 0; i < writeGroupCount; i++)
             {

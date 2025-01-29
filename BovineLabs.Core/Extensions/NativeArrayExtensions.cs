@@ -147,9 +147,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static NativeArray<TOutput> Select<TInput, TOutput, TSelector>(
-            this NativeArray<TInput> array,
-            TSelector selector,
-            Allocator allocator = Allocator.Temp)
+            this NativeArray<TInput> array, TSelector selector, Allocator allocator = Allocator.Temp)
             where TInput : unmanaged
             where TOutput : unmanaged
             where TSelector : ISelector<TInput, TOutput>

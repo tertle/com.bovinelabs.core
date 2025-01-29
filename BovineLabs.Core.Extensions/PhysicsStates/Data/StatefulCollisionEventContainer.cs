@@ -59,9 +59,9 @@ namespace BovineLabs.Core.PhysicsStates
         public bool Equals(StatefulCollisionEventContainer other)
         {
             return this.CollisionEventData.Entities.EntityA.Equals(other.EntityA) &&
-                   this.CollisionEventData.Entities.EntityB.Equals(other.EntityB) &&
-                   this.CollisionEventData.ColliderKeys.ColliderKeyA.Equals(this.CollisionEventData.ColliderKeys.ColliderKeyA) &&
-                   this.CollisionEventData.ColliderKeys.ColliderKeyB.Equals(this.CollisionEventData.ColliderKeys.ColliderKeyB);
+                this.CollisionEventData.Entities.EntityB.Equals(other.EntityB) &&
+                this.CollisionEventData.ColliderKeys.ColliderKeyA.Equals(this.CollisionEventData.ColliderKeys.ColliderKeyA) &&
+                this.CollisionEventData.ColliderKeys.ColliderKeyB.Equals(this.CollisionEventData.ColliderKeys.ColliderKeyB);
         }
 
         public override int GetHashCode()

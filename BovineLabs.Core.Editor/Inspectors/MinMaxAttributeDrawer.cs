@@ -10,7 +10,6 @@ namespace BovineLabs.Core.Editor.Inspectors
     using UnityEngine.UIElements;
 
     [CustomPropertyDrawer(typeof(MinMaxAttribute))]
-
     public class MinMaxAttributeDrawer : PropertyDrawer
     {
         /// <inheritdoc />
@@ -23,7 +22,11 @@ namespace BovineLabs.Core.Editor.Inspectors
                 var px = property.FindPropertyRelative("x");
                 var py = property.FindPropertyRelative("y");
 
-                var ve = new Foldout { text = property.displayName, value = true };
+                var ve = new Foldout
+                {
+                    text = property.displayName,
+                    value = true,
+                };
 
                 var minMaxField = new MinMaxSlider("Range", px.floatValue, py.floatValue, attr.Min, attr.Max);
                 minMaxField.AddToClassList(MinMaxSlider.alignedFieldUssClassName);
@@ -51,6 +54,7 @@ namespace BovineLabs.Core.Editor.Inspectors
                     minField.SetValueWithoutNotify(v);
                     minMaxField.minValue = v;
                 });
+
                 maxField.RegisterValueChangedCallback(evt =>
                 {
                     var v = Mathf.Min(evt.newValue, attr.Max);
@@ -75,7 +79,11 @@ namespace BovineLabs.Core.Editor.Inspectors
                 var min = attr.Min <= int.MinValue ? int.MinValue : Mathf.CeilToInt(attr.Min);
                 var max = attr.Max >= int.MaxValue ? int.MaxValue : Mathf.FloorToInt(attr.Max);
 
-                var ve = new Foldout { text = property.displayName, value = true };
+                var ve = new Foldout
+                {
+                    text = property.displayName,
+                    value = true,
+                };
 
                 var minMaxField = new MinMaxSlider("Range", x, y, min, max);
                 minMaxField.AddToClassList(MinMaxSlider.alignedFieldUssClassName);

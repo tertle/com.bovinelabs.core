@@ -52,24 +52,24 @@ namespace BovineLabs.Core.SubScenes
 
         public SubSceneLoad GetSubSceneLoad()
         {
-                var subScene = this.GetComponent<SubScene>();
-                if (subScene == null || subScene.SceneGUID == default)
-                {
-                    return default;
-                }
+            var subScene = this.GetComponent<SubScene>();
+            if (subScene == null || subScene.SceneGUID == default)
+            {
+                return default;
+            }
 
-                return new SubSceneLoad
-                {
+            return new SubSceneLoad
+            {
 #if UNITY_EDITOR
-                    Name = subScene.SceneAsset.name,
+                Name = subScene.SceneAsset.name,
 #endif
-                    Scene = new EntitySceneReference(subScene.SceneGUID, 0),
-                    TargetWorld = SubSceneLoadUtil.ConvertFlags(this.targetWorld),
-                    LoadingMode = this.loadMode,
-                    IsRequired = this.isRequired,
-                    LoadMaxDistance = this.loadMaxDistance,
-                    UnloadMaxDistance = this.unloadMaxDistance,
-                };
+                Scene = new EntitySceneReference(subScene.SceneGUID, 0),
+                TargetWorld = SubSceneLoadUtil.ConvertFlags(this.targetWorld),
+                LoadingMode = this.loadMode,
+                IsRequired = this.isRequired,
+                LoadMaxDistance = this.loadMaxDistance,
+                UnloadMaxDistance = this.unloadMaxDistance,
+            };
         }
 
         private void Awake()

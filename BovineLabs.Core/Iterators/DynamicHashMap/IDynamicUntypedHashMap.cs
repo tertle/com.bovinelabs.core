@@ -1,4 +1,4 @@
-﻿// <copyright file="unmanaged.cs" company="BovineLabs">
+﻿// <copyright file="IDynamicUntypedHashMap.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 

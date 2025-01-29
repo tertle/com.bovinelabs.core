@@ -11,7 +11,7 @@ namespace BovineLabs.Core.Editor.UI
     [MeansImplicitUse]
     public class EditorToolbarAttribute : Attribute
     {
-        /// <summary> Initializes a new instance of the <see cref="EditorToolbarAttribute"/> class. </summary>
+        /// <summary> Initializes a new instance of the <see cref="EditorToolbarAttribute" /> class. </summary>
         /// <param name="position"> Where to position the button. </param>
         public EditorToolbarAttribute(EditorToolbarPosition position)
         {
@@ -20,5 +20,4 @@ namespace BovineLabs.Core.Editor.UI
 
         public EditorToolbarPosition Position { get; }
     }
-
 }

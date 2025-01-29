@@ -5,6 +5,9 @@
 namespace BovineLabs.Core.Groups
 {
     using Unity.Entities;
+#if UNITY_NETCODE
+    using Unity.NetCode;
+#endif
 
     [WorldSystemFilter(Worlds.SimulationThin, Worlds.SimulationThin)]
     [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
@@ -12,8 +15,8 @@ namespace BovineLabs.Core.Groups
     [UpdateBefore(typeof(VariableRateSimulationSystemGroup))]
     [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
 #if UNITY_NETCODE
-    [UpdateAfter(typeof(Unity.NetCode.GhostSimulationSystemGroup))]
-    [UpdateBefore(typeof(Unity.NetCode.PredictedSimulationSystemGroup))]
+    [UpdateAfter(typeof(GhostSimulationSystemGroup))]
+    [UpdateBefore(typeof(PredictedSimulationSystemGroup))]
 #endif
     public partial class BeginSimulationSystemGroup : ComponentSystemGroup
     {

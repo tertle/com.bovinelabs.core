@@ -35,8 +35,11 @@ namespace BovineLabs.Core.Model
             this.activeHandle = state.GetComponentTypeHandle<TActive>(true);
             this.durationHandle = state.GetComponentTypeHandle<TDuration>(true);
 
-            this.query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<TRemaining, TOn>().WithAll<TActive, TDuration>()
-                .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState).Build(ref state);
+            this.query = new EntityQueryBuilder(Allocator.Temp)
+                .WithAllRW<TRemaining, TOn>()
+                .WithAll<TActive, TDuration>()
+                .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState)
+                .Build(ref state);
         }
 
         public void OnUpdate(ref SystemState state, UpdateTimeJob job = default)
@@ -72,7 +75,7 @@ namespace BovineLabs.Core.Model
             public float DeltaTime;
             public uint SystemVersion;
 
-            /// <inheritdoc/>
+            /// <inheritdoc />
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 var activeChanged = chunk.DidChange(ref this.ActiveHandle, this.SystemVersion);
@@ -104,7 +107,7 @@ namespace BovineLabs.Core.Model
 
                     CalculateOn(remainings, (ulong*)&updated, chunk.Count, this.DeltaTime);
 
-                    bool hasChanged = updated.ULong0 != original.ULong0 || updated.ULong1 != original.ULong1;
+                    var hasChanged = updated.ULong0 != original.ULong0 || updated.ULong1 != original.ULong1;
 
                     if (hasChanged)
                     {
@@ -118,7 +121,7 @@ namespace BovineLabs.Core.Model
 
             private static void CalculateOn([NoAlias] float* remainings, [NoAlias] ulong* isOn, int length, float deltaTime)
             {
-                ulong* u0 = isOn;
+                var u0 = isOn;
                 var length0 = math.min(64, length);
 
                 for (var i = 0; i < length0; i++)
@@ -127,7 +130,7 @@ namespace BovineLabs.Core.Model
                     UnsafeBitArray.Set(u0, i, remainings[i] != 0);
                 }
 
-                ulong* u1 = isOn + 1;
+                var u1 = isOn + 1;
                 var length1 = math.min(64, length - 64);
 
                 for (var i = 0; i < length1; i++)

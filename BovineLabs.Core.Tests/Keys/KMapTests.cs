@@ -48,7 +48,12 @@ namespace BovineLabs.Core.Tests.Keys
         public void MaxString()
         {
             var kvp = new NameValue[1];
-            kvp[0] = new NameValue { Name = "abcdefghijklmno", Value = 0 }; // 15
+            kvp[0] = new NameValue
+            {
+                Name = "abcdefghijklmno",
+                Value = 0,
+            }; // 15
+
             new KMap(kvp);
         }
 
@@ -59,7 +64,12 @@ namespace BovineLabs.Core.Tests.Keys
 
             var kvp = new NameValue[1];
 
-            kvp[0] = new NameValue { Name = testString, Value = 0 }; // 16
+            kvp[0] = new NameValue
+            {
+                Name = testString,
+                Value = 0,
+            }; // 16
+
             Assert.Throws<ArgumentException>(() => new KMap(kvp));
         }
     }

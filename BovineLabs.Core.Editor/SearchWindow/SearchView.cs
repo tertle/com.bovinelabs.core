@@ -85,7 +85,13 @@ namespace BovineLabs.Core.Editor.SearchWindow
 
         public void Reset()
         {
-            this.rootNode = new TreeNode<Item>(new Item { Path = this.title, Data = null, Icon = null });
+            this.rootNode = new TreeNode<Item>(new Item
+            {
+                Path = this.title,
+                Data = null,
+                Icon = null,
+            });
+
             for (var i = 0; i < this.items.Count; ++i)
             {
                 this.Add(this.items[i]);
@@ -96,7 +102,7 @@ namespace BovineLabs.Core.Editor.SearchWindow
 
         private static TreeNode<Item> FindNodeByPath(TreeNode<Item> parent, string path)
         {
-            if ((parent == null) || (path.Length == 0))
+            if (parent == null || path.Length == 0)
             {
                 return null;
             }
@@ -114,7 +120,7 @@ namespace BovineLabs.Core.Editor.SearchWindow
 
         private void OnSearchQueryChanged(ChangeEvent<string> changeEvent)
         {
-            if ((this.searchNode != null) && (this.currentNode == this.searchNode))
+            if (this.searchNode != null && this.currentNode == this.searchNode)
             {
                 this.currentNode = this.searchNode.Parent;
                 this.searchNode = null;
@@ -172,7 +178,12 @@ namespace BovineLabs.Core.Editor.SearchWindow
         {
             if (this.rootNode != null)
             {
-                this.rootNode.Value = new Item { Path = this.title, Data = null, Icon = null };
+                this.rootNode.Value = new Item
+                {
+                    Path = this.title,
+                    Data = null,
+                    Icon = null,
+                };
             }
 
             if (this.currentNode == null)
@@ -205,7 +216,7 @@ namespace BovineLabs.Core.Editor.SearchWindow
 
         private void OnNavigationReturn()
         {
-            if ((this.currentNode != null) && (this.currentNode.Parent != null))
+            if (this.currentNode != null && this.currentNode.Parent != null)
             {
                 this.SetCurrentSelectionNode(this.currentNode.Parent);
             }
@@ -232,8 +243,13 @@ namespace BovineLabs.Core.Editor.SearchWindow
                     currentPath += "/" + pathParts[i];
                 }
 
-                var node = FindNodeByPath(root, currentPath)
-                           ?? root.AddChild(new Item { Path = currentPath, Data = null, Icon = null });
+                var node = FindNodeByPath(root, currentPath) ??
+                root.AddChild(new Item
+                {
+                    Path = currentPath,
+                    Data = null,
+                    Icon = null,
+                });
 
                 if (i == pathParts.Length - 1)
                 {
@@ -256,9 +272,7 @@ namespace BovineLabs.Core.Editor.SearchWindow
 
             public bool Equals(Item other)
             {
-                return this.Path == other.Path &&
-                       Equals(this.Icon, other.Icon) &&
-                       Equals(this.Data, other.Data);
+                return this.Path == other.Path && Equals(this.Icon, other.Icon) && Equals(this.Data, other.Data);
             }
 
             public override bool Equals(object obj)

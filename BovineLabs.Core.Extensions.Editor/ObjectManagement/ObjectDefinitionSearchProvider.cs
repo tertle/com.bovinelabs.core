@@ -118,11 +118,14 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             var query = new QueryEngine<ObjectDefinitionDescriptor>();
             query.SetSearchDataCallback(GetWords);
 
-            SearchBridge.SetFilter(query, "n", data => data.Name, new[] { "=", ":" })
+            SearchBridge
+                .SetFilter(query, "n", data => data.Name, new[] { "=", ":" })
                 .AddOrUpdateProposition(category: null, label: "Name", replacement: "n:Name", help: "Search Entry by Object Definition Name");
 
-            SearchBridge.SetFilter(query, "d", data => data.Description, new[] { "=", ":" })
-                .AddOrUpdateProposition(category: null, label: "Description", replacement: "d:Description", help: "Search Entry by Object Definition Description");
+            SearchBridge
+                .SetFilter(query, "d", data => data.Description, new[] { "=", ":" })
+                .AddOrUpdateProposition(category: null, label: "Description", replacement: "d:Description",
+                    help: "Search Entry by Object Definition Description");
 
             SearchBridge.AddFilter<string, ObjectDefinitionDescriptor>(query, "ca", OnTypeFilter, new[] { "=" });
 
@@ -139,6 +142,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         {
             yield return desc.Name;
             yield return desc.Description;
+
             foreach (var c in desc.Categories)
             {
                 yield return c;
@@ -199,7 +203,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 foreach (var ca in categories.Keys)
                 {
                     var n = ca.Name.Contains(" ") ? $"\"{ca.Name}\"" : ca.Name;
-                    yield return new SearchProposition(c, ca.Name, replacement: n, type: this.GetType(), data: n);
+                    yield return new SearchProposition(c, ca.Name, n, type: this.GetType(), data: n);
                 }
             }
         }

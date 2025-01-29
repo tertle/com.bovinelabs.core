@@ -20,10 +20,7 @@ namespace BovineLabs.Core.Model
 
         public void OnCreate(ref SystemState state)
         {
-            this.query = new EntityQueryBuilder(Allocator.Temp)
-                .WithPresentRW<TTo>()
-                .WithPresent<TFrom>()
-                .Build(ref state);
+            this.query = new EntityQueryBuilder(Allocator.Temp).WithPresentRW<TTo>().WithPresent<TFrom>().Build(ref state);
 
             this.query.AddChangedVersionFilter(ComponentType.ReadOnly<TFrom>());
 
@@ -50,7 +47,7 @@ namespace BovineLabs.Core.Model
             [ReadOnly]
             public ComponentTypeHandle<TFrom> FromHandle;
 
-            /// <inheritdoc/>
+            /// <inheritdoc />
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 chunk.CopyEnableMaskFrom(ref this.ToHandle, ref this.FromHandle);

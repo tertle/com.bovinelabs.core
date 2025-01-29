@@ -1,6 +1,7 @@
 ﻿// <copyright file="EditorMenus.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
+
 #pragma warning disable 0436 // Type 'Log' conflicts with another one in case of InternalVisibleTo
 
 namespace BovineLabs.Core.Editor

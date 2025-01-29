@@ -40,13 +40,12 @@ namespace BovineLabs.Core.Collections
         public JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new NativePartialKeyedMapDisposeJob
-                {
-                    Map = this.map,
-                    Next = this.map->Next,
-                    Buckets = this.map->Buckets,
-                    Allocator = this.map->Allocator,
-                }
-                .Schedule(inputDeps);
+            {
+                Map = this.map,
+                Next = this.map->Next,
+                Buckets = this.map->Buckets,
+                Allocator = this.map->Allocator,
+            }.Schedule(inputDeps);
 
             this.map = null;
 

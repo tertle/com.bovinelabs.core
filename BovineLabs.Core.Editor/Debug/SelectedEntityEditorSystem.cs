@@ -26,7 +26,7 @@ namespace BovineLabs.Core.Editor
 
         private JobHandle lastFrame;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnCreate()
         {
             this.instanceIds = new NativeList<int>(512, Allocator.Persistent);
@@ -43,7 +43,7 @@ namespace BovineLabs.Core.Editor
             this.entityLookup.Dispose();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
             if (!IsEnabled.Data)
@@ -62,7 +62,8 @@ namespace BovineLabs.Core.Editor
             // No need to build this if not selecting a gameobject
             if (this.instanceIds.Length > 0)
             {
-                var query = SystemAPI.QueryBuilder()
+                var query = SystemAPI
+                    .QueryBuilder()
                     .WithAll<EntityGuid>()
                     .WithOptions(EntityQueryOptions.IncludeDisabledEntities | EntityQueryOptions.IncludePrefab)
                     .Build();
@@ -70,32 +71,29 @@ namespace BovineLabs.Core.Editor
                 var count = query.CalculateEntityCount();
 
                 this.Dependency = new ResizeJob
-                    {
-                        EntityLookup = this.entityLookup,
-                        Count = count,
-                    }
-                    .Schedule(this.Dependency);
+                {
+                    EntityLookup = this.entityLookup,
+                    Count = count,
+                }.Schedule(this.Dependency);
 
                 this.Dependency = new BuildInstanceIDToEntityIndexJob
-                    {
-                        EntityLookup = this.entityLookup.AsParallelWriter(),
-                        GuidType = SystemAPI.GetComponentTypeHandle<EntityGuid>(true),
-                        EntityType = SystemAPI.GetEntityTypeHandle(),
-                    }
-                    .ScheduleParallel(query, this.Dependency);
+                {
+                    EntityLookup = this.entityLookup.AsParallelWriter(),
+                    GuidType = SystemAPI.GetComponentTypeHandle<EntityGuid>(true),
+                    EntityType = SystemAPI.GetEntityTypeHandle(),
+                }.ScheduleParallel(query, this.Dependency);
             }
 
             this.Dependency = new SetSelectionJob
-                {
-                    EntityLookup = this.entityLookup,
-                    InstanceIDs = this.instanceIds,
-                    Entities = this.entities,
-                    EntityGuids = SystemAPI.GetComponentLookup<EntityGuid>(true),
-                    SelectedEntitys = SystemAPI.GetComponentLookup<SelectedEntity>(),
-                    SelectedEntities = selectedEntities,
-                    SingletonEntity = SystemAPI.GetSingletonEntity<SelectedEntity>(),
-                }
-                .Schedule(this.Dependency);
+            {
+                EntityLookup = this.entityLookup,
+                InstanceIDs = this.instanceIds,
+                Entities = this.entities,
+                EntityGuids = SystemAPI.GetComponentLookup<EntityGuid>(true),
+                SelectedEntitys = SystemAPI.GetComponentLookup<SelectedEntity>(),
+                SelectedEntities = selectedEntities,
+                SingletonEntity = SystemAPI.GetSingletonEntity<SelectedEntity>(),
+            }.Schedule(this.Dependency);
 
             this.lastFrame = this.Dependency;
         }

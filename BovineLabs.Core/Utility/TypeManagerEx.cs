@@ -16,11 +16,15 @@ namespace BovineLabs.Core.Utility
 
     public static unsafe class TypeManagerEx
     {
+        private static readonly List<Type> Types = new();
+
         private static bool initialized;
         private static bool appDomainUnloadRegistered;
 
         private static UnsafeList<UnsafeText> typeNames;
         private static UnsafeList<UnsafeText> systemTypeNames;
+
+        private static UnsafeHashMap<int, AllTypeIndex> typeMap; // we use a hashmap instead of a shared static as it takes 2+ seconds to initialize
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         public static void Initialize()
@@ -37,6 +41,13 @@ namespace BovineLabs.Core.Utility
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             SharedSafetyHandle.Ref.Data = AtomicSafetyHandle.Create();
 #endif
+
+            typeMap = new UnsafeHashMap<int, AllTypeIndex>(1024, Allocator.Persistent);
+            BuildTypeIndices();
+            fixed (UnsafeHashMap<int, AllTypeIndex>* ptr = &typeMap)
+            {
+                TypeMap.Ref.Data = new IntPtr(ptr);
+            }
 
             typeNames = new UnsafeList<UnsafeText>(TypeManager.MaximumTypesCount, Allocator.Persistent);
             foreach (var t in TypeManager.AllTypes)
@@ -65,10 +76,10 @@ namespace BovineLabs.Core.Utility
             if (!appDomainUnloadRegistered)
             {
                 // important: this will always be called from a special unload thread (main thread will be blocking on this)
-                AppDomain.CurrentDomain.DomainUnload += (_, __) => Shutdown();
+                AppDomain.CurrentDomain.DomainUnload += (_, _) => Shutdown();
 
                 // There is no domain unload in player builds, so we must be sure to shut down when the process exits.
-                AppDomain.CurrentDomain.ProcessExit += (_, __) => Shutdown();
+                AppDomain.CurrentDomain.ProcessExit += (_, _) => Shutdown();
                 appDomainUnloadRegistered = true;
             }
         }
@@ -82,11 +93,23 @@ namespace BovineLabs.Core.Utility
         {
             var pUnsafeText = GetSystemNameInternal(systemIndex);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            NativeText.ReadOnly ro = new NativeText.ReadOnly(pUnsafeText, SharedSafetyHandle.Ref.Data);
+            var ro = new NativeText.ReadOnly(pUnsafeText, SharedSafetyHandle.Ref.Data);
 #else
             NativeText.ReadOnly ro = new NativeText.ReadOnly(pUnsafeText);
 #endif
             return ro;
+        }
+
+        public static AllTypeIndex GetAllTypeIndex<T>()
+            where T : unmanaged
+        {
+            var map = *(UnsafeHashMap<int, AllTypeIndex>*)TypeMap.Ref.Data;
+            return map[BurstRuntime.GetHashCode32<T>()];
+        }
+
+        public static Type GetType(AllTypeIndex type)
+        {
+            return Types[type.Value];
         }
 
         private static void Shutdown()
@@ -111,10 +134,33 @@ namespace BovineLabs.Core.Utility
             }
 
             systemTypeNames.Dispose();
+            typeMap.Dispose();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.Release(SharedSafetyHandle.Ref.Data);
 #endif
+        }
+
+        private static void BuildTypeIndices()
+        {
+            var allTypes = ReflectionUtility.AllTypes;
+
+            Types.Add(null);
+            typeMap.Add(0, new AllTypeIndex { Value = 0 });
+
+            foreach (var type in allTypes)
+            {
+                if (!UnsafeUtility.IsUnmanaged(type))
+                {
+                    continue;
+                }
+
+                var hash = BurstRuntime.GetHashCode32(type);
+
+                var index = Types.Count;
+                Types.Add(type);
+                typeMap.Add(hash, new AllTypeIndex { Value = index });
+            }
         }
 
         private static UnsafeText* GetTypeNameInternal(TypeIndex typeIndex)
@@ -134,7 +180,7 @@ namespace BovineLabs.Core.Utility
 
         private static UnsafeText* GetSystemTypeNamesPointer()
         {
-            return (UnsafeText*) SharedSystemTypeNames.Ref.Data;
+            return (UnsafeText*)SharedSystemTypeNames.Ref.Data;
         }
 
         private struct TypeManagerKeyContext
@@ -151,11 +197,37 @@ namespace BovineLabs.Core.Utility
             public static readonly SharedStatic<IntPtr> Ref = SharedStatic<IntPtr>.GetOrCreate<TypeManagerKeyContext, SharedSystemTypeNames>();
         }
 
+        private struct TypeMap
+        {
+            public static readonly SharedStatic<IntPtr> Ref = SharedStatic<IntPtr>.GetOrCreate<TypeManagerKeyContext, TypeMap>();
+        }
+
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         private struct SharedSafetyHandle
         {
-            public static readonly SharedStatic<AtomicSafetyHandle> Ref = SharedStatic<AtomicSafetyHandle>.GetOrCreate<TypeManagerKeyContext, AtomicSafetyHandle>();
+            public static readonly SharedStatic<AtomicSafetyHandle> Ref = SharedStatic<AtomicSafetyHandle>
+                .GetOrCreate<TypeManagerKeyContext, AtomicSafetyHandle>();
         }
 #endif
+    }
+
+    public struct AllTypeIndex : IComparable<AllTypeIndex>, IEquatable<AllTypeIndex>
+    {
+        public int Value;
+
+        public int CompareTo(AllTypeIndex other)
+        {
+            return this.Value.CompareTo(other.Value);
+        }
+
+        public bool Equals(AllTypeIndex other)
+        {
+            return this.Value == other.Value;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Value;
+        }
     }
 }

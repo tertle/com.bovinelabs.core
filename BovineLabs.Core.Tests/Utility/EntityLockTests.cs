@@ -41,11 +41,10 @@ namespace BovineLabs.Core.Tests.Utility
                 var entityLock = new EntityLock(Allocator.TempJob);
 
                 state.Dependency = new TestJob
-                    {
-                        EntityLock = entityLock,
-                        LocalTransforms = SystemAPI.GetComponentLookup<LocalTransform>(),
-                    }
-                    .ScheduleParallel(state.Dependency);
+                {
+                    EntityLock = entityLock,
+                    LocalTransforms = SystemAPI.GetComponentLookup<LocalTransform>(),
+                }.ScheduleParallel(state.Dependency);
 
                 state.Dependency.Complete();
 

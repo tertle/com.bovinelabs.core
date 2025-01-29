@@ -31,13 +31,15 @@ namespace BovineLabs.Core.Extensions
             ecb.UnsafeAddComponent(e, typeIndex, typeSize, componentDataPtr);
         }
 
-        public static void UnsafeAddComponent(this EntityCommandBuffer.ParallelWriter ecb, int sortIndex, Entity e, ComponentType componentType, void* componentDataPtr)
+        public static void UnsafeAddComponent(
+            this EntityCommandBuffer.ParallelWriter ecb, int sortIndex, Entity e, ComponentType componentType, void* componentDataPtr)
         {
             ref readonly var type = ref TypeManager.GetTypeInfo(componentType.TypeIndex);
             UnsafeAddComponent(ecb, sortIndex, e, componentType.TypeIndex, type.ElementSize, componentDataPtr);
         }
 
-        public static void UnsafeAddComponent(this EntityCommandBuffer.ParallelWriter ecb, int sortIndex, Entity e, TypeIndex typeIndex, int typeSize, void* componentDataPtr)
+        public static void UnsafeAddComponent(
+            this EntityCommandBuffer.ParallelWriter ecb, int sortIndex, Entity e, TypeIndex typeIndex, int typeSize, void* componentDataPtr)
         {
             ecb.UnsafeAddComponent(sortIndex, e, typeIndex, typeSize, componentDataPtr);
         }
@@ -46,7 +48,7 @@ namespace BovineLabs.Core.Extensions
             ref this EntityCommandBufferData ecbd, ECBCommand commandType, EntityCommandBufferChain* chain, int sortKey, Entity e, ComponentType componentType)
         {
             int internalCapacity;
-            BufferHeader* header = ecbd.AddEntityBufferCommandUntyped(chain, sortKey, commandType, e, componentType, out internalCapacity);
+            var header = ecbd.AddEntityBufferCommandUntyped(chain, sortKey, commandType, e, componentType, out internalCapacity);
             ref readonly var type = ref TypeManager.GetTypeInfo(componentType.TypeIndex);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -60,7 +62,8 @@ namespace BovineLabs.Core.Extensions
         }
 
         private static BufferHeader* AddEntityBufferCommandUntyped(
-            ref this EntityCommandBufferData ecbd, EntityCommandBufferChain* chain, int sortKey, ECBCommand op, Entity e, ComponentType componentType, out int internalCapacity)
+            ref this EntityCommandBufferData ecbd, EntityCommandBufferChain* chain, int sortKey, ECBCommand op, Entity e, ComponentType componentType,
+            out int internalCapacity)
         {
             var typeIndex = componentType.TypeIndex;
             ref readonly var type = ref TypeManager.GetTypeInfo(typeIndex);
@@ -79,13 +82,13 @@ namespace BovineLabs.Core.Extensions
             cmd->ComponentSize = (short)type.SizeInChunk;
             cmd->ValueRequiresEntityFixup = 0;
 
-            BufferHeader* header = &cmd->BufferNode.TempBuffer;
+            var header = &cmd->BufferNode.TempBuffer;
             BufferHeader.Initialize(header, type.BufferCapacity);
 
             // Track all DynamicBuffer headers created during recording. Until the ECB is played back, it owns the
             // memory allocations for these buffers and is responsible for deallocating them when the ECB is disposed.
             cmd->BufferNode.Prev = chain->m_Cleanup->BufferCleanupList;
-            chain->m_Cleanup->BufferCleanupList = &(cmd->BufferNode);
+            chain->m_Cleanup->BufferCleanupList = &cmd->BufferNode;
             // The caller may invoke methods on the DynamicBuffer returned by this command during ECB recording which
             // cause it to allocate memory (for example, DynamicBuffer.AddRange). These allocations always use
             // Allocator.Persistent, not the ECB's allocator. These allocations must ALWAYS be manually cleaned up

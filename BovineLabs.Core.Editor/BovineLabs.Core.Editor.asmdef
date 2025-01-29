@@ -1,65 +1,65 @@
 {
-    "name": "BovineLabs.Core.Editor",
-    "rootNamespace": "",
-    "references": [
-        "BovineLabs.Core",
-        "BovineLabs.Core.Authoring",
-        "Unity.Burst",
-        "Unity.Collections",
-        "Unity.Entities",
-        "Unity.Entities.Editor",
-        "Unity.Entities.Hybrid",
-        "Unity.Entities.UI",
-        "Unity.Entities.UI.Editor",
-        "Unity.InternalAPIEditorBridge.002",
-        "Unity.Logging",
-        "Unity.Mathematics",
-        "Unity.Scenes",
-        "Unity.Scenes.Editor",
-        "Unity.Physics",
-        "Unity.Transforms",
-        "Unity.VisualEffectGraph.Editor"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
-    "excludePlatforms": [],
-    "allowUnsafeCode": true,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "com.bovinelabs.game",
-            "expression": "0",
-            "define": "BL_GAME"
-        },
-        {
-            "name": "com.unity.ui",
-            "expression": "0",
-            "define": "UNITY_UI_TOOLKIT"
-        },
-        {
-            "name": "com.unity.entities.graphics",
-            "expression": "0",
-            "define": "UNITY_GRAPHICS"
-        },
-        {
-            "name": "com.unity.physics",
-            "expression": "0",
-            "define": "UNITY_PHYSICS"
-        },
-        {
-            "name": "com.unity.netcode",
-            "expression": "0",
-            "define": "UNITY_NETCODE"
-        },
-        {
-            "name": "com.unity.visualeffectgraph",
-            "expression": "0",
-            "define": "UNITY_VFX_GRAPH"
-        }
-    ],
-    "noEngineReferences": false
+  "name": "BovineLabs.Core.Editor",
+  "rootNamespace": "",
+  "references": [
+    "BovineLabs.Core",
+    "BovineLabs.Core.Authoring",
+    "Unity.Burst",
+    "Unity.Collections",
+    "Unity.Entities",
+    "Unity.Entities.Editor",
+    "Unity.Entities.Hybrid",
+    "Unity.Entities.UI",
+    "Unity.Entities.UI.Editor",
+    "Unity.InternalAPIEditorBridge.002",
+    "Unity.Logging",
+    "Unity.Mathematics",
+    "Unity.Scenes",
+    "Unity.Scenes.Editor",
+    "Unity.Physics",
+    "Unity.Transforms",
+    "Unity.VisualEffectGraph.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": true,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [
+    {
+      "name": "com.bovinelabs.game",
+      "expression": "0",
+      "define": "BL_GAME"
+    },
+    {
+      "name": "com.unity.ui",
+      "expression": "0",
+      "define": "UNITY_UI_TOOLKIT"
+    },
+    {
+      "name": "com.unity.entities.graphics",
+      "expression": "0",
+      "define": "UNITY_GRAPHICS"
+    },
+    {
+      "name": "com.unity.physics",
+      "expression": "0",
+      "define": "UNITY_PHYSICS"
+    },
+    {
+      "name": "com.unity.netcode",
+      "expression": "0",
+      "define": "UNITY_NETCODE"
+    },
+    {
+      "name": "com.unity.visualeffectgraph",
+      "expression": "0",
+      "define": "UNITY_VFX_GRAPH"
+    }
+  ],
+  "noEngineReferences": false
 }

@@ -10,6 +10,7 @@ namespace BovineLabs.Core
     using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Entities;
+    using UnityEngine;
     using UnityEngine.Scripting;
 
     /// <summary>
@@ -21,7 +22,8 @@ namespace BovineLabs.Core
     public abstract partial class BovineLabsBootstrap : ICustomBootstrap
     {
 #if !UNITY_SERVER
-        [ConfigVar("app.target-frame-rate", 0, "Override the target frame rate, this is in frames per second. If less than or equal to 0 this will be ignored", true)]
+        [ConfigVar("app.target-frame-rate", 0, "Override the target frame rate, this is in frames per second. If less than or equal to 0 this will be ignored",
+            true)]
         private static readonly SharedStatic<int> FrameRate = SharedStatic<int>.GetOrCreate<FrameRateKey>();
 #endif
 
@@ -49,7 +51,7 @@ namespace BovineLabs.Core
         public static BovineLabsBootstrap Instance { get; private set; }
 
 #if UNITY_NETCODE
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public sealed override bool Initialize(string defaultWorldName)
 #else
         [SuppressMessage("ReSharper", "InvocationIsSkipped", Justification = "Conditional")]
@@ -119,7 +121,7 @@ namespace BovineLabs.Core
             GameWorldCreated?.Invoke(world);
         }
 
-        /// <summary> Initialization method for the bootstrap. By default sets up a service world and configures default app settings.  </summary>
+        /// <summary> Initialization method for the bootstrap. By default sets up a service world and configures default app settings. </summary>
         protected virtual void Initialize()
         {
             this.CreateServiceWorld();
@@ -127,7 +129,7 @@ namespace BovineLabs.Core
 #if !UNITY_SERVER
             if (FrameRate.Data > 0)
             {
-                UnityEngine.Application.targetFrameRate = FrameRate.Data;
+                Application.targetFrameRate = FrameRate.Data;
             }
 #endif
         }
@@ -199,16 +201,16 @@ namespace BovineLabs.Core
             }
 
             return t != typeof(FixedStepSimulationSystemGroup) &&
-                   t != typeof(BeginFixedStepSimulationEntityCommandBufferSystem) &&
-                   t != typeof(EndFixedStepSimulationEntityCommandBufferSystem) &&
-                   t != typeof(VariableRateSimulationSystemGroup) &&
-                   t != typeof(BeginVariableRateSimulationEntityCommandBufferSystem) &&
-                   t != typeof(EndVariableRateSimulationEntityCommandBufferSystem) &&
-                   t != typeof(CompanionGameObjectUpdateTransformSystem) &&
+                t != typeof(BeginFixedStepSimulationEntityCommandBufferSystem) &&
+                t != typeof(EndFixedStepSimulationEntityCommandBufferSystem) &&
+                t != typeof(VariableRateSimulationSystemGroup) &&
+                t != typeof(BeginVariableRateSimulationEntityCommandBufferSystem) &&
+                t != typeof(EndVariableRateSimulationEntityCommandBufferSystem) &&
+                t != typeof(CompanionGameObjectUpdateTransformSystem) &&
 #if !BL_DISABLE_TIME
-                   t != typeof(UpdateWorldTimeSystem) &&
+                t != typeof(UpdateWorldTimeSystem) &&
 #endif
-                   t != EntityInternals.CompanionGameObjectUpdateSystemType;
+                t != EntityInternals.CompanionGameObjectUpdateSystemType;
 
             // TODO do we need transform, companion, fixed/variable update etc
         }

@@ -14,8 +14,8 @@ namespace BovineLabs.Core.Iterators
     /// An enumerator over the values of an individual key in a multi hash map.
     /// </summary>
     /// <remarks>
-    /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
-    /// The first <see cref="MoveNext"/> call advances the enumerator to the first value of the key.
+    /// In an enumerator's initial state, <see cref="Current" /> is not valid to read.
+    /// The first <see cref="MoveNext" /> call advances the enumerator to the first value of the key.
     /// </remarks>
     public struct DynamicHashMapKeyEnumerator<TKey, TValue> : IEnumerator<TValue>
         where TKey : unmanaged, IEquatable<TKey>
@@ -25,18 +25,20 @@ namespace BovineLabs.Core.Iterators
         internal TKey key;
         internal byte isFirst;
 
-        TValue value;
-        HashMapIterator<TKey> iterator;
+        private TValue value;
+        private HashMapIterator<TKey> iterator;
 
         /// <summary>
         /// Does nothing.
         /// </summary>
-        public void Dispose() { }
+        public void Dispose()
+        {
+        }
 
         /// <summary>
         /// Advances the enumerator to the next value of the key.
         /// </summary>
-        /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+        /// <returns> True if <see cref="Current" /> is valid to read after the call. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
@@ -53,19 +55,19 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Resets the enumerator to its initial state.
         /// </summary>
-        public void Reset() => this.isFirst = 1;
+        public void Reset()
+        {
+            this.isFirst = 1;
+        }
 
         /// <summary>
         /// The current value.
         /// </summary>
-        /// <value>The current value.</value>
+        /// <value> The current value. </value>
         public TValue Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return this.value;
-            }
+            get => this.value;
         }
 
         object IEnumerator.Current => this.Current;
@@ -73,7 +75,10 @@ namespace BovineLabs.Core.Iterators
         /// <summary>
         /// Returns this enumerator.
         /// </summary>
-        /// <returns>This enumerator.</returns>
-        public DynamicHashMapKeyEnumerator<TKey, TValue> GetEnumerator() { return this; }
+        /// <returns> This enumerator. </returns>
+        public DynamicHashMapKeyEnumerator<TKey, TValue> GetEnumerator()
+        {
+            return this;
+        }
     }
 }

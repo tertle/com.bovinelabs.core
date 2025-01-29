@@ -12,13 +12,13 @@ namespace BovineLabs.Core.PhysicsUpdate
     [UpdateInGroup(typeof(PhysicsInitializeGroup))]
     public partial struct FixedStepUpdatedSystem : ISystem
     {
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void OnCreate(ref SystemState state)
         {
             state.EntityManager.AddComponent<AlwaysUpdatePhysicsWorld>(state.SystemHandle);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {

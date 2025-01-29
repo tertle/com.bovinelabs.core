@@ -122,13 +122,13 @@ namespace BovineLabs.Core.Utility
 
             for (var iteration = 0; iteration < options.MaxIterationCount; iteration++)
             {
-                if ((startTrisCount - deletedTris) <= targetTrisCount)
+                if (startTrisCount - deletedTris <= targetTrisCount)
                 {
                     break;
                 }
 
                 // Update mesh once in a while
-                if ((iteration % 5) == 0)
+                if (iteration % 5 == 0)
                 {
                     UpdateMesh(ref result, ref refs, iteration);
                     triangles = result.Triangles.AsArray();
@@ -161,7 +161,7 @@ namespace BovineLabs.Core.Utility
         /// <summary>
         /// Compact triangles, compute edge error and build reference list.
         /// </summary>
-        /// <param name="iteration">The iteration index.</param>
+        /// <param name="iteration"> The iteration index. </param>
         private static void UpdateMesh(ref Result result, ref NativeList<Ref> refs, int iteration)
         {
             var triangles = result.Triangles.AsArray();
@@ -302,7 +302,8 @@ namespace BovineLabs.Core.Utility
         }
 
         private static void RemoveVertexPass(
-            ref Result result, ref NativeList<Ref> refs, int startTrisCount, int targetTrisCount, double threshold, NativeList<bool> deleted0, NativeList<bool> deleted1, ref int deletedTris)
+            ref Result result, ref NativeList<Ref> refs, int startTrisCount, int targetTrisCount, double threshold, NativeList<bool> deleted0,
+            NativeList<bool> deleted1, ref int deletedTris)
         {
             var triangles = result.Triangles.AsArray();
             var triangleCount = result.Triangles.Length;
@@ -375,7 +376,7 @@ namespace BovineLabs.Core.Utility
                     }
 
                     // Calculate the barycentric coordinates within the triangle
-                    var nextNextEdgeIndex = ((edgeIndex + 2) % 3);
+                    var nextNextEdgeIndex = (edgeIndex + 2) % 3;
                     var i2 = triangles[tid][nextNextEdgeIndex];
                     CalculateBarycentricCoords(ref p, ref vertices.ElementAt(i0).p, ref vertices.ElementAt(i1).p, ref vertices.ElementAt(i2).p, out _);
 
@@ -427,7 +428,7 @@ namespace BovineLabs.Core.Utility
                 }
 
                 // Check if we are already done
-                if ((startTrisCount - deletedTris) <= targetTrisCount)
+                if (startTrisCount - deletedTris <= targetTrisCount)
                 {
                     break;
                 }
@@ -436,46 +437,46 @@ namespace BovineLabs.Core.Utility
 
         private static void CompactMesh(ref Result result)
         {
-            int dst = 0;
+            var dst = 0;
             var vertices = result.Vertices.AsArray();
-            int vertexCount = result.Vertices.Length;
-            for (int i = 0; i < vertexCount; i++)
+            var vertexCount = result.Vertices.Length;
+            for (var i = 0; i < vertexCount; i++)
             {
                 vertices.ElementAt(i).tcount = 0;
             }
 
             var triangles = result.Triangles.AsArray();
-            int triangleCount = result.Triangles.Length;
-            for (int i = 0; i < triangleCount; i++)
+            var triangleCount = result.Triangles.Length;
+            for (var i = 0; i < triangleCount; i++)
             {
                 var triangle = triangles[i];
                 if (!triangle.deleted)
                 {
                     if (triangle.va.x != triangle.v.x)
                     {
-                        int iDest = triangle.va.x;
-                        int iSrc = triangle.v.x;
+                        var iDest = triangle.va.x;
+                        var iSrc = triangle.v.x;
                         vertices.ElementAt(iDest).p = vertices[iSrc].p;
                         triangle.v.x = triangle.va.x;
                     }
 
                     if (triangle.va.y != triangle.v.y)
                     {
-                        int iDest = triangle.va.y;
-                        int iSrc = triangle.v.y;
+                        var iDest = triangle.va.y;
+                        var iSrc = triangle.v.y;
                         vertices.ElementAt(iDest).p = vertices[iSrc].p;
                         triangle.v.y = triangle.va.y;
                     }
 
                     if (triangle.va.z != triangle.v.z)
                     {
-                        int iDest = triangle.va.z;
-                        int iSrc = triangle.v.z;
+                        var iDest = triangle.va.z;
+                        var iSrc = triangle.v.z;
                         vertices.ElementAt(iDest).p = vertices[iSrc].p;
                         triangle.v.z = triangle.va.z;
                     }
 
-                    int newTriangleIndex = dst++;
+                    var newTriangleIndex = dst++;
                     triangles[newTriangleIndex] = triangle;
                     triangles.ElementAt(newTriangleIndex).index = newTriangleIndex;
 
@@ -491,7 +492,7 @@ namespace BovineLabs.Core.Utility
             triangles = result.Triangles.AsArray();
 
             dst = 0;
-            for (int i = 0; i < vertexCount; i++)
+            for (var i = 0; i < vertexCount; i++)
             {
                 var vert = vertices[i];
                 if (vert.tcount > 0)
@@ -502,13 +503,13 @@ namespace BovineLabs.Core.Utility
                     {
                         vertices.ElementAt(dst).index = dst;
                         vertices.ElementAt(dst).p = vert.p;
-
                     }
+
                     ++dst;
                 }
             }
 
-            for (int i = 0; i < triangleCount; i++)
+            for (var i = 0; i < triangleCount; i++)
             {
                 var triangle = triangles[i];
                 triangle.v.x = vertices[triangle.v.x].tstart;
@@ -586,10 +587,9 @@ namespace BovineLabs.Core.Utility
             if (det != 0.0 && !borderEdge)
             {
                 // q_delta is invertible
-                result = new double3(
-                    -1.0 / det * q.Determinant2(), // vx = A41/det(q_delta)
-                    1.0 / det * q.Determinant3(), // vy = A42/det(q_delta)
-                    -1.0 / det * q.Determinant4()); // vz = A43/det(q_delta)
+                result = new double3((-1.0 / det) * q.Determinant2(), // vx = A41/det(q_delta)
+                    (1.0 / det) * q.Determinant3(), // vy = A42/det(q_delta)
+                    (-1.0 / det) * q.Determinant4()); // vz = A43/det(q_delta)
 
                 // double curvatureError = 0;
                 // if (simplificationOptions.PreserveSurfaceCurvature)
@@ -597,7 +597,7 @@ namespace BovineLabs.Core.Utility
                 //     curvatureError = CurvatureError(ref vert0, ref vert1);
                 // }
 
-                error = VertexError(ref q, result.x, result.y, result.z);// + curvatureError;
+                error = VertexError(ref q, result.x, result.y, result.z); // + curvatureError;
             }
             else
             {
@@ -639,8 +639,16 @@ namespace BovineLabs.Core.Utility
 
         private static double VertexError(ref SymmetricMatrix q, double x, double y, double z)
         {
-            return q.m0 * x * x + 2 * q.m1 * x * y + 2 * q.m2 * x * z + 2 * q.m3 * x + q.m4 * y * y
-                   + 2 * q.m5 * y * z + 2 * q.m6 * y + q.m7 * z * z + 2 * q.m8 * z + q.m9;
+            return (q.m0 * x * x) +
+                (2 * q.m1 * x * y) +
+                (2 * q.m2 * x * z) +
+                (2 * q.m3 * x) +
+                (q.m4 * y * y) +
+                (2 * q.m5 * y * z) +
+                (2 * q.m6 * y) +
+                (q.m7 * z * z) +
+                (2 * q.m8 * z) +
+                q.m9;
         }
 
         private static bool Flipped(ref Result result, ref NativeList<Ref> refs, ref double3 p, int i0, int i1, ref Vertex v0, NativeArray<bool> deleted)
@@ -701,7 +709,7 @@ namespace BovineLabs.Core.Utility
             var d11 = math.dot(v1, v1);
             var d20 = math.dot(v2, v0);
             var d21 = math.dot(v2, v1);
-            double denom = d00 * d11 - d01 * d01;
+            var denom = (d00 * d11) - (d01 * d01);
 
             // Make sure the denominator is not too small to cause math problems
             if (math.abs(denom) < denomEpilson)
@@ -715,7 +723,8 @@ namespace BovineLabs.Core.Utility
             result = new Vector3((float)u, (float)v, (float)w);
         }
 
-        private static void UpdateTriangles(ref Result result, ref NativeList<Ref> refs, int i0, int ia0, ref Vertex v, NativeList<bool> deleted, ref int deletedTriangles)
+        private static void UpdateTriangles(
+            ref Result result, ref NativeList<Ref> refs, int i0, int ia0, ref Vertex v, NativeList<bool> deleted, ref int deletedTriangles)
         {
             var tcount = v.tcount;
             var triangles = result.Triangles.AsArray();
@@ -756,7 +765,7 @@ namespace BovineLabs.Core.Utility
         [Serializable]
         public struct Options
         {
-            public double Quality { get; set;  }
+            public double Quality { get; set; }
 
             /// <summary>
             /// The maximum iteration count. Higher number is more expensive but can bring you closer to your target quality.
@@ -794,10 +803,10 @@ namespace BovineLabs.Core.Utility
 
             public NativeArray<float3> GetVertices(Allocator allocator)
             {
-                int vertexCount = this.Vertices.Length;
+                var vertexCount = this.Vertices.Length;
                 var vertices = new NativeArray<float3>(vertexCount, allocator);
                 var vertArr = this.Vertices.AsArray();
-                for (int i = 0; i < vertexCount; i++)
+                for (var i = 0; i < vertexCount; i++)
                 {
                     vertices[i] = (float3)vertArr[i].p;
                 }
@@ -807,10 +816,10 @@ namespace BovineLabs.Core.Utility
 
             public Vector3[] GetVertices()
             {
-                int vertexCount = this.Vertices.Length;
+                var vertexCount = this.Vertices.Length;
                 var vertices = new Vector3[vertexCount];
                 var vertArr = this.Vertices.AsArray();
-                for (int i = 0; i < vertexCount; i++)
+                for (var i = 0; i < vertexCount; i++)
                 {
                     vertices[i] = (float3)vertArr[i].p;
                 }
@@ -825,10 +834,10 @@ namespace BovineLabs.Core.Utility
 
                 var indices = new NativeArray<int>(triangleCount * 3, allocator);
 
-                for (int triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++)
+                for (var triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++)
                 {
                     var triangle = triangles[triangleIndex];
-                    int offset = triangleIndex * 3;
+                    var offset = triangleIndex * 3;
                     indices[offset] = triangle.v.x;
                     indices[offset + 1] = triangle.v.y;
                     indices[offset + 2] = triangle.v.z;
@@ -840,14 +849,14 @@ namespace BovineLabs.Core.Utility
             public int[] GetIndices()
             {
                 var triangles = this.Triangles.AsArray();
-                int triangleCount = this.Triangles.Length;
+                var triangleCount = this.Triangles.Length;
 
-                int[] indices = new int[triangleCount * 3];
+                var indices = new int[triangleCount * 3];
 
-                for (int triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++)
+                for (var triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++)
                 {
                     var triangle = triangles[triangleIndex];
-                    int offset = triangleIndex * 3;
+                    var offset = triangleIndex * 3;
                     indices[offset] = triangle.v.x;
                     indices[offset + 1] = triangle.v.y;
                     indices[offset + 2] = triangle.v.z;
@@ -905,13 +914,12 @@ namespace BovineLabs.Core.Utility
 
             public override int GetHashCode()
             {
-                return index;
+                return this.index;
             }
-
 
             public bool Equals(Vertex other)
             {
-                return index == other.index;
+                return this.index == other.index;
             }
         }
 
@@ -934,12 +942,9 @@ namespace BovineLabs.Core.Utility
             public int this[int index]
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => v[index];
+                get => this.v[index];
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                set
-                {
-                    v[index] = value;
-                }
+                set => this.v[index] = value;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -950,17 +955,20 @@ namespace BovineLabs.Core.Utility
                 this.v = new int3(v0, v1, v2);
                 this.va = this.v;
 
-                err0 = err1 = err2 = err3 = 0;
-                deleted = dirty = false;
-                n = new double3();
+                this.err0 = this.err1 = this.err2 = this.err3 = 0;
+                this.deleted = this.dirty = false;
+                this.n = new double3();
             }
 
-            public int3 GetAttributeIndices() => this.va;
+            public int3 GetAttributeIndices()
+            {
+                return this.va;
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void SetAttributeIndex(int index, int value)
             {
-                va[index] = value;
+                this.va[index] = value;
             }
 
             public double3 GetErrors()
@@ -970,12 +978,12 @@ namespace BovineLabs.Core.Utility
 
             public override int GetHashCode()
             {
-                return index;
+                return this.index;
             }
 
             public bool Equals(Triangle other)
             {
-                return index == other.index;
+                return this.index == other.index;
             }
         }
 
@@ -999,7 +1007,7 @@ namespace BovineLabs.Core.Utility
     /// </summary>
     public struct SymmetricMatrix
     {
-        #region Fields
+#region Fields
         /// <summary>
         /// The m11 component.
         /// </summary>
@@ -1040,14 +1048,14 @@ namespace BovineLabs.Core.Utility
         /// The m44 component.
         /// </summary>
         public double m9;
-        #endregion
+#endregion
 
-        #region Properties
+#region Properties
         /// <summary>
         /// Gets the component value with a specific index.
         /// </summary>
-        /// <param name="index">The component index.</param>
-        /// <returns>The value.</returns>
+        /// <param name="index"> The component index. </param>
+        /// <returns> The value. </returns>
         public double this[int index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1056,37 +1064,37 @@ namespace BovineLabs.Core.Utility
                 switch (index)
                 {
                     case 0:
-                        return m0;
+                        return this.m0;
                     case 1:
-                        return m1;
+                        return this.m1;
                     case 2:
-                        return m2;
+                        return this.m2;
                     case 3:
-                        return m3;
+                        return this.m3;
                     case 4:
-                        return m4;
+                        return this.m4;
                     case 5:
-                        return m5;
+                        return this.m5;
                     case 6:
-                        return m6;
+                        return this.m6;
                     case 7:
-                        return m7;
+                        return this.m7;
                     case 8:
-                        return m8;
+                        return this.m8;
                     case 9:
-                        return m9;
+                        return this.m9;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
         }
-        #endregion
+#endregion
 
-        #region Constructor
+#region Constructor
         /// <summary>
         /// Creates a symmetric matrix with a value in each component.
         /// </summary>
-        /// <param name="c">The component value.</param>
+        /// <param name="c"> The component value. </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SymmetricMatrix(double c)
         {
@@ -1105,19 +1113,18 @@ namespace BovineLabs.Core.Utility
         /// <summary>
         /// Creates a symmetric matrix.
         /// </summary>
-        /// <param name="m0">The m11 component.</param>
-        /// <param name="m1">The m12 component.</param>
-        /// <param name="m2">The m13 component.</param>
-        /// <param name="m3">The m14 component.</param>
-        /// <param name="m4">The m22 component.</param>
-        /// <param name="m5">The m23 component.</param>
-        /// <param name="m6">The m24 component.</param>
-        /// <param name="m7">The m33 component.</param>
-        /// <param name="m8">The m34 component.</param>
-        /// <param name="m9">The m44 component.</param>
+        /// <param name="m0"> The m11 component. </param>
+        /// <param name="m1"> The m12 component. </param>
+        /// <param name="m2"> The m13 component. </param>
+        /// <param name="m3"> The m14 component. </param>
+        /// <param name="m4"> The m22 component. </param>
+        /// <param name="m5"> The m23 component. </param>
+        /// <param name="m6"> The m24 component. </param>
+        /// <param name="m7"> The m33 component. </param>
+        /// <param name="m8"> The m34 component. </param>
+        /// <param name="m9"> The m44 component. </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SymmetricMatrix(double m0, double m1, double m2, double m3,
-            double m4, double m5, double m6, double m7, double m8, double m9)
+        public SymmetricMatrix(double m0, double m1, double m2, double m3, double m4, double m5, double m6, double m7, double m8, double m9)
         {
             this.m0 = m0;
             this.m1 = m1;
@@ -1134,10 +1141,10 @@ namespace BovineLabs.Core.Utility
         /// <summary>
         /// Creates a symmetric matrix from a plane.
         /// </summary>
-        /// <param name="a">The plane x-component.</param>
-        /// <param name="b">The plane y-component</param>
-        /// <param name="c">The plane z-component</param>
-        /// <param name="d">The plane w-component</param>
+        /// <param name="a"> The plane x-component. </param>
+        /// <param name="b"> The plane y-component </param>
+        /// <param name="c"> The plane z-component </param>
+        /// <param name="d"> The plane w-component </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SymmetricMatrix(double a, double b, double c, double d)
         {
@@ -1155,125 +1162,109 @@ namespace BovineLabs.Core.Utility
 
             this.m9 = d * d;
         }
-        #endregion
+#endregion
 
-        #region Operators
+#region Operators
         /// <summary>
         /// Adds two matrixes together.
         /// </summary>
-        /// <param name="a">The left hand side.</param>
-        /// <param name="b">The right hand side.</param>
-        /// <returns>The resulting matrix.</returns>
+        /// <param name="a"> The left hand side. </param>
+        /// <param name="b"> The right hand side. </param>
+        /// <returns> The resulting matrix. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static SymmetricMatrix operator +(SymmetricMatrix a, SymmetricMatrix b)
         {
-            return new SymmetricMatrix(
-                a.m0 + b.m0, a.m1 + b.m1, a.m2 + b.m2, a.m3 + b.m3,
-                a.m4 + b.m4, a.m5 + b.m5, a.m6 + b.m6,
-                a.m7 + b.m7, a.m8 + b.m8,
-                a.m9 + b.m9
-            );
+            return new SymmetricMatrix(a.m0 + b.m0, a.m1 + b.m1, a.m2 + b.m2, a.m3 + b.m3, a.m4 + b.m4, a.m5 + b.m5, a.m6 + b.m6, a.m7 + b.m7, a.m8 + b.m8,
+                a.m9 + b.m9);
         }
-        #endregion
+#endregion
 
-        #region Internal Methods
+#region Internal Methods
         /// <summary>
         /// Determinant(0, 1, 2, 1, 4, 5, 2, 5, 7)
         /// </summary>
-        /// <returns></returns>
+        /// <returns> </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal double Determinant1()
         {
-            var det =
-                m0 * m4 * m7 +
-                m2 * m1 * m5 +
-                m1 * m5 * m2 -
-                m2 * m4 * m2 -
-                m0 * m5 * m5 -
-                m1 * m1 * m7;
+            var det = ((this.m0 * this.m4 * this.m7) + (this.m2 * this.m1 * this.m5) + (this.m1 * this.m5 * this.m2)) -
+                (this.m2 * this.m4 * this.m2) -
+                (this.m0 * this.m5 * this.m5) -
+                (this.m1 * this.m1 * this.m7);
+
             return det;
         }
 
         /// <summary>
         /// Determinant(1, 2, 3, 4, 5, 6, 5, 7, 8)
         /// </summary>
-        /// <returns></returns>
+        /// <returns> </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal double Determinant2()
         {
-            var det =
-                m1 * m5 * m8 +
-                m3 * m4 * m7 +
-                m2 * m6 * m5 -
-                m3 * m5 * m5 -
-                m1 * m6 * m7 -
-                m2 * m4 * m8;
+            var det = ((this.m1 * this.m5 * this.m8) + (this.m3 * this.m4 * this.m7) + (this.m2 * this.m6 * this.m5)) -
+                (this.m3 * this.m5 * this.m5) -
+                (this.m1 * this.m6 * this.m7) -
+                (this.m2 * this.m4 * this.m8);
+
             return det;
         }
 
         /// <summary>
         /// Determinant(0, 2, 3, 1, 5, 6, 2, 7, 8)
         /// </summary>
-        /// <returns></returns>
+        /// <returns> </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal double Determinant3()
         {
-            var det =
-                m0 * m5 * m8 +
-                m3 * m1 * m7 +
-                m2 * m6 * m2 -
-                m3 * m5 * m2 -
-                m0 * m6 * m7 -
-                m2 * m1 * m8;
+            var det = ((this.m0 * this.m5 * this.m8) + (this.m3 * this.m1 * this.m7) + (this.m2 * this.m6 * this.m2)) -
+                (this.m3 * this.m5 * this.m2) -
+                (this.m0 * this.m6 * this.m7) -
+                (this.m2 * this.m1 * this.m8);
+
             return det;
         }
 
         /// <summary>
         /// Determinant(0, 1, 3, 1, 4, 6, 2, 5, 8)
         /// </summary>
-        /// <returns></returns>
+        /// <returns> </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal double Determinant4()
         {
-            var det =
-                m0 * m4 * m8 +
-                m3 * m1 * m5 +
-                m1 * m6 * m2 -
-                m3 * m4 * m2 -
-                m0 * m6 * m5 -
-                m1 * m1 * m8;
+            var det = ((this.m0 * this.m4 * this.m8) + (this.m3 * this.m1 * this.m5) + (this.m1 * this.m6 * this.m2)) -
+                (this.m3 * this.m4 * this.m2) -
+                (this.m0 * this.m6 * this.m5) -
+                (this.m1 * this.m1 * this.m8);
+
             return det;
         }
-        #endregion
+#endregion
 
-        #region Public Methods
+#region Public Methods
         /// <summary>
         /// Computes the determinant of this matrix.
         /// </summary>
-        /// <param name="a11">The a11 index.</param>
-        /// <param name="a12">The a12 index.</param>
-        /// <param name="a13">The a13 index.</param>
-        /// <param name="a21">The a21 index.</param>
-        /// <param name="a22">The a22 index.</param>
-        /// <param name="a23">The a23 index.</param>
-        /// <param name="a31">The a31 index.</param>
-        /// <param name="a32">The a32 index.</param>
-        /// <param name="a33">The a33 index.</param>
-        /// <returns>The determinant value.</returns>
+        /// <param name="a11"> The a11 index. </param>
+        /// <param name="a12"> The a12 index. </param>
+        /// <param name="a13"> The a13 index. </param>
+        /// <param name="a21"> The a21 index. </param>
+        /// <param name="a22"> The a22 index. </param>
+        /// <param name="a23"> The a23 index. </param>
+        /// <param name="a31"> The a31 index. </param>
+        /// <param name="a32"> The a32 index. </param>
+        /// <param name="a33"> The a33 index. </param>
+        /// <returns> The determinant value. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double Determinant(int a11, int a12, int a13,
-            int a21, int a22, int a23,
-            int a31, int a32, int a33)
+        public double Determinant(int a11, int a12, int a13, int a21, int a22, int a23, int a31, int a32, int a33)
         {
-            var det =
-                this[a11] * this[a22] * this[a33] +
-                this[a13] * this[a21] * this[a32] +
-                this[a12] * this[a23] * this[a31] -
-                this[a13] * this[a22] * this[a31] -
-                this[a11] * this[a23] * this[a32] -
-                this[a12] * this[a21] * this[a33];
+            var det = ((this[a11] * this[a22] * this[a33]) + (this[a13] * this[a21] * this[a32]) + (this[a12] * this[a23] * this[a31])) -
+                (this[a13] * this[a22] * this[a31]) -
+                (this[a11] * this[a23] * this[a32]) -
+                (this[a12] * this[a21] * this[a33]);
+
             return det;
         }
-        #endregion
+#endregion
     }
 }

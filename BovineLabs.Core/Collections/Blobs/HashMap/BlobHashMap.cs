@@ -42,20 +42,26 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary> Gets the value associated with the specified key. </summary>
-        /// <param name="key">The key of the value to get.</param>
-        /// <param name="item">If key is found item parameter will contain value. </param>
-        /// <returns>Returns true if key is found, otherwise returns false. </returns>
-        public bool TryGetValue(TKey key, out Ptr<TValue> item) => this.Data.TryGetFirstValue(key, out item, out _);
+        /// <param name="key"> The key of the value to get. </param>
+        /// <param name="item"> If key is found item parameter will contain value. </param>
+        /// <returns> Returns true if key is found, otherwise returns false. </returns>
+        public bool TryGetValue(TKey key, out Ptr<TValue> item)
+        {
+            return this.Data.TryGetFirstValue(key, out item, out _);
+        }
 
         /// <summary>
         /// Determines whether an key is in the container.
         /// </summary>
-        /// <param name="key">The key to locate in the container.</param>
-        /// <returns>Returns true if the container contains the key.</returns>
-        public bool ContainsKey(TKey key) => this.TryGetValue(key, out _);
+        /// <param name="key"> The key to locate in the container. </param>
+        /// <returns> Returns true if the container contains the key. </returns>
+        public bool ContainsKey(TKey key)
+        {
+            return this.TryGetValue(key, out _);
+        }
 
         /// <summary> Returns an enumerator over the key-value pairs of this hash map. </summary>
-        /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
+        /// <returns> An enumerator over the key-value pairs of this hash map. </returns>
         public unsafe BlobHashMapEnumerator<TKey, TValue> GetEnumerator()
         {
             return new BlobHashMapEnumerator<TKey, TValue>(ref UnsafeUtility.AsRef<BlobHashMapData<TKey, TValue>>(UnsafeUtility.AddressOf(ref this)));

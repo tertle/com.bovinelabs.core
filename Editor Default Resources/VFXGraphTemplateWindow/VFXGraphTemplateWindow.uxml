@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
     <ui:TextField label="Name" name="Name" />
     <ui:TextField label="Category" value="BovineLabs" name="Category" />
     <ui:TextField label="Description" name="Description" />

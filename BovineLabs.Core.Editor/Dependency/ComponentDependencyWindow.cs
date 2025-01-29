@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Editor.Dependency
 
         protected override void PopulateItems(List<SearchView.Item> items)
         {
-            foreach (TypeManager.TypeInfo t in TypeManager.AllTypes)
+            foreach (var t in TypeManager.AllTypes)
             {
                 if (t.Category != TypeManager.TypeCategory.ComponentData && t.Category != TypeManager.TypeCategory.BufferData)
                 {
@@ -41,7 +41,11 @@ namespace BovineLabs.Core.Editor.Dependency
                     continue;
                 }
 
-                items.Add(new SearchView.Item { Path = t.DebugTypeName.ToString().Replace('.', '/'), Data = t });
+                items.Add(new SearchView.Item
+                {
+                    Path = t.DebugTypeName.ToString().Replace('.', '/'),
+                    Data = t,
+                });
             }
         }
 
@@ -80,7 +84,7 @@ namespace BovineLabs.Core.Editor.Dependency
             this.Write();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         protected override VisualElement CreateView()
         {
             return new ScrollView();
@@ -89,14 +93,14 @@ namespace BovineLabs.Core.Editor.Dependency
         private unsafe void FindAllDependencies(ComponentSystemGroup systemGroup)
         {
             var masterUpdateList = systemGroup.m_MasterUpdateList;
-            int updateListLength = masterUpdateList.Length;
-            for (int i = 0; i < updateListLength; ++i)
+            var updateListLength = masterUpdateList.Length;
+            for (var i = 0; i < updateListLength; ++i)
             {
                 var index = masterUpdateList[i];
 
                 if (!index.IsManaged)
                 {
-                    SystemHandle handle = systemGroup.m_UnmanagedSystemsToUpdate[index.Index];
+                    var handle = systemGroup.m_UnmanagedSystemsToUpdate[index.Index];
                     ref var state = ref systemGroup.World.Unmanaged.ResolveSystemStateRef(handle);
                     GetDependencies(ref state);
                 }

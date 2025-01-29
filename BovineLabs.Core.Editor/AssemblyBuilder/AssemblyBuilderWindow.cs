@@ -142,10 +142,10 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             var assemblyToggles = this.rootVisualElement.Query<Toggle>(className: "assembly").Where(t => t.value).ToList();
 
             // Sort so Data is first, Systems is second, so it can be added to other packages
-            assemblyToggles.Sort((t1, t2) => t1.label == "Data" ? -1
-                : t2.label == "Data" ? 1
-                : t1.label is "Main" or "Server" ? -1
-                : t2.label is "Main" or "Server" ? 1 : 0);
+            assemblyToggles.Sort((t1, t2) => t1.label == "Data" ? -1 :
+                t2.label == "Data" ? 1 :
+                t1.label is "Main" or "Server" ? -1 :
+                t2.label is "Main" or "Server" ? 1 : 0);
 
             var nameField = this.rootVisualElement.Q<TextField>("name").value;
 
@@ -177,7 +177,9 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 definition.name = assemblyName;
                 definition.allowUnsafeCode = allowUnsafeCode;
 
-                var references = this.rootVisualElement.Q<Foldout>($"reference{toggle.label}")?.Children().OfType<Toggle>().Select(t => t.label).ToList() ?? new List<string>();
+                var references = this.rootVisualElement.Q<Foldout>($"reference{toggle.label}")?.Children().OfType<Toggle>().Select(t => t.label).ToList() ??
+                    new List<string>();
+
                 references.Add("BovineLabs.Core");
                 references.Add("BovineLabs.Core.Extensions");
 
@@ -228,6 +230,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                     switch (label)
                     {
                         case "Main":
+                            AddAnchor(references);
                             break;
 
                         case "Server":
@@ -235,10 +238,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                             break;
 
                         case "Debug":
-                            references.Add("BovineLabs.Anchor");
-                            references.Add("Unity.AppUI");
-                            references.Add("Unity.AppUI.MVVM");
-                            references.Add("Unity.AppUI.Redux");
+                            AddAnchor(references);
                             definition.defineConstraints.Add("UNITY_EDITOR || BL_DEBUG");
                             break;
 
@@ -300,6 +300,14 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             AssetDatabase.Refresh();
         }
 
+        private static void AddAnchor(List<string> references)
+        {
+            references.Add("BovineLabs.Anchor");
+            references.Add("Unity.AppUI");
+            references.Add("Unity.AppUI.MVVM");
+            references.Add("Unity.AppUI.Navigation");
+        }
+
         private IEnumerable<string> GetCommonReferences()
         {
             return this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().Where(t => t.value).Select(t => t.label);
@@ -312,11 +320,14 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private void AddInternalAccess(string nameField, string folder, params string[] ignore)
         {
-            var otherAssemblies = this.rootVisualElement.Query<Toggle>(className: "assembly")
-                .ToList()
-                .Where(t => !ignore.Contains(t.label))
-                .Select(t => (object)$"{(t.label == "Main" ? nameField : $"{nameField}.{t.label}")}")
-                .ToArray();
+            var otherAssemblies =
+                this
+                    .rootVisualElement
+                    .Query<Toggle>(className: "assembly")
+                    .ToList()
+                    .Where(t => !ignore.Contains(t.label))
+                    .Select(t => (object)$"{(t.label == "Main" ? nameField : $"{nameField}.{t.label}")}")
+                    .ToArray();
 
             var assemblyInfoPath = GetAssemblyInfoPath(folder);
 

@@ -57,7 +57,7 @@ namespace BovineLabs.Core.Utility
             return this.Value == other.Value;
         }
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
             return obj is Ptr<T> other && this.Equals(other);
         }

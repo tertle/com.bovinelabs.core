@@ -16,31 +16,31 @@ namespace BovineLabs.Core.Functions
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
-    /// <summary> The builder for creating <see cref="Functions{T, TO}"/>. </summary>
+    /// <summary> The builder for creating <see cref="Functions{T, TO}" />. </summary>
     /// <typeparam name="T"> Is the void* data that will be passed to the ExecuteFunction. Also serves as a grouping mechanism for ReflectAll. </typeparam>
     /// <typeparam name="TO"> Is the type of result that is expected from the ExecuteFunction. </typeparam>
     public unsafe struct FunctionsBuilder<T, TO> : IDisposable
         where T : unmanaged
         where TO : unmanaged
     {
-        private static List<MethodInfo>? cachedReflectAll;
+        private static List<MethodInfo> cachedReflectAll;
 
         private NativeHashSet<BuildData> functions;
 
-        /// <summary> Initializes a new instance of the <see cref="FunctionsBuilder{T, TO}"/> struct. </summary>
-        /// <param name="allocator"> The allocator to use for the builder. This should nearly always be <see cref="Allocator.Temp"/>. </param>
+        /// <summary> Initializes a new instance of the <see cref="FunctionsBuilder{T, TO}" /> struct. </summary>
+        /// <param name="allocator"> The allocator to use for the builder. This should nearly always be <see cref="Allocator.Temp" />. </param>
         public FunctionsBuilder(Allocator allocator)
         {
             this.functions = new NativeHashSet<BuildData>(0, allocator);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void Dispose()
         {
             this.functions.Dispose();
         }
 
-        /// <summary> Find all implementations of <see cref="IFunction{T}"/>. </summary>
+        /// <summary> Find all implementations of <see cref="IFunction{T}" />. </summary>
         /// <param name="state"> The system state passed to OnCreate. </param>
         /// <returns> Itself. </returns>
         public FunctionsBuilder<T, TO> ReflectAll(ref SystemState state)
@@ -75,10 +75,10 @@ namespace BovineLabs.Core.Functions
             return this;
         }
 
-        /// <summary> Manually add an instance of <see cref="IFunction{T}"/>. </summary>
+        /// <summary> Manually add an instance of <see cref="IFunction{T}" />. </summary>
         /// <param name="state"> The system state passed to OnCreate. </param>
         /// <param name="function"> The instance </param>
-        /// <typeparam name="TF"> The type of <see cref="IFunction{T}"/>. </typeparam>
+        /// <typeparam name="TF"> The type of <see cref="IFunction{T}" />. </typeparam>
         /// <returns> Itself. </returns>
         public FunctionsBuilder<T, TO> Add<TF>(ref SystemState state, TF function)
             where TF : unmanaged, IFunction<T>
@@ -86,11 +86,11 @@ namespace BovineLabs.Core.Functions
             return this.Add(ref state, function, BurstRuntime.GetHashCode64<TF>());
         }
 
-        /// <summary> Manually add an instance of <see cref="IFunction{T}"/>. </summary>
+        /// <summary> Manually add an instance of <see cref="IFunction{T}" />. </summary>
         /// <param name="state"> The system state passed to OnCreate. </param>
         /// <param name="function"> The instance. </param>
         /// <param name="hash"> Unique hash of the function. </param>
-        /// <typeparam name="TF"> The type of <see cref="IFunction{T}"/>. </typeparam>
+        /// <typeparam name="TF"> The type of <see cref="IFunction{T}" />. </typeparam>
         /// <returns> Itself. </returns>
         public FunctionsBuilder<T, TO> Add<TF>(ref SystemState state, TF function, long hash)
             where TF : unmanaged, IFunction<T>
@@ -135,9 +135,9 @@ namespace BovineLabs.Core.Functions
             return this;
         }
 
-        /// <summary> Manually create an instance of <see cref="IFunction{T}"/>. </summary>
+        /// <summary> Manually create an instance of <see cref="IFunction{T}" />. </summary>
         /// <param name="state"> The system state passed to OnCreate. </param>
-        /// <typeparam name="TF"> The type of <see cref="IFunction{T}"/> to create. </typeparam>
+        /// <typeparam name="TF"> The type of <see cref="IFunction{T}" /> to create. </typeparam>
         /// <returns> Itself. </returns>
         public FunctionsBuilder<T, TO> Add<TF>(ref SystemState state)
             where TF : unmanaged, IFunction<T>
@@ -148,8 +148,8 @@ namespace BovineLabs.Core.Functions
             }
         }
 
-        /// <summary> Builds the <see cref="Functions{T, TO}"/> to use with all the found <see cref="IFunction{T}"/>. </summary>
-        /// <returns> A new instance of <see cref="Functions{T, TO}"/>. </returns>
+        /// <summary> Builds the <see cref="Functions{T, TO}" /> to use with all the found <see cref="IFunction{T}" />. </summary>
+        /// <returns> A new instance of <see cref="Functions{T, TO}" />. </returns>
         public Functions<T, TO> Build()
         {
             var array = new NativeArray<FunctionData>(this.functions.Count, Allocator.Persistent);
@@ -165,8 +165,8 @@ namespace BovineLabs.Core.Functions
             return new Functions<T, TO>(array);
         }
 
-        /// <summary> Builds the <see cref="Functions{T, TO}"/> to use with all the found <see cref="IFunction{T}"/>. </summary>
-        /// <returns> A new instance of <see cref="Functions{T, TO}"/>. </returns>
+        /// <summary> Builds the <see cref="Functions{T, TO}" /> to use with all the found <see cref="IFunction{T}" />. </summary>
+        /// <returns> A new instance of <see cref="Functions{T, TO}" />. </returns>
         public FunctionsHash<T, TO> BuildHash()
         {
             var hash = new NativeHashMap<long, FunctionData>(this.functions.Count, Allocator.Persistent);

@@ -19,7 +19,9 @@ namespace BovineLabs.Core.Extensions
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref T ReadArrayElementWithStrideRef<T>(void* source, int index, int stride)
-            where T : unmanaged =>
-            ref UnsafeUtility.AsRef<T>((byte*)source + (index * (long)stride));
+            where T : unmanaged
+        {
+            return ref UnsafeUtility.AsRef<T>((byte*)source + (index * (long)stride));
+        }
     }
 }

@@ -11,6 +11,7 @@ namespace BovineLabs.Core.Editor.UI
     using System.Linq;
     using System.Reflection;
     using BovineLabs.Core.Editor.Helpers;
+    using Unity.Assertions;
     using Unity.Mathematics;
     using UnityEditor;
     using UnityEditor.TextCore.Text;
@@ -69,7 +70,7 @@ namespace BovineLabs.Core.Editor.UI
 
         static FontCharactersWindow()
         {
-            var assembly = typeof(UnityEditor.TextCore.Text.FontAssetCreatorWindow).Assembly;
+            var assembly = typeof(FontAssetCreatorWindow).Assembly;
             var type = assembly.GetType("UnityEditor.TextCore.Text.FontAsset_CreationMenu");
 
             var createFontAssetFromSelectedObjectMethod = type.GetMethod("CreateFontAssetFromSelectedObject", BindingFlags.Static | BindingFlags.NonPublic);
@@ -79,33 +80,42 @@ namespace BovineLabs.Core.Editor.UI
             var tryPackGlyphsInAtlasMethod = typeof(FontEngine).GetMethod("TryPackGlyphsInAtlas", BindingFlags.Static | BindingFlags.NonPublic);
             TryPackGlyphsInAtlas =
                 (Func<List<Glyph>, List<Glyph>, int, GlyphPackingMode, GlyphRenderMode, int, int, List<GlyphRect>, List<GlyphRect>, bool>)
-                tryPackGlyphsInAtlasMethod!
-                    .CreateDelegate(
-                        typeof(Func<List<Glyph>, List<Glyph>, int, GlyphPackingMode, GlyphRenderMode, int, int, List<GlyphRect>, List<GlyphRect>, bool>));
+                tryPackGlyphsInAtlasMethod!.CreateDelegate(
+                    typeof(Func<List<Glyph>, List<Glyph>, int, GlyphPackingMode, GlyphRenderMode, int, int, List<GlyphRect>, List<GlyphRect>, bool>));
 
-            var renderGlyphsToTextureMethod = typeof(FontEngine).GetMethod(
-                "RenderGlyphsToTexture",
-                BindingFlags.Static | BindingFlags.NonPublic,
-                null,
-                new[] { typeof(List<Glyph>), typeof(int), typeof(GlyphRenderMode), typeof(byte[]), typeof(int), typeof(int) },
-                null);
-            RenderGlyphsToTexture = (Func<List<Glyph>, int, GlyphRenderMode, byte[], int, int, FontEngineError>)renderGlyphsToTextureMethod!
-                .CreateDelegate(typeof(Func<List<Glyph>, int, GlyphRenderMode, byte[], int, int, FontEngineError>));
+            var renderGlyphsToTextureMethod = typeof(FontEngine).GetMethod("RenderGlyphsToTexture", BindingFlags.Static | BindingFlags.NonPublic, null,
+                new[] { typeof(List<Glyph>), typeof(int), typeof(GlyphRenderMode), typeof(byte[]), typeof(int), typeof(int) }, null);
+
+            RenderGlyphsToTexture =
+                (Func<List<Glyph>, int, GlyphRenderMode, byte[], int, int, FontEngineError>)renderGlyphsToTextureMethod!.CreateDelegate(
+                    typeof(Func<List<Glyph>, int, GlyphRenderMode, byte[], int, int, FontEngineError>));
 
             FontAssetGlyphTable = (Action<FontAsset, List<Glyph>>)typeof(FontAsset).GetProperty("glyphTable", BindingFlags.Instance | BindingFlags.Public)!
-                .GetSetMethod(true).CreateDelegate(typeof(Action<FontAsset, List<Glyph>>));
+                .GetSetMethod(true)
+                .CreateDelegate(typeof(Action<FontAsset, List<Glyph>>));
+
             FontAssetCharacterTable =
                 (Action<FontAsset, List<Character>>)typeof(FontAsset).GetProperty("characterTable", BindingFlags.Instance | BindingFlags.Public)!
-                    .GetSetMethod(true).CreateDelegate(typeof(Action<FontAsset, List<Character>>));
+                    .GetSetMethod(true)
+                    .CreateDelegate(typeof(Action<FontAsset, List<Character>>));
+
             FontAssetFontFeatureTable =
                 (Action<FontAsset, FontFeatureTable>)typeof(FontAsset).GetProperty("fontFeatureTable", BindingFlags.Instance | BindingFlags.Public)!
-                    .GetSetMethod(true).CreateDelegate(typeof(Action<FontAsset, FontFeatureTable>));
+                    .GetSetMethod(true)
+                    .CreateDelegate(typeof(Action<FontAsset, FontFeatureTable>));
+
             FontAssetAtlasWidth = (Action<FontAsset, int>)typeof(FontAsset).GetProperty("atlasWidth", BindingFlags.Instance | BindingFlags.Public)!
-                .GetSetMethod(true).CreateDelegate(typeof(Action<FontAsset, int>));
+                .GetSetMethod(true)
+                .CreateDelegate(typeof(Action<FontAsset, int>));
+
             FontAssetAtlasHeight = (Action<FontAsset, int>)typeof(FontAsset).GetProperty("atlasHeight", BindingFlags.Instance | BindingFlags.Public)!
-                .GetSetMethod(true).CreateDelegate(typeof(Action<FontAsset, int>));
+                .GetSetMethod(true)
+                .CreateDelegate(typeof(Action<FontAsset, int>));
+
             FontAssetAtlasPadding = (Action<FontAsset, int>)typeof(FontAsset).GetProperty("atlasPadding", BindingFlags.Instance | BindingFlags.Public)!
-                .GetSetMethod(true).CreateDelegate(typeof(Action<FontAsset, int>));
+                .GetSetMethod(true)
+                .CreateDelegate(typeof(Action<FontAsset, int>));
+
             FontAssetSortAllTables =
                 (Action<FontAsset>)typeof(FontAsset).GetMethod("SortAllTables", BindingFlags.Instance | BindingFlags.NonPublic)!.CreateDelegate(
                     typeof(Action<FontAsset>));
@@ -136,7 +146,7 @@ namespace BovineLabs.Core.Editor.UI
 
         private void CreateGUI()
         {
-            VisualElement root = this.rootVisualElement;
+            var root = this.rootVisualElement;
 
             var fontField = new ObjectField("Font") { objectType = typeof(Font) };
             root.Add(fontField);
@@ -166,7 +176,7 @@ namespace BovineLabs.Core.Editor.UI
 
         private static string PickAllCharsRangeFromFont(Font? font)
         {
-            string chars = string.Empty;
+            var chars = string.Empty;
             if (font != null)
             {
                 TrueTypeFontImporter? fontImporter = null;
@@ -189,7 +199,7 @@ namespace BovineLabs.Core.Editor.UI
 
                 // Only Non-Dynamic Fonts define the characterInfo array
                 var minMaxRange = new int2(-1, -1);
-                for (int i = 0; i < font.characterInfo.Length; i++)
+                for (var i = 0; i < font.characterInfo.Length; i++)
                 {
                     var charInfo = font.characterInfo[i];
                     var apply = true;
@@ -298,7 +308,7 @@ namespace BovineLabs.Core.Editor.UI
         {
             var staticFont = new FontAsset[FontWeights];
 
-            foreach ((Font font, string type) in group)
+            foreach (var (font, type) in group)
             {
                 var index = GetIndex(type);
                 if (index < 0)
@@ -380,27 +390,46 @@ namespace BovineLabs.Core.Editor.UI
         {
             switch (type.ToLower())
             {
-                case "thin": return 1;
-                case "extralight": return 2;
-                case "light": return 3;
-                case "regular": return 4;
-                case "medium": return 5;
-                case "semibold": return 6;
-                case "bold": return 7;
+                case "thin":
+                    return 1;
+                case "extralight":
+                    return 2;
+                case "light":
+                    return 3;
+                case "regular":
+                    return 4;
+                case "medium":
+                    return 5;
+                case "semibold":
+                    return 6;
+                case "bold":
+                    return 7;
                 case "extrabold":
-                case "heavy": return 8;
-                case "black": return 9;
-                case "thinitalic": return 11;
-                case "extralightitalic": return 12;
-                case "lightitalic": return 13;
-                case "italic": return 14;
-                case "mediumitalic": return 15;
-                case "semibolditalic": return 16;
-                case "bolditalic": return 17;
+                case "heavy":
+                    return 8;
+                case "black":
+                    return 9;
+                case "thinitalic":
+                    return 11;
+                case "extralightitalic":
+                    return 12;
+                case "lightitalic":
+                    return 13;
+                case "italic":
+                    return 14;
+                case "mediumitalic":
+                    return 15;
+                case "semibolditalic":
+                    return 16;
+                case "bolditalic":
+                    return 17;
                 case "extrabolditalic":
-                case "heavyitalic": return 18;
-                case "blackitalic": return 19;
-                default: return -1;
+                case "heavyitalic":
+                    return 18;
+                case "blackitalic":
+                    return 19;
+                default:
+                    return -1;
             }
         }
 
@@ -408,9 +437,9 @@ namespace BovineLabs.Core.Editor.UI
         {
             CreateFontAssetFromSelectedObject(font, GlyphRenderMode);
 
-            string assetPath = AssetDatabase.GetAssetPath(font);
-            string directoryName = Path.GetDirectoryName(assetPath)!;
-            string withoutExtension = Path.GetFileNameWithoutExtension(assetPath);
+            var assetPath = AssetDatabase.GetAssetPath(font);
+            var directoryName = Path.GetDirectoryName(assetPath)!;
+            var withoutExtension = Path.GetFileNameWithoutExtension(assetPath);
 
             var path = directoryName + "/" + withoutExtension + " SDF.asset";
 
@@ -429,9 +458,9 @@ namespace BovineLabs.Core.Editor.UI
         {
             CreateFontAssetFromSelectedObject(font, GlyphRenderMode);
 
-            string assetPath = AssetDatabase.GetAssetPath(font);
-            string directoryName = Path.GetDirectoryName(assetPath)!;
-            string withoutExtension = Path.GetFileNameWithoutExtension(assetPath);
+            var assetPath = AssetDatabase.GetAssetPath(font);
+            var directoryName = Path.GetDirectoryName(assetPath)!;
+            var withoutExtension = Path.GetFileNameWithoutExtension(assetPath);
 
             var path = directoryName + "/" + withoutExtension + " SDF.asset";
 
@@ -459,7 +488,7 @@ namespace BovineLabs.Core.Editor.UI
 
             FontAssetFontFeatureTable(fontAsset, this.GetAllFontFeatures(faceInfo));
 
-            for (int index = 1; index < fontAsset.atlasTextures.Length; ++index)
+            for (var index = 1; index < fontAsset.atlasTextures.Length; ++index)
             {
                 DestroyImmediate(fontAsset.atlasTextures[index], true);
             }
@@ -469,7 +498,7 @@ namespace BovineLabs.Core.Editor.UI
             FontAssetAtlasHeight(fontAsset, atlasHeight);
             FontAssetAtlasPadding(fontAsset, padding);
 
-            Texture2D atlasTexture = fontAsset.atlasTextures[0];
+            var atlasTexture = fontAsset.atlasTextures[0];
 
             var setAtlasTextureIsReadable =
                 (Action<Texture2D, bool>)typeof(FontAsset).GetField("SetAtlasTextureIsReadable", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null);
@@ -501,7 +530,8 @@ namespace BovineLabs.Core.Editor.UI
             return fontAsset;
         }
 
-        private FontAssetCreationEditorSettings SaveFontCreationSettings(FontAsset fontAsset, Font font, int atlasWidth, int atlasHeight, int pointSize, int padding)
+        private FontAssetCreationEditorSettings SaveFontCreationSettings(
+            FontAsset fontAsset, Font font, int atlasWidth, int atlasHeight, int pointSize, int padding)
         {
             return new FontAssetCreationEditorSettings
             {
@@ -525,7 +555,7 @@ namespace BovineLabs.Core.Editor.UI
 
         private FaceInfo PackAndRender(int atlasWidth, int atlasHeight, int pointSize, int padding, byte[] atlasTextureBuffer)
         {
-            Unity.Assertions.Assert.AreEqual(atlasWidth * atlasHeight, atlasTextureBuffer.Length);
+            Assert.AreEqual(atlasWidth * atlasHeight, atlasTextureBuffer.Length);
 
             var characterSet = ParseNumberSequence(this.characterSequence!.value);
 
@@ -539,9 +569,9 @@ namespace BovineLabs.Core.Editor.UI
             this.glyphsPacked.Clear();
 
             // Check if requested characters are available in the source font file.
-            for (int i = 0; i < characterSet.Length; i++)
+            for (var i = 0; i < characterSet.Length; i++)
             {
-                uint unicode = characterSet[i];
+                var unicode = characterSet[i];
 
                 if (FontEngine.TryGetGlyphIndex(unicode, out var glyphIndex))
                 {
@@ -562,7 +592,7 @@ namespace BovineLabs.Core.Editor.UI
                     }
 
                     // Add glyph reference to glyph lookup map.
-                    this.glyphLookupMap.Add(glyphIndex, new List<uint>() { unicode });
+                    this.glyphLookupMap.Add(glyphIndex, new List<uint> { unicode });
 
                     // Add glyph index to list of glyphs to add to texture.
                     this.availableGlyphsToAdd.Add(glyphIndex);
@@ -577,7 +607,7 @@ namespace BovineLabs.Core.Editor.UI
             // Pack available glyphs in the provided texture space.
             if (this.availableGlyphsToAdd.Count > 0)
             {
-                int packingModifier = 1;
+                var packingModifier = 1;
 
                 // Set point size
                 FontEngine.SetFaceSize(pointSize);
@@ -589,9 +619,9 @@ namespace BovineLabs.Core.Editor.UI
                 this.freeGlyphRects.Add(new GlyphRect(0, 0, atlasWidth - packingModifier, atlasHeight - packingModifier));
                 this.usedGlyphRects.Clear();
 
-                for (int i = 0; i < this.availableGlyphsToAdd.Count; i++)
+                for (var i = 0; i < this.availableGlyphsToAdd.Count; i++)
                 {
-                    uint glyphIndex = this.availableGlyphsToAdd[i];
+                    var glyphIndex = this.availableGlyphsToAdd[i];
 
                     if (FontEngine.TryGetGlyphWithIndexValue(glyphIndex, GlyphLoadFlags, out var glyph))
                     {
@@ -606,20 +636,12 @@ namespace BovineLabs.Core.Editor.UI
                     }
                 }
 
-                TryPackGlyphsInAtlas(
-                    this.glyphsToPack,
-                    this.glyphsPacked,
-                    padding,
-                    GlyphPackingMode.ContactPointRule,
-                    GlyphRenderMode,
-                    atlasWidth,
-                    atlasHeight,
-                    this.freeGlyphRects,
-                    this.usedGlyphRects);
+                TryPackGlyphsInAtlas(this.glyphsToPack, this.glyphsPacked, padding, GlyphPackingMode.ContactPointRule, GlyphRenderMode, atlasWidth, atlasHeight,
+                    this.freeGlyphRects, this.usedGlyphRects);
             }
             else
             {
-                int packingModifier = 1;
+                var packingModifier = 1;
 
                 FontEngine.SetFaceSize(pointSize);
 
@@ -636,9 +658,9 @@ namespace BovineLabs.Core.Editor.UI
             this.glyphsToRender.Clear();
 
             // Add glyphs and characters successfully added to texture to their respective font tables.
-            foreach (Glyph glyph in this.glyphsPacked)
+            foreach (var glyph in this.glyphsPacked)
             {
-                uint glyphIndex = glyph.index;
+                var glyphIndex = glyph.index;
 
                 this.fontGlyphTable.Add(glyph);
 
@@ -648,7 +670,7 @@ namespace BovineLabs.Core.Editor.UI
                     this.glyphsToRender.Add(glyph);
                 }
 
-                foreach (uint unicode in this.glyphLookupMap[glyphIndex])
+                foreach (var unicode in this.glyphLookupMap[glyphIndex])
                 {
                     // Create new Character
                     this.fontCharacterTable.Add(new Character(unicode, glyph));
@@ -657,7 +679,7 @@ namespace BovineLabs.Core.Editor.UI
 
             foreach (var glyph in this.glyphsToPack)
             {
-                foreach (uint unicode in this.glyphLookupMap[glyph.index])
+                foreach (var unicode in this.glyphLookupMap[glyph.index])
                 {
                     this.excludedCharacters.Add(unicode);
                 }
@@ -676,11 +698,11 @@ namespace BovineLabs.Core.Editor.UI
 
         private Texture2D CreateFontAtlasTexture(int atlasWidth, int atlasHeight, byte[] atlasTextureBuffer)
         {
-            Color32[] colors = new Color32[atlasWidth * atlasHeight];
+            var colors = new Color32[atlasWidth * atlasHeight];
             var fontAtlasTexture = new Texture2D(atlasWidth, atlasHeight, TextureFormat.Alpha8, false, true);
-            for (int index = 0; index < colors.Length; ++index)
+            for (var index = 0; index < colors.Length; ++index)
             {
-                byte num = atlasTextureBuffer[index];
+                var num = atlasTextureBuffer[index];
                 colors[index] = new Color32(num, num, num, num);
             }
 
@@ -692,10 +714,10 @@ namespace BovineLabs.Core.Editor.UI
 
         private static uint[] ParseNumberSequence(string sequence)
         {
-            List<uint> unicodeList = new List<uint>();
+            var unicodeList = new List<uint>();
             string[] sequences = sequence.Split(',');
 
-            foreach (string seq in sequences)
+            foreach (var seq in sequences)
             {
                 string[] s1 = seq.Split('-');
 
@@ -712,7 +734,7 @@ namespace BovineLabs.Core.Editor.UI
                 }
                 else
                 {
-                    for (uint j = uint.Parse(s1[0]); j < uint.Parse(s1[1]) + 1; j++)
+                    for (var j = uint.Parse(s1[0]); j < uint.Parse(s1[1]) + 1; j++)
                     {
                         unicodeList.Add(j);
                     }
@@ -727,9 +749,13 @@ namespace BovineLabs.Core.Editor.UI
             var window = CreateInstance<FontAssetCreatorWindow>();
 
             typeof(FontAssetCreatorWindow).GetField("m_FaceInfo", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(window, faceInfo);
-            typeof(FontAssetCreatorWindow).GetField("m_AvailableGlyphsToAdd", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(window, this.availableGlyphsToAdd);
+            typeof(FontAssetCreatorWindow).GetField("m_AvailableGlyphsToAdd", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(window,
+                this.availableGlyphsToAdd);
 
-            var fft = (FontFeatureTable)typeof(FontAssetCreatorWindow).GetMethod("GetAllFontFeatures", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, null);
+            var fft =
+                (FontFeatureTable)typeof(FontAssetCreatorWindow).GetMethod("GetAllFontFeatures", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window,
+                    null);
+
             DestroyImmediate(window);
 
             return fft;
@@ -738,7 +764,7 @@ namespace BovineLabs.Core.Editor.UI
         [MenuItem("BovineLabs/Tools/Font Characters", false)]
         private static void Init()
         {
-            FontCharactersWindow window = (FontCharactersWindow)GetWindow(typeof(FontCharactersWindow));
+            var window = (FontCharactersWindow)GetWindow(typeof(FontCharactersWindow));
             window.titleContent = new GUIContent("Font Characters");
             window.ShowUtility();
         }

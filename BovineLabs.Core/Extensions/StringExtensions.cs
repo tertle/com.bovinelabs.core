@@ -25,7 +25,7 @@ namespace BovineLabs.Core.Extensions
             for (var index = 0; index < input.Length; index++)
             {
                 // Check neighbours to support acronyms
-                if ((index > 0) && (index < input.Length - 1))
+                if (index > 0 && index < input.Length - 1)
                 {
                     if (char.IsUpper(input[index]) && (!char.IsUpper(input[index - 1]) || !char.IsUpper(input[index + 1])))
                     {

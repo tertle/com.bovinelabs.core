@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Functions
         [ReadOnly]
         private NativeArray<FunctionData> functions;
 
-        /// <summary> Initializes a new instance of the <see cref="Functions{T, TO}"/> struct. </summary>
+        /// <summary> Initializes a new instance of the <see cref="Functions{T, TO}" /> struct. </summary>
         /// <param name="functions"> The collection of functions. </param>
         internal Functions(NativeArray<FunctionData> functions)
         {

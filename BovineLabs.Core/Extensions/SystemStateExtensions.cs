@@ -184,10 +184,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         public static bool TryGetSingletonBuffer<T>(
-            ref this SystemState state,
-            out DynamicBuffer<T> buffer,
-            bool isReadOnly = false,
-            bool completeDependency = true)
+            ref this SystemState state, out DynamicBuffer<T> buffer, bool isReadOnly = false, bool completeDependency = true)
             where T : unmanaged, IBufferElementData
         {
             var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(ref state);
@@ -220,7 +217,7 @@ namespace BovineLabs.Core.Extensions
             return query.GetSingleton<T>();
         }
 
-        public static bool TryGetManagedSingleton<T>(ref this SystemState state, out T? component, bool completeDependency = true)
+        public static bool TryGetManagedSingleton<T>(ref this SystemState state, out T component, bool completeDependency = true)
             where T : class, IComponentData
         {
             var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(ref state);

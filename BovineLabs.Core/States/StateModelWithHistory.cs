@@ -21,12 +21,8 @@ namespace BovineLabs.Core.States
         private DynamicComponentTypeHandle historyForwardType;
 
         public StateModelWithHistory(
-            ref SystemState state,
-            ComponentType stateComponent,
-            ComponentType previousStateComponent,
-            ComponentType historyBackComponent,
-            ComponentType historyForwardComponent,
-            int maxHistorySize)
+            ref SystemState state, ComponentType stateComponent, ComponentType previousStateComponent, ComponentType historyBackComponent,
+            ComponentType historyForwardComponent, int maxHistorySize)
         {
             Assert.AreEqual(UnsafeUtility.SizeOf<byte>(), TypeManager.GetTypeInfo(stateComponent.TypeIndex).ElementSize);
             Assert.AreEqual(UnsafeUtility.SizeOf<byte>(), TypeManager.GetTypeInfo(previousStateComponent.TypeIndex).ElementSize);
@@ -158,7 +154,7 @@ namespace BovineLabs.Core.States
                     var forward = historyForward.GetBuffer<byte>(i);
 
                     // Was it a Pop operation to a previous state
-                    if ((back.Length > 0) && (back[^1] == state))
+                    if (back.Length > 0 && back[^1] == state)
                     {
                         // Limit capacity
                         if (forward.Length == this.MaxHistory)

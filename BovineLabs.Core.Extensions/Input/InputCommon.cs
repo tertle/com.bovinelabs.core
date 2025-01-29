@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Input
 
     public struct InputCommon : IComponentData
     {
-        /// <summary> The size of the screen. <see cref="Screen.width"/> and <see cref="Screen.height"/>. </summary>
+        /// <summary> The size of the screen. <see cref="Screen.width" /> and <see cref="Screen.height" />. </summary>
         public int2 ScreenSize;
 
         /// <summary> Point in screen space. Screenspace is defined in pixels. The bottom-left is (0,0); the right-top is (pixelWidth,pixelHeight). </summary>
@@ -45,7 +45,7 @@ namespace BovineLabs.Core.Input
 
         /// <summary>
         /// Gets a value indicating whether the cursor is in the view and the application has focus.
-        /// combination of <see cref="CursorInViewPort"/> && <see cref="ApplicationFocus"/>.
+        /// combination of <see cref="CursorInViewPort" /> && <see cref="ApplicationFocus" />.
         /// </summary>
         public bool InViewWithFocus => this.CursorInViewPort && this.ApplicationFocus;
     }

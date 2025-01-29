@@ -212,7 +212,7 @@ namespace BovineLabs.Core.Editor.Dependency
                     var guid = guids[i];
                     var path = AssetDatabase.GUIDToAssetPath(guid);
                     EditorUtility.DisplayProgressBar("Searching", "AssemblyDefinitionAsset:" + path + " " + i + "/" + guids.Length,
-                        ((float)i / guids.Length) / 2f);
+                        (float)i / guids.Length / 2f);
 
                     var assemblyDefinition = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>(path);
                     if (assemblyDefinition == null)

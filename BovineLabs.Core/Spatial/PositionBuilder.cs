@@ -47,12 +47,11 @@ namespace BovineLabs.Core.Spatial
             dependency = JobHandle.CombineDependencies(dependency, dependency1);
 
             dependency = new GatherPositionsJob
-                {
-                    TransformHandle = this.transformHandle,
-                    Positions = positions,
-                    FirstEntityIndices = firstEntityIndices,
-                }
-                .ScheduleParallel(this.query, dependency);
+            {
+                TransformHandle = this.transformHandle,
+                Positions = positions,
+                FirstEntityIndices = firstEntityIndices,
+            }.ScheduleParallel(this.query, dependency);
 
             return dependency;
         }

@@ -13,7 +13,11 @@ namespace BovineLabs.Core.Tests.Utility
         [Test]
         public void AABBTriangle()
         {
-            var aabb = new MinMaxAABB { Min = new float3(1), Max = new float3(5) };
+            var aabb = new MinMaxAABB
+            {
+                Min = new float3(1),
+                Max = new float3(5),
+            };
 
             Assert.IsTrue(IntersectionTests.AABBTriangle(aabb, new float3(3, 0, 3), new float3(3, 4, 3), new float3(4, 0, 3)));
             Assert.IsTrue(IntersectionTests.AABBTriangle(aabb, new float3(2, 2, 3), new float3(2, 3, 3), new float3(3, 2, 3)));

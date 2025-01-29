@@ -27,7 +27,6 @@ namespace BovineLabs.Core.Internal
 
             // pointer to chunk disabled count
             public int* m_PtrChunkDisabledCount;
-
         }
 
         public readonly struct SafeBitRefClone

@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
     <Style src="project://database/Packages/com.bovinelabs.core/Editor%20Default%20Resources/AssemblyBuilder/AssemblyBuilder.uss?fileID=7433441132597879392&amp;guid=fa30cde714e0ef04d8ca4d94a1c56586&amp;type=3#AssemblyBuilder" />
     <ui:VisualElement name="screen" class="screen" style="flex-grow: 1;">
         <ui:VisualElement style="flex-grow: 1;">
@@ -34,8 +34,12 @@
                 </ui:VisualElement>
                 <ui:Label text="Options" style="font-size: 14px; -unity-font-style: bold;" />
                 <ui:VisualElement>
-                    <ui:Toggle label="Internals Visible To" tooltip="Provide the Editor, Tests and PerformanceTests assemblies internal access to the Main assembly" value="true" name="internalAccess" />
-                    <ui:Toggle label="Disable Auto Creation" tooltip="Add a assembly wide [DisableAutoCreation] attribute to the Test and PerformanceTest assemblies" name="disableAutoCreation" value="true" />
+                    <ui:Toggle label="Internals Visible To"
+                               tooltip="Provide the Editor, Tests and PerformanceTests assemblies internal access to the Main assembly" value="true"
+                               name="internalAccess" />
+                    <ui:Toggle label="Disable Auto Creation"
+                               tooltip="Add a assembly wide [DisableAutoCreation] attribute to the Test and PerformanceTest assemblies"
+                               name="disableAutoCreation" value="true" />
                     <ui:Toggle label="Allow Unsafe Code" tooltip="Enable unsafe code within the generated assemblies" name="allowUnsafeCode" value="true" />
                 </ui:VisualElement>
             </ui:ScrollView>

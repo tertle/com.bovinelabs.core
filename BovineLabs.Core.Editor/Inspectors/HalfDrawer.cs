@@ -24,6 +24,7 @@ namespace BovineLabs.Core.Editor.Inspectors
                 property.serializedObject.ApplyModifiedProperties();
                 field.SetValueWithoutNotify(new half { value = (ushort)valueProperty.intValue });
             });
+
             return field;
         }
     }

@@ -11,55 +11,144 @@ namespace BovineLabs.Core.Cache
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+    using Unity.Jobs;
+    using UnityEngine;
 
     public unsafe struct CacheImpl<T, TC, TCC>
-        where TCC : unmanaged,  ICacheComponent<TC>
+        where TCC : unmanaged, ICacheComponent<TC>
         where TC : unmanaged, IEntityCache
     {
-        private EntityQuery query;
-        private EntityQuery missingQuery;
+        private EntityQuery updateQuery;
+        private EntityQuery newQuery;
+        private EntityQuery cleanupQuery;
+
         private EntityTypeHandle entityHandle;
         private ComponentTypeHandle<TCC> cacheHandle;
-        private NativeQueue<Ptr<UnsafeList<TC>>> lists;
+        private ComponentTypeHandle<CacheCleanup> cacheCleanupHandle;
+
+        private NativeQueue<New> newQueue;
+        private NativeHashSet<Ptr<UnsafeList<TC>>> allocated;
+
+        private JobHandle lastFrameDependency;
 
         public void OnCreate(ref SystemState state)
         {
-            this.lists = new NativeQueue<Ptr<UnsafeList<TC>>>(Allocator.Persistent);
+            this.newQueue = new NativeQueue<New>(Allocator.Persistent);
+            this.allocated = new NativeHashSet<Ptr<UnsafeList<TC>>>(256, Allocator.Persistent);
 
             using var builder = new EntityQueryBuilder(Allocator.Temp);
 
-            this.query = builder.WithAllChunkComponentRW<TCC>().Build(ref state);
-            this.query.AddOrderVersionFilter();
+            this.updateQuery = builder.WithAllChunkComponentRW<TCC>().Build(ref state);
+            this.updateQuery.AddOrderVersionFilter();
 
             // By ensuring prefabs are given the chunk component we avoid entities instantiated ending up in individual chunks
             builder.Reset();
-            this.missingQuery = builder.WithAll<T>().WithNoneChunkComponent<TCC>().WithOptions(EntityQueryOptions.IncludePrefab).Build(ref state);
+            this.newQuery = builder.WithAll<T>().WithNoneChunkComponent<TCC>().WithOptions(EntityQueryOptions.IncludePrefab).Build(ref state);
+
+            builder.Reset();
+            this.cleanupQuery = builder.WithAll<CacheCleanup>().WithNone<TCC>().Build(ref state);
 
             this.entityHandle = state.GetEntityTypeHandle();
             this.cacheHandle = state.GetComponentTypeHandle<TCC>();
+            this.cacheCleanupHandle = state.GetComponentTypeHandle<CacheCleanup>();
         }
 
         public void OnDestroy()
         {
-            while (this.lists.TryDequeue(out var list))
+            while (this.newQueue.TryDequeue(out var list))
             {
-                UnsafeList<TC>.Destroy(list.Value);
+                UnsafeList<TC>.Destroy(list.Cache.Value);
             }
 
-            this.lists.Dispose();
+            this.newQueue.Dispose();
+
+            foreach (var p in this.allocated)
+            {
+                UnsafeList<TC>.Destroy(p);
+            }
+
+            this.allocated.Dispose();
         }
 
         public void OnUpdate(ref SystemState state, UpdateCacheJob job = default)
         {
-            state.EntityManager.AddComponent(this.missingQuery, ComponentType.ChunkComponent<TCC>());
+            this.lastFrameDependency.Complete(); // last frame's job
 
-            this.entityHandle.Update(ref state);
+            this.AddCleanupState(ref state);
+            this.CleanupOldCache(ref state);
+
+            state.EntityManager.AddComponent(this.newQuery, ComponentType.ChunkComponent<TCC>());
+
+            this.UpdateCache(ref state, ref job);
+
+            this.lastFrameDependency = state.Dependency;
+        }
+
+        private void AddCleanupState(ref SystemState state)
+        {
+            while (this.newQueue.TryDequeue(out var list))
+            {
+                if (!state.EntityManager.Exists(list.MetaEntity))
+                {
+                    // Meta Entity no longer exists
+                    UnsafeList<TC>.Destroy(list.Cache.Value);
+                    continue;
+                }
+
+                this.allocated.Add(list.Cache);
+                state.EntityManager.AddComponentData(list.MetaEntity, new CacheCleanup { Ptr = list.Cache });
+            }
+        }
+
+        private void CleanupOldCache(ref SystemState state)
+        {
+            if (this.cleanupQuery.IsEmptyIgnoreFilter)
+            {
+                return;
+            }
+
+            this.cacheCleanupHandle.Update(ref state);
+
+            foreach (var chunk in this.cleanupQuery.ToArchetypeChunkArray(state.WorldUpdateAllocator))
+            {
+                var cleanup = (CacheCleanup*)chunk.GetRequiredComponentDataPtrRO(ref this.cacheCleanupHandle);
+                for (var i = 0; i < chunk.Count; i++)
+                {
+                    if (cleanup[i].Ptr == null)
+                    {
+                        Debug.Log("Null cache how?");
+                        continue;
+                    }
+
+                    var cache = (Ptr<UnsafeList<TC>>)cleanup[i].Ptr;
+
+                    if (!this.allocated.Remove(cache))
+                    {
+                        Debug.LogError("Somehow cache was not stored");
+                    }
+
+                    UnsafeList<TC>.Destroy(cache);
+                }
+            }
+
+            state.EntityManager.RemoveComponent<CacheCleanup>(this.cleanupQuery);
+        }
+
+        private void UpdateCache(ref SystemState state, ref UpdateCacheJob job)
+        {
             this.cacheHandle.Update(ref state);
+            this.entityHandle.Update(ref state);
 
             job.EntityHandle = this.entityHandle;
             job.CacheHandle = this.cacheHandle;
-            job.Lists = this.lists.AsParallelWriter();
-            state.Dependency = job.ScheduleParallel(this.query, state.Dependency);
+            job.Lists = this.newQueue.AsParallelWriter();
+            state.Dependency = job.ScheduleParallel(this.updateQuery, state.Dependency);
+        }
+
+        public struct New
+        {
+            public Entity MetaEntity;
+            public Ptr<UnsafeList<TC>> Cache;
         }
 
         [BurstCompile]
@@ -70,7 +159,7 @@ namespace BovineLabs.Core.Cache
 
             public ComponentTypeHandle<TCC> CacheHandle;
 
-            public NativeQueue<Ptr<UnsafeList<TC>>>.ParallelWriter Lists;
+            public NativeQueue<New>.ParallelWriter Lists;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
@@ -79,7 +168,12 @@ namespace BovineLabs.Core.Cache
                 if (cacheComponent.Cache == null)
                 {
                     cacheComponent.Cache = UnsafeList<TC>.Create(chunk.Capacity, Allocator.Persistent);
-                    this.Lists.Enqueue(cacheComponent.Cache);
+
+                    this.Lists.Enqueue(new New
+                    {
+                        MetaEntity = chunk.m_Chunk.MetaChunkEntity,
+                        Cache = cacheComponent.Cache,
+                    });
                 }
 
                 var cache = *cacheComponent.Cache;
@@ -131,5 +225,12 @@ namespace BovineLabs.Core.Cache
                 *cacheComponent.Cache = cache;
             }
         }
+    }
+
+    // Outside the struct to avoid generic issues
+    internal unsafe struct CacheCleanup : ICleanupComponentData
+    {
+        [NativeDisableUnsafePtrRestriction]
+        public void* Ptr;
     }
 }

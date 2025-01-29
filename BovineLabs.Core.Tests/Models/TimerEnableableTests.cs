@@ -64,7 +64,8 @@ namespace BovineLabs.Core.Tests.Models
         {
             Allocate(count, Allocator.Persistent, out var remainings, out var isOn);
 
-            Measure.Method(() =>
+            Measure
+                .Method(() =>
                 {
                     CalculateNew(remainings, isOn, count, 0.6f);
                 })
@@ -80,7 +81,8 @@ namespace BovineLabs.Core.Tests.Models
         {
             Allocate(count, Allocator.Persistent, out var remainings, out var isOn);
 
-            Measure.Method(() =>
+            Measure
+                .Method(() =>
                 {
                     CalculateOld(remainings, isOn, count, 0.6f);
                 })
@@ -184,7 +186,7 @@ namespace BovineLabs.Core.Tests.Models
 
         private static void CalculateNew128([NoAlias] float* remainings, [NoAlias] ulong* isOn, int length, float deltaTime)
         {
-            ulong* u0 = isOn;
+            var u0 = isOn;
             var length0 = math.min(64, length);
 
             for (var i = 0; i < length0; i++)
@@ -193,7 +195,7 @@ namespace BovineLabs.Core.Tests.Models
                 UnsafeBitArray.Set(u0, i, remainings[i] != 0);
             }
 
-            ulong* u1 = isOn + 1;
+            var u1 = isOn + 1;
             var length1 = math.min(64, length - 64);
 
             for (var i = 0; i < length1; i++)
@@ -234,7 +236,7 @@ namespace BovineLabs.Core.Tests.Models
 
                     var value = (uint)math.bitmask(remaining4[i] != 0);
                     var mask = 15u << (i * 4);
-                    *isOn = (*isOn & ~mask) | value << (i * 4);
+                    *isOn = (*isOn & ~mask) | (value << (i * 4));
                 }
             }
 
@@ -251,7 +253,7 @@ namespace BovineLabs.Core.Tests.Models
 
                     var value = (uint)math.bitmask(remaining4[i] != 0);
                     var mask = 15u << (i * 4);
-                    *isOn = (*isOn & ~mask) | value << (i * 4);
+                    *isOn = (*isOn & ~mask) | (value << (i * 4));
                 }
 
                 for (var i = 0; i < remainder; i++)

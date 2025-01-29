@@ -26,7 +26,7 @@ namespace BovineLabs.Core.SubScenes
         private NativeHashSet<Entity> waitingForLoad;
         private NativeHashSet<Hash128> scenes;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void OnCreate(ref SystemState state)
         {
             this.volumes = new NativeList<Volume>(16, Allocator.Persistent);
@@ -35,7 +35,7 @@ namespace BovineLabs.Core.SubScenes
             this.scenes = new NativeHashSet<Hash128>(16, Allocator.Persistent);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void OnDestroy(ref SystemState state)
         {
             this.volumes.Dispose();

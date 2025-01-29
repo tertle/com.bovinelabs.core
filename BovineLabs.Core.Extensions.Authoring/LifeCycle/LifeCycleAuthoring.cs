@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Authoring.LifeCycle
 
         private class Baker : Baker<LifeCycleAuthoring>
         {
-            /// <inheritdoc/>
+            /// <inheritdoc />
             public override void Bake(LifeCycleAuthoring authoring)
             {
                 var entity = this.GetEntity(TransformUsageFlags.None);

@@ -17,7 +17,7 @@ namespace BovineLabs.Testing
     {
         public override ActionTargets Targets => ActionTargets.Test;
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void BeforeTest(ITest test)
         {
             if (test.IsSuite)
@@ -33,7 +33,7 @@ namespace BovineLabs.Testing
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public override void AfterTest(ITest test)
         {
             if (test.IsSuite)

@@ -27,7 +27,8 @@ namespace BovineLabs.Core.Utility
             {
                 case Codec.LZ4:
                     return CompressBoundLZ4(srcSize);
-                default: throw new ArgumentException($"Invalid codec '{codec}' specified");
+                default:
+                    throw new ArgumentException($"Invalid codec '{codec}' specified");
             }
         }
 
@@ -37,14 +38,15 @@ namespace BovineLabs.Core.Utility
         /// <param name="srcSize"> The length of the source buffer. </param>
         /// <param name="dst"> The destination buffer. </param>
         /// <param name="boundedSize"> The destination buffer size. </param>
-        /// <returns>The compressed length. </returns>
+        /// <returns> The compressed length. </returns>
         public static int Compress(Codec codec, byte* src, int srcSize, byte* dst, int boundedSize)
         {
             switch (codec)
             {
                 case Codec.LZ4:
                     return CompressLZ4(src, dst, srcSize, boundedSize);
-                default: throw new ArgumentException($"Invalid codec '{codec}' specified");
+                default:
+                    throw new ArgumentException($"Invalid codec '{codec}' specified");
             }
         }
 
@@ -95,7 +97,8 @@ namespace BovineLabs.Core.Utility
             {
                 case Codec.LZ4:
                     return DecompressLZ4(compressedData, decompressedData, compressedSize, decompressedSize) > 0;
-                default: throw new ArgumentException($"Invalid codec '{codec}' specified");
+                default:
+                    throw new ArgumentException($"Invalid codec '{codec}' specified");
             }
         }
 

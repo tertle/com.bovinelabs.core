@@ -14,12 +14,16 @@ namespace BovineLabs.Core.Jobs
     /// <summary>
     /// A replacement for IJobParallelForBatch when the number of work items is not known at Schedule time.
     /// IJobParallelForDeferBatch lets you calculate the number of iterations to perform in a job that must execute before the IJobParallelForDeferBatch job.
-    ///
     /// When Scheduling the job's Execute(int startIndex, int count) method will be invoked on multiple worker threads in parallel to each other.
-    /// Execute(int startIndex, int count) will be executed once for each index from 0 to the provided length. Each iteration must be independent from other iterations (The safety system enforces this rule for you). The indices have no guaranteed order and are executed on multiple cores in parallel.
-    /// Unity automatically splits the work into chunks of no less than the provided batchSize, and schedules an appropriate number of jobs based on the number of worker threads, the length of the array and the batch size.
-    /// Batch size should generally be chosen depending on the amount of work performed in the job. A simple job, for example adding a couple of float3 to each other should probably have a batch size of 32 to 128. However if the work performed is very expensive then it is best to use a small batch size, for expensive work a batch size of 1 is totally fine. IJobParallelFor performs work stealing using atomic operations. Batch sizes can be small but they are not for free.
-    /// The returned JobHandle can be used to ensure that the job has completed. Or it can be passed to other jobs as a dependency, thus ensuring the jobs are executed one after another on the worker threads.
+    /// Execute(int startIndex, int count) will be executed once for each index from 0 to the provided length. Each iteration must be independent from other iterations
+    /// (The safety system enforces this rule for you). The indices have no guaranteed order and are executed on multiple cores in parallel.
+    /// Unity automatically splits the work into chunks of no less than the provided batchSize, and schedules an appropriate number of jobs based on the number of
+    /// worker threads, the length of the array and the batch size.
+    /// Batch size should generally be chosen depending on the amount of work performed in the job. A simple job, for example adding a couple of float3 to each other
+    /// should probably have a batch size of 32 to 128. However if the work performed is very expensive then it is best to use a small batch size, for expensive work a
+    /// batch size of 1 is totally fine. IJobParallelFor performs work stealing using atomic operations. Batch sizes can be small but they are not for free.
+    /// The returned JobHandle can be used to ensure that the job has completed. Or it can be passed to other jobs as a dependency, thus ensuring the jobs are executed
+    /// one after another on the worker threads.
     /// </summary>
     [JobProducerType(typeof(IJobParallelForDeferBatchExtensions.IJobParallelForDeferBatchProducer<>))]
     public interface IJobParallelForDeferBatch
@@ -66,11 +70,7 @@ namespace BovineLabs.Core.Jobs
         /// <returns> JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread. </returns>
         /// <typeparam name="T"> Job type </typeparam>
         /// <typeparam name="U"> List element type </typeparam>
-        public static unsafe JobHandle ScheduleParallel<T, U>(
-            this T jobData,
-            NativeList<U> list,
-            int innerloopBatchCount,
-            JobHandle dependsOn = default)
+        public static unsafe JobHandle ScheduleParallel<T, U>(this T jobData, NativeList<U> list, int innerloopBatchCount, JobHandle dependsOn = default)
             where T : unmanaged, IJobParallelForDeferBatch
             where U : unmanaged
         {
@@ -82,8 +82,8 @@ namespace BovineLabs.Core.Jobs
             var safety = NativeListUnsafeUtility.GetAtomicSafetyHandle(ref list);
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
-            return ScheduleParallelBatchInternal(
-                ref jobData, innerloopBatchCount, NativeListUnsafeUtility.GetInternalListDataPtrUnchecked(ref list), atomicSafetyHandlePtr, dependsOn);
+            return ScheduleParallelBatchInternal(ref jobData, innerloopBatchCount, NativeListUnsafeUtility.GetInternalListDataPtrUnchecked(ref list),
+                atomicSafetyHandlePtr, dependsOn);
         }
 
         /// <summary>
@@ -104,11 +104,7 @@ namespace BovineLabs.Core.Jobs
         /// <returns> JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread. </returns>
         /// <typeparam name="T"> Job type. </typeparam>
         /// <typeparam name="TU"> List element type. </typeparam>
-        public static unsafe JobHandle Schedule<T, TU>(
-            this T jobData,
-            NativeList<TU> list,
-            int innerloopBatchCount,
-            JobHandle dependsOn = default)
+        public static unsafe JobHandle Schedule<T, TU>(this T jobData, NativeList<TU> list, int innerloopBatchCount, JobHandle dependsOn = default)
             where T : unmanaged, IJobParallelForDeferBatch
             where TU : unmanaged
         {
@@ -122,8 +118,8 @@ namespace BovineLabs.Core.Jobs
             var safety = NativeListUnsafeUtility.GetAtomicSafetyHandle(ref list);
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
-            return ScheduleBatchInternal(
-                ref jobData, innerloopBatchCount, NativeListUnsafeUtility.GetInternalListDataPtrUnchecked(ref list), atomicSafetyHandlePtr, dependsOn);
+            return ScheduleBatchInternal(ref jobData, innerloopBatchCount, NativeListUnsafeUtility.GetInternalListDataPtrUnchecked(ref list),
+                atomicSafetyHandlePtr, dependsOn);
         }
 
         /// <summary>
@@ -148,10 +144,7 @@ namespace BovineLabs.Core.Jobs
         /// <typeparam name="T"> Job type </typeparam>
         /// <typeparam name="U"> List element type </typeparam>
         public static unsafe JobHandle ScheduleParallelByRef<T, U>(
-            this ref T jobData,
-            NativeList<U> list,
-            int innerloopBatchCount,
-            JobHandle dependsOn = default)
+            this ref T jobData, NativeList<U> list, int innerloopBatchCount, JobHandle dependsOn = default)
             where T : unmanaged, IJobParallelForDeferBatch
             where U : unmanaged
         {
@@ -163,8 +156,8 @@ namespace BovineLabs.Core.Jobs
             var safety = NativeListUnsafeUtility.GetAtomicSafetyHandle(ref list);
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
-            return ScheduleParallelBatchInternal(
-                ref jobData, innerloopBatchCount, NativeListUnsafeUtility.GetInternalListDataPtrUnchecked(ref list), atomicSafetyHandlePtr, dependsOn);
+            return ScheduleParallelBatchInternal(ref jobData, innerloopBatchCount, NativeListUnsafeUtility.GetInternalListDataPtrUnchecked(ref list),
+                atomicSafetyHandlePtr, dependsOn);
         }
 
         /// <summary>
@@ -185,11 +178,7 @@ namespace BovineLabs.Core.Jobs
         /// <returns> JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread. </returns>
         /// <typeparam name="T"> Job type </typeparam>
         /// <returns> </returns>
-        public static unsafe JobHandle ScheduleParallel<T>(
-            this T jobData,
-            int* forEachCount,
-            int innerloopBatchCount,
-            JobHandle dependsOn = default)
+        public static unsafe JobHandle ScheduleParallel<T>(this T jobData, int* forEachCount, int innerloopBatchCount, JobHandle dependsOn = default)
             where T : unmanaged, IJobParallelForDeferBatch
         {
             var forEachListPtr = (byte*)forEachCount - sizeof(void*);
@@ -197,10 +186,7 @@ namespace BovineLabs.Core.Jobs
         }
 
         public static unsafe JobHandle ScheduleParallel<T>(
-            this T jobData,
-            NativeReference<int> forEachCount,
-            int innerloopBatchCount,
-            JobHandle dependsOn = default)
+            this T jobData, NativeReference<int> forEachCount, int innerloopBatchCount, JobHandle dependsOn = default)
             where T : unmanaged, IJobParallelForDeferBatch
         {
             var forEachListPtr = (byte*)forEachCount.GetUnsafePtrWithoutChecks() - sizeof(void*);
@@ -228,11 +214,7 @@ namespace BovineLabs.Core.Jobs
         /// <returns> JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread. </returns>
         /// <typeparam name="T"> </typeparam>
         /// <returns> </returns>
-        public static unsafe JobHandle ScheduleParallelByRef<T>(
-            this ref T jobData,
-            int* forEachCount,
-            int innerloopBatchCount,
-            JobHandle dependsOn = default)
+        public static unsafe JobHandle ScheduleParallelByRef<T>(this ref T jobData, int* forEachCount, int innerloopBatchCount, JobHandle dependsOn = default)
             where T : unmanaged, IJobParallelForDeferBatch
         {
             var forEachListPtr = (byte*)forEachCount - sizeof(void*);
@@ -240,11 +222,7 @@ namespace BovineLabs.Core.Jobs
         }
 
         private static unsafe JobHandle ScheduleParallelBatchInternal<T>(
-            ref T jobData,
-            int innerloopBatchCount,
-            void* forEachListPtr,
-            void* atomicSafetyHandlePtr,
-            JobHandle dependsOn)
+            ref T jobData, int innerloopBatchCount, void* forEachListPtr, void* atomicSafetyHandlePtr, JobHandle dependsOn)
             where T : unmanaged, IJobParallelForDeferBatch
         {
             IJobParallelForDeferBatchProducer<T>.Initialize();
@@ -255,11 +233,7 @@ namespace BovineLabs.Core.Jobs
         }
 
         private static unsafe JobHandle ScheduleBatchInternal<T>(
-            ref T jobData,
-            int innerloopBatchCount,
-            void* forEachListPtr,
-            void* atomicSafetyHandlePtr,
-            JobHandle dependsOn)
+            ref T jobData, int innerloopBatchCount, void* forEachListPtr, void* atomicSafetyHandlePtr, JobHandle dependsOn)
             where T : unmanaged, IJobParallelForDeferBatch
         {
             IJobParallelForDeferBatchProducer<T>.Initialize();

@@ -80,14 +80,25 @@ namespace BovineLabs.Core.Input
 
             this.inputCommon.ApplicationFocus = this.focus.Value;
 
-            // ScreenPointToRay fails if out of bounds so we clamp it.
-            // Won't be accurate, but it's up to the user to determine if they want to use it or not with InViewPort
-            var screenPointForRay = this.inputCommon.CursorInCameraViewPort
-                ? this.inputCommon.CursorScreenPoint
-                : math.clamp(this.inputCommon.CursorScreenPoint, float2.zero, this.inputCommon.CursorScreenPoint);
+            if (math.all(this.inputCommon.CursorCameraViewPoint))
+            {
+                // ScreenPointToRay fails if out of bounds so we clamp it.
+                // Won't be accurate, but it's up to the user to determine if they want to use it or not with InViewPort
+                var screenPointForRay = this.inputCommon.CursorInCameraViewPort
+                    ? this.inputCommon.CursorScreenPoint
+                    : math.clamp(this.inputCommon.CursorScreenPoint, float2.zero, this.inputCommon.CursorScreenPoint);
 
-            var cameraRay = camera.ScreenPointToRay((Vector2)screenPointForRay);
-            this.inputCommon.CameraRay = new Ray { Origin = cameraRay.origin, Displacement = cameraRay.direction };
+                var cameraRay = camera.ScreenPointToRay((Vector2)screenPointForRay);
+                this.inputCommon.CameraRay = new Ray
+                {
+                    Origin = cameraRay.origin,
+                    Displacement = cameraRay.direction,
+                };
+            }
+            else
+            {
+                this.inputCommon.CameraRay = default;
+            }
 
             SystemAPI.SetSingleton(this.inputCommon);
 

@@ -44,7 +44,7 @@ namespace BovineLabs.Core.Collections
 
         internal UnsafeThreadStreamBlock* Allocate(UnsafeThreadStreamBlock* oldBlock, int threadIndex)
         {
-            Debug.Assert((threadIndex < UnsafeThreadStream.ForEachCount) && (threadIndex >= 0));
+            Debug.Assert(threadIndex < UnsafeThreadStream.ForEachCount && threadIndex >= 0);
 
             var block = (UnsafeThreadStreamBlock*)Memory.Unmanaged.Allocate(AllocationSize, 16, this.Allocator);
             block->Next = null;

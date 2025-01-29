@@ -6,7 +6,6 @@ namespace BovineLabs.Core.Model
 {
     using Unity.Assertions;
     using Unity.Burst;
-    using Unity.Burst.CompilerServices;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -36,8 +35,7 @@ namespace BovineLabs.Core.Model
             this.activeHandle = state.GetComponentTypeHandle<TActive>(true);
             this.durationHandle = state.GetComponentTypeHandle<TDuration>(true);
 
-            this.query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<TRemaining, TOn>().WithAll<TActive, TDuration>()
-                .Build(ref state);
+            this.query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<TRemaining, TOn>().WithAll<TActive, TDuration>().Build(ref state);
         }
 
         public void OnUpdate(ref SystemState state, UpdateTimeJob job = default)
@@ -76,7 +74,7 @@ namespace BovineLabs.Core.Model
             [NativeDisableContainerSafetyRestriction] // Only initialized in the job
             private NativeList<bool> onBuffer;
 
-            /// <inheritdoc/>
+            /// <inheritdoc />
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 var activeChanged = chunk.DidChange(ref this.ActiveHandle, this.SystemVersion);

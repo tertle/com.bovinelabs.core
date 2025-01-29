@@ -1,4 +1,4 @@
-﻿// // <copyright file="DynamicHashMapListElement.cs" company="BovineLabs">
+﻿// <copyright file="DynamicHashMapListElement.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -21,8 +21,7 @@ namespace BovineLabs.Core.Editor.Inspectors
         {
         }
 
-        private DynamicHashMap<TKey, TValue> GetMap =>
-             this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity).AsHashMap<TBuffer, TKey, TValue>();
+        private DynamicHashMap<TKey, TValue> GetMap => this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity).AsHashMap<TBuffer, TKey, TValue>();
 
         public override bool IsValid()
         {

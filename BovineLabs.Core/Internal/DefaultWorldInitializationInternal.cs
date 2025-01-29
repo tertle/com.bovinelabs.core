@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Internal
         /// <summary>
         /// Invoked after the Worlds are destroyed.
         /// </summary>
-        public static event Action? DefaultWorldDestroyed
+        public static event Action DefaultWorldDestroyed
         {
             add => DefaultWorldInitialization.DefaultWorldDestroyed += value;
             remove => DefaultWorldInitialization.DefaultWorldDestroyed -= value;

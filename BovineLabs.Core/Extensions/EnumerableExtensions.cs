@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Extensions
         public static int IndexOf<T>(this IEnumerable<T> e, T value)
             where T : IEquatable<T>
         {
-            int index = 0;
+            var index = 0;
 
             foreach (var t in e)
             {
@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Extensions
 
         public static int IndexOf<T>(this IEnumerable<T> e, Func<T, bool> predicate)
         {
-            int index = 0;
+            var index = 0;
 
             foreach (var t in e)
             {

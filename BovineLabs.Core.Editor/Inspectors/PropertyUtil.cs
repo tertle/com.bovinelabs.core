@@ -15,6 +15,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             {
                 name = "PropertyField:" + property?.propertyPath,
             };
+
             field.Bind(serializedObject);
             return field;
         }
@@ -25,6 +26,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             {
                 name = "PropertyField:" + property?.propertyPath,
             };
+
             return field;
         }
     }

@@ -63,7 +63,11 @@ namespace BovineLabs.Core.Tests.Extensions
             var sourceData = new NativeArray<Data>(size, Allocator.Temp);
             for (var i = 0; i < size; i++)
             {
-                sourceData[i] = new Data { Key = i, Value = 123 };
+                sourceData[i] = new Data
+                {
+                    Key = i,
+                    Value = 123,
+                };
             }
 
             var writer = stream.AsWriter();

@@ -22,17 +22,15 @@ namespace BovineLabs.Core.Iterators
     {
         private readonly DynamicBuffer<byte> buffer;
 
-        [NativeDisableUnsafePtrRestriction]
-        private readonly DynamicPerfectHashMapHelper<TKey, TValue>* helper;
-
         internal DynamicPerfectHashMap(DynamicBuffer<byte> buffer)
         {
             CheckSize(buffer);
             this.buffer = buffer;
-            this.helper = buffer.AsHelper<TKey, TValue>(); // TODO enable
+            this.Helper = buffer.AsHelper<TKey, TValue>(); // TODO enable
         }
 
-        internal DynamicPerfectHashMapHelper<TKey, TValue>* Helper => this.helper;
+        [field: NativeDisableUnsafePtrRestriction]
+        internal DynamicPerfectHashMapHelper<TKey, TValue>* Helper { get; }
 
         /// <summary> Gets and sets values by key. </summary>
         /// <remarks> Getting a key that is not present will throw. Setting a key that is not already present will add the key. </remarks>
@@ -61,14 +59,14 @@ namespace BovineLabs.Core.Iterators
                     this.ThrowKeyNotPresent(key);
                 }
 
-                this.helper->Values[index] = value;
+                this.Helper->Values[index] = value;
             }
         }
 
         /// <summary> Returns the value associated with a key. </summary>
-        /// <param name="key">The key to look up.</param>
-        /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
-        /// <returns>True if the key was present.</returns>
+        /// <param name="key"> The key to look up. </param>
+        /// <param name="item"> Outputs the value associated with the key. Outputs default if the key was not present. </param>
+        /// <returns> True if the key was present. </returns>
         public bool TryGetValue(TKey key, out TValue item)
         {
             this.buffer.CheckReadAccess();
@@ -78,8 +76,8 @@ namespace BovineLabs.Core.Iterators
                 return false;
             }
 
-            var value = item = this.helper->Values[index];
-            return !value.Equals(this.helper->NullValue);
+            var value = item = this.Helper->Values[index];
+            return !value.Equals(this.Helper->NullValue);
         }
 
         public bool ContainsKey(TKey key)
@@ -90,8 +88,8 @@ namespace BovineLabs.Core.Iterators
                 return false;
             }
 
-            var value = this.helper->Values[index];
-            return !value.Equals(this.helper->NullValue);
+            var value = this.Helper->Values[index];
+            return !value.Equals(this.Helper->NullValue);
         }
 
         public TValue GetNoCheck(TKey key)
@@ -103,24 +101,24 @@ namespace BovineLabs.Core.Iterators
                 return default;
             }
 
-            return this.helper->Values[index];
+            return this.Helper->Values[index];
         }
 
         /// <summary>
-        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// This method is not implemented. Use <see cref="GetEnumerator" /> instead.
         /// </summary>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        /// <returns> Throws NotImplementedException. </returns>
+        /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
         public IEnumerator<KVPair<TKey, TValue>> GetEnumerator()
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// This method is not implemented. Use <see cref="GetEnumerator" /> instead.
         /// </summary>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        /// <returns> Throws NotImplementedException. </returns>
+        /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();
@@ -130,13 +128,13 @@ namespace BovineLabs.Core.Iterators
         private bool TryGetIndex(TKey key, out int index)
         {
             index = this.IndexFor(key);
-            return index >= 0 && index < this.helper->Size;
+            return index >= 0 && index < this.Helper->Size;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int IndexFor(TKey key)
         {
-            return key.GetHashCode() & (this.helper->Size - 1);
+            return key.GetHashCode() & (this.Helper->Size - 1);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

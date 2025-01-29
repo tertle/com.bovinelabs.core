@@ -86,7 +86,7 @@ namespace BovineLabs.Core.Editor.Settings
             return from t in AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes())
                 where !t.IsAbstract && !t.IsInterface && !t.IsGenericType
                 let i = t.BaseType
-                where i is { IsGenericType: true } && (i.GetGenericTypeDefinition() == typeof(SettingsBasePanel<>))
+                where i is { IsGenericType: true } && i.GetGenericTypeDefinition() == typeof(SettingsBasePanel<>)
                 select (i.GetGenericArguments()[0], t);
         }
     }
