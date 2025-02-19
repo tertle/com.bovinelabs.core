@@ -13,12 +13,19 @@ namespace BovineLabs.Core.Editor.Inspectors
     /// <summary> Provides an inspector ([CustomPropertyDrawer(typeof(T))]) with custom element but will fall back to PropertyField if not overriden. </summary>
     public abstract class ElementProperty : PropertyDrawer
     {
+        protected enum ParentTypes : byte
+        {
+            Foldout,
+            Label,
+            None,
+        }
+
         private SerializedObject? serializedObject;
         private VisualElement? parent;
 
-        private static readonly Dictionary<SerializedProperty, object> caches = new();
+        private static readonly Dictionary<SerializedProperty, object> Caches = new();
 
-        protected virtual bool Inline { get; }
+        protected virtual ParentTypes ParentType { get; } = ParentTypes.Foldout;
 
         protected VisualElement Parent => this.parent!;
 
@@ -33,28 +40,35 @@ namespace BovineLabs.Core.Editor.Inspectors
 
             var iterateChildren = rootProperty.propertyType == SerializedPropertyType.Generic;
 
-            if (this.Inline)
+            switch (this.ParentType)
             {
-                this.parent = new VisualElement();
+                case ParentTypes.Label:
+                    this.parent = new VisualElement();
 
-                if (iterateChildren)
-                {
-                    // TODO indent?
-                    this.parent.AddToClassList("unity-decorator-drawers-container");
-
-                    if (!rootProperty.displayName.StartsWith("Element "))
+                    if (iterateChildren)
                     {
-                        var label = new Label(this.GetDisplayName(rootProperty));
-                        label.AddToClassList("unity-header-drawer__label");
-                        this.Parent.Add(label);
+                        // TODO indent?
+                        this.parent.AddToClassList("unity-decorator-drawers-container");
+
+                        if (!rootProperty.displayName.StartsWith("Element "))
+                        {
+                            var label = new Label(this.GetDisplayName(rootProperty));
+                            label.AddToClassList("unity-header-drawer__label");
+                            this.Parent.Add(label);
+                        }
                     }
-                }
-            }
-            else
-            {
-                this.parent = new Foldout { text = this.GetDisplayName(rootProperty) };
-                this.parent.AddToClassList("unity-collection-view");
-                this.parent.AddToClassList("unity-list-view");
+
+                    break;
+                case ParentTypes.None:
+                    this.parent = new VisualElement();
+                    break;
+
+                case ParentTypes.Foldout:
+                default:
+                    this.parent = new Foldout { text = this.GetDisplayName(rootProperty) };
+                    this.parent.AddToClassList("unity-collection-view");
+                    this.parent.AddToClassList("unity-list-view");
+                    break;
             }
 
             var createElements = this.PreElementCreation(this.parent);
@@ -100,9 +114,9 @@ namespace BovineLabs.Core.Editor.Inspectors
         protected T Cache<T>()
             where T : class, new()
         {
-            if (!caches.TryGetValue(this.RootProperty!, out var cache))
+            if (!Caches.TryGetValue(this.RootProperty!, out var cache))
             {
-                caches[this.RootProperty!] = cache = new T();
+                Caches[this.RootProperty!] = cache = new T();
             }
 
             return (T)cache;

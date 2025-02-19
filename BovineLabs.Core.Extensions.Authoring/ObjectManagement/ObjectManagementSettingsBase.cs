@@ -47,14 +47,22 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             }
         }
 
-        public override void Bake(Baker<SettingsAuthoring> baker)
+        public sealed override void Bake(Baker<SettingsAuthoring> baker)
         {
-            this.SetupRegistry(baker);
-            this.SetupGroups(baker);
+            var entity = baker.CreateAdditionalEntity(TransformUsageFlags.None);
+
+            this.SetupRegistry(baker, entity);
+            this.SetupGroups(baker, entity); // TODO MOD SUPPORT
 
 #if !BL_DISABLE_LIFECYCLE
-            this.SetupLookups(baker);
+            this.SetupLookups(baker, entity); // TODO MOD SUPPORT
 #endif
+
+            this.CustomBake(baker, entity);
+        }
+
+        protected virtual void CustomBake(Baker<SettingsAuthoring> baker, Entity entity)
+        {
         }
 
         private void OnValidate()
@@ -70,14 +78,13 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             }
         }
 
-        private void SetupRegistry(IBaker baker)
+        private void SetupRegistry(IBaker baker, Entity entity)
         {
             if (this.ObjectDefinitions.Count == 0)
             {
                 return;
             }
 
-            var entity = baker.GetEntity(TransformUsageFlags.None);
             baker.AddComponent(entity, new Mod(this.Mod));
             var registry = baker.AddBuffer<ObjectDefinitionSetupRegistry>(entity);
 
@@ -103,15 +110,13 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             }
         }
 
-        private void SetupGroups(IBaker baker)
+        private void SetupGroups(IBaker baker, Entity entity)
         {
-            // TODO runtime
             if (this.ObjectGroups.Count == 0)
             {
                 return;
             }
 
-            var entity = baker.GetEntity(TransformUsageFlags.None);
             var objectGroupRegistry = baker.AddBuffer<ObjectGroupRegistry>(entity).Initialize().AsMap();
             var objectGroupMatcher = baker.AddBuffer<ObjectGroupMatcher>(entity).Initialize().AsHashSet();
 
@@ -123,6 +128,12 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                 }
 
                 baker.DependsOn(group);
+
+                foreach (var dependencies in group.GetAllDependencies())
+                {
+                    baker.DependsOn(dependencies);
+                }
+
                 var definitions = group.GetAllDefinitions();
 
                 foreach (var definition in definitions)
@@ -138,14 +149,13 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         }
 
 #if !BL_DISABLE_LIFECYCLE
-        private void SetupLookups(IBaker baker)
+        private void SetupLookups(IBaker baker, Entity entity)
         {
             if (this.ObjectDefinitions.Count == 0)
             {
                 return;
             }
 
-            var entity = baker.GetEntity(TransformUsageFlags.None);
             var maps = new Dictionary<Type, object>();
 
             foreach (var d in this.ObjectDefinitions)

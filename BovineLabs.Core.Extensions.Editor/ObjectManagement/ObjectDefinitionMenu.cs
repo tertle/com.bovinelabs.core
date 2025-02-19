@@ -10,10 +10,12 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     using BovineLabs.Core.Editor.Settings;
     using UnityEditor;
     using UnityEngine;
+    using UnityEngine.SceneManagement;
 
     public static class ObjectDefinitionMenu
     {
         private const string DefaultDirectory = "Assets/Settings/Definitions";
+        private const string ReplaceSceneDefinitionsWithInstantiateName = "BovineLabs/Tools/Replace Scene Definitions with Instantiate";
 
         [MenuItem("BovineLabs/Tools/Create Definitions from Assets", priority = -17)]
         public static void CreateDefinitionsFromAssets()
@@ -38,6 +40,41 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             }
 
             AssetDatabase.SaveAssets();
+        }
+
+        [MenuItem(ReplaceSceneDefinitionsWithInstantiateName, priority = -16)]
+        public static void ReplaceSceneDefinitionsWithInstantiate()
+        {
+            var scene = SceneManager.GetActiveScene();
+
+            // Use roots instead of Object.Find to keep order
+            foreach (var go in scene.GetRootGameObjects())
+            {
+                TryReplace(go);
+            }
+
+            return;
+
+            static void TryReplace(GameObject go)
+            {
+                if (go.GetComponent<ObjectDefinitionAuthoring>() != null)
+                {
+                    ObjectInstantiate.TryReplace(go);
+                }
+                else
+                {
+                    foreach (Transform c in go.transform)
+                    {
+                        TryReplace(c.gameObject);
+                    }
+                }
+            }
+        }
+
+        [MenuItem(ReplaceSceneDefinitionsWithInstantiateName, true)]
+        public static bool ReplaceSceneDefinitionsWithInstantiateValidate()
+        {
+            return !EditorApplication.isPlaying;
         }
     }
 }

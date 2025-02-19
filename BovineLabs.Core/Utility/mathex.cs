@@ -622,6 +622,12 @@ namespace BovineLabs.Core.Utility
             return math.all(math.abs(f1 - f2) < delta);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Approximately(quaternion f1, quaternion f2, float delta = 0.01f)
+        {
+            return Approximately(f1.value, f2.value, delta);
+        }
+
         // fisher-yates-shuffle
         public static void Shuffle<T>(this NativeArray<T> array, ref Random random)
             where T : struct

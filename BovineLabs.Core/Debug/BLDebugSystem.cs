@@ -21,7 +21,7 @@ namespace BovineLabs.Core
     using UnityEngine;
 
     [Configurable]
-    [UpdateInGroup(typeof(InitializationSystemGroup))]
+    [UpdateInGroup(typeof(InitializationSystemGroup), OrderFirst = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | WorldSystemFilterFlags.Editor)]
     public partial class BLDebugSystem : SystemBase
     {

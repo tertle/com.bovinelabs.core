@@ -11,6 +11,9 @@ namespace BovineLabs.Core.Model
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using Unity.Mathematics;
+#if UNITY_BURST_EXPERIMENTAL_LOOP_INTRINSICS
+    using Unity.Burst.CompilerServices;
+#endif
 
     public struct Timer<TOn, TRemaining, TActive, TDuration>
         where TOn : unmanaged, IComponentData

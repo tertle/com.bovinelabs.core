@@ -4,14 +4,13 @@
 
 namespace BovineLabs.Core
 {
+    using BovineLabs.Core.Groups;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-    using Unity.Scenes;
 
     [WorldSystemFilter(WorldSystemFilterFlags.Default | Worlds.Service)]
-    [UpdateInGroup(typeof(InitializationSystemGroup))]
-    [UpdateBefore(typeof(SceneSystemGroup))]
+    [UpdateInGroup(typeof(BeforeSceneSystemGroup))]
     public partial class InstantiateCommandBufferSystem : EntityCommandBufferSystem
     {
         /// <inheritdoc cref="EntityCommandBufferSystem.OnCreate" />

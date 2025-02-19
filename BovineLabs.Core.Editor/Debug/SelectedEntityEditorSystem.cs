@@ -12,8 +12,10 @@ namespace BovineLabs.Core.Editor
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using UnityEditor;
 
     [Configurable]
+    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.Editor)]
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     public partial class SelectedEntityEditorSystem : SystemBase
     {

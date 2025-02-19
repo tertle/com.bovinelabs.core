@@ -368,7 +368,7 @@ namespace BovineLabs.Core.Entropy
         [InitializeOnLoadMethod]
 #endif
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void Initialize()
+        public static void Initialize()
         {
             if (ThreadRandoms.Data.IsCreated)
             {

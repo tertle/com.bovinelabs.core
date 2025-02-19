@@ -6,11 +6,11 @@
 namespace BovineLabs.Core.LifeCycle
 {
     using BovineLabs.Core.Groups;
-    using BovineLabs.Core.SubScenes;
+    using BovineLabs.Core.Pause;
     using Unity.Entities;
 
     [UpdateInGroup(typeof(BeginSimulationSystemGroup), OrderFirst = true)]
-    public partial class InitializeSystemGroup : AlwaysUpdateSystemGroup
+    public partial class InitializeSystemGroup : ComponentSystemGroup, IUpdateWhilePaused
     {
         /// <inheritdoc />
         protected override void OnUpdate()

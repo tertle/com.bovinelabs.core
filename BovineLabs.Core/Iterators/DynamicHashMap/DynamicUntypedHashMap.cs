@@ -124,6 +124,15 @@ namespace BovineLabs.Core.Iterators
             return this.helper->TryGetValue(key, out item);
         }
 
+        public readonly bool ContainsKey(TKey key)
+        {
+            this.buffer.CheckReadAccess();
+            this.RefCheck();
+
+            var idx = this.helper->Find(key);
+            return idx != -1;
+        }
+
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
         private readonly void RefCheck()

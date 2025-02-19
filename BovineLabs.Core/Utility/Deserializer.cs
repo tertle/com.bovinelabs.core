@@ -28,6 +28,8 @@ namespace BovineLabs.Core.Utility
             this.CurrentIndex = offset;
         }
 
+        public bool IsCreated => this.data.IsCreated;
+
         /// <summary> Gets the raw serialized data. </summary>
         public NativeArray<byte> Data => this.data;
 

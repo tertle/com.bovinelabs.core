@@ -13,11 +13,9 @@ namespace BovineLabs.Core.Time
     using UnityEngine;
 
     /// <summary> Replaces the <see cref="UpdateWorldTimeSystem" /> but burst compiles it and adds support to Service world. </summary>
-    [UpdateBefore(typeof(Unity.Entities.UpdateWorldTimeSystem))] // To ensure we update before any system that is updating after this.
     [UpdateInGroup(typeof(InitializationSystemGroup), OrderFirst = true)]
     [UpdateAfter(typeof(BeginInitializationEntityCommandBufferSystem))]
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | Worlds.Service)]
-    [DisableAutoCreation]
+    [WorldSystemFilter(Worlds.All)]
     public partial struct UpdateWorldTimeSystem : ISystem, ISystemStartStop
     {
         private Entity timeSingleton;

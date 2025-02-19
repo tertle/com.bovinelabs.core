@@ -7,10 +7,14 @@ namespace BovineLabs.Core.Groups
     using Unity.Entities;
     using Unity.Transforms;
 
+    /// <summary>
+    /// A system group that updates after the <see cref="TransformSystemGroup"/> ensure up-to-date transform data.
+    /// Any simulation system that does not write to <see cref="LocalTransform"/> should update in here.
+    /// </summary>
+    [WorldSystemFilter(Worlds.SimulationEditor, Worlds.SimulationThin)]
     [UpdateAfter(typeof(TransformSystemGroup))]
     [UpdateAfter(typeof(CompanionGameObjectUpdateTransformSystem))]
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.Editor)]
-    public partial class AfterTransformSystemGroup : ComponentSystemGroup
+    public partial class AfterTransformSystemGroup : BLSimulationSystemGroup
     {
     }
 }

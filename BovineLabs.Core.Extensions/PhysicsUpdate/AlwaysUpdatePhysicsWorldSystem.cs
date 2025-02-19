@@ -6,13 +6,13 @@
 namespace BovineLabs.Core.PhysicsUpdate
 {
     using BovineLabs.Core.Extensions;
+    using BovineLabs.Core.Groups;
     using Unity.Entities;
     using Unity.Jobs;
     using Unity.Physics;
     using Unity.Physics.Systems;
 
-    [UpdateAfter(typeof(FixedStepSimulationSystemGroup))]
-    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
+    [UpdateInGroup(typeof(BeforeTransformSystemGroup), OrderFirst = true)]
     [CreateAfter(typeof(BuildPhysicsWorld))]
     public unsafe partial class AlwaysUpdatePhysicsWorldSystem : SystemBase
     {

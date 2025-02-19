@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Editor.UI
     {
         static EditorToolbarInitialize()
         {
-            foreach (var m in ReflectionUtility.GetAllPublicMethodsWithAttribute<EditorToolbarAttribute>())
+            foreach (var m in ReflectionUtility.GetMethodsWithAttribute<EditorToolbarAttribute>())
             {
                 if (!m.IsStatic)
                 {

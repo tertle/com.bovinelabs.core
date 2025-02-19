@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Editor.Inspectors
 {
+    using BovineLabs.Core.Editor.Internal;
     using JetBrains.Annotations;
     using Unity.Entities;
     using Unity.Entities.UI;
@@ -12,29 +13,44 @@ namespace BovineLabs.Core.Editor.Inspectors
     using UnityEngine.UIElements;
     using Object = UnityEngine.Object;
 
-    internal class UnityObjectRefInspector<T> : PropertyInspector<UnityObjectRef<T>>
+    internal abstract class UnityObjectRefInspector<T> : PropertyInspector<UnityObjectRef<T>>
         where T : Object
     {
+        private IntegerField? idField;
+        private ObjectField? objectField;
+        private Foldout? field;
+
         public override VisualElement Build()
         {
-            var value = this.Target.Value;
-            var name = value == null ? this.DisplayName : $"{this.DisplayName} : {value.name}";
-            var field = new Foldout
+            this.field = new Foldout { value = false };
+
+            this.idField = new IntegerField("Instance Id");
+            this.idField.SetEnabled(false);
+            InspectorUtility.AddRuntimeBar(this.idField);
+
+            this.objectField = new ObjectField { enabledSelf = !this.IsReadOnly };
+            InspectorUtility.AddRuntimeBar(this.objectField);
+
+            this.field.Add(this.idField);
+            this.field.Add(this.objectField);
+
+            this.Update();
+
+            this.objectField.RegisterValueChangedCallback(evt =>
             {
-                text = name,
-                value = false,
-            };
+                this.Target = (T)evt.newValue;
+            });
 
-            var id = new IntegerField("Instance Id") { value = this.Target.Id.instanceId };
-            id.SetEnabled(false);
+            return this.field;
+        }
 
-            var of = new ObjectField { value = this.Target.Value };
-            of.SetEnabled(false);
+        public override void Update()
+        {
+            var target = this.Target;
 
-            field.Add(id);
-            field.Add(of);
-
-            return field;
+            this.idField!.value = target.Id.instanceId;
+            this.objectField!.value = target.Value;
+            this.field!.text = target.Value == null ? this.DisplayName : $"{this.DisplayName} : {target.Value.name}";
         }
     }
 

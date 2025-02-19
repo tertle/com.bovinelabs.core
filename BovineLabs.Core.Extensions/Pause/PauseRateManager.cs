@@ -12,24 +12,30 @@ namespace BovineLabs.Core.Pause
     public class PauseRateManager : IRateManager
     {
         private readonly IRateManager existingRateManager;
-        private readonly bool isPresentation;
         private EntityQuery pauseQuery;
-        private EntityQuery debugQuery;
 
         private bool wasPaused;
         private bool hasUpdatedThisFrame;
         private double pauseTime;
 
-        public PauseRateManager(ComponentSystemGroup group, bool isPresentation)
+        public PauseRateManager(ComponentSystemGroup group)
         {
             this.pauseQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<PauseGame>().WithOptions(EntityQueryOptions.IncludeSystems).Build(group);
-            this.debugQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<BLDebug>().Build(group);
             this.existingRateManager = group.RateManager;
-            this.isPresentation = isPresentation;
         }
 
         /// <inheritdoc/>
-        float IRateManager.Timestep { get; set; }
+        float IRateManager.Timestep
+        {
+            get => this.existingRateManager?.Timestep ?? 0;
+            set
+            {
+                if (this.existingRateManager != null)
+                {
+                    this.existingRateManager.Timestep = value;
+                }
+            }
+        }
 
         /// <inheritdoc/>
         bool IRateManager.ShouldGroupUpdate(ComponentSystemGroup group)
@@ -46,42 +52,28 @@ namespace BovineLabs.Core.Pause
             }
 
             var pauses = this.pauseQuery.ToComponentDataArray<PauseGame>(group.WorldUpdateAllocator);
-            var isPaused = false;
 
-            if (this.isPresentation)
+            var isPauseAll = false;
+
+            foreach (var p in pauses)
             {
-                foreach (var p in pauses)
+                if (p.PauseAll)
                 {
-                    if (p.PausePresentation)
-                    {
-                        isPaused = true;
-                        break;
-                    }
+                    isPauseAll = true;
+                    break;
                 }
             }
-            else
-            {
-                isPaused = pauses.Length > 0;
-            }
+
+            var isPaused = pauses.Length > 0;
 
             // Became paused this frame
             if (isPaused && !this.wasPaused)
             {
-                if (!this.isPresentation)
-                {
-                    this.debugQuery.GetSingleton<BLDebug>().Debug("World Paused: true");
-                }
-
                 this.pauseTime = group.World.Time.ElapsedTime;
                 this.wasPaused = true;
             }
             else if (!isPaused && this.wasPaused)
             {
-                if (!this.isPresentation)
-                {
-                    this.debugQuery.GetSingleton<BLDebug>().Debug("World Paused: false");
-                }
-
                 this.wasPaused = false;
             }
 
@@ -89,19 +81,30 @@ namespace BovineLabs.Core.Pause
             {
                 // Game time progress needs to be paused to stop fixed step catchup after unpausing
                 group.World.Time = new TimeData(this.pauseTime, group.World.Time.DeltaTime);
-                PauseUtility.UpdateAlwaysSystems(group);
 
-                ((IRateManager)this).Timestep = 0;
+                if (!isPauseAll)
+                {
+                    if (this.existingRateManager != null)
+                    {
+                        while (this.existingRateManager.ShouldGroupUpdate(group))
+                        {
+                            PauseUtility.UpdateAlwaysSystems(group);
+                        }
+                    }
+                    else
+                    {
+                        PauseUtility.UpdateAlwaysSystems(group);
+                    }
+                }
+
                 return false;
             }
 
             if (!this.existingRateManager?.ShouldGroupUpdate(group) ?? false)
             {
-                ((IRateManager)this).Timestep = 0;
                 return false;
             }
 
-            ((IRateManager)this).Timestep = group.World.Time.DeltaTime;
             this.hasUpdatedThisFrame = true;
             return true;
         }

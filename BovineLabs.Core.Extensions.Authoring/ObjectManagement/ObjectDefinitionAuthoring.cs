@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 {
     using System.Collections.Generic;
     using BovineLabs.Core.Authoring.Settings;
-    using BovineLabs.Core.Editor.Settings;
     using BovineLabs.Core.ObjectManagement;
     using Unity.Entities;
     using Unity.Mathematics;

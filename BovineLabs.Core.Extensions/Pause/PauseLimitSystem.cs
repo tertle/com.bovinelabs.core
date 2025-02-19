@@ -16,12 +16,12 @@ namespace BovineLabs.Core.Pause
         protected override void OnUpdate()
         {
             var simulationSystemGroup = this.World.GetExistingSystemManaged<SimulationSystemGroup>();
-            simulationSystemGroup.RateManager = new PauseRateManager(simulationSystemGroup, false);
+            simulationSystemGroup.RateManager = new PauseRateManager(simulationSystemGroup);
 
             var presentationSystemGroup = this.World.GetExistingSystemManaged<PresentationSystemGroup>();
             if (presentationSystemGroup != null)
             {
-                presentationSystemGroup.RateManager = new PauseRateManager(presentationSystemGroup, true);
+                presentationSystemGroup.RateManager = new PauseRateManager(presentationSystemGroup);
             }
 
             this.World.GetExistingSystemManaged<InitializationSystemGroup>().RemoveSystemFromUpdateList(this);

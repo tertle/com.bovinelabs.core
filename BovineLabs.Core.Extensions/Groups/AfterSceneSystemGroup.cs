@@ -7,9 +7,13 @@ namespace BovineLabs.Core.Groups
     using Unity.Entities;
     using Unity.Scenes;
 
+    /// <summary>
+    /// Group that updates after <see cref="SceneSystemGroup"/>.
+    /// Put initialization systems in here that need to affect entities just loaded from SubScenes.
+    /// </summary>
+    [WorldSystemFilter(Worlds.All, Worlds.SimulationThin)]
     [UpdateAfter(typeof(SceneSystemGroup))]
     [UpdateInGroup(typeof(InitializationSystemGroup))]
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | Worlds.Service)]
     public partial class AfterSceneSystemGroup : ComponentSystemGroup
     {
     }

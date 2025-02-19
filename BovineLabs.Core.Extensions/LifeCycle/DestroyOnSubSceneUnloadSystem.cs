@@ -6,13 +6,14 @@
 namespace BovineLabs.Core.LifeCycle
 {
     using BovineLabs.Core.Extensions;
+    using BovineLabs.Core.Groups;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Entities;
     using Unity.Scenes;
 
     [BurstCompile]
-    [UpdateInGroup(typeof(InitializationSystemGroup))]
+    [UpdateInGroup(typeof(BeforeSceneSystemGroup))]
     [UpdateAfter(typeof(InstantiateCommandBufferSystem))]
     [UpdateBefore(typeof(DestroySystemGroup))] // This can't run in DestroySystemGroup because it stops execution if no DestroyEntity
     public partial struct DestroyOnSubSceneUnloadSystem : ISystem

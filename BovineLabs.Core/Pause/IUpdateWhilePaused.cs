@@ -4,9 +4,7 @@
 
 namespace BovineLabs.Core.Pause
 {
-    using Unity.Entities;
-
-    /// <summary> Allows a <see cref="ComponentSystemGroup" /> to continue to Update when the game is paused. </summary>
+    /// <summary> Allows a System to continue to Update inside a <see cref="IDisableWhilePaused"/> system group. </summary>
     public interface IUpdateWhilePaused
     {
     }

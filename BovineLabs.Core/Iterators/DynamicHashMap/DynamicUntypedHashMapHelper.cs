@@ -451,16 +451,18 @@ namespace BovineLabs.Core.Iterators
             {
                 this.CheckType<TValue>(idx);
 
-                if (UnsafeUtility.SizeOf<TValue>() > UnsafeUtility.SizeOf<int>())
+                var value = this.Values + (idx * sizeof(int));
+
+                if (UnsafeUtility.SizeOf<TValue>() > sizeof(int))
                 {
-                    idx = UnsafeUtility.ReadArrayElement<int>(this.Values, idx);
+                    idx = *value;
 
                     // TODO range check
                     item = *(TValue*)(this.Data + idx);
                 }
                 else
                 {
-                    item = UnsafeUtility.ReadArrayElement<TValue>(this.Values, idx);
+                    item = *(TValue*)value;
                 }
 
                 return true;

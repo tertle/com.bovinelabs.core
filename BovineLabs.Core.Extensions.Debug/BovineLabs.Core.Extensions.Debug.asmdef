@@ -4,7 +4,6 @@
   "references": [
     "BovineLabs.Core",
     "BovineLabs.Core.Extensions",
-    "BovineLabs.Draw",
     "Havok.Physics",
     "Unity.Burst",
     "Unity.Collections",
@@ -38,11 +37,6 @@
     "UNITY_6000_0_OR_NEWER"
   ],
   "versionDefines": [
-    {
-      "name": "com.bovinelabs.draw",
-      "expression": "",
-      "define": "BL_DRAW"
-    },
     {
       "name": "com.unity.physics",
       "expression": "",

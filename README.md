@@ -21,7 +21,8 @@ Features I have documented are listed below. This is but a tiny fraction of the 
 | [Change Filter Tracking](Documentation~/ChangeFilterTracking.md) | Allows you to track how frequently a component triggers a change filter and warns you if it is happening too frequently.. |
 | [DynamicHashMap](Documentation~/DynamicHashMap.md)               | Adds HashMap support to entities.                                                                                         | 
 | [EntityCommands](Documentation~/EntityCommands.md)               | Provides a shared interface between EntityManager, EntityCommandBuffer, EntityCommandBuffer.ParallelWriter and IBaker.    |
-| [Entropy](Documentation~/Entropy.md)                             | Entropy provides an easy way to manage generating Random values in jobs.                                                  |
+| [Global Random](Documentation~/GlobalRandom.md)                  | A static random usable from everywhere, even parallel burst jobs.                                                         |
+| [Input](Documentation~/Input.md)                                 | Support for input integrated with entities using source generation and common properties.                                 |
 | [Jobs](Documentation~/Jobs.md)                                   | Custom jobs (IJobParallelForDeferBatch, IJobHashMapVisitKeyValue).                                                        |
 | [Functions](Documentation~/Functions.md)                         | Functions provide an easy way to add support for extending jobs to other developers or modders.                           |
 | [K](Documentation~/K.md)                                         | K is an Enum or LayerMask alternative that allows you to define your key-value pairs in setting files.                    |

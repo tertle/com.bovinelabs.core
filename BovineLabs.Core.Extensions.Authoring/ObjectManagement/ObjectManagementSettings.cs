@@ -29,19 +29,12 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
         public override IReadOnlyCollection<ObjectGroup> ObjectGroups => this.objectGroups;
 
-        public override void Bake(Baker<SettingsAuthoring> baker)
+        protected override void CustomBake(Baker<SettingsAuthoring> baker, Entity entity)
         {
-            base.Bake(baker);
-
-            this.SetupCategories(baker);
-        }
-
-        private void SetupCategories(IBaker baker)
-        {
+            // Setup categories
             var objectCategories = Resources.Load<ObjectCategories>($"{KSettings.KResourceDirectory}/{nameof(ObjectCategories)}");
             baker.DependsOn(objectCategories);
 
-            var entity = baker.GetEntity(TransformUsageFlags.None);
             var components = baker.AddBuffer<ObjectCategoryComponents>(entity);
 
             if (objectCategories == null)

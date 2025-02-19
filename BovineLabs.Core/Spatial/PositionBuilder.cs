@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Spatial
 {
+    using Unity.Assertions;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -43,8 +44,7 @@ namespace BovineLabs.Core.Spatial
 
             positions = state.WorldRewindableAllocator.AllocateNativeArray<SpatialPosition>(this.query.CalculateEntityCount());
 
-            var firstEntityIndices = this.query.CalculateBaseEntityIndexArrayAsync(state.WorldUpdateAllocator, dependency, out var dependency1);
-            dependency = JobHandle.CombineDependencies(dependency, dependency1);
+            var firstEntityIndices = this.query.CalculateBaseEntityIndexArrayAsync(state.WorldUpdateAllocator, dependency, out dependency);
 
             dependency = new GatherPositionsJob
             {
@@ -70,6 +70,8 @@ namespace BovineLabs.Core.Spatial
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
+                Assert.IsFalse(useEnabledMask, "PositionBuilder does not support enable components");
+
                 var ptr = (float3*)this.Positions.GetUnsafePtr();
                 var dst = ptr + this.FirstEntityIndices[unfilteredChunkIndex];
 
