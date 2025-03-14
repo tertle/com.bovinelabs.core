@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Extensions
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Runtime.InteropServices;
     using System.Threading;
@@ -69,6 +70,60 @@ namespace BovineLabs.Core.Extensions
             var gcHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
             list.AddRange((void*)gcHandle.AddrOfPinnedObject(), array.Length);
             gcHandle.Free();
+        }
+
+        public static void AddRange<T>(this NativeList<T> list, IEnumerable<T> enumerable)
+            where T : unmanaged
+        {
+            foreach (var e in enumerable)
+            {
+                list.Add(e);
+            }
+        }
+
+        public static void ClearAddRange<T>(this NativeList<T> list, IEnumerable<T> enumerable)
+            where T : unmanaged
+        {
+            list.Clear();
+            list.AddRange(enumerable);
+        }
+
+        public static void ClearAddRange<T>(this NativeList<T> list, NativeArray<T> array)
+            where T : unmanaged
+        {
+            list.Clear();
+            list.AddRange(array);
+        }
+
+        public static void ClearAddRange<T>(this NativeList<T> list, NativeHashSet<T> hashSet)
+            where T : unmanaged, IEquatable<T>
+        {
+            list.Clear();
+
+            using var se = hashSet.GetEnumerator();
+            while (se.MoveNext())
+            {
+                list.Add(se.Current);
+            }
+        }
+
+        public static bool Compare<T>(this NativeList<T> list, NativeHashSet<T> hashSet)
+            where T : unmanaged, IEquatable<T>
+        {
+            if (list.Length != hashSet.Count)
+            {
+                return false;
+            }
+
+            foreach (var l in list)
+            {
+                if (!hashSet.Contains(l))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

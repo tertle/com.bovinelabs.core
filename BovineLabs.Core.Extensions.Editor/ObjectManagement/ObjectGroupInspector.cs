@@ -20,7 +20,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         protected override VisualElement CreateElement(SerializedProperty property)
         {
             var element = CreatePropertyField(property, this.serializedObject);
-            element.RegisterCallback<SerializedPropertyChangeEvent>(_ => this.CreateSummary());
+            element.RegisterCallback<SerializedPropertyChangeEvent>(this.CreateSummary);
 
             if (property.name == "autoGroups")
             {
@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
         protected override void PostElementCreation(VisualElement root, bool createdElements)
         {
-            this.CreateSummary();
+            this.CreateSummary(null);
         }
 
         private void UpdateGroups(SerializedPropertyChangeEvent evt)
@@ -46,7 +46,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             }
         }
 
-        private void CreateSummary()
+        private void CreateSummary(SerializedPropertyChangeEvent? evt)
         {
             this.summary?.parent?.Remove(this.summary);
 

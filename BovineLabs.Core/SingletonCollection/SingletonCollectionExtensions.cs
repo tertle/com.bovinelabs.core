@@ -18,6 +18,14 @@ namespace BovineLabs.Core.SingletonCollection
             return stream.AsWriter();
         }
 
+        public static unsafe UnsafeThreadStream.Writer CreateUnsafeThreadStream<TS>(this TS eventSingleton)
+            where TS : unmanaged, ISingletonCollection<UnsafeThreadStream>
+        {
+            var stream = new UnsafeThreadStream(eventSingleton.Allocator);
+            eventSingleton.Collections->Add(stream);
+            return stream.AsWriter();
+        }
+
         public static unsafe NativeArray<TC> CreateArray<TS, TC>(
             this TS eventSingleton, int length, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
             where TS : unmanaged, ISingletonCollection<NativeArray<TC>>

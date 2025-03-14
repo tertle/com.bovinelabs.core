@@ -237,5 +237,20 @@ namespace BovineLabs.Core.Extensions
             return true;
         }
 #endif
+
+        public static unsafe JobHandle GetAllSystemDependencies(ref this SystemState state)
+        {
+            var jobHandles = new NativeList<JobHandle>(state.WorldUpdateAllocator);
+
+            using var e = state.WorldUnmanaged.GetImpl().m_SystemStatePtrMap.GetEnumerator();
+            while (e.MoveNext())
+            {
+                var systemState = (SystemState*)e.Current.Value;
+                jobHandles.Add(systemState->m_JobHandle);
+            }
+
+            // This seems slightly faster than doing JobHandle.CompleteAll()
+            return JobHandle.CombineDependencies(jobHandles.AsArray());
+        }
     }
 }

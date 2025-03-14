@@ -4,8 +4,6 @@
   "references": [
     "BovineLabs.Core",
     "BovineLabs.Testing",
-    "UnityEditor.TestRunner",
-    "UnityEngine.TestRunner",
     "Unity.Burst",
     "Unity.Collections",
     "Unity.Entities",
@@ -16,19 +14,16 @@
     "Unity.Scenes",
     "Unity.Transforms"
   ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
   "includePlatforms": [
     "Editor"
   ],
   "excludePlatforms": [],
   "allowUnsafeCode": true,
   "overrideReferences": true,
-  "precompiledReferences": [
-    "nunit.framework.dll"
-  ],
   "autoReferenced": false,
-  "defineConstraints": [
-    "UNITY_INCLUDE_TESTS"
-  ],
   "versionDefines": [],
   "noEngineReferences": false
 }

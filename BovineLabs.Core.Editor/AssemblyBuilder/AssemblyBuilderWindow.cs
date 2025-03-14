@@ -257,13 +257,9 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                             // Add test requirements
                             if (label == "Tests")
                             {
-                                definition.overrideReferences = true;
-                                definition.precompiledReferences.Add("nunit.framework.dll");
-                                definition.defineConstraints.Add("UNITY_INCLUDE_TESTS");
+                                definition.optionalUnityReferences.Add("TestAssemblies");
 
                                 references.Add("BovineLabs.Testing");
-                                references.Add("UnityEditor.TestRunner");
-                                references.Add("UnityEngine.TestRunner");
                                 references.Add("Unity.PerformanceTesting");
 
                                 if (disableAutoCreation)

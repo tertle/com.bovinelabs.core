@@ -24,7 +24,6 @@ namespace Unity.Collections
     /// <typeparam name="TKey"> The type of the keys. </typeparam>
     /// <typeparam name="TValue"> The type of the values. </typeparam>
     [StructLayout(LayoutKind.Sequential)]
-    [NativeContainer]
     [DebuggerTypeProxy(typeof(UnsafeMultiHashMapDebuggerTypeProxy<,>))]
     [SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "Exposed for others")]
     public unsafe struct UnsafeMultiHashMap<TKey, TValue> : INativeDisposable, IEnumerable<KVPair<TKey, TValue>> // Used by collection initializers.

@@ -89,6 +89,12 @@ namespace BovineLabs.Core.Extensions
             NoAllocHelpers.ResizeList(list, newLength);
         }
 
+        public static void ClearAddRange<T>(this List<T> list, IEnumerable<T> range)
+        {
+            list.Clear();
+            list.AddRange(range);
+        }
+
         public static void Resize<T>(this List<T> list, int size, T element)
         {
             var count = list.Count;

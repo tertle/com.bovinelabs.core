@@ -14,7 +14,6 @@ namespace BovineLabs.Core.Collections
     using Unity.Entities;
 
     [StructLayout(LayoutKind.Sequential)]
-    [NativeContainer]
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
     public unsafe struct UnsafeUntypedDynamicBuffer
     {

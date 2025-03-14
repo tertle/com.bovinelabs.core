@@ -21,6 +21,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
         public string name;
         public string rootNamespace;
         public List<string> references;
+        public List<string> optionalUnityReferences;
         public List<string> includePlatforms;
         public List<string> excludePlatforms;
         public bool allowUnsafeCode;
@@ -36,6 +37,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             return new AssemblyDefinitionTemplate
             {
                 references = new List<string>(),
+                optionalUnityReferences = new List<string>(),
                 includePlatforms = new List<string>(),
                 excludePlatforms = new List<string>(),
                 allowUnsafeCode = false,

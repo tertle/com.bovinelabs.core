@@ -13,26 +13,14 @@ namespace BovineLabs.Core.Collections
     public unsafe partial struct UnsafeThreadStream
     {
         /// <summary> The writer instance. </summary>
-        public struct Writer
+        public readonly struct Writer
         {
             [NativeDisableUnsafePtrRestriction]
             private readonly UnsafeThreadStreamBlockData* blockStream;
 
-#pragma warning disable SA1308
-            [NativeSetThreadIndex]
-            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Required by unity scheduler")] // TODO is this true?
-            private int m_ThreadIndex;
-#pragma warning restore SA1308
-
             internal Writer(ref UnsafeThreadStream stream)
             {
                 this.blockStream = stream.blockData;
-                this.m_ThreadIndex = 0; // 0 so main thread works
-            }
-
-            public void SetThreadIndex(int threadIndex)
-            {
-                this.m_ThreadIndex = threadIndex;
             }
 
             /// <summary> Write data. </summary>
@@ -62,7 +50,7 @@ namespace BovineLabs.Core.Collections
             /// <returns> Pointer to allocated space for data. </returns>
             public readonly byte* Allocate(int size)
             {
-                var threadIndex = AssumeThreadRange(this.m_ThreadIndex);
+                var threadIndex = AssumeThreadRange(JobsUtility.ThreadIndex);
 
                 var ranges = this.blockStream->Ranges + threadIndex;
 
