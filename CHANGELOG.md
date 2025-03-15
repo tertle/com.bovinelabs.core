@@ -1,4 +1,8 @@
 # Changelog
+## [1.3.7] - 2025-03-16
+### Fixed
+* InputProcessSystemGroup missing conditional defines
+
 ## [1.3.6] - 2025-03-15
 ### Added
 * WorldUnmanagedExtensions.GetAllSystemDependencies
