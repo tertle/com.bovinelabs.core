@@ -1,4 +1,8 @@
 # Changelog
+## [1.4.0] - 2025-03-15
+### Changed
+* Updated to entities 1.4.0-exp.2
+
 ## [1.3.6] - 2025-03-15
 ### Added
 * WorldUnmanagedExtensions.GetAllSystemDependencies

@@ -135,8 +135,7 @@ namespace BovineLabs.Core.ObjectManagement
                 {
                     var instance = instances.Value[i++];
 
-                    var lt = this.LocalTransforms.GetRefRWOptional(instance);
-                    if (Hint.Likely(lt.IsValid))
+                    if (Hint.Likely(this.LocalTransforms.TryGetRefRW(instance, out var lt)))
                     {
                         lt.ValueRW = LocalTransform.FromMatrix(data.Ref.Value);
                     }

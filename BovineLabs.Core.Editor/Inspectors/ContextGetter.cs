@@ -44,12 +44,6 @@ namespace BovineLabs.Core.Editor.Inspectors
                 return (IContextGetter)Activator.CreateInstance(context, inspector);
             }
 
-            if (typeof(IAspect).IsAssignableFrom(typeof(T)))
-            {
-                var context = typeof(AspectGetter<>).MakeGenericType(typeof(T));
-                return (IContextGetter)Activator.CreateInstance(context, inspector);
-            }
-
             {
                 var context = typeof(ContextGetter<>).MakeGenericType(typeof(T));
                 return (IContextGetter)Activator.CreateInstance(context, inspector);
@@ -80,33 +74,5 @@ namespace BovineLabs.Core.Editor.Inspectors
         public EntityManager EntityManager => this.context.EntityManager;
 
         public bool IsReadOnly => this.context.EntityContainer.IsReadOnly;
-    }
-
-    internal class AspectGetter<T> : IContextGetter
-        where T : unmanaged, IAspect, IAspectCreate<T>
-    {
-        private readonly AspectInspectionContext context;
-        private readonly EntityAspectContainer<T> container;
-
-        public AspectGetter(object inspector)
-        {
-            if (inspector is not InspectorBase<EntityAspectContainer<T>> propertyInspector)
-            {
-                throw new ArgumentException($"Inspector is not {nameof(InspectorBase<T>)}", nameof(inspector));
-            }
-
-            this.context = propertyInspector.GetContext<AspectInspectionContext>();
-            this.container = this.context.Root.GetTarget<EntityAspectContainer<T>>();
-        }
-
-        public InspectionContext Context => this.context;
-
-        public Entity Entity => this.container.Entity;
-
-        public World World => this.container.World;
-
-        public EntityManager EntityManager => this.container.World.EntityManager;
-
-        public bool IsReadOnly => true;
     }
 }
