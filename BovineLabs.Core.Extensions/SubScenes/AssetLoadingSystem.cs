@@ -49,14 +49,12 @@ namespace BovineLabs.Core.SubScenes
                     }
 
                     // This is for live baking
-                    if (this.objects.TryGetValue(asset.Asset.Value, out var instance))
+                    if (!this.objects.TryGetValue(asset.Asset.Value, out var instance))
                     {
-                        Object.Destroy(instance);
+                        instance = Object.Instantiate(asset.Asset.Value);
+                        Object.DontDestroyOnLoad(instance);
+                        this.objects[asset.Asset.Value] = instance;
                     }
-
-                    instance = Object.Instantiate(asset.Asset.Value);
-                    Object.DontDestroyOnLoad(instance);
-                    this.objects[asset.Asset.Value] = instance;
                 }
 
                 ecb.AddComponent<Disabled>(entity);

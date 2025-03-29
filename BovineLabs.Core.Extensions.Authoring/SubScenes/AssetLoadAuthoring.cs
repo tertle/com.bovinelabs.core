@@ -34,13 +34,6 @@ namespace BovineLabs.Core.Authoring.SubScenes
                         continue;
                     }
 
-#if UNITY_SERVER
-                    if ((s.TargetWorld & SubSceneLoadFlags.Service) != 0 && s.IgnoreOnDedicated)
-                    {
-                        continue;
-                    }
-#endif
-
                     if (!this.IncludeScene(s.TargetWorld))
                     {
                         continue;

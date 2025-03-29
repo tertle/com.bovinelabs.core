@@ -5,67 +5,39 @@
 #if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.Authoring.SubScenes
 {
-    using System;
+    using BovineLabs.Core.Authoring.EntityCommands;
     using BovineLabs.Core.SubScenes;
     using Unity.Entities;
-    using Unity.Entities.Serialization;
-    using UnityEditor;
     using UnityEngine;
 
     public class SubSceneLoadAuthoring : MonoBehaviour
     {
         [SerializeField]
-        private Data[] subScenes = Array.Empty<Data>();
+        private SubSceneSettings? settings;
 
         private class Baker : Baker<SubSceneLoadAuthoring>
         {
             public override void Bake(SubSceneLoadAuthoring authoring)
             {
-                DynamicBuffer<SubSceneLoad> buffer = default;
-
-                foreach (var s in authoring.subScenes)
+                if (authoring.settings == null)
                 {
-                    if (s.SceneAsset == null)
+                    Debug.LogError("SuBSceneSettings not assigned");
+                    return;
+                }
+
+                foreach (var set in authoring.settings.SceneSets)
+                {
+                    if (!this.IncludeScene(set.TargetWorld))
                     {
                         continue;
                     }
 
-                    if (!this.IncludeScene(s.TargetWorld))
-                    {
-                        continue;
-                    }
+                    var entity = this.CreateAdditionalEntity(TransformUsageFlags.None);
 
-                    if (!buffer.IsCreated)
-                    {
-                        buffer = this.AddBuffer<SubSceneLoad>(this.GetEntity(TransformUsageFlags.None));
-                    }
-
-                    // Depends on shouldn't be required as we don't care if the scene asset actually changes, only if our own references change
-                    buffer.Add(new SubSceneLoad
-                    {
-                        Name = s.SceneAsset.name,
-                        Scene = new EntitySceneReference(s.SceneAsset),
-                        TargetWorld = SubSceneLoadUtil.ConvertFlags(s.TargetWorld),
-                        LoadingMode = s.LoadMode,
-                        IsRequired = s.IsRequired,
-                    });
+                    var commands = new BakerCommands(this, entity);
+                    SubSceneAuthUtil.AddComponents(ref commands, set);
                 }
             }
-        }
-
-        [Serializable]
-        internal class Data
-        {
-            public SceneAsset? SceneAsset;
-
-#if UNITY_NETCODE
-            public SubSceneLoadFlags TargetWorld = SubSceneLoadFlags.ThinClient | SubSceneLoadFlags.Client | SubSceneLoadFlags.Server;
-#else
-            public SubSceneLoadFlags TargetWorld = SubSceneLoadFlags.Game;
-#endif
-
-            public SubSceneLoadMode LoadMode = SubSceneLoadMode.AutoLoad;
-            public bool IsRequired = true;
         }
     }
 }

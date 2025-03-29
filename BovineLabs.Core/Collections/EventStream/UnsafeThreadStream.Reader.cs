@@ -4,15 +4,13 @@
 
 namespace BovineLabs.Core.Collections
 {
-    using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
     public unsafe partial struct UnsafeThreadStream
     {
         /// <summary>
         /// </summary>
-        [GenerateTestsForBurstCompatibility]
-        public struct Reader
+        public struct Reader : INativeStreamReader
         {
             [NativeDisableUnsafePtrRestriction]
             internal UnsafeThreadStreamBlockData* m_BlockStream;
@@ -104,9 +102,8 @@ namespace BovineLabs.Core.Collections
             /// </summary>
             /// <typeparam name="T"> The type of value. </typeparam>
             /// <returns> Reference to data. </returns>
-            [GenerateTestsForBurstCompatibility]
             public ref T Read<T>()
-                where T : struct
+                where T : unmanaged
             {
                 var size = UnsafeUtility.SizeOf<T>();
                 return ref UnsafeUtility.AsRef<T>(this.ReadUnsafePtr(size));
@@ -117,7 +114,6 @@ namespace BovineLabs.Core.Collections
             /// </summary>
             /// <typeparam name="T"> The type of value. </typeparam>
             /// <returns> Reference to data. </returns>
-            [GenerateTestsForBurstCompatibility]
             public ref T Peek<T>()
                 where T : struct
             {
@@ -145,6 +141,54 @@ namespace BovineLabs.Core.Collections
                 }
 
                 return itemCount;
+            }
+
+            /// <summary> Read a chunk of memory that could have been larger than the max allocation size. </summary>
+            /// <param name="buffer"> A buffer to write back to. </param>
+            /// <param name="size"> For an array, this is UnsafeUtility.SizeOf{T} * length. </param>
+            public void ReadLarge(byte* buffer, int size)
+            {
+                var allocationCount = size / MaxLargeSize;
+                var allocationRemainder = size % MaxLargeSize;
+
+                // Write the remainder first as this helps avoid an extra chunk allocation most times
+                if (allocationRemainder > 0)
+                {
+                    var ptr = this.ReadUnsafePtr(allocationRemainder);
+                    UnsafeUtility.MemCpy(buffer + (allocationCount * MaxLargeSize), ptr, allocationRemainder);
+                }
+
+                for (var i = 0; i < allocationCount; i++)
+                {
+                    var ptr = this.ReadUnsafePtr(MaxLargeSize);
+                    UnsafeUtility.MemCpy(buffer + (i * MaxLargeSize), ptr, MaxLargeSize);
+                }
+            }
+
+            /// <summary> Read a chunk of memory that could have been larger than the max allocation size. </summary>
+            /// <param name="buffer"> A buffer to write back to. </param>
+            /// <param name="length"> The number of elements. </param>
+            /// <typeparam name="T"> The element type to read. </typeparam>
+            public void ReadLarge<T>(byte* buffer, int length)
+                where T : unmanaged
+            {
+                var size = sizeof(T) * length;
+
+                var allocationCount = size / MaxLargeSize;
+                var allocationRemainder = size % MaxLargeSize;
+
+                // Write the remainder first as this helps avoid an extra chunk allocation most times
+                if (allocationRemainder > 0)
+                {
+                    var ptr = this.ReadUnsafePtr(allocationRemainder);
+                    UnsafeUtility.MemCpy(buffer + (allocationCount * MaxLargeSize), ptr, allocationRemainder);
+                }
+
+                for (var i = 0; i < allocationCount; i++)
+                {
+                    var ptr = this.ReadUnsafePtr(MaxLargeSize);
+                    UnsafeUtility.MemCpy(buffer + (i * MaxLargeSize), ptr, MaxLargeSize);
+                }
             }
         }
     }

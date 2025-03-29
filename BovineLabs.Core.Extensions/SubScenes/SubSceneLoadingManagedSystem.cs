@@ -8,13 +8,14 @@ namespace BovineLabs.Core.SubScenes
     using System.Collections.Generic;
     using BovineLabs.Core.Groups;
     using Unity.Entities;
+    using Unity.Entities.Serialization;
     using Unity.Scenes;
     using UnityEngine;
     using UnityEngine.SceneManagement;
     using Hash128 = Unity.Entities.Hash128;
 
     [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderFirst = true)]
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | Worlds.Service)]
+    [WorldSystemFilter(Worlds.SimulationThinService)]
     [UpdateBefore(typeof(SubSceneLoadingSystem))]
     public partial class SubSceneLoadingManagedSystem : SystemBase
     {
@@ -66,48 +67,65 @@ namespace BovineLabs.Core.SubScenes
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            var subScenes = Object.FindObjectsByType<SubSceneLoadConfig>(FindObjectsSortMode.None);
+            var subScenes = Object.FindObjectsByType<SubScene>(FindObjectsSortMode.None);
 
-            var entity = this.EntityManager.CreateEntity(typeof(SubSceneLoad));
-            var subSceneLoad = this.EntityManager.GetBuffer<SubSceneLoad>(entity);
-
-            foreach (var subSceneLoadConfig in subScenes)
+            foreach (var subScene in subScenes)
             {
                 // Only load scenes that were found in the loaded scene
-                if (subSceneLoadConfig.gameObject.scene != scene)
+                if (subScene.gameObject.scene != scene)
                 {
                     continue;
                 }
 
-                this.Load(subSceneLoad, subSceneLoadConfig);
+                this.LoadSubScene(subScene);
             }
         }
 
         private void LoadAllExistingSubScenes()
         {
-            var subScenes = Object.FindObjectsByType<SubSceneLoadConfig>(FindObjectsSortMode.None);
+            var subScenes = Object.FindObjectsByType<SubScene>(FindObjectsSortMode.None);
 
-            var entity = this.EntityManager.CreateEntity(typeof(SubSceneLoad));
-            var subSceneLoad = this.EntityManager.GetBuffer<SubSceneLoad>(entity);
-
-            foreach (var subSceneLoadConfig in subScenes)
+            foreach (var subScene in subScenes)
             {
-                this.Load(subSceneLoad, subSceneLoadConfig);
+                this.LoadSubScene(subScene);
             }
         }
 
-        private void Load(DynamicBuffer<SubSceneLoad> subSceneLoad, SubSceneLoadConfig subSceneLoadConfig)
+        private void LoadSubScene(SubScene subScene)
         {
-            var s = subSceneLoadConfig.GetSubSceneLoad();
-            if (!s.Scene.IsReferenceValid)
+            if (subScene.SceneGUID == default)
             {
                 return;
             }
 
-            subSceneLoad.Add(s);
+            var entity = this.EntityManager.CreateEntity(typeof(SubSceneLoadData), typeof(SubSceneEntity), typeof(SubSceneBuffer), typeof(LoadSubScene),
+                typeof(SubSceneLoaded));
+
+            this.EntityManager.SetComponentData(entity, new SubSceneLoadData
+            {
+                ID = -1,
+                IsRequired = subScene.AutoLoadScene,
+                WaitForLoad = subScene.AutoLoadScene,
+                TargetWorld = this.World.Flags,
+            });
+
+            this.EntityManager.SetComponentEnabled<LoadSubScene>(entity, subScene.AutoLoadScene);
+            this.EntityManager.SetComponentEnabled<SubSceneLoaded>(entity, false);
+            this.EntityManager.SetComponentEnabled<SubSceneEntity>(entity, false);
+
+            var subSceneLoad = this.EntityManager.GetBuffer<SubSceneBuffer>(entity);
+            subSceneLoad.Add(new SubSceneBuffer
+            {
+#if UNITY_EDITOR
+                Name = subScene.SceneName,
+#else
+                    Name = subScene.name,
+#endif
+                Scene = new EntitySceneReference(subScene.SceneGUID, 0),
+            });
 
 #if UNITY_EDITOR
-            this.loading.Add(s.Scene.Id.GlobalId.AssetGUID, subSceneLoadConfig.GetComponent<SubScene>());
+            this.loading.Add(subScene.SceneGUID, subScene);
 #endif
         }
     }

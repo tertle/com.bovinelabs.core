@@ -1,4 +1,23 @@
 # Changelog
+## [1.4.1] - 2025-03-29
+### Added
+* Reload button for domain and subscene in Extensions, can be toggled off in config vars
+* QueryEntityEnumerator for manual chunk iteration with Enablable components
+
+### Changed
+* BL_DISABLE_OBJECT_AUTO_INSTANTIATE removed, replaced by a config var
+* Internal logging no longer writes to a separate json file
+* Breaking: SubScene loading rewritten from scratch with new live baking path, backup your setup before updating and check documentation
+* Modernized thread stream safety
+* Merged thread stream large writes into the container
+
+### Fixed
+* InputProcessSystemGroup missing conditional defines
+* Searcher missing the search field
+
+### Documentation
+* Updated SubScene to match changes and be more comprehensive
+
 ## [1.4.0] - 2025-03-15
 ### Changed
 * Updated to entities 1.4.0-exp.2

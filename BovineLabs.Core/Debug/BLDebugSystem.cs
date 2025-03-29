@@ -9,7 +9,6 @@
 namespace BovineLabs.Core
 {
     using System;
-    using System.IO;
     using BovineLabs.Core.ConfigVars;
     using BovineLabs.Core.Extensions;
     using Unity.Burst;
@@ -49,7 +48,6 @@ namespace BovineLabs.Core
             this.EntityManager.SetName(netDebugEntity, "DBDebug");
 
             this.currentLogLevel = ToLogLevel(LogLevel.Data);
-            var logDir = GetCurrentAbsoluteLogDirectory();
 
             var world = this.World.Name.TrimEnd("World").TrimEnd();
 
@@ -60,15 +58,6 @@ namespace BovineLabs.Core
 #endif
 
             var loggerConfig = new LoggerConfig().RedirectUnityLogs(false).SyncMode.FatalIsSync();
-
-            if (!string.IsNullOrWhiteSpace(logDir))
-            {
-                loggerConfig = loggerConfig
-                    .CaptureStacktrace(false)
-                    .WriteTo
-                    .JsonFile(Path.Combine(logDir, "Output.log.json"), minLevel: MinLogLevel,
-                        outputTemplate: $"[{{Timestamp}}] {{Level}} | {world} | {{Message}}");
-            }
 
 #if UNITY_EDITOR
             var template = $"{{Level}} | {world} | {{Message}}{{NewLine}}{{Stacktrace}}";
@@ -126,32 +115,6 @@ namespace BovineLabs.Core
         private static LogLevel ToLogLevel(int level)
         {
             return (LogLevel)math.clamp(level, 0, (int)Unity.Logging.LogLevel.Fatal);
-        }
-
-        /// <summary> <see cref="Unity.Logging.DefaultSettings.GetLogDirectory" />. </summary>
-        private static string GetCurrentAbsoluteLogDirectory()
-        {
-#if UNITY_EDITOR
-            var dataDir = Path.GetDirectoryName(Application.dataPath)!;
-            var logDir = Path.Combine(dataDir, "Logs");
-            Directory.CreateDirectory(logDir);
-            return logDir;
-#else
-            try
-            {
-                var logPath = string.IsNullOrEmpty(Application.consoleLogPath)
-                    ? Application.persistentDataPath
-                    : Application.consoleLogPath;
-
-                var logDir = Path.Combine(Path.GetDirectoryName(logPath)!, "Logs");
-                Directory.CreateDirectory(logDir);
-                return logDir;
-            }
-            catch (Exception)
-            {
-                return string.Empty;
-            }
-#endif
         }
 
         // In 1.0.11 when leaving play mode the log handle gets disposed before the world causing errors in OnDestroy/OnStopRunning that try to use it

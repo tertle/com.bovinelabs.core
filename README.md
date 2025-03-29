@@ -3,6 +3,8 @@ BovineLabs Core is a library that provides numerous extensions, new containers, 
 
 For support and discussions, join [Discord](https://discord.gg/RTsw6Cxvw3).
 
+If you want to support my work or get access to a few private libraries, [Buy Me a Coffee](https://buymeacoffee.com/bovinelabs).
+
 ## Installation
 
 Stick to the version that matches your entities version. The incremental versions do not have to match. For example, users on Entities 1.0.X stick with Core 1.0.Y.

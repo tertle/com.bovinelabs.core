@@ -368,7 +368,6 @@ namespace Unity.Collections
         /// </summary>
         [NativeContainer]
         [NativeContainerIsReadOnly]
-        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
         public readonly struct ReadOnly : IEnumerable<KVPair<TKey, TValue>>
         {
             [NativeDisableUnsafePtrRestriction]

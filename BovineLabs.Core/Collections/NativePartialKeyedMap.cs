@@ -11,7 +11,6 @@ namespace BovineLabs.Core.Collections
     using Unity.Jobs;
 
     [StructLayout(LayoutKind.Sequential)]
-    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
     public unsafe struct NativePartialKeyedMap<TValue> : INativeDisposable
         where TValue : unmanaged
     {

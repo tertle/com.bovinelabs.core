@@ -44,6 +44,11 @@ namespace BovineLabs.Core.Editor.ConfigVars
 
             foreach (var (configVar, field) in configVars)
             {
+                if (configVar.IsHidden)
+                {
+                    continue;
+                }
+
                 var key = configVar.Name.Split('.');
                 var menu = key.Length < 2 ? "[null]" : key[0];
 

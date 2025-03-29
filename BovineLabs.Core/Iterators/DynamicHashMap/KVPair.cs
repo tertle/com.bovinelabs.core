@@ -6,7 +6,6 @@ namespace BovineLabs.Core.Iterators
 {
     using System;
     using System.Diagnostics;
-    using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
     /// <summary> A key-value pair. </summary>
@@ -14,7 +13,6 @@ namespace BovineLabs.Core.Iterators
     /// <typeparam name="TKey"> The type of the keys. </typeparam>
     /// <typeparam name="TValue"> The type of the values. </typeparam>
     [DebuggerDisplay("Key = {Key}, Value = {Value}")]
-    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
     public unsafe struct KVPair<TKey, TValue>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged

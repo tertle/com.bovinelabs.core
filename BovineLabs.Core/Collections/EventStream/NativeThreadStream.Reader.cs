@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Collections
     using System;
     using System.Diagnostics;
     using Unity.Assertions;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
@@ -15,15 +16,14 @@ namespace BovineLabs.Core.Collections
         /// <summary> The reader instance. </summary>
         [NativeContainer]
         [NativeContainerIsReadOnly]
-        public struct Reader
+        public struct Reader : INativeStreamReader
         {
             private UnsafeThreadStream.Reader reader;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             private int remainingBlocks;
-#pragma warning disable SA1308
-            private readonly AtomicSafetyHandle m_Safety;
-#pragma warning restore SA1308
+            internal AtomicSafetyHandle m_Safety;
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<Reader>();
 #endif
 
             internal Reader(ref NativeThreadStream stream)
@@ -33,6 +33,7 @@ namespace BovineLabs.Core.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 this.remainingBlocks = 0;
                 this.m_Safety = stream.m_Safety;
+                CollectionHelper.SetStaticSafetyId(ref this.m_Safety, ref s_staticSafetyId.Data, "BovineLabs.Core.Collections.NativeThreadStream.Reader");
 #endif
             }
 
@@ -115,7 +116,7 @@ namespace BovineLabs.Core.Collections
             /// <typeparam name="T"> The type of value. </typeparam>
             /// <returns> The returned data. </returns>
             public ref T Read<T>()
-                where T : struct
+                where T : unmanaged
             {
                 var size = UnsafeUtility.SizeOf<T>();
                 return ref UnsafeUtility.AsRef<T>(this.ReadUnsafePtr(size));
@@ -129,6 +130,54 @@ namespace BovineLabs.Core.Collections
             {
                 this.CheckRead();
                 return this.reader.Count();
+            }
+
+            /// <summary> Read a chunk of memory that could have been larger than the max allocation size. </summary>
+            /// <param name="buffer"> A buffer to write back to. </param>
+            /// <param name="size"> For an array, this is UnsafeUtility.SizeOf{T} * length. </param>
+            public void ReadLarge(byte* buffer, int size)
+            {
+                var allocationCount = size / MaxLargeSize;
+                var allocationRemainder = size % MaxLargeSize;
+
+                // Write the remainder first as this helps avoid an extra chunk allocation most times
+                if (allocationRemainder > 0)
+                {
+                    var ptr = this.ReadUnsafePtr(allocationRemainder);
+                    UnsafeUtility.MemCpy(buffer + (allocationCount * MaxLargeSize), ptr, allocationRemainder);
+                }
+
+                for (var i = 0; i < allocationCount; i++)
+                {
+                    var ptr = this.ReadUnsafePtr(MaxLargeSize);
+                    UnsafeUtility.MemCpy(buffer + (i * MaxLargeSize), ptr, MaxLargeSize);
+                }
+            }
+
+            /// <summary> Read a chunk of memory that could have been larger than the max allocation size. </summary>
+            /// <param name="buffer"> A buffer to write back to. </param>
+            /// <param name="length"> The number of elements. </param>
+            /// <typeparam name="T"> The element type to read. </typeparam>
+            public void ReadLarge<T>(byte* buffer, int length)
+                where T : unmanaged
+            {
+                var size = sizeof(T) * length;
+
+                var allocationCount = size / MaxLargeSize;
+                var allocationRemainder = size % MaxLargeSize;
+
+                // Write the remainder first as this helps avoid an extra chunk allocation most times
+                if (allocationRemainder > 0)
+                {
+                    var ptr = this.ReadUnsafePtr(allocationRemainder);
+                    UnsafeUtility.MemCpy(buffer + (allocationCount * MaxLargeSize), ptr, allocationRemainder);
+                }
+
+                for (var i = 0; i < allocationCount; i++)
+                {
+                    var ptr = this.ReadUnsafePtr(MaxLargeSize);
+                    UnsafeUtility.MemCpy(buffer + (i * MaxLargeSize), ptr, MaxLargeSize);
+                }
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

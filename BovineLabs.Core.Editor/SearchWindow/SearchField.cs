@@ -44,8 +44,9 @@ namespace BovineLabs.Core.Editor.SearchWindow
 
             this.searchContainer = this.Q<VisualElement>(null, "search-field__container");
 
-            this.RegisterCallback<FocusInEvent, SearchField>((_, ve) => ve.style.display = DisplayStyle.None, this);
-            this.RegisterCallback<FocusOutEvent, SearchField>((_, sf) => sf.searchContainer.style.display = sf.value.Length == 0 ? DisplayStyle.Flex : DisplayStyle.None, this);
+            this.RegisterCallback<FocusInEvent, SearchField>((_, sc) => sc.searchContainer.style.display = DisplayStyle.None, this);
+            this.RegisterCallback<FocusOutEvent, SearchField>(
+                (_, sc) => sc.searchContainer.style.display = sc.value.Length == 0 ? DisplayStyle.Flex : DisplayStyle.None, this);
         }
     }
 }

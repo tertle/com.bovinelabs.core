@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Collections
     using System;
     using System.Diagnostics;
     using BovineLabs.Core.Utility;
-    using Unity.Collections;
     using Unity.Entities;
 
     internal struct BlobHashMapData<TKey, TValue>
@@ -64,7 +63,6 @@ namespace BovineLabs.Core.Collections
     /// <typeparam name="TKey"> The type of the keys. </typeparam>
     /// <typeparam name="TValue"> The type of the values. </typeparam>
     [DebuggerDisplay("Key = {Key}, Value = {Value}")]
-    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
     public readonly unsafe struct KVPair<TKey, TValue>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged

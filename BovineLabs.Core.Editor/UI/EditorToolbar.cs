@@ -113,6 +113,8 @@ namespace BovineLabs.Core.Editor.UI
                 {
                     flexGrow = 1,
                     flexDirection = FlexDirection.Row,
+                    paddingLeft = 1,
+                    paddingRight = 1,
                 },
             };
 

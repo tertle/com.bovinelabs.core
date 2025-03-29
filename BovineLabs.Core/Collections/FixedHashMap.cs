@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Collections
     using System;
     using System.Diagnostics.Contracts;
     using System.Runtime.CompilerServices;
-    using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
     public unsafe struct FixedHashMap<TKey, TValue, TCapacity>
@@ -166,7 +165,6 @@ namespace BovineLabs.Core.Collections
             return ref this.Keys[idx];
         }
 
-        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         private ref TValue GetElementAt(int idx)
         {
             return ref *(TValue*)this.GetElementAt(this.Ptr, this.Capacity, idx);

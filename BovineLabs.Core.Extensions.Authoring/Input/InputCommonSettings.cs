@@ -31,15 +31,11 @@ namespace BovineLabs.Core.Authoring.Input
 
         [SerializeField]
         [SerializeReference]
-        [SuppressMessage("ReSharper", "CollectionNeverUpdated.Local", Justification = "Unity serialization")]
-        [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Local", Justification = "Unity serialization")]
         private List<IInputSettings> settings = new();
 
 #if UNITY_EDITOR || BL_DEBUG
         [SerializeField]
         [SerializeReference]
-        [SuppressMessage("ReSharper", "CollectionNeverUpdated.Local", Justification = "Unity serialization")]
-        [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Local", Justification = "Unity serialization")]
         private List<IInputSettings> debugSettings = new();
 #endif
 

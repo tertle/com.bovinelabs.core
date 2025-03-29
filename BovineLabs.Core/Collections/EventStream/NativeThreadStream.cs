@@ -19,6 +19,8 @@ namespace BovineLabs.Core.Collections
     [NativeContainer]
     public partial struct NativeThreadStream : IDisposable, IEquatable<NativeThreadStream>
     {
+        private static readonly unsafe int MaxLargeSize = UnsafeThreadStreamBlockData.AllocationSize - sizeof(void*);
+
         /// <summary> Gets the number of streams the list can use. </summary>
         public static int ForEachCount => UnsafeThreadStream.ForEachCount;
 
@@ -100,7 +102,7 @@ namespace BovineLabs.Core.Collections
         /// <remarks> The array is a copy of stream data. </remarks>
         /// <returns> The native array. </returns>
         public NativeArray<T> ToNativeArray<T>(Allocator allocator)
-            where T : struct
+            where T : unmanaged
         {
             this.CheckReadAccess();
             return this.stream.ToNativeArray<T>(allocator);
@@ -157,14 +159,13 @@ namespace BovineLabs.Core.Collections
 
         private static void Allocate(out NativeThreadStream stream, AllocatorManager.AllocatorHandle allocator)
         {
+            CollectionHelper.CheckAllocator(allocator);
+
             UnsafeThreadStream.AllocateBlock(out stream.stream, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.CheckAllocator(allocator);
             stream.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
-
-            CollectionHelper.SetStaticSafetyId<NativeThreadStream>(ref stream.m_Safety, ref s_staticSafetyId.Data);
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(stream.m_Safety, true);
+            CollectionHelper.SetStaticSafetyId(ref stream.m_Safety, ref s_staticSafetyId.Data, "BovineLabs.Core.Collections.NativeThreadStream");
 #endif
         }
 

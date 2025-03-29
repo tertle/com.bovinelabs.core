@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Collections
     using Unity.Collections;
     using UnityEngine;
 
-    [GenerateTestsForBurstCompatibility]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Convenience")]
     internal unsafe struct UnsafeThreadStreamBlock
     {
@@ -16,7 +15,6 @@ namespace BovineLabs.Core.Collections
         internal fixed byte Data[1];
     }
 
-    [GenerateTestsForBurstCompatibility]
     internal unsafe struct UnsafeThreadStreamRange
     {
         internal UnsafeThreadStreamBlock* Block;
@@ -32,7 +30,6 @@ namespace BovineLabs.Core.Collections
         internal byte* CurrentBlockEnd;
     }
 
-    [GenerateTestsForBurstCompatibility]
     internal unsafe struct UnsafeThreadStreamBlockData
     {
         internal const int AllocationSize = 4 * 1024;

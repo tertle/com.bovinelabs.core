@@ -56,8 +56,6 @@ namespace BovineLabs.Core.Collections
         internal static void AllocateHashMap<TValue>(int length, int bucketLength, AllocatorManager.AllocatorHandle label, out KeyedMapData* data)
             where TValue : unmanaged
         {
-            CollectionHelper.CheckIsUnmanaged<TValue>();
-
             data = (KeyedMapData*)Memory.Unmanaged.Allocate(sizeof(KeyedMapData), UnsafeUtility.AlignOf<KeyedMapData>(), label);
 
             data->Length = 0;

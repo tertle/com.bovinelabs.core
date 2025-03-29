@@ -1,47 +1,46 @@
-// <copyright file="SubSceneLoadingSystem.cs" company="BovineLabs">
+﻿// <copyright file="SubSceneLoadingSystem.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Groups;
     using BovineLabs.Core.Pause;
+    using BovineLabs.Core.Utility;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.Mathematics;
     using Unity.Scenes;
-    using Hash128 = Unity.Entities.Hash128;
 
     /// <summary> System that loads our SubScenes depending on the world and the SubScene load mode. </summary>
     [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderFirst = true)]
-    [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | Worlds.Service)]
+    [WorldSystemFilter(Worlds.SimulationThinService)]
     [CreateAfter(typeof(BLDebugSystem))]
-    public partial struct SubSceneLoadingSystem : ISystem
+    public unsafe partial struct SubSceneLoadingSystem : ISystem
     {
-        private NativeList<Volume> volumes;
-        private NativeList<Entity> requiredScenes;
-        private NativeHashSet<Entity> waitingForLoad;
-        private NativeHashSet<Hash128> scenes;
+        private NativeList<Entity> waitingForLoad;
+
+#if UNITY_EDITOR
+        private NativeHashSet<Entity> requiredScenes;
+#endif
 
         /// <inheritdoc />
         public void OnCreate(ref SystemState state)
         {
-            this.volumes = new NativeList<Volume>(16, Allocator.Persistent);
-            this.requiredScenes = new NativeList<Entity>(4, Allocator.Persistent);
-            this.waitingForLoad = new NativeHashSet<Entity>(16, Allocator.Persistent);
-            this.scenes = new NativeHashSet<Hash128>(16, Allocator.Persistent);
+            this.waitingForLoad = new NativeList<Entity>(4, Allocator.Persistent);
+#if UNITY_EDITOR
+            this.requiredScenes = new NativeHashSet<Entity>(4, Allocator.Persistent);
+#endif
         }
 
         /// <inheritdoc />
         public void OnDestroy(ref SystemState state)
         {
-            this.volumes.Dispose();
-            this.requiredScenes.Dispose();
             this.waitingForLoad.Dispose();
-            this.scenes.Dispose();
+#if UNITY_EDITOR
+            this.requiredScenes.Dispose();
+#endif
         }
 
         /// <inheritdoc />
@@ -49,14 +48,84 @@ namespace BovineLabs.Core.SubScenes
         public void OnUpdate(ref SystemState state)
         {
 #if UNITY_EDITOR
+            this.HandleMissingSubScenes(ref state);
+#endif
+
+            this.UnloadSubScenes(ref state);
+            this.LoadSubSceneEntities(ref state);
+            this.LoadSubScenes(ref state);
+
+            if (this.waitingForLoad.Length > 0)
+            {
+                this.WaitToLoad(ref state);
+            }
+        }
+
+#if UNITY_EDITOR
+        private void HandleMissingSubScenes(ref SystemState state)
+        {
+            var query = SystemAPI.QueryBuilder().WithAll<SubSceneLoadData, SubSceneBuffer, SubSceneEntity>().Build();
+
+            var entityTypeHandle = SystemAPI.GetEntityTypeHandle();
+            var subSceneEntityHandle = SystemAPI.GetBufferTypeHandle<SubSceneEntity>();
+
+            var list = new NativeList<(Entity Entity, int Index)>(state.WorldUpdateAllocator);
+
+            var queryIterator = new QueryEntityEnumerator(query);
+            while (queryIterator.MoveNextChunk(out var chunk, out var chunkIterator))
+            {
+                var entities = chunk.GetEntityDataPtrRO(entityTypeHandle);
+                var subSceneEntityAccessor = chunk.GetBufferAccessorRO(ref subSceneEntityHandle);
+
+                while (chunkIterator.NextEntityIndex(out var entityIndexInChunk))
+                {
+                    var subSceneEntities = subSceneEntityAccessor[entityIndexInChunk];
+                    for (var index = 0; index < subSceneEntities.Length; index++)
+                    {
+                        if (state.EntityManager.Exists(subSceneEntities[index].Entity))
+                        {
+                            continue;
+                        }
+
+                        list.Add((entities[entityIndexInChunk], index));
+                    }
+                }
+            }
+
             var loadRequired = false;
 
-            foreach (var required in this.requiredScenes.AsArray())
+            foreach (var (entity, index) in list)
             {
-                if (!this.IsSceneLoad(ref state, required))
+                var buffer = state.EntityManager.GetBuffer<SubSceneEntity>(entity);
+                ref var element = ref buffer.ElementAt(index);
+
+                var oldEntity = element.Entity;
+
+                var autoLoad = state.EntityManager.IsComponentEnabled<LoadSubScene>(entity);
+                var newEntity = SceneSystem.LoadSceneAsync(state.WorldUnmanaged, element.Scene, new SceneSystem.LoadParameters { AutoLoad = autoLoad });
+                element.Entity = newEntity;
+
+                if (this.requiredScenes.Remove(oldEntity))
                 {
-                    if (this.waitingForLoad.Add(required))
+                    var oldIndex = this.waitingForLoad.IndexOf(oldEntity);
+                    if (oldIndex != -1)
                     {
+                        this.waitingForLoad.RemoveAtSwapBack(oldIndex);
+                    }
+
+                    this.waitingForLoad.Add(element.Entity);
+
+                    loadRequired = true;
+                }
+            }
+
+            foreach (var required in this.requiredScenes)
+            {
+                if (!SceneSystem.IsSceneLoaded(state.WorldUnmanaged, required))
+                {
+                    if (this.waitingForLoad.IndexOf(required) == -1)
+                    {
+                        this.waitingForLoad.Add(required);
                         loadRequired = true;
                     }
                 }
@@ -66,182 +135,222 @@ namespace BovineLabs.Core.SubScenes
             {
                 PauseGame.Pause(ref state, true);
             }
+        }
 #endif
-
-            this.LoadSubSceneEntities(ref state);
-
-            if (this.waitingForLoad.Count != 0)
-            {
-                this.WaitToLoad(ref state);
-            }
-        }
-
-        private bool IsSceneLoad(ref SystemState state, Entity entity)
-        {
-            return SceneSystem.IsSceneLoaded(state.WorldUnmanaged, entity);
-        }
 
         private void LoadSubSceneEntities(ref SystemState state)
         {
-            var query = SystemAPI.QueryBuilder().WithAll<SubSceneLoad>().Build();
-
-            if (query.IsEmptyIgnoreFilter)
+            var query = SystemAPI.QueryBuilder().WithAll<SubSceneLoadData, SubSceneBuffer>().WithDisabledRW<SubSceneEntity>().Build();
+            if (query.IsEmpty)
             {
                 return;
             }
 
-            var scenesToLoad = new NativeList<SceneLoadData>(state.WorldUpdateAllocator);
-            var ecb = SystemAPI.GetSingleton<InstantiateCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+            var toLoad = new NativeList<(Entity Entity, NativeList<SubSceneBuffer> SceneEntities)>(4, state.WorldUpdateAllocator);
 
-            var entityHandle = SystemAPI.GetEntityTypeHandle();
-            var subSceneLoadWeakReferenceHandle = SystemAPI.GetBufferTypeHandle<SubSceneLoad>(true);
-
-            var chunks = query.ToArchetypeChunkArray(state.WorldUpdateAllocator);
-            foreach (var chunk in chunks)
-            {
-                var entities = chunk.GetNativeArray(entityHandle);
-                var subSceneLoadWeakReferenceAccessor = chunk.GetBufferAccessor(ref subSceneLoadWeakReferenceHandle);
-
-                for (var i = 0; i < chunk.Count; i++)
-                {
-                    var subSceneLoadWeakReferences = subSceneLoadWeakReferenceAccessor[i];
-
-                    foreach (var scene in subSceneLoadWeakReferences.AsNativeArray())
-                    {
-                        scenesToLoad.Add(new SceneLoadData { Data = scene });
-                    }
-
-                    ecb.AddComponent<Disabled>(entities[i]);
-                }
-            }
-
-            this.LoadScenes(ref state, scenesToLoad.AsArray());
-        }
-
-        private void LoadScenes(ref SystemState state, NativeArray<SceneLoadData> scenesToLoad)
-        {
-            var debug = SystemAPI.GetSingleton<BLDebug>();
             var flags = state.WorldUnmanaged.Flags;
 
-            for (var index = 0; index < scenesToLoad.Length; index++)
+            var entityHandle = SystemAPI.GetEntityTypeHandle();
+            var subSceneLoadDataHandle = SystemAPI.GetComponentTypeHandle<SubSceneLoadData>(true);
+            var subSceneBufferHandle = SystemAPI.GetBufferTypeHandle<SubSceneBuffer>(true);
+            var subSceneEntityHandle = SystemAPI.GetBufferTypeHandle<SubSceneEntity>();
+
+            var queryIterator = new QueryEntityEnumerator(query);
+            while (queryIterator.MoveNextChunk(out var chunk, out var chunkIterator))
             {
-                ref var subScene = ref scenesToLoad.ElementAt(index);
-                var sceneGuid = subScene.Data.Scene.SceneGUID();
+                var entities = chunk.GetEntityDataPtrRO(entityHandle);
+                var subSceneLoadDatas = (SubSceneLoadData*)chunk.GetRequiredComponentDataPtrRO(ref subSceneLoadDataHandle);
+                var subSceneBufferAccessor = chunk.GetBufferAccessor(ref subSceneBufferHandle);
 
-                if (!this.scenes.Add(sceneGuid))
+                while (chunkIterator.NextEntityIndex(out var entityIndexInChunk))
                 {
-                    // Already been loaded
-                    continue;
-                }
+                    chunk.SetComponentEnabled(ref subSceneEntityHandle, entityIndexInChunk, true);
 
-                var loadingMode = subScene.Data.LoadingMode;
-                var isRequired = subScene.Data.IsRequired;
-                var targetWorld = subScene.Data.TargetWorld;
+                    var data = subSceneLoadDatas[entityIndexInChunk];
+                    var subSceneBuffer = subSceneBufferAccessor[entityIndexInChunk];
+                    var doesNotMatchWorld = (data.TargetWorld & flags) == 0;
 
-                if ((targetWorld & flags) == 0)
-                {
-                    // SubScene OnEnable can load sub scenes before we have a chance to stop it so let's just revert this here
-                    var sceneEntity = this.GetSceneEntity(ref state, sceneGuid);
-                    if (sceneEntity != Entity.Null)
+                    if (doesNotMatchWorld)
                     {
-                        // The guid overload variation is not burst compatible so we get the entity ourselves
-                        SceneSystem.UnloadScene(state.WorldUnmanaged, sceneEntity, SceneSystem.UnloadParameters.DestroyMetaEntities);
+                        continue;
                     }
 
-                    continue;
-                }
-
-                var isServer = state.WorldUnmanaged.IsServerWorld();
-
-                var requiredForLoading = loadingMode == SubSceneLoadMode.AutoLoad && isRequired;
-                requiredForLoading |= isServer && loadingMode == SubSceneLoadMode.BoundingVolume;
-
-                var loadingParams = default(SceneSystem.LoadParameters);
-                loadingParams.AutoLoad = (isServer && loadingMode != SubSceneLoadMode.OnDemand) || loadingMode == SubSceneLoadMode.AutoLoad;
-                subScene.Entity = SceneSystem.LoadSceneAsync(state.WorldUnmanaged, sceneGuid, loadingParams);
-                state.EntityManager.AddComponentData(subScene.Entity, new RequestSceneLoaded { LoadFlags = loadingParams.Flags });
-
-#if UNITY_EDITOR
-                state.EntityManager.SetName(subScene.Entity, subScene.Data.Name);
-                debug.Debug($"Loading SubScene {subScene.Data.Name}\nrequiredForLoading: {requiredForLoading}, loadingMode: {loadingMode}");
-#endif
-                if (requiredForLoading)
-                {
-                    this.waitingForLoad.Add(subScene.Entity);
-                    this.requiredScenes.Add(subScene.Entity);
-
-                    state.EntityManager.AddComponent<RequiredSubScene>(subScene.Entity);
-                }
-
-                if (!isServer && loadingMode == SubSceneLoadMode.BoundingVolume)
-                {
-                    this.volumes.Add(new Volume
-                    {
-                        Entity = subScene.Entity,
-                        LoadMaxDistance = subScene.Data.LoadMaxDistance,
-                        UnloadMaxDistance = subScene.Data.UnloadMaxDistance,
-                    });
+                    var list = new NativeList<SubSceneBuffer>(16, state.WorldUpdateAllocator);
+                    toLoad.Add((entities[entityIndexInChunk], list));
+                    list.AddRange(subSceneBuffer.AsNativeArray());
                 }
             }
 
-            if (this.waitingForLoad.Count != 0)
+            // This is all just to work around structural changes and DynamicBuffers
+            var loadingParams = default(SceneSystem.LoadParameters);
+            loadingParams.AutoLoad = false;
+
+            foreach (var (entity, sceneEntities) in toLoad)
+            {
+                foreach (var scene in sceneEntities)
+                {
+                    var sceneGuid = scene.Scene.SceneGUID();
+                    var sceneEntity = SceneSystem.LoadSceneAsync(state.WorldUnmanaged, sceneGuid, loadingParams);
+
+                    state
+                    .EntityManager
+                    .GetBuffer<SubSceneEntity>(entity)
+                    .Add(new SubSceneEntity
+                    {
+                        Entity = sceneEntity,
+                        Scene = sceneGuid,
+                    });
+#if UNITY_EDITOR
+                    state.EntityManager.SetName(sceneEntity, scene.Name);
+#endif
+                }
+            }
+        }
+
+        private void LoadSubScenes(ref SystemState state)
+        {
+            var query = SystemAPI.QueryBuilder().WithAll<SubSceneLoadData, SubSceneEntity, LoadSubScene>().WithDisabledRW<SubSceneLoaded>().Build();
+            if (query.IsEmpty)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            var debug = SystemAPI.GetSingleton<BLDebug>();
+#endif
+
+            var toLoad = new NativeList<Entity>(64, state.WorldUpdateAllocator);
+            var subSceneLoadDataHandle = SystemAPI.GetComponentTypeHandle<SubSceneLoadData>(true);
+            var subSceneEntityHandle = SystemAPI.GetBufferTypeHandle<SubSceneEntity>(true);
+            var subSceneLoadedHandle = SystemAPI.GetComponentTypeHandle<SubSceneLoaded>();
+
+            var queryIterator = new QueryEntityEnumerator(query);
+            while (queryIterator.MoveNextChunk(out var chunk, out var e))
+            {
+                var subSceneLoadDatas = (SubSceneLoadData*)chunk.GetRequiredComponentDataPtrRO(ref subSceneLoadDataHandle);
+                var subSceneEntityAccessor = chunk.GetBufferAccessor(ref subSceneEntityHandle);
+
+                while (e.NextEntityIndex(out var entityIndexInChunk))
+                {
+                    chunk.SetComponentEnabled(ref subSceneLoadedHandle, entityIndexInChunk, true);
+
+                    var data = subSceneLoadDatas[entityIndexInChunk];
+                    var subSceneEntities = subSceneEntityAccessor[entityIndexInChunk];
+
+                    foreach (var ss in subSceneEntities)
+                    {
+                        toLoad.Add(ss.Entity);
+
+#if UNITY_EDITOR
+                        state.EntityManager.GetName(ss.Entity, out var name);
+                        debug.Debug($"Loading SubScene | {name}");
+#endif
+                    }
+
+                    if (data.WaitForLoad)
+                    {
+                        foreach (var ss in subSceneEntities)
+                        {
+                            this.waitingForLoad.Add(ss.Entity);
+#if UNITY_EDITOR
+                            this.requiredScenes.Add(ss.Entity);
+#endif
+                        }
+                    }
+                }
+            }
+
+            var loadingParams = new SceneSystem.LoadParameters { AutoLoad = true };
+            foreach (var entity in toLoad)
+            {
+                SceneSystem.LoadSceneAsync(state.WorldUnmanaged, entity, loadingParams);
+            }
+
+            if (this.waitingForLoad.Length > 0)
             {
                 PauseGame.Pause(ref state, true);
             }
         }
 
-        private Entity GetSceneEntity(ref SystemState state, Hash128 sceneGUID)
+        private void UnloadSubScenes(ref SystemState state)
         {
-            foreach (var (r, e) in SystemAPI.Query<SceneReference>().WithEntityAccess())
+            var query = SystemAPI.QueryBuilder().WithAll<SubSceneLoadData, SubSceneEntity>().WithAllRW<SubSceneLoaded>().WithDisabled<LoadSubScene>().Build();
+            if (query.IsEmpty)
             {
-                if (r.SceneGUID == sceneGUID)
+                return;
+            }
+
+#if UNITY_EDITOR
+            var debug = SystemAPI.GetSingleton<BLDebug>();
+#endif
+
+            var toUnload = new NativeList<Entity>(64, state.WorldUpdateAllocator);
+
+            var subSceneLoadDataHandle = SystemAPI.GetComponentTypeHandle<SubSceneLoadData>(true);
+            var subSceneEntityHandle = SystemAPI.GetBufferTypeHandle<SubSceneEntity>();
+            var subSceneLoadedHandle = SystemAPI.GetComponentTypeHandle<SubSceneLoaded>();
+
+            var queryIterator = new QueryEntityEnumerator(query);
+            while (queryIterator.MoveNextChunk(out var chunk, out var e))
+            {
+                var subSceneLoadDatas = (SubSceneLoadData*)chunk.GetRequiredComponentDataPtrRO(ref subSceneLoadDataHandle);
+                var subSceneEntityAccessor = chunk.GetBufferAccessor(ref subSceneEntityHandle);
+
+                while (e.NextEntityIndex(out var entityIndexInChunk))
                 {
-                    return e;
+                    chunk.SetComponentEnabled(ref subSceneLoadedHandle, entityIndexInChunk, true);
+
+                    var data = subSceneLoadDatas[entityIndexInChunk];
+                    var subSceneEntities = subSceneEntityAccessor[entityIndexInChunk];
+
+                    foreach (var ss in subSceneEntities)
+                    {
+                        toUnload.Add(ss.Entity);
+
+#if UNITY_EDITOR
+                        state.EntityManager.GetName(ss.Entity, out var name);
+                        debug.Debug($"Unloading SubScene | {name}");
+#endif
+                    }
+
+                    // This should be uncommon but if we were waiting to load these subscenes we should remove them from the queue if they never loaded
+                    if (data.WaitForLoad)
+                    {
+                        foreach (var ss in subSceneEntities)
+                        {
+                            var index = this.waitingForLoad.IndexOf(ss.Entity);
+                            if (index != -1)
+                            {
+                                this.waitingForLoad.RemoveAtSwapBack(index);
+                            }
+
+#if UNITY_EDITOR
+                            this.requiredScenes.Remove(ss.Entity);
+#endif
+                        }
+                    }
+
+                    subSceneEntities.Clear();
                 }
             }
 
-            return Entity.Null;
+            foreach (var e in toUnload)
+            {
+                SceneSystem.UnloadScene(state.WorldUnmanaged, e);
+            }
         }
 
         private void WaitToLoad(ref SystemState state)
         {
-            using var e = this.waitingForLoad.GetEnumerator();
-            while (e.MoveNext())
+            for (var i = this.waitingForLoad.Length - 1; i >= 0; i--)
             {
-                if (!this.IsSceneLoad(ref state, e.Current))
+                if (SceneSystem.IsSceneLoaded(state.WorldUnmanaged, this.waitingForLoad[i]))
                 {
-                    return;
+                    this.waitingForLoad.RemoveAtSwapBack(i);
                 }
             }
 
-            this.waitingForLoad.Clear();
-
-            for (var index = this.volumes.Length - 1; index >= 0; index--)
-            {
-                var subScene = this.volumes[index];
-
-                if (!state.EntityManager.HasComponent<ResolvedSectionEntity>(subScene.Entity))
-                {
-                    continue;
-                }
-
-                var sections = state.EntityManager.GetBuffer<ResolvedSectionEntity>(subScene.Entity).AsNativeArray();
-
-                var bounds = this.GetBounds(ref state, sections);
-                if (!bounds.Equals(MinMaxAABB.Empty))
-                {
-                    state.EntityManager.AddComponentData(subScene.Entity, new LoadWithBoundingVolume
-                    {
-                        Bounds = bounds,
-                        LoadMaxDistanceSq = subScene.LoadMaxDistance * subScene.LoadMaxDistance,
-                        UnloadMaxDistanceSq = subScene.UnloadMaxDistance * subScene.UnloadMaxDistance,
-                    });
-                }
-
-                this.volumes.RemoveAt(index);
-            }
-
-            if (this.volumes.Length != 0)
+            if (this.waitingForLoad.Length > 0)
             {
                 return;
             }
@@ -250,45 +359,6 @@ namespace BovineLabs.Core.SubScenes
             debug.Debug("All required SubScenes loaded.");
 
             PauseGame.Unpause(ref state);
-
-            // In builds once scenes are loaded there is no need to keep checking state
-            // However in editor SubScenes can be opened and reloaded so we keep the system running to handle this
-#if !UNITY_EDITOR
-            state.Enabled = false;
-#endif
-        }
-
-        private MinMaxAABB GetBounds(ref SystemState state, NativeArray<ResolvedSectionEntity> sections)
-        {
-            var bounds = MinMaxAABB.Empty;
-
-            foreach (var section in sections)
-            {
-                if (!state.EntityManager.HasComponent<SceneSectionData>(section.SectionEntity))
-                {
-                    // If we don't have a SceneSectionData it means subscene is open and we should always load it
-                    return MinMaxAABB.Empty;
-                }
-
-                var sceneSectionData = state.EntityManager.GetComponentData<SceneSectionData>(section.SectionEntity);
-                bounds.Encapsulate(sceneSectionData.BoundingVolume);
-            }
-
-            return bounds;
-        }
-
-        private struct Volume
-        {
-            public Entity Entity;
-            public float LoadMaxDistance;
-            public float UnloadMaxDistance;
-        }
-
-        private struct SceneLoadData
-        {
-            public Entity Entity;
-            public SubSceneLoad Data;
         }
     }
 }
-#endif

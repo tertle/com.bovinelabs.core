@@ -17,8 +17,7 @@ namespace BovineLabs.Core.Collections
     /// </summary>
     public unsafe partial struct UnsafeThreadStream : INativeDisposable, IEquatable<UnsafeThreadStream>
     {
-        /// <summary> Gets the number of streams the list can use. </summary>
-        public static int ForEachCount => JobsUtility.ThreadIndexCount;
+        private static readonly int MaxLargeSize = UnsafeThreadStreamBlockData.AllocationSize - sizeof(void*);
 
         [NativeDisableUnsafePtrRestriction]
         private UnsafeThreadStreamBlockData* blockData;
@@ -32,6 +31,9 @@ namespace BovineLabs.Core.Collections
             AllocateBlock(out this, allocator);
             this.AllocateForEach();
         }
+
+        /// <summary> Gets the number of streams the list can use. </summary>
+        public static int ForEachCount => JobsUtility.ThreadIndexCount;
 
         /// <summary> Gets a value indicating whether memory for the container is allocated. </summary>
         /// <value> True if this container object's internal storage has been allocated. </value>
@@ -100,9 +102,8 @@ namespace BovineLabs.Core.Collections
         /// <remarks>
         ///     <para> The array is a copy of stream data. </para>
         /// </remarks>
-        [GenerateTestsForBurstCompatibility]
         public NativeArray<T> ToNativeArray<T>(Allocator arrayAllocator)
-            where T : struct
+            where T : unmanaged
         {
             var array = new NativeArray<T>(this.Count(), arrayAllocator, NativeArrayOptions.UninitializedMemory);
             var reader = this.AsReader();
@@ -149,7 +150,6 @@ namespace BovineLabs.Core.Collections
         /// A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.
         /// </returns>
-        [GenerateTestsForBurstCompatibility /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new DisposeJob { Container = this }.Schedule(inputDeps);

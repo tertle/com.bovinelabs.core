@@ -9,6 +9,8 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using BovineLabs.Core.ConfigVars;
+    using Unity.Burst;
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.SceneManagement;
@@ -17,9 +19,13 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     // ExecuteAlways and the GameObject callbacks.
     [ExecuteAlways]
     [InitializeOnLoad]
+    [Configurable]
     public partial class ObjectInstantiate
     {
         private static readonly Dictionary<GameObject, ObjectInstantiate> PreviewInstantiateMap = new();
+
+        [ConfigVar("core.instantiate-replace", true, "Should object definition targets be replaced when dropping in scene")]
+        private static readonly SharedStatic<bool> Replace = SharedStatic<bool>.GetOrCreate<ReplaceType>();
 
         private ObjectDefinitionAuthoring? preview;
         private GameObject[] previewChildren = Array.Empty<GameObject>();
@@ -28,9 +34,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         static ObjectInstantiate()
         {
             Selection.selectionChanged += OnSelectionChanged;
-#if !BL_DISABLE_OBJECT_AUTO_INSTANTIATE
             ObjectChangeEvents.changesPublished += ChangesPublished;
-#endif
         }
 
         public static void TryReplace(GameObject newGameObject)
@@ -154,6 +158,11 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
         private static void ChangesPublished(ref ObjectChangeEventStream stream)
         {
+            if (!Replace.Data)
+            {
+                return;
+            }
+
             for (var i = 0; i < stream.length; ++i)
             {
                 var type = stream.GetEventType(i);
@@ -210,6 +219,10 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
             this.preview.transform.position = this.transform.position;
             this.preview.transform.rotation = this.transform.rotation;
             this.preview.transform.localScale = this.transform.localScale;
+        }
+
+        private struct ReplaceType
+        {
         }
     }
 }

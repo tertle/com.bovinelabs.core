@@ -20,7 +20,11 @@ namespace BovineLabs.Core
         public const WorldSystemFilterFlags Simulation =
             WorldSystemFilterFlags.ServerSimulation | WorldSystemFilterFlags.LocalSimulation | WorldSystemFilterFlags.ClientSimulation;
 
+        public const WorldSystemFilterFlags SimulationService = Simulation | Service;
+
         public const WorldSystemFilterFlags SimulationThin = Simulation | WorldSystemFilterFlags.ThinClientSimulation;
+
+        public const WorldSystemFilterFlags SimulationThinService = SimulationThin | Service;
 
         public const WorldSystemFilterFlags SimulationEditor = SimulationThin | WorldSystemFilterFlags.Editor;
 

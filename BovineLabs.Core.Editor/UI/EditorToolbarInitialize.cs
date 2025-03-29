@@ -38,6 +38,11 @@ namespace BovineLabs.Core.Editor.UI
 
                 var ve = (VisualElement)m.Invoke(null, null);
 
+                if (ve == null)
+                {
+                    continue;
+                }
+
                 var parent = m.GetCustomAttribute<EditorToolbarAttribute>().Position switch
                 {
                     EditorToolbarPosition.RightLeft => EditorToolbar.RightLeftParent,
@@ -48,6 +53,17 @@ namespace BovineLabs.Core.Editor.UI
                     EditorToolbarPosition.LeftRight => EditorToolbar.LeftRightParent,
                     _ => throw new ArgumentOutOfRangeException(),
                 };
+
+                // Force a margin between things
+                if (ve.style.marginLeft.keyword == StyleKeyword.Null)
+                {
+                    ve.style.marginLeft = 1;
+                }
+
+                if (ve.style.marginRight.keyword == StyleKeyword.Null)
+                {
+                    ve.style.marginRight = 1;
+                }
 
                 parent.Add(ve);
             }

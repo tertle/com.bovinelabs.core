@@ -14,7 +14,6 @@ namespace BovineLabs.Core.Collections
     using Unity.Jobs.LowLevel.Unsafe;
 
     [StructLayout(LayoutKind.Sequential)]
-    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
     public unsafe struct UnsafePartialKeyedMap<TValue> : INativeDisposable
         where TValue : unmanaged
     {
