@@ -11,12 +11,10 @@ namespace BovineLabs.Core
     using Unity.Burst;
     using Unity.Entities;
     using UnityEngine;
-    using UnityEngine.Scripting;
 
     /// <summary>
     /// A bootstrap for setting up and handling a separate Service world as well as support for single player and optional multiplayer games via NetCode.
     /// </summary>
-    [Preserve]
     [Configurable]
     [SuppressMessage("ReSharper", "RedundantExtendsListEntry", Justification = "Conditional")]
     public abstract partial class BovineLabsBootstrap : ICustomBootstrap
@@ -200,12 +198,9 @@ namespace BovineLabs.Core
                 return false;
             }
 
-            return t != typeof(FixedStepSimulationSystemGroup) &&
-                t != typeof(BeginFixedStepSimulationEntityCommandBufferSystem) &&
-                t != typeof(EndFixedStepSimulationEntityCommandBufferSystem) &&
-                t != typeof(VariableRateSimulationSystemGroup) &&
-                t != typeof(BeginVariableRateSimulationEntityCommandBufferSystem) &&
-                t != typeof(EndVariableRateSimulationEntityCommandBufferSystem) &&
+            return t != typeof(FixedStepSimulationSystemGroup) && t != typeof(BeginFixedStepSimulationEntityCommandBufferSystem) &&
+                t != typeof(EndFixedStepSimulationEntityCommandBufferSystem) && t != typeof(VariableRateSimulationSystemGroup) &&
+                t != typeof(BeginVariableRateSimulationEntityCommandBufferSystem) && t != typeof(EndVariableRateSimulationEntityCommandBufferSystem) &&
                 t != typeof(CompanionGameObjectUpdateTransformSystem) &&
 #if !BL_DISABLE_TIME
                 t != typeof(UpdateWorldTimeSystem) &&

@@ -63,100 +63,14 @@ namespace BovineLabs.Core.Editor.Settings
             return defaultDirectory;
         }
 
-        private static T GetOrCreateSettings<T>(Type type)
-            where T : ScriptableObject, ISettings
+        public static void AddSettingsToAuthoring(EditorSettings editorSettings, SettingsBase settingsBase)
         {
-            return (T)GetOrCreateSettings(type);
-        }
-
-        private static ISettings GetOrCreateSettings(Type type)
-        {
-            if (!typeof(ISettings).IsAssignableFrom(type))
-            {
-                throw new Exception("Settings must implement ISettings");
-            }
-
-            var filter = type.Namespace == null ? type.Name : $"{type.Namespace}.{type.Name}";
-            var assets = AssetDatabase.FindAssets($"t:{filter}");
-
-            ScriptableObject? instance;
-
-            switch (assets.Length)
-            {
-                case 0:
-                {
-                    string directory;
-                    var resourceAttribute = type.GetCustomAttribute<ResourceSettingsAttribute>();
-                    if (resourceAttribute != null)
-                    {
-                        var resources = "Resources";
-                        if (!string.IsNullOrWhiteSpace(resourceAttribute.Directory))
-                        {
-                            resources = Path.Combine(resources, resourceAttribute.Directory);
-                        }
-
-                        directory = GetAssetDirectory(EditorSettings.SettingsResourceKey, EditorSettings.DefaultSettingsResourceDirectory, resources);
-                    }
-                    else
-                    {
-                        directory = GetAssetDirectory(EditorSettings.SettingsKey, EditorSettings.DefaultSettingsDirectory);
-                    }
-
-                    var path = Path.Combine(directory, $"{type.Name}.asset");
-
-                    // Search didn't work, for some reason this seems to fail sometimes due to library state
-                    // So before creating a new instance, try to directly look it up where we expect it
-                    instance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
-
-                    if (instance == null)
-                    {
-                        instance = ScriptableObject.CreateInstance(type);
-                        AssetDatabase.CreateAsset(instance, path);
-                        AssetDatabase.SaveAssets();
-                    }
-
-                    break;
-                }
-
-                case 1:
-                {
-                    // Return
-                    var asset = assets.First();
-                    instance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(asset));
-                    break;
-                }
-
-                default:
-                {
-                    // Error
-                    Debug.LogError($"More than 1 instance of {type.Name} found. {string.Join(",", assets)}");
-                    var asset = assets.First();
-                    instance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(asset));
-                    break;
-                }
-            }
-
-            Assert.IsNotNull(instance, $"{type.Name} returned null from asset database. Might need to reimport something.");
-
-            TryAddToSettingsAuthoring(instance);
-
-            return (ISettings)instance;
-        }
-
-        private static void TryAddToSettingsAuthoring(ScriptableObject settings)
-        {
-            if (settings is not SettingsBase settingsBase)
+            if (editorSettings.DefaultSettingsAuthoring == null)
             {
                 return;
             }
 
-            var editorSettings = GetEditorSettings();
-            if (editorSettings == null || editorSettings.DefaultSettingsAuthoring == null)
-            {
-                return;
-            }
-
-            var worlds = settings.GetType().GetCustomAttribute<SettingsWorldAttribute>()?.Worlds;
+            var worlds = settingsBase.GetType().GetCustomAttribute<SettingsWorldAttribute>()?.Worlds;
 
             var authorings = new HashSet<SettingsAuthoring>();
 
@@ -246,7 +160,104 @@ namespace BovineLabs.Core.Editor.Settings
                 }
 
                 so.ApplyModifiedProperties();
+                AssetDatabase.SaveAssetIfDirty(authoring);
             }
+        }
+
+        private static T GetOrCreateSettings<T>(Type type)
+            where T : ScriptableObject, ISettings
+        {
+            return (T)GetOrCreateSettings(type);
+        }
+
+        private static ISettings GetOrCreateSettings(Type type)
+        {
+            if (!typeof(ISettings).IsAssignableFrom(type))
+            {
+                throw new Exception("Settings must implement ISettings");
+            }
+
+            var filter = type.Namespace == null ? type.Name : $"{type.Namespace}.{type.Name}";
+            var assets = AssetDatabase.FindAssets($"t:{filter}");
+
+            ScriptableObject? instance;
+
+            switch (assets.Length)
+            {
+                case 0:
+                {
+                    string directory;
+                    var resourceAttribute = type.GetCustomAttribute<ResourceSettingsAttribute>();
+                    if (resourceAttribute != null)
+                    {
+                        var resources = "Resources";
+                        if (!string.IsNullOrWhiteSpace(resourceAttribute.Directory))
+                        {
+                            resources = Path.Combine(resources, resourceAttribute.Directory);
+                        }
+
+                        directory = GetAssetDirectory(EditorSettings.SettingsResourceKey, EditorSettings.DefaultSettingsResourceDirectory, resources);
+                    }
+                    else
+                    {
+                        directory = GetAssetDirectory(EditorSettings.SettingsKey, EditorSettings.DefaultSettingsDirectory);
+                    }
+
+                    var path = Path.Combine(directory, $"{type.Name}.asset");
+
+                    // Search didn't work, for some reason this seems to fail sometimes due to library state
+                    // So before creating a new instance, try to directly look it up where we expect it
+                    instance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
+
+                    if (instance == null)
+                    {
+                        instance = ScriptableObject.CreateInstance(type);
+                        AssetDatabase.CreateAsset(instance, path);
+                        AssetDatabase.SaveAssets();
+                    }
+
+                    break;
+                }
+
+                case 1:
+                {
+                    // Return
+                    var asset = assets.First();
+                    instance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(asset));
+                    break;
+                }
+
+                default:
+                {
+                    // Error
+                    Debug.LogError($"More than 1 instance of {type.Name} found. {string.Join(",", assets)}");
+                    var asset = assets.First();
+                    instance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(asset));
+                    break;
+                }
+            }
+
+            Assert.IsNotNull(instance, $"{type.Name} returned null from asset database. Might need to reimport something.");
+
+            TryAddToSettingsAuthoring(instance);
+
+            return (ISettings)instance;
+        }
+
+        private static void TryAddToSettingsAuthoring(ScriptableObject settings)
+        {
+            if (settings is not SettingsBase settingsBase)
+            {
+                return;
+            }
+
+            var editorSettings = GetEditorSettings();
+            if (editorSettings == null)
+            {
+                return;
+            }
+
+            AddSettingsToAuthoring(editorSettings, settingsBase);
         }
 
         private static bool Compare(Object obj1, Object obj2)

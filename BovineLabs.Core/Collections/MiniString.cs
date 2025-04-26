@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Keys
+namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Diagnostics;
@@ -14,7 +14,7 @@ namespace BovineLabs.Core.Keys
 
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size = 16)]
-    internal struct MiniString : INativeList<byte>, IUTF8Bytes, IEquatable<MiniString>
+    public struct MiniString : INativeList<byte>, IUTF8Bytes, IEquatable<MiniString>
     {
         internal const ushort UTF8MaxLengthInBytes = 15;
 

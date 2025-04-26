@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         protected override void CustomBake(Baker<SettingsAuthoring> baker, Entity entity)
         {
             // Setup categories
-            var objectCategories = Resources.Load<ObjectCategories>($"{KSettings.KResourceDirectory}/{nameof(ObjectCategories)}");
+            var objectCategories = Resources.Load<ObjectCategories>($"{KSettingsBase.KResourceDirectory}/{nameof(ObjectCategories)}");
             baker.DependsOn(objectCategories);
 
             var components = baker.AddBuffer<ObjectCategoryComponents>(entity);
@@ -59,7 +59,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                     continue;
                 }
 
-                if (c.Value is < 0 or >= ObjectCategory.MaxBits)
+                if (c.Value >= ObjectCategory.MaxBits)
                 {
                     Debug.LogWarning($"Value outside bit field range {c.Value}");
                     continue;
@@ -67,7 +67,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
                 components.Add(new ObjectCategoryComponents
                 {
-                    CategoryBit = (byte)c.Value,
+                    CategoryBit = c.Value,
                     StableTypeHash = c.ComponentType,
                 });
             }

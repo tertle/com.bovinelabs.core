@@ -5,6 +5,8 @@
 namespace BovineLabs.Core.Editor.UI
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
     using BovineLabs.Core.Utility;
     using Unity;
@@ -14,6 +16,8 @@ namespace BovineLabs.Core.Editor.UI
     [InitializeOnLoad]
     internal static class EditorToolbarInitialize
     {
+        private static readonly Dictionary<VisualElement, List<(VisualElement, int)>> Priorities = new();
+
         static EditorToolbarInitialize()
         {
             foreach (var m in ReflectionUtility.GetMethodsWithAttribute<EditorToolbarAttribute>())
@@ -43,7 +47,10 @@ namespace BovineLabs.Core.Editor.UI
                     continue;
                 }
 
-                var parent = m.GetCustomAttribute<EditorToolbarAttribute>().Position switch
+                ApplyDefaultMargin(ve);
+
+                var attr = m.GetCustomAttribute<EditorToolbarAttribute>();
+                var parent = attr.Position switch
                 {
                     EditorToolbarPosition.RightLeft => EditorToolbar.RightLeftParent,
                     EditorToolbarPosition.RightCenter => EditorToolbar.RightCenterParent,
@@ -54,18 +61,32 @@ namespace BovineLabs.Core.Editor.UI
                     _ => throw new ArgumentOutOfRangeException(),
                 };
 
-                // Force a margin between things
-                if (ve.style.marginLeft.keyword == StyleKeyword.Null)
+                var priority = attr.Priority;
+
+                if (!Priorities.TryGetValue(parent, out var list))
                 {
-                    ve.style.marginLeft = 1;
+                    list = Priorities[parent] = new List<(VisualElement, int)>();
                 }
 
-                if (ve.style.marginRight.keyword == StyleKeyword.Null)
-                {
-                    ve.style.marginRight = 1;
-                }
+                list.Add((ve, priority));
+                list.Sort((i1, i2) => i1.Item2.CompareTo(i2.Item2));
 
-                parent.Add(ve);
+                var index = list.FindIndex(i => i.Item1 == ve);
+                parent.Insert(index, ve);
+            }
+        }
+
+        private static void ApplyDefaultMargin(VisualElement ve)
+        {
+            // Force a margin between things
+            if (ve.style.marginLeft.keyword == StyleKeyword.Null)
+            {
+                ve.style.marginLeft = 1;
+            }
+
+            if (ve.style.marginRight.keyword == StyleKeyword.Null)
+            {
+                ve.style.marginRight = 1;
             }
         }
     }

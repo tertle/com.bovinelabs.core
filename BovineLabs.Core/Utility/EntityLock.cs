@@ -15,9 +15,6 @@ namespace BovineLabs.Core.Utility
 
     public unsafe struct EntityLock : IDisposable
     {
-        // private NativeParallelHashMap<Entity, SpinLock>.ParallelWriter locks;
-
-        // Fix
         [NativeDisableUnsafePtrRestriction]
         private readonly LockData* pairs;
         private readonly int length;

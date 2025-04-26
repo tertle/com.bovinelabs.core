@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.Authoring.SubScenes
 {
     using System.Collections.Generic;
@@ -9,7 +10,6 @@ namespace BovineLabs.Core.Authoring.SubScenes
     using BovineLabs.Core.SubScenes;
     using Unity.Entities.Serialization;
     using UnityEditor;
-    using UnityEngine;
 
     public static class SubSceneAuthUtil
     {
@@ -57,3 +57,4 @@ namespace BovineLabs.Core.Authoring.SubScenes
         }
     }
 }
+#endif

@@ -12,14 +12,14 @@ namespace BovineLabs.Core
     using UnityEngine;
 
     [SettingsGroup("Core")]
-    public class PhysicsTags : KSettings
+    public class PhysicsTags : KSettingsBase<PhysicsTags, int>
     {
-        private readonly List<NameValue> keys = new();
+        private readonly List<NameValue<int>> keys = new();
 
         [SerializeField]
         private CustomPhysicsMaterialTagNames tags;
 
-        public override IReadOnlyList<NameValue> Keys
+        public override IEnumerable<NameValue<int>> Keys
         {
             get
             {
@@ -38,20 +38,11 @@ namespace BovineLabs.Core
                         continue;
                     }
 
-                    this.keys.Add(new NameValue
-                    {
-                        Name = tag,
-                        Value = i,
-                    });
+                    this.keys.Add(new NameValue<int>(tag, i));
                 }
 
                 return this.keys;
             }
-        }
-
-        protected override void Initialize()
-        {
-            K<PhysicsTags>.Initialize(this.Keys);
         }
     }
 }

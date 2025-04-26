@@ -14,8 +14,9 @@ namespace BovineLabs.Core.States
         public static byte Register<TState, TInstance, TSettings>(ref SystemState systemState, string stateName, bool queryDependency = true)
             where TState : unmanaged, IComponentData
             where TInstance : unmanaged, IComponentData
+            where TSettings : KSettingsBase<TSettings, byte>
         {
-            var stateKey = (byte)K<TSettings>.NameToKey(stateName);
+            var stateKey = KSettingsBase<TSettings, byte>.NameToKey(stateName);
             Register<TState, TInstance>(ref systemState, stateKey, queryDependency);
             return stateKey;
         }

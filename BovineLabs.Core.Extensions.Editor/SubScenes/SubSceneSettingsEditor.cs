@@ -23,6 +23,8 @@ namespace BovineLabs.Core.Editor.SubScenes
                     "Assets/Settings/Scenes/", "SceneSet.asset").Element,
                 nameof(SubSceneSettings.EditorSceneSets) => new AssetCreator<SubSceneEditorSet>(this.serializedObject, property, "bl.subscene-editor-set",
                     "Assets/Settings/Scenes/Editor", "EditorSceneSet.asset").Element,
+                nameof(SubSceneSettings.AssetSets) => new AssetCreator<AssetSet>(this.serializedObject, property, "bl.subscene-asset-set",
+                    "Assets/Settings/Scenes/Assets", "AssetSet.asset").Element,
                 _ => base.CreateElement(property),
             };
         }

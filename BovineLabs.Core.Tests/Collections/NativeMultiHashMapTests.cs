@@ -108,7 +108,6 @@ namespace BovineLabs.Core.Tests.Collections
                     }
                     while (hashmap.TryGetNextValue(out _, ref it));
 
-                    Debug.Log($"i: {i}, sizeOfKey0: {sizeOfKey0}");
                     Assert.AreEqual(3, sizeOfKey0);
                 }
             }

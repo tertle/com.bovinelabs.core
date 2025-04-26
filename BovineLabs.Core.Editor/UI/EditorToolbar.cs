@@ -119,7 +119,7 @@ namespace BovineLabs.Core.Editor.UI
             };
 
             ve.AddToClassList("unity-editor-main-toolbar");
-            ve.name = "PlayMode";
+            // ve.name = "PlayMode";
             return ve;
         }
     }

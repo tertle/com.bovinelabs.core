@@ -44,5 +44,12 @@ namespace BovineLabs.Core.Collections
                 UnsafeUtility.WriteArrayElement(this.Buffer, CollectionHelper.AssumePositive(index), value);
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ref T ElementAt(int index)
+        {
+            CollectionHelper.CheckIndexInRange(index, this.Length);
+            return ref UnsafeUtility.ArrayElementAsRef<T>(this.Buffer, CollectionHelper.AssumePositive(index));
+        }
     }
 }

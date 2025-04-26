@@ -30,7 +30,8 @@ namespace BovineLabs.Core
         [ConfigVar(PortName, 7979, PortDesc)]
         public static readonly SharedStatic<int> Port = SharedStatic<int>.GetOrCreate<PortType>();
 
-        protected virtual bool RequireConnectionApproval => true;
+        [ConfigVar("network.require-connection-approval", false, "Is connection approval required to connect to a netcode service", true)]
+        public static readonly SharedStatic<bool> RequireConnectionApproval = SharedStatic<bool>.GetOrCreate<RequireConnectionApprovalType>();
 
         /// <summary> Creates the client and server world as long as we aren't dedicated. </summary>
         /// <exception cref="InvalidOperationException"> If there is already a server or client world. </exception>
@@ -155,7 +156,7 @@ namespace BovineLabs.Core
         {
             var ep = GetNetworkEndpoint();
             var driver = world.EntityManager.GetSingletonRW<NetworkStreamDriver>();
-            if (this.RequireConnectionApproval)
+            if (RequireConnectionApproval.Data)
             {
                 driver.ValueRW.RequireConnectionApproval = true;
             }
@@ -169,7 +170,7 @@ namespace BovineLabs.Core
         {
             var ep = GetNetworkEndpoint();
             var driver = world.EntityManager.GetSingletonRW<NetworkStreamDriver>();
-            if (this.RequireConnectionApproval)
+            if (RequireConnectionApproval.Data)
             {
                 driver.ValueRW.RequireConnectionApproval = true;
             }
@@ -197,6 +198,10 @@ namespace BovineLabs.Core
         }
 
         private struct PortType
+        {
+        }
+
+        private struct RequireConnectionApprovalType
         {
         }
     }

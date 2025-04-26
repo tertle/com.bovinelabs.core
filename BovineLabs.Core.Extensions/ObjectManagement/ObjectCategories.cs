@@ -13,65 +13,34 @@ namespace BovineLabs.Core.ObjectManagement
     using BovineLabs.Core.Settings;
     using UnityEngine;
 
-    /// <summary> Object categories dynamically implement using <see cref="K{T}" />. </summary>
+    /// <summary> Object categories dynamically implemented. </summary>
     [SettingsGroup("Core")]
-    public class ObjectCategories : KSettings
+    public class ObjectCategories : KSettingsBase<ObjectCategories, byte>
     {
         [SerializeField]
         private ComponentMap[] keys = Array.Empty<ComponentMap>();
 
         public IReadOnlyCollection<ComponentMap> Components => this.keys;
 
-        public override IReadOnlyList<NameValue> Keys => this
-            .keys
-            .Select(k => new NameValue
-            {
-                Name = k.Name,
-                Value = k.Value,
-            })
-            .ToArray();
-
-        /// <inheritdoc />
-        protected override void Initialize()
-        {
-            K<ObjectCategories>.Initialize(this.Keys);
-        }
-
-#if UNITY_EDITOR
-        protected virtual void OnValidate()
-        {
-            Validate(ref this.keys);
-        }
-#endif
+        public override IEnumerable<NameValue<byte>> Keys => this.keys.Select(k => new NameValue<byte>(k.Name, k.Value));
 
         [Serializable]
-        public struct ComponentMap : IKKeyValue
+        public struct ComponentMap
         {
             [SerializeField]
             private string name;
 
             [SerializeField]
             [Range(0, 31)]
-            private int value;
+            private byte value;
 
             [SerializeField]
             [StableTypeHash(StableTypeHashAttribute.TypeCategory.ComponentData, OnlyZeroSize = true, AllowUnityNamespace = false)]
             private ulong component;
 
-            public string Name
-            {
-                get => this.name;
-                set => this.name = value;
-            }
+            public string Name => this.name;
 
-            public int Value => this.value;
-
-            /// <inheritdoc />
-            int IKKeyValue.Value
-            {
-                get => this.value;
-                set => this.value = (byte)value;
-            }
+            public byte Value => this.value;
 
             public ulong ComponentType => this.component;
         }

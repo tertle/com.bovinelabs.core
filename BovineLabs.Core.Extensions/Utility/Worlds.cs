@@ -10,8 +10,7 @@ namespace BovineLabs.Core
     {
         public const WorldSystemFilterFlags Service = (WorldSystemFilterFlags)(1 << 21);
 
-        public const WorldSystemFilterFlags ClientLocal = WorldSystemFilterFlags.LocalSimulation | WorldSystemFilterFlags.ClientSimulation |
-            WorldSystemFilterFlags.ThinClientSimulation;
+        public const WorldSystemFilterFlags ClientLocal = WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.LocalSimulation;
 
         public const WorldSystemFilterFlags ServerLocal = WorldSystemFilterFlags.ServerSimulation | WorldSystemFilterFlags.LocalSimulation;
 
@@ -22,11 +21,7 @@ namespace BovineLabs.Core
 
         public const WorldSystemFilterFlags SimulationService = Simulation | Service;
 
-        public const WorldSystemFilterFlags SimulationThin = Simulation | WorldSystemFilterFlags.ThinClientSimulation;
-
-        public const WorldSystemFilterFlags SimulationThinService = SimulationThin | Service;
-
-        public const WorldSystemFilterFlags SimulationEditor = SimulationThin | WorldSystemFilterFlags.Editor;
+        public const WorldSystemFilterFlags SimulationEditor = Simulation | WorldSystemFilterFlags.Editor;
 
         public const WorldSystemFilterFlags All = SimulationEditor | Service;
 

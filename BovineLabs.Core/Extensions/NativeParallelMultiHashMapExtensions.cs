@@ -598,60 +598,57 @@ namespace BovineLabs.Core.Extensions
 #endif
             var data = hashMap.m_MultiHashMapData.m_Buffer;
 
-            if (!UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(data, key, out _, out _))
+            // Allocate an entry from the free list
+            int idx;
+            int* nextPtrs;
+
+            if (data->allocatedIndexLength >= data->keyCapacity && data->firstFreeTLS[0] < 0)
             {
-                // Allocate an entry from the free list
-                int idx;
-                int* nextPtrs;
-
-                if (data->allocatedIndexLength >= data->keyCapacity && data->firstFreeTLS[0] < 0)
+                var maxThreadCount = JobsUtility.ThreadIndexCount;
+                for (var tls = 1; tls < maxThreadCount; ++tls)
                 {
-                    var maxThreadCount = JobsUtility.ThreadIndexCount;
-                    for (var tls = 1; tls < maxThreadCount; ++tls)
+                    if (data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] >= 0)
                     {
-                        if (data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] >= 0)
-                        {
-                            idx = data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine];
-                            nextPtrs = (int*)data->next;
-                            data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] = nextPtrs[idx];
-                            nextPtrs[idx] = -1;
-                            data->firstFreeTLS[0] = idx;
-                            break;
-                        }
-                    }
-
-                    if (data->firstFreeTLS[0] < 0)
-                    {
-                        var newCap = UnsafeParallelHashMapData.GrowCapacity(data->keyCapacity);
-                        UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, newCap, UnsafeParallelHashMapData.GetBucketSize(newCap),
-                            hashMap.m_MultiHashMapData.m_AllocatorLabel);
+                        idx = data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine];
+                        nextPtrs = (int*)data->next;
+                        data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] = nextPtrs[idx];
+                        nextPtrs[idx] = -1;
+                        data->firstFreeTLS[0] = idx;
+                        break;
                     }
                 }
 
-                idx = data->firstFreeTLS[0];
-
-                if (idx >= 0)
+                if (data->firstFreeTLS[0] < 0)
                 {
-                    data->firstFreeTLS[0] = ((int*)data->next)[idx];
+                    var newCap = UnsafeParallelHashMapData.GrowCapacity(data->keyCapacity);
+                    UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, newCap, UnsafeParallelHashMapData.GetBucketSize(newCap),
+                        hashMap.m_MultiHashMapData.m_AllocatorLabel);
                 }
-                else
-                {
-                    idx = data->allocatedIndexLength++;
-                }
-
-                CheckIndexOutOfBounds(data, idx);
-
-                // Write the new value to the entry
-                UnsafeUtility.WriteArrayElement(data->keys, idx, key);
-                UnsafeUtility.WriteArrayElement(data->values, idx, item);
-
-                var bucket = hash & data->bucketCapacityMask;
-                // Add the index to the hash-map
-                var buckets = (int*)data->buckets;
-                nextPtrs = (int*)data->next;
-                nextPtrs[idx] = buckets[bucket];
-                buckets[bucket] = idx;
             }
+
+            idx = data->firstFreeTLS[0];
+
+            if (idx >= 0)
+            {
+                data->firstFreeTLS[0] = ((int*)data->next)[idx];
+            }
+            else
+            {
+                idx = data->allocatedIndexLength++;
+            }
+
+            CheckIndexOutOfBounds(data, idx);
+
+            // Write the new value to the entry
+            UnsafeUtility.WriteArrayElement(data->keys, idx, key);
+            UnsafeUtility.WriteArrayElement(data->values, idx, item);
+
+            var bucket = hash & data->bucketCapacityMask;
+            // Add the index to the hash-map
+            var buckets = (int*)data->buckets;
+            nextPtrs = (int*)data->next;
+            nextPtrs[idx] = buckets[bucket];
+            buckets[bucket] = idx;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -680,15 +677,20 @@ namespace BovineLabs.Core.Extensions
             var length = hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength;
 
             var data = hashMap.GetUnsafeBucketData();
+            var keys = (TKey*)data.keys;
             var buckets = (int*)data.buckets;
             var nextPtrs = (int*)data.next;
 
             for (var idx = 0; idx < length; idx++)
             {
-                var bucket = nextPtrs[idx] & data.bucketCapacityMask;
+                var bucket = keys[idx].GetHashCode() & data.bucketCapacityMask;
                 nextPtrs[idx] = buckets[bucket];
                 buckets[bucket] = idx;
             }
+
+            // var bucket = keys[idx].GetHashCode() & data.bucketCapacityMask;
+            // nextPtrs[idx] = buckets[bucket];
+            // buckets[bucket] = idx;
         }
 
         public static void SetAllocatedIndexLength<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, int length)

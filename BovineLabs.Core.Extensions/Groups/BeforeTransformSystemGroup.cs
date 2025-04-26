@@ -11,7 +11,7 @@ namespace BovineLabs.Core.Groups
     /// A system group that updates before the <see cref="TransformSystemGroup"/>.
     /// Any simulation system that writes to <see cref="LocalTransform"/> should update in here.
     /// </summary>
-    [WorldSystemFilter(Worlds.SimulationEditor, Worlds.SimulationThin)]
+    [WorldSystemFilter(Worlds.SimulationEditor, Worlds.Simulation)]
     [UpdateBefore(typeof(TransformSystemGroup))]
     public partial class BeforeTransformSystemGroup : BLSimulationSystemGroup
     {

@@ -47,15 +47,14 @@ namespace BovineLabs.Core.Editor.Inspectors
 
                     if (iterateChildren)
                     {
-                        // TODO indent?
-                        this.parent.AddToClassList("unity-decorator-drawers-container");
-
                         if (!rootProperty.displayName.StartsWith("Element "))
                         {
-                            var label = new Label(this.GetDisplayName(rootProperty));
-                            label.AddToClassList("unity-header-drawer__label");
-                            this.Parent.Add(label);
+                            this.parent.AddToClassList("unity-decorator-drawers-container");
                         }
+
+                        var label = new Label(this.GetDisplayName(rootProperty));
+                        label.AddToClassList("unity-header-drawer__label");
+                        this.parent.Add(label);
                     }
 
                     break;

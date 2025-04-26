@@ -152,7 +152,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         private readonly struct ObjectDefinitionDescriptor
         {
             public readonly ObjectDefinition ObjectDefinition;
-            private static Dictionary<int, string>? map;
+            private static Dictionary<byte, string>? map;
 
             public ObjectDefinitionDescriptor(ObjectDefinition objectDefinition)
             {
@@ -164,7 +164,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 var c = (uint)objectDefinition.Categories;
                 while (c != 0)
                 {
-                    var index = math.tzcnt(c);
+                    var index = (byte)math.tzcnt(c);
                     var shifted = (uint)(1 << index);
 
                     if (map.TryGetValue(index, out var n))

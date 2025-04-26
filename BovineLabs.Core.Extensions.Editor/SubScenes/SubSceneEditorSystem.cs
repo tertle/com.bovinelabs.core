@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Editor.SubScenes
 
     [Configurable]
     [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderFirst = true)]
-    [WorldSystemFilter(Worlds.SimulationThinService)]
+    [WorldSystemFilter(Worlds.Simulation)]
     [CreateAfter(typeof(BLDebugSystem))]
     [UpdateBefore(typeof(SubSceneLoadingSystem))]
     public partial class SubSceneEditorSystem : SystemBase

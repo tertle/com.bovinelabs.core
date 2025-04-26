@@ -21,11 +21,17 @@ namespace BovineLabs.Core.Authoring.SubScenes
             {
                 if (authoring.settings == null)
                 {
-                    Debug.LogError("SuBSceneSettings not assigned");
+                    Debug.LogError("SubSceneSettings not assigned");
                     return;
                 }
 
-                foreach (var set in authoring.settings.SceneSets)
+                this.BakeSubScenes(authoring.settings);
+                this.BakeAssets(authoring.settings);
+            }
+
+            private void BakeSubScenes(SubSceneSettings settings)
+            {
+                foreach (var set in settings.SceneSets)
                 {
                     if (!this.IncludeScene(set.TargetWorld))
                     {
@@ -36,6 +42,36 @@ namespace BovineLabs.Core.Authoring.SubScenes
 
                     var commands = new BakerCommands(this, entity);
                     SubSceneAuthUtil.AddComponents(ref commands, set);
+                }
+            }
+
+            private void BakeAssets(SubSceneSettings settings)
+            {
+                var buffer = this.AddBuffer<AssetLoad>(this.GetEntity(TransformUsageFlags.None));
+
+                foreach (var s in settings.AssetSets)
+                {
+                    if (!this.IncludeScene(s.TargetWorld))
+                    {
+                        continue;
+                    }
+
+                    var targetWorld = SubSceneLoadUtil.ConvertFlags(s.TargetWorld);
+
+                    foreach (var asset in s.Assets)
+                    {
+                        if (asset == null)
+                        {
+                            continue;
+                        }
+
+                        // Depends on shouldn't be required as we don't care if the scene asset actually changes, only if our own references change
+                        buffer.Add(new AssetLoad
+                        {
+                            Asset = asset,
+                            TargetWorld = targetWorld,
+                        });
+                    }
                 }
             }
         }

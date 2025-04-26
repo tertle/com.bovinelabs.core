@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Iterators
 
     public static unsafe class DynamicExtensions
     {
-        private const int DefaultMinGrowth = 256;
+        private const int DefaultMinGrowth = 64;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicBuffer<TBuffer> InitializeHashMap<TBuffer, TKey, TValue>(
@@ -128,6 +128,23 @@ namespace BovineLabs.Core.Iterators
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DynamicBuffer<TBuffer> InitializeIndexed<TBuffer, TKey, TIndex, TValue>(
+            this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
+            where TBuffer : unmanaged, IDynamicIndexedMap<TKey, TIndex, TValue>
+            where TKey : unmanaged, IEquatable<TKey>
+            where TIndex : unmanaged, IEquatable<TIndex>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            Assert.AreEqual(1, UnsafeUtility.SizeOf<TBuffer>());
+#endif
+
+            var bytes = buffer.Reinterpret<byte>();
+            DynamicIndexedMapHelper<TKey, TIndex, TValue>.Init(bytes, capacity, minGrowth);
+            return buffer;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicHashMap<TKey, TValue> AsHashMap<TBuffer, TKey, TValue>(this DynamicBuffer<TBuffer> buffer)
             where TBuffer : unmanaged, IDynamicHashMap<TKey, TValue>
             where TKey : unmanaged, IEquatable<TKey>
@@ -186,6 +203,19 @@ namespace BovineLabs.Core.Iterators
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DynamicIndexedMap<TKey, TIndex, TValue> AsIndexedMap<TBuffer, TKey, TIndex, TValue>(this DynamicBuffer<TBuffer> buffer)
+            where TBuffer : unmanaged, IDynamicIndexedMap<TKey, TIndex, TValue>
+            where TKey : unmanaged, IEquatable<TKey>
+            where TIndex : unmanaged, IEquatable<TIndex>
+            where TValue : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            Assert.AreEqual(1, sizeof(TBuffer));
+#endif
+            return new DynamicIndexedMap<TKey, TIndex, TValue>(buffer.Reinterpret<byte>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static DynamicHashMapHelper<TKey>* AsHelper<TKey>(this DynamicBuffer<byte> buffer)
             where TKey : unmanaged, IEquatable<TKey>
         {
@@ -210,11 +240,30 @@ namespace BovineLabs.Core.Iterators
             return (DynamicPerfectHashMapHelper<TKey, TValue>*)buffer.GetPtr();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static DynamicIndexedMapHelper<TKey, TIndex, TValue>* AsIndexedHelper<TKey, TIndex, TValue>(this DynamicBuffer<byte> buffer)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TIndex : unmanaged, IEquatable<TIndex>
+            where TValue : unmanaged
+        {
+            CheckSize(buffer, sizeof(DynamicIndexedMapHelper<TKey, TIndex, TValue>));
+            return (DynamicIndexedMapHelper<TKey, TIndex, TValue>*)buffer.GetPtr();
+        }
+
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckSize<T>(DynamicBuffer<byte> buffer)
             where T : unmanaged
         {
             if (buffer.Length < sizeof(T))
+            {
+                throw new InvalidOperationException("Buffer not initialized before use.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckSize(DynamicBuffer<byte> buffer, int size)
+        {
+            if (buffer.Length < size)
             {
                 throw new InvalidOperationException("Buffer not initialized before use.");
             }

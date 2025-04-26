@@ -21,25 +21,32 @@ namespace BovineLabs.Core.Editor.Settings
         public const string DefaultSettingsDirectory = "Assets/Settings/Settings";
         public const string DefaultSettingsResourceDirectory = "Assets/Settings/";
 
+        [SerializeField]
+        private KeyPath[] paths = Array.Empty<KeyPath>();
+
 #if !BL_DISABLE_SUBSCENE
         [SerializeField]
         private SceneAsset[] prebakeScenes = Array.Empty<SceneAsset>();
-#endif
 
         [SerializeField]
-        private KeyPath[] paths = Array.Empty<KeyPath>();
+        private SceneAsset? startupScene;
+#endif
 
         [SerializeField]
         private SettingsAuthoring? defaultSettingsAuthoring;
 
         [SerializeField]
-        private KeyAuthoring[] settingAuthoring = { new() { World = "service" }, new() { World = "shared" } };
+        private KeyAuthoring[] settingAuthoring = { new() { World = "service" } };
 
 #if !BL_DISABLE_SUBSCENE
         public IReadOnlyList<SceneAsset> PrebakeScenes => this.prebakeScenes;
+
+        public SceneAsset? StartupScene => this.startupScene;
 #endif
 
         public SettingsAuthoring? DefaultSettingsAuthoring => this.defaultSettingsAuthoring;
+
+        public IReadOnlyList<KeyAuthoring> SettingsAuthorings => this.settingAuthoring;
 
         public void GetOrAddPath(string key, ref string path)
         {

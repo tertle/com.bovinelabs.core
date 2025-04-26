@@ -6,63 +6,30 @@ namespace BovineLabs.Core.Keys
 {
     using System;
     using System.Collections.Generic;
-    using BovineLabs.Core.Settings;
-    using JetBrains.Annotations;
-    using Unity.Mathematics;
-    using UnityEditor;
+    using System.Linq;
     using UnityEngine;
 
-    /// <summary>
-    /// The base KSettings file for defining custom enums, layers, keys. Do not implement this directly, implement <see cref="KSettings{T}" />.
-    /// </summary>
-    [Serializable]
-    [ResourceSettings(KResourceDirectory)]
-    public abstract class KSettings : ScriptableObject, ISettings
+    /// <typeparam name="T"> Itself. </typeparam>
+    /// <typeparam name="TV"> The value. </typeparam>
+    public abstract class KSettings<T, TV> : KSettingsBase<T, TV>
+        where T : KSettings<T, TV>
+        where TV : unmanaged, IEquatable<TV>
     {
-        public const string KResourceDirectory = "K";
-
-        [Multiline]
-        [UsedImplicitly]
         [SerializeField]
-        private string description = string.Empty;
+        private NameValue<TV>[] keys = Array.Empty<NameValue<TV>>();
 
-        public abstract IReadOnlyList<NameValue> Keys { get; }
+        public override IEnumerable<NameValue<TV>> Keys => this.keys;
 
-        protected abstract void Initialize();
+        protected virtual IEnumerable<NameValue<TV>> SetReset()
+        {
+            return Enumerable.Empty<NameValue<TV>>();
+        }
 
 #if UNITY_EDITOR
-        protected static void Validate<T>(ref T[] keys)
-            where T : IKKeyValue
+        private void Reset()
         {
-            if (keys.Length > KMap.MaxCapacity)
-            {
-                var keysOld = keys;
-                keys = new T[KMap.MaxCapacity];
-                Array.Copy(keysOld, keys, KMap.MaxCapacity);
-            }
-
-            for (var i = 0; i < keys.Length; i++)
-            {
-                var k = keys[i];
-                k.Name = k.Name.ToLower();
-                k.Value = math.min(k.Value, KMap.MaxCapacity - 1);
-                keys[i] = k;
-            }
+            this.keys = this.SetReset().ToArray();
         }
 #endif
-
-#if UNITY_EDITOR
-        [InitializeOnLoadMethod]
-#endif
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-        private static void LoadAll()
-        {
-            var kvSettings = Resources.LoadAll<KSettings>(KResourceDirectory);
-
-            foreach (var setting in kvSettings)
-            {
-                setting.Initialize();
-            }
-        }
     }
 }

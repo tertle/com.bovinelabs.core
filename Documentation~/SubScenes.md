@@ -1,25 +1,25 @@
 # SubScenes
 ## Summary
-The BovineLabs Core SubScenes system provides a comprehensive solution for managing Unity DOTS SubScenes with enhanced control over loading, unloading, and world targeting. The system offers several key features:
+The BovineLabs Core SubScenes system provides a comprehensive solution for managing Unity DOTS SubScenes and Assets with enhanced control over loading, unloading, and world targeting. The system offers several key features:
 
-- Load management of SubScenes across different world types (Game, Service, Client, Server)
+- Load management of SubScenes and Assets across different world types (Game, Service, Client, Server)
 - Fine-grained control over when SubScenes are loaded
 - Optional blocking of world system updates until critical SubScenes are fully loaded
-- Support for loading managed assets alongside SubScenes
+- Integrated support for loading managed assets alongside SubScenes
 - Editor tools for live baking and testing
 
 ## System Architecture
 
 ### Components
 
-| Component          | Purpose                                                              |
-|--------------------|----------------------------------------------------------------------|
-| `SubSceneLoadData` | Configuration data for how a SubScene should load                    |
-| `SubSceneBuffer`   | Buffer containing references to scene assets to load in a set        |
-| `SubSceneEntity`   | Buffer of the runtime SubScene entities, these may not be loaded yet |
-| `LoadSubScene`     | Enableable component indicating a SubScene should be loaded          |
-| `SubSceneLoaded`   | Enableable component indicating a SubScene has been loaded           |
-| `AssetLoad`        | Buffer for instantiating gameobjects tied to a world at runtime      |
+| Component          | Purpose                                                                     |
+|--------------------|-----------------------------------------------------------------------------|
+| `SubSceneLoadData` | Configuration data for how a SubScene should load                           |
+| `SubSceneBuffer`   | Buffer containing references to scene assets to load in a set               |
+| `SubSceneEntity`   | Buffer of the runtime SubScene entities, these may not be loaded yet        |
+| `LoadSubScene`     | Enableable component indicating a SubScene should be loaded                 |
+| `SubSceneLoaded`   | Enableable component indicating a SubScene has been loaded                  |
+| `AssetLoad`        | Buffer for loading and instantiating gameobjects tied to a world at runtime |
 
 Generally at runtime the only component you need to interact with is LoadSubScene, the rest are used internally but can provide useful information.
 
@@ -29,16 +29,17 @@ Generally at runtime the only component you need to interact with is LoadSubScen
 |--------------------------------|----------------------------------------------------------------------------------|
 | `SubSceneLoadingSystem`        | Primary system handling the loading, unloading, and status tracking of SubScenes |
 | `SubSceneLoadingManagedSystem` | Managed system that handles integration with Unity SubScene objects              |
-| `AssetLoadingSystem`           | System for loading assets associated with worlds                                 |
+| `AssetLoadingSystem`           | System for loading and instantiating assets in specific world types              |
 
 ### Authoring Components
 
 | Component/ScriptableObject   | Purpose                                                                                           |
 |------------------------------|---------------------------------------------------------------------------------------------------|
-| `SubSceneLoadAuthoring`      | MonoBehaviour for configuring SubScene loading in a scene, where the SubSceneSettings is assigned |
-| `AssetLoadAuthoring`         | MonoBehaviour for loading assets in specific world types                                          |
-| `SubSceneSettings`           | ScriptableObject container for all SubSceneSets, appears in the Settings Window                   |
+| `SubSceneLoadAuthoring`      | MonoBehaviour for configuring both SubScene and asset loading in a scene                          |
+| `SubSceneSettings`           | ScriptableObject container for all SubSceneSets, AssetSets, and EditorSceneSets                   |
 | `SubSceneSet`                | ScriptableObject defining a set of SubScenes with load configuration                              |
+| `AssetSet`                   | ScriptableObject defining a set of GameObjects to instantiate in specific world types             |
+| `SubSceneEditorSet`          | ScriptableObject defining editor-only scene sets for testing                                      |
 
 ## SubSceneSet Configuration
 
@@ -76,11 +77,24 @@ Your setup should look something like this:
 
 ## Asset Loading Setup
 
-To load assets alongside your SubScenes:
+The asset loading system allows you to instantiate GameObjects in specific world types alongside your SubScenes. Asset loading is configured through AssetSets, which are managed within the same SubSceneSettings asset.
 
-1. Add `AssetLoadAuthoring` to a GameObject in the same SubScene you created previously
-2. Configure which assets to load
-3. Configure which worlds to load the assets into, usually just Service or Client
+### Creating an AssetSet
+
+1. Open the SubScene Settings via the Settings window `BovineLabs → Settings → Core → SubScene`
+2. Under Asset Sets, click the + button to create a new `AssetSet`
+3. Configure which assets to load by adding GameObjects to the Assets list
+4. Configure which worlds to load the assets into using the TargetWorld flags (usually Service or Client)
+
+### Adding Assets to Your Scene
+
+The same `SubSceneLoadAuthoring` component that handles SubScene loading also handles asset loading:
+
+1. Add `SubSceneLoadAuthoring` to a GameObject in a SubScene (if you haven't already)
+2. Assign your SubSceneSettings asset containing your AssetSets
+3. When the SubScene loads, the specified assets will be instantiated in the appropriate worlds
+
+Assets are loaded and instantiated by the `AssetLoadingSystem` and remain active as long as their hosting worlds exist. The system handles GameObject instantiation and cleanup automatically.
 
 ## On-Demand Loading
 

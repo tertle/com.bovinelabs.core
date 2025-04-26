@@ -64,12 +64,12 @@ To use the buffer, the ID of the Object Definition is the index in the buffer. F
 public void OnUpdate(ref SystemState state)
 {
     var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
-    var objectDefinitionRegistry = SystemAPI.GetSingletonBuffer<ObjectDefinitionRegistry>().AsNativeArray();
-    foreach (var (command, commandEntity) in SystemAPI.Query<SpawnCommand>().WithEntityAccess())
+    var objectDefinitionRegistry = SystemAPI.GetSingleton<ObjectDefinitionRegistry>();
+    foreach (var (command, commandEntity) in SystemAPI.Query<RefRO<SpawnCommand>>().WithEntityAccess())
     {
-        var entityPrefab = objectDefinitionRegistry[command.Prefab];
-        var entity = ecb.Instantiate(entityPrefab.Prefab);
-        ecb.SetComponent(entity, LocalTransform.FromPosition(command.Position));
+        var entityPrefab = objectDefinitionRegistry[command.ValueRO.Prefab];
+        var entity = ecb.Instantiate(entityPrefab);
+        ecb.SetComponent(entity, LocalTransform.FromPosition(command.ValueRO.Position));
         ecb.DestroyEntity(commandEntity);
     }
 

@@ -33,11 +33,11 @@ namespace BovineLabs.Core.Iterators
             this.helper = buffer.AsHelper<TKey>();
         }
 
-        /// <summary> Gets a value indicating whether whether this hash map has been allocated (and not yet deallocated). </summary>
+        /// <summary> Gets a value indicating whether this hash map has been allocated (and not yet deallocated). </summary>
         /// <value> True if this hash map has been allocated (and not yet deallocated). </value>
         public readonly bool IsCreated => this.buffer.IsCreated;
 
-        /// <summary> Gets a value indicating whether whether this hash map is empty. </summary>
+        /// <summary> Gets a value indicating whether this hash map is empty. </summary>
         /// <value> True if this hash map is empty or if the map has not been constructed. </value>
         public readonly bool IsEmpty
         {

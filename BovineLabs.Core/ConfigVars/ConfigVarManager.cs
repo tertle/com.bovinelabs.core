@@ -60,6 +60,10 @@ namespace BovineLabs.Core.ConfigVars
 
             Application.quitting += Shutdown;
 
+#if UNITY_EDITOR
+            EditorApplication.quitting += Shutdown;
+#endif
+
             isInitialized = true;
 
             foreach (var (configVar, field) in FindAllConfigVars())

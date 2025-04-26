@@ -183,9 +183,9 @@ namespace BovineLabs.Core.Utility
         public static IEnumerable<Type> GetAllWithAttribute<T>()
             where T : Attribute
         {
-#if UNITY_EDITOR
-            return TypeCache.GetTypesWithAttribute<T>();
-#else
+// #if UNITY_EDITOR
+//             return TypeCache.GetTypesWithAttribute<T>();
+// #else
             var attributeType = typeof(T);
             var coreAssembly = attributeType.Assembly;
 
@@ -198,7 +198,7 @@ namespace BovineLabs.Core.Utility
 
                 foreach (var type in GetNonGenericTypes(assembly))
                 {
-                    if (!type.IsDefined(attributeType, false))
+                    if (!type.IsDefined(attributeType, true))
                     {
                         continue;
                     }
@@ -206,7 +206,7 @@ namespace BovineLabs.Core.Utility
                     yield return type;
                 }
             }
-#endif
+// #endif
         }
 
         public static IEnumerable<MethodInfo> GetMethodsWithAttribute<T>()

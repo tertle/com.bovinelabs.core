@@ -13,15 +13,37 @@ namespace BovineLabs.Core.Collections
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
+        // we store these values in the builder because we cannot access BlobHashMapData itself (it must live in blob storage)
+        internal readonly int KeyCapacity;
+        private readonly int bucketCapacityMask;
+
         private BlobBuilderArray<TValue> values;
         private BlobBuilderArray<TKey> keys;
         private BlobBuilderArray<int> next;
         private BlobBuilderArray<int> buckets;
         private BlobBuilderArray<int> count;
 
-        // we store these values in the builder because we cannot access BlobHashMapData itself (it must live in blob storage)
-        private readonly int bucketCapacityMask;
-        internal readonly int KeyCapacity;
+        internal BlobBuilderHashMapData(int capacity, int bucketCapacityRatio, ref BlobBuilder blobBuilder, ref BlobHashMapData<TKey, TValue> data)
+        {
+            var bucketCapacity = math.ceilpow2(capacity * bucketCapacityRatio);
+
+            // bucketCapacityMask is neccessary for retrieval so set it on the data too
+            this.bucketCapacityMask = data.BucketCapacityMask = bucketCapacity - 1;
+            this.KeyCapacity = capacity;
+
+            this.values = blobBuilder.Allocate(ref data.Values, capacity);
+            this.keys = blobBuilder.Allocate(ref data.Keys, capacity);
+            this.next = blobBuilder.Allocate(ref data.Next, capacity);
+            this.buckets = blobBuilder.Allocate(ref data.Buckets, bucketCapacity);
+
+            // so far the only way I've found to modify the true count on the data itself (without using unsafe code)
+            // is by storing it in an array we can still access in the Add method.
+            // count is only used in GetKeyArray and GetValueArray to size the array to the true count instead of capacity
+            // count and keyCapacity are like
+            this.count = blobBuilder.Allocate(ref data.Count, 1);
+
+            this.Clear();
+        }
 
         internal int Count => this.count[0];
 
@@ -89,6 +111,7 @@ namespace BovineLabs.Core.Collections
         }
 
         // Safety check for regular hashmap Add
+
         private bool ContainsKey(int bucket, TKey key)
         {
             var index = this.buckets[bucket];
@@ -122,28 +145,6 @@ namespace BovineLabs.Core.Collections
             {
                 this.next[i] = -1;
             }
-        }
-
-        internal BlobBuilderHashMapData(int capacity, int bucketCapacityRatio, ref BlobBuilder blobBuilder, ref BlobHashMapData<TKey, TValue> data)
-        {
-            var bucketCapacity = math.ceilpow2(capacity * bucketCapacityRatio);
-
-            // bucketCapacityMask is neccessary for retrieval so set it on the data too
-            this.bucketCapacityMask = data.BucketCapacityMask = bucketCapacity - 1;
-            this.KeyCapacity = capacity;
-
-            this.values = blobBuilder.Allocate(ref data.Values, capacity);
-            this.keys = blobBuilder.Allocate(ref data.Keys, capacity);
-            this.next = blobBuilder.Allocate(ref data.Next, capacity);
-            this.buckets = blobBuilder.Allocate(ref data.Buckets, bucketCapacity);
-
-            // so far the only way I've found to modify the true count on the data itself (without using unsafe code)
-            // is by storing it in an array we can still access in the Add method.
-            // count is only used in GetKeyArray and GetValueArray to size the array to the true count instead of capacity
-            // count and keyCapacity are like
-            this.count = blobBuilder.Allocate(ref data.Count, 1);
-
-            this.Clear();
         }
     }
 }

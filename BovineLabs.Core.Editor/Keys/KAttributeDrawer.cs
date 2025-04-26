@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Editor.Keys
     [CustomPropertyDrawer(typeof(KAttribute), true)]
     public class KAttributeDrawer : BitFieldAttributeEditor<KAttribute>
     {
-        private static Dictionary<string, Type>? KTypes;
+        private static Dictionary<string, Type>? kTypes;
 
         protected override IEnumerable<(string Name, int Value)>? GetKeyValues(KAttribute attr)
         {
@@ -28,23 +28,60 @@ namespace BovineLabs.Core.Editor.Keys
                 return null;
             }
 
-            var k = EditorSettingsUtility.GetSettings(type) as KSettings;
-            return k == null ? null : k.Keys.Select(s => (s.Name, s.Value));
+            var settings = EditorSettingsUtility.GetSettings(type) as KSettingsBase;
+            if (settings == null)
+            {
+                return null;
+            }
+
+            if (settings is KSettingsBase<int> i)
+            {
+                return i.Keys.Select(k => (k.Name, k.Value));
+            }
+
+            if (settings is KSettingsBase<uint> ui)
+            {
+                return ui.Keys.Select(k => (k.Name, (int)k.Value));
+            }
+
+            if (settings is KSettingsBase<byte> b)
+            {
+                return b.Keys.Select(k => (k.Name, (int)k.Value));
+            }
+
+            if (settings is KSettingsBase<sbyte> sb)
+            {
+                return sb.Keys.Select(k => (k.Name, (int)k.Value));
+            }
+
+            if (settings is KSettingsBase<short> s)
+            {
+                return s.Keys.Select(k => (k.Name, (int)k.Value));
+            }
+
+            if (settings is KSettingsBase<ushort> us)
+            {
+                return us.Keys.Select(k => (k.Name, (int)k.Value));
+            }
+
+            Debug.LogWarning("KAttribute is currently only supported on int, uint, byte, sbyte, short and ushort.");
+
+            return null;
         }
 
         private static Type? TryGetType(string type)
         {
-            if (KTypes == null)
+            if (kTypes == null)
             {
-                KTypes = new Dictionary<string, Type>();
+                kTypes = new Dictionary<string, Type>();
 
-                foreach (var c in ReflectionUtility.GetAllImplementations<KSettings>())
+                foreach (var c in ReflectionUtility.GetAllImplementations<KSettingsBase>())
                 {
-                    KTypes[c.Name] = c;
+                    kTypes[c.Name] = c;
                 }
             }
 
-            KTypes.TryGetValue(type, out var result);
+            kTypes.TryGetValue(type, out var result);
 
             return result;
         }

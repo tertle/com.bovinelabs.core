@@ -7,6 +7,7 @@ namespace BovineLabs.Core.LifeCycle
 {
     using BovineLabs.Core.Groups;
     using BovineLabs.Core.Pause;
+    using BovineLabs.Core.Utility;
     using Unity.Entities;
 
     [UpdateInGroup(typeof(BeginSimulationSystemGroup), OrderFirst = true)]
@@ -16,7 +17,7 @@ namespace BovineLabs.Core.LifeCycle
         protected override void OnUpdate()
         {
             var query = SystemAPI.QueryBuilder().WithAny<InitializeEntity, InitializeSubSceneEntity>().Build();
-            if (query.IsEmpty)
+            if (BurstUtil.IsEmpty(ref query))
             {
                 return;
             }

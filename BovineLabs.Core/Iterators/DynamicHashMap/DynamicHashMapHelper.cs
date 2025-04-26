@@ -144,7 +144,7 @@ namespace BovineLabs.Core.Iterators
             var totalSize = CalculateDataSize(newCapacity, newBucketCapacity, data->SizeOfTValue, out var keyOffset, out var nextOffset, out var bucketOffset);
 
             var oldValue = (byte*)UnsafeUtility.Malloc(data->Capacity * data->SizeOfTValue, UnsafeUtility.AlignOf<byte>(), Allocator.Temp);
-            var oldKeys = (TKey*)UnsafeUtility.Malloc(data->Capacity * sizeof(TKey), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
+            var oldKeys = (TKey*)UnsafeUtility.Malloc(data->Capacity * sizeof(TKey), UnsafeUtility.AlignOf<TKey>(), Allocator.Temp);
             var oldNext = (int*)UnsafeUtility.Malloc(data->Capacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
             var oldBuckets = (int*)UnsafeUtility.Malloc(data->BucketCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
 
@@ -217,7 +217,7 @@ namespace BovineLabs.Core.Iterators
                 data->Clear();
 
                 // TODO can this be made faster?
-                for (int i = 0, num = oldBucketCapacity; i < num; ++i)
+                for (var i = 0; i < oldBucketCapacity; ++i)
                 {
                     for (var idx = oldBuckets[i]; idx != -1; idx = oldNext[idx])
                     {
@@ -553,50 +553,50 @@ namespace BovineLabs.Core.Iterators
 
         internal int Remove(TKey key)
         {
-            if (this.Capacity != 0)
+            if (this.Capacity == 0)
             {
-                var removed = 0;
+                return 0;
+            }
 
-                // First find the slot based on the hash
-                var bucket = this.GetBucket(key);
+            var removed = 0;
 
-                var prevEntry = -1;
-                var entryIdx = this.Buckets[bucket];
+            // First find the slot based on the hash
+            var bucket = this.GetBucket(key);
 
-                while (entryIdx >= 0 && entryIdx < this.Capacity)
+            var prevEntry = -1;
+            var entryIdx = this.Buckets[bucket];
+
+            while (entryIdx >= 0 && entryIdx < this.Capacity)
+            {
+                if (UnsafeUtility.ReadArrayElement<TKey>(this.Keys, entryIdx).Equals(key))
                 {
-                    if (UnsafeUtility.ReadArrayElement<TKey>(this.Keys, entryIdx).Equals(key))
+                    ++removed;
+
+                    // Found matching element, remove it
+                    if (prevEntry < 0)
                     {
-                        ++removed;
-
-                        // Found matching element, remove it
-                        if (prevEntry < 0)
-                        {
-                            this.Buckets[bucket] = this.Next[entryIdx];
-                        }
-                        else
-                        {
-                            this.Next[prevEntry] = this.Next[entryIdx];
-                        }
-
-                        // And free the index
-                        var nextIdx = this.Next[entryIdx];
-                        this.Next[entryIdx] = this.FirstFreeIdx;
-                        this.FirstFreeIdx = entryIdx;
-                        entryIdx = nextIdx;
+                        this.Buckets[bucket] = this.Next[entryIdx];
                     }
                     else
                     {
-                        prevEntry = entryIdx;
-                        entryIdx = this.Next[entryIdx];
+                        this.Next[prevEntry] = this.Next[entryIdx];
                     }
-                }
 
-                this.Count -= removed;
-                return removed;
+                    // And free the index
+                    var nextIdx = this.Next[entryIdx];
+                    this.Next[entryIdx] = this.FirstFreeIdx;
+                    this.FirstFreeIdx = entryIdx;
+                    entryIdx = nextIdx;
+                }
+                else
+                {
+                    prevEntry = entryIdx;
+                    entryIdx = this.Next[entryIdx];
+                }
             }
 
-            return 0;
+            this.Count -= removed;
+            return removed;
         }
 
         internal bool TryGetValue<TValue>(TKey key, out TValue item)

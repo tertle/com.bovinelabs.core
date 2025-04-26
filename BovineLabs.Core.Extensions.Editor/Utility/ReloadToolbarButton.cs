@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Editor.Utility
 
         private static EditorToolbarDropdown? dropDown;
 
-        [EditorToolbar(EditorToolbarPosition.RightCenter)]
+        [EditorToolbar(EditorToolbarPosition.RightCenter, -20)]
         public static VisualElement? RequestScriptReload()
         {
             ConfigVarManager.Init();
@@ -33,7 +33,8 @@ namespace BovineLabs.Core.Editor.Utility
 
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 
-            dropDown = new EditorToolbarDropdown { text = "Reload" };
+            dropDown = new EditorToolbarDropdown { text = "Reload", icon = (Texture2D)EditorGUIUtility.IconContent("Refresh").image };
+            dropDown.AddToClassList("unity-editor-toolbar-element");
             dropDown.clicked += () => ClickEvent(dropDown.worldBound);
             return dropDown;
         }

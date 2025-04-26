@@ -1,5 +1,38 @@
 # Changelog
+
+## [1.4.2] - 2025-04-16
+
+### Added
+* AssetSet as a replacement for AssetLoadAuthoring
+* StartupScene to SubScene for auto swapping to a default set
+* Priority to Toolbar attribute to order elements
+* DynamicIndexedMap
+* ElementAt on FixedArray
+* Update Settings button to EditorSettings to automatically resort your settings if you've made destination world changes
+* PooledNativeList
+* LibraryLoader for loading native libraries dynamically in cross platform manner at runtime
+
+### Changed
+* Stopped baking when overriding subscenes
+* Groups no longer add to thin clients by default
+* Cleaned up K validation a little and exposed it a bit easier
+* K rewritten to support any value type
+
+### Removed
+* AssetLoadAuthoring, now merged into SubSceneLoadAuthoring
+* Settings<T> and SettingsBuffer as they weren't used and too simplistic
+
+### Fixed
+* Compile errors when disabling SubScene feature
+* NativeParallelMultiHashMapFallback could lose elements
+
+### Documentation
+* SubScene documentation updated to reflect changes to AssetSet
+* K documentation updated to match refactor and fleshed out
+* PooledNativeList added and a new section for Utility
+
 ## [1.4.1] - 2025-03-29
+
 ### Added
 * Reload button for domain and subscene in Extensions, can be toggled off in config vars
 * QueryEntityEnumerator for manual chunk iteration with Enablable components
@@ -19,10 +52,12 @@
 * Updated SubScene to match changes and be more comprehensive
 
 ## [1.4.0] - 2025-03-15
+
 ### Changed
 * Updated to entities 1.4.0-exp.2
 
 ## [1.3.6] - 2025-03-15
+
 ### Added
 * WorldUnmanagedExtensions.GetAllSystemDependencies
 * IsEditorWorld extension
@@ -40,6 +75,7 @@
 * Removed [NativeContainer] from UnsafeMultiHashMap
 
 ## [1.3.5] - 2025-02-19
+
 ### Added
 * Exposed InspectorUtility
 * Thread check to ThreadRandom
@@ -66,6 +102,7 @@
 * Input
 
 ## [1.3.4] - 2025-01-28
+
 ### Added
 * Added HashSet support to IJobHashMapDefer
 * GetChunkComponent to ComponentLookup
@@ -137,6 +174,7 @@
 * CameraFrustrumAuthroing as it's now included in CameraAuthoring
 
 ## [1.3.2] - 2024-09-18
+
 ### Added
 * SubSceneLoadAuthoring for weak referenced subscene loading and stripping
 * Better SubSceneLoading netcode support
@@ -155,6 +193,7 @@
 * UI and Toolbar removed from core but I have a new standalone project called Anchor https://gitlab.com/tertle/com.bovinelabs.anchor
 
 ## [1.3.1] - 2024-08-28
+
 ### Added
 * SearchWindow now works on 2022.3
 * AddEnabledComponent and AddEnabledBuffer Baker extension
@@ -184,6 +223,7 @@
 * Added an Extension sample with everything setup
 
 ## [1.3.0] - 2024-06-26
+
 ### Added
 * IJobChunkWorkerBeginEnd
 * ContainsKey to DynamicPerfectHashMap
@@ -201,6 +241,7 @@
 * IUID issues with duplication
 
 ## [1.2.15] - 2024-06-08
+
 ### Added
 * CacheImpl which adds an easy way to add a cache to a meta entity
 * WriteGroupMatcher which matches existence of any component from a write group including enable state
@@ -237,6 +278,7 @@
 * ObjectDefinition create authoring couldn't handle null definition fields
  
 ## [1.2.14] - 2024-05-13
+
 ### Added
 * AddDependency<T> extension for SystemState
 * SpatialMap3 for a spatial map in 3D
@@ -253,6 +295,7 @@
 * Created Definitions from Assets wasn't adding the authoring component
 
 ## [1.2.13] - 2024-05-04
+
 ### Added
 * NativeThreadStream.Writer<T> generic variation
 * NativeMultiHashMap.Remove(key, value)
@@ -278,6 +321,7 @@
 * SelectedEntity wasn't being set
 
 ## [1.2.12] - 2024-04-05
+
 ### Added
 * Ability to specify ThreadIndex for UnsafeThreadStream and UnsafeParallelHashMap
 
@@ -288,6 +332,7 @@
 * Renamed StatefulNewCollisionEventAuthoring to StatefulCollisionEventAuthoring
 
 ## [1.2.11] - 2024-04-02
+
 ### Added
 * Hotkeys for timescale if TimeToolbar exists
 * ElementEditor has had a few helpers added alignment, visibility etc
@@ -320,6 +365,7 @@
 * PhysicsDraw as it depended on internal libraries
 
 ## [1.2.10] - 2024-03-11
+
 ### Added
 * BlobHashMap, BlobMultiHashMap
 * PrefabElementEditor and PrefabElementAttribute which makes an inspector where changes are written to the prefab not instance
@@ -350,6 +396,7 @@
 * Removed UnityTime, instead just directly use UnityEngine.Time in burst
 
 ## [1.2.9] - 2024-03-03
+
 ### Added
 * UNITY_DOTS_DEBUG to SpatialMap, K, DynamicHashMaps, EntityCommands and Check
 
@@ -360,6 +407,7 @@
 * Dependency issue on InputActionMapSystem
 
 ## [1.2.8] - 2024-03-02
+
 ### Added
 * SetBinding to allow you to bind a binding
 * You can now automatically generate hashmaps from data on Object Definitions
@@ -377,6 +425,7 @@
 * UI binding and IL2CPP builds
 
 ## [1.2.7] - 2024-02-29
+
 ### Added
 * ButtonState can now be generated from [InputAction]
 
@@ -396,11 +445,13 @@
 * Old virtual chunks implementation
 
 ## [1.2.6] - 2024-02-11
+
 ### Fixed
 * Weird compile issue some users were experiencing related to internal
 * Toolbar causing missing warnings in builds
 
 ## [1.2.5] - 2024-02-11
+
 ### Added
 * 2022.3 Core support back, with limitations
 * ListViewCountTrackerBinding for binding ListViews
@@ -428,10 +479,12 @@
 * EnabledBinding has been removed as it's not longer required
 
 ## [1.2.4] - 2024-01-12
+
 ### Fixed
 * Compiling when toolbar extension was enabled
 
 ## [1.2.3] - 2024-01-10
+
 ### Added
 * minmax to mathex
 * DebugLong to BLDebug
@@ -441,6 +494,7 @@
 * Compile error on BovineLabsBoostrap when NetCode was installed
 
 ## [1.2.2] - 2024-01-05
+
 ### Added
 * Toolbar now has the option of showing and hiding groups
 * InputActionMapSystem

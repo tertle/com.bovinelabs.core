@@ -33,13 +33,13 @@ namespace BovineLabs.Core.Editor
         private static void Initialize()
         {
             var windows = Resources.FindObjectsOfTypeAll(InspectorWindowType);
-            var all = windows.Length > 0;
+            var any = false;
             foreach (var w in windows)
             {
-                all &= Setup((EditorWindow)w);
+                any |= Setup((EditorWindow)w);
             }
 
-            if (all)
+            if (any)
             {
                 EditorApplication.update -= Initialize;
                 Selection.selectionChanged += SelectionChanged;
@@ -106,8 +106,15 @@ namespace BovineLabs.Core.Editor
                 foreach (var c in root.Children())
                 {
                     var nameSplit = c.name.Split("_");
+
                     if (nameSplit.Length != 3)
                     {
+                        if (nameSplit.Length == 1 && nameSplit[0] == "RemainingPrefabComponentElement")
+                        {
+                            ElementUtility.SetVisible(c, false);
+                            continue;
+                        }
+
                         Debug.Log($"{c.name} unknown format");
                         continue;
                     }

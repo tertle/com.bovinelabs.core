@@ -14,6 +14,7 @@ namespace BovineLabs.Core.Authoring.SubScenes
     {
         public List<SubSceneSet> SceneSets = new();
         public List<SubSceneEditorSet> EditorSceneSets = new();
+        public List<AssetSet> AssetSets = new();
     }
 }
 #endif

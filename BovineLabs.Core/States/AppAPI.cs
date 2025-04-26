@@ -44,9 +44,9 @@ namespace BovineLabs.Core.States
         public static bool StateIsEnabled<T, TA, TS>(ref SystemState systemState, FixedString32Bytes name)
             where T : unmanaged, IState<TA>
             where TA : unmanaged, IBitArray<TA>
-            where TS : KSettings
+            where TS : KSettingsBase<TS, byte>
         {
-            var state = (byte)K<TS>.NameToKey(name);
+            var state = KSettingsBase<TS, byte>.NameToKey(name);
             return systemState.EntityManager.GetSingleton<T>().Value[state];
         }
 
@@ -60,13 +60,13 @@ namespace BovineLabs.Core.States
         public static void StateSet<T, TA, TS>(ref SystemState systemState, FixedString32Bytes name)
             where T : unmanaged, IState<TA>
             where TA : unmanaged, IBitArray<TA>
-            where TS : KSettings
+            where TS : KSettingsBase<TS, byte>
         {
 #if DEBUG_LOG
             systemState.EntityManager.GetSingleton<BLDebug>(false).Debug($"{GetName<T, TA>()} set to {name}");
 #endif
 
-            var state = (byte)K<TS>.NameToKey(name);
+            var state = KSettingsBase<TS, byte>.NameToKey(name);
             systemState.EntityManager.SetSingleton(new T { Value = new TA { [state] = true } });
         }
 
@@ -97,13 +97,13 @@ namespace BovineLabs.Core.States
         public static void StateEnable<T, TA, TS>(ref SystemState systemState, FixedString32Bytes name)
             where T : unmanaged, IState<TA>
             where TA : unmanaged, IBitArray<TA>
-            where TS : KSettings
+            where TS : KSettingsBase<TS, byte>
         {
 #if DEBUG_LOG
             systemState.EntityManager.GetSingleton<BLDebug>(false).Debug($"{GetName<T, TA>()} enabled {name}");
 #endif
 
-            var state = (byte)K<TS>.NameToKey(name);
+            var state = KSettingsBase<TS, byte>.NameToKey(name);
             StateEnable<T, TA>(ref systemState, state, true);
         }
 
@@ -133,13 +133,12 @@ namespace BovineLabs.Core.States
         public static void StateDisable<T, TA, TS>(ref SystemState systemState, FixedString32Bytes name)
             where T : unmanaged, IState<TA>
             where TA : unmanaged, IBitArray<TA>
-            where TS : KSettings
+            where TS : KSettingsBase<TS, byte>
         {
 #if DEBUG_LOG
             systemState.EntityManager.GetSingleton<BLDebug>(false).Debug($"{GetName<T, TA>()} disabled {name}");
 #endif
-
-            var state = (byte)K<TS>.NameToKey(name);
+            var state = KSettingsBase<TS, byte>.NameToKey(name);
             StateEnable<T, TA>(ref systemState, state, false);
         }
 

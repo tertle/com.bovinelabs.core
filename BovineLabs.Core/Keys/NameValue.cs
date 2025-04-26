@@ -8,24 +8,22 @@ namespace BovineLabs.Core.Keys
     using UnityEngine;
 
     [Serializable]
-    public struct NameValue : IKKeyValue
+    public struct NameValue<T>
     {
         [SerializeField]
         private string name;
 
         [SerializeField]
-        private int value;
+        private T value;
 
-        public string Name
+        public NameValue(string name, T value)
         {
-            get => this.name;
-            set => this.name = value;
+            this.name = name;
+            this.value = value;
         }
 
-        public int Value
-        {
-            get => this.value;
-            set => this.value = value;
-        }
+        public string Name => this.name;
+
+        public T Value => this.value;
     }
 }

@@ -43,7 +43,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
         private static ObjectCategories GetObjectCategories()
         {
-            return Resources.Load<ObjectCategories>($"{KSettings.KResourceDirectory}/{nameof(ObjectCategories)}");
+            return Resources.Load<ObjectCategories>($"{KSettingsBase.KResourceDirectory}/{nameof(ObjectCategories)}");
         }
 
         private void CreateGUI()
@@ -66,14 +66,16 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         {
             // evt.
             var categories = GetObjectCategories();
-            var index = categories.Keys.IndexOf(i => i.Name == evt.newValue);
+
+            var keys = categories.Keys.ToArray();
+            var index = keys.IndexOf(i => i.Name == evt.newValue);
             if (index == -1)
             {
                 this.componentDropdown!.choices = new List<string>();
                 return;
             }
 
-            var value = categories.Keys[index].Value;
+            var value = keys[index].Value;
             var settings = EditorSettingsUtility.GetSettings<ObjectManagementSettings>();
 
             this.definitions = settings.ObjectDefinitions.Where(o => (o.Categories & (1 << value)) != 0).Where(o => o.Prefab != null).ToArray();

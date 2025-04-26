@@ -34,8 +34,7 @@ namespace BovineLabs.Core.Editor.SubScenes
         private static readonly Dictionary<Hash128, SubScene> TempSubScenes = new();
         private static EditorToolbarButton? dropDown;
 
-        // scene = EditorSceneManager.LoadSceneInPlayMode(subScene.EditableScenePath, new LoadSceneParameters(LoadSceneMode.Additive));
-        [EditorToolbar(EditorToolbarPosition.RightCenter)]
+        [EditorToolbar(EditorToolbarPosition.RightCenter, -10)]
         public static VisualElement? LiveBaking()
         {
             ConfigVarManager.Init();
@@ -48,7 +47,8 @@ namespace BovineLabs.Core.Editor.SubScenes
             SceneManager.sceneLoaded += (_, _) => CleanupOldSubScenes();
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 
-            dropDown = new EditorToolbarDropdown();
+            dropDown = new EditorToolbarDropdown { icon = (Texture2D)EditorGUIUtility.IconContent("d_PreMatCube").image };
+            dropDown.AddToClassList("unity-editor-toolbar-element");
             dropDown.clicked += () => ClickEvent(dropDown.worldBound);
             UpdateScenariosText();
 

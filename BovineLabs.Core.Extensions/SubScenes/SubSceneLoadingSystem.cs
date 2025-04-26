@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.SubScenes
 {
     using BovineLabs.Core.Extensions;
@@ -15,7 +16,7 @@ namespace BovineLabs.Core.SubScenes
 
     /// <summary> System that loads our SubScenes depending on the world and the SubScene load mode. </summary>
     [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderFirst = true)]
-    [WorldSystemFilter(Worlds.SimulationThinService)]
+    [WorldSystemFilter(Worlds.SimulationService)]
     [CreateAfter(typeof(BLDebugSystem))]
     public unsafe partial struct SubSceneLoadingSystem : ISystem
     {
@@ -140,7 +141,7 @@ namespace BovineLabs.Core.SubScenes
 
         private void LoadSubSceneEntities(ref SystemState state)
         {
-            var query = SystemAPI.QueryBuilder().WithAll<SubSceneLoadData, SubSceneBuffer>().WithDisabledRW<SubSceneEntity>().Build();
+            var query = SystemAPI.QueryBuilder().WithAll<SubSceneLoadData, SubSceneBuffer, LoadSubScene>().WithDisabledRW<SubSceneEntity>().Build();
             if (query.IsEmpty)
             {
                 return;
@@ -362,3 +363,4 @@ namespace BovineLabs.Core.SubScenes
         }
     }
 }
+#endif

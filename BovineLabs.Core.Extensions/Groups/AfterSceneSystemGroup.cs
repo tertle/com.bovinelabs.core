@@ -11,7 +11,7 @@ namespace BovineLabs.Core.Groups
     /// Group that updates after <see cref="SceneSystemGroup"/>.
     /// Put initialization systems in here that need to affect entities just loaded from SubScenes.
     /// </summary>
-    [WorldSystemFilter(Worlds.All, Worlds.SimulationThin)]
+    [WorldSystemFilter(Worlds.All, Worlds.Simulation)]
     [UpdateAfter(typeof(SceneSystemGroup))]
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     public partial class AfterSceneSystemGroup : ComponentSystemGroup

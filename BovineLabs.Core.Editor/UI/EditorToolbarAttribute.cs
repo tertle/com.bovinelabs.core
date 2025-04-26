@@ -13,11 +13,15 @@ namespace BovineLabs.Core.Editor.UI
     {
         /// <summary> Initializes a new instance of the <see cref="EditorToolbarAttribute" /> class. </summary>
         /// <param name="position"> Where to position the button. </param>
-        public EditorToolbarAttribute(EditorToolbarPosition position)
+        /// <param name="priority"> Negative priority means element will be to the left of things, positive to the right. </param>
+        public EditorToolbarAttribute(EditorToolbarPosition position, int priority = 0)
         {
             this.Position = position;
+            this.Priority = priority;
         }
 
         public EditorToolbarPosition Position { get; }
+
+        public int Priority { get; }
     }
 }

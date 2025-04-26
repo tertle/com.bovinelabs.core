@@ -6,9 +6,11 @@
 namespace BovineLabs.Core.LifeCycle
 {
     using BovineLabs.Core.Groups;
-    using BovineLabs.Core.SubScenes;
+    using BovineLabs.Core.Utility;
+    using Unity.Burst;
     using Unity.Entities;
 
+    [BurstCompile]
     [UpdateInGroup(typeof(BeforeSceneSystemGroup))]
     [UpdateAfter(typeof(InstantiateCommandBufferSystem))]
     public partial class DestroySystemGroup : ComponentSystemGroup
@@ -16,7 +18,7 @@ namespace BovineLabs.Core.LifeCycle
         protected override void OnUpdate()
         {
             var query = SystemAPI.QueryBuilder().WithAll<DestroyEntity>().Build();
-            if (query.IsEmpty)
+            if (BurstUtil.IsEmpty(ref query))
             {
                 return;
             }

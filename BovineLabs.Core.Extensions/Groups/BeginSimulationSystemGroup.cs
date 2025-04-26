@@ -14,7 +14,7 @@ namespace BovineLabs.Core.Groups
     /// A system group for updating at the start of <see cref="SimulationSystemGroup"/>.
     /// Use of this should be limited to systems that setup data that may be used in many other systems, such as Input.
     /// </summary>
-    [WorldSystemFilter(Worlds.SimulationEditor, Worlds.SimulationThin)]
+    [WorldSystemFilter(Worlds.SimulationEditor, Worlds.Simulation)]
     [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
     [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
     [UpdateBefore(typeof(FixedStepSimulationSystemGroup))]
