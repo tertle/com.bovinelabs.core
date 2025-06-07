@@ -11,7 +11,7 @@ namespace BovineLabs.Core.Authoring.SubScenes
     using UnityEditor;
     using UnityEngine;
 
-    [AutoRef(nameof(SubSceneSettings), nameof(SubSceneSettings.SceneSets))]
+    [AutoRef(nameof(SubSceneSettings), nameof(SubSceneSettings.SceneSets), nameof(SubSceneSet), "Scenes", createNull:false)]
     public class SubSceneSet : ScriptableObject, IUID
     {
         public int ID;

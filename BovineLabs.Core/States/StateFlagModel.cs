@@ -65,7 +65,7 @@ namespace BovineLabs.Core.States
                 StateType = this.impl.StateType,
                 PreviousStateType = this.impl.PreviousStateType,
                 CommandBuffer = commandBuffer,
-                Debug = this.impl.Debug,
+                Logger = this.impl.Logger,
                 StateSize = this.stateSize,
             };
         }
@@ -86,7 +86,7 @@ namespace BovineLabs.Core.States
 
             public EntityCommandBuffer.ParallelWriter CommandBuffer;
 
-            public BLDebug Debug;
+            public BLLogger Logger;
 
             public byte StateSize;
 
@@ -141,7 +141,7 @@ namespace BovineLabs.Core.States
                                 }
                                 else
                                 {
-                                    this.Debug.Warning($"State {bit} not setup for type {TypeManagerEx.GetTypeName(this.StateType.m_TypeIndex)}");
+                                    this.Logger.LogWarning($"State {bit} not setup for type {TypeManagerEx.GetTypeName(this.StateType.m_TypeIndex)}");
                                 }
                             }
                         }

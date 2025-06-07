@@ -46,7 +46,7 @@ namespace BovineLabs.Core.Pause
             var text = default(FixedString512Bytes);
             text.Append(TypeManagerEx.GetSystemName(systemState.m_SystemTypeIndex));
             text.Append((FixedString32Bytes)" | Paused: true");
-            systemState.EntityManager.GetSingleton<BLDebug>(false).DebugLong512(text);
+            systemState.EntityManager.GetSingleton<BLLogger>(false).LogDebug512(text);
         }
 
         /// <summary> Unpause the world. </summary>
@@ -64,7 +64,7 @@ namespace BovineLabs.Core.Pause
             var text = default(FixedString512Bytes);
             text.Append(TypeManagerEx.GetSystemName(systemState.m_SystemTypeIndex));
             text.Append((FixedString32Bytes)" | Paused: false");
-            systemState.EntityManager.GetSingleton<BLDebug>(false).DebugLong512(text);
+            systemState.EntityManager.GetSingleton<BLLogger>(false).LogDebug512(text);
         }
     }
 }

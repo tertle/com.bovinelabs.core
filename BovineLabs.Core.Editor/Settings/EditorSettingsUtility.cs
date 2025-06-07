@@ -65,7 +65,7 @@ namespace BovineLabs.Core.Editor.Settings
 
         public static void AddSettingsToAuthoring(EditorSettings editorSettings, SettingsBase settingsBase)
         {
-            if (editorSettings.DefaultSettingsAuthoring == null)
+            if (!editorSettings.DefaultSettingsAuthoring)
             {
                 return;
             }
@@ -95,7 +95,7 @@ namespace BovineLabs.Core.Editor.Settings
                         editorSettings.TryGetAuthoring(world, out authoring);
                     }
 
-                    if (authoring == null)
+                    if (!authoring)
                     {
                         continue;
                     }
@@ -120,7 +120,7 @@ namespace BovineLabs.Core.Editor.Settings
                 for (var index = settingsProperty.arraySize - 1; index >= 0; index--)
                 {
                     var element = settingsProperty.GetArrayElementAtIndex(index);
-                    if (element.objectReferenceValue != null)
+                    if (element.objectReferenceValue)
                     {
                         continue;
                     }
@@ -209,7 +209,7 @@ namespace BovineLabs.Core.Editor.Settings
                     // So before creating a new instance, try to directly look it up where we expect it
                     instance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
 
-                    if (instance == null)
+                    if (!instance)
                     {
                         instance = ScriptableObject.CreateInstance(type);
                         AssetDatabase.CreateAsset(instance, path);
@@ -230,7 +230,7 @@ namespace BovineLabs.Core.Editor.Settings
                 default:
                 {
                     // Error
-                    Debug.LogError($"More than 1 instance of {type.Name} found. {string.Join(",", assets)}");
+                    BLGlobalLogger.LogErrorString($"More than 1 instance of {type.Name} found. {string.Join(",", assets)}");
                     var asset = assets.First();
                     instance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(asset));
                     break;
@@ -252,7 +252,7 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             var editorSettings = GetEditorSettings();
-            if (editorSettings == null)
+            if (!editorSettings)
             {
                 return;
             }
@@ -262,12 +262,12 @@ namespace BovineLabs.Core.Editor.Settings
 
         private static bool Compare(Object obj1, Object obj2)
         {
-            if (obj1 == null)
+            if (!obj1)
             {
                 return false;
             }
 
-            if (obj2 == null)
+            if (!obj2)
             {
                 return true;
             }
@@ -284,7 +284,7 @@ namespace BovineLabs.Core.Editor.Settings
             {
                 if (assets.Length > 2)
                 {
-                    Debug.LogError($"More than 1 EditorSettings found, using {AssetDatabase.GUIDToAssetPath(assets[0])}");
+                    BLGlobalLogger.LogErrorString($"More than 1 EditorSettings found, using {AssetDatabase.GUIDToAssetPath(assets[0])}");
                 }
 
                 return AssetDatabase.LoadAssetAtPath<EditorSettings>(AssetDatabase.GUIDToAssetPath(assets[0]));

@@ -62,9 +62,9 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
                 categoryToComponentTypes = new Dictionary<byte, ComponentType>();
 
-                if (objectCategories == null)
+                if (!objectCategories)
                 {
-                    Debug.LogWarning("Categories missing");
+                    BLGlobalLogger.LogWarningString("Categories missing");
                     return categoryToComponentTypes;
                 }
 
@@ -76,9 +76,9 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                         continue;
                     }
 
-                    if (!categoryToComponentTypes.TryAdd((byte)c.Value, ComponentType.FromTypeIndex(typeIndex)))
+                    if (!categoryToComponentTypes.TryAdd(c.Value, ComponentType.FromTypeIndex(typeIndex)))
                     {
-                        Debug.LogWarning($"Duplicate entries for {c.Value}");
+                        BLGlobalLogger.LogWarningString($"Duplicate entries for {c.Value}");
                     }
                 }
 

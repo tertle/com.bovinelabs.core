@@ -26,7 +26,7 @@ namespace BovineLabs.Core.Editor.Dependency
         private ScrollView? content;
         private DropdownField? mode;
 
-        [MenuItem("BovineLabs/Tools/Assembly Graph", priority = 1011)]
+        [MenuItem(EditorMenus.RootMenuTools + "Assembly Graph", priority = 1011)]
         private static void Execute()
         {
             GetWindow<AssemblyGraphWindow>(false, "Assembly Graph", true);

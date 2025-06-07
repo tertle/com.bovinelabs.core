@@ -63,7 +63,7 @@ namespace BovineLabs.Core.States
             where TS : KSettingsBase<TS, byte>
         {
 #if DEBUG_LOG
-            systemState.EntityManager.GetSingleton<BLDebug>(false).Debug($"{GetName<T, TA>()} set to {name}");
+            systemState.EntityManager.GetSingleton<BLLogger>(false).LogDebug($"{GetName<T, TA>()} set to {name}");
 #endif
 
             var state = KSettingsBase<TS, byte>.NameToKey(name);
@@ -81,7 +81,7 @@ namespace BovineLabs.Core.States
             where TA : unmanaged, IBitArray<TA>
         {
 #if DEBUG_LOG
-            systemState.EntityManager.GetSingleton<BLDebug>(false).Debug($"{GetName<T, TA>()} set to {state}");
+            systemState.EntityManager.GetSingleton<BLLogger>(false).LogDebug($"{GetName<T, TA>()} set to {state}");
 #endif
 
             systemState.EntityManager.SetSingleton(new T { Value = new TA { [state] = true } });
@@ -100,7 +100,7 @@ namespace BovineLabs.Core.States
             where TS : KSettingsBase<TS, byte>
         {
 #if DEBUG_LOG
-            systemState.EntityManager.GetSingleton<BLDebug>(false).Debug($"{GetName<T, TA>()} enabled {name}");
+            systemState.EntityManager.GetSingleton<BLLogger>(false).LogDebug($"{GetName<T, TA>()} enabled {name}");
 #endif
 
             var state = KSettingsBase<TS, byte>.NameToKey(name);
@@ -118,7 +118,7 @@ namespace BovineLabs.Core.States
             where TA : unmanaged, IBitArray<TA>
         {
 #if DEBUG_LOG
-            systemState.EntityManager.GetSingleton<BLDebug>(false).Debug($"{GetName<T, TA>()} enable {state}");
+            systemState.EntityManager.GetSingleton<BLLogger>(false).LogDebug($"{GetName<T, TA>()} enable {state}");
 #endif
             StateEnable<T, TA>(ref systemState, state, true);
         }
@@ -136,7 +136,7 @@ namespace BovineLabs.Core.States
             where TS : KSettingsBase<TS, byte>
         {
 #if DEBUG_LOG
-            systemState.EntityManager.GetSingleton<BLDebug>(false).Debug($"{GetName<T, TA>()} disabled {name}");
+            systemState.EntityManager.GetSingleton<BLLogger>(false).LogDebug($"{GetName<T, TA>()} disabled {name}");
 #endif
             var state = KSettingsBase<TS, byte>.NameToKey(name);
             StateEnable<T, TA>(ref systemState, state, false);
@@ -153,7 +153,7 @@ namespace BovineLabs.Core.States
             where TA : unmanaged, IBitArray<TA>
         {
 #if DEBUG_LOG
-            systemState.EntityManager.GetSingleton<BLDebug>(false).Debug($"{GetName<T, TA>()} disable {state}");
+            systemState.EntityManager.GetSingleton<BLLogger>(false).LogDebug($"{GetName<T, TA>()} disable {state}");
 #endif
 
             StateEnable<T, TA>(ref systemState, state, false);

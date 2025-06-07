@@ -78,8 +78,8 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogError($"GetBestType failed for {path}");
-                        Debug.LogError(ex);
+                        BLGlobalLogger.LogErrorString($"GetBestType failed for {path}");
+                        BLGlobalLogger.LogFatal(ex);
                     }
                 }
             }

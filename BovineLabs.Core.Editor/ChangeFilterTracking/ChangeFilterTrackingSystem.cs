@@ -118,7 +118,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
             }
 
             var currentFrameIndex = this.frameIndex;
-            var debug = SystemAPI.GetSingleton<BLDebug>();
+            var debug = SystemAPI.GetSingleton<BLLogger>();
 
             for (var index = 0; index < this.typeTracks.Length; index++)
             {
@@ -144,7 +144,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
                     Short = track.Short,
                     Long = track.Long,
                     Index = currentFrameIndex,
-                    Debug = debug,
+                    Logger = debug,
                 }.Schedule(this.jobHandles[index]);
             }
 
@@ -206,7 +206,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
 
             public int Index;
 
-            public BLDebug Debug;
+            public BLLogger Logger;
 
             public void Execute()
             {
@@ -241,7 +241,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
                     if (!this.HasWarned.Value && averageChange > WarningLevel.Data)
                     {
                         var percent = (int)(averageChange * 100);
-                        this.Debug.Warning512($"{this.TypeName} DidChange triggered on average {percent}% of chunks per frame");
+                        this.Logger.LogWarning512($"{this.TypeName} DidChange triggered on average {percent}% of chunks per frame");
                         this.HasWarned.Value = true;
                     }
                 }

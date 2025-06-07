@@ -34,10 +34,28 @@ namespace BovineLabs.Core.Collections
             return (T*)bb.Allocate(ref ptr, size);
         }
 
-        internal static void AllocateBlobAssetReference(this ref BlobBuilder blobBuilder, ref BlobPtr<BlobAssetHeader> header, BlobBuilder target)
+        /// <summary>
+        /// Allocates a <see cref="BlobArray{T}"/> inside <paramref name="builder"/> and copies the full contents of <paramref name="src"/> into it.
+        /// </summary>
+        public static void Construct<T>(this ref BlobBuilder builder, ref BlobArray<T> dest, in NativeArray<T> src) where T : unmanaged
         {
-            ref var bt = ref UnsafeUtility.As<BlobBuilder, BlobBuilderInternal>(ref target);
-            bt.AllocateBlobAssetReference(ref blobBuilder, ref header);
+            var blobArr = builder.Allocate(ref dest, src.Length);
+
+            // bulk-copy
+            var dst = UnsafeUtility.AddressOf(ref blobArr[0]);
+            var srcPtr = src.GetUnsafeReadOnlyPtr();
+            var  bytes  = (long)src.Length * UnsafeUtility.SizeOf<T>();
+
+            UnsafeUtility.MemCpy(dst, srcPtr, bytes);
+        }
+
+        /// <summary>
+        /// Allocates a <see cref="BlobArray{T}"/> inside <paramref name="builder"/> and copies the full contents of <paramref name="src"/> into it.
+        /// </summary>
+        public static void Construct<T>(this ref BlobBuilder builder, ref BlobArray<T> dest, in NativeList<T> src) where T : unmanaged
+        {
+            var list = src;
+            builder.Construct(ref dest, list.AsArray());
         }
 
         /// <summary> Allocates a BlobHashMap and copies all key value pairs from the source NativeHashMap. </summary>
@@ -164,6 +182,7 @@ namespace BovineLabs.Core.Collections
         /// <param name="builder"> Reference to the struct BlobBuilder used to construct the hashmap </param>
         /// <param name="blobHashMap"> Reference to the struct BlobHashMap field </param>
         /// <param name="source"> Source hashmap to copy keys and values from </param>
+        /// <param name="nullValue"> The null value to compare against. </param>
         public static BlobBuilderPerfectHashMap<TKey, TValue> ConstructPerfectHashMap<TKey, TValue>(
             this ref BlobBuilder builder, ref BlobPerfectHashMap<TKey, TValue> blobHashMap, NativeHashMap<TKey, TValue> source, TValue nullValue = default)
             where TKey : unmanaged, IEquatable<TKey>
@@ -175,108 +194,108 @@ namespace BovineLabs.Core.Collections
         public static IntPtr GetListPtr(this BlobBuilder builder)
         {
             ref var bb = ref UnsafeUtility.As<BlobBuilder, BlobBuilderInternal>(ref builder);
-            return new IntPtr(bb.m_allocations.m_ListData);
+            return new IntPtr(bb.Allocations.m_ListData);
         }
 
         private struct BlobBuilderInternal
         {
-            public AllocatorManager.AllocatorHandle m_allocator;
-            public NativeList<BlobAllocation> m_allocations;
-            public NativeList<OffsetPtrPatch> m_patches;
-            public int m_currentChunkIndex;
-            public int m_chunkSize;
+            public AllocatorManager.AllocatorHandle Allocator;
+            public NativeList<BlobAllocation> Allocations;
+            public NativeList<OffsetPtrPatch> Patches;
+            public int CurrentChunkIndex;
+            public int ChunkSize;
 
             public struct BlobAllocation
             {
-                public int size;
-                public byte* p;
+                public int Size;
+                public byte* P;
             }
 
             public struct BlobDataRef
             {
-                public int allocIndex;
-                public int offset;
+                public int AllocIndex;
+                public int Offset;
             }
 
             public struct OffsetPtrPatch
             {
-                public int* offsetPtr;
-                public BlobDataRef target;
-                public int length; // if length != 0 this is an array patch and the length should be patched
+                public int* OffsetPtr;
+                public BlobDataRef Target;
+                public int Length; // if length != 0 this is an array patch and the length should be patched
             }
 
             public BlobDataRef Allocate(int size, int alignment)
             {
-                if (size > this.m_chunkSize)
+                if (size > this.ChunkSize)
                 {
                     size = CollectionHelper.Align(size, 16);
-                    var allocIndex = this.m_allocations.Length;
-                    var mem = (byte*)Memory.Unmanaged.Allocate(size, alignment, this.m_allocator);
+                    var allocIndex = this.Allocations.Length;
+                    var mem = (byte*)Memory.Unmanaged.Allocate(size, alignment, this.Allocator);
                     UnsafeUtility.MemClear(mem, size);
-                    this.m_allocations.Add(new BlobAllocation
+                    this.Allocations.Add(new BlobAllocation
                     {
-                        p = mem,
-                        size = size,
+                        P = mem,
+                        Size = size,
                     });
 
                     return new BlobDataRef
                     {
-                        allocIndex = allocIndex,
-                        offset = 0,
+                        AllocIndex = allocIndex,
+                        Offset = 0,
                     };
                 }
 
                 var alloc = this.EnsureEnoughRoomInChunk(size, alignment);
 
-                var offset = alloc.size;
-                UnsafeUtility.MemClear(alloc.p + alloc.size, size);
-                alloc.size += size;
-                this.m_allocations[this.m_currentChunkIndex] = alloc;
+                var offset = alloc.Size;
+                UnsafeUtility.MemClear(alloc.P + alloc.Size, size);
+                alloc.Size += size;
+                this.Allocations[this.CurrentChunkIndex] = alloc;
                 return new BlobDataRef
                 {
-                    allocIndex = this.m_currentChunkIndex,
-                    offset = offset,
+                    AllocIndex = this.CurrentChunkIndex,
+                    Offset = offset,
                 };
             }
 
             public void* AllocationToPointer(BlobDataRef blobDataRef)
             {
-                return this.m_allocations[blobDataRef.allocIndex].p + blobDataRef.offset;
+                return this.Allocations[blobDataRef.AllocIndex].P + blobDataRef.Offset;
             }
 
             public void AllocateBlobAssetReference(ref BlobBuilder target, ref BlobPtr<BlobAssetHeader> blobPtr)
             {
                 // Avoid crash when there are no chunks (DOTS-8681)
-                if (this.m_currentChunkIndex != -1)
+                if (this.CurrentChunkIndex != -1)
                 {
                     //Align last chunk upwards so all chunks are 16 byte aligned
-                    this.AlignChunk(this.m_currentChunkIndex);
+                    this.AlignChunk(this.CurrentChunkIndex);
                 }
 
-                var offsets = new NativeArray<int>(this.m_allocations.Length + 1, Allocator.Temp);
-                var sortedAllocs = new NativeArray<SortedIndex>(this.m_allocations.Length, Allocator.Temp);
+                var offsets = new NativeArray<int>(this.Allocations.Length + 1, Unity.Collections.Allocator.Temp);
+                var sortedAllocs = new NativeArray<SortedIndex>(this.Allocations.Length, Unity.Collections.Allocator.Temp);
 
                 offsets[0] = 0;
-                for (var i = 0; i < this.m_allocations.Length; ++i)
+                for (var i = 0; i < this.Allocations.Length; ++i)
                 {
-                    offsets[i + 1] = offsets[i] + this.m_allocations[i].size;
+                    offsets[i + 1] = offsets[i] + this.Allocations[i].Size;
                     sortedAllocs[i] = new SortedIndex
                     {
-                        p = this.m_allocations[i].p,
-                        index = i,
+                        P = this.Allocations[i].P,
+                        Index = i,
                     };
                 }
 
-                var dataSize = offsets[this.m_allocations.Length];
+                var dataSize = offsets[this.Allocations.Length];
 
                 sortedAllocs.Sort();
-                var sortedPatches = new NativeArray<SortedIndex>(this.m_patches.Length, Allocator.Temp);
-                for (var i = 0; i < this.m_patches.Length; ++i)
+                var sortedPatches = new NativeArray<SortedIndex>(this.Patches.Length, Unity.Collections.Allocator.Temp);
+                for (var i = 0; i < this.Patches.Length; ++i)
                 {
                     sortedPatches[i] = new SortedIndex
                     {
-                        p = (byte*)this.m_patches[i].offsetPtr,
-                        index = i,
+                        P = (byte*)this.Patches[i].OffsetPtr,
+                        Index = i,
                     };
                 }
 
@@ -287,36 +306,36 @@ namespace BovineLabs.Core.Collections
 
                 var data = buffer + sizeof(BlobAssetHeader);
 
-                for (var i = 0; i < this.m_allocations.Length; ++i)
+                for (var i = 0; i < this.Allocations.Length; ++i)
                 {
-                    UnsafeUtility.MemCpy(data + offsets[i], this.m_allocations[i].p, this.m_allocations[i].size);
+                    UnsafeUtility.MemCpy(data + offsets[i], this.Allocations[i].P, this.Allocations[i].Size);
                 }
 
                 var iAlloc = 0;
-                var allocStart = this.m_allocations[sortedAllocs[0].index].p;
-                var allocEnd = allocStart + this.m_allocations[sortedAllocs[0].index].size;
+                var allocStart = this.Allocations[sortedAllocs[0].Index].P;
+                var allocEnd = allocStart + this.Allocations[sortedAllocs[0].Index].Size;
 
-                for (var i = 0; i < this.m_patches.Length; ++i)
+                for (var i = 0; i < this.Patches.Length; ++i)
                 {
-                    var patchIndex = sortedPatches[i].index;
-                    var offsetPtr = (int*)sortedPatches[i].p;
+                    var patchIndex = sortedPatches[i].Index;
+                    var offsetPtr = (int*)sortedPatches[i].P;
 
                     while (offsetPtr >= allocEnd)
                     {
                         ++iAlloc;
-                        allocStart = this.m_allocations[sortedAllocs[iAlloc].index].p;
-                        allocEnd = allocStart + this.m_allocations[sortedAllocs[iAlloc].index].size;
+                        allocStart = this.Allocations[sortedAllocs[iAlloc].Index].P;
+                        allocEnd = allocStart + this.Allocations[sortedAllocs[iAlloc].Index].Size;
                     }
 
-                    var patch = this.m_patches[patchIndex];
+                    var patch = this.Patches[patchIndex];
 
-                    var offsetPtrInData = offsets[sortedAllocs[iAlloc].index] + (int)((byte*)offsetPtr - allocStart);
-                    var targetPtrInData = offsets[patch.target.allocIndex] + patch.target.offset;
+                    var offsetPtrInData = offsets[sortedAllocs[iAlloc].Index] + (int)((byte*)offsetPtr - allocStart);
+                    var targetPtrInData = offsets[patch.Target.AllocIndex] + patch.Target.Offset;
 
                     *(int*)(data + offsetPtrInData) = targetPtrInData - offsetPtrInData;
-                    if (patch.length != 0)
+                    if (patch.Length != 0)
                     {
-                        *(int*)(data + offsetPtrInData + 4) = patch.length;
+                        *(int*)(data + offsetPtrInData + 4) = patch.Length;
                     }
                 }
 
@@ -327,7 +346,7 @@ namespace BovineLabs.Core.Collections
                 var header = (BlobAssetHeader*)buffer;
                 *header = new BlobAssetHeader();
                 header->Length = dataSize;
-                header->Allocator = Allocator.Persistent;
+                header->Allocator = Unity.Collections.Allocator.Persistent;
 
                 // @TODO use 64bit hash
                 header->Hash = math.hash(buffer + sizeof(BlobAssetHeader), dataSize);
@@ -346,61 +365,61 @@ namespace BovineLabs.Core.Collections
 
                 var patch = new OffsetPtrPatch
                 {
-                    offsetPtr = offsetPtr,
-                    target = allocation,
-                    length = 0,
+                    OffsetPtr = offsetPtr,
+                    Target = allocation,
+                    Length = 0,
                 };
 
-                this.m_patches.Add(patch);
+                this.Patches.Add(patch);
                 return this.AllocationToPointer(allocation);
             }
 
             private BlobAllocation EnsureEnoughRoomInChunk(int size, int alignment)
             {
-                if (this.m_currentChunkIndex == -1)
+                if (this.CurrentChunkIndex == -1)
                 {
                     return this.AllocateNewChunk();
                 }
 
-                var alloc = this.m_allocations[this.m_currentChunkIndex];
-                var startOffset = CollectionHelper.Align(alloc.size, alignment);
-                if (startOffset + size > this.m_chunkSize)
+                var alloc = this.Allocations[this.CurrentChunkIndex];
+                var startOffset = CollectionHelper.Align(alloc.Size, alignment);
+                if (startOffset + size > this.ChunkSize)
                 {
                     return this.AllocateNewChunk();
                 }
 
-                UnsafeUtility.MemClear(alloc.p + alloc.size, startOffset - alloc.size);
+                UnsafeUtility.MemClear(alloc.P + alloc.Size, startOffset - alloc.Size);
 
-                alloc.size = startOffset;
+                alloc.Size = startOffset;
                 return alloc;
             }
 
             private BlobAllocation AllocateNewChunk()
             {
                 // align size of last chunk to 16 bytes so chunks can be concatenated without breaking alignment
-                if (this.m_currentChunkIndex != -1)
+                if (this.CurrentChunkIndex != -1)
                 {
-                    this.AlignChunk(this.m_currentChunkIndex);
+                    this.AlignChunk(this.CurrentChunkIndex);
                 }
 
-                this.m_currentChunkIndex = this.m_allocations.Length;
+                this.CurrentChunkIndex = this.Allocations.Length;
                 var alloc = new BlobAllocation
                 {
-                    p = (byte*)Memory.Unmanaged.Allocate(this.m_chunkSize, 16, this.m_allocator),
-                    size = 0,
+                    P = (byte*)Memory.Unmanaged.Allocate(this.ChunkSize, 16, this.Allocator),
+                    Size = 0,
                 };
 
-                this.m_allocations.Add(alloc);
+                this.Allocations.Add(alloc);
                 return alloc;
             }
 
             private void AlignChunk(int chunkIndex)
             {
-                var chunk = this.m_allocations[chunkIndex];
-                var oldSize = chunk.size;
-                chunk.size = CollectionHelper.Align(chunk.size, 16);
-                this.m_allocations[chunkIndex] = chunk;
-                UnsafeUtility.MemSet(chunk.p + oldSize, 0, chunk.size - oldSize);
+                var chunk = this.Allocations[chunkIndex];
+                var oldSize = chunk.Size;
+                chunk.Size = CollectionHelper.Align(chunk.Size, 16);
+                this.Allocations[chunkIndex] = chunk;
+                UnsafeUtility.MemSet(chunk.P + oldSize, 0, chunk.Size - oldSize);
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -409,10 +428,10 @@ namespace BovineLabs.Core.Collections
             {
                 // ValidateAllocation is most often called with data in recently allocated allocations
                 // so this searches backwards
-                for (var i = this.m_allocations.Length - 1; i >= 0; --i)
+                for (var i = this.Allocations.Length - 1; i >= 0; --i)
                 {
-                    var allocation = this.m_allocations[i];
-                    if (address >= allocation.p && address < allocation.p + allocation.size)
+                    var allocation = this.Allocations[i];
+                    if (address >= allocation.P && address < allocation.P + allocation.Size)
                     {
                         return;
                     }
@@ -424,12 +443,12 @@ namespace BovineLabs.Core.Collections
 
             private struct SortedIndex : IComparable<SortedIndex>
             {
-                public byte* p;
-                public int index;
+                public byte* P;
+                public int Index;
 
                 public int CompareTo(SortedIndex other)
                 {
-                    return ((ulong)this.p).CompareTo((ulong)other.p);
+                    return ((ulong)this.P).CompareTo((ulong)other.P);
                 }
             }
         }

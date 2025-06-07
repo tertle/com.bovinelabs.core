@@ -57,7 +57,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         private DynamicHashMap<TKey, TValue> GetMap()
         {
-            return this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity).AsHashMap<TBuffer, TKey, TValue>();
+            return this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity, true).AsHashMap<TBuffer, TKey, TValue>();
         }
 
         public unsafe void Update()
@@ -109,7 +109,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
             if (data is not TKey key)
             {
-                Debug.LogError($"List item {data} was not type of {typeof(TKey)}");
+                BLGlobalLogger.LogErrorString($"List item {data} was not type of {typeof(TKey)}");
                 return;
             }
 

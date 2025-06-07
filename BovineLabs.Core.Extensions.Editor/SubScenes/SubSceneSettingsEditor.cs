@@ -19,12 +19,9 @@ namespace BovineLabs.Core.Editor.SubScenes
         {
             return property.name switch
             {
-                nameof(SubSceneSettings.SceneSets) => new AssetCreator<SubSceneSet>(this.serializedObject, property, "bl.subscene-set",
-                    "Assets/Settings/Scenes/", "SceneSet.asset").Element,
-                nameof(SubSceneSettings.EditorSceneSets) => new AssetCreator<SubSceneEditorSet>(this.serializedObject, property, "bl.subscene-editor-set",
-                    "Assets/Settings/Scenes/Editor", "EditorSceneSet.asset").Element,
-                nameof(SubSceneSettings.AssetSets) => new AssetCreator<AssetSet>(this.serializedObject, property, "bl.subscene-asset-set",
-                    "Assets/Settings/Scenes/Assets", "AssetSet.asset").Element,
+                nameof(SubSceneSettings.SceneSets) => new AssetCreator<SubSceneSet>(this.serializedObject, property).Element,
+                nameof(SubSceneSettings.EditorSceneSets) => new AssetCreator<SubSceneEditorSet>(this.serializedObject, property).Element,
+                nameof(SubSceneSettings.AssetSets) => new AssetCreator<AssetSet>(this.serializedObject, property).Element,
                 _ => base.CreateElement(property),
             };
         }

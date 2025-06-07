@@ -193,10 +193,8 @@ namespace BovineLabs.Core.SubScenes
                     var sceneGuid = scene.Scene.SceneGUID();
                     var sceneEntity = SceneSystem.LoadSceneAsync(state.WorldUnmanaged, sceneGuid, loadingParams);
 
-                    state
-                    .EntityManager
-                    .GetBuffer<SubSceneEntity>(entity)
-                    .Add(new SubSceneEntity
+                    var subSceneEntityBuffer = state.EntityManager.GetBuffer<SubSceneEntity>(entity);
+                    subSceneEntityBuffer.Add(new SubSceneEntity
                     {
                         Entity = sceneEntity,
                         Scene = sceneGuid,
@@ -217,7 +215,7 @@ namespace BovineLabs.Core.SubScenes
             }
 
 #if UNITY_EDITOR
-            var debug = SystemAPI.GetSingleton<BLDebug>();
+            var debug = SystemAPI.GetSingleton<BLLogger>();
 #endif
 
             var toLoad = new NativeList<Entity>(64, state.WorldUpdateAllocator);
@@ -244,7 +242,7 @@ namespace BovineLabs.Core.SubScenes
 
 #if UNITY_EDITOR
                         state.EntityManager.GetName(ss.Entity, out var name);
-                        debug.Debug($"Loading SubScene | {name}");
+                        debug.LogDebug($"Loading SubScene | {name}");
 #endif
                     }
 
@@ -282,7 +280,7 @@ namespace BovineLabs.Core.SubScenes
             }
 
 #if UNITY_EDITOR
-            var debug = SystemAPI.GetSingleton<BLDebug>();
+            var debug = SystemAPI.GetSingleton<BLLogger>();
 #endif
 
             var toUnload = new NativeList<Entity>(64, state.WorldUpdateAllocator);
@@ -310,7 +308,7 @@ namespace BovineLabs.Core.SubScenes
 
 #if UNITY_EDITOR
                         state.EntityManager.GetName(ss.Entity, out var name);
-                        debug.Debug($"Unloading SubScene | {name}");
+                        debug.LogDebug($"Unloading SubScene | {name}");
 #endif
                     }
 
@@ -356,8 +354,8 @@ namespace BovineLabs.Core.SubScenes
                 return;
             }
 
-            var debug = SystemAPI.GetSingleton<BLDebug>();
-            debug.Debug("All required SubScenes loaded.");
+            var debug = SystemAPI.GetSingleton<BLLogger>();
+            debug.LogDebug("All required SubScenes loaded.");
 
             PauseGame.Unpause(ref state);
         }

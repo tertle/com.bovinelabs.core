@@ -1,6 +1,56 @@
 # Changelog
 
-## [1.4.2] - 2025-04-16
+## [1.4.3] - 2025-06-07
+
+### Added
+* ComponentAsset and ComponentFieldAsset for more stable type and fields instead of directly storing StableTypeHash and Offsets
+* A Unity compatible and updated version of CodeGenHelpers https://github.com/dansiegel/CodeGenHelpers to use with source generators
+* Source Generator for generating IDynamic[HashMap|HashSet|IndexedMap|MultiHashMap|UntypedHashMap] Initialize and AsMap methods
+* ProfilerTimer for quick easy scoped Timing
+* BLGlobalLogger
+* SubScenePostLoadCommandBufferSystem for allowing setup of PostLoadCommandBuffer from multiple places
+* Added BL_TOOLS_MENU if you want to move the BovineLabs menu to Tools/BovineLabs
+* SingletonAttribute which can be added to DynamicBuffers to auto merge multiple into a single singleton at runtime
+* Support for AutoRef to optionally generate a 'null' asset
+* DynamicVariableMap<TKey, TValue, T, TC> and DynamicVariableMap<TKey, TValue, T1, TC1, T2, TC2> that allow you to have dynamic multiple column indexing
+* MultiHashColumn and OrderedListColumn to be used in IDynamicVariableMap, you can implement your own type by implementing the IColumn interface
+
+### Changed
+* Scope limited source generators
+* Disable auto reference of assemblies
+* Reduced memory cost of MeshSimplifier to help support larger terrain
+* Rewrote InputGenerator to use CodeGenHelpers
+* Breaking: Input has been moved to its own assembly to scope limit the source generator
+* Analyzers no longer inject in projects that match Unity.*
+* ConfigVars now save on domain reload
+* Named BLDebug to BLLogger and prefixed all BLDebug methods with Log; this now means you can double click Console to directly go to the correct stack
+* Replaced all of Core Debug with BLLogger
+* Performance optimizations to ObjectManagermentProcessor
+* ObjectId is again just an int
+* ObjectDefinitions no longer use Mod keys
+* SubSceneSet ID is now a struct SubSceneSetId not an int
+* Moved AssetCreator config to AutoRef
+* Added better checks in AssetCreator
+
+### Removed
+* AllTypeIndex from TypeManagerEx to speed up domain reloads
+* DynamicIndexedMap as it's replaced by DynamicVariableMap
+
+### documentation
+* LifeCycle
+* DynamicHashMap updated to reflect source generation and new types
+
+### Fixed
+* SearchView can now handle generic paths
+* SearchView issue with having to double click
+* SearchView error on hitting escape in nested menu
+* Timing issue with SubSceneLoadingManagedSystem and subscribing to SceneManager.sceneLoaded
+* ObjectManagementProcessor no longer triggers save unless it triggered dirtying the asset
+* SubSceneEditorToolbar can again unload SubScenes
+* CodeGenHelpers FullyQualifiedName not working with nested classes
+* CodeGenHelpers not working in global namespace
+
+## [1.4.2] - 2025-04-26
 
 ### Added
 * AssetSet as a replacement for AssetLoadAuthoring
@@ -17,6 +67,11 @@
 * Groups no longer add to thin clients by default
 * Cleaned up K validation a little and exposed it a bit easier
 * K rewritten to support any value type
+* Tweaked element property nesting a little
+* Optimized DestroySystemGroup and InitializeSystemGroup for high entity counts
+* BovineLabsBootStrap.RequireConnectionApproval is now a ConfigVar
+* InspectorSearch no longer iterates forever on hidden inspectors
+* Toolbar dropdowns now match Unity 6 style and look pretty
 
 ### Removed
 * AssetLoadAuthoring, now merged into SubSceneLoadAuthoring
@@ -25,6 +80,7 @@
 ### Fixed
 * Compile errors when disabling SubScene feature
 * NativeParallelMultiHashMapFallback could lose elements
+* InspectorSearch not able to handle instance component removal
 
 ### Documentation
 * SubScene documentation updated to reflect changes to AssetSet

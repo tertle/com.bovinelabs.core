@@ -19,7 +19,6 @@ namespace BovineLabs.Core.Editor.Inspectors
         where TElement : unmanaged
     {
         private readonly PropertyElement content;
-        private readonly VisualElement refreshButton;
         private readonly List<TElement> autoRefreshList = new();
 
         private bool autoRefresh;
@@ -30,8 +29,9 @@ namespace BovineLabs.Core.Editor.Inspectors
             this.content = this.InitializeContent();
             this.Add(this.content);
 
-            this.refreshButton = this.InitializeRefreshButton();
-            this.AddRefreshButton();
+            this.Add(this.InitializeRefreshButton());
+
+            this.UpdateElement();
 
             if (refreshRate > 0)
             {
@@ -52,6 +52,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             }
 
             this.ForceUpdate();
+            this.OnRefresh();
         }
 
         public void ForceUpdate()
@@ -70,6 +71,8 @@ namespace BovineLabs.Core.Editor.Inspectors
             this.Rebuild();
         }
 
+        protected virtual void OnRefresh() {}
+
         protected abstract void PopulateList(List<TElement> list);
 
         protected abstract void OnValueChanged(NativeArray<TElement> newValues);
@@ -77,31 +80,14 @@ namespace BovineLabs.Core.Editor.Inspectors
         private void Rebuild()
         {
             this.content.ForceReload();
-            this.AddRefreshButton();
-            StylingUtility.AlignInspectorLabelWidth(this.content);
+            this.UpdateElement();
         }
 
-        private void AddRefreshButton()
+        private void UpdateElement()
         {
-            var newParent = new VisualElement();
-            newParent.style.flexDirection = FlexDirection.Row;
-            newParent.style.justifyContent = Justify.SpaceBetween;
-
             var addButton = this.content.Q<Button>(className: "unity-platforms__list-element__add-item-button");
-
-            // As we're moving the old add button, we need to grab the stylesheets from old parent to ensure the same look
-            var oldParent = addButton.parent;
-            for (var i = 0; i < oldParent.styleSheets.count; i++)
-            {
-                var sheet = oldParent.styleSheets[i];
-                newParent.styleSheets.Add(sheet);
-            }
-
-            addButton.parent.parent.Add(newParent);
-            addButton.parent.Remove(addButton);
-
-            newParent.Add(this.refreshButton);
-            newParent.Add(addButton);
+            addButton.RemoveFromHierarchy();
+            StylingUtility.AlignInspectorLabelWidth(this.content);
         }
 
         private unsafe void OnComponentChanged(BindingContextElement element, PropertyPath path)
@@ -120,8 +106,8 @@ namespace BovineLabs.Core.Editor.Inspectors
             var array = NoAllocHelpers.ExtractArrayFromList(valueList);
 
             var handle = GCHandle.Alloc(array, GCHandleType.Pinned);
-            var nativeArray =
-                NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<TElement>((void*)handle.AddrOfPinnedObject(), valueList.Count, Allocator.None);
+            var nativeArray = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<TElement>(
+                    (void*)handle.AddrOfPinnedObject(), valueList.Count, Allocator.None);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref nativeArray, AtomicSafetyHandle.Create());
 #endif
@@ -168,7 +154,6 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         private struct Inspected
         {
-            // [InspectorName("HashMap")]
             [InspectorOptions(HideResetToDefault = true)]
             [Pagination]
             public List<TElement> Value;

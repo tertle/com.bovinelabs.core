@@ -78,4 +78,16 @@ namespace BovineLabs.Core.Editor.Inspectors
     internal class Texture2DArrayUnityObjectRefInspector : UnityObjectRefInspector<Texture2DArray>
     {
     }
+
+#if !BL_DISABLE_INPUT
+    [UsedImplicitly]
+    internal class InputActionAssetUnityObjectRefInspector : UnityObjectRefInspector<UnityEngine.InputSystem.InputActionAsset>
+    {
+    }
+
+    [UsedImplicitly]
+    internal class InputActionReferenceUnityObjectRefInspector : UnityObjectRefInspector<UnityEngine.InputSystem.InputActionReference>
+    {
+    }
+#endif
 }

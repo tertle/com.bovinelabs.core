@@ -41,7 +41,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             ViewMode = getProjectBrowserIfExistsMethod!.ReturnType.GetField("m_ViewMode", BindingFlags.Instance | BindingFlags.NonPublic)!;
         }
 
-        [MenuItem("BovineLabs/Tools/Assembly Builder", priority = 1007)]
+        [MenuItem(EditorMenus.RootMenuTools + "Assembly Builder", priority = 1007)]
         private static void ShowWindow()
         {
             // Get existing open window or if none, make a new one:
@@ -151,7 +151,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
             if (string.IsNullOrWhiteSpace(nameField))
             {
-                Debug.LogError($"AssemblyName '{nameField}' is invalid");
+                BLGlobalLogger.LogErrorString($"AssemblyName '{nameField}' is invalid");
                 return;
             }
 
@@ -167,11 +167,16 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
                 if (AssetDatabase.IsValidFolder(folder))
                 {
-                    Debug.LogError($"MenuPath {folder} already exists");
+                    BLGlobalLogger.LogErrorString($"MenuPath {folder} already exists");
                     continue;
                 }
 
-                AssetDatabase.CreateFolder(activeFolderPath, assemblyName);
+                var result = AssetDatabase.CreateFolder(activeFolderPath, assemblyName);
+                if (string.IsNullOrWhiteSpace(result))
+                {
+                    BLGlobalLogger.LogErrorString($"Unable to create folder: {activeFolderPath} assembly name: {assemblyName}");
+                    return;
+                }
 
                 var definition = AssemblyDefinitionTemplate.New();
                 definition.name = assemblyName;
@@ -333,7 +338,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 internalAccessTemplate += string.Format(InternalAccessTemplate, assembly);
             }
 
-            // var text = GetAssemblyInfoTemplate() + internalAccessTemplate;
             File.WriteAllText(assemblyInfoPath, internalAccessTemplate);
         }
     }

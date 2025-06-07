@@ -27,13 +27,22 @@ namespace BovineLabs.Core.Editor
             InspectorWindowType = typeof(EditorWindow).Assembly.GetType("UnityEditor.InspectorWindow");
 
             // Selection.selectionChanged is nicer here, but it fails on domain reload to set itself up
-            EditorApplication.update += Initialize;
+            if (Selection.activeObject)
+            {
+                EditorApplication.update += Initialize;
+            }
+            else
+            {
+                Selection.selectionChanged += SelectionChanged;
+            }
         }
 
         private static void Initialize()
         {
             var windows = Resources.FindObjectsOfTypeAll(InspectorWindowType);
-            var any = false;
+
+            // If no windows skip and just wait for selection changes
+            var any = windows.Length == 0;
             foreach (var w in windows)
             {
                 any |= Setup((EditorWindow)w);
@@ -48,9 +57,7 @@ namespace BovineLabs.Core.Editor
 
         private static void SelectionChanged()
         {
-            var inspectorWindow = typeof(EditorWindow).Assembly.GetType("UnityEditor.InspectorWindow");
-
-            foreach (var w in Resources.FindObjectsOfTypeAll(inspectorWindow))
+            foreach (var w in Resources.FindObjectsOfTypeAll(InspectorWindowType))
             {
                 Setup((EditorWindow)w);
             }
@@ -115,7 +122,7 @@ namespace BovineLabs.Core.Editor
                             continue;
                         }
 
-                        Debug.Log($"{c.name} unknown format");
+                        BLGlobalLogger.LogInfoString($"{c.name} unknown format");
                         continue;
                     }
 

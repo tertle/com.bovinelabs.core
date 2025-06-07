@@ -33,7 +33,7 @@ namespace BovineLabs.Core.Editor.Utility
 
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 
-            dropDown = new EditorToolbarDropdown { text = "Reload", icon = (Texture2D)EditorGUIUtility.IconContent("Refresh").image };
+            dropDown = new EditorToolbarDropdown { icon = (Texture2D)EditorGUIUtility.IconContent("Refresh").image, tooltip = "Reload" };
             dropDown.AddToClassList("unity-editor-toolbar-element");
             dropDown.clicked += () => ClickEvent(dropDown.worldBound);
             return dropDown;

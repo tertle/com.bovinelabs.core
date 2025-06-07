@@ -14,11 +14,10 @@
                     <ui:Toggle label="Unity.Entities.Hybrid" value="true" />
                     <ui:Toggle label="Unity.Entities.Graphics" value="true" />
                     <ui:Toggle label="Unity.InputSystem" value="true" />
-                    <ui:Toggle label="Unity.Logging" value="true" />
                     <ui:Toggle label="Unity.Mathematics" value="true" />
                     <ui:Toggle label="Unity.Mathematics.Extensions" value="true" />
-                    <ui:Toggle label="Unity.NetCode" value="true" />
-                    <ui:Toggle label="Unity.Networking.Transport" value="true" />
+                    <ui:Toggle label="Unity.NetCode" value="false" />
+                    <ui:Toggle label="Unity.Networking.Transport" value="false" />
                     <ui:Toggle label="Unity.Physics" value="true" />
                     <ui:Toggle label="Unity.Transforms" value="true" />
                 </ui:VisualElement>

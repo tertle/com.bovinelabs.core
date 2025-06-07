@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Iterators
 
     public static unsafe class UnsafeDynamicHashMapExtensions
     {
-        public static UntypedDynamicHashMapIterator GetUntypedIterator(UnsafeUntypedDynamicBuffer buffer, int keySize, int valueSize)
+        public static UntypedDynamicHashMapIterator GetUntypedIterator(this UnsafeUntypedDynamicBuffer buffer, int keySize, int valueSize)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             Assert.AreEqual(1, buffer.ElementSize);

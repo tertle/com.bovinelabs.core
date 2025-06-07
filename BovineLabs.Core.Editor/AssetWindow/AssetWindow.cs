@@ -13,7 +13,7 @@ namespace BovineLabs.Core.Editor.AssetWindow
         private TextField? textField;
         private Label? result;
 
-        [MenuItem("BovineLabs/Tools/Asset", priority = 1015)]
+        [MenuItem(EditorMenus.RootMenuTools + "Asset", priority = 1015)]
         private static void ShowWindow()
         {
             // Get existing open window or if none, make a new one:
@@ -22,7 +22,7 @@ namespace BovineLabs.Core.Editor.AssetWindow
             window.Show();
         }
 
-        private void OnEnable()
+        public void CreateGUI()
         {
             this.textField = new TextField { label = "guid" };
             var button = new Button(this.Search) { text = "Find" };

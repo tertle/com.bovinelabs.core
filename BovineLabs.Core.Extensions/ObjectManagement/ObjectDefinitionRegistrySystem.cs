@@ -9,26 +9,23 @@ namespace BovineLabs.Core.ObjectManagement
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
-    using UnityEngine;
 
     [UpdateInGroup(typeof(AfterSceneSystemGroup))]
     public partial struct ObjectDefinitionRegistrySystem : ISystem
     {
-        private NativeHashMap<int, int> objectDefinitionsOffsets;
-        private NativeList<Entity> objectDefinitions;
+        private NativeHashMap<ObjectId, Entity> objectDefinitions;
         private EntityQuery newQuery;
         private EntityQuery oldQuery;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            this.objectDefinitionsOffsets = new NativeHashMap<int, int>(0, Allocator.Persistent);
-            this.objectDefinitions = new NativeList<Entity>(0, Allocator.Persistent);
+            this.objectDefinitions = new NativeHashMap<ObjectId, Entity>(0, Allocator.Persistent);
 
-            state.EntityManager.AddComponentData(state.SystemHandle, new ObjectDefinitionRegistry(this.objectDefinitions, this.objectDefinitionsOffsets));
+            state.EntityManager.AddComponentData(state.SystemHandle, new ObjectDefinitionRegistry(this.objectDefinitions));
 
-            this.newQuery = SystemAPI.QueryBuilder().WithAll<Mod, ObjectDefinitionSetupRegistry>().WithNone<Initialized>().Build();
-            this.oldQuery = SystemAPI.QueryBuilder().WithNone<Mod, ObjectDefinitionSetupRegistry>().WithAll<Initialized>().Build();
+            this.newQuery = SystemAPI.QueryBuilder().WithAll<ObjectDefinitionSetupRegistry>().WithNone<Initialized>().Build();
+            this.oldQuery = SystemAPI.QueryBuilder().WithNone<ObjectDefinitionSetupRegistry>().WithAll<Initialized>().Build();
 
             var anyQueries = new NativeArray<EntityQuery>(2, Allocator.Temp);
             anyQueries[0] = this.newQuery;
@@ -39,10 +36,10 @@ namespace BovineLabs.Core.ObjectManagement
 
         public void OnDestroy(ref SystemState state)
         {
-            this.objectDefinitionsOffsets.Dispose();
             this.objectDefinitions.Dispose();
         }
 
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             state.CompleteDependency();
@@ -50,21 +47,19 @@ namespace BovineLabs.Core.ObjectManagement
             state.EntityManager.AddComponent<Initialized>(this.newQuery);
 
             this.objectDefinitions.Clear();
-            this.objectDefinitionsOffsets.Clear();
 
             SystemAPI.GetSingletonRW<ObjectDefinitionRegistry>(); // Trigger change filter
+            var blDebug = SystemAPI.GetSingleton<BLLogger>();
 
-            var offsets = 0;
-            foreach (var (mod, odr) in SystemAPI.Query<Mod, DynamicBuffer<ObjectDefinitionSetupRegistry>>())
+            foreach (var objects in SystemAPI.Query<DynamicBuffer<ObjectDefinitionSetupRegistry>>())
             {
-                if (!this.objectDefinitionsOffsets.TryAdd(mod.Value, offsets))
+                foreach (var obj in objects)
                 {
-                    Debug.LogError($"Mod with key {mod.Value} already added, skipping duplicate. Inform author of collision.");
-                    continue;
+                    if (!this.objectDefinitions.TryAdd(obj.Id, obj.Prefab))
+                    {
+                        blDebug.LogError512($"Asset {obj.Id.ToFixedString()} already added, skipping duplicate. Inform author of collision.");
+                    }
                 }
-
-                offsets += odr.Length;
-                this.objectDefinitions.AddRange(odr.AsNativeArray().Reinterpret<Entity>());
             }
         }
 

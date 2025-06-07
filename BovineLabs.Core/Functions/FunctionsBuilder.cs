@@ -9,7 +9,6 @@ namespace BovineLabs.Core.Functions
     using System.Reflection;
     using System.Runtime.InteropServices;
     using BovineLabs.Core.Utility;
-    using Unity;
     using Unity.Assertions;
     using Unity.Burst;
     using Unity.Collections;
@@ -99,7 +98,7 @@ namespace BovineLabs.Core.Functions
 
             if (this.functions.Contains(buildData))
             {
-                Debug.LogError($"Trying to add function with hash {hash} multiple times");
+                BLGlobalLogger.LogError($"Trying to add function with hash {hash} multiple times");
                 return this;
             }
 

@@ -38,7 +38,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
         {
         }
 
-        [MenuItem("BovineLabs/Tools/Change Filter")]
+        [MenuItem(EditorMenus.RootMenuTools + "Change Filter")]
         public static void OpenWindow()
         {
             var window = GetWindow<ChangeFilterTrackingWindow>();

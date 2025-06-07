@@ -5,61 +5,36 @@
 namespace BovineLabs.Core.Iterators
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Assertions;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    public readonly unsafe ref struct HashHelper<TKey>
+    [SuppressMessage("ReSharper", "PrivateFieldCanBeConvertedToLocalVariable")]
+    internal unsafe struct HashHelper<TKey>
         where TKey : unmanaged, IEquatable<TKey>
     {
-        private readonly int keysOffset;
+        private readonly int keyOffset;
         private readonly int nextOffset;
         private readonly int bucketsOffset;
 
-        public HashHelper(byte* parentPtr, HashHelper<TKey>* thisPtr, int hashMapDataSize, int keyOffset, int nextOffset, int bucketOffset)
+        public HashHelper(byte* parentPtr, HashHelper<TKey>* thisPtr, int hashMapDataSize, int keyOffset, int nextOffset, int bucketsOffset)
         {
             var ptr = (byte*)thisPtr;
             var offset = (int)(ptr - parentPtr);
             Check.Assume(offset < int.MaxValue);
 
-            this.keysOffset = (hashMapDataSize + keyOffset) - offset;
+            this.keyOffset = (hashMapDataSize + keyOffset) - offset;
             this.nextOffset = (hashMapDataSize + nextOffset) - offset;
-            this.bucketsOffset = (hashMapDataSize + bucketOffset) - offset;
+            this.bucketsOffset = (hashMapDataSize + bucketsOffset) - offset;
         }
 
-        internal TKey* Keys
-        {
-            get
-            {
-                fixed (HashHelper<TKey>* data = &this)
-                {
-                    return (TKey*)((byte*)data + data->keysOffset);
-                }
-            }
-        }
+        public TKey* Keys => (TKey*)((byte*)UnsafeUtility.AddressOf(ref this) + this.keyOffset);
 
-        internal int* Next
-        {
-            get
-            {
-                fixed (HashHelper<TKey>* data = &this)
-                {
-                    return (int*)((byte*)data + data->nextOffset);
-                }
-            }
-        }
+        public int* Next => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + this.nextOffset);
 
-        internal int* Buckets
-        {
-            get
-            {
-                fixed (HashHelper<TKey>* data = &this)
-                {
-                    return (int*)((byte*)data + data->bucketsOffset);
-                }
-            }
-        }
+        public int* Buckets => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + this.bucketsOffset);
 
         public void Clear(int capacity, int bucketCapacity)
         {
@@ -67,7 +42,7 @@ namespace BovineLabs.Core.Iterators
             UnsafeUtility.MemSet(this.Buckets, 0xff, bucketCapacity * sizeof(int));
         }
 
-        internal int Find(TKey key, int capacity, int bucketCapacityMask)
+        public int Find(TKey key, int capacity, int bucketCapacityMask)
         {
             // First find the slot based on the hash
             var bucket = GetBucket(key, bucketCapacityMask);
@@ -93,8 +68,37 @@ namespace BovineLabs.Core.Iterators
             return -1;
         }
 
+        public void RemoveIndex(int entryIdx, int bucketCapacityMask)
+        {
+            // We need to iterate until we find the same index
+            var index = UnsafeUtility.ReadArrayElement<TKey>(this.Keys, entryIdx);
+
+            var indexBucket = GetBucket(index, bucketCapacityMask);
+            var indexPrevEntry = -1;
+            var indexEntryIdx = this.Buckets[indexBucket];
+
+            while (entryIdx != indexEntryIdx)
+            {
+                indexPrevEntry = indexEntryIdx;
+                indexEntryIdx = this.Next[indexEntryIdx];
+            }
+
+            // Found matching element, remove it
+            if (indexPrevEntry < 0)
+            {
+                this.Buckets[indexBucket] = this.Next[indexEntryIdx];
+            }
+            else
+            {
+                this.Next[indexPrevEntry] = this.Next[indexEntryIdx];
+            }
+
+            // And free the index
+            this.Next[indexEntryIdx] = this.Next[entryIdx]; // TODO we don't add this way so it shouldn't matter
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int GetBucket(in TKey key, int bucketCapacityMask)
+        public static int GetBucket(in TKey key, int bucketCapacityMask)
         {
             return (int)((uint)key.GetHashCode() & bucketCapacityMask);
         }

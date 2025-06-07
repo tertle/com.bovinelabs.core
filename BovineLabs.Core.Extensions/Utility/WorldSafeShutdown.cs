@@ -5,20 +5,36 @@
 namespace BovineLabs.Core
 {
     using Unity.Entities;
+#if UNITY_EDITOR
+    using UnityEditor;
+#else
     using UnityEngine;
+#endif
 
     public static class WorldSafeShutdown
     {
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+#if UNITY_EDITOR
+        [InitializeOnLoadMethod]
+        private static void Init()
+        {
+            EditorApplication.playModeStateChanged += change =>
+            {
+                if (change == PlayModeStateChange.ExitingPlayMode)
+                {
+                    OnQuit();
+                }
+            };
+        }
+#else
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Init()
         {
             Application.quitting += OnQuit;
         }
+#endif
 
         private static void OnQuit()
         {
-            Application.quitting -= OnQuit;
-
             // ReSharper disable once ForCanBeConvertedToForeach
             for (var index = 0; index < World.All.Count; index++)
             {
@@ -28,7 +44,6 @@ namespace BovineLabs.Core
                     continue;
                 }
 
-                // world.EntityManager.CompleteAllTrackedJobs(); // TODO this would be safer but hides potential issues
                 TryDisableUpdateSystemGroup<InitializationSystemGroup>(world);
                 TryDisableUpdateSystemGroup<SimulationSystemGroup>(world);
                 TryDisableUpdateSystemGroup<PresentationSystemGroup>(world);

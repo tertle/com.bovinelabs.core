@@ -72,10 +72,12 @@ namespace BovineLabs.Core.Editor.SubScenes
 
         private static void UpdateScenariosText()
         {
+            const string defaultText = "Startup";
+
             var index = SubSceneEditorSystem.Override.Data;
             if (index < 0)
             {
-                dropDown!.text = "Scene Override";
+                dropDown!.text = defaultText;
             }
             else
             {
@@ -83,7 +85,7 @@ namespace BovineLabs.Core.Editor.SubScenes
                 if (index >= sets.Count || !sets[index])
                 {
                     SubSceneEditorSystem.Override.Data = -1;
-                    dropDown!.text = "Scene Override";
+                    dropDown!.text = defaultText;
                 }
                 else
                 {
@@ -176,7 +178,7 @@ namespace BovineLabs.Core.Editor.SubScenes
 
             foreach (var s in scenes)
             {
-                if (s.Value)
+                if (s.Value && !TempSubScenes.ContainsKey(s.Key))
                 {
                     continue;
                 }

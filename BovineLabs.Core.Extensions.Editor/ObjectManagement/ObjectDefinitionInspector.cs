@@ -25,13 +25,13 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 authoring = target.AddComponent<ObjectDefinitionAuthoring>();
                 authoring.Definition = objectDefinition;
             }
-            else if (authoring.Definition == null)
+            else if (!authoring.Definition)
             {
                 authoring.Definition = objectDefinition;
             }
             else if (authoring.Definition != objectDefinition)
             {
-                Debug.LogError($"{objectDefinition} and it's target prefab {authoring} don't match. This likely means it's being used in 2 places.");
+                BLGlobalLogger.LogErrorString($"{objectDefinition} and it's target prefab {authoring} don't match. This likely means it's being used in 2 places.");
 
                 return false;
             }
@@ -66,15 +66,15 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         private static void PrefabFieldChanged(SerializedPropertyChangeEvent evt)
         {
             var go = evt.changedProperty.objectReferenceValue as GameObject;
-            if (go == null)
+            if (!go)
             {
                 return;
             }
 
             var to = evt.changedProperty.serializedObject.targetObject as ObjectDefinition;
-            if (to == null)
+            if (!to)
             {
-                Debug.LogError("target is not a ObjectDefinition");
+                BLGlobalLogger.LogErrorString("target is not a ObjectDefinition");
                 return;
             }
 

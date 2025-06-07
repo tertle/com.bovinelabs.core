@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Iterators
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Extensions;
+    using BovineLabs.Core.Iterators.Columns;
     using Unity.Assertions;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -15,7 +16,7 @@ namespace BovineLabs.Core.Iterators
 
     public static unsafe class DynamicExtensions
     {
-        private const int DefaultMinGrowth = 64;
+        public const int DefaultMinGrowth = 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicBuffer<TBuffer> InitializeHashMap<TBuffer, TKey, TValue>(
@@ -128,19 +129,40 @@ namespace BovineLabs.Core.Iterators
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DynamicBuffer<TBuffer> InitializeIndexed<TBuffer, TKey, TIndex, TValue>(
+        public static DynamicBuffer<TBuffer> InitializeVariableMap<TBuffer, TKey, TValue, T, TC>(
             this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
-            where TBuffer : unmanaged, IDynamicIndexedMap<TKey, TIndex, TValue>
+            where TBuffer : unmanaged, IDynamicVariableMap<TKey, TValue, T, TC>
             where TKey : unmanaged, IEquatable<TKey>
-            where TIndex : unmanaged, IEquatable<TIndex>
             where TValue : unmanaged
+            where T : unmanaged, IEquatable<T>
+            where TC : unmanaged, IColumn<T>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             Assert.AreEqual(1, UnsafeUtility.SizeOf<TBuffer>());
 #endif
 
             var bytes = buffer.Reinterpret<byte>();
-            DynamicIndexedMapHelper<TKey, TIndex, TValue>.Init(bytes, capacity, minGrowth);
+            DynamicVariableMapHelper<TKey, TValue, T, TC>.Init(bytes, capacity, minGrowth);
+            return buffer;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DynamicBuffer<TBuffer> InitializeVariableMap<TBuffer, TKey, TValue, T1, TC1, T2, TC2>(
+            this DynamicBuffer<TBuffer> buffer, int capacity = 0, int minGrowth = DefaultMinGrowth)
+            where TBuffer : unmanaged, IDynamicVariableMap<TKey, TValue, T1, TC1, T2, TC2>
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+            where T1 : unmanaged, IEquatable<T1>
+            where TC1 : unmanaged, IColumn<T1>
+            where T2 : unmanaged, IEquatable<T2>
+            where TC2 : unmanaged, IColumn<T2>
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            Assert.AreEqual(1, UnsafeUtility.SizeOf<TBuffer>());
+#endif
+
+            var bytes = buffer.Reinterpret<byte>();
+            DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.Init(bytes, capacity, minGrowth);
             return buffer;
         }
 
@@ -203,16 +225,33 @@ namespace BovineLabs.Core.Iterators
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DynamicIndexedMap<TKey, TIndex, TValue> AsIndexedMap<TBuffer, TKey, TIndex, TValue>(this DynamicBuffer<TBuffer> buffer)
-            where TBuffer : unmanaged, IDynamicIndexedMap<TKey, TIndex, TValue>
+        public static DynamicVariableMap<TKey, TValue, T, TC> AsVariableMap<TBuffer, TKey, TValue, T, TC>(this DynamicBuffer<TBuffer> buffer)
+            where TBuffer : unmanaged, IDynamicVariableMap<TKey, TValue, T, TC>
             where TKey : unmanaged, IEquatable<TKey>
-            where TIndex : unmanaged, IEquatable<TIndex>
             where TValue : unmanaged
+            where T : unmanaged, IEquatable<T>
+            where TC : unmanaged, IColumn<T>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             Assert.AreEqual(1, sizeof(TBuffer));
 #endif
-            return new DynamicIndexedMap<TKey, TIndex, TValue>(buffer.Reinterpret<byte>());
+            return new DynamicVariableMap<TKey, TValue, T, TC>(buffer.Reinterpret<byte>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DynamicVariableMap<TKey, TValue, T1, TC1, T2, TC2> AsVariableMap<TBuffer, TKey, TValue, T1, TC1, T2, TC2>(this DynamicBuffer<TBuffer> buffer)
+            where TBuffer : unmanaged, IDynamicVariableMap<TKey, TValue, T1, TC1, T2, TC2>
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+            where T1 : unmanaged, IEquatable<T1>
+            where TC1 : unmanaged, IColumn<T1>
+            where T2 : unmanaged, IEquatable<T2>
+            where TC2 : unmanaged, IColumn<T2>
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            Assert.AreEqual(1, sizeof(TBuffer));
+#endif
+            return new DynamicVariableMap<TKey, TValue, T1, TC1, T2, TC2>(buffer.Reinterpret<byte>());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -241,13 +280,27 @@ namespace BovineLabs.Core.Iterators
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static DynamicIndexedMapHelper<TKey, TIndex, TValue>* AsIndexedHelper<TKey, TIndex, TValue>(this DynamicBuffer<byte> buffer)
+        internal static DynamicVariableMapHelper<TKey, TValue, T, TC>* AsVariableHelper<TKey, TValue, T, TC>(this DynamicBuffer<byte> buffer)
             where TKey : unmanaged, IEquatable<TKey>
-            where TIndex : unmanaged, IEquatable<TIndex>
             where TValue : unmanaged
+            where T : unmanaged, IEquatable<T>
+            where TC : unmanaged, IColumn<T>
         {
-            CheckSize(buffer, sizeof(DynamicIndexedMapHelper<TKey, TIndex, TValue>));
-            return (DynamicIndexedMapHelper<TKey, TIndex, TValue>*)buffer.GetPtr();
+            CheckSize(buffer, sizeof(DynamicVariableMapHelper<TKey, TValue, T, TC>));
+            return (DynamicVariableMapHelper<TKey, TValue, T, TC>*)buffer.GetPtr();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* AsVariableHelper<TKey, TValue, T1, TC1, T2, TC2>(this DynamicBuffer<byte> buffer)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+            where T1 : unmanaged, IEquatable<T1>
+            where TC1 : unmanaged, IColumn<T1>
+            where T2 : unmanaged, IEquatable<T2>
+            where TC2 : unmanaged, IColumn<T2>
+        {
+            CheckSize(buffer, sizeof(DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>));
+            return (DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>*)buffer.GetPtr();
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

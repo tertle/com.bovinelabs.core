@@ -13,7 +13,6 @@
     "Unity.Entities.Hybrid",
     "Unity.InputSystem",
     "Unity.Localization",
-    "Unity.Logging",
     "Unity.Mathematics",
     "Unity.Mathematics.Extensions",
     "Unity.Physics",
@@ -25,22 +24,12 @@
   "allowUnsafeCode": true,
   "overrideReferences": false,
   "precompiledReferences": [],
-  "autoReferenced": true,
+  "autoReferenced": false,
   "defineConstraints": [
     "UNITY_EDITOR",
     "BL_CORE_EXTENSIONS"
   ],
   "versionDefines": [
-    {
-      "name": "com.bovinelabs.game",
-      "expression": "",
-      "define": "BL_CORE_EXTENSIONS"
-    },
-    {
-      "name": "com.bovinelabs.camera",
-      "expression": "",
-      "define": "BL_CORE_EXTENSIONS"
-    },
     {
       "name": "com.unity.localization",
       "expression": "",

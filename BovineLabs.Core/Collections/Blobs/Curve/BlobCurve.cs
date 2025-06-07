@@ -14,7 +14,6 @@ namespace BovineLabs.Core.Collections
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
-    using Debug = UnityEngine.Debug;
 
     [StructLayout(LayoutKind.Sequential)]
     public struct BlobCurve : IBlobCurve<float>
@@ -129,7 +128,7 @@ namespace BovineLabs.Core.Collections
                 var k = keys[i];
                 if (k.weightedMode != WeightedMode.None)
                 {
-                    Debug.LogWarning(
+                    BLGlobalLogger.LogWarningString(
                         $"Weight Not Supported! Key[{i}, Weight[{k.weightedMode}, In{k.inWeight}, Out{k.outWeight}], Time{k.time}, Value{k.value}]");
                 }
             }

@@ -40,7 +40,7 @@ namespace BovineLabs.Core.Camera
                 var cam = Camera.main;
                 if (cam == null)
                 {
-                    SystemAPI.GetSingleton<BLDebug>().Error("No main camera found");
+                    SystemAPI.GetSingleton<BLLogger>().LogError("No main camera found");
                     return;
                 }
 

@@ -5,11 +5,9 @@
 namespace BovineLabs.Core.Editor.ObjectManagement
 {
     using System;
-    using System.IO;
     using System.Linq;
     using System.Reflection;
     using BovineLabs.Core.Editor.Inspectors;
-    using BovineLabs.Core.Editor.Settings;
     using BovineLabs.Core.ObjectManagement;
     using UnityEditor;
     using UnityEditor.UIElements;
@@ -18,50 +16,56 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
     public class AssetCreator
     {
-        private readonly string path;
+        private readonly string? path;
         private readonly SerializedObject serializedObject;
         private readonly SerializedProperty serializedProperty;
         private readonly Type type;
-        private readonly string directoryKey;
-        private readonly string defaultDirectory;
-        private readonly string defaultFileName;
+
         private ListView? listView;
 
-        public AssetCreator(
-            SerializedObject serializedObject, SerializedProperty serializedProperty, Type type, string directoryKey, string defaultDirectory,
-            string defaultFileName)
+        private AutoRefAttribute? attribute;
+
+        public AssetCreator(SerializedObject serializedObject, SerializedProperty serializedProperty, Type type)
         {
-            if (type.GetCustomAttribute<AutoRefAttribute>() == null)
-            {
-                Debug.LogError($"Type {type} is using AssetCreator but without {nameof(AutoRefAttribute)} so the item will not be added to the object.");
-            }
+            this.attribute = TryGetAttribute(serializedObject, serializedProperty, type);
 
             this.serializedObject = serializedObject;
             this.serializedProperty = serializedProperty;
             this.type = type;
-            this.directoryKey = directoryKey;
-            this.defaultDirectory = defaultDirectory;
-            this.defaultFileName = defaultFileName;
             this.serializedProperty.isExpanded = false;
 
             this.Element = PropertyUtil.CreateProperty(serializedProperty, this.serializedObject);
-            this.path = this.GetDirectory();
 
-            this.Element.RegisterCallback<GeometryChangedEvent>(this.Init);
-            this.Element.AddManipulator(new ContextualMenuManipulator(this.MenuBuilder));
+            if (this.attribute != null)
+            {
+                this.Element.RegisterCallback<GeometryChangedEvent>(this.Init);
+                this.Element.AddManipulator(new ContextualMenuManipulator(this.MenuBuilder));
+                this.path = OMUtility.GetDefaultPath(this.attribute);
+            }
+        }
+
+        private static AutoRefAttribute? TryGetAttribute(SerializedObject serializedObject, SerializedProperty serializedProperty, Type type)
+        {
+            var attribute = type.GetCustomAttribute<AutoRefAttribute>();
+
+            if (attribute == null)
+            {
+                BLGlobalLogger.LogErrorString(
+                    $"Type {type} is using AssetCreator but without {nameof(AutoRefAttribute)} so the item will not be added to the object.");
+            }
+            else if (attribute.ManagerType != serializedObject.targetObject.name)
+            {
+                BLGlobalLogger.LogErrorString($"Type {type} is using AssetCreator but the {nameof(AutoRefAttribute)} targets a different manager.");
+            }
+            else if (attribute.FieldName != serializedProperty.name)
+            {
+                BLGlobalLogger.LogErrorString($"Type {type} is using AssetCreator but the {nameof(AutoRefAttribute)} targets a different field.");
+            }
+
+            return attribute;
         }
 
         public PropertyField Element { get; }
-
-        protected virtual void Initialize(object instance)
-        {
-        }
-
-        private string GetDirectory()
-        {
-            var directory = EditorSettingsUtility.GetAssetDirectory(this.directoryKey, this.defaultDirectory);
-            return Path.Combine(directory, this.defaultFileName);
-        }
 
         private void Init(GeometryChangedEvent evt)
         {
@@ -83,11 +87,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 var count = ints.Count();
                 for (var i = 0; i < count; i++)
                 {
-                    var instance = ScriptableObject.CreateInstance(this.type);
-                    this.Initialize(instance);
-                    AssetDatabase.CreateAsset(instance, AssetDatabase.GenerateUniqueAssetPath(this.path));
-
-                    EditorGUIUtility.PingObject(instance);
+                    OMUtility.CreateInstance(this.type, this.path!);
                 }
             };
 
@@ -115,18 +115,9 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         where T : ScriptableObject
     {
         public AssetCreator(
-            SerializedObject serializedObject, SerializedProperty serializedProperty, string directoryKey, string defaultDirectory, string defaultFileName)
-            : base(serializedObject, serializedProperty, typeof(T), directoryKey, defaultDirectory, defaultFileName)
+            SerializedObject serializedObject, SerializedProperty serializedProperty)
+            : base(serializedObject, serializedProperty, typeof(T))
         {
-        }
-
-        protected virtual void Initialize(T instance)
-        {
-        }
-
-        protected sealed override void Initialize(object obj)
-        {
-            this.Initialize((T)obj);
         }
     }
 }

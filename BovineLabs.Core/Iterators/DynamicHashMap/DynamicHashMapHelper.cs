@@ -189,21 +189,17 @@ namespace BovineLabs.Core.Iterators
                 UnsafeUtility.MemCpy(data->Values, oldValue, oldCapacity * sizeOfT);
                 UnsafeUtility.MemCpy(data->Keys, oldKeys, oldCapacity * sizeof(TKey));
 
-                UnsafeUtility.MemCpy(next, oldNext, oldCapacity * sizeof(int));
-                UnsafeUtility.MemSet(next + oldCapacity, 0xff, (newCapacity - oldCapacity) * sizeof(int));
-
                 // re-hash the buckets, first clear the new bucket list, then insert all values from the old list
+                UnsafeUtility.MemSet(next, 0xff, newCapacity * sizeof(int));
                 UnsafeUtility.MemSet(buckets, 0xff, newBucketCapacity * 4);
 
-                for (var bucket = 0; bucket < oldBucketCapacity; ++bucket)
+                for (var i = 0; i < oldBucketCapacity; i++)
                 {
-                    while (oldBuckets[bucket] >= 0)
+                    for (var idx = oldBuckets[i]; idx != -1; idx = oldNext[idx])
                     {
-                        var curEntry = oldBuckets[bucket];
-                        oldBuckets[bucket] = next[curEntry];
-                        var newBucket = data->GetBucket(oldKeys[curEntry]);
-                        next[curEntry] = buckets[newBucket];
-                        buckets[newBucket] = curEntry;
+                        var bucket = data->GetBucket(oldKeys[idx]);
+                        next[idx] = buckets[bucket];
+                        buckets[bucket] = idx;
                     }
                 }
 

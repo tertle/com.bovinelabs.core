@@ -14,7 +14,6 @@ namespace BovineLabs.Core.Spatial
     using Unity.Jobs;
     using Unity.Jobs.LowLevel.Unsafe;
     using Unity.Mathematics;
-    using Debug = UnityEngine.Debug;
 
     public struct SpatialMap3<T> : IDisposable
         where T : unmanaged, ISpatialPosition3
@@ -167,7 +166,7 @@ namespace BovineLabs.Core.Spatial
                     var min = new int3(-this.HalfSize);
                     var max = new int3(this.HalfSize - 1);
 
-                    Debug.LogError($"Position {position} is outside the size of the world, min={min} max={max}");
+                    BLGlobalLogger.LogError512($"Position {position} is outside the size of the world, min={min} max={max}");
                     throw new ArgumentException($"Position {position} is outside the size of the world, min={min} max={max}");
                 }
             }

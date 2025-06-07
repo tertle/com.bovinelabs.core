@@ -6,70 +6,123 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using BovineLabs.Core.ObjectManagement;
+    using BovineLabs.Core.Utility;
     using JetBrains.Annotations;
     using UnityEditor;
     using UnityEngine;
+    using UnityEngine.Assertions;
     using Object = UnityEngine.Object;
 
     /// <summary> An <see cref="AssetPostprocessor" /> that ensures <see cref="IUID" /> types always have a unique ID even if 2 branches merge. </summary>
     public class ObjectManagementProcessor : AssetPostprocessor
     {
-        private static GlobalProcessor global = new();
+        private static readonly HashSet<string> AlreadyProcessedAssets = new();
+        private static readonly HashSet<Type> AlreadyProcessedAutoRef = new();
+
+        private static readonly Dictionary<Type, Processor> Processors = new();
+        private static readonly Dictionary<Type, AutoRefAttribute> AutoRefMap = new();
+        private static readonly GlobalProcessor Global = new();
+
+        private static readonly HashSet<string> Delayed = new();
 
         [UsedImplicitly(ImplicitUseKindFlags.Access)]
-        [SuppressMessage("ReSharper", "Unity.IncorrectMethodSignature", Justification = "Changed in 2021")]
         private static void OnPostprocessAllAssets(
             string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths, bool didDomainReload)
         {
-            if (didDomainReload || importedAssets.Length == 0)
+            // Clean up AlreadyProcessed otherwise if a user deleted then created a new asset with same name, it would be skipped
+            foreach (var assetPath in deletedAssets)
             {
-                return;
+                AlreadyProcessedAssets.Remove(assetPath);
             }
 
-            global = new GlobalProcessor();
-            var processors = new Dictionary<Type, Processor>();
-            var autoRefMap = new Dictionary<Type, AutoRefAttribute>();
+            var runDelayed = false;
 
             foreach (var assetPath in importedAssets)
             {
-                var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
-
-                // Instead of just doing a LoadAssetsAtPath tHis helps us early out for all other type of assets
-                if (asset == null)
+                // Much faster check than LoadAssetAtPath
+                if (!assetPath.EndsWith(".asset"))
                 {
                     continue;
                 }
 
-                ProcessAsset(asset, processors, autoRefMap);
-                foreach (var subAsset in AssetDatabase.LoadAllAssetRepresentationsAtPath(assetPath))
+                if (!AlreadyProcessedAssets.Add(assetPath))
                 {
-                    if (subAsset == null)
+                    continue;
+                }
+
+                Delayed.Add(assetPath);
+                runDelayed = true;
+            }
+
+            // We use delayed execution to greatly speed up mass duplication as each duplication comes as a separate OnPostprocessAllAssets
+            // and this allows us to group them together
+            if (runDelayed)
+            {
+                EditorApplication.delayCall -= DelayedExecution;
+                EditorApplication.delayCall += DelayedExecution;
+            }
+        }
+
+        private static void DelayedExecution()
+        {
+            using (TimeProfiler.Start("ObjectManagementProcessor"))
+            {
+                EditorApplication.delayCall -= DelayedExecution;
+
+                Global.Reset();
+                foreach (var p in Processors)
+                {
+                    p.Value.Reset();
+                }
+
+                AutoRefMap.Clear();
+
+                foreach (var assetPath in Delayed)
+                {
+                    var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
+
+                    // Instead of just doing a LoadAssetsAtPath this helps us early out for all other type of assets
+                    if (!asset)
                     {
                         continue;
                     }
 
-                    ProcessAsset(subAsset, processors, autoRefMap);
+                    ProcessAsset(asset);
+                    foreach (var subAsset in AssetDatabase.LoadAllAssetRepresentationsAtPath(assetPath))
+                    {
+                        var so = subAsset as ScriptableObject;
+
+                        if (!so)
+                        {
+                            continue;
+                        }
+
+                        ProcessAsset(so);
+                    }
                 }
-            }
 
-            foreach (var manager in autoRefMap)
-            {
-                UpdateAutoRef(manager.Key, manager.Value);
+                foreach (var manager in AutoRefMap)
+                {
+                    UpdateAutoRef(manager.Key, manager.Value);
+                }
+
+                Delayed.Clear();
             }
         }
 
-        private static void ProcessAsset(Object asset, Dictionary<Type, Processor> processors, Dictionary<Type, AutoRefAttribute> autoRefMap)
+        private static void ProcessAsset(Object asset)
         {
-            CheckAutoRef(asset, autoRefMap);
-            CheckAutoID(asset, processors);
-            AssetDatabase.SaveAssetIfDirty(asset);
+            CheckAutoRef(asset);
+            if (CheckAutoID(asset))
+            {
+                AssetDatabase.SaveAssetIfDirty(asset);
+            }
         }
 
-        private static void CheckAutoRef(Object asset, Dictionary<Type, AutoRefAttribute> autoRefMap)
+        private static void CheckAutoRef(Object asset)
         {
             var type = asset.GetType();
 
@@ -79,54 +132,57 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 return;
             }
 
-            autoRefMap[type] = attribute;
+            AutoRefMap[type] = attribute;
         }
 
-        private static void CheckAutoID(Object asset, Dictionary<Type, Processor> processors)
+        private static bool CheckAutoID(Object asset)
         {
             switch (asset)
             {
                 case IUIDGlobal:
                 {
-                    global.Process(asset);
-
-                    break;
+                    return Global.Process(asset);
                 }
 
                 case IUID:
                 {
                     var assetType = asset.GetType();
-                    if (!processors.TryGetValue(assetType, out var processor))
+                    if (!Processors.TryGetValue(assetType, out var processor))
                     {
-                        processor = processors[assetType] = new Processor(assetType);
+                        processor = Processors[assetType] = new Processor(assetType);
                     }
 
-                    processor.Process(asset);
-
-                    break;
+                    return processor.Process(asset);
                 }
             }
+
+            return false;
         }
 
         private static void UpdateAutoRef(Type type, AutoRefAttribute attribute)
         {
+            if (!AlreadyProcessedAutoRef.Add(type))
+            {
+                return;
+            }
+
             var managerGuid = AssetDatabase.FindAssets($"t:{attribute.ManagerType}");
             if (managerGuid.Length == 0)
             {
-                Debug.LogError($"No manager found for {attribute.ManagerType}");
+                BLGlobalLogger.LogErrorString($"No manager found for {attribute.ManagerType}");
                 return;
             }
 
             if (managerGuid.Length > 1)
             {
-                Debug.LogError($"More than one manager found for {attribute.ManagerType}");
+                BLGlobalLogger.LogErrorString($"More than one manager found for {attribute.ManagerType}");
                 return;
             }
 
             var manager = AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(managerGuid[0]));
-            if (manager == null)
+            if (!manager)
             {
-                Debug.LogError("Manager wasn't a ScriptableObject");
+                BLGlobalLogger.LogErrorString("Manager wasn't a ScriptableObject");
                 return;
             }
 
@@ -134,19 +190,19 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             var sp = so.FindProperty(attribute.FieldName);
             if (sp == null)
             {
-                Debug.LogError($"Property {attribute.FieldName} not found for {attribute.ManagerType}");
+                BLGlobalLogger.LogErrorString($"Property {attribute.FieldName} not found for {attribute.ManagerType}");
                 return;
             }
 
             if (!sp.isArray)
             {
-                Debug.LogError($"Property {attribute.FieldName} was not type of array for {attribute.ManagerType}");
+                BLGlobalLogger.LogErrorString($"Property {attribute.FieldName} was not type of array for {attribute.ManagerType}");
                 return;
             }
 
             if (sp.arrayElementType != $"PPtr<${type.Name}>")
             {
-                Debug.LogError($"Property {attribute.FieldName} was not type of {type.Name} for {attribute.ManagerType}");
+                BLGlobalLogger.LogErrorString($"Property {attribute.FieldName} was not type of {type.Name} for {attribute.ManagerType}");
                 return;
             }
 
@@ -155,7 +211,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Distinct() // In case multi of same type on same path
                 .SelectMany(AssetDatabase.LoadAllAssetsAtPath)
-                .Where(s => s != null && s.GetType() == type)
+                .Where(s => s && s.GetType() == type)
                 .ToList();
 
             sp.arraySize = objects.Count;
@@ -184,21 +240,33 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         private class Processor
         {
             private readonly string filter;
-            private Dictionary<int, int>? map;
+            private readonly Dictionary<int, int> map = new();
+            private readonly Type type;
+
+            private bool isInitialized;
 
             public Processor(Type type)
             {
-                this.Type = type;
+                this.type = type;
                 this.filter = $"t:{type.Name}";
             }
 
-            public Type Type { get; }
+            public void Reset()
+            {
+                this.isInitialized = false;
+                this.map.Clear();
+            }
 
-            public void Process(Object obj)
+            public bool Process(Object obj)
             {
                 var asset = (IUID)obj;
 
-                this.map ??= this.GetIDMap();
+                if (!this.isInitialized)
+                {
+                    this.isInitialized = true;
+                    this.BuildMap();
+                }
+
                 this.map.TryGetValue(asset.ID, out var count);
 
                 if (count > 1)
@@ -209,12 +277,15 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                     this.map[newId] = 1;
 
                     EditorUtility.SetDirty(obj);
+                    return true;
                 }
+
+                return false;
             }
 
-            private Dictionary<int, int> GetIDMap()
+            private void BuildMap()
             {
-                var idMap = new Dictionary<int, int>();
+                Assert.AreEqual(0, this.map.Count);
 
                 var paths = AssetDatabase.FindAssets(this.filter).Select(AssetDatabase.GUIDToAssetPath).Distinct();
 
@@ -224,37 +295,47 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
                     foreach (var asset in assets)
                     {
-                        if (asset == null)
+                        if (!asset)
                         {
                             continue;
                         }
 
-                        if (asset.GetType() != this.Type)
+                        if (asset.GetType() != this.type)
                         {
                             continue;
                         }
 
                         var uid = (IUID)asset;
-                        idMap.TryGetValue(uid.ID, out var count);
+                        this.map.TryGetValue(uid.ID, out var count);
                         count++;
-                        idMap[uid.ID] = count;
+                        this.map[uid.ID] = count;
                     }
                 }
-
-                return idMap;
             }
         }
 
         private class GlobalProcessor
         {
             private const string Filter = "t:ScriptableObject";
-            private Dictionary<int, int>? map;
+            private readonly Dictionary<int, int> map = new();
+            private bool isInitialized;
 
-            public void Process(Object obj)
+            public void Reset()
+            {
+                this.isInitialized = false;
+                this.map.Clear();
+            }
+
+            public bool Process(Object obj)
             {
                 var asset = (IUIDGlobal)obj;
 
-                this.map ??= GetIDMap();
+                if (!this.isInitialized)
+                {
+                    this.isInitialized = true;
+                    this.BuildMap();
+                }
+
                 this.map.TryGetValue(asset.ID, out var count);
 
                 if (count > 1)
@@ -265,12 +346,15 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                     this.map[newId] = 1;
 
                     EditorUtility.SetDirty(obj);
+                    return true;
                 }
+
+                return false;
             }
 
-            private static Dictionary<int, int> GetIDMap()
+            private void BuildMap()
             {
-                var idMap = new Dictionary<int, int>();
+                Assert.AreEqual(0, this.map.Count);
 
                 var paths = AssetDatabase.FindAssets(Filter).Select(AssetDatabase.GUIDToAssetPath).Distinct();
 
@@ -280,7 +364,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
                     foreach (var asset in assets)
                     {
-                        if (asset == null)
+                        if (!asset)
                         {
                             continue;
                         }
@@ -290,13 +374,11 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                             continue;
                         }
 
-                        idMap.TryGetValue(uid.ID, out var count);
+                        this.map.TryGetValue(uid.ID, out var count);
                         count++;
-                        idMap[uid.ID] = count;
+                        this.map[uid.ID] = count;
                     }
                 }
-
-                return idMap;
             }
         }
     }

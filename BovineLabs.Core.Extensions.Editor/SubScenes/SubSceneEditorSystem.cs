@@ -69,7 +69,7 @@ namespace BovineLabs.Core.Editor.SubScenes
 
             var commands = new EntityManagerCommands(this.EntityManager);
             commands.CreateEntity();
-            SubSceneAuthUtil.AddComponents(ref commands, -2, this.set!.TargetWorld, true, true, true, this.set.Scenes);
+            SubSceneAuthUtil.AddComponents(ref commands, new SubSceneSetId(-2), this.set!.TargetWorld, true, true, true, this.set.Scenes);
 
             this.Enabled = false;
             this.EntityManager.DestroyEntity(SystemAPI.GetSingletonEntity<RequireForLoading>());

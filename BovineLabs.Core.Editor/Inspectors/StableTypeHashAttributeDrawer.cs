@@ -31,13 +31,13 @@ namespace BovineLabs.Core.Editor.Inspectors
             {
                 if (att.OnlySize)
                 {
-                    Debug.LogError("OnlyZeroSize && OnlySize will return no results");
+                    BLGlobalLogger.LogErrorString("OnlyZeroSize && OnlySize will return no results");
                     return componentTypes;
                 }
 
                 if (att.Category == StableTypeHashAttribute.TypeCategory.BufferData)
                 {
-                    Debug.LogError("OnlyZeroSize && Buffer category will return no results");
+                    BLGlobalLogger.LogErrorString("OnlyZeroSize && Buffer category will return no results");
                     return componentTypes;
                 }
             }
@@ -93,7 +93,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
                 componentTypes.Add(new SearchView.Item
                 {
-                    Path = t.DebugTypeName.ToString().Replace('.', '/'),
+                    Path = SearchView.Item.ConvertTypeToPath(t.DebugTypeName.ToString()),
                     Data = t.StableTypeHash,
                 });
             }

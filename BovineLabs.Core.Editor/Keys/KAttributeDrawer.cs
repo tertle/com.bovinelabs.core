@@ -24,12 +24,12 @@ namespace BovineLabs.Core.Editor.Keys
             var type = TryGetType(attr.Settings);
             if (type == null)
             {
-                Debug.LogWarning($"KAttribute could not find settings {attr.Settings}. Please check spelling and capitalization.");
+                BLGlobalLogger.LogWarningString($"KAttribute could not find settings {attr.Settings}. Please check spelling and capitalization.");
                 return null;
             }
 
             var settings = EditorSettingsUtility.GetSettings(type) as KSettingsBase;
-            if (settings == null)
+            if (!settings)
             {
                 return null;
             }
@@ -64,7 +64,7 @@ namespace BovineLabs.Core.Editor.Keys
                 return us.Keys.Select(k => (k.Name, (int)k.Value));
             }
 
-            Debug.LogWarning("KAttribute is currently only supported on int, uint, byte, sbyte, short and ushort.");
+            BLGlobalLogger.LogWarningString("KAttribute is currently only supported on int, uint, byte, sbyte, short and ushort.");
 
             return null;
         }

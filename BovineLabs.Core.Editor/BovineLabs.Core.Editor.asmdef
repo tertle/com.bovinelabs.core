@@ -11,8 +11,8 @@
     "Unity.Entities.Hybrid",
     "Unity.Entities.UI",
     "Unity.Entities.UI.Editor",
+    "Unity.InputSystem",
     "Unity.InternalAPIEditorBridge.002",
-    "Unity.Logging",
     "Unity.Mathematics",
     "Unity.Scenes",
     "Unity.Scenes.Editor",
@@ -27,7 +27,7 @@
   "allowUnsafeCode": true,
   "overrideReferences": false,
   "precompiledReferences": [],
-  "autoReferenced": true,
+  "autoReferenced": false,
   "defineConstraints": [],
   "versionDefines": [
     {
@@ -37,27 +37,27 @@
     },
     {
       "name": "com.unity.ui",
-      "expression": "0",
+      "expression": "",
       "define": "UNITY_UI_TOOLKIT"
     },
     {
       "name": "com.unity.entities.graphics",
-      "expression": "0",
+      "expression": "",
       "define": "UNITY_GRAPHICS"
     },
     {
       "name": "com.unity.physics",
-      "expression": "0",
+      "expression": "",
       "define": "UNITY_PHYSICS"
     },
     {
       "name": "com.unity.netcode",
-      "expression": "0",
+      "expression": "",
       "define": "UNITY_NETCODE"
     },
     {
       "name": "com.unity.visualeffectgraph",
-      "expression": "0",
+      "expression": "",
       "define": "UNITY_VFX_GRAPH"
     }
   ],

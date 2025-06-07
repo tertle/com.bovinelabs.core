@@ -90,7 +90,7 @@ namespace BovineLabs.Core.Collections
             {
                 if (this.stack.Contains(element))
                 {
-                    Debug.LogError("Internal error. Trying to destroy object that is already released to pool.");
+                    BLDebug.Error("Internal error. Trying to destroy object that is already released to pool.");
                 }
             }
 #endif

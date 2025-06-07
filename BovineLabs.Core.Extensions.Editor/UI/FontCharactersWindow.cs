@@ -125,16 +125,16 @@ namespace BovineLabs.Core.Editor.UI
         {
             get
             {
-                if (shaderRefMobileBitmap == null)
+                if (!shaderRefMobileBitmap)
                 {
                     shaderRefMobileBitmap = Shader.Find("TextMeshPro/Mobile/Bitmap");
 
-                    if (shaderRefMobileBitmap == null)
+                    if (!shaderRefMobileBitmap)
                     {
                         shaderRefMobileBitmap = Shader.Find("Text/Bitmap");
                     }
 
-                    if (shaderRefMobileBitmap == null)
+                    if (!shaderRefMobileBitmap)
                     {
                         shaderRefMobileBitmap = Shader.Find("Hidden/Internal-GUITextureClipText");
                     }
@@ -177,7 +177,7 @@ namespace BovineLabs.Core.Editor.UI
         private static string PickAllCharsRangeFromFont(Font? font)
         {
             var chars = string.Empty;
-            if (font != null)
+            if (font)
             {
                 TrueTypeFontImporter? fontImporter = null;
 
@@ -237,7 +237,7 @@ namespace BovineLabs.Core.Editor.UI
                 }
 
                 // Change back to dynamic font
-                if (fontImporter != null)
+                if (fontImporter)
                 {
                     fontImporter.fontTextureCase = FontTextureCase.Dynamic;
                     fontImporter.SaveAndReimport();
@@ -268,7 +268,7 @@ namespace BovineLabs.Core.Editor.UI
 
                 for (var i = 0; i < dynamicFonts.Length; i++)
                 {
-                    if (staticFonts[i] == null)
+                    if (!staticFonts[i])
                     {
                         continue;
                     }
@@ -291,7 +291,7 @@ namespace BovineLabs.Core.Editor.UI
                 var index = GetIndex(type);
                 if (index < 0)
                 {
-                    Debug.LogWarning($"Font {font} was not a valid type.");
+                    BLGlobalLogger.LogWarningString($"Font {font} was not a valid type.");
                     continue;
                 }
 
@@ -313,7 +313,7 @@ namespace BovineLabs.Core.Editor.UI
                 var index = GetIndex(type);
                 if (index < 0)
                 {
-                    Debug.LogWarning($"Font {font} was not a valid type.");
+                    BLGlobalLogger.LogWarningString($"Font {font} was not a valid type.");
                     continue;
                 }
 
@@ -330,7 +330,7 @@ namespace BovineLabs.Core.Editor.UI
         {
             var activeFontIndex = GetIndex("regular");
             var font = dynamicFonts[activeFontIndex];
-            if (font == null)
+            if (!font)
             {
                 return;
             }
@@ -365,7 +365,7 @@ namespace BovineLabs.Core.Editor.UI
 
         private static void Move(string type, FontAsset[] fonts, bool nameFile)
         {
-            var assetPath = AssetDatabase.GetAssetPath(fonts.First(f => f != null));
+            var assetPath = AssetDatabase.GetAssetPath(fonts.First(f => f));
             var directoryName = Path.GetDirectoryName(assetPath)!;
             var newDirectory = Path.Combine(directoryName, type);
 
@@ -373,7 +373,7 @@ namespace BovineLabs.Core.Editor.UI
 
             foreach (var asset in fonts)
             {
-                if (asset == null)
+                if (!asset)
                 {
                     continue;
                 }
@@ -569,10 +569,8 @@ namespace BovineLabs.Core.Editor.UI
             this.glyphsPacked.Clear();
 
             // Check if requested characters are available in the source font file.
-            for (var i = 0; i < characterSet.Length; i++)
+            foreach (var unicode in characterSet)
             {
-                var unicode = characterSet[i];
-
                 if (FontEngine.TryGetGlyphIndex(unicode, out var glyphIndex))
                 {
                     // Skip over potential duplicate characters.
@@ -619,10 +617,8 @@ namespace BovineLabs.Core.Editor.UI
                 this.freeGlyphRects.Add(new GlyphRect(0, 0, atlasWidth - packingModifier, atlasHeight - packingModifier));
                 this.usedGlyphRects.Clear();
 
-                for (var i = 0; i < this.availableGlyphsToAdd.Count; i++)
+                foreach (var glyphIndex in this.availableGlyphsToAdd)
                 {
-                    var glyphIndex = this.availableGlyphsToAdd[i];
-
                     if (FontEngine.TryGetGlyphWithIndexValue(glyphIndex, GlyphLoadFlags, out var glyph))
                     {
                         if (glyph.glyphRect is { width: > 0, height: > 0 })
@@ -729,7 +725,7 @@ namespace BovineLabs.Core.Editor.UI
                     }
                     catch
                     {
-                        Debug.Log("No characters selected or invalid format.");
+                        BLGlobalLogger.LogInfoString("No characters selected or invalid format.");
                     }
                 }
                 else
@@ -761,7 +757,7 @@ namespace BovineLabs.Core.Editor.UI
             return fft;
         }
 
-        [MenuItem("BovineLabs/Tools/Font Characters", false)]
+        [MenuItem(EditorMenus.RootMenuTools + "Font Characters", false)]
         private static void Init()
         {
             var window = (FontCharactersWindow)GetWindow(typeof(FontCharactersWindow));

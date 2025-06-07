@@ -8,8 +8,8 @@ namespace BovineLabs.Core.Utility
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using Unity;
     using Unity.Collections;
+    using Unity.Collections.LowLevel.Unsafe;
     using Unity.Profiling;
 #if UNITY_EDITOR
     using UnityEditor;
@@ -27,6 +27,7 @@ namespace BovineLabs.Core.Utility
 
         private static System.Reflection.Assembly[] allAssemblies;
         private static Type[] allTypes;
+        private static Type[] allUnmanagedTypes;
         private static Type[] allTypesWithImplementation;
         private static Type[] allTypesWithImplementationNoGeneric;
         private static MethodInfo[] allMethods;
@@ -38,6 +39,8 @@ namespace BovineLabs.Core.Utility
         public static System.Reflection.Assembly[] AllAssemblies => allAssemblies ??= AppDomain.CurrentDomain.GetAssemblies();
 
         public static Type[] AllTypes => allTypes ??= AllAssemblies.SelectMany(GetTypes).ToArray();
+
+        public static Type[] AllUnmanagedTypes => allUnmanagedTypes ??= AllTypes.Where(UnsafeUtility.IsUnmanaged).ToArray();
 
         private static Type[] AllTypesWithImplementation => allTypesWithImplementation ??= AllTypes.Where(t => !t.IsAbstract && !t.IsInterface).ToArray();
 
@@ -59,7 +62,7 @@ namespace BovineLabs.Core.Utility
                 }
                 catch (ReflectionTypeLoadException)
                 {
-                    Debug.LogWarning($"Unable to load types for assembly {assembly.FullName}");
+                    BLGlobalLogger.LogWarningString($"Unable to load types for assembly {assembly.FullName}");
                     types = Array.Empty<Type>();
                 }
 
@@ -183,9 +186,6 @@ namespace BovineLabs.Core.Utility
         public static IEnumerable<Type> GetAllWithAttribute<T>()
             where T : Attribute
         {
-// #if UNITY_EDITOR
-//             return TypeCache.GetTypesWithAttribute<T>();
-// #else
             var attributeType = typeof(T);
             var coreAssembly = attributeType.Assembly;
 
@@ -206,7 +206,6 @@ namespace BovineLabs.Core.Utility
                     yield return type;
                 }
             }
-// #endif
         }
 
         public static IEnumerable<MethodInfo> GetMethodsWithAttribute<T>()

@@ -9,7 +9,7 @@ namespace BovineLabs.Core.SubScenes
 
     public struct SubSceneLoadData : IComponentData
     {
-        public int ID;
+        public SubSceneSetId ID;
         public bool WaitForLoad;
         public bool IsRequired;
         public WorldFlags TargetWorld;

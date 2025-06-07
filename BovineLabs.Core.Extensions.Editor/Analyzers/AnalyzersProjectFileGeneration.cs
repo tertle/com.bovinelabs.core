@@ -21,6 +21,12 @@ namespace BovineLabs.Core.Editor.Analyzers
 
         private static string OnGeneratedCSProject(string path, string contents)
         {
+            var fileName = Path.GetFileName(path);
+            if (fileName.StartsWith("Unity."))
+            {
+                return contents;
+            }
+
             var xml = XDocument.Parse(contents);
 
             UpgradeProjectFile(xml);

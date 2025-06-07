@@ -51,7 +51,7 @@ namespace BovineLabs.Core.Utility
                 var t = TypeManager.GetTypeIndexFromStableTypeHash(s.StableHash);
                 if (t == default)
                 {
-                    Debug.LogWarning($"Trying to remap stable hash {s.StableHash} but could not find type index from TypeManager");
+                    BLDebug.LogWarningString($"Trying to remap stable hash {s.StableHash} but could not find type index from TypeManager");
                     continue;
                 }
 
@@ -72,7 +72,7 @@ namespace BovineLabs.Core.Utility
             var typeInfoPointer = TypeManager.GetTypeInfoPointer() + index;
             if (typeInfoPointer->Category != TypeManager.TypeCategory.BufferData)
             {
-                Debug.LogError($"Trying to set buffer capacity on typeindex ({index}) that isn't buffer");
+                BLDebug.Error($"Trying to set buffer capacity on typeindex ({index}) that isn't buffer");
                 return;
             }
 
@@ -85,14 +85,14 @@ namespace BovineLabs.Core.Utility
             var typeIndex = TypeManager.GetTypeIndexFromStableTypeHash(stableHash);
             if (typeIndex == default)
             {
-                Debug.LogWarning($"Trying to make {stableHash} IEnableable but could not find type index from TypeManager");
+                BLDebug.LogWarningString($"Trying to make {stableHash} IEnableable but could not find type index from TypeManager");
                 return;
             }
 
             var typeInfoPointer = TypeManager.GetTypeInfoPointer() + typeIndex.Index;
             if (typeInfoPointer->Category != TypeManager.TypeCategory.BufferData && typeInfoPointer->Category != TypeManager.TypeCategory.ComponentData)
             {
-                Debug.LogError($"Trying to set buffer capacity on typeindex ({typeIndex.Index}) that isn't buffer");
+                BLDebug.Error($"Trying to set buffer capacity on typeindex ({typeIndex.Index}) that isn't buffer");
                 return;
             }
 

@@ -11,16 +11,17 @@ namespace BovineLabs.Core.ConfigVars
     using BovineLabs.Core.Utility;
     using Unity.Burst;
     using Unity.Collections;
-    using UnityEngine;
     using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
     using UnityEditor;
+#else
+    using UnityEngine;
 #endif
 
     /// <summary> The manager for the config vars. Is pretty automated. </summary>
     public static class ConfigVarManager
     {
-        private static readonly Regex ValidateNameRegex = new(@"^[a-z_+-][a-z0-9_+.-]*$");
+        private static readonly Regex ValidateNameRegex = new("^[a-z_+-][a-z0-9_+.-]*$");
         private static readonly Dictionary<ConfigVarAttribute, IConfigVarContainer> AllInternal = new();
         private static bool isInitialized;
 
@@ -58,10 +59,11 @@ namespace BovineLabs.Core.ConfigVars
                 return;
             }
 
-            Application.quitting += Shutdown;
-
 #if UNITY_EDITOR
             EditorApplication.quitting += Shutdown;
+            AppDomain.CurrentDomain.DomainUnload += (_, _) => Shutdown();
+#else
+            Application.quitting += Shutdown;
 #endif
 
             isInitialized = true;
@@ -74,7 +76,7 @@ namespace BovineLabs.Core.ConfigVars
 
                 if (container is NullConfigVarContainer)
                 {
-                    Debug.LogError($"ConfigVar on field ({field.Name} in {field.DeclaringType?.Name}) of type ({field.FieldType}) is not a supported type");
+                    Debug.LogError($"Error | ConfigVar on field ({field.Name} in {field.DeclaringType?.Name}) of type ({field.FieldType}) is not a supported type");
                     continue;
                 }
 
@@ -85,12 +87,12 @@ namespace BovineLabs.Core.ConfigVars
                     try
                     {
                         container.StringValue = value;
-                        Debug.Log($"ConfigVar {configVar.Name} set from command line to {value}");
+                        Debug.Log($"Info  | ConfigVar {configVar.Name} set from command line to {value}");
                     }
                     catch (Exception)
                     {
-                        Debug.LogWarning(
-                            $"Trying to set a configvar {configVar.Name} value of {value} which is not in the write type format. Faling back to default.");
+                        Debug.LogError(
+                            $"Error | Trying to set a ConfigVar {configVar.Name} value of {value} which is not in the right type format. Falling back to default.");
 
                         container.StringValue = configVar.DefaultValue;
                     }
@@ -108,10 +110,19 @@ namespace BovineLabs.Core.ConfigVars
 
         private static void Shutdown()
         {
+#if UNITY_EDITOR
+            if (!UnityEditorInternal.InternalEditorUtility.CurrentThreadIsMainThread())
+            {
+                throw new InvalidOperationException("Must be called from the main thread");
+            }
+#endif
+
             if (!isInitialized)
             {
                 return;
             }
+
+            isInitialized = false;
 
 #if UNITY_EDITOR
             foreach (var (configVar, container) in AllInternal)
@@ -121,20 +132,19 @@ namespace BovineLabs.Core.ConfigVars
 #endif
 
             AllInternal.Clear();
-            isInitialized = false;
         }
 
         private static void RegisterConfigVar(ConfigVarAttribute configVar, IConfigVarContainer container)
         {
             if (AllInternal.ContainsKey(configVar))
             {
-                Debug.LogError($"Trying to register ConfigVar {configVar.Name} twice");
+                Debug.LogError($"Error | Trying to register ConfigVar {configVar.Name} twice");
                 return;
             }
 
             if (!ValidateNameRegex.IsMatch(configVar.Name))
             {
-                Debug.LogError($"Trying to register ConfigVar with invalid name: {configVar.Name}");
+                Debug.LogError($"Error | Trying to register ConfigVar with invalid name: {configVar.Name}");
                 return;
             }
 

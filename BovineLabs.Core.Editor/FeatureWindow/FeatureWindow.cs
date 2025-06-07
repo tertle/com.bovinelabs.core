@@ -26,7 +26,7 @@ namespace BovineLabs.Core.Editor.FeatureWindow
         private readonly List<string> defines = new();
         private UQueryBuilder<VisualElement> features;
 
-        [MenuItem("BovineLabs/Features", priority = -500)]
+        [MenuItem(EditorMenus.RootMenu + "Features", priority = -500)]
         private static void ShowWindow()
         {
             // Get existing open window or if none, make a new one:

@@ -26,6 +26,7 @@ namespace BovineLabs.Core.Editor.Helpers
                 if (!AssetDatabase.IsValidFolder(p))
                 {
                     AssetDatabase.CreateFolder(combo, d);
+                    AssetDatabase.Refresh();
                 }
 
                 combo = p;

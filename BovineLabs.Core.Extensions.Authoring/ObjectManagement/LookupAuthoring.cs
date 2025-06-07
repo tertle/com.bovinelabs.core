@@ -18,6 +18,8 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         void Bake(IBaker baker, Entity entity, ObjectDefinition id, Dictionary<Type, object> map);
     }
 
+    // TODO MOD SUPPORT
+
     public interface ILookupAuthoring<TMap, TValue> : ILookupAuthoring
         where TMap : unmanaged, IDynamicHashMap<ObjectId, TValue>
         where TValue : unmanaged

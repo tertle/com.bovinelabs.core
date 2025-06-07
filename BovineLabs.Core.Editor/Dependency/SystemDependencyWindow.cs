@@ -25,7 +25,7 @@ namespace BovineLabs.Core.Editor.Dependency
 
         protected override string DefaultButtonText => "Systems";
 
-        [MenuItem("BovineLabs/Tools/System Dependencies")]
+        [MenuItem(EditorMenus.RootMenuTools + "System Dependencies")]
         public static void OpenWindow()
         {
             GetWindow<SystemDependencyWindow>().Show();
@@ -150,7 +150,7 @@ namespace BovineLabs.Core.Editor.Dependency
                     var state = systemGroup.World.Unmanaged.ResolveSystemStateChecked(handle);
                     items.Add(new SearchView.Item
                     {
-                        Path = state->DebugName.ToString().Replace('.', '/'),
+                        Path = SearchView.Item.ConvertTypeToPath(state->DebugName.ToString()),
                         Data = handle,
                     });
                 }
@@ -160,7 +160,7 @@ namespace BovineLabs.Core.Editor.Dependency
                     var state = sys.CheckedState();
                     items.Add(new SearchView.Item
                     {
-                        Path = state->DebugName.ToString().Replace('.', '/'),
+                        Path = SearchView.Item.ConvertTypeToPath(state->DebugName.ToString()),
                         Data = sys.SystemHandle,
                     });
 

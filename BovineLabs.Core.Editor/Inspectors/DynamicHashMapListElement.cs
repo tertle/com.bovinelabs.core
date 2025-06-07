@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Editor.Inspectors
         {
         }
 
-        private DynamicHashMap<TKey, TValue> GetMap => this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity).AsHashMap<TBuffer, TKey, TValue>();
+        private DynamicHashMap<TKey, TValue> GetMap => this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity, true).AsHashMap<TBuffer, TKey, TValue>();
 
         public override bool IsValid()
         {

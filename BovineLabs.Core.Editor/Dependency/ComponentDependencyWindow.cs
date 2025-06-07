@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Editor.Dependency
 
         protected override string DefaultButtonText => "Components";
 
-        [MenuItem("BovineLabs/Tools/Component Dependencies")]
+        [MenuItem(EditorMenus.RootMenuTools + "Component Dependencies")]
         public static void OpenWindow()
         {
             GetWindow<ComponentDependencyWindow>().Show();
@@ -43,7 +43,7 @@ namespace BovineLabs.Core.Editor.Dependency
 
                 items.Add(new SearchView.Item
                 {
-                    Path = t.DebugTypeName.ToString().Replace('.', '/'),
+                    Path = SearchView.Item.ConvertTypeToPath(t.DebugTypeName.ToString()),
                     Data = t,
                 });
             }

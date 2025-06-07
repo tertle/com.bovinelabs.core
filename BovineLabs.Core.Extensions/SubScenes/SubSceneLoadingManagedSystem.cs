@@ -24,21 +24,16 @@ namespace BovineLabs.Core.SubScenes
 #endif
 
         /// <inheritdoc />
-        protected override void OnCreate()
-        {
-            SceneManager.sceneLoaded += this.OnSceneLoaded;
-        }
-
-        /// <inheritdoc />
-        protected override void OnDestroy()
-        {
-            SceneManager.sceneLoaded -= this.OnSceneLoaded;
-        }
-
-        /// <inheritdoc />
         protected override void OnStartRunning()
         {
+            SceneManager.sceneLoaded += this.OnSceneLoaded;
             this.LoadAllExistingSubScenes();
+        }
+
+        /// <inheritdoc/>
+        protected override void OnStopRunning()
+        {
+            SceneManager.sceneLoaded -= this.OnSceneLoaded;
         }
 
         /// <inheritdoc />
@@ -103,7 +98,7 @@ namespace BovineLabs.Core.SubScenes
 
             this.EntityManager.SetComponentData(entity, new SubSceneLoadData
             {
-                ID = -1,
+                ID = new SubSceneSetId(-1),
                 IsRequired = subScene.AutoLoadScene,
                 WaitForLoad = subScene.AutoLoadScene,
                 TargetWorld = this.World.Flags,

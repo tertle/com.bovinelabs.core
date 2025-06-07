@@ -20,7 +20,7 @@ namespace BovineLabs.Core.Editor.Settings
         /// <inheritdoc />
         protected override string TitleText => "Settings";
 
-        [MenuItem("BovineLabs/Settings", priority = -30)]
+        [MenuItem(EditorMenus.RootMenu + "Settings", priority = -30)]
         internal static void OpenSettings()
         {
             Open();
@@ -43,7 +43,7 @@ namespace BovineLabs.Core.Editor.Settings
                 }
                 catch (ArgumentException)
                 {
-                    Debug.LogError($"Multiple panels found for {settings}");
+                    BLGlobalLogger.LogErrorString($"Multiple panels found for {settings}");
                 }
             }
 

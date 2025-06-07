@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     using BovineLabs.Core.ObjectManagement;
     using UnityEngine;
 
-    [AutoRef("ObjectManagementSettings", "objectGroups")]
+    [AutoRef("ObjectManagementSettings", "objectGroups", nameof(ObjectGroup), "ObjectGroups")]
     public sealed class ObjectGroup : ScriptableObject, IUID
     {
         [HideInInspector] // So the field is not editable even in debug mode.

@@ -1,54 +1,52 @@
 {
-  "name": "BovineLabs.Core",
-  "rootNamespace": "",
-  "references": [
-    "Unity.Burst",
-    "Unity.Collections",
-    "Unity.Entities",
-    "Unity.Entities.Graphics",
-    "Unity.Entities.Hybrid",
-    "Unity.Entities.Hybrid.HybridComponents",
-    "Unity.Logging",
-    "Unity.Mathematics",
-    "Unity.Mathematics.Extensions",
-    "Unity.NetCode",
-    "Unity.Physics",
-    "Unity.Scenes",
-    "Unity.Transforms"
-  ],
-  "includePlatforms": [],
-  "excludePlatforms": [],
-  "allowUnsafeCode": true,
-  "overrideReferences": true,
-  "precompiledReferences": [],
-  "autoReferenced": true,
-  "defineConstraints": [],
-  "versionDefines": [
-    {
-      "name": "com.bovinelabs.game",
-      "expression": "0",
-      "define": "BL_GAME"
-    },
-    {
-      "name": "com.unity.netcode",
-      "expression": "0",
-      "define": "UNITY_NETCODE"
-    },
-    {
-      "name": "com.unity.physics",
-      "expression": "0",
-      "define": "UNITY_PHYSICS"
-    },
-    {
-      "name": "com.unity.entities.graphics",
-      "expression": "0",
-      "define": "UNITY_GRAPHICS"
-    },
-    {
-      "name": "com.unity.modules.terrain",
-      "expression": "0",
-      "define": "UNITY_TERRAIN"
-    }
-  ],
-  "noEngineReferences": false
+    "name": "BovineLabs.Core",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Entities.Graphics",
+        "Unity.Entities.Hybrid",
+        "Unity.Entities.Hybrid.HybridComponents",
+        "Unity.Mathematics",
+        "Unity.Mathematics.Extensions",
+        "Unity.Physics",
+        "Unity.Scenes",
+        "Unity.Transforms"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.bovinelabs.game",
+            "expression": "",
+            "define": "BL_GAME"
+        },
+        {
+            "name": "com.unity.netcode",
+            "expression": "",
+            "define": "UNITY_NETCODE"
+        },
+        {
+            "name": "com.unity.physics",
+            "expression": "",
+            "define": "UNITY_PHYSICS"
+        },
+        {
+            "name": "com.unity.entities.graphics",
+            "expression": "",
+            "define": "UNITY_GRAPHICS"
+        },
+        {
+            "name": "com.unity.modules.terrain",
+            "expression": "",
+            "define": "UNITY_TERRAIN"
+        }
+    ],
+    "noEngineReferences": false
 }

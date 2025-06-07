@@ -19,9 +19,9 @@ namespace BovineLabs.Core.Authoring.SubScenes
         {
             public override void Bake(SubSceneLoadAuthoring authoring)
             {
-                if (authoring.settings == null)
+                if (!authoring.settings)
                 {
-                    Debug.LogError("SubSceneSettings not assigned");
+                    BLGlobalLogger.LogErrorString("SubSceneSettings not assigned");
                     return;
                 }
 

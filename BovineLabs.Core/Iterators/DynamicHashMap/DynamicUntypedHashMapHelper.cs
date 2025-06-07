@@ -9,8 +9,8 @@ namespace BovineLabs.Core.Iterators
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using BovineLabs.Core.Assertions;
-    using BovineLabs.Core.Utility;
     using Unity.Assertions;
+    using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -90,13 +90,13 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-        internal AllTypeIndex* Types
+        internal int* Types
         {
             get
             {
                 fixed (DynamicUntypedHashMapHelper<TKey>* data = &this)
                 {
-                    return (AllTypeIndex*)((byte*)data + data->TypeOffset);
+                    return (int*)((byte*)data + data->TypeOffset);
                 }
             }
         }
@@ -166,14 +166,14 @@ namespace BovineLabs.Core.Iterators
             var oldKeys = (TKey*)UnsafeUtility.Malloc(data->Capacity * sizeof(TKey), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
             var oldNext = (int*)UnsafeUtility.Malloc(data->Capacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
             var oldBuckets = (int*)UnsafeUtility.Malloc(data->BucketCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
-            var oldTypes = (int*)UnsafeUtility.Malloc(data->Capacity * sizeof(AllTypeIndex), UnsafeUtility.AlignOf<AllTypeIndex>(), Allocator.Temp);
+            var oldTypes = (int*)UnsafeUtility.Malloc(data->Capacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
             var oldData = (int*)UnsafeUtility.Malloc(data->DataCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
 
             UnsafeUtility.MemCpy(oldValue, data->Values, data->Capacity * sizeof(int));
             UnsafeUtility.MemCpy(oldKeys, data->Keys, data->Capacity * sizeof(TKey));
             UnsafeUtility.MemCpy(oldNext, data->Next, data->Capacity * sizeof(int));
             UnsafeUtility.MemCpy(oldBuckets, data->Buckets, data->BucketCapacity * sizeof(int));
-            UnsafeUtility.MemCpy(oldTypes, data->Types, data->Capacity * sizeof(AllTypeIndex));
+            UnsafeUtility.MemCpy(oldTypes, data->Types, data->Capacity * sizeof(int));
             UnsafeUtility.MemCpy(oldData, data->Data, data->DataCapacity * sizeof(int));
 
             var oldCapacity = data->Capacity;
@@ -207,7 +207,7 @@ namespace BovineLabs.Core.Iterators
             UnsafeUtility.MemCpy(data->Keys, oldKeys, oldCapacity * sizeof(TKey));
 
             UnsafeUtility.MemCpy(data->Data, oldData, oldDataCapacity * sizeof(int));
-            UnsafeUtility.MemCpy(data->Types, oldTypes, oldCapacity * sizeof(AllTypeIndex));
+            UnsafeUtility.MemCpy(data->Types, oldTypes, oldCapacity * sizeof(int));
 
             UnsafeUtility.MemCpy(data->Next, oldNext, oldCapacity * sizeof(int));
             UnsafeUtility.MemSet(data->Next + oldCapacity, 0xff, (newCapacity - oldCapacity) * sizeof(int));
@@ -271,7 +271,7 @@ namespace BovineLabs.Core.Iterators
                 data->CheckIndexOutOfBounds(idx);
 
                 UnsafeUtility.WriteArrayElement(data->Keys, idx, key);
-                UnsafeUtility.WriteArrayElement(data->Types, idx, TypeManagerEx.GetAllTypeIndex<TValue>());
+                UnsafeUtility.WriteArrayElement(data->Types, idx, BurstRuntime.GetHashCode32<TValue>());
 
                 var bucket = data->GetBucket(key);
 
@@ -363,7 +363,7 @@ namespace BovineLabs.Core.Iterators
             data->CheckIndexOutOfBounds(idx);
 
             UnsafeUtility.WriteArrayElement(data->Keys, idx, key);
-            UnsafeUtility.WriteArrayElement(data->Types, idx, TypeManagerEx.GetAllTypeIndex<TValue>());
+            UnsafeUtility.WriteArrayElement(data->Types, idx, BurstRuntime.GetHashCode32<TValue>());
 
             var bucket = data->GetBucket(key);
 
@@ -502,7 +502,7 @@ namespace BovineLabs.Core.Iterators
         {
             var sizeOfTKey = sizeof(TKey);
             var sizeOfInt = sizeof(int);
-            var sizeOfTypeIndex = sizeof(AllTypeIndex);
+            var sizeOfTypeIndex = sizeof(int);
 
             var valuesSize = sizeOfInt * capacity;
             var keysSize = sizeOfTKey * capacity;
@@ -549,11 +549,11 @@ namespace BovineLabs.Core.Iterators
         private void CheckType<TValue>(int idx)
             where TValue : unmanaged
         {
-            var expected = TypeManagerEx.GetAllTypeIndex<TValue>();
-            var actual = UnsafeUtility.ReadArrayElement<AllTypeIndex>(this.Types, idx);
+            var expected = BurstRuntime.GetHashCode32<TValue>();
+            var actual = UnsafeUtility.ReadArrayElement<int>(this.Types, idx);
             if (!expected.Equals(actual))
             {
-                throw new InvalidOperationException($"Type {actual.Value} does not match stored {expected.Value}");
+                throw new InvalidOperationException($"Type {actual} does not match stored {expected}");
             }
         }
     }

@@ -25,7 +25,7 @@ namespace BovineLabs.Core.Authoring.BakeFast
     {
         public GameObject? Prefab;
 
-        [MenuItem("BovineLabs/Utility/Create Prefab Instances")]
+        [MenuItem(EditorMenus.RootMenu + "Utility/Create Prefab Instances")]
         public static void CreatePrefabInstances()
         {
             foreach (var g in Selection.gameObjects)

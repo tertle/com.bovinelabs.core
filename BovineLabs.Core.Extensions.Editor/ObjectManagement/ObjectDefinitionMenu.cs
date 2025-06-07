@@ -15,9 +15,9 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     public static class ObjectDefinitionMenu
     {
         private const string DefaultDirectory = "Assets/Settings/Definitions";
-        private const string ReplaceSceneDefinitionsWithInstantiateName = "BovineLabs/Tools/Replace Scene Definitions with Instantiate";
+        private const string ReplaceSceneDefinitionsWithInstantiateName = EditorMenus.RootMenuTools + "Replace Scene Definitions with Instantiate";
 
-        [MenuItem("BovineLabs/Tools/Create Definitions from Assets", priority = -17)]
+        [MenuItem(EditorMenus.RootMenuTools + "Create Definitions from Assets", priority = -17)]
         public static void CreateDefinitionsFromAssets()
         {
             if (Selection.gameObjects == null)

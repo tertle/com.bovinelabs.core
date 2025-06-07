@@ -80,7 +80,7 @@ namespace BovineLabs.Core.States
                 HistoryBackType = this.historyBackType,
                 HistoryForwardType = this.historyForwardType,
                 CommandBuffer = commandBuffer,
-                Debug = this.impl.Debug,
+                Logger = this.impl.Logger,
                 MaxHistory = this.maxHistorySize,
             };
         }
@@ -105,7 +105,7 @@ namespace BovineLabs.Core.States
 
             public EntityCommandBuffer.ParallelWriter CommandBuffer;
 
-            public BLDebug Debug;
+            public BLLogger Logger;
 
             public int MaxHistory;
 
@@ -146,7 +146,7 @@ namespace BovineLabs.Core.States
                         }
                         else
                         {
-                            this.Debug.Warning($"State {state} not setup");
+                            this.Logger.LogWarning($"State {state} not setup");
                         }
                     }
 

@@ -25,7 +25,7 @@ namespace BovineLabs.Core.Keys
 
         protected abstract void Initialize();
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
         private static void LoadAll()
         {
             var kvSettings = Resources.LoadAll<KSettingsBase>(KResourceDirectory);

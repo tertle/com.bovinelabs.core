@@ -16,11 +16,11 @@ namespace BovineLabs.Core.Authoring.SubScenes
         public static void AddComponents<T>(ref T commands, SubSceneSet set)
             where T : IEntityCommands
         {
-            AddComponents(ref commands, set.ID, set.TargetWorld, set.IsRequired, set.WaitForLoad, set.AutoLoad, set.Scenes);
+            AddComponents(ref commands, new SubSceneSetId(set.ID), set.TargetWorld, set.IsRequired, set.WaitForLoad, set.AutoLoad, set.Scenes);
         }
 
         public static void AddComponents<T>(
-            ref T commands, int id, SubSceneLoadFlags targetWorld, bool isRequired, bool waitForLoad, bool autoLoad, List<SceneAsset> scenes)
+            ref T commands, SubSceneSetId id, SubSceneLoadFlags targetWorld, bool isRequired, bool waitForLoad, bool autoLoad, List<SceneAsset> scenes)
             where T : IEntityCommands
         {
             commands.AddComponent(new SubSceneLoadData

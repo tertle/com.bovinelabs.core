@@ -22,7 +22,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
 
         protected override bool HideToggleShowEmpty => true;
 
-        [MenuItem("BovineLabs/ConfigVars", priority = -31)]
+        [MenuItem(EditorMenus.RootMenu + "ConfigVars", priority = -31)]
         internal static void OpenSettings()
         {
             Open();

@@ -20,6 +20,8 @@ namespace BovineLabs.Core.Keys
 
         public override IEnumerable<NameValue<TV>> Keys => this.keys;
 
+        public TV this[string key] => this.keys.First(k => k.Name == key).Value;
+
         protected virtual IEnumerable<NameValue<TV>> SetReset()
         {
             return Enumerable.Empty<NameValue<TV>>();

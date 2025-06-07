@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Editor.VFXGraphTemplateWindow
         private TextField? categoryField;
         private TextField? descriptionField;
 
-        [MenuItem("BovineLabs/Tools/Create VFX Template", priority = -15)]
+        [MenuItem(EditorMenus.RootMenuTools + "Create VFX Template", priority = -15)]
         private static void ShowWindow()
         {
             // Get existing open window or if none, make a new one:
@@ -46,13 +46,13 @@ namespace BovineLabs.Core.Editor.VFXGraphTemplateWindow
         {
             if (!TryGetPath(out var path))
             {
-                Debug.LogError("No VisualEffectAsset selected");
+                BLGlobalLogger.LogErrorString("No VisualEffectAsset selected");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(this.nameField!.value))
             {
-                Debug.LogError("No name set");
+                BLGlobalLogger.LogErrorString("No name set");
                 return;
             }
 
@@ -67,7 +67,7 @@ namespace BovineLabs.Core.Editor.VFXGraphTemplateWindow
         private static bool TryGetPath(out string? path)
         {
             var asset = Selection.activeObject as VisualEffectAsset;
-            if (asset == null)
+            if (!asset)
             {
                 path = null;
                 return false;

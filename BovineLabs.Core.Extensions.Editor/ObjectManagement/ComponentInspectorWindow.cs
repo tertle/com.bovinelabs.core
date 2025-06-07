@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         private ObjectDefinition[] definitions = Array.Empty<ObjectDefinition>();
         private Dictionary<string, Type> components = new();
 
-        [MenuItem("BovineLabs/Tools/Component Inspector")]
+        [MenuItem(EditorMenus.RootMenuTools + "Component Inspector")]
         private static void ShowWindow()
         {
             // Get existing open window or if none, make a new one:

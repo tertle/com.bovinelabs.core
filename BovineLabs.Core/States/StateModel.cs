@@ -61,7 +61,7 @@ namespace BovineLabs.Core.States
                 StateType = this.impl.StateType,
                 PreviousStateType = this.impl.PreviousStateType,
                 CommandBuffer = commandBuffer,
-                Debug = this.impl.Debug,
+                Logger = this.impl.Logger,
             };
         }
 
@@ -81,7 +81,7 @@ namespace BovineLabs.Core.States
 
             public EntityCommandBuffer.ParallelWriter CommandBuffer;
 
-            public BLDebug Debug;
+            public BLLogger Logger;
 
             /// <inheritdoc />
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
@@ -117,7 +117,7 @@ namespace BovineLabs.Core.States
                         }
                         else
                         {
-                            this.Debug.Warning($"State {state} not setup");
+                            this.Logger.LogWarning($"State {state} not setup");
                         }
                     }
 

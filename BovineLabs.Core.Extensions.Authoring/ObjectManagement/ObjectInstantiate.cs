@@ -19,7 +19,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         {
             public override void Bake(ObjectInstantiate authoring)
             {
-                if (authoring.definition == null || authoring.definition.Prefab == null)
+                if (!authoring.definition || !authoring.definition.Prefab)
                 {
                     return;
                 }

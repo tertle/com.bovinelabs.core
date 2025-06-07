@@ -58,25 +58,15 @@ namespace BovineLabs.Core.ObjectManagement
     }
 
     /// <summary> Convenient extensions for <see cref="ObjectGroupMatcher" />. </summary>
-    public static class ObjectGroupMatcherExtensions
+    public static partial class ObjectGroupMatcherExtensions
     {
-        internal static DynamicBuffer<ObjectGroupMatcher> Initialize(this DynamicBuffer<ObjectGroupMatcher> buffer)
-        {
-            return buffer.InitializeHashSet<ObjectGroupMatcher, ObjectGroupKey>();
-        }
-
-        public static DynamicHashSet<ObjectGroupKey> AsHashSet(this DynamicBuffer<ObjectGroupMatcher> buffer)
-        {
-            return buffer.AsHashSet<ObjectGroupMatcher, ObjectGroupKey>();
-        }
-
         /// <summary> Checks if <see cref="key" /> <see cref="ObjectId" /> is a match inside the group with <see cref="key" /> <see cref="GroupId" />. </summary>
         /// <param name="buffer"> The ObjectGroupMatch singleton buffer. </param>
         /// <param name="key"> The <see cref="ObjectId" /> to match to the <see cref="GroupId" />. </param>
         /// <returns> True if it's part of the group, otherwise false. </returns>
         public static bool Matches(this DynamicBuffer<ObjectGroupMatcher> buffer, ObjectGroupKey key)
         {
-            return buffer.AsHashSet().Contains(key);
+            return buffer.AsMap().Contains(key);
         }
 
         /// <summary> Checks if <see cref="key" /> ObjectID is a match inside the group with <see cref="key" /> <see cref="GroupId" />. </summary>
@@ -85,7 +75,7 @@ namespace BovineLabs.Core.ObjectManagement
         /// <returns> True if it's part of the group, otherwise false. </returns>
         public static bool Matches(this DynamicBuffer<ObjectGroupMatcher> buffer, (GroupId GroupId, ObjectId ObjectId) key)
         {
-            return buffer.AsHashSet().Contains(key);
+            return buffer.AsMap().Contains(key);
         }
 
         /// <summary> Checks if <see cref="objectId" /> is a match inside the group with <see cref="GroupId" />. </summary>
@@ -96,7 +86,7 @@ namespace BovineLabs.Core.ObjectManagement
         public static bool Matches(this DynamicBuffer<ObjectGroupMatcher> buffer, GroupId groupId, ObjectId objectId)
         {
             return buffer
-            .AsHashSet()
+            .AsMap()
             .Contains(new ObjectGroupKey
             {
                 GroupId = groupId,

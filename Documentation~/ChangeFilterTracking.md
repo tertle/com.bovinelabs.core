@@ -1,5 +1,7 @@
 ﻿# Change Filter Tracking
+
 ## Summary
+
 When using change filters it is very easy to break their usage by accidentally introducing a ref field on the component causing them to trigger every frame.
 
 The `ChangeFilterTrackingAttribute` allows you to track how frequently a component triggers a change filter and warns you if it is happening too frequently.

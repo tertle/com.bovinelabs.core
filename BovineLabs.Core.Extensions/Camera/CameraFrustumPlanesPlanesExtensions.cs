@@ -7,7 +7,6 @@
 namespace BovineLabs.Core.Camera
 {
     using Unity.Mathematics;
-    using UnityEngine;
 
     public enum IntersectResult
     {
@@ -92,7 +91,7 @@ namespace BovineLabs.Core.Camera
             var determinant = math.dot(p1.xyz, cross23);
             if (math.abs(determinant) < math.EPSILON)
             {
-                Debug.LogError("Planes do not intersect properly (parallel or coincident planes).");
+                BLGlobalLogger.LogError("Planes do not intersect properly (parallel or coincident planes).");
                 return float3.zero;
             }
 

@@ -1,19 +1,24 @@
 ﻿# DynamicHashMap
+
 ## Summary
-Adds HashMap support to entities by reinterpreting a DynamicBuffer. 
+
+Adds HashMap and other custom container support to entities by reinterpreting a DynamicBuffer. 
 
 ## Setup
 
 Use the following interfaces depending on the type of container you want:
 
-| Type           | Interface                            |
-|----------------|--------------------------------------|
-| HashMap        | IDynamicHashMap<TKey, TValue>        |
-| MultiHashMap   | IDynamicMultiHashMap<TKey, TValue>   |
-| HashSet        | IDynamicHashSet<TKey, TValue>        |
-| PerfectHashMap | IDynamicPerfectHashMap<TKey, TValue> | 
+| Type           | Interface                                            |
+|----------------|------------------------------------------------------|
+| HashMap        | IDynamicHashMap<TKey, TValue>                        |
+| MultiHashMap   | IDynamicMultiHashMap<TKey, TValue>                   |
+| HashSet        | IDynamicHashSet<TKey, TValue>                        |
+| UntypedHashMap | IDynamicUntypedHashMap<TKey>                         |
+| PerfectHashMap | IDynamicPerfectHashMap<TKey, TValue>                 |
+| VariableMap    | IDynamicVariableMap<TKey, TValue, T, TC>             | 
+| VariableMap2   | IDynamicVariableMap<TKey, TValue, T1, TC1, T2, TC2>  |
 
-The following examples use IDynamicHashMap, but IDynamicMultiHashMap and IDynamicHashSet work in the same way.
+The following examples use IDynamicHashMap, but they work the same in general
 
 For example:
 
@@ -49,9 +54,8 @@ public partial struct MyJob : IJobEntity
 
 From here, you can use it as a normal hashmap.
 
-## Tips
-Having to remember to do the full generic invoke, `AsHashMap<MyHashMap, byte, int>()`, can get a bit tedious.
-I recommend writing a small extension to simplify this.
+## Extension
+Having to remember to do the full generic invoke, `AsHashMap<MyHashMap, byte, int>()`, can get a bit tedious so instead a small extension to simply this.
 
 ```cs
 public static class MyHashMapExtensions
@@ -80,3 +84,9 @@ public partial struct MyJob : IJobEntity
     }
 }
 ```
+
+### Source Generation
+
+For even more convenience, these extension is automatically generated for you for `HashMap`, `MultiHashMap`, `HashSet` and `UntypedHashMap`.
+
+Note currently `PerfectHashMap`, `VariableMap` and `VariableMap2` do not have a source generator and the extensions should still be implemented manually.

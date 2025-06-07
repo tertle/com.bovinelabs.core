@@ -5,7 +5,6 @@
 namespace BovineLabs.Core.Keys
 {
     using System;
-    using Unity;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -38,7 +37,7 @@ namespace BovineLabs.Core.Keys
             if (!TryNameToKey(name, out var key))
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-                Debug.LogError($"{name} does not exist");
+                BLGlobalLogger.LogError($"{name} does not exist");
 #endif
             }
 
@@ -72,7 +71,7 @@ namespace BovineLabs.Core.Keys
             if (!Reverse.Data.TryGetValue(key, out var name))
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-                Debug.LogError($"{key} does not exist");
+                BLGlobalLogger.LogError($"{key} does not exist");
 #endif
             }
 

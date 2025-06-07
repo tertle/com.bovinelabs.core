@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Text;
+    using Unity.Collections;
 
     /// <summary> Extensions for strings. </summary>
     public static class StringExtensions
@@ -30,12 +31,78 @@ namespace BovineLabs.Core.Extensions
                     if (char.IsUpper(input[index]) && (!char.IsUpper(input[index - 1]) || !char.IsUpper(input[index + 1])))
                     {
                         output.Append(' ');
-                        output.Append(input[index]);
-                        continue;
                     }
                 }
 
                 output.Append(input[index]);
+            }
+
+            return output.ToString();
+        }
+
+        /// <summary> Converts a PascalCase, camelCase, or spaced string into lowercase dot notation. </summary>
+        /// <param name="input"> The string to convert. </param>
+        /// <returns> The lowercase dot-separated string. </returns>
+        public static string ToDotNotation(this string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return input;
+            }
+
+            var output = new StringBuilder();
+
+            for (var index = 0; index < input.Length; index++)
+            {
+                var currentChar = input[index];
+
+                // Skip whitespace characters
+                if (char.IsWhiteSpace(currentChar))
+                {
+                    // Add dot if we're not at the start and the last char isn't already a dot
+                    if (output.Length > 0 && output[^1] != '.')
+                    {
+                        output.Append('.');
+                    }
+                    continue;
+                }
+
+                // Check for PascalCase/camelCase splits (same logic as before)
+                if (index > 0 && index < input.Length - 1)
+                {
+                    if (char.IsUpper(currentChar) && (!char.IsUpper(input[index - 1]) || !char.IsUpper(input[index + 1])))
+                    {
+                        output.Append('.');
+                    }
+                }
+
+                output.Append(char.ToLower(currentChar));
+            }
+
+            return output.ToString();
+        }
+
+        /// <summary> Removes all whitespace and converts the string to lowercase. </summary>
+        /// <param name="input"> The string to process. </param>
+        /// <returns> The lowercase string with no spaces. </returns>
+        public static string ToLowerNoSpaces(this string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return input;
+            }
+
+            var output = new StringBuilder();
+
+            foreach (var currentChar in input)
+            {
+                // Skip all whitespace characters
+                if (char.IsWhiteSpace(currentChar))
+                {
+                    continue;
+                }
+
+                output.Append(char.ToLower(currentChar));
             }
 
             return output.ToString();
@@ -95,6 +162,27 @@ namespace BovineLabs.Core.Extensions
             }
 
             return source.Remove(source.LastIndexOf(value, StringComparison.Ordinal));
+        }
+
+        public static FixedString32Bytes ToFixedString32NoError(this string source)
+        {
+            FixedString32Bytes fs = default;
+            fs.CopyFromTruncated(source);
+            return fs;
+        }
+
+        public static FixedString64Bytes ToFixedString64NoError(this string source)
+        {
+            FixedString64Bytes fs = default;
+            fs.CopyFromTruncated(source);
+            return fs;
+        }
+
+        public static FixedString128Bytes ToFixedString128NoError(this string source)
+        {
+            FixedString128Bytes fs = default;
+            fs.CopyFromTruncated(source);
+            return fs;
         }
     }
 }
