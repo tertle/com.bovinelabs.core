@@ -1,98 +1,96 @@
-﻿# Singleton Collections
-## Summary
-Easily set up a Many-To-One container singleton with minimal boilerplate and syncless job support.
+# Singleton Collections
 
-Think of it like EntityCommandBuffer.Singleton, but with the added capability of performing reading in a job.
+## Overview
 
-It currently supports the following Unity Collection containers
+A Many-To-One container system that allows multiple systems to write to containers while a single owning system processes them efficiently. Similar to `EntityCommandBuffer.Singleton` but with full job-based reading support and zero per-frame allocations.
 
-- NativeArray
-- NativeList
-- NativeQueue
-- NativeHashMap
-- NativeParallelHashMap
-- NativeParallelMultiHashMap
+**Key benefits**: Lock-free concurrent access, burst-compatible reading, automatic memory management via rewindable allocators.
 
-as well as the following Core containers
-- NativeThreadStream
-- NativeMultiHashMap
+## Supported Container Types
 
-## Example
-### Reading
-This is the system that owns the singleton and processes the collection of containers that are passed to it each frame.
+**Unity Collections:**
+- `NativeArray<T>` - Fixed-size arrays
+- `NativeList<T>` - Dynamic lists  
+- `NativeQueue<T>` - FIFO queues
+- `NativeHashMap<TKey, TValue>` - Hash tables
+- `NativeParallelHashMap<TKey, TValue>` - Thread-safe hash tables
+- `NativeParallelMultiHashMap<TKey, TValue>` - Thread-safe multi-value hash tables
+
+**Core Collections:**
+- `NativeThreadStream` - Lock-free event streams
+- `NativeMultiHashMap<TKey, TValue>` - Multi-value hash tables
+
+## Basic Usage
+
+### 1. Define the Singleton Component
+
 ```csharp
-public partial struct MySystem : ISystem
+public struct EventSingleton : ISingletonCollection<NativeList<GameEvent>>
 {
-    private SingletonCollectionUtil<Singleton, NativeList<int>> singletonCollectionUtil;
+    unsafe UnsafeList<NativeList<GameEvent>>* ISingletonCollection<NativeList<GameEvent>>.Collections { get; set; }
+    Allocator ISingletonCollection<NativeList<GameEvent>>.Allocator { get; set; }
+}
+```
 
-    // Note this can't be burst compiled due to RewindAllocator creation
-    public void OnCreate(ref SystemState state)
+### 2. Create the Processing System
+
+```csharp
+public partial struct EventSystem : ISystem
+{
+    private SingletonCollectionUtil<EventSingleton, NativeList<GameEvent>> util;
+
+    public void OnCreate(ref SystemState state) // Cannot be burst-compiled
     {
-        this.singletonCollectionUtil = new SingletonCollectionUtil<Singleton, NativeList<int>>(ref state);
+        util = new SingletonCollectionUtil<EventSingleton, NativeList<GameEvent>>(ref state);
     }
 
-    // Note this can't be burst compiled due to RewindAllocator disposable
-    public void OnDestroy(ref SystemState state)
+    public void OnDestroy(ref SystemState state) // Cannot be burst-compiled
     {
-        this.singletonCollectionUtil.Dispose();
+        util.Dispose();
     }
 
     [BurstCompile]
     public unsafe void OnUpdate(ref SystemState state)
     {
-        var lists = this.singletonCollectionUtil.Containers;
-
-        for (var i = 0; i < lists.Length; i++)
+        var containers = util.Containers;
+        
+        for (int i = 0; i < containers.Length; i++)
         {
-            state.Dependency = new Job { List = lists.Ptr[i] }.Schedule(state.Dependency);
+            state.Dependency = new ProcessEventsJob { Events = containers.Ptr[i] }
+                .Schedule(state.Dependency);
         }
 
-        this.singletonCollectionUtil.ClearRewind();
-    }
-
-    // Define the singleton
-    public struct Singleton : ISingletonCollection<NativeList<int>>
-    {
-        /// <inheritdoc/>
-        unsafe UnsafeList<NativeList<int>>* ISingletonCollection<NativeList<int>>.Collections { get; set; }
-
-        /// <inheritdoc/>
-        Allocator ISingletonCollection<NativeList<int>>.Allocator { get; set; }
+        util.ClearRewind(); // Essential: clears containers and rewinds allocator
     }
 
     [BurstCompile]
-    private struct Job : IJob
+    private struct ProcessEventsJob : IJob
     {
-        public NativeList<int> List;
+        public NativeList<GameEvent> Events;
 
         public void Execute()
         {
-            // Do something
+            for (int i = 0; i < Events.Length; i++)
+            {
+                // Process event
+            }
         }
     }
 }
 ```
 
-### Writing
-Creating a container to write to is as simple as
-```csharp
-NativeList<int> list = SystemAPI.GetSingleton<MySystem.Singleton>().CreateList(capacity);
-```
+### 3. Writing from Other Systems
 
-The options for creating containers are as follows:
-#### NativeArray
-`NativeArray<T> CreateArray<T>(int length, NativeArrayOptions options = NativeArrayOptions.ClearMemory)`
-#### NativeList
-`NativeList<T> CreateList<T>(int capacity)`
-#### NativeQueue
-`NativeQueue<T> CreateQueue<T>()`
-#### NativeHashMap
-`NativeHashMap<TKey, TValue> CreateHashMap<TKey, TValue>(int capacity)`
-#### NativeMultiHashMap
-`NativeMultiHashMap<TKey, TValue> CreateMultiHashMap<TKey, TValue>(int capacity)`
-#### NativeParallelMultiHashMap
-`NativeParallelHashMap<TKey, TValue> CreateParallelHashMap<TKey, TValue>(int capacity)`
-#### NativeParallelMultiHashMap
-`NativeParallelMultiHashMap<TKey, TValue> CreateParallelMultiHashMap<TKey, TValue>(int capacity)`
-#### NativeThreadStream
-`NativeThreadStream.Writer CreateThreadStream();`
+```csharp
+public partial struct GameplaySystem : IJobEntity
+{
+    public void Execute(/* entity parameters */)
+    {
+        // Create a container to write events
+        var eventList = SystemAPI.GetSingleton<EventSingleton>().CreateList<GameEvent>(32);
+        
+        eventList.Add(new GameEvent { Type = EventType.PlayerDeath });
+        eventList.Add(new GameEvent { Type = EventType.ScoreUpdate });
+    }
+}
+```

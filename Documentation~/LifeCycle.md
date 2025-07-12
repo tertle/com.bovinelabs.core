@@ -2,56 +2,37 @@
 
 ## Summary
 
-The BovineLabs Core Life Cycle system provides a unified framework for managing entity initialization and destruction in Unity Entities.
+The Life Cycle system provides a unified framework for managing entity initialization and destruction in Unity Entities.
 
-Key features include:
+**Key Features:**
 - Unified initialization component for prefabs and subscene entities
 - Automatic destruction propagation through LinkedEntityGroup
 
-## System Architecture
+## Core Components
 
-### Components
+**Components:**
+- `InitializeEntity`: Marks prefab entities for initialization
+- `InitializeSubSceneEntity`: Marks subscene entities for initialization (opt-in)
+- `DestroyEntity`: Enableable component that triggers entity destruction
 
-| Component                  | Purpose                                               |
-|----------------------------|-------------------------------------------------------|
-| `InitializeEntity`         | Marks prefab entities for initialization              |
-| `InitializeSubSceneEntity` | Marks subscene entities for initialization (opt-in)   |
-| `DestroyEntity`            | Enableable component that triggers entity destruction |
+**System Groups:**
+- `InitializeSystemGroup`: Processes entity initialization (start of simulation)
+- `DestroySystemGroup`: Processes entity destruction (before scene loading)
 
-### System Groups
+**Command Buffer Systems:**
+- `EndInitializeEntityCommandBufferSystem`: ECB for initialization phase
+- `DestroyEntityCommandBufferSystem`: ECB for destruction phase
 
-| System Group            | Purpose                         | Update Order                                                |
-|-------------------------|---------------------------------|-------------------------------------------------------------|
-| `InitializeSystemGroup` | Processes entity initialization | OrderFirst BeginSimulationSystemGroup - Start of simulation |
-| `DestroySystemGroup`    | Processes entity destruction    | Before SceneSystemGroup - Before scene loading              |
+## Setup
 
-### Systems
-
-| System                          | Purpose                                                                                          |
-|---------------------------------|--------------------------------------------------------------------------------------------------|
-| `InitializeEntitySystem`        | Disables initialization components after processing                                              |
-| `DestroyOnDestroySystem`        | Propagates destruction through LinkedEntityGroup                                                 |
-| `DestroyOnSubSceneUnloadSystem` | Allows the destroy pipeline to execute on entities that are about to be unloaded from a subscene |
-| `DestroyEntitySystem`           | Performs actual entity destruction                                                               |
-
-### Command Buffer Systems
-
-| System                                   | Purpose                      |
-|------------------------------------------|------------------------------|
-| `EndInitializeEntityCommandBufferSystem` | ECB for initialization phase |
-| `DestroyEntityCommandBufferSystem`       | ECB for destruction phase    |
-
-## Basic Usage
-
-### Setup
-
-Add a `LifeCycleAuthoring` component to any GameObject that needs lifecycle management. 
-Optionally you can add it for AdditionalEntities using `LifeCycleAuthoring.AddComponents(IBaker, Entity, bool isPrefab)`.
-
-This automatically adds:
+Add a `LifeCycleAuthoring` component to any GameObject that needs lifecycle management. This automatically adds:
 - `InitializeEntity` for prefabs
 - `InitializeSubSceneEntity` for entities in subscenes
 - `DestroyEntity`
+
+For AdditionalEntities, use `LifeCycleAuthoring.AddComponents(IBaker, Entity, bool isPrefab)`.
+
+## Usage
 
 ### Initialize Entity
 
@@ -61,10 +42,8 @@ Create systems that run on entity initialization:
 [UpdateInGroup(typeof(InitializeSystemGroup))]
 public partial struct InitializePlayerSystem : ISystem
 {
-    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        // Schedule job to initialize entities
         new InitializeJob().ScheduleParallel();
     }
     
@@ -74,7 +53,6 @@ public partial struct InitializePlayerSystem : ISystem
     {
         private void Execute(Entity entity, ref Player player)
         {
-            // Initialize player data
             player.Health = 100;
             player.Score = 0;
         }
@@ -82,8 +60,7 @@ public partial struct InitializePlayerSystem : ISystem
 }
 ```
 
-You can customize which entities to initialize by changing the query attributes:
-
+**Query Options:**
 ```csharp
 // Initialize only entities instantiated from prefabs
 [WithAll(typeof(InitializeEntity))]
@@ -100,7 +77,6 @@ You can customize which entities to initialize by changing the query attributes:
 Trigger entity destruction by enabling the `DestroyEntity` component:
 
 ```csharp
-[BurstCompile]
 [UpdateInGroup(typeof(SimulationSystemGroup))]
 public partial struct HealthDestroySystem : ISystem
 {
@@ -123,23 +99,21 @@ public partial struct HealthDestroySystem : ISystem
 }
 ```
 
-#### Processing Before Destruction
+### Processing Before Destruction
 
-To perform actions on entities before they're destroyed, create systems in the `DestroySystemGroup`:
+Perform actions on entities before they're destroyed using `DestroySystemGroup`:
 
 ```csharp
 [UpdateInGroup(typeof(DestroySystemGroup))]
 public partial struct TrackDestroyedMonsterSystem : ISystem
 {
-    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         new TrackJob { Tracking = SystemAPI.GetSingleton<DestroyedMonsterList>().Map }.Schedule();
     }
     
     [BurstCompile] 
-    [WithAll(typeof(Monster))]
-    [WithAll(typeof(DestroyEntity))] // Only process entities marked for destruction
+    [WithAll(typeof(Monster), typeof(DestroyEntity))]
     private partial struct TrackJob : IJobEntity
     {
         public NativeHashMap<ObjectId, int> Tracking;

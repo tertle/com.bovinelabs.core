@@ -1,4 +1,4 @@
-// <copyright file="AttributeTargets.cs" company="BovineLabs">
+// <copyright file="SingletonAttribute.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 

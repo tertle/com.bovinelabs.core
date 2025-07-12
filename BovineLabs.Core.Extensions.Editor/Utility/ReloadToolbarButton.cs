@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Editor.Utility
     [Configurable]
     public static class ReloadToolbarButton
     {
-        [ConfigVar("debug.reload-toolbar-button", true, "Should the reload toolbar button be shown. Requires a domain reload to update")]
+        [ConfigVar("debug.editor-toolbar.reload-button", true, "Should the reload toolbar button be shown. Requires a domain reload to update")]
         private static readonly SharedStatic<bool> Enabled = SharedStatic<bool>.GetOrCreate<EnabledType>();
 
         private static EditorToolbarDropdown? dropDown;

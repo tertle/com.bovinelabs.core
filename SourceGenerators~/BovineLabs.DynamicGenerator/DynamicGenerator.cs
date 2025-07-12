@@ -1,4 +1,4 @@
-﻿// <copyright file="DynamicGenerator.cs" company="BovineLabs">
+// <copyright file="DynamicGenerator.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -103,10 +103,14 @@ namespace BovineLabs.DynamicGenerator
                         return new DynamicData(ts, DynamicType.HashSet, interfaceSymbol.TypeArguments[0]);
                     case "IDynamicMultiHashMap" when typeParamCount == 2:
                         return new DynamicData(ts, DynamicType.MultiHashMap, interfaceSymbol.TypeArguments[0], interfaceSymbol.TypeArguments[1]);
-                    // case "IDynamicPerfectHashMap" when typeParamCount == 2:
-                        // return new DynamicData(ts, DynamicType.PerfectHashMap, interfaceSymbol.TypeArguments[0], interfaceSymbol.TypeArguments[1]);
+                    case "IDynamicPerfectHashMap" when typeParamCount == 2:
+                        return new DynamicData(ts, DynamicType.PerfectHashMap, interfaceSymbol.TypeArguments[0], interfaceSymbol.TypeArguments[1]);
                     case "IDynamicUntypedHashMap" when typeParamCount == 1:
                         return new DynamicData(ts, DynamicType.UntypedHashMap, interfaceSymbol.TypeArguments[0]);
+                    case "IDynamicVariableMap" when typeParamCount == 4:
+                        return new DynamicData(ts, DynamicType.VariableMap, interfaceSymbol.TypeArguments[0], interfaceSymbol.TypeArguments[1], interfaceSymbol.TypeArguments[2], interfaceSymbol.TypeArguments[3]);
+                    case "IDynamicVariableMap" when typeParamCount == 6:
+                        return new DynamicData(ts, DynamicType.VariableMap2, interfaceSymbol.TypeArguments[0], interfaceSymbol.TypeArguments[1], interfaceSymbol.TypeArguments[2], interfaceSymbol.TypeArguments[3], interfaceSymbol.TypeArguments[4], interfaceSymbol.TypeArguments[5]);
                 }
             }
 
@@ -142,6 +146,12 @@ namespace BovineLabs.DynamicGenerator
 
         private static void InitializeMethod(ClassBuilder builder, DynamicData data)
         {
+            // Skip Initialize method for PerfectHashMap as it requires special parameters
+            if (data.Type == DynamicType.PerfectHashMap)
+            {
+                return;
+            }
+
             var rt = $"DynamicBuffer<{data.TypeName}>";
 
             var initialize = builder
@@ -151,11 +161,8 @@ namespace BovineLabs.DynamicGenerator
                 .AddAttribute("MethodImpl(MethodImplOptions.AggressiveInlining)");
             initialize.AddParameter($"this {rt}", "buffer");
 
-            // if (data.Type != DynamicType.PerfectHashMap)
-            {
-                initialize.AddParameterWithDefaultValue("int", "capacity", "0");
-                initialize.AddParameterWithDefaultValue("int", "minGrowth", "DynamicExtensions.DefaultMinGrowth");
-            }
+            initialize.AddParameterWithDefaultValue("int", "capacity", "0");
+            initialize.AddParameterWithDefaultValue("int", "minGrowth", "DynamicExtensions.DefaultMinGrowth");
 
             initialize.WithBody(b =>
             {
@@ -165,6 +172,8 @@ namespace BovineLabs.DynamicGenerator
                     DynamicType.HashSet => $"InitializeHashSet<{data.TypeName}, {data.Type1}>",
                     DynamicType.MultiHashMap => $"InitializeMultiHashMap<{data.TypeName}, {data.Type1}, {data.Type2}>",
                     DynamicType.UntypedHashMap => $"InitializeUntypedHashMap<{data.TypeName}, {data.Type1}>",
+                    DynamicType.VariableMap => $"InitializeVariableMap<{data.TypeName}, {data.Type1}, {data.Type2}, {data.Type3}, {data.Type4}>",
+                    DynamicType.VariableMap2 => $"InitializeVariableMap<{data.TypeName}, {data.Type1}, {data.Type2}, {data.Type3}, {data.Type4}, {data.Type5}, {data.Type6}>",
                     _ => throw new ArgumentOutOfRangeException()
                 };
 
@@ -179,7 +188,10 @@ namespace BovineLabs.DynamicGenerator
                 DynamicType.HashMap => $"DynamicHashMap<{data.Type1}, {data.Type2}>",
                 DynamicType.HashSet => $"DynamicHashSet<{data.Type1}>",
                 DynamicType.MultiHashMap => $"DynamicMultiHashMap<{data.Type1}, {data.Type2}>",
+                DynamicType.PerfectHashMap => $"DynamicPerfectHashMap<{data.Type1}, {data.Type2}>",
                 DynamicType.UntypedHashMap => $"DynamicUntypedHashMap<{data.Type1}>",
+                DynamicType.VariableMap => $"DynamicVariableMap<{data.Type1}, {data.Type2}, {data.Type3}, {data.Type4}>",
+                DynamicType.VariableMap2 => $"DynamicVariableMap<{data.Type1}, {data.Type2}, {data.Type3}, {data.Type4}, {data.Type5}, {data.Type6}>",
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -197,7 +209,10 @@ namespace BovineLabs.DynamicGenerator
                     DynamicType.HashMap => $"AsHashMap<{data.TypeName}, {data.Type1}, {data.Type2}>",
                     DynamicType.HashSet => $"AsHashSet<{data.TypeName}, {data.Type1}>",
                     DynamicType.MultiHashMap => $"AsMultiHashMap<{data.TypeName}, {data.Type1}, {data.Type2}>",
+                    DynamicType.PerfectHashMap => $"AsPerfectHashMap<{data.TypeName}, {data.Type1}, {data.Type2}>",
                     DynamicType.UntypedHashMap => $"AsUntypedHashMap<{data.TypeName}, {data.Type1}>",
+                    DynamicType.VariableMap => $"AsVariableMap<{data.TypeName}, {data.Type1}, {data.Type2}, {data.Type3}, {data.Type4}>",
+                    DynamicType.VariableMap2 => $"AsVariableMap<{data.TypeName}, {data.Type1}, {data.Type2}, {data.Type3}, {data.Type4}, {data.Type5}, {data.Type6}>",
                     _ => throw new ArgumentOutOfRangeException(),
                 };
 
@@ -210,8 +225,10 @@ namespace BovineLabs.DynamicGenerator
             HashMap,
             HashSet,
             MultiHashMap,
-            // PerfectHashMap,
+            PerfectHashMap,
             UntypedHashMap,
+            VariableMap,
+            VariableMap2,
         }
 
         private class DynamicData
@@ -222,8 +239,11 @@ namespace BovineLabs.DynamicGenerator
             public readonly string Type1;
             public readonly string Type2;
             public readonly string Type3;
+            public readonly string Type4;
+            public readonly string Type5;
+            public readonly string Type6;
 
-            public DynamicData(ITypeSymbol typeSymbol, DynamicType type, ITypeSymbol type1, ITypeSymbol type2 = null, ITypeSymbol type3 = null)
+            public DynamicData(ITypeSymbol typeSymbol, DynamicType type, ITypeSymbol type1, ITypeSymbol type2 = null, ITypeSymbol type3 = null, ITypeSymbol type4 = null, ITypeSymbol type5 = null, ITypeSymbol type6 = null)
             {
                 this.TypeSymbol = typeSymbol;
                 this.TypeName = GetName(typeSymbol);
@@ -231,6 +251,9 @@ namespace BovineLabs.DynamicGenerator
                 this.Type1 = GetName(type1);
                 this.Type2 = GetName(type2);
                 this.Type3 = GetName(type3);
+                this.Type4 = GetName(type4);
+                this.Type5 = GetName(type5);
+                this.Type6 = GetName(type6);
             }
 
             private static SymbolDisplayFormat QualifiedFormat { get; } = new(

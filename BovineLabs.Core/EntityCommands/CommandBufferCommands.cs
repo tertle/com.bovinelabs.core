@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.EntityCommands
 {
+    using Unity.Collections;
     using Unity.Entities;
 
     public struct CommandBufferCommands : IEntityCommands
@@ -30,6 +31,16 @@ namespace BovineLabs.Core.EntityCommands
         {
             this.Entity = this.commandBuffer.Instantiate(prefab);
             return this.Entity;
+        }
+
+        public void SetName(FixedString64Bytes name)
+        {
+            this.commandBuffer.SetName(this.Entity, name);
+        }
+
+        public void SetName(Entity entity, FixedString64Bytes name)
+        {
+            this.commandBuffer.SetName(entity, name);
         }
 
         public void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)

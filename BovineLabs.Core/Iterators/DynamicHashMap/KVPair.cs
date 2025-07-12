@@ -55,7 +55,7 @@ namespace BovineLabs.Core.Iterators
                 }
 #endif
 
-                return ref UnsafeUtility.AsRef<TValue>(this.Data->Values + (sizeof(TValue) * this.Index));
+                return ref UnsafeUtility.AsRef<TValue>(this.Data->Values + (this.Data->SizeOfTValue * this.Index));
             }
         }
 

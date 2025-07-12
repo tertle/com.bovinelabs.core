@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Input
 {
+    using BovineLabs.Core.Pause;
     using Unity.Entities;
 #if UNITY_NETCODE
     using Unity.NetCode;
@@ -17,7 +18,7 @@ namespace BovineLabs.Core.Input
 #else
     [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
 #endif
-    public partial class InputSystemGroup : ComponentSystemGroup
+    public partial class InputSystemGroup : ComponentSystemGroup, IUpdateWhilePaused
     {
     }
 }

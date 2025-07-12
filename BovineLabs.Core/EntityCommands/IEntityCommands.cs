@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.EntityCommands
 {
+    using Unity.Collections;
     using Unity.Entities;
 
     public interface IEntityCommands
@@ -15,6 +16,10 @@ namespace BovineLabs.Core.EntityCommands
         Entity CreateEntity();
 
         Entity Instantiate(Entity prefab);
+
+        void SetName(FixedString64Bytes name);
+
+        void SetName(Entity entity, FixedString64Bytes name);
 
         void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)
             where T : unmanaged;

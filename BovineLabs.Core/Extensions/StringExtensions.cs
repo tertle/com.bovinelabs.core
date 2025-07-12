@@ -64,6 +64,7 @@ namespace BovineLabs.Core.Extensions
                     {
                         output.Append('.');
                     }
+
                     continue;
                 }
 
@@ -162,6 +163,21 @@ namespace BovineLabs.Core.Extensions
             }
 
             return source.Remove(source.LastIndexOf(value, StringComparison.Ordinal));
+        }
+
+        public static string Max(this string source, int length, string replacement = null)
+        {
+            if (source.Length <= length)
+            {
+                return source;
+            }
+
+            if (replacement != null)
+            {
+                length -= replacement.Length;
+            }
+
+            return source[..length] + replacement;
         }
 
         public static FixedString32Bytes ToFixedString32NoError(this string source)

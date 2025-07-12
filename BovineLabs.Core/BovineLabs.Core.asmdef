@@ -12,6 +12,7 @@
         "Unity.Mathematics.Extensions",
         "Unity.Physics",
         "Unity.Scenes",
+        "Unity.Splines",
         "Unity.Transforms"
     ],
     "includePlatforms": [],
@@ -46,6 +47,11 @@
             "name": "com.unity.modules.terrain",
             "expression": "",
             "define": "UNITY_TERRAIN"
+        },
+        {
+            "name": "com.unity.splines",
+            "expression": "",
+            "define": "UNITY_SPLINES"
         }
     ],
     "noEngineReferences": false

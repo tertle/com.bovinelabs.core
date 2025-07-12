@@ -1,11 +1,65 @@
 # Changelog
 
+## [1.4.4] - 2025-07-12
+
+### Added
+* Scene toolbar button for opening and closing scenes in editor, there is a bunch of config in configvars
+* Better exception handling to source generators
+* 1.4.0-pre.3 support
+* BlobSpline if the Unity Spline package is found
+* Added an optional baker for SplineContainer, must be manually enabled with BL_BAKE_SPLINE
+* int indexer to BitArray
+* Source generator support for VariableMap - auto-generates Initialize() and AsMap() extension methods
+* Source generator support for PerfectHashMap - auto-generates AsMap() extension method (Initialize() requires manual implementation)
+* Added SetName to IEntityCommands
+
+### Changed
+* SubScenePrebakeSystem no longer forces settings to be generated
+* AddUnique renamed to Add for BlobBuilderMultiHashMap
+* InputSystemGroup now updates while paused
+* Increased label size of config var window
+* GlobalRandom now in Utility namespace
+
+### Removed
+* ListPool<T> - just use the built in one UnityEngine.Pool.ListPool<T>
+
+### Fixed
+* SingletonInitializeSystemGroup lifecycle requirement
+
+### Documentation
+* Major documentation restructuring
+* Input documentation updated for new assembly structure and significantly streamlined
+* ObjectManagement documentation updated for ObjectId changes and consolidated explanations
+* Jobs documentation rewritten with examples and best practices
+* EntityCommands documentation rewritten with usage patterns
+* Settings documentation streamlined with simplified component overview
+* Functions documentation improved with cleaner examples and reduced verbosity
+* SubScenes documentation enhanced with better setup instructions and runtime examples)
+* States documentation cleaned up with consolidated examples and removed incomplete sections
+* LifeCycle documentation streamlined with simplified architecture tables
+* K documentation improved with cleaner setup instructions and usage examples
+* README.md updated with clearer descriptions and current job types
+* GlobalRandom documentation improved
+* ChangeFilterTracking documentation updated
+* DynamicHashMap documentation enhanced with examples
+* SingletonCollection documentation improved
+* Collections documentation added covering all specialized collection types
+* Extensions documentation added covering all extension methods
+* Utility documentation added covering all utility classes and helpers
+* Debug documentation added covering debugging and assertion utilities
+* Iterators documentation added covering high-performance iterator utilities
+* PhysicsStates documentation added covering stateful collision and trigger event tracking
+* PhysicsUpdate documentation added covering high frame rate physics spatial data maintenance
+* Camera documentation added covering ECS camera integration with frustum culling
+* Pause documentation added covering world-level pause system with fine-grained control
+* Analyzers documentation added covering automatic Roslyn analyzer integration infrastructure
+
 ## [1.4.3] - 2025-06-07
 
 ### Added
 * ComponentAsset and ComponentFieldAsset for more stable type and fields instead of directly storing StableTypeHash and Offsets
 * A Unity compatible and updated version of CodeGenHelpers https://github.com/dansiegel/CodeGenHelpers to use with source generators
-* Source Generator for generating IDynamic[HashMap|HashSet|IndexedMap|MultiHashMap|UntypedHashMap] Initialize and AsMap methods
+* Source Generator for generating IDynamic[HashMap|HashSet|MultiHashMap|UntypedHashMap] Initialize and AsMap methods
 * ProfilerTimer for quick easy scoped Timing
 * BLGlobalLogger
 * SubScenePostLoadCommandBufferSystem for allowing setup of PostLoadCommandBuffer from multiple places
@@ -36,7 +90,7 @@
 * AllTypeIndex from TypeManagerEx to speed up domain reloads
 * DynamicIndexedMap as it's replaced by DynamicVariableMap
 
-### documentation
+### Documentation
 * LifeCycle
 * DynamicHashMap updated to reflect source generation and new types
 

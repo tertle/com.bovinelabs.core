@@ -77,7 +77,7 @@ namespace BovineLabs.Core.ObjectManagement
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
-            throw new SystemException("Not supported");
+            return obj is ObjectId other && this.Equals(other);
         }
 
         /// <inheritdoc />

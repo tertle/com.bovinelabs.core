@@ -25,7 +25,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 return;
             }
 
-            var directory = EditorSettingsUtility.GetAssetDirectory("definitions", DefaultDirectory);
+            var directory = EditorSettingsUtility.GetAssetDirectory("definitions", DefaultDirectory)!;
 
             foreach (var select in Selection.gameObjects)
             {

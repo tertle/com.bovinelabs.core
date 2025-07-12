@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Editor.Inspectors
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-        public DynamicHashMapElement(object inspector, List<SearchView.Item>? items = default, TValue defaultValue = default)
+        public DynamicHashMapElement(object inspector, List<SearchView.Item>? items = null, TValue defaultValue = default)
             : base(inspector, items, defaultValue)
         {
         }
@@ -34,7 +34,7 @@ namespace BovineLabs.Core.Editor.Inspectors
         private readonly ToolbarToggle listElementToggle;
         private readonly ToolbarToggle searchToggle;
 
-        public DynamicHashMapElement(object inspector, List<SearchView.Item>? items = default, TValue defaultValue = default)
+        public DynamicHashMapElement(object inspector, List<SearchView.Item>? items = null, TValue defaultValue = default)
         {
             var hasItems = items is { Count: > 0 };
             this.listElementToggle = new ToolbarToggle();

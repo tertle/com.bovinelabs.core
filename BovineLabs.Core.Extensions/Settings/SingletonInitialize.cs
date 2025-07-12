@@ -1,4 +1,4 @@
-// <copyright file="Singleton.cs" company="BovineLabs">
+// <copyright file="SingletonInitialize.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 

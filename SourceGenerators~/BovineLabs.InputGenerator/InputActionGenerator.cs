@@ -41,7 +41,14 @@ namespace BovineLabs.InputGenerator
                 return;
             }
 
-            context.AddSource(builder);
+            try
+            {
+                context.AddSource(builder);
+            }
+            catch (Exception ex)
+            {
+                SourceGenHelpers.Log(ex.ToString());
+            }
         }
 
         private static ClassBuilder ProcessStruct(Data data)
@@ -358,102 +365,118 @@ namespace BovineLabs.InputGenerator
 
         private static bool IsSyntaxTargetForGeneration(SyntaxNode syntaxNode, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Is Struct
-            if (syntaxNode is not StructDeclarationSyntax structDeclarationSyntax)
-                return false;
-
-            // Has Base List
-            if (structDeclarationSyntax.BaseList == null)
+            try
             {
-                return false;
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            var hasIComponentData = false;
-            foreach (var baseType in structDeclarationSyntax.BaseList.Types)
+                // Is Struct
+                if (syntaxNode is not StructDeclarationSyntax structDeclarationSyntax)
+                    return false;
 
-            {
-                var syntax = baseType.Type as IdentifierNameSyntax;
-                if (syntax?.Identifier.ValueText is "IComponentData" or "IInputComponentData")
+                // Has Base List
+                if (structDeclarationSyntax.BaseList == null)
                 {
-                    hasIComponentData = true;
-                    break;
+                    return false;
                 }
-            }
 
-            if (!hasIComponentData)
-                return false;
+                var hasIComponentData = false;
+                foreach (var baseType in structDeclarationSyntax.BaseList.Types)
 
-            // Has Partial keyword
-            var hasPartial = false;
-            foreach (var m in structDeclarationSyntax.Modifiers)
-            {
-                if (m.IsKind(SyntaxKind.PartialKeyword))
                 {
-                    hasPartial = true;
-                    break;
+                    var syntax = baseType.Type as IdentifierNameSyntax;
+                    if (syntax?.Identifier.ValueText is "IComponentData" or "IInputComponentData")
+                    {
+                        hasIComponentData = true;
+                        break;
+                    }
                 }
-            }
 
-            if (!hasPartial)
+                if (!hasIComponentData)
+                    return false;
+
+                // Has Partial keyword
+                var hasPartial = false;
+                foreach (var m in structDeclarationSyntax.Modifiers)
+                {
+                    if (m.IsKind(SyntaxKind.PartialKeyword))
+                    {
+                        hasPartial = true;
+                        break;
+                    }
+                }
+
+                if (!hasPartial)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
             {
+                SourceGenHelpers.Log(ex.ToString());
                 return false;
             }
-
-            return true;
         }
 
         private static Data GetSemanticTargetForGeneration(
             GeneratorSyntaxContext ctx, CancellationToken cancellationToken)
         {
-            var structDeclarationSyntax = (StructDeclarationSyntax)ctx.Node;
-
-            var fields = new List<FieldData>();
-
-            foreach (var m in structDeclarationSyntax.Members)
+            try
             {
-                if (m is not FieldDeclarationSyntax field)
+                var structDeclarationSyntax = (StructDeclarationSyntax)ctx.Node;
+
+                var fields = new List<FieldData>();
+
+                foreach (var m in structDeclarationSyntax.Members)
                 {
-                    continue;
-                }
-
-                var type = field.Declaration.Type.GetText().ToString().TrimEnd();
-
-                if (!ValidFieldType(type))
-                {
-                    continue;
-                }
-
-                var attribute = GetInputActionAttribute(field);
-
-                if (attribute != AttributeType.None)
-                {
-                    foreach (var variable in field.Declaration.Variables)
+                    if (m is not FieldDeclarationSyntax field)
                     {
-                        fields.Add(new FieldData
+                        continue;
+                    }
+
+                    var type = field.Declaration.Type.GetText().ToString().TrimEnd();
+
+                    if (!ValidFieldType(type))
+                    {
+                        continue;
+                    }
+
+                    var attribute = GetInputActionAttribute(field);
+
+                    if (attribute != AttributeType.None)
+                    {
+                        foreach (var variable in field.Declaration.Variables)
                         {
-                            Name = variable.Identifier.ValueText,
-                            Type = type,
-                            AttributeType = attribute,
-                        });
+                            fields.Add(new FieldData
+                            {
+                                Name = variable.Identifier.ValueText,
+                                Type = type,
+                                AttributeType = attribute,
+                            });
+                        }
                     }
                 }
-            }
 
-            if (fields.Count == 0)
+                if (fields.Count == 0)
+                {
+                    return null;
+                }
+
+                var typeSymbol = ctx.SemanticModel.GetDeclaredSymbol(structDeclarationSyntax);
+                if (typeSymbol == null)
+                {
+                    return null;
+                }
+
+                var isNetcode = HasInputComponentData(structDeclarationSyntax);
+                return new Data(typeSymbol, fields, isNetcode);
+            }
+            catch (Exception ex)
             {
+                SourceGenHelpers.Log(ex.ToString());
                 return null;
             }
-
-            var typeSymbol = ctx.SemanticModel.GetDeclaredSymbol(structDeclarationSyntax);
-            if (typeSymbol == null)
-            {
-                return null;
-            }
-
-            var isNetcode = HasInputComponentData(structDeclarationSyntax);
-            return new Data(typeSymbol, fields, isNetcode);
         }
 
         private static bool HasInputComponentData(StructDeclarationSyntax structDeclarationSyntax)

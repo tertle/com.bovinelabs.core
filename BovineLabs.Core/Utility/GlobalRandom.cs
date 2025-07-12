@@ -2,15 +2,15 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Entropy
+namespace BovineLabs.Core.Utility
 {
+#if UNITY_EDITOR
+#endif
     using BovineLabs.Core.Collections;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Mathematics;
-#if UNITY_EDITOR
     using UnityEditor;
-#endif
     using UnityEngine;
     using Random = Unity.Mathematics.Random;
 

@@ -18,7 +18,12 @@ namespace BovineLabs.Core.Editor.SubScenes
         /// <inheritdoc />
         protected override void OnCreate()
         {
-            foreach (var scene in EditorSettingsUtility.GetSettings<EditorSettings>().PrebakeScenes)
+            if (!EditorSettingsUtility.TryGetSettings<EditorSettings>(out var settings))
+            {
+                return;
+            }
+
+            foreach (var scene in settings!.PrebakeScenes)
             {
                 if (!scene)
                 {

@@ -39,7 +39,7 @@ namespace BovineLabs.Core.Collections
             this.data.TryAdd(key, item, true);
         }
 
-        public ref TValue AddUnique(TKey key)
+        public ref TValue Add(TKey key)
         {
             return ref this.data.AddUnique(key, true);
         }

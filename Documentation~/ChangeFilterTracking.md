@@ -1,13 +1,14 @@
-﻿# Change Filter Tracking
+# Change Filter Tracking
 
-## Summary
+## Overview
 
-When using change filters it is very easy to break their usage by accidentally introducing a ref field on the component causing them to trigger every frame.
+Change filters can be easily broken by ref fields or frequent modifications, causing them to trigger every frame and defeating their performance benefits. The `ChangeFilterTrackingAttribute` monitors component change frequency and warns when components exceed optimal thresholds.
 
-The `ChangeFilterTrackingAttribute` allows you to track how frequently a component triggers a change filter and warns you if it is happening too frequently.
+**Editor-only system with zero runtime overhead.**
 
-## Using
-Simply add the attribute to any component you want to track.
+## Usage
+
+Add the attribute to components you want to monitor:
 
 ```csharp
 [ChangeFilterTracking]
@@ -17,18 +18,31 @@ public struct MyComponent : IComponentData
 }
 ```
 
-## Configuration
+Works with `IComponentData`, `IBufferElementData`, and `IEnableableComponent` types.
 
-Configuration is handled in the config var window. `BovineLabs -> ConfigVars` toggling the `debug.changefiltertracking` option.
+## Monitoring
 
-| Key       | Description                                                                                                                                                                                                    |
-|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Enabled   | Tracking a lot of components can add a little overhead to the editor (but not the runtime), this lets you toggle it on and off.                                                                                |
-| Threshold | Allows you to change the warn level. Use a value of 0 to 1, default 85% (0.85). This means if a component triggers a change filter more than 85% of the time over 600 frames it will log a warning in console. |
+### Real-time Window
+Access via `BovineLabs -> Tools -> Change Filter` to view:
+- **60 Frames %**: Short-term change frequency
+- **600 Frames %**: Long-term average (used for warnings)
+- Multi-world support with world selector
+
+![ChangeFilterWindow](Images/ChangeFilterWindow.png)
+
+### Configuration
+Configure via `BovineLabs -> ConfigVars`:
+
+| ConfigVar                      | Default | Description                                  |
+|--------------------------------|---------|----------------------------------------------|
+| `debug.changefilter.enabled`   | true    | Enable/disable tracking                      |
+| `debug.changefilter.threshold` | 0.85    | Warning threshold (85%) for console warnings |
 
 ![ChangeFilterWindow](Images/ChangeFilterTrackingOption.png)
 
-## Window
-There is also a window under `BovineLabs -> Tools -> Change Filter` that will show you all the components that are triggering change filters and how frequently they are doing so.
+## Common Issues
 
-![ChangeFilterWindow](Images/ChangeFilterWindow.png)
+**High change frequency (>85%) usually indicates:**
+- Ref fields breaking change detection
+- Unnecessary component writes every frame
+- Structural changes affecting the component

@@ -1,4 +1,4 @@
-// <copyright file="DynamicVariableMapTwoColumns.cs" company="BovineLabs">
+// <copyright file="DynamicVariableMap2.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 

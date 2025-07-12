@@ -115,8 +115,8 @@ namespace BovineLabs.Core.Iterators
 
                 if (idx == -1)
                 {
-                    this.TryAdd(key, value); // TODO this doesn't need to do another find
-                    return;
+                    // Use optimized path that doesn't repeat the Find() call
+                    idx = DynamicHashMapHelper<TKey>.AddWithKnownAbsence(this.buffer, ref this.helper, key);
                 }
 
                 UnsafeUtility.WriteArrayElement(this.helper->Values, idx, value);
@@ -178,7 +178,7 @@ namespace BovineLabs.Core.Iterators
             var idx = this.helper->Find(key);
             if (idx == -1)
             {
-                idx = DynamicHashMapHelper<TKey>.AddUnique(this.buffer, ref this.helper, key);
+                idx = DynamicHashMapHelper<TKey>.AddWithKnownAbsence(this.buffer, ref this.helper, key);
                 UnsafeUtility.WriteArrayElement(this.helper->Values, idx, defaultValue);
             }
 
@@ -193,7 +193,7 @@ namespace BovineLabs.Core.Iterators
             var idx = this.helper->Find(key);
             if (idx == -1)
             {
-                idx = DynamicHashMapHelper<TKey>.AddUnique(this.buffer, ref this.helper, key);
+                idx = DynamicHashMapHelper<TKey>.AddWithKnownAbsence(this.buffer, ref this.helper, key);
                 UnsafeUtility.WriteArrayElement(this.helper->Values, idx, defaultValue);
                 add = true;
             }

@@ -1,4 +1,4 @@
-// <copyright file="InitializeEntitySystem.cs" company="BovineLabs">
+// <copyright file="SingletonInitializedSystem.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 

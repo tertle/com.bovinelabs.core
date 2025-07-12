@@ -74,6 +74,23 @@ namespace BovineLabs.Core.Extensions
             return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafeReadOnlyPtr(), index);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref T ElementAtROUnsafe<T>(this NativeArray<T> array, int index)
+            where T : unmanaged
+        {
+            CheckElementReadAccess(array, index);
+            return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafeReadOnlyPtr(), index);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref T ElementAtROUnsafe<T>(this NativeArray<T>.ReadOnly array, int index)
+            where T : unmanaged
+        {
+            CheckElementReadAccess(array, index);
+            return ref UnsafeUtility.ArrayElementAsRef<T>(array.GetUnsafeReadOnlyPtr(), index);
+        }
+
+
         /// <summary> Efficiently sets all values in a NativeArray to a specific value. </summary>
         /// <param name="array"> The array to fill. </param>
         /// <param name="value"> The value that the array elements will be set to. </param>

@@ -19,7 +19,7 @@ namespace BovineLabs.Core.Utility
         {
             // TODO validate
             this.H = math.clamp(h, 0, 360);
-            if (math.abs(this.H - 360) < float.Epsilon)
+            if (math.abs(this.H - 360) < math.EPSILON)
             {
                 this.H = 0;
             }

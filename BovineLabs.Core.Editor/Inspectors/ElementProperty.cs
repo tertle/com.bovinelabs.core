@@ -13,17 +13,17 @@ namespace BovineLabs.Core.Editor.Inspectors
     /// <summary> Provides an inspector ([CustomPropertyDrawer(typeof(T))]) with custom element but will fall back to PropertyField if not overriden. </summary>
     public abstract class ElementProperty : PropertyDrawer
     {
+        private SerializedObject? serializedObject;
+        private VisualElement? parent;
+
+        private static readonly Dictionary<SerializedProperty, object> Caches = new();
+
         protected enum ParentTypes : byte
         {
             Foldout,
             Label,
             None,
         }
-
-        private SerializedObject? serializedObject;
-        private VisualElement? parent;
-
-        private static readonly Dictionary<SerializedProperty, object> Caches = new();
 
         protected virtual ParentTypes ParentType { get; } = ParentTypes.Foldout;
 

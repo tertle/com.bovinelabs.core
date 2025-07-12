@@ -13,6 +13,11 @@ namespace BovineLabs.Core.Utility
     using UnityEditor;
     using UnityEngine;
 
+    /// <summary>
+    /// A pooled wrapper around NativeList that reuses allocated memory across instances to reduce allocation pressure.
+    /// Uses thread-local pools to avoid contention in multi-threaded scenarios.
+    /// </summary>
+    /// <typeparam name="T">The unmanaged element type.</typeparam>
     public unsafe struct PooledNativeList<T> : IDisposable
         where T : unmanaged
     {
@@ -22,11 +27,22 @@ namespace BovineLabs.Core.Utility
         private AtomicSafetyHandle oldHandle;
 #endif
 
+        /// <summary>
+        /// Gets the underlying NativeList instance.
+        /// </summary>
+        /// <value>The wrapped NativeList that can be used for all list operations.</value>
         public NativeList<T> List => this.list;
 
         private PooledNativeList<T> Create()
         {
             ref var data = ref PooledNativeList.Pool.Data;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!data.IsCreated)
+            {
+                throw new InvalidOperationException("PooledNativeList pool not initialized.");
+            }
+#endif
 
             ref var lp = ref PooledNativeList.Pool.Data.GetThreadList();
             if (lp.Length == 0)
@@ -50,18 +66,32 @@ namespace BovineLabs.Core.Utility
 #endif
 
                 this.list = UnsafeUtility.As<NativeList<byte>, NativeList<T>>(ref byteList);
-
                 this.list.m_ListData->m_capacity = byteList.Capacity / UnsafeUtility.SizeOf<T>();
             }
 
             return this;
         }
 
+        /// <summary>
+        /// Creates a new PooledNativeList instance, either from the thread-local pool or by allocating a new one.
+        /// </summary>
+        /// <returns>A PooledNativeList instance ready for use.</returns>
+        /// <remarks>
+        /// This method is thread-safe and will reuse previously disposed instances when available.
+        /// The returned instance must be disposed to return it to the pool.
+        /// </remarks>
         public static PooledNativeList<T> Make()
         {
             return default(PooledNativeList<T>).Create();
         }
 
+        /// <summary>
+        /// Disposes the PooledNativeList and returns the underlying memory to the thread-local pool for reuse.
+        /// </summary>
+        /// <remarks>
+        /// This method clears the list contents and converts it back to a byte list for storage in the pool.
+        /// The instance should not be used after disposal.
+        /// </remarks>
         public void Dispose()
         {
             ref var lp = ref PooledNativeList.Pool.Data.GetThreadList();
@@ -76,7 +106,16 @@ namespace BovineLabs.Core.Utility
             byteList.m_Safety = this.oldHandle;
 #endif
 
-            lp.Add(byteList);
+            // Only add back to pool if we haven't exceeded the max size
+            if (lp.Length < PooledNativeList.MaxPoolSizePerThread)
+            {
+                lp.Add(byteList);
+            }
+            else
+            {
+                // Pool is full, dispose the list instead
+                byteList.Dispose();
+            }
         }
     }
 
@@ -84,6 +123,15 @@ namespace BovineLabs.Core.Utility
     {
         internal static readonly SharedStatic<Data> Pool = SharedStatic<Data>.GetOrCreate<Data>();
 
+        internal const int MaxPoolSizePerThread = 8;
+
+        /// <summary>
+        /// Initializes the global pool data structure used by all PooledNativeList instances.
+        /// </summary>
+        /// <remarks>
+        /// This method is called automatically during Unity initialization and should not be called manually.
+        /// Creates thread-local storage for each worker thread to avoid contention.
+        /// </remarks>
 #if UNITY_EDITOR
         [InitializeOnLoadMethod]
 #endif
@@ -121,8 +169,8 @@ namespace BovineLabs.Core.Utility
 
             public ref UnsafeList<NativeList<byte>> GetThreadList()
             {
-                ref var randoms = ref UnsafeUtility.ArrayElementAsRef<ThreadData>(this.buffer, JobsUtility.ThreadIndex);
-                return ref randoms.ThreadList;
+                ref var list = ref UnsafeUtility.ArrayElementAsRef<ThreadData>(this.buffer, JobsUtility.ThreadIndex);
+                return ref list.ThreadList;
             }
 
             public void Dispose()

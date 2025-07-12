@@ -96,7 +96,6 @@ namespace BovineLabs.Core.Collections
 
             var index = c++;
             this.keys[index] = key;
-            // this.values[index] = item;
             this.next[index] = this.buckets[bucket];
             this.buckets[bucket] = index;
 

@@ -224,113 +224,32 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int TryAdd(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data, in TKey key)
         {
             if (data->Find(key) == -1)
             {
-                // Allocate an entry from the free list
-                if (data->AllocatedIndex >= data->Capacity && data->FirstFreeIdx < 0)
-                {
-                    var newCap = CalcCapacityCeilPow2(data->Count, data->Capacity + (1 << data->Log2MinGrowth), data->Log2MinGrowth);
-                    Resize(buffer, ref data, newCap);
-                }
-
-                var idx = data->FirstFreeIdx;
-
-                if (idx >= 0)
-                {
-                    data->FirstFreeIdx = data->Next[idx];
-                }
-                else
-                {
-                    idx = data->AllocatedIndex++;
-                }
-
-                data->CheckIndexOutOfBounds(idx);
-
-                UnsafeUtility.WriteArrayElement(data->Keys, idx, key);
-                var bucket = data->GetBucket(key);
-
-                // Add the index to the hash-map
-                var next = data->Next;
-                next[idx] = data->Buckets[bucket];
-                data->Buckets[bucket] = idx;
-                data->Count++;
-
-                return idx;
+                return AddNewKey(buffer, ref data, key);
             }
 
             return -1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int AddWithKnownAbsence(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data, in TKey key)
+        {
+            return AddNewKey(buffer, ref data, key);
+        }
+
         internal static int AddUnique(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data, in TKey key)
         {
             data->CheckDoesNotExist(key);
-
-            // Allocate an entry from the free list
-            if (data->AllocatedIndex >= data->Capacity && data->FirstFreeIdx < 0)
-            {
-                var newCap = CalcCapacityCeilPow2(data->Count, data->Capacity + (1 << data->Log2MinGrowth), data->Log2MinGrowth);
-                Resize(buffer, ref data, newCap);
-            }
-
-            var idx = data->FirstFreeIdx;
-
-            if (idx >= 0)
-            {
-                data->FirstFreeIdx = data->Next[idx];
-            }
-            else
-            {
-                idx = data->AllocatedIndex++;
-            }
-
-            data->CheckIndexOutOfBounds(idx);
-
-            UnsafeUtility.WriteArrayElement(data->Keys, idx, key);
-            var bucket = data->GetBucket(key);
-
-            // Add the index to the hash-map
-            var next = data->Next;
-            next[idx] = data->Buckets[bucket];
-            data->Buckets[bucket] = idx;
-            data->Count++;
-
-            return idx;
+            return AddNewKey(buffer, ref data, key);
         }
 
         internal static int AddMulti(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data, in TKey key)
         {
-            // Allocate an entry from the free list
-            if (data->AllocatedIndex >= data->Capacity && data->FirstFreeIdx < 0)
-            {
-                var newCap = CalcCapacityCeilPow2(data->Count, data->Capacity + (1 << data->Log2MinGrowth), data->Log2MinGrowth);
-                Resize(buffer, ref data, newCap);
-            }
-
-            var idx = data->FirstFreeIdx;
-
-            if (idx >= 0)
-            {
-                data->FirstFreeIdx = data->Next[idx];
-            }
-            else
-            {
-                idx = data->AllocatedIndex++;
-            }
-
-            data->CheckIndexOutOfBounds(idx);
-
-            UnsafeUtility.WriteArrayElement(data->Keys, idx, key);
-            var bucket = data->GetBucket(key);
-
-            // Add the index to the hash-map
-            var next = data->Next;
-            next[idx] = data->Buckets[bucket];
-            data->Buckets[bucket] = idx;
-            data->Count++;
-
-            return idx;
+            return AddNewKey(buffer, ref data, key);
         }
 
         internal static void AddBatchUnsafe(
@@ -793,6 +712,40 @@ namespace BovineLabs.Core.Iterators
             next[idx] = this.Buckets[bucket];
             this.Buckets[bucket] = idx;
             this.Count++;
+
+            return idx;
+        }
+
+        private static int AddNewKey(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data, in TKey key)
+        {
+            // Allocate an entry from the free list
+            if (data->AllocatedIndex >= data->Capacity && data->FirstFreeIdx < 0)
+            {
+                var newCap = CalcCapacityCeilPow2(data->Count, data->Capacity + (1 << data->Log2MinGrowth), data->Log2MinGrowth);
+                Resize(buffer, ref data, newCap);
+            }
+
+            var idx = data->FirstFreeIdx;
+
+            if (idx >= 0)
+            {
+                data->FirstFreeIdx = data->Next[idx];
+            }
+            else
+            {
+                idx = data->AllocatedIndex++;
+            }
+
+            data->CheckIndexOutOfBounds(idx);
+
+            UnsafeUtility.WriteArrayElement(data->Keys, idx, key);
+            var bucket = data->GetBucket(key);
+
+            // Add the index to the hash-map
+            var next = data->Next;
+            next[idx] = data->Buckets[bucket];
+            data->Buckets[bucket] = idx;
+            data->Count++;
 
             return idx;
         }

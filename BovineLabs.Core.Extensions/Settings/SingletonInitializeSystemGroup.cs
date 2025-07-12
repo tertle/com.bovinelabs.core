@@ -1,17 +1,16 @@
-// <copyright file="InitializeSingletonSystemGroup.cs" company="BovineLabs">
+// <copyright file="SingletonInitializeSystemGroup.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 namespace BovineLabs.Core.Settings
 {
     using BovineLabs.Core.Groups;
-    using BovineLabs.Core.LifeCycle;
     using BovineLabs.Core.Pause;
     using BovineLabs.Core.Utility;
     using Unity.Entities;
 
 #if !BL_DISABLE_LIFECYCLE
-    [UpdateBefore(typeof(InitializeSystemGroup))]
+    [UpdateBefore(typeof(LifeCycle.InitializeSystemGroup))]
 #endif
     [UpdateInGroup(typeof(BeginSimulationSystemGroup), OrderFirst = true)]
     public partial class SingletonInitializeSystemGroup : ComponentSystemGroup, IUpdateWhilePaused

@@ -15,5 +15,11 @@ namespace BovineLabs.Core.Utility
         {
             return query.IsEmpty;
         }
+
+        [BurstDiscard]
+        public static void SetNotBurstCompiled(ref bool isBurstCompiled)
+        {
+            isBurstCompiled = false;
+        }
     }
 }

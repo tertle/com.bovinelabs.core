@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Authoring.EntityCommands
 {
     using System;
     using BovineLabs.Core.EntityCommands;
+    using Unity.Collections;
     using Unity.Entities;
 
     public struct BakerCommands : IEntityCommands
@@ -29,6 +30,16 @@ namespace BovineLabs.Core.Authoring.EntityCommands
         public Entity Instantiate(Entity prefab)
         {
             throw new NotImplementedException("Can't instantiate from a baker");
+        }
+
+        public void SetName(FixedString64Bytes name)
+        {
+            throw new NotImplementedException("Can't SetName from a baker");
+        }
+
+        public void SetName(Entity entity, FixedString64Bytes name)
+        {
+            throw new NotImplementedException("Can't SetName from a baker");
         }
 
         public void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)

@@ -1,55 +1,66 @@
 {
-  "name": "BovineLabs.Core.Extensions",
-  "rootNamespace": "BovineLabs.Core",
-  "references": [
-    "BovineLabs.Core",
-    "Unity.Burst",
-    "Unity.Collections",
-    "Unity.Entities",
-    "Unity.Entities.Hybrid",
-    "Unity.InputSystem",
-    "Unity.Localization",
-    "Unity.Mathematics",
-    "Unity.Mathematics.Extensions",
-    "Unity.NetCode",
-    "Unity.Networking.Transport",
-    "Unity.Physics",
-    "Unity.ResourceManager",
-    "Unity.Scenes",
-    "Unity.Transforms",
-    "Unity.Transforms.Hybrid",
-    "Unity.Physics.Custom"
-  ],
-  "includePlatforms": [],
-  "excludePlatforms": [],
-  "allowUnsafeCode": true,
-  "overrideReferences": false,
-  "precompiledReferences": [],
-  "autoReferenced": false,
-  "defineConstraints": [
-    "BL_CORE_EXTENSIONS"
-  ],
-  "versionDefines": [
-    {
-      "name": "com.unity.netcode",
-      "expression": "",
-      "define": "UNITY_NETCODE"
-    },
-    {
-      "name": "com.unity.physics",
-      "expression": "",
-      "define": "UNITY_PHYSICS"
-    },
-    {
-      "name": "com.unity.localization",
-      "expression": "",
-      "define": "UNITY_LOCALIZATION"
-    },
-    {
-      "name": "com.unity.dt.app-ui",
-      "expression": "",
-      "define": "UNITY_APPUI"
-    }
-  ],
-  "noEngineReferences": false
+    "name": "BovineLabs.Core.Extensions",
+    "rootNamespace": "BovineLabs.Core",
+    "references": [
+        "BovineLabs.Core",
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Unity.InputSystem",
+        "Unity.Localization",
+        "Unity.Mathematics",
+        "Unity.Mathematics.Extensions",
+        "Unity.NetCode",
+        "Unity.Networking.Transport",
+        "Unity.Physics",
+        "Unity.ResourceManager",
+        "Unity.Scenes",
+        "Unity.Splines",
+        "Unity.Transforms",
+        "Unity.Transforms.Hybrid",
+        "Unity.Physics.Custom"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "BL_CORE_EXTENSIONS"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.netcode",
+            "expression": "",
+            "define": "UNITY_NETCODE"
+        },
+        {
+            "name": "com.unity.physics",
+            "expression": "",
+            "define": "UNITY_PHYSICS"
+        },
+        {
+            "name": "com.unity.localization",
+            "expression": "",
+            "define": "UNITY_LOCALIZATION"
+        },
+        {
+            "name": "com.unity.dt.app-ui",
+            "expression": "",
+            "define": "UNITY_APPUI"
+        },
+        {
+            "name": "com.unity.entities",
+            "expression": "1.4.0-pre.3",
+            "define": "UNITY_ENTITIES_1_4_0_pre_3"
+        },
+        {
+          "name": "com.unity.splines",
+          "expression": "",
+          "define": "UNITY_SPLINES"
+        }
+    ],
+    "noEngineReferences": false
 }

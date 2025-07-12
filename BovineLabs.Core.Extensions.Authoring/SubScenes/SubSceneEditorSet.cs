@@ -5,22 +5,11 @@
 #if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.Authoring.SubScenes
 {
-    using System.Collections.Generic;
     using BovineLabs.Core.ObjectManagement;
-    using BovineLabs.Core.SubScenes;
-    using UnityEditor;
-    using UnityEngine;
 
     [AutoRef(nameof(SubSceneSettings), nameof(SubSceneSettings.EditorSceneSets), nameof(SubSceneEditorSet), "Scenes/Editor", createNull:false)]
-    public class SubSceneEditorSet : ScriptableObject
+    public class SubSceneEditorSet : SubSceneSetBase
     {
-        public List<SceneAsset> Scenes = new();
-
-#if UNITY_NETCODE
-        public SubSceneLoadFlags TargetWorld = SubSceneLoadFlags.Game | SubSceneLoadFlags.Client | SubSceneLoadFlags.Server;
-#else
-        public SubSceneLoadFlags TargetWorld = SubSceneLoadFlags.Game;
-#endif
     }
 }
 #endif

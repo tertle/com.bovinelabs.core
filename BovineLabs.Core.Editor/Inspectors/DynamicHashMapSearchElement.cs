@@ -28,7 +28,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             : base(inspector)
         {
             this.defaultValue = defaultValue;
-            var popup = new SearchElement(items, "Stat");
+            var popup = new SearchElement(items, string.Empty);
 
             this.content = new PropertyElement();
             this.content.AddContext(this.Context.Context);
@@ -72,14 +72,14 @@ namespace BovineLabs.Core.Editor.Inspectors
                 return;
             }
 
-            var oldValue = this.content.GetTarget<TValue>();
+            var oldValue = this.content.GetTarget<ValueStruct>();
 
             var map = this.GetMap();
             var value = this.TryGetValue(map, this.current.Value);
 
-            if (UnsafeUtility.MemCmp(&oldValue, &value, UnsafeUtility.SizeOf<TValue>()) != 0)
+            if (UnsafeUtility.MemCmp(&oldValue.Value, &value, UnsafeUtility.SizeOf<TValue>()) != 0)
             {
-                this.content.SetTarget(value);
+                this.content.SetTarget(new ValueStruct { Value = value });
             }
         }
 
@@ -117,7 +117,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
             this.current = key;
             var value = this.TryGetValue(map, key);
-            this.content.SetTarget(value);
+            this.content.SetTarget(new ValueStruct { Value = value });
         }
 
         private TValue TryGetValue(DynamicHashMap<TKey, TValue> map, TKey key)
@@ -128,6 +128,11 @@ namespace BovineLabs.Core.Editor.Inspectors
             }
 
             return value;
+        }
+
+        public struct ValueStruct
+        {
+            public TValue Value;
         }
     }
 }

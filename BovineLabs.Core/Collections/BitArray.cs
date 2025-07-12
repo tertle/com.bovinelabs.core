@@ -40,6 +40,11 @@ namespace BovineLabs.Core.Collections
         /// <returns> State of the bit at the provided index. </returns>
         bool this[uint index] { get; set; }
 
+        /// <summary> An indexer that allows access to the bit at a given index. This provides both read and write access. </summary>
+        /// <param name="index"> Index of the bit. </param>
+        /// <returns> State of the bit at the provided index. </returns>
+        bool this[int index] { get; set; }
+
         /// <summary>
         /// Perform an AND bitwise operation between this BitArray and the one you pass into the function and return the result.
         /// Both BitArrays must have the same capacity. This will not change current BitArray values.
@@ -131,6 +136,13 @@ namespace BovineLabs.Core.Collections
         {
             readonly get => BitArrayUtilities.Get8(index, this.data);
             set => BitArrayUtilities.Set8(index, ref this.data, value);
+        }
+
+        /// <inheritdoc />
+        public bool this[int index]
+        {
+            readonly get => this[(uint)index];
+            set => this[(uint)index] = value;
         }
 
         /// <summary> Bit-wise Not operator. </summary>
@@ -298,6 +310,17 @@ namespace BovineLabs.Core.Collections
             set => BitArrayUtilities.Set16(index, ref this.data, value);
         }
 
+        /// <summary>
+        /// Returns the state of the bit at a specific index.
+        /// </summary>
+        /// <param name="index"> Index of the bit. </param>
+        /// <returns> State of the bit at the provided index. </returns>
+        public bool this[int index]
+        {
+            readonly get => this[(uint)index];
+            set => this[(uint)index] = value;
+        }
+
         /// <summary> Bit-wise Not operator. </summary>
         /// <param name="a"> Bit array with which to do the operation. </param>
         /// <returns> The resulting bit array. </returns>
@@ -457,6 +480,17 @@ namespace BovineLabs.Core.Collections
         {
             readonly get => BitArrayUtilities.Get32(index, this.data);
             set => BitArrayUtilities.Set32(index, ref this.data, value);
+        }
+
+        /// <summary>
+        /// Returns the state of the bit at a specific index.
+        /// </summary>
+        /// <param name="index"> Index of the bit. </param>
+        /// <returns> State of the bit at the provided index. </returns>
+        public bool this[int index]
+        {
+            readonly get => this[(uint)index];
+            set => this[(uint)index] = value;
         }
 
         /// <summary> Bit-wise Not operator. </summary>
@@ -627,6 +661,17 @@ namespace BovineLabs.Core.Collections
         {
             readonly get => BitArrayUtilities.Get64(index, this.data);
             set => BitArrayUtilities.Set64(index, ref this.data, value);
+        }
+
+        /// <summary>
+        /// Returns the state of the bit at a specific index.
+        /// </summary>
+        /// <param name="index"> Index of the bit. </param>
+        /// <returns> State of the bit at the provided index. </returns>
+        public bool this[int index]
+        {
+            readonly get => this[(uint)index];
+            set => this[(uint)index] = value;
         }
 
         /// <summary> Bit-wise Not operator. </summary>
@@ -1037,6 +1082,17 @@ namespace BovineLabs.Core.Collections
         {
             readonly get => BitArrayUtilities.Get256(index, this.data1, this.data2, this.data3, this.data4);
             set => BitArrayUtilities.Set256(index, ref this.data1, ref this.data2, ref this.data3, ref this.data4, value);
+        }
+
+        /// <summary>
+        /// Returns the state of the bit at a specific index.
+        /// </summary>
+        /// <param name="index"> Index of the bit. </param>
+        /// <returns> State of the bit at the provided index. </returns>
+        public bool this[int index]
+        {
+            readonly get => this[(uint)index];
+            set => this[(uint)index] = value;
         }
 
         /// <summary> Bit-wise Not operator. </summary>

@@ -183,8 +183,9 @@ namespace BovineLabs.Core.Tests.Utility
             using (var doubleList = PooledNativeList<double>.Make())
             {
                 // The capacity should be approximately half (due to size difference)
+                // Allow some tolerance for pooling overhead and rounding
                 Assert.LessOrEqual(doubleList.List.Capacity, smallTypeCapacity);
-                Assert.GreaterOrEqual(doubleList.List.Capacity * 2, smallTypeCapacity);
+                Assert.GreaterOrEqual(doubleList.List.Capacity * 2 + 1, smallTypeCapacity);
 
                 // Ensure the list is still usable
                 for (var i = 0; i < 50; i++)

@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Iterators
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using JetBrains.Annotations;
     using Unity.Entities;
 
     [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Needed for safety.")]
@@ -14,6 +15,7 @@ namespace BovineLabs.Core.Iterators
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
+        [UsedImplicitly]
         byte Value { get; }
     }
 }

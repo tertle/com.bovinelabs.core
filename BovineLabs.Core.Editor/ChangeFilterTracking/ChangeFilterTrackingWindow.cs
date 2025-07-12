@@ -111,7 +111,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
                     var t = typeTracks[index];
                     var source = this.sources[index];
 
-                    if (math.abs(source.Short - t.Short.Value) > float.Epsilon || math.abs(source.Long - t.Long.Value) > float.Epsilon)
+                    if (math.abs(source.Short - t.Short.Value) > math.EPSILON || math.abs(source.Long - t.Long.Value) > math.EPSILON)
                     {
                         source.Short = t.Short.Value;
                         source.Long = t.Long.Value;
