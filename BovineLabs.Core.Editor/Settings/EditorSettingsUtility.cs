@@ -51,6 +51,7 @@ namespace BovineLabs.Core.Editor.Settings
 
         /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
         /// <param name="settings"> The settings if found. </param>
+        /// <typeparam name="T"> The settings type. </typeparam>
         /// <returns> True if settings is created. </returns>
         /// <exception cref="Exception"> Thrown if more than 1 instance found in project. </exception>
         public static bool TryGetSettings<T>(out T? settings)
@@ -232,13 +233,9 @@ namespace BovineLabs.Core.Editor.Settings
                     }
                     else
                     {
-                        directory = GetAssetDirectory(EditorSettings.SettingsKey, EditorSettings.DefaultSettingsDirectory, allowCreate: allowCreate);
-
-                        var subDirectory = type.GetCustomAttribute<SettingSubDirectoryAttribute>();
-                        if (directory != null && subDirectory != null && !string.IsNullOrWhiteSpace(subDirectory.Directory))
-                        {
-                            directory = Path.Combine(directory, subDirectory.Directory);
-                        }
+                        var subDirectoryAttribute = type.GetCustomAttribute<SettingSubDirectoryAttribute>();
+                        var subDirectory = subDirectoryAttribute != null ? subDirectoryAttribute.Directory : string.Empty;
+                        directory = GetAssetDirectory(EditorSettings.SettingsKey, EditorSettings.DefaultSettingsDirectory, subDirectory, allowCreate: allowCreate);
                     }
 
                     if (directory == null)

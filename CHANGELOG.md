@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.5.1] - 2025-08-17
+
+### Fixed
+* SettingSubDirectoryAttribute not correctly creating directory
+
 ## [1.4.5] - 2025-08-17
 
 ### Added
