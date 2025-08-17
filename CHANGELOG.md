@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.4.5] - 2025-08-17
+
+### Added
+* Selection history window
+* Favourites window
+* SubSettingsAttribute
+* SettingsSingleton which auto includes settings in build
+* Unity 6.3 support
+* cid support for ObjectDefinitionSearchProvider
+* BlobAssetStore to ECSTestsFixture
+* ReflectionTestHelper
+* FromToRotation
+* BitWise internals
+
+### Changed
+* Updated ECSTestFixture for Entities latest changes
+* K no longer goes in Resources, automatically added to builds
+* Exposed SearchProviderType on ObjectDefinition for easy attribute usage
+* Moved InitializeSystemGroup before DestroySystemGroup to allow for reacting to dead entities on same frame
+* Added SceneInitializeSystem where InitializeSystemGroup used to exist that initializes new subscenes and ghosts
+
+### Fixed
+* Id bug in ObjectManagementProcessor which was causing ids to duplicate
+
+### Removed
+* ISpline from BlobSpline so you can no longer accidentaly use block breaking extension methods
+
+### Documentation
+* EntityBlob documentation added covering memory-efficient storage of multiple BlobAssetReferences
+* ObjectDefinition search integration documentation added covering SearchContext attribute usage with filters
+* LifeCycle documentation explaining destroy features
+
 ## [1.4.4] - 2025-07-12
 
 ### Added

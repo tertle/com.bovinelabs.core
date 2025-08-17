@@ -23,6 +23,7 @@ namespace BovineLabs.Core.Editor.Component
         private PropertyField? componentField;
         private DropdownField? fieldNameField;
 
+        /// <inheritdoc/>
         protected override VisualElement? CreateElement(SerializedProperty property)
         {
             switch (property.name)
@@ -44,6 +45,7 @@ namespace BovineLabs.Core.Editor.Component
             return base.CreateElement(property);
         }
 
+        /// <inheritdoc/>
         protected override void PostElementCreation(VisualElement root, bool createdElements)
         {
             this.SetupDropDown();

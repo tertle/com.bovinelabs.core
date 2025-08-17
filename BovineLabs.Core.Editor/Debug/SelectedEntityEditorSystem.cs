@@ -12,7 +12,6 @@ namespace BovineLabs.Core.Editor
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using UnityEditor;
 
     [Configurable]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.Editor)]
@@ -38,6 +37,7 @@ namespace BovineLabs.Core.Editor
             this.EntityManager.CreateEntity(typeof(SelectedEntity), typeof(SelectedEntities));
         }
 
+        /// <inheritdoc/>
         protected override void OnDestroy()
         {
             this.instanceIds.Dispose();

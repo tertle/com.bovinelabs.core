@@ -38,7 +38,11 @@ namespace BovineLabs.Core.Model
             this.activeHandle = state.GetComponentTypeHandle<TActive>(true);
             this.durationHandle = state.GetComponentTypeHandle<TDuration>(true);
 
-            this.query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<TRemaining, TOn>().WithAll<TActive, TDuration>().Build(ref state);
+            this.query = new EntityQueryBuilder(Allocator.Temp)
+                .WithAllRW<TRemaining, TOn>()
+                .WithAll<TActive, TDuration>()
+                .WithOptions(EntityQueryOptions.FilterWriteGroup)
+                .Build(ref state);
         }
 
         public void OnUpdate(ref SystemState state, UpdateTimeJob job = default)

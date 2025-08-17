@@ -274,16 +274,19 @@ namespace BovineLabs.Core.Editor.SearchWindow
                 }
             }
 
+            /// <inheritdoc/>
             public bool Equals(Item other)
             {
                 return this.Path == other.Path && Equals(this.Icon, other.Icon) && Equals(this.Data, other.Data);
             }
 
+            /// <inheritdoc/>
             public override bool Equals(object obj)
             {
                 return obj is Item other && this.Equals(other);
             }
 
+            /// <inheritdoc/>
             public override int GetHashCode()
             {
                 unchecked

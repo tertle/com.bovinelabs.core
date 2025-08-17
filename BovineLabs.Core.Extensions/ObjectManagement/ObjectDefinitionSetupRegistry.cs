@@ -5,7 +5,6 @@
 #if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.ObjectManagement
 {
-    using System;
     using Unity.Entities;
 
     [InternalBufferCapacity(0)]

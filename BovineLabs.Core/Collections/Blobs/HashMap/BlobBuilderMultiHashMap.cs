@@ -16,9 +16,9 @@ namespace BovineLabs.Core.Collections
         internal BlobBuilderMultiHashMap(int capacity, int bucketCapacityRatio, ref BlobBuilder blobBuilder, ref BlobHashMapData<TKey, TValue> data)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (capacity <= 0)
+            if (capacity < 0)
             {
-                throw new ArgumentException("Must be greater than zero", nameof(capacity));
+                throw new ArgumentException("Must not be negative", nameof(capacity));
             }
 
             if (bucketCapacityRatio <= 0)

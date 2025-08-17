@@ -233,6 +233,12 @@ namespace BovineLabs.Core.Editor.Settings
                     else
                     {
                         directory = GetAssetDirectory(EditorSettings.SettingsKey, EditorSettings.DefaultSettingsDirectory, allowCreate: allowCreate);
+
+                        var subDirectory = type.GetCustomAttribute<SettingSubDirectoryAttribute>();
+                        if (directory != null && subDirectory != null && !string.IsNullOrWhiteSpace(subDirectory.Directory))
+                        {
+                            directory = Path.Combine(directory, subDirectory.Directory);
+                        }
                     }
 
                     if (directory == null)

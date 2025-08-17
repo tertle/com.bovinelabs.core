@@ -15,5 +15,4 @@ namespace BovineLabs.Core.Keys
     {
         public abstract IEnumerable<NameValue<TV>> Keys { get; }
     }
-
 }

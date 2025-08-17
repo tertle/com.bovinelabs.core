@@ -9,6 +9,9 @@ namespace BovineLabs.Core
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
+    /// <summary>
+    /// Command buffer system for handling entity instantiation operations for the initialization lifecycle phase.
+    /// </summary>
     [WorldSystemFilter(WorldSystemFilterFlags.Default | Worlds.Service)]
     [UpdateInGroup(typeof(BeforeSceneSystemGroup))]
     public partial class InstantiateCommandBufferSystem : EntityCommandBufferSystem

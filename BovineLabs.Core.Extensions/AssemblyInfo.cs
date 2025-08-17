@@ -3,8 +3,6 @@
 // </copyright>
 
 using System.Runtime.CompilerServices;
-using Unity.Entities;
-using UnityEngine;
 #if !BL_DISABLE_PHYSICS_STATES
 using BovineLabs.Core.PhysicsStates;
 using Unity.Jobs;
@@ -31,8 +29,4 @@ using Unity.Jobs;
         typeof(CollectEventsJob<StatefulCollisionEvent, StatefulCollisionEventContainer, StatefulCollisionEventSystem.CollectCollisionEvents>))]
 [assembly: RegisterGenericJobType(typeof(CalculateEventMapBucketsJob<StatefulCollisionEvent, StatefulCollisionEventContainer>))]
 [assembly: RegisterGenericJobType(typeof(CalculateCurrentEventsBucketsJob<StatefulCollisionEvent, StatefulCollisionEventContainer>))]
-#endif
-
-#if !BL_DISABLE_CAMERA && UNITY_ENTITIES_1_4_0_pre_3
-[assembly:RegisterUnityEngineComponentType(typeof(Camera))]
 #endif

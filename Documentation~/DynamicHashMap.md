@@ -31,7 +31,7 @@ Initialize in your baker:
 
 ```csharp
 var buffer = baker.AddBuffer<PlayerInventory>();
-buffer.InitializeHashMap<PlayerInventory, int, ItemData>(capacity: 64);
+buffer.Initialize();
 ```
 
 ## Usage
@@ -44,7 +44,7 @@ public partial struct InventorySystem : IJobEntity
 {
     public void Execute(DynamicBuffer<PlayerInventory> buffer)
     {
-        var inventory = buffer.AsHashMap<PlayerInventory, int, ItemData>();
+        var inventory = buffer.AsMap();
         
         // Basic operations
         inventory.Add(itemId, itemData);
@@ -68,20 +68,7 @@ public partial struct InventorySystem : IJobEntity
 
 ## Extension Methods
 
-Create extensions to simplify usage:
-
-```csharp
-public static class PlayerInventoryExtensions
-{
-    public static DynamicHashMap<int, ItemData> AsMap(this DynamicBuffer<PlayerInventory> buffer)
-        => buffer.AsHashMap<PlayerInventory, int, ItemData>();
-}
-
-// Usage becomes cleaner
-var inventory = buffer.AsMap();
-```
-
-**Auto-generation**: Extensions are automatically generated for `HashMap`, `MultiHashMap`, `HashSet`, `UntypedHashMap`, `VariableMap`, and `PerfectHashMap` variants. For `PerfectHashMap`, only `AsMap()` is generated - `Initialize()` methods require manual implementation due to special parameters.
+**Auto-generation**: AsMap and Initialize extensions are automatically generated for `HashMap`, `MultiHashMap`, `HashSet`, `UntypedHashMap`, `VariableMap`, and `PerfectHashMap` variants. For `PerfectHashMap`, only `AsMap()` is generated - `Initialize()` methods require manual implementation due to special parameters.
 
 ## Container-Specific Usage
 

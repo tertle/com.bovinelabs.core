@@ -8,9 +8,11 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     using System.IO;
     using BovineLabs.Core.Authoring.ObjectManagement;
     using BovineLabs.Core.Editor.Settings;
+    using BovineLabs.Core.ObjectManagement;
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.SceneManagement;
+    using ObjectInstantiate = BovineLabs.Core.Authoring.ObjectManagement.ObjectInstantiate;
 
     public static class ObjectDefinitionMenu
     {
@@ -25,7 +27,9 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 return;
             }
 
-            var directory = EditorSettingsUtility.GetAssetDirectory("definitions", DefaultDirectory)!;
+            var directory = EditorSettingsUtility.GetAssetDirectory(AutoRefAttribute.NameToDirectory(nameof(ObjectDefinition)), DefaultDirectory)!;
+
+            AssetDatabase.StartAssetEditing();
 
             foreach (var select in Selection.gameObjects)
             {
@@ -36,10 +40,9 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 ObjectDefinitionInspector.AddAuthoring(select, definition);
 
                 AssetDatabase.CreateAsset(definition, path);
-                AssetDatabase.ImportAsset(path);
             }
 
-            AssetDatabase.SaveAssets();
+            AssetDatabase.StopAssetEditing();
         }
 
         [MenuItem(ReplaceSceneDefinitionsWithInstantiateName, priority = -16)]

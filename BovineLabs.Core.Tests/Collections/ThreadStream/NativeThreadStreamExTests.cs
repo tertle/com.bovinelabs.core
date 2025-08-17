@@ -2,16 +2,16 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if BL_TESTING
-namespace BovineLabs.Core.Tests.Collections.EventStream
+namespace BovineLabs.Core.Tests.Collections.ThreadStream
 {
     using BovineLabs.Core.Collections;
+    using BovineLabs.Core.Extensions;
     using BovineLabs.Testing;
     using NUnit.Framework;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Tests for <see cref="NativeThreadStreamEx" /> . </summary>
+    /// <summary> Tests for <see cref="NativeStreamExtensions" /> . </summary>
     public class NativeThreadStreamExTests : ECSTestsFixture
     {
         /// <summary> Tests the extensions AllocateLarge and ReadLarge. </summary>
@@ -54,5 +54,3 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
         }
     }
 }
-
-#endif

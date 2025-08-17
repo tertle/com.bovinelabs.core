@@ -45,6 +45,7 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
             window.Show();
         }
 
+        /// <inheritdoc/>
         protected override void OnCreate()
         {
             Resources.AddCommonVariables(this.rootVisualElement);

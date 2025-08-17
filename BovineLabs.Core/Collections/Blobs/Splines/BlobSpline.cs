@@ -5,8 +5,6 @@
 #if UNITY_SPLINES
 namespace BovineLabs.Core.Collections
 {
-    using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
     using Unity.Collections;
@@ -15,7 +13,7 @@ namespace BovineLabs.Core.Collections
     using UnityEngine;
     using UnityEngine.Splines;
 
-    public struct BlobSpline : ISpline
+    public struct BlobSpline
     {
         private const int SegmentResolution = 30;
         private const int NormalsPerCurve = 16;
@@ -55,15 +53,9 @@ namespace BovineLabs.Core.Collections
         /// <summary> Gets the number of knots. </summary>
         public int Count => this.Knots.Length;
 
-        /// <inheritdoc/>
-        bool ISpline.Closed => this.Closed;
-
         /// <summary> Get the knot at <paramref name="index"/>. </summary>
         /// <param name="index">The zero-based index of the knot.</param>
         public BezierKnot this[int index] => this.Knots[index];
-
-        /// <inheritdoc/>
-        float ISpline.GetLength() => this.Length;
 
         public static BlobAssetReference<BlobSpline> Create(ISpline spline, float4x4 transform, Allocator allocator = Allocator.Persistent)
         {
@@ -230,18 +222,6 @@ namespace BovineLabs.Core.Collections
             }
 
             return 1f;
-        }
-
-        /// <inheritdoc/>
-        IEnumerator<BezierKnot> IEnumerable<BezierKnot>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <inheritdoc/>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
         }
 
         private float3 CalculateUpVector(int curveIndex, float curveT)
@@ -473,6 +453,16 @@ namespace BovineLabs.Core.Collections
                 (curve.P3 * (3f * t2));
 
             return tangent;
+        }
+
+        public int NextIndex(int index)
+        {
+            return NextIndex(index, this.Count, this.Closed);
+        }
+
+        private static int NextIndex(int index, int count, bool wrap)
+        {
+            return wrap ? (index + 1) % count : math.min(index + 1, count - 1);
         }
 
         private struct FrenetFrame

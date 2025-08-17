@@ -12,13 +12,13 @@ namespace BovineLabs.Core.Editor.Keys
     using BovineLabs.Core.Keys;
     using BovineLabs.Core.Utility;
     using UnityEditor;
-    using UnityEngine;
 
     [CustomPropertyDrawer(typeof(KAttribute), true)]
     public class KAttributeDrawer : BitFieldAttributeEditor<KAttribute>
     {
         private static Dictionary<string, Type>? kTypes;
 
+        /// <inheritdoc/>
         protected override IEnumerable<(string Name, int Value)>? GetKeyValues(KAttribute attr)
         {
             var type = TryGetType(attr.Settings);

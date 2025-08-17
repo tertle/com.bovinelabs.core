@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Utility
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Assertions;
+    using Unity.Assertions;
     using Unity.Burst;
     using Unity.Burst.CompilerServices;
     using Unity.Collections;
@@ -803,6 +804,25 @@ namespace BovineLabs.Core.Utility
             }
 
             return mean + (stddev * x);
+        }
+
+        /// <summary>  Returns a quaternion q with q * from = to. </summary>
+        /// <remarks> Taken from Unity Physics. </remarks>
+        /// <param name="from"> From rotation. </param>
+        /// <param name="to"> To rotation. </param>
+        /// <returns> A quaternion such that q * from = to. </returns>
+        public static quaternion FromToRotation(float3 from, float3 to)
+        {
+            Assert.IsTrue(math.abs(math.lengthsq(from) - 1.0f) < 1e-4f);
+            Assert.IsTrue(math.abs(math.lengthsq(to) - 1.0f) < 1e-4f);
+            var cross = math.cross(from, to);
+            CalculatePerpendicularNormalized(from, out var safeAxis, out var unused); // for when angle ~= 180
+            var dot = math.dot(from, to);
+            var squares = new float3(0.5f - (new float2(dot, -dot) * 0.5f), math.lengthsq(cross));
+            var inverses = math.select(math.rsqrt(squares), 0.0f, squares < 1e-10f);
+            var sinCosHalfAngle = squares.xy * inverses.xy;
+            var axis = math.select(cross * inverses.z, safeAxis, squares.z < 1e-10f);
+            return new quaternion(new float4(axis * sinCosHalfAngle.x, sinCosHalfAngle.y));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

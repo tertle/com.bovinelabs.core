@@ -20,6 +20,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         protected bool MultiEditing => this.targets.Length > 1;
 
+        /// <inheritdoc/>
         public sealed override VisualElement CreateInspectorGUI()
         {
             this.parent = new VisualElement();

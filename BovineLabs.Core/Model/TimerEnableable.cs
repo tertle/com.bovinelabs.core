@@ -38,7 +38,7 @@ namespace BovineLabs.Core.Model
             this.query = new EntityQueryBuilder(Allocator.Temp)
                 .WithAllRW<TRemaining, TOn>()
                 .WithAll<TActive, TDuration>()
-                .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState)
+                .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState | EntityQueryOptions.FilterWriteGroup)
                 .Build(ref state);
         }
 

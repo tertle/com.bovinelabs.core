@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Tests
+namespace BovineLabs.Core.Tests.Collections
 {
     using BovineLabs.Core.Collections;
     using BovineLabs.Core.Jobs;

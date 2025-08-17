@@ -19,8 +19,6 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
     public static class ObjectDefinitionSearchProvider
     {
-        private const string Type = "objectdefinition";
-
         private static QueryEngine<ObjectDefinitionDescriptor>? queryEngine;
 
         private static QueryEngine<ObjectDefinitionDescriptor> QueryEngine => queryEngine ??= SetupQueryEngine();
@@ -28,7 +26,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         [SearchItemProvider]
         private static SearchProvider CreateProvider()
         {
-            return new SearchProvider(Type, "Object Definitions")
+            return new SearchProvider(ObjectDefinition.SearchProviderType, "Object Definitions")
             {
                 filterId = "od:",
                 isExplicitProvider = true,
@@ -63,7 +61,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
         private static void OpenProvider()
         {
-            SearchService.ShowContextual(Type);
+            SearchService.ShowContextual(ObjectDefinition.SearchProviderType);
         }
 
         private static IEnumerable<SearchItem> FetchItems(SearchContext context, List<SearchItem> items, SearchProvider provider)
@@ -128,6 +126,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                     help: "Search Entry by Object Definition Description");
 
             SearchBridge.AddFilter<string, ObjectDefinitionDescriptor>(query, "ca", OnTypeFilter, new[] { "=" });
+            SearchBridge.AddFilter<string, ObjectDefinitionDescriptor>(query, "cid", OnCategoryIdFilter, new[] { "=" });
 
             return query;
         }
@@ -135,6 +134,12 @@ namespace BovineLabs.Core.Editor.ObjectManagement
         private static bool OnTypeFilter(ObjectDefinitionDescriptor descriptor, QueryFilterOperator op, string value)
         {
             var results = descriptor.Categories;
+            return SearchBridge.CompareWords(op, value, results);
+        }
+
+        private static bool OnCategoryIdFilter(ObjectDefinitionDescriptor descriptor, QueryFilterOperator op, string value)
+        {
+            var results = descriptor.CategoryIds;
             return SearchBridge.CompareWords(op, value, results);
         }
 
@@ -161,6 +166,8 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 this.ObjectDefinition = objectDefinition;
 
                 this.Categories = new List<string>();
+                this.CategoryIds = new List<string>();
+
                 var c = (uint)objectDefinition.Categories;
                 while (c != 0)
                 {
@@ -172,7 +179,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                         this.Categories.Add(n);
                     }
 
-                    this.Categories.Add(shifted.ToString());
+                    this.CategoryIds.Add(index.ToString());
 
                     c ^= shifted;
                 }
@@ -185,6 +192,8 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             public string Description => this.ObjectDefinition.Description;
 
             public List<string> Categories { get; }
+
+            public List<string> CategoryIds { get; }
         }
 
         [QueryListBlock("Category", "ca", "ca")]

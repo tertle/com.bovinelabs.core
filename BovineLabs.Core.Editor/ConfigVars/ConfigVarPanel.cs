@@ -28,8 +28,10 @@ namespace BovineLabs.Core.Editor.ConfigVars
         /// <inheritdoc />
         public string DisplayName { get; }
 
+        /// <inheritdoc/>
         public string GroupName => this.DisplayName;
 
+        /// <inheritdoc/>
         public bool IsEmpty => false;
 
         /// <summary> Gets a list of all the config vars this panel draws. </summary>

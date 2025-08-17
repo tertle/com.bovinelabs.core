@@ -19,6 +19,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         private bool IsPrefab => ((Component)this.target).IsPrefab();
 
+        /// <inheritdoc/>
         protected override bool PreElementCreation(VisualElement root)
         {
             if (this.IsPrefab)

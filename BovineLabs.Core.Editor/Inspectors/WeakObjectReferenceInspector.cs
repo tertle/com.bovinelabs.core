@@ -20,6 +20,7 @@ namespace BovineLabs.Core.Editor.Inspectors
         private Foldout? field;
         private ObjectField? objectField;
 
+        /// <inheritdoc/>
         public override VisualElement Build()
         {
             this.field = new Foldout { value = false };
@@ -39,6 +40,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             return this.field;
         }
 
+        /// <inheritdoc/>
         public override void Update()
         {
             var target = this.Target;

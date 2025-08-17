@@ -2,8 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if BL_TESTING
-namespace BovineLabs.Core.Tests.Collections.EventStream
+namespace BovineLabs.Core.Tests.Collections.ThreadStream
 {
     using BovineLabs.Core.Collections;
     using BovineLabs.Testing;
@@ -27,5 +26,3 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
         }
     }
 }
-
-#endif

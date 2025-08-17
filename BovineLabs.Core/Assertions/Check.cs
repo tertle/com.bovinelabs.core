@@ -4,10 +4,12 @@
 
 namespace BovineLabs.Core.Assertions
 {
+    using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using JetBrains.Annotations;
     using Unity.Burst.CompilerServices;
+    using UnityEngine;
     using Debug = UnityEngine.Debug;
 
     [DebuggerStepThrough]
@@ -15,7 +17,7 @@ namespace BovineLabs.Core.Assertions
     {
         [AssertionMethod]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Assume(bool assumption)
+        public static void Assume([AssertionCondition(AssertionConditionType.IS_TRUE)]bool assumption)
         {
             IsTrue(assumption);
             Hint.Assume(assumption);
@@ -23,26 +25,36 @@ namespace BovineLabs.Core.Assertions
 
         [AssertionMethod]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Assume(bool assumption, string message)
+        public static void Assume([AssertionCondition(AssertionConditionType.IS_TRUE)]bool assumption, string message)
         {
             IsTrue(assumption, message);
             Hint.Assume(assumption);
         }
 
-        [AssertionMethod]
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
         private static void IsTrue(bool condition)
         {
-            Debug.Assert(condition);
+            if (condition)
+            {
+                return;
+            }
+
+            Debug.unityLogger.Log(LogType.Assert);
+            throw new Exception();
         }
 
-        [AssertionMethod]
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
         private static void IsTrue(bool condition, string message)
         {
-            Debug.Assert(condition, message);
+            if (condition)
+            {
+                return;
+            }
+
+            Debug.unityLogger.Log(LogType.Assert, message);
+            throw new Exception(message);
         }
     }
 }

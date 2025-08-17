@@ -11,7 +11,6 @@ namespace BovineLabs.Core.Editor.Inspectors
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities.UI;
     using Unity.Properties;
-    using UnityEngine;
     using SearchElement = BovineLabs.Core.Editor.UI.SearchElement;
 
     public class DynamicHashMapSearchElement<T, TBuffer, TKey, TValue> : EntityInspector<T>

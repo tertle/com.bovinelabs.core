@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Keys
     /// <typeparam name="TV"> The value to store. </typeparam>
     /// <summary> The base KSettings file for defining custom enums, layers, keys. </summary>
     public abstract class KSettingsBase<T, TV> : KSettingsBase<TV>
-        where T : KSettingsBase
+        where T : KSettingsBase<T, TV>
         where TV : unmanaged, IEquatable<TV>
     {
         private static readonly SharedStatic<UnsafeHashMap<FixedString32Bytes, TV>> Forward =
@@ -28,6 +28,14 @@ namespace BovineLabs.Core.Keys
 
         private static readonly SharedStatic<UnsafeList<FixedNameValue<TV>>> Ordered =
             SharedStatic<UnsafeList<FixedNameValue<TV>>>.GetOrCreate<UnsafeList<FixedNameValue<TV>>, T>();
+
+        private static T settings;
+
+        public static T I
+        {
+            get => GetSingleton(ref settings);
+            private set => settings = value;
+        }
 
         /// <summary> Given a name, returns the user defined value. </summary>
         /// <param name="name"> The name. </param>
@@ -80,19 +88,14 @@ namespace BovineLabs.Core.Keys
 
         public static UnsafeList<FixedNameValue<TV>>.Enumerator Enumerator()
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-            if (!Ordered.Data.IsCreated)
-            {
-                throw new Exception("K not setup");
-            }
-#endif
-
-            return Ordered.Data.GetEnumerator();
+            return Ordered.Data.IsCreated ? Ordered.Data.GetEnumerator() : default;
         }
 
         /// <inheritdoc />
         protected sealed override void Initialize()
         {
+            I = (T)this;
+
             if (Forward.Data.IsCreated)
             {
                 Forward.Data.Clear();
@@ -120,5 +123,12 @@ namespace BovineLabs.Core.Keys
                 });
             }
         }
+
+#if UNITY_EDITOR
+        private void Reset()
+        {
+            I = (T)this;
+        }
+#endif
     }
 }

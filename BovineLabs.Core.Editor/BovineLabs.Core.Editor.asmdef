@@ -17,6 +17,7 @@
     "Unity.Scenes",
     "Unity.Scenes.Editor",
     "Unity.Physics",
+    "Unity.Serialization.Editor",
     "Unity.Transforms",
     "Unity.VisualEffectGraph.Editor"
   ],

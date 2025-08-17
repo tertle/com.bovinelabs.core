@@ -1,0 +1,133 @@
+/* Base Object Window Shared Styles */
+
+.main-listview {
+    flex-grow: 1;
+}
+
+/* Toolbar styling */
+.action-toolbar .unity-toolbar-button {
+    font-size: 11px;
+}
+
+.action-toolbar .unity-toolbar-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.action-toolbar .unity-toolbar-menu {
+    font-size: 11px;
+}
+
+.toolbar-search-field {
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: auto; /* Override Unity's default 295px width */
+}
+
+.toolbar-filter-menu {
+    min-width: 80px;
+    max-width: 120px;
+}
+
+.toolbar-settings-menu {
+    width: 16px;
+    background-image: var(--unity-icons-pane_options);
+}
+
+.toolbar-settings-menu .unity-toolbar-menu__arrow {
+    background-image: none;
+}
+
+/* List View Item Styling */
+.unity-list-view__item {
+    padding: 0;
+}
+
+.unity-list-view__item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.unity-list-view__item Image {
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.unity-list-view__item Label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 11px;
+}
+
+/* Improved list view styling to match toolbar */
+.unity-list-view {
+    background-color: rgba(0, 0, 0, 0.08);
+    border-width: 0;
+    border-color: rgba(255, 255, 255, 0.05);
+    /*flex-grow: 1;*/
+}
+
+/* Dark theme adjustments */
+.unity-theme-env-variables {
+    --unity-colors-list_view-background: rgba(42, 42, 42, 1);
+    --unity-colors-list_view_item-background-hover: rgba(70, 70, 70, 1);
+    --unity-colors-list_view_item-background-selected: rgba(44, 93, 135, 1);
+}
+
+/* Missing object styling */
+.missing-object {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Generic Object Item Styling */
+.object-item-container {
+    flex-direction: row;
+    align-items: center;
+    padding-right: 4px;
+    height: auto;
+    flex-grow: 1;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.object-item-label {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    -unity-text-align: middle-left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.object-item-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+
+/* Reorderable handle styling */
+.unity-list-view__reorderable-handle {
+    display: none;
+}
+
+.unity-list-view__reorderable-item__container {
+    padding: 0;
+    margin: 0;
+}
+
+/* Currently selected item highlighting */
+.currently-selected {
+    background-color: rgba(44, 93, 135, 0.6);
+    border-radius: 2px;
+}
+
+.currently-selected Label {
+    color: rgba(255, 255, 255, 1);
+}
+
+/* Monospace font styling */
+.monospace-font {
+    -unity-font: resource("Fonts/RobotoMono/RobotoMono-Regular.ttf") !important;
+    -unity-font-definition: initial !important;
+}

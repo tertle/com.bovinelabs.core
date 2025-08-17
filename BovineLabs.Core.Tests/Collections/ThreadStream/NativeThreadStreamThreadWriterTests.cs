@@ -2,8 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if BL_TESTING
-namespace BovineLabs.Core.Tests.Collections.EventStream
+namespace BovineLabs.Core.Tests.Collections.ThreadStream
 {
     using BovineLabs.Core.Collections;
     using BovineLabs.Testing;
@@ -154,18 +153,16 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
 
             protected override void OnUpdate()
             {
-                this.EntitiesForEach();
-                this.JobWithCode();
+                this.JobEntityTest();
+                this.JobTest();
             }
 
-            private void EntitiesForEach()
+            private void JobEntityTest()
             {
                 var stream = new NativeThreadStream(Allocator.TempJob);
-                var writer = stream.AsWriter();
+                NativeThreadStream.Writer writer = stream.AsWriter();
 
-                this.Entities
-                    .ForEach((in TestComponent test) => writer.Write(test.Value))
-                    .ScheduleParallel();
+                this.Dependency = new JobEntityJob { Writer = writer }.ScheduleParallel(this.Dependency);
 
                 this.Dependency = new ReadJob
                     {
@@ -187,21 +184,18 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
                 stream.Dispose();
             }
 
-            private void JobWithCode()
+            private void JobTest()
             {
                 var stream = new NativeThreadStream(Allocator.TempJob);
                 var writer = stream.AsWriter();
 
                 var c = this.count;
 
-                this.Job.WithCode(() =>
-                    {
-                        for (var i = 0; i < c; i++)
-                        {
-                            writer.Write(i);
-                        }
-                    })
-                    .Schedule();
+                this.Dependency = new JobTestJob
+                {
+                    Writer = writer,
+                    Count = c,
+                }.Schedule(this.Dependency);
 
                 this.Dependency = new ReadJob
                     {
@@ -221,6 +215,32 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
 
                 this.hashmap.Clear();
                 stream.Dispose();
+            }
+
+            [BurstCompile(CompileSynchronously = true)]
+            private partial struct JobEntityJob : IJobEntity
+            {
+                public NativeThreadStream.Writer Writer;
+
+                private void Execute(in TestComponent test)
+                {
+                    this.Writer.Write(test.Value);
+                }
+            }
+
+            [BurstCompile(CompileSynchronously = true)]
+            private struct JobTestJob : IJob
+            {
+                public NativeThreadStream.Writer Writer;
+                public int Count;
+
+                public void Execute()
+                {
+                    for (var i = 0; i < this.Count; i++)
+                    {
+                        this.Writer.Write(i);
+                    }
+                }
             }
 
             [BurstCompile(CompileSynchronously = true)]
@@ -250,5 +270,3 @@ namespace BovineLabs.Core.Tests.Collections.EventStream
         }
     }
 }
-
-#endif

@@ -10,6 +10,9 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Burst;
     using Unity.Entities;
 
+    /// <summary>
+    /// Handles destruction of entities. Runs before SceneSystemGroup to properly cleanup entities in closing subscenes.
+    /// </summary>
     [BurstCompile]
     [UpdateInGroup(typeof(BeforeSceneSystemGroup))]
     [UpdateAfter(typeof(InstantiateCommandBufferSystem))]

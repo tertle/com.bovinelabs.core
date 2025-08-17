@@ -28,19 +28,24 @@ namespace BovineLabs.Core
         /// <inheritdoc />
         protected override void OnCreate()
         {
-            var netDebugEntity = this.EntityManager.CreateSingleton<BLLogger>();
-            this.EntityManager.SetName(netDebugEntity, "DBDebug");
+            Create(this.World);
+        }
 
-            var world = this.World.Name.TrimEnd("World").TrimEnd();
+        internal static void Create(World world)
+        {
+            var netDebugEntity = world.EntityManager.CreateSingleton<BLLogger>();
+            world.EntityManager.SetName(netDebugEntity, "DBDebug");
+
+            var worldName = world.Name.TrimEnd("World").TrimEnd();
 
             var maxLength = FixedString32Bytes.UTF8MaxLengthInBytes;
             var minLength = math.min(MinWorldLength.Data, maxLength);
 
             // Apply size limits
-            world = world.Length > maxLength ? world[..maxLength] : world;
-            world = world.PadRight(minLength);
+            worldName = worldName.Length > maxLength ? worldName[..maxLength] : worldName;
+            worldName = worldName.PadRight(minLength);
 
-            this.EntityManager.SetComponentData(netDebugEntity, new BLLogger { World = world });
+            world.EntityManager.SetComponentData(netDebugEntity, new BLLogger { World = worldName });
         }
     }
 }

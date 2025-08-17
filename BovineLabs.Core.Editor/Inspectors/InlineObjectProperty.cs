@@ -18,6 +18,7 @@ namespace BovineLabs.Core.Editor.Inspectors
         private ObjectField rootField = null!;
         private SerializedProperty rootProperty = null!;
 
+        /// <inheritdoc/>
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             this.rootProperty = property;

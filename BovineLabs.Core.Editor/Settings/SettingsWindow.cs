@@ -26,6 +26,7 @@ namespace BovineLabs.Core.Editor.Settings
             Open();
         }
 
+        /// <inheritdoc/>
         protected override void GetPanels(List<ISettingsPanel> settingPanels)
         {
             this.settingsPanelMap.Clear();

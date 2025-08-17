@@ -20,8 +20,8 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     public class ObjectManagementProcessor : AssetPostprocessor
     {
         private static readonly HashSet<string> AlreadyProcessedAssets = new();
-        private static readonly HashSet<Type> AlreadyProcessedAutoRef = new();
 
+        private static readonly HashSet<Type> AlreadyProcessedAutoRef = new();
         private static readonly Dictionary<Type, Processor> Processors = new();
         private static readonly Dictionary<Type, AutoRefAttribute> AutoRefMap = new();
         private static readonly GlobalProcessor Global = new();
@@ -79,6 +79,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
                 }
 
                 AutoRefMap.Clear();
+                AlreadyProcessedAutoRef.Clear();
 
                 foreach (var assetPath in Delayed)
                 {

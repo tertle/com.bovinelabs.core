@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     using System;
     using System.Collections.Generic;
     using BovineLabs.Core.Authoring.Settings;
-    using BovineLabs.Core.Keys;
     using BovineLabs.Core.ObjectManagement;
     using BovineLabs.Core.Settings;
     using Unity.Entities;
@@ -30,7 +29,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         protected override void CustomBake(Baker<SettingsAuthoring> baker, Entity entity)
         {
             // Setup categories
-            var objectCategories = Resources.Load<ObjectCategories>($"{KSettingsBase.KResourceDirectory}/{nameof(ObjectCategories)}");
+            var objectCategories = AuthoringSettingsUtility.GetSettings<ObjectCategories>();
             baker.DependsOn(objectCategories);
 
             var components = baker.AddBuffer<ObjectCategoryComponents>(entity);

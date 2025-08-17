@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Utility
     [UpdateInGroup(typeof(InitializationSystemGroup), OrderFirst = true)]
     public abstract partial class InitSystemBase : SystemBase
     {
+        /// <inheritdoc/>
         protected override void OnUpdate()
         {
             var initialization = this.World.GetExistingSystemManaged<InitializationSystemGroup>();

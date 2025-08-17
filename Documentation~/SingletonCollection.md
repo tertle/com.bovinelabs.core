@@ -82,15 +82,13 @@ public partial struct EventSystem : ISystem
 ### 3. Writing from Other Systems
 
 ```csharp
-public partial struct GameplaySystem : IJobEntity
+public partial struct GameplaySystem : ISystem
 {
-    public void Execute(/* entity parameters */)
+	[BurstCompile]
+    public void OnUpdate(ref SystemState state)
     {
-        // Create a container to write events
-        var eventList = SystemAPI.GetSingleton<EventSingleton>().CreateList<GameEvent>(32);
-        
-        eventList.Add(new GameEvent { Type = EventType.PlayerDeath });
-        eventList.Add(new GameEvent { Type = EventType.ScoreUpdate });
+        NativeList<GameEvent> eventList = SystemAPI.GetSingleton<EventSingleton>().CreateList<EventSingleton, GameEvent>(32);
+        // Pass to job or whatever you want
     }
 }
 ```

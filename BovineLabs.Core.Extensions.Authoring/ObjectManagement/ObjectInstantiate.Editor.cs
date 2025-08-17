@@ -172,7 +172,11 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                 }
 
                 stream.GetCreateGameObjectHierarchyEvent(i, out var createGameObjectHierarchyEvent);
+#if UNITY_6000_3_OR_NEWER
+                var newGameObject = (GameObject)EditorUtility.EntityIdToObject(createGameObjectHierarchyEvent.instanceId);
+#else
                 var newGameObject = (GameObject)EditorUtility.InstanceIDToObject(createGameObjectHierarchyEvent.instanceId);
+#endif
                 TryReplace(newGameObject);
             }
         }

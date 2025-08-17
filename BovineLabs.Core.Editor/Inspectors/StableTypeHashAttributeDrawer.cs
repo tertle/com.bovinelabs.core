@@ -9,13 +9,13 @@ namespace BovineLabs.Core.Editor.Inspectors
     using BovineLabs.Core.Editor.SearchWindow;
     using BovineLabs.Core.PropertyDrawers;
     using BovineLabs.Core.Utility;
-    using Unity;
     using Unity.Entities;
     using UnityEditor;
 
     [CustomPropertyDrawer(typeof(StableTypeHashAttribute))]
     public sealed class StableTypeHashAttributeDrawer : StableTypeHashAttributeBaseDrawer<StableTypeHashAttribute>
     {
+        /// <inheritdoc/>
         protected override List<SearchView.Item> GenerateItems(StableTypeHashAttribute att)
         {
             var componentTypes = new List<SearchView.Item>

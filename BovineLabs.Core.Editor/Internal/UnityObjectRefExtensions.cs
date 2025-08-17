@@ -16,9 +16,13 @@ namespace BovineLabs.Core.Editor.Internal
         public static UntypedWeakReferenceId ToUntypedWeakReferenceId<T>(this UnityObjectRef<T> unityObjectRef)
             where T : Object
         {
-            var meshGoid = GlobalObjectId.GetGlobalObjectIdSlow(unityObjectRef.GetInstanceId());
-            var meshRtgoid = UnsafeUtility.As<GlobalObjectId, RuntimeGlobalObjectId>(ref meshGoid);
-            return new UntypedWeakReferenceId(meshRtgoid, WeakReferenceGenerationType.UnityObject);
+#if UNITY_6000_3_OR_NEWER
+            var guid = GlobalObjectId.GetGlobalObjectIdSlow((EntityId)unityObjectRef.GetInstanceId());
+#else
+            var guid = GlobalObjectId.GetGlobalObjectIdSlow(unityObjectRef.GetInstanceId());
+#endif
+            var rgGuid = UnsafeUtility.As<GlobalObjectId, RuntimeGlobalObjectId>(ref guid);
+            return new UntypedWeakReferenceId(rgGuid, WeakReferenceGenerationType.UnityObject);
         }
     }
 }

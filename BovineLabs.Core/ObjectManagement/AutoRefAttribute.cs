@@ -38,8 +38,8 @@ namespace BovineLabs.Core.ObjectManagement
         }
 
         public AutoRefAttribute(string managerType, string fieldName, string name, string subDirectory, bool createNull = true)
-            : this(managerType, fieldName, $"bl.ar.{name.ToLowerNoSpaces()}", Path.Combine("Assets/Settings/",subDirectory),
-                $"{name.FirstCharToUpper()}.asset", createNull)
+            : this(managerType, fieldName, NameToDirectory(name), Path.Combine("Assets/Settings/", subDirectory), $"{name.FirstCharToUpper()}.asset",
+                createNull)
         {
         }
 
@@ -55,7 +55,6 @@ namespace BovineLabs.Core.ObjectManagement
             this.CreateNull = createNull;
         }
 
-
         public string ManagerType { get; }
 
         public string FieldName { get; }
@@ -67,5 +66,7 @@ namespace BovineLabs.Core.ObjectManagement
         public string DefaultFileName { get; }
 
         public bool CreateNull { get; }
+
+        public static string NameToDirectory(string name) => $"bl.ar.{name.ToLowerNoSpaces()}";
     }
 }

@@ -11,11 +11,13 @@ namespace BovineLabs.Core.Editor.UI
     [UsedImplicitly]
     public class BitArray256Converter : UxmlAttributeConverter<BitArray256>
     {
+        /// <inheritdoc/>
         public override string ToString(BitArray256 value)
         {
             return $"{value.Data1},{value.Data2},{value.Data3},{value.Data4}";
         }
 
+        /// <inheritdoc/>
         public override BitArray256 FromString(string value)
         {
             if (string.IsNullOrWhiteSpace(value))

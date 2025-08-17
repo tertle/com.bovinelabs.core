@@ -44,10 +44,11 @@ namespace BovineLabs.Core.Model
             this.remainingHandle = state.GetComponentTypeHandle<TRemaining>();
             this.activeHandle = state.GetComponentTypeHandle<TActive>(true);
 
-            this.query = state.GetEntityQuery(new EntityQueryDesc
-            {
-                All = new[] { ComponentType.ReadWrite<TRemaining>(), ComponentType.ReadWrite<TOn>(), ComponentType.ReadOnly<TActive>() },
-            });
+            this.query = new EntityQueryBuilder(Allocator.Temp)
+                .WithAllRW<TRemaining, TOn>()
+                .WithAll<TActive>()
+                .WithOptions(EntityQueryOptions.FilterWriteGroup)
+                .Build(ref state);
         }
 
         public void OnUpdate(ref SystemState state, UpdateTimeJob job)

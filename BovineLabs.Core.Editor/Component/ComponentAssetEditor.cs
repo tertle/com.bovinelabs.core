@@ -9,13 +9,13 @@ namespace BovineLabs.Core.Editor.Component
     using UnityEditor;
     using UnityEditor.UIElements;
     using UnityEngine.UIElements;
-    using Image = UnityEngine.UI.Image;
 
     [CustomEditor(typeof(ComponentAsset))]
     public class ComponentAssetEditor : ElementEditor
     {
         private SerializedProperty? componentNameProperty;
 
+        /// <inheritdoc/>
         protected override VisualElement? CreateElement(SerializedProperty property)
         {
             switch (property.name)

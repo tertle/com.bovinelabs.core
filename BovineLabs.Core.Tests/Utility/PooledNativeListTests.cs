@@ -92,7 +92,9 @@ namespace BovineLabs.Core.Tests.Utility
                     $"Job {i} recorded an out-of-bounds thread index");
             }
 
-            // Verify that multiple thread indices were used (if multiple threads available)
+            // Verify that at least some valid thread indices were recorded
+            // Note: We don't assert that multiple threads were used since Unity's job scheduler
+            // may choose to run all jobs on a single thread depending on system load and configuration
             var uniqueThreadIndices = new NativeHashSet<int>(jobCount, Allocator.Temp);
             for (var i = 0; i < jobCount; i++)
             {
@@ -100,12 +102,6 @@ namespace BovineLabs.Core.Tests.Utility
             }
 
             Assert.Greater(uniqueThreadIndices.Count, 0, "No valid thread indices were recorded");
-
-            // Only check for multiple threads if we have multiple threads available
-            if (jobCount > 1 && Unity.Jobs.LowLevel.Unsafe.JobsUtility.ThreadIndexCount > 1)
-            {
-                Assert.Greater(uniqueThreadIndices.Count, 1, "Only one thread was used despite having multiple threads available");
-            }
 
             uniqueThreadIndices.Dispose();
             results.Dispose();

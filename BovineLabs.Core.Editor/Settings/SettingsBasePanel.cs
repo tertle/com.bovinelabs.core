@@ -43,8 +43,10 @@ namespace BovineLabs.Core.Editor.Settings
         /// <inheritdoc />
         public string DisplayName => this.Settings.DisplayName();
 
+        /// <inheritdoc/>
         public string GroupName { get; }
 
+        /// <inheritdoc/>
         public bool IsEmpty { get; }
 
         /// <summary> Gets the settings that the panel is drawing. </summary>

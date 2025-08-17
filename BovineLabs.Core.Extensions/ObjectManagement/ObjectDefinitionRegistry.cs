@@ -14,10 +14,11 @@ namespace BovineLabs.Core.ObjectManagement
         [ReadOnly]
         private NativeHashMap<ObjectId, Entity> objectDefinitions;
 
-        internal ObjectDefinitionRegistry(NativeHashMap<ObjectId, Entity> objectDefinitions)
+        public ObjectDefinitionRegistry(NativeHashMap<ObjectId, Entity> objectDefinitions)
         {
             this.objectDefinitions = objectDefinitions;
         }
+
         public Entity this[ObjectId id] => this.objectDefinitions[id];
     }
 }

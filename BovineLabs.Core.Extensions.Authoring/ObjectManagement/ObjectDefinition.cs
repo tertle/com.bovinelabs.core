@@ -18,6 +18,8 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     [AutoRef("ObjectManagementSettings", "objectDefinitions", nameof(ObjectDefinition), "ObjectDefinitions")]
     public class ObjectDefinition : ScriptableObject, IUID
     {
+        public const string SearchProviderType = "objectdefinition";
+
         [InspectorReadOnly]
         [SerializeField]
         private int id;

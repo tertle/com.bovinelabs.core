@@ -1,0 +1,87 @@
+/* Import base object window styles */
+@import url("../Base/BaseObjectWindow.uss");
+
+/* Selection History Window Specific Styles */
+
+/* History item lock button */
+.history-item-lock-button {
+    width: 16px;
+    height: 16px;
+    margin-left: 4px;
+    padding: 0;
+    flex-shrink: 0;
+    flex-grow: 0;
+    background-color: transparent;
+    border-width: 0;
+    font-size: 12px;
+    min-width: 16px;
+    min-height: 16px;
+}
+
+.history-item-lock-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.history-item-lock-button:active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Lock button states using Unity built-in icons */
+.history-item-lock-button.locked {
+    background-image: var(--unity-icons-lock-checked);
+}
+
+.history-item-lock-button.unlocked {
+    background-image: var(--unity-icons-lock);
+}
+
+.history-item-lock-button.locked:hover {
+    background-image: var(--unity-icons-lock-checked);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.history-item-lock-button.unlocked:hover {
+    background-image: var(--unity-icons-lock);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.history-item-lock-button.locked:active {
+    background-image: var(--unity-icons-lock-checked_pressed);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.history-item-lock-button.unlocked:active {
+    background-image: var(--unity-icons-lock-pressed);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Status bar styling */
+.selection-history-status-bar {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.08);
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    flex-direction: row;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.selection-history-status-bar Label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Unlocked item styling - add left padding to base object-item-container */
+.unlocked-item {
+    padding-left: 7px;
+}
+
+/* Locked item styling - add left padding and visual indicator to base object-item-container */
+.locked-item {
+    padding-left: 4px;
+    border-left-width: 3px;
+    border-left-color: rgba(100, 150, 255, 0.8);
+}

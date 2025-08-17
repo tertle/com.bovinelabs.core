@@ -12,6 +12,10 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Entities;
     using Unity.Scenes;
 
+    /// <summary>
+    /// Automatically destroys entities when their subscene is unloaded. 
+    /// Enables the DestroyEntity component on all entities belonging to subscenes that are being unloaded.
+    /// </summary>
     [BurstCompile]
     [UpdateInGroup(typeof(BeforeSceneSystemGroup))]
     [UpdateAfter(typeof(InstantiateCommandBufferSystem))]

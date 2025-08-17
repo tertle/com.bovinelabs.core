@@ -21,8 +21,10 @@ namespace BovineLabs.Core.Editor.Dependency
 
         private ListView ListView => (ListView)this.View;
 
+        /// <inheritdoc/>
         protected override string WindowName { get; } = L10n.Tr("System Dependencies");
 
+        /// <inheritdoc/>
         protected override string DefaultButtonText => "Systems";
 
         [MenuItem(EditorMenus.RootMenuTools + "System Dependencies")]
@@ -31,6 +33,7 @@ namespace BovineLabs.Core.Editor.Dependency
             GetWindow<SystemDependencyWindow>().Show();
         }
 
+        /// <inheritdoc/>
         protected override void PopulateItems(List<SearchView.Item> items)
         {
             var initialization = this.World!.GetExistingSystemManaged<InitializationSystemGroup>();
@@ -52,6 +55,7 @@ namespace BovineLabs.Core.Editor.Dependency
             }
         }
 
+        /// <inheritdoc/>
         protected override unsafe void SearchWindowOnOnSelection(SearchView.Item item)
         {
             this.system = (SystemHandle)item.Data;
@@ -79,6 +83,7 @@ namespace BovineLabs.Core.Editor.Dependency
             }
         }
 
+        /// <inheritdoc/>
         protected override void Rebuild()
         {
             this.ClearItems();

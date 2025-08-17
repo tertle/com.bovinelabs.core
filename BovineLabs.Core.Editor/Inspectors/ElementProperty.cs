@@ -33,6 +33,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         protected SerializedProperty? RootProperty { get; private set; }
 
+        /// <inheritdoc/>
         public sealed override VisualElement CreatePropertyGUI(SerializedProperty rootProperty)
         {
             this.RootProperty = rootProperty;

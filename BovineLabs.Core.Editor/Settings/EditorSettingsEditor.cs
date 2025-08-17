@@ -12,6 +12,7 @@ namespace BovineLabs.Core.Editor.Settings
     [CustomEditor(typeof(EditorSettings))]
     public class EditorSettingsEditor : ElementEditor
     {
+        /// <inheritdoc/>
         protected override void PostElementCreation(VisualElement root, bool createdElements)
         {
             var editorSettings = (EditorSettings)this.target;

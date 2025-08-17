@@ -12,6 +12,7 @@ namespace BovineLabs.Core.Editor.Inspectors
     internal abstract class BaseFieldInspector<TField, TFieldValue, TValue> : PropertyInspector<TValue>
         where TField : BaseField<TFieldValue>, new()
     {
+        /// <inheritdoc/>
         public override VisualElement Build()
         {
             var field = new TField

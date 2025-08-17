@@ -10,8 +10,13 @@ namespace BovineLabs.Core.LifeCycle
     using BovineLabs.Core.Utility;
     using Unity.Entities;
 
-    [UpdateInGroup(typeof(BeginSimulationSystemGroup), OrderFirst = true)]
-    public partial class InitializeSystemGroup : ComponentSystemGroup, IUpdateWhilePaused
+    /// <summary>
+    /// Handles initialization of entities. Updates before DestroySystemGroup to allow access to data from destroyed entities.
+    /// </summary>
+    [UpdateAfter(typeof(InstantiateCommandBufferSystem))]
+    [UpdateBefore(typeof(DestroySystemGroup))]
+    [UpdateInGroup(typeof(BeforeSceneSystemGroup))]
+    public partial class InitializeSystemGroup : ComponentSystemGroup
     {
         /// <inheritdoc />
         protected override void OnUpdate()

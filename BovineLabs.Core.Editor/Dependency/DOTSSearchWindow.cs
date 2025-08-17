@@ -48,6 +48,7 @@ namespace BovineLabs.Core.Editor.Dependency
             Items.Clear();
         }
 
+        /// <inheritdoc/>
         protected override void OnCreate()
         {
             Resources.AddCommonVariables(this.rootVisualElement);
@@ -68,6 +69,7 @@ namespace BovineLabs.Core.Editor.Dependency
             this.root.Add(this.View);
         }
 
+        /// <inheritdoc/>
         protected override void OnWorldSelected(World newWorld)
         {
             this.World = newWorld;

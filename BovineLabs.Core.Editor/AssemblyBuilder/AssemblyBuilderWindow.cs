@@ -4,12 +4,11 @@
 
 namespace BovineLabs.Core.Editor.AssemblyBuilder
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
     using BovineLabs.Core.Editor.UI;
+    using BovineLabs.Core.Editor.Utility;
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.UIElements;
@@ -25,21 +24,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private const string RootUIPath = "Packages/com.bovinelabs.core/Editor Default Resources/AssemblyBuilder/";
         private static readonly UITemplate AssemblyBuilderTemplate = new(RootUIPath + "AssemblyBuilder");
-        private static readonly Func<string> GetActiveFolderPath;
-        private static readonly Func<object> GetProjectBrowserIfExists;
-        private static readonly FieldInfo ViewMode;
-
-        static AssemblyBuilderWindow()
-        {
-            var projectWindowUtilType = typeof(ProjectWindowUtil);
-            var getActiveFolderPathMethod = projectWindowUtilType.GetMethod("GetActiveFolderPath", BindingFlags.Static | BindingFlags.NonPublic);
-            GetActiveFolderPath = (Func<string>)Delegate.CreateDelegate(typeof(Func<string>), getActiveFolderPathMethod!);
-
-            var getProjectBrowserIfExistsMethod = projectWindowUtilType.GetMethod("GetProjectBrowserIfExists", BindingFlags.Static | BindingFlags.NonPublic);
-            GetProjectBrowserIfExists = (Func<object>)Delegate.CreateDelegate(typeof(Func<object>), getProjectBrowserIfExistsMethod!);
-
-            ViewMode = getProjectBrowserIfExistsMethod!.ReturnType.GetField("m_ViewMode", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        }
 
         [MenuItem(EditorMenus.RootMenuTools + "Assembly Builder", priority = 1007)]
         private static void ShowWindow()
@@ -62,32 +46,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private void Update()
         {
-            this.rootVisualElement.Q<TextField>("directory").value = GetDirectory();
-        }
-
-        private static string GetDirectory()
-        {
-            var isTwoColumnView = IsTwoColumnView();
-
-            if (!isTwoColumnView && Selection.objects.Length == 1)
-            {
-                var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
-                return AssetDatabase.IsValidFolder(assetPath) ? assetPath + "/" : Path.GetDirectoryName(assetPath)!.Replace("\\", "/");
-            }
-
-            return GetActiveFolderPath();
-        }
-
-        private static bool IsTwoColumnView()
-        {
-            var browser = GetProjectBrowserIfExists();
-            if (browser == null)
-            {
-                return true;
-            }
-
-            var mode = ViewMode.GetValue(browser)!;
-            return !Convert.ChangeType(mode, Enum.GetUnderlyingType(mode.GetType())).Equals(0);
+            this.rootVisualElement.Q<TextField>("directory").value = ProjectView.Internal.GetDirectory();
         }
 
         private void OnEnable()
@@ -137,7 +96,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private void Create()
         {
-            var activeFolderPath = GetDirectory();
+            var activeFolderPath = ProjectView.Internal.GetDirectory();
 
             var assemblyToggles = this.rootVisualElement.Query<Toggle>(className: "assembly").Where(t => t.value).ToList();
 

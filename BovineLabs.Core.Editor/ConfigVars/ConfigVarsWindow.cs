@@ -20,6 +20,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
         /// <inheritdoc />
         protected override string TitleText => "ConfigVars";
 
+        /// <inheritdoc/>
         protected override bool HideToggleShowEmpty => true;
 
         [MenuItem(EditorMenus.RootMenu + "ConfigVars", priority = -31)]

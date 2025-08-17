@@ -1,4 +1,4 @@
-Q# BovineLabs Core
+# BovineLabs Core
 
 BovineLabs Core provides extensions, containers, and tools for building games with Unity DOTS (Data-Oriented Technology Stack).
 
@@ -48,13 +48,14 @@ The Core library maintains the status quo in your project by default. However, t
 
 ![Toggle Features](Documentation~/Images/ToggleFeatures.png)
 
-| Feature                                                 | Description                                                                                  |
-|---------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| Feature                                                 | Description                                                                                           |
+|---------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
 | [Analyzers](Documentation~/Analyzers.md)                | Automatic Roslyn analyzer integration infrastructure for seamless code analysis and style enforcement |
-| [Camera](Documentation~/Camera.md)                      | ECS camera integration with frustum culling and Unity Camera synchronization                 |
-| [Life Cycle](Documentation~/LifeCycle.md)               | Framework for managing entity initialization and destruction                                 |
-| [Object Management](Documentation~/ObjectManagement.md) | Automatic ID, category and group management                                                  |
-| [Pause](Documentation~/Pause.md)                        | World-level pause system with fine-grained control over system updates during pause states   |
-| [PhysicsStates](Documentation~/PhysicsStates.md)        | Stateful collision and trigger event tracking with Enter/Stay/Exit states for Unity Physics  |
-| [PhysicsUpdate](Documentation~/PhysicsUpdate.md)        | Ensures Unity Physics spatial data remains current at high frame rates above fixed timestep  |
-| [SubScenes](Documentation~/SubScenes.md)                | Enhanced SubScene loading with world targeting and editor tools                              |
+| [Camera](Documentation~/Camera.md)                      | ECS camera integration with frustum culling and Unity Camera synchronization                          |
+| [EntityBlob](Documentation~/EntityBlob.md)              | Memory-efficient storage of multiple BlobAssetReferences in a single blob using perfect hash maps     |
+| [Life Cycle](Documentation~/LifeCycle.md)               | Framework for managing entity initialization and destruction                                          |
+| [Object Management](Documentation~/ObjectManagement.md) | Automatic ID, category and group management                                                           |
+| [Pause](Documentation~/Pause.md)                        | World-level pause system with fine-grained control over system updates during pause states            |
+| [PhysicsStates](Documentation~/PhysicsStates.md)        | Stateful collision and trigger event tracking with Enter/Stay/Exit states for Unity Physics           |
+| [PhysicsUpdate](Documentation~/PhysicsUpdate.md)        | Ensures Unity Physics spatial data remains current at high frame rates above fixed timestep           |
+| [SubScenes](Documentation~/SubScenes.md)                | Enhanced SubScene loading with world targeting and editor tools                                       |

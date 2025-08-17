@@ -17,8 +17,10 @@ namespace BovineLabs.Core.Editor.Dependency
 
         private TypeIndex typeIndex;
 
+        /// <inheritdoc/>
         protected override string WindowName { get; } = L10n.Tr("Component Dependencies");
 
+        /// <inheritdoc/>
         protected override string DefaultButtonText => "Components";
 
         [MenuItem(EditorMenus.RootMenuTools + "Component Dependencies")]
@@ -27,6 +29,7 @@ namespace BovineLabs.Core.Editor.Dependency
             GetWindow<ComponentDependencyWindow>().Show();
         }
 
+        /// <inheritdoc/>
         protected override void PopulateItems(List<SearchView.Item> items)
         {
             foreach (var t in TypeManager.AllTypes)
@@ -49,6 +52,7 @@ namespace BovineLabs.Core.Editor.Dependency
             }
         }
 
+        /// <inheritdoc/>
         protected override void SearchWindowOnOnSelection(SearchView.Item item)
         {
             var typeInfo = (TypeManager.TypeInfo)item.Data;
@@ -59,6 +63,7 @@ namespace BovineLabs.Core.Editor.Dependency
             this.Button.text = item.Name;
         }
 
+        /// <inheritdoc/>
         protected override void Rebuild()
         {
             this.View.Clear();

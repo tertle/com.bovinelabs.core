@@ -44,6 +44,8 @@ namespace BovineLabs.Core
                     continue;
                 }
 
+                world.EntityManager.CompleteAllTrackedJobs();
+
                 TryDisableUpdateSystemGroup<InitializationSystemGroup>(world);
                 TryDisableUpdateSystemGroup<SimulationSystemGroup>(world);
                 TryDisableUpdateSystemGroup<PresentationSystemGroup>(world);

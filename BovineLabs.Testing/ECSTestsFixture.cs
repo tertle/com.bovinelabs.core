@@ -26,6 +26,8 @@ namespace BovineLabs.Testing
 
         protected EntityManager.EntityManagerDebug ManagerDebug { get; private set; }
 
+        protected BlobAssetStore BlobAssetStore { get; private set; }
+
         [SetUp]
         public virtual void Setup()
         {
@@ -44,7 +46,9 @@ namespace BovineLabs.Testing
             this.jobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
             JobsUtility.JobDebuggerEnabled = true;
 
-            this.Manager.CreateEntity(typeof(BLLogger));
+            BLDebugSystem.Create(this.world);
+
+            this.BlobAssetStore = new BlobAssetStore(128);
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
             // In case entities journaling is initialized, clear it
@@ -55,16 +59,23 @@ namespace BovineLabs.Testing
         [TearDown]
         public virtual void TearDown()
         {
-            // Clean up systems before calling CheckInternalConsistency because we might have filters etc
-            // holding on SharedComponentData making checks fail
-            while (this.World.Systems.Count > 0)
-            {
-                this.World.DestroySystemManaged(this.World.Systems[0]);
-            }
+            this.World.EntityManager.CompleteAllTrackedJobs();
+
+            this.World.DestroyAllSystemsAndLogException(out var errorsWhileDestroyingSystems);
+            Assert.IsFalse(errorsWhileDestroyingSystems,
+                "One or more exceptions were thrown while destroying systems during test teardown; consult the log for details.");
 
             this.ManagerDebug.CheckInternalConsistency();
+
             this.World.Dispose();
-            World.DefaultGameObjectInjectionWorld = this.previousWorld!;
+            this.world = null;
+
+            World.DefaultGameObjectInjectionWorld = this.previousWorld;
+            this.previousWorld = null;
+
+            this.Manager = default;
+
+            this.BlobAssetStore.Dispose();
 
             JobsUtility.JobDebuggerEnabled = this.jobsDebuggerWasEnabled;
 

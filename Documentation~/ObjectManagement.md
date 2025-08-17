@@ -80,6 +80,24 @@ public void OnUpdate(ref SystemState state)
 }
 ```
 
+### Search Integration
+ObjectDefinition implements a `ObjectDefinitionSearchProvider` that integrates with Unity's search system, enabling powerful filtering during authoring workflows.
+
+Use the `SearchContext` attribute to filter ObjectDefinition fields in the inspector:
+
+```cs
+[SearchContext("ca=creature", ObjectDefinition.SearchProviderType)]
+public ObjectDefinition Definition;
+```
+
+**Available Search Filters:**
+- `ca=` - Filter by category type (e.g., `ca=creature`)
+- `cid=` - Filter by category ID value (e.g., `cid=5`)
+- `n=` - Filter by ObjectDefinition name (e.g., `n=Goblin`)
+- `d=` - Filter by ObjectDefinition description (e.g., `d=melee`)
+
+Multiple filters can be combined for more precise filtering.
+
 ## Object Group
 
 ### Summary

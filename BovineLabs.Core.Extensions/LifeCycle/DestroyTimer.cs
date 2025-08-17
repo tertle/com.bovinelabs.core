@@ -13,6 +13,11 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Entities;
     using Unity.Mathematics;
 
+    /// <summary>
+    /// Utility for managing timer-based entity destruction. Automatically enables DestroyEntity when the timer component reaches zero.
+    /// The timer component T must be the same size as a float.
+    /// </summary>
+    /// <typeparam name="T">The timer component type that will be decremented each frame.</typeparam>
     public struct DestroyTimer<T>
         where T : unmanaged, IComponentData
     {
@@ -20,6 +25,10 @@ namespace BovineLabs.Core.LifeCycle
         private ComponentTypeHandle<T> remainingHandle;
         private EntityQuery query;
 
+        /// <summary>
+        /// Initializes the DestroyTimer for use. Must be called in the system's OnCreate method.
+        /// </summary>
+        /// <param name="state">The system state.</param>
         public void OnCreate(ref SystemState state)
         {
             Check.Assume(UnsafeUtility.SizeOf<float>() == UnsafeUtility.SizeOf<T>());
@@ -30,6 +39,11 @@ namespace BovineLabs.Core.LifeCycle
             this.query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithDisabledRW<DestroyEntity>().Build(ref state);
         }
 
+        /// <summary>
+        /// Updates all timer components and enables DestroyEntity when timers reach zero.
+        /// </summary>
+        /// <param name="state">The system state.</param>
+        /// <param name="job">Optional custom job instance. If not provided, uses default.</param>
         public void OnUpdate(ref SystemState state, UpdateTimeJob job = default)
         {
             this.entityDestroyHandle.Update(ref state);
@@ -42,6 +56,9 @@ namespace BovineLabs.Core.LifeCycle
             state.Dependency = job.ScheduleParallel(this.query, state.Dependency);
         }
 
+        /// <summary>
+        /// Job that decrements timer values and enables DestroyEntity when timers reach zero.
+        /// </summary>
         [BurstCompile]
         public unsafe struct UpdateTimeJob : IJobChunk
         {

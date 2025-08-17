@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Authoring.Blobs
     using BovineLabs.Core.Blobs;
     using BovineLabs.Core.Collections;
     using BovineLabs.Core.Extensions;
-    using Unity;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
