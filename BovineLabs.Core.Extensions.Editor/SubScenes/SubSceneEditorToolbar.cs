@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_SUBSCENE
+#if !BL_DISABLE_SUBSCENE && UNITY_6000_3_OR_NEWER
 namespace BovineLabs.Core.Editor.SubScenes
 {
     using System.Collections.Generic;
@@ -14,7 +14,6 @@ namespace BovineLabs.Core.Editor.SubScenes
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.SubScenes;
     using JetBrains.Annotations;
-    using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Scenes;
@@ -23,219 +22,81 @@ namespace BovineLabs.Core.Editor.SubScenes
     using UnityEditor.Toolbars;
     using UnityEngine;
     using UnityEngine.SceneManagement;
-    using UnityEngine.UIElements;
     using Hash128 = Unity.Entities.Hash128;
     using Object = UnityEngine.Object;
-#if !UNITY_6000_3_OR_NEWER
-    using System;
-    using BovineLabs.Core.Editor.UI;
-#endif
+    using SubSceneUtility = Unity.Scenes.Editor.SubSceneUtility;
 
     [Configurable]
     [UsedImplicitly]
     public static class SubSceneEditorToolbar
     {
-        private const string SceneSelectionPath = "BovineLabs/Scene";
-        private const string StartupPath = "BovineLabs/Startup";
+        private const string ScenePath = "BovineLabs/Scene";
+        private const string SceneSetPath = "BovineLabs/SceneSet";
 
-        private const int MaxLength = 25;
-
-        private const string ScenePlayModeText = "Live Baking";
         private const string ScenePlayModeTooltip = "Open a set of scenes as live baking without the need for a SubScene";
-
-        private const string SceneEditModeText = "Scenes";
-        private const string SceneEditModeTooltip = "Open or close scenes for editing. Left click to open a set of scenes or right click to manually open/close scenes";
-
-        [ConfigVar("debug.editor-toolbar.scene-enable", true, "Should the scene baking toolbar buttons be shown. Requires a domain reload to update")]
-        private static readonly SharedStatic<bool> Enabled = SharedStatic<bool>.GetOrCreate<EnabledType>();
-
-        [ConfigVar("debug.editor-toolbar.scene-group", false, "Should scenes be grouped by first character. Useful if you have a lot of scenes")]
-        private static readonly SharedStatic<bool> Group = SharedStatic<bool>.GetOrCreate<GroupType>();
-
-        [ConfigVar("debug.editor-toolbar.scene-swap", false, "Swap the left and right mouse functions for the scene button")]
-        private static readonly SharedStatic<bool> Swap = SharedStatic<bool>.GetOrCreate<SwapType>();
+        private const string SceneEditModeTooltip = "Left click to open a scene for editing or right click to open a scene as a subscene";
 
         private static readonly Dictionary<Hash128, SubScene> TempSubScenes = new();
+        private static readonly Dictionary<SceneAsset, SubScene> EditorSubScenes = new();
 
-#if UNITY_6000_3_OR_NEWER
         private static MainToolbarDropdown? sceneDropDown;
-        private static MainToolbarDropdown? startupDropDown;
-#else
-        private static EditorToolbarButton? sceneDropDown;
-        private static EditorToolbarButton? startupDropDown;
-#endif
 
-#if UNITY_6000_3_OR_NEWER
-        [MainToolbarElement(SceneSelectionPath, defaultDockPosition = MainToolbarDockPosition.Middle)]
-        public static MainToolbarElement? SceneSelection()
-#else
-        [EditorToolbar(EditorToolbarPosition.RightCenter, -11)]
-        public static VisualElement? SceneSelection()
-#endif
+        static SubSceneEditorToolbar()
         {
             ConfigVarManager.Init();
-
-            if (!Enabled.Data)
-            {
-                return null;
-            }
-
-            if (sceneDropDown == null)
-            {
-                SceneManager.sceneLoaded += (_, _) => CleanupOldSubScenes();
-            }
-
+            SceneManager.sceneLoaded += (_, _) => CleanupOldSubScenes();
             EditorApplication.playModeStateChanged += SceneOnPlayModeStatusChanged;
+        }
 
-#if UNITY_6000_3_OR_NEWER
+        private delegate bool AddSetDelegate<in T>(T dropDown, SubSceneSetBase set, string setPath)
+            where T : IDropDown;
+
+        private delegate void AddSceneDelegate<in T>(T dropDown, SceneAsset scene, string setName)
+            where T : IDropDown;
+
+        [UsedImplicitly]
+        [MainToolbarElement(ScenePath, defaultDockPosition = MainToolbarDockPosition.Middle)]
+        public static MainToolbarElement SceneSelection()
+        {
             var icon = (Texture2D)EditorGUIUtility.IconContent("PreMatCube").image;
-            var content = new MainToolbarContent(icon);
-            (content.text, content.tooltip) = GetSceneText(EditorApplication.isPlayingOrWillChangePlaymode);
-            sceneDropDown = new MainToolbarDropdown(content, rect => SceneSelectionClicked(rect, Swap.Data))
+            var content = new MainToolbarContent(icon) { tooltip = GetTooltip() };
+            sceneDropDown = new MainToolbarDropdown(content, rect => SceneSelectionClicked(new GenericMenuWrapper(rect),  false))
             {
-                populateContextMenu = menu => SceneSelectionClicked(menu, !Swap.Data),
+                // right click action
+                populateContextMenu = menu => SceneSelectionClicked(new DropdownMenuWrapper(menu), true),
             };
 
             return sceneDropDown;
-#else
-            sceneDropDown = new EditorToolbarDropdown { icon = (Texture2D)EditorGUIUtility.IconContent("PreMatCube").image };
-            sceneDropDown.AddToClassList("unity-editor-toolbar-element");
-            sceneDropDown.clicked += () => SceneSelectionClicked(sceneDropDown.worldBound, Swap.Data);
-            sceneDropDown.RegisterCallback<MouseDownEvent>(evt =>
-            {
-                if (evt.button == 1)
-                {
-                    SceneSelectionClicked(sceneDropDown.worldBound, !Swap.Data);
-                }
-            });
-            SceneOnPlayModeStatusChanged(PlayModeStateChange.EnteredEditMode);
-
-            return sceneDropDown;
-#endif
         }
 
-#if UNITY_6000_3_OR_NEWER
-        [MainToolbarElement(StartupPath, defaultDockPosition = MainToolbarDockPosition.Middle)]
-        public static MainToolbarElement? Startup()
-#else
-        [EditorToolbar(EditorToolbarPosition.RightCenter, -10)]
-        public static VisualElement? Startup()
-#endif
+        private static string GetTooltip()
         {
-            ConfigVarManager.Init();
-
-            if (!Enabled.Data)
-            {
-                return null;
-            }
-
-#if UNITY_6000_3_OR_NEWER
-            var icon = (Texture2D)EditorGUIUtility.IconContent("PreMatCylinder").image;
-            var content = new MainToolbarContent(GetSelectionText(), icon, "Overrides the startup set of scenes for quick testing.");
-            startupDropDown = new MainToolbarDropdown(content, EditorStartupDropDown) { enabled = !EditorApplication.isPlayingOrWillChangePlaymode };
-#else
-            startupDropDown = new EditorToolbarDropdown { icon = (Texture2D)EditorGUIUtility.IconContent("PreMatCylinder").image };
-            startupDropDown.tooltip = "Overrides the startup set of scenes for quick testing.";
-            startupDropDown.AddToClassList("unity-editor-toolbar-element");
-            startupDropDown.clicked += () => EditorStartupDropDown(startupDropDown.worldBound);
-            UpdateEditModeSelections();
-#endif
-
-            EditorApplication.playModeStateChanged += change =>
-            {
-                switch (change)
-                {
-#if UNITY_6000_3_OR_NEWER
-                    case PlayModeStateChange.EnteredPlayMode:
-                    case PlayModeStateChange.EnteredEditMode:
-                        RefreshStartup();
-                        break;
-#else
-                    case PlayModeStateChange.EnteredPlayMode:
-                        startupDropDown.SetEnabled(false);
-                        break;
-                    case PlayModeStateChange.EnteredEditMode:
-                        startupDropDown.SetEnabled(true);
-                        break;
-#endif
-                }
-            };
-
-            return startupDropDown;
+            return EditorApplication.isPlaying ? ScenePlayModeTooltip : SceneEditModeTooltip;
         }
-
-#if UNITY_6000_3_OR_NEWER
-        private static void RefreshSceneSelection()
-        {
-            MainToolbar.Refresh(SceneSelectionPath);
-        }
-
-        private static void RefreshStartup()
-        {
-            MainToolbar.Refresh(StartupPath);
-        }
-#endif
 
         private static void SceneOnPlayModeStatusChanged(PlayModeStateChange obj)
         {
             CleanupOldSubScenes();
 
-#if UNITY_6000_3_OR_NEWER
             switch (obj)
             {
                 case PlayModeStateChange.EnteredPlayMode:
                 case PlayModeStateChange.EnteredEditMode:
-                    RefreshSceneSelection();
+                    MainToolbar.Refresh(ScenePath);
+                    MainToolbar.Refresh(SceneSetPath);
+                    break;
+                case PlayModeStateChange.ExitingEditMode:
+                    foreach (var s in EditorSubScenes)
+                    {
+                        if (s.Value)
+                        {
+                            Object.DestroyImmediate(s.Value.gameObject);
+                        }
+                    }
+
+                    EditorSubScenes.Clear();
                     break;
             }
-#else
-            switch (obj)
-            {
-                case PlayModeStateChange.EnteredPlayMode:
-                    sceneDropDown!.text = ScenePlayModeText;
-                    sceneDropDown.tooltip = ScenePlayModeTooltip;
-                    break;
-                case PlayModeStateChange.EnteredEditMode:
-                    sceneDropDown!.text = SceneEditModeText;
-                    sceneDropDown.tooltip = SceneEditModeTooltip;
-                    break;
-            }
-#endif
-        }
-
-        private static (string Text, string Tooltip) GetSceneText(bool playMode)
-        {
-            return playMode ? (ScenePlayModeText, ScenePlayModeTooltip) : (SceneEditModeText, SceneEditModeTooltip);
-        }
-
-        private static void UpdateEditModeSelections()
-        {
-#if UNITY_6000_3_OR_NEWER
-            RefreshStartup();
-#else
-            startupDropDown!.text = GetSelectionText();
-#endif
-        }
-
-        private static string GetSelectionText()
-        {
-            const string defaultText = "Startup";
-
-            var index = SubSceneEditorSystem.Override.Data;
-
-            if (index < 0)
-            {
-                return defaultText;
-            }
-
-            var sets = EditorSettingsUtility.GetSettings<SubSceneSettings>().EditorSceneSets;
-            if (index >= sets.Count || !sets[index])
-            {
-                SubSceneEditorSystem.Override.Data = -1;
-                return defaultText;
-            }
-
-            return sets[index].name.ToSentence().Max(MaxLength, "...");
         }
 
         private static void CleanupOldSubScenes()
@@ -244,375 +105,199 @@ namespace BovineLabs.Core.Editor.SubScenes
             {
                 if (!s.Value)
                 {
+                    var scene = SceneManager.GetSceneByPath(AssetDatabase.GUIDToAssetPath(s.Key));
+                    SceneManager.UnloadSceneAsync(scene);
                     TempSubScenes.Remove(s.Key);
                 }
             }
         }
 
-        private static void EditorStartupDropDown(Rect worldBound)
-        {
-            var menu = new GenericMenu();
-
-            var settings = EditorSettingsUtility.GetSettings<SubSceneSettings>();
-            var sets = settings.EditorSceneSets.Select((set, index) => (set, index)).Where(s => s.set).OrderBy(s => s.set.name);
-
-            foreach (var kvp in sets)
-            {
-                menu.AddItem(EditorGUIUtility.TrTextContent(kvp.set.name.ToSentence()), SubSceneEditorSystem.Override.Data == kvp.index, static data =>
-                {
-                    SubSceneEditorSystem.Override.Data = SubSceneEditorSystem.Override.Data == (int)data ? -1 : (int)data;
-                    UpdateEditModeSelections();
-                }, kvp.index);
-            }
-
-            menu.DropDown(worldBound);
-        }
-
-#if UNITY_6000_3_OR_NEWER
-        private static void SceneSelectionClicked(DropdownMenu menu, bool showScene)
+        private static void SceneSelectionClicked<T>(T worldBound, bool baking)
+            where T : IDropDown
         {
             if (EditorApplication.isPlaying)
             {
-                LivingBakingDropdown(menu);
-            }
-            else
-            {
-                if (showScene)
+                if (baking)
                 {
-                    SceneSelectionSceneDropDown(menu);
-                }
-                else
-                {
-                    SceneSelectionSetDropDown(menu);
-                }
-            }
-        }
-
-        private static void LivingBakingDropdown(DropdownMenu menu)
-        {
-            var scenes = new Dictionary<Hash128, SubScene?>();
-
-            var subScenes = Object.FindObjectsByType<SubScene>(FindObjectsSortMode.None);
-            foreach (var s in subScenes)
-            {
-                scenes.Add(s.SceneGUID, s);
-            }
-
-            foreach (var world in World.All)
-            {
-                using var query = world.EntityManager.CreateEntityQuery(typeof(SubSceneLoadData), typeof(SubSceneBuffer));
-
-                var entities = query.ToEntityArray(Allocator.Temp);
-                var subSceneLoadDatas = query.ToComponentDataArray<SubSceneLoadData>(Allocator.Temp);
-
-                for (var index = 0; index < entities.Length; index++)
-                {
-                    var sr = subSceneLoadDatas[index];
-                    if (sr.IsRequired)
-                    {
-                        continue;
-                    }
-
-                    var suBSceneBuffer = world.EntityManager.GetBuffer<SubSceneBuffer>(entities[index]);
-
-                    foreach (var ssb in suBSceneBuffer)
-                    {
-                        scenes.TryAdd(ssb.Scene.Id.GlobalId.AssetGUID, null);
-                    }
-                }
-            }
-
-            foreach (var s in scenes)
-            {
-                if (s.Value && !TempSubScenes.ContainsKey(s.Key))
-                {
-                    continue;
+                    return;
                 }
 
-                var path = AssetDatabase.GUIDToAssetPath(s.Key);
-                var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(path);
-
-                if (!sceneAsset)
-                {
-                    continue;
-                }
-
-                if (SceneManager.GetSceneByPath(path).isLoaded)
-                {
-                    menu.AppendAction(L10n.Tr(sceneAsset.ToString()), static ss =>
-                    {
-                        var (key, subScene) = (KeyValuePair<Hash128, SubScene?>)ss.userData;
-
-                        if (TempSubScenes.Remove(key))
-                        {
-                            if (!subScene)
-                            {
-                                return;
-                            }
-
-                            Object.Destroy(subScene.gameObject);
-                        }
-
-                        // Make sure it is still open
-                        var scene = SceneManager.GetSceneByPath(AssetDatabase.GUIDToAssetPath(key));
-                        if (!scene.isLoaded)
-                        {
-                            return;
-                        }
-
-                        SceneManager.UnloadSceneAsync(scene);
-                    }, _ => DropdownMenuAction.Status.Checked, s);
-                }
-                else
-                {
-                    menu.AppendAction(L10n.Tr(sceneAsset.name), static ss =>
-                    {
-                        var (key, subScene) = (KeyValuePair<Hash128, SubScene?>)ss.userData;
-
-                        var path = AssetDatabase.GUIDToAssetPath(key);
-                        var scene = SceneManager.GetSceneByPath(path);
-
-                        if (scene.isLoaded)
-                        {
-                            return;
-                        }
-
-                        if (!subScene)
-                        {
-                            var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(path);
-                            subScene = new GameObject().AddComponent<SubScene>();
-                            subScene.AutoLoadScene = false;
-                            subScene.SceneAsset = sceneAsset;
-
-                            TempSubScenes[key] = subScene;
-                        }
-
-                        scene = EditorSceneManager.LoadSceneInPlayMode(path, new LoadSceneParameters(LoadSceneMode.Additive));
-                        scene.isSubScene = true;
-                    }, _ => DropdownMenuAction.Status.Normal, s);
-                }
-            }
-        }
-
-        private static void SceneSelectionSceneDropDown(DropdownMenu menu)
-        {
-            var settings = EditorSettingsUtility.GetSettings<SubSceneSettings>();
-
-            var scenes = settings
-                .SceneSets
-                .Cast<SubSceneSetBase>()
-                .Concat(settings.EditorSceneSets)
-                .Where(set => set)
-                .SelectMany(set => set.Scenes)
-                .Where(scene => scene)
-                .Concat(EditorBuildSettings.scenes.Select(s => AssetDatabase.LoadAssetAtPath<SceneAsset>(s.path)))
-                .Distinct()
-                .OrderBy(s => s.name);
-
-            foreach (var scene in scenes)
-            {
-                var n = scene.name.ToSentence();
-                if (Group.Data)
-                {
-                    n = $"{n.FirstCharToUpper()[0]}/{n}";
-                }
-
-                var isOpen = EditorSceneUtil.IsSceneAssetOpen(scene);
-
-                menu.AppendAction(L10n.Tr(n), static data =>
-                {
-                    var scene = (SceneAsset)data.userData;
-                    var isOpen = EditorSceneUtil.IsSceneAssetOpen(scene);
-
-                    if (isOpen)
-                    {
-                        // Can't close if only scene
-                        if (SceneManager.sceneCount == 1)
-                        {
-                            return;
-                        }
-
-                        var scenePath = SceneManager.GetSceneByPath(AssetDatabase.GetAssetPath(scene));
-
-                        if (!EditorSceneManager.SaveModifiedScenesIfUserWantsTo(new[] { scenePath }))
-                        {
-                            return;
-                        }
-
-                        EditorSceneManager.CloseScene(scenePath, true);
-                    }
-                    else
-                    {
-                        EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(scene), OpenSceneMode.Additive);
-                    }
-                }, _ => isOpen ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal, scene);
-            }
-        }
-
-        private static void SceneSelectionSetDropDown(DropdownMenu menu)
-        {
-            var settings = EditorSettingsUtility.GetSettings<SubSceneSettings>();
-
-            var sets = settings.SceneSets.Cast<SubSceneSetBase>().Concat(settings.EditorSceneSets).Where(s => s && s.Scenes.Count > 0).OrderBy(s => s.name);
-
-            foreach (var set in sets)
-            {
-                var n = set.name.ToSentence();
-                if (Group.Data)
-                {
-                    n = $"{n.FirstCharToUpper()[0]}/{n}";
-                }
-
-                menu.AppendAction(L10n.Tr(n), static data =>
-                {
-                    if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-                    {
-                        return;
-                    }
-
-                    var set = (SubSceneSetBase)data.userData;
-
-                    var scenes = set.Scenes.Where(s => s).ToArray();
-                    if (scenes.Length == 0)
-                    {
-                        return;
-                    }
-
-                    // Open the first scene
-                    EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(scenes[0]), OpenSceneMode.Single);
-                    for (var i = 1; i < scenes.Length; i++)
-                    {
-                        EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(scenes[i]), OpenSceneMode.Additive);
-                    }
-                }, _ => DropdownMenuAction.Status.Normal, set);
-            }
-        }
-#endif
-
-        private static void SceneSelectionClicked(Rect worldBound, bool showScene)
-        {
-            if (EditorApplication.isPlaying)
-            {
                 LivingBakingDropdown(worldBound);
             }
             else
             {
-                if (showScene)
+                if (baking)
                 {
-                    SceneSelectionSceneDropDown(worldBound);
+                    SceneSelectionDropDown(worldBound, (_, _, _) => true, AddSceneBake);
                 }
                 else
                 {
-                    SceneSelectionSetDropDown(worldBound);
+                    SceneSelectionDropDown(worldBound, AddSetOpen, AddSceneOpen);
                 }
             }
         }
 
-        private static void SceneSelectionSceneDropDown(Rect worldBound)
+        private static void SceneSelectionDropDown<T>(T dropDown, AddSetDelegate<T> addSet, AddSceneDelegate<T> addScene)
+            where T : IDropDown
         {
-            var menu = new GenericMenu();
-
             var settings = EditorSettingsUtility.GetSettings<SubSceneSettings>();
 
-            var scenes = settings
-                .SceneSets
-                .Cast<SubSceneSetBase>()
-                .Concat(settings.EditorSceneSets)
-                .Where(set => set)
-                .SelectMany(set => set.Scenes)
-                .Where(scene => scene)
-                .Concat(EditorBuildSettings.scenes.Select(s => AssetDatabase.LoadAssetAtPath<SceneAsset>(s.path)))
-                .Distinct()
-                .OrderBy(s => s.name);
-
-            foreach (var scene in scenes)
-            {
-                var n = scene.name.ToSentence();
-                if (Group.Data)
-                {
-                    n = $"{n.FirstCharToUpper()[0]}/{n}";
-                }
-
-                var isOpen = EditorSceneUtil.IsSceneAssetOpen(scene);
-
-                menu.AddItem(EditorGUIUtility.TrTextContent(n), isOpen, static data =>
-                {
-                    var scene = (SceneAsset)data;
-                    var isOpen = EditorSceneUtil.IsSceneAssetOpen(scene);
-
-                    if (isOpen)
-                    {
-                        // Can't close if only scene
-                        if (SceneManager.sceneCount == 1)
-                        {
-                            return;
-                        }
-
-                        var scenePath = SceneManager.GetSceneByPath(AssetDatabase.GetAssetPath(scene));
-
-                        if (!EditorSceneManager.SaveModifiedScenesIfUserWantsTo(new[] { scenePath }))
-                        {
-                            return;
-                        }
-
-                        EditorSceneManager.CloseScene(scenePath, true);
-                    }
-                    else
-                    {
-                        EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(scene), OpenSceneMode.Additive);
-                    }
-                }, scene);
-            }
-
-            menu.DropDown(worldBound);
-        }
-
-        private static void SceneSelectionSetDropDown(Rect worldBound)
-        {
-            var menu = new GenericMenu();
-
-            var settings = EditorSettingsUtility.GetSettings<SubSceneSettings>();
-
-            var sets = settings.SceneSets.Cast<SubSceneSetBase>().Concat(settings.EditorSceneSets).Where(s => s && s.Scenes.Count > 0).OrderBy(s => s.name);
+            var sets = settings.SceneSets.Cast<SubSceneSetBase>().Concat(settings.EditorSceneSets).Where(s => s && s.Scenes.Count > 0).OrderBy(s => s.name).ToArray();
+            var shorten = sets.Length > 20;
 
             foreach (var set in sets)
             {
-                var n = set.name.ToSentence();
-                if (Group.Data)
+                var setName = set.name.ToSentence();
+                var setPath = setName;
+
+                if (shorten)
                 {
-                    n = $"{n.FirstCharToUpper()[0]}/{n}";
+                    setPath = $"{setPath.FirstCharToUpper()[0]}/{setPath}";
                 }
 
-                menu.AddItem(EditorGUIUtility.TrTextContent(n), false, static data =>
+                if (!addSet(dropDown, set, setPath))
                 {
-                    if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-                    {
-                        return;
-                    }
+                    continue;
+                }
 
-                    var set = (SubSceneSetBase)data;
+                var scenes = set
+                    .Scenes
+                    .Where(scene => scene)
+                    .Concat(EditorBuildSettings.scenes.Select(s => AssetDatabase.LoadAssetAtPath<SceneAsset>(s.path)))
+                    .Distinct()
+                    .OrderBy(s => s.name);
 
-                    var scenes = set.Scenes.Where(s => s).ToArray();
-                    if (scenes.Length == 0)
-                    {
-                        return;
-                    }
-
-                    // Open the first scene
-                    EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(scenes[0]), OpenSceneMode.Single);
-                    for (var i = 1; i < scenes.Length; i++)
-                    {
-                        EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(scenes[i]), OpenSceneMode.Additive);
-                    }
-                }, set);
+                foreach (var scene in scenes)
+                {
+                    addScene(dropDown, scene, setPath);
+                }
             }
 
-            menu.DropDown(worldBound);
+            dropDown.Finish();
         }
 
-        private static void LivingBakingDropdown(Rect worldBound)
+        private static bool AddSetOpen<T>(T dropDown, SubSceneSetBase set, string setPath)
+            where T : IDropDown
         {
-            var menu = new GenericMenu();
+            var scenes = set.Scenes.Where(s => s).ToArray();
+            if (scenes.Length == 0)
+            {
+                return false;
+            }
+
+            dropDown.AddItem(setPath + "/Open All", false, static data =>
+            {
+                if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                {
+                    return;
+                }
+
+                var set = (SubSceneSetBase)data;
+                var scenes = set.Scenes.Where(s => s).ToArray();
+                if (scenes.Length == 0)
+                {
+                    return;
+                }
+
+                // Open the first scene
+                EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(scenes[0]), OpenSceneMode.Single);
+                for (var i = 1; i < scenes.Length; i++)
+                {
+                    EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(scenes[i]), OpenSceneMode.Additive);
+                }
+            }, set);
+
+            dropDown.AddSeparator(setPath + "/");
+            return true;
+        }
+
+        private static void AddSceneOpen<T>(T dropDown, SceneAsset scene, string setName)
+            where T : IDropDown
+        {
+            var sceneName = scene.name.ToSentence();
+            var isOpen = EditorSceneUtil.IsSceneAssetOpen(scene);
+
+            dropDown.AddItem($"{setName}/{sceneName}", isOpen, static data =>
+            {
+                var scene = (SceneAsset)data;
+                var isOpen = EditorSceneUtil.IsSceneAssetOpen(scene);
+
+                if (isOpen)
+                {
+                    // Can't close if only scene
+                    if (SceneManager.sceneCount == 1)
+                    {
+                        return;
+                    }
+
+                    var scenePath = SceneManager.GetSceneByPath(AssetDatabase.GetAssetPath(scene));
+
+                    if (!EditorSceneManager.SaveModifiedScenesIfUserWantsTo(new[] { scenePath }))
+                    {
+                        return;
+                    }
+
+                    EditorSceneManager.CloseScene(scenePath, true);
+                }
+                else
+                {
+                    EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(scene), OpenSceneMode.Additive);
+                }
+            }, scene);
+        }
+
+        private static void AddSceneBake<T>(T dropDown, SceneAsset scene, string setName)
+            where T : IDropDown
+        {
+            var sceneName = scene.name.ToSentence();
+            dropDown.AddItem($"{setName}/{sceneName}", false, _ =>
+            {
+                // If it's already open, we have to close it before converting it
+                if (EditorSceneUtil.IsSceneAssetOpen(scene))
+                {
+                    // Can't close if only scene
+                    if (SceneManager.sceneCount == 1)
+                    {
+                        return;
+                    }
+
+                    var scenePath = SceneManager.GetSceneByPath(AssetDatabase.GetAssetPath(scene));
+
+                    if (!EditorSceneManager.SaveModifiedScenesIfUserWantsTo(new[] { scenePath }))
+                    {
+                        return;
+                    }
+
+                    EditorSceneManager.CloseScene(scenePath, true);
+                }
+
+                if (!EditorSubScenes.TryGetValue(scene, out var subScene) || !subScene)
+                {
+                    foreach (var subscene in Object.FindObjectsByType<SubScene>(FindObjectsSortMode.None))
+                    {
+                        if (subscene.SceneAsset == scene)
+                        {
+                            subScene = subscene;
+                            break;
+                        }
+                    }
+
+                    if (!subScene)
+                    {
+                        var go = new GameObject { hideFlags = HideFlags.DontSave };
+                        subScene = go.AddComponent<SubScene>();
+                        subScene.SceneAsset = scene;
+                        EditorSubScenes[scene] = subScene;
+                    }
+                }
+
+                SubSceneUtility.EditScene(subScene);
+            }, scene);
+        }
+
+        private static void LivingBakingDropdown<T>(T menu)
+            where T : IDropDown
+        {
             var scenes = new Dictionary<Hash128, SubScene?>();
 
             var subScenes = Object.FindObjectsByType<SubScene>(FindObjectsSortMode.None);
@@ -662,9 +347,9 @@ namespace BovineLabs.Core.Editor.SubScenes
 
                 if (SceneManager.GetSceneByPath(path).isLoaded)
                 {
-                    menu.AddItem(EditorGUIUtility.TrTextContent(sceneAsset.ToString()), true, static ss =>
+                    menu.AddItem(L10n.Tr(sceneAsset.ToString()), true, static data =>
                     {
-                        var (key, subScene) = (KeyValuePair<Hash128, SubScene?>)ss;
+                        var (key, subScene) = (KeyValuePair<Hash128, SubScene?>)data;
 
                         if (TempSubScenes.Remove(key))
                         {
@@ -688,9 +373,9 @@ namespace BovineLabs.Core.Editor.SubScenes
                 }
                 else
                 {
-                    menu.AddItem(EditorGUIUtility.TrTextContent(sceneAsset.name), false, static ss =>
+                    menu.AddItem(sceneAsset.name, false, static data =>
                     {
-                        var (key, subScene) = (KeyValuePair<Hash128, SubScene?>)ss;
+                        var (key, subScene) = (KeyValuePair<Hash128, SubScene?>)data;
 
                         var path = AssetDatabase.GUIDToAssetPath(key);
                         var scene = SceneManager.GetSceneByPath(path);
@@ -706,8 +391,7 @@ namespace BovineLabs.Core.Editor.SubScenes
                             subScene = new GameObject().AddComponent<SubScene>();
                             subScene.AutoLoadScene = false;
                             subScene.SceneAsset = sceneAsset;
-
-                            TempSubScenes[key] = subScene;
+                            TempSubScenes[subScene.SceneGUID] = subScene;
                         }
 
                         scene = EditorSceneManager.LoadSceneInPlayMode(path, new LoadSceneParameters(LoadSceneMode.Additive));
@@ -716,19 +400,7 @@ namespace BovineLabs.Core.Editor.SubScenes
                 }
             }
 
-            menu.DropDown(worldBound);
-        }
-
-        private struct EnabledType
-        {
-        }
-
-        private struct GroupType
-        {
-        }
-
-        private struct SwapType
-        {
+            menu.Finish();
         }
     }
 }

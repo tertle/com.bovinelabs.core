@@ -306,39 +306,8 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
                 reorderMode = ListViewReorderMode.Animated,
             };
 
-            this.lockedItemsListView.RegisterCallback<ClickEvent>(evt =>
-            {
-                var item = this.GetLockedItemAtPosition(evt.localPosition);
-                if (item != null)
-                {
-                    var currentTime = EditorApplication.timeSinceStartup;
-                    var timeSinceLastClick = currentTime - this.lastLockedClickTime;
-
-                    if (this.lastLockedClickedItem == item && timeSinceLastClick < this.Service.DoubleClickThreshold)
-                    {
-                        // Double-click detected
-                        this.OnLockedListItemDoubleClicked(item);
-                        this.lastLockedClickedItem = null; // Reset to prevent triple-click issues
-                    }
-                    else
-                    {
-                        // Single click or first click of potential double-click
-                        this.OnListItemClicked(item);
-                        this.lastLockedClickedItem = item;
-                    }
-
-                    this.lastLockedClickTime = currentTime;
-                }
-            });
-
-            this.lockedItemsListView.AddManipulator(new ContextualMenuManipulator(evt =>
-            {
-                var item = this.GetLockedItemAtPosition(evt.localMousePosition);
-                if (item != null)
-                {
-                    this.CreateContextMenu(evt, item);
-                }
-            }));
+            this.lockedItemsListView.RegisterCallback<ClickEvent>(this.OnLockedListClick);
+            this.lockedItemsListView.AddManipulator(new ContextualMenuManipulator(this.OnLockedListContextMenu));
 
             this.lockedItemsListView.itemIndexChanged += this.OnLockedItemReordered;
 
@@ -386,10 +355,55 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             }
         }
 
-        private SelectionHistoryItem? GetLockedItemAtPosition(Vector2 localPosition)
+        private void OnLockedListClick(ClickEvent evt)
         {
+            var item = this.GetLockedItemAtPosition(evt.localPosition);
+            if (item != null)
+            {
+                var currentTime = EditorApplication.timeSinceStartup;
+                var timeSinceLastClick = currentTime - this.lastLockedClickTime;
+
+                if (Equals(this.lastLockedClickedItem, item) && timeSinceLastClick < this.Service.DoubleClickThreshold)
+                {
+                    this.OnLockedListItemDoubleClicked(item);
+                    this.lastLockedClickedItem = null;
+                }
+                else
+                {
+                    this.OnListItemClicked(item);
+                    this.lastLockedClickedItem = item;
+                }
+
+                this.lastLockedClickTime = currentTime;
+            }
+        }
+
+        private void OnLockedListContextMenu(ContextualMenuPopulateEvent evt)
+        {
+            var item = this.GetLockedItemAtPosition(evt.localMousePosition);
+            if (item != null)
+            {
+                this.CreateContextMenu(evt, item);
+            }
+        }
+
+        private SelectionHistoryItem? GetLockedItemAtPosition(Vector2 listLocalPosition)
+        {
+            var scrollView = this.lockedItemsListView?.Q<ScrollView>();
+            if (scrollView == null)
+            {
+                return null;
+            }
+
+            var world = this.lockedItemsListView.LocalToWorld(listLocalPosition);
+            if (!scrollView.contentViewport.worldBound.Contains(world))
+            {
+                return null;
+            }
+
+            var contentLocal = scrollView.contentContainer.WorldToLocal(world);
             var itemHeight = this.Service.ItemHeight;
-            var index = (int)(localPosition.y / itemHeight);
+            var index = Mathf.FloorToInt(contentLocal.y / itemHeight);
 
             if (index >= 0 && index < this.filteredLockedItems.Count)
             {

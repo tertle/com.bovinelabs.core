@@ -25,12 +25,6 @@ namespace BovineLabs.Core
         [ConfigVar("debug.loglevel.min-world-length", DefaultMinLength, "The min length of the world name, useful for alignment.")]
         private static readonly SharedStatic<int> MinWorldLength = SharedStatic<int>.GetOrCreate<BLDebugSystem>();
 
-        /// <inheritdoc />
-        protected override void OnCreate()
-        {
-            Create(this.World);
-        }
-
         internal static void Create(World world)
         {
             var netDebugEntity = world.EntityManager.CreateSingleton<BLLogger>();
@@ -46,6 +40,20 @@ namespace BovineLabs.Core
             worldName = worldName.PadRight(minLength);
 
             world.EntityManager.SetComponentData(netDebugEntity, new BLLogger { World = worldName });
+        }
+
+        /// <inheritdoc />
+        protected override void OnCreate()
+        {
+            Create(this.World);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnUpdate()
+        {
+            var frameCount = UnityEngine.Time.frameCount;
+            this.World.EntityManager.GetSingletonRW<BLLogger>().ValueRW.Frame = frameCount;
+            BLGlobalLogger.Frame.Data = frameCount;
         }
     }
 }

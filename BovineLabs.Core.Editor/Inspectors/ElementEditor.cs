@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Editor.Inspectors
     using UnityEditor;
     using UnityEditor.UIElements;
     using UnityEngine.UIElements;
+    using UnityEngine.WSA;
 
     /// <summary> Provides a custom editor ([CustomEditor(typeof(T))]) with custom element but will fall back to PropertyField if not overriden. </summary>
     public abstract class ElementEditor : Editor
@@ -77,13 +78,15 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         /// <summary> Create a foldout without margins so it lines up with the inspector listviews. </summary>
         /// <param name="text"> Text value of the foldout. </param>
+        /// <param name="value"> Default value of the foldout. </param>
         /// <returns> A new foldout. </returns>
-        protected static Foldout CreateFoldout(string text)
+        protected static Foldout CreateFoldout(string text, bool value = false)
         {
             var foldout = new Foldout { text = text };
             foldout.AddToClassList("unity-list-view__foldout-header");
             foldout.contentContainer.style.marginLeft = 0;
-            foldout.value = false;
+            foldout.Q<Toggle>().style.marginLeft = -12;
+            foldout.value = value;
             return foldout;
         }
     }

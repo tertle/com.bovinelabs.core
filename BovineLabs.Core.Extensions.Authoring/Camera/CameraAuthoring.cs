@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_CAMERA
+#if !BL_DISABLE_CAMERA && !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.Authoring.Camera
 {
     using BovineLabs.Core.Camera;

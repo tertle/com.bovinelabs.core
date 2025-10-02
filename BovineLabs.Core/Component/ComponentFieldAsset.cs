@@ -13,7 +13,7 @@ namespace BovineLabs.Core
     public class ComponentFieldAsset : ScriptableObject
     {
         [SerializeField]
-        private ComponentAsset component;
+        private ComponentAssetBase component;
 
         [SerializeField]
         private string fieldName = string.Empty;
@@ -65,7 +65,7 @@ namespace BovineLabs.Core
 
         private readonly struct Cache
         {
-            public readonly ComponentAsset Component;
+            public readonly ComponentAssetBase Component;
             public readonly string FieldName;
             public readonly ushort Offset;
 

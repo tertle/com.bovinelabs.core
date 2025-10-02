@@ -12,6 +12,7 @@ namespace BovineLabs.Core.Editor.Keys
     using BovineLabs.Core.Keys;
     using BovineLabs.Core.Utility;
     using UnityEditor;
+    using UnityEngine;
 
     [CustomPropertyDrawer(typeof(KAttribute), true)]
     public class KAttributeDrawer : BitFieldAttributeEditor<KAttribute>
@@ -28,7 +29,7 @@ namespace BovineLabs.Core.Editor.Keys
                 return null;
             }
 
-            var settings = EditorSettingsUtility.GetSettings(type) as KSettingsBase;
+            var settings = EditorSettingsUtility.GetSettings(type) as ScriptableObject;
             if (!settings)
             {
                 return null;
@@ -75,7 +76,7 @@ namespace BovineLabs.Core.Editor.Keys
             {
                 kTypes = new Dictionary<string, Type>();
 
-                foreach (var c in ReflectionUtility.GetAllImplementations<KSettingsBase>())
+                foreach (var c in ReflectionUtility.GetAllImplementations<IKsettings>())
                 {
                     kTypes[c.Name] = c;
                 }

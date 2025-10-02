@@ -11,31 +11,31 @@ namespace BovineLabs.Core.Camera
     using UnityEngine;
 
     [WorldSystemFilter(WorldSystemFilterFlags.Presentation)]
+    [UpdateBefore(typeof(CameraFrustumSystem))]
     [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
     public partial class CameraMainSystem : SystemBase
     {
-        protected override void OnCreate()
-        {
-            this.RequireForUpdate<CameraMain>();
-        }
-
         /// <inheritdoc />
         protected override void OnUpdate()
         {
-            var cameraQuery = SystemAPI.QueryBuilder().WithAllRW<LocalTransform>().WithAll<CameraMain, Camera, Transform>().Build();
+            var cameraQuery = SystemAPI.QueryBuilder().WithAllRW<LocalTransform>().WithAll<CameraMain, Camera>().Build();
 
             Entity entity;
 
             if (cameraQuery.IsEmptyIgnoreFilter)
             {
-                var noCameraQuery = SystemAPI.QueryBuilder().WithAllRW<LocalTransform>().WithAll<CameraMain>().WithNone<Camera, Transform>().Build();
+                var noCameraQuery = SystemAPI.QueryBuilder().WithAllRW<LocalTransform>().WithAll<CameraMain>().WithNone<Camera>().Build();
 
                 if (noCameraQuery.IsEmptyIgnoreFilter)
                 {
-                    return;
+                    // User hasn't setup an entity, create our own
+                    entity = this.EntityManager.CreateEntity(typeof(CameraMain), typeof(LocalTransform), typeof(CameraFrustumPlanes),
+                        typeof(CameraFrustumCorners));
                 }
-
-                entity = noCameraQuery.GetSingletonEntity();
+                else
+                {
+                    entity = noCameraQuery.GetSingletonEntity();
+                }
 
                 var cam = Camera.main;
                 if (cam == null)
@@ -44,10 +44,7 @@ namespace BovineLabs.Core.Camera
                     return;
                 }
 
-                var componentTypeSet = new ComponentTypeSet(ComponentType.ReadOnly<Transform>(), ComponentType.ReadOnly<Camera>());
-                this.EntityManager.AddComponent(entity, componentTypeSet);
                 this.EntityManager.AddComponentObject(entity, cam);
-                this.EntityManager.AddComponentObject(entity, cam.transform);
             }
             else
             {

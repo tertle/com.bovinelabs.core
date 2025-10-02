@@ -331,175 +331,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <summary> Converts a quaternion to euler. </summary>
-        /// <remarks> Taken from Unity.Physics. </remarks>
-        /// <param name="q"> The quaternion. </param>
-        /// <param name="order"> The winding order. </param>
-        /// <returns> Euler angles in radians. </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 ToEuler(quaternion q, math.RotationOrder order = math.RotationOrder.Default)
-        {
-            const float epsilon = 1e-6f;
-
-            // prepare the data
-            var qv = q.value;
-            var d1 = qv * qv.wwww * new float4(2.0f); // xw, yw, zw, ww
-            var d2 = qv * qv.yzxw * new float4(2.0f); // xy, yz, zx, ww
-            var d3 = qv * qv;
-            var euler = new float3(0.0f);
-
-            const float CUTOFF = (1.0f - (2.0f * epsilon)) * (1.0f - (2.0f * epsilon));
-
-            switch (order)
-            {
-                case math.RotationOrder.ZYX:
-                {
-                    var y1 = d2.z + d1.y;
-                    if (y1 * y1 < CUTOFF)
-                    {
-                        var x1 = -d2.x + d1.z;
-                        var x2 = (d3.x + d3.w) - d3.y - d3.z;
-                        var z1 = -d2.y + d1.x;
-                        var z2 = (d3.z + d3.w) - d3.y - d3.x;
-                        euler = new float3(math.atan2(x1, x2), math.asin(y1), math.atan2(z1, z2));
-                    }
-                    else
-                    {
-                        // zxz
-                        y1 = math.clamp(y1, -1.0f, 1.0f);
-                        var abcd = new float4(d2.z, d1.y, d2.y, d1.x);
-                        var x1 = 2.0f * ((abcd.x * abcd.w) + (abcd.y * abcd.z)); // 2(ad+bc)
-                        var x2 = math.csum(abcd * abcd * new float4(-1.0f, 1.0f, -1.0f, 1.0f));
-                        euler = new float3(math.atan2(x1, x2), math.asin(y1), 0.0f);
-                    }
-
-                    break;
-                }
-
-                case math.RotationOrder.ZXY:
-                {
-                    var y1 = d2.y - d1.x;
-                    if (y1 * y1 < CUTOFF)
-                    {
-                        var x1 = d2.x + d1.z;
-                        var x2 = (d3.y + d3.w) - d3.x - d3.z;
-                        var z1 = d2.z + d1.y;
-                        var z2 = (d3.z + d3.w) - d3.x - d3.y;
-                        euler = new float3(math.atan2(x1, x2), -math.asin(y1), math.atan2(z1, z2));
-                    }
-                    else
-                    {
-                        // zxz
-                        y1 = math.clamp(y1, -1.0f, 1.0f);
-                        var abcd = new float4(d2.z, d1.y, d2.y, d1.x);
-                        var x1 = 2.0f * ((abcd.x * abcd.w) + (abcd.y * abcd.z)); // 2(ad+bc)
-                        var x2 = math.csum(abcd * abcd * new float4(-1.0f, 1.0f, -1.0f, 1.0f));
-                        euler = new float3(math.atan2(x1, x2), -math.asin(y1), 0.0f);
-                    }
-
-                    break;
-                }
-
-                case math.RotationOrder.YXZ:
-                {
-                    var y1 = d2.y + d1.x;
-                    if (y1 * y1 < CUTOFF)
-                    {
-                        var x1 = -d2.z + d1.y;
-                        var x2 = (d3.z + d3.w) - d3.x - d3.y;
-                        var z1 = -d2.x + d1.z;
-                        var z2 = (d3.y + d3.w) - d3.z - d3.x;
-                        euler = new float3(math.atan2(x1, x2), math.asin(y1), math.atan2(z1, z2));
-                    }
-                    else
-                    {
-                        // yzy
-                        y1 = math.clamp(y1, -1.0f, 1.0f);
-                        var abcd = new float4(d2.x, d1.z, d2.y, d1.x);
-                        var x1 = 2.0f * ((abcd.x * abcd.w) + (abcd.y * abcd.z)); // 2(ad+bc)
-                        var x2 = math.csum(abcd * abcd * new float4(-1.0f, 1.0f, -1.0f, 1.0f));
-                        euler = new float3(math.atan2(x1, x2), math.asin(y1), 0.0f);
-                    }
-
-                    break;
-                }
-
-                case math.RotationOrder.YZX:
-                {
-                    var y1 = d2.x - d1.z;
-                    if (y1 * y1 < CUTOFF)
-                    {
-                        var x1 = d2.z + d1.y;
-                        var x2 = (d3.x + d3.w) - d3.z - d3.y;
-                        var z1 = d2.y + d1.x;
-                        var z2 = (d3.y + d3.w) - d3.x - d3.z;
-                        euler = new float3(math.atan2(x1, x2), -math.asin(y1), math.atan2(z1, z2));
-                    }
-                    else
-                    {
-                        // yxy
-                        y1 = math.clamp(y1, -1.0f, 1.0f);
-                        var abcd = new float4(d2.x, d1.z, d2.y, d1.x);
-                        var x1 = 2.0f * ((abcd.x * abcd.w) + (abcd.y * abcd.z)); // 2(ad+bc)
-                        var x2 = math.csum(abcd * abcd * new float4(-1.0f, 1.0f, -1.0f, 1.0f));
-                        euler = new float3(math.atan2(x1, x2), -math.asin(y1), 0.0f);
-                    }
-
-                    break;
-                }
-
-                case math.RotationOrder.XZY:
-                {
-                    var y1 = d2.x + d1.z;
-                    if (y1 * y1 < CUTOFF)
-                    {
-                        var x1 = -d2.y + d1.x;
-                        var x2 = (d3.y + d3.w) - d3.z - d3.x;
-                        var z1 = -d2.z + d1.y;
-                        var z2 = (d3.x + d3.w) - d3.y - d3.z;
-                        euler = new float3(math.atan2(x1, x2), math.asin(y1), math.atan2(z1, z2));
-                    }
-                    else
-                    {
-                        // xyx
-                        y1 = math.clamp(y1, -1.0f, 1.0f);
-                        var abcd = new float4(d2.x, d1.z, d2.z, d1.y);
-                        var x1 = 2.0f * ((abcd.x * abcd.w) + (abcd.y * abcd.z)); // 2(ad+bc)
-                        var x2 = math.csum(abcd * abcd * new float4(-1.0f, 1.0f, -1.0f, 1.0f));
-                        euler = new float3(math.atan2(x1, x2), math.asin(y1), 0.0f);
-                    }
-
-                    break;
-                }
-
-                case math.RotationOrder.XYZ:
-                {
-                    var y1 = d2.z - d1.y;
-                    if (y1 * y1 < CUTOFF)
-                    {
-                        var x1 = d2.y + d1.x;
-                        var x2 = (d3.z + d3.w) - d3.y - d3.x;
-                        var z1 = d2.x + d1.z;
-                        var z2 = (d3.x + d3.w) - d3.y - d3.z;
-                        euler = new float3(math.atan2(x1, x2), -math.asin(y1), math.atan2(z1, z2));
-                    }
-                    else
-                    {
-                        // xzx
-                        y1 = math.clamp(y1, -1.0f, 1.0f);
-                        var abcd = new float4(d2.z, d1.y, d2.x, d1.z);
-                        var x1 = 2.0f * ((abcd.x * abcd.w) + (abcd.y * abcd.z)); // 2(ad+bc)
-                        var x2 = math.csum(abcd * abcd * new float4(-1.0f, 1.0f, -1.0f, 1.0f));
-                        euler = new float3(math.atan2(x1, x2), -math.asin(y1), 0.0f);
-                    }
-
-                    break;
-                }
-            }
-
-            return eulerReorderBack(euler, order);
-        }
-
         // Radians
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float SmoothDampAngle(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
@@ -806,23 +637,48 @@ namespace BovineLabs.Core.Utility
             return mean + (stddev * x);
         }
 
-        /// <summary>  Returns a quaternion q with q * from = to. </summary>
-        /// <remarks> Taken from Unity Physics. </remarks>
+        /// <summary> Returns a quaternion q with q * from = to. </summary>
         /// <param name="from"> From rotation. </param>
         /// <param name="to"> To rotation. </param>
         /// <returns> A quaternion such that q * from = to. </returns>
         public static quaternion FromToRotation(float3 from, float3 to)
         {
-            Assert.IsTrue(math.abs(math.lengthsq(from) - 1.0f) < 1e-4f);
-            Assert.IsTrue(math.abs(math.lengthsq(to) - 1.0f) < 1e-4f);
-            var cross = math.cross(from, to);
-            CalculatePerpendicularNormalized(from, out var safeAxis, out var unused); // for when angle ~= 180
-            var dot = math.dot(from, to);
-            var squares = new float3(0.5f - (new float2(dot, -dot) * 0.5f), math.lengthsq(cross));
-            var inverses = math.select(math.rsqrt(squares), 0.0f, squares < 1e-10f);
-            var sinCosHalfAngle = squares.xy * inverses.xy;
-            var axis = math.select(cross * inverses.z, safeAxis, squares.z < 1e-10f);
-            return new quaternion(new float4(axis * sinCosHalfAngle.x, sinCosHalfAngle.y));
+            // Handle degenerate or invalid inputs
+            var lsqFrom = math.lengthsq(from);
+            var lsqTo = math.lengthsq(to);
+            if (lsqFrom <= 1e-20f || lsqTo <= 1e-20f || !math.isfinite(lsqFrom + lsqTo))
+            {
+                return quaternion.identity;
+            }
+
+            // Normalize vectors
+            var f = from * math.rsqrt(lsqFrom);
+            var t = to * math.rsqrt(lsqTo);
+
+            var dot = math.dot(f, t);
+
+            // Same direction → identity
+            if (dot > 1f - 1e-6f)
+            {
+                return quaternion.identity;
+            }
+
+            // Opposite direction → rotate 180° around a stable perpendicular axis
+            if (dot < -1f + 1e-6f)
+            {
+                var axis = math.abs(f.x) < 0.5f ? math.cross(f, new float3(1, 0, 0)) : math.cross(f, new float3(0, 1, 0));
+                if (math.lengthsq(axis) <= 1e-12f)
+                {
+                    axis = math.cross(f, new float3(0, 0, 1));
+                }
+
+                return quaternion.AxisAngle(math.normalize(axis), math.PI);
+            }
+
+            // General case
+            var v = math.cross(f, t);
+            var q = new quaternion(v.x, v.y, v.z, 1f + dot);
+            return math.normalize(q);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

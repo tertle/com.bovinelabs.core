@@ -46,12 +46,8 @@ namespace BovineLabs.Core.Camera
 
         public bool Equals(CameraFrustumPlanes other)
         {
-            return this.Left.Equals(other.Left) &&
-                this.Right.Equals(other.Right) &&
-                this.Bottom.Equals(other.Bottom) &&
-                this.Top.Equals(other.Top) &&
-                this.Near.Equals(other.Near) &&
-                this.Far.Equals(other.Far);
+            return this.Left.Equals(other.Left) && this.Right.Equals(other.Right) && this.Bottom.Equals(other.Bottom) && this.Top.Equals(other.Top) &&
+                this.Near.Equals(other.Near) && this.Far.Equals(other.Far);
         }
 
         public override int GetHashCode()

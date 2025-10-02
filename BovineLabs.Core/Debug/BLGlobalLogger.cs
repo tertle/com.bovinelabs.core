@@ -6,11 +6,14 @@ namespace BovineLabs.Core
 {
     using System;
     using System.Diagnostics;
+    using Unity.Burst;
     using Unity.Collections;
     using UnityEngine;
 
     public static class BLGlobalLogger
     {
+        internal static readonly SharedStatic<int> Frame = SharedStatic<int>.GetOrCreate<FrameType>();
+
         public static LogLevel Level => BLLogger.Level;
 
         [Conditional("UNITY_EDITOR")]
@@ -19,7 +22,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Verbose)
             {
-                UnityEngine.Debug.Log($"V | {msg}");
+                UnityEngine.Debug.Log($"V | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -29,7 +32,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Verbose)
             {
-                UnityEngine.Debug.Log($"V | {msg}");
+                UnityEngine.Debug.Log($"V | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -40,7 +43,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Debug)
             {
-                UnityEngine.Debug.Log($"Debug | {msg}");
+                UnityEngine.Debug.Log($"D | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -51,7 +54,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Debug)
             {
-                UnityEngine.Debug.Log($"Debug | {msg}");
+                UnityEngine.Debug.Log($"D | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -62,7 +65,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Debug)
             {
-                UnityEngine.Debug.Log($"Debug | {msg}");
+                UnityEngine.Debug.Log($"D | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -73,7 +76,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Debug)
             {
-                UnityEngine.Debug.Log($"Debug | {msg}");
+                UnityEngine.Debug.Log($"D | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -82,7 +85,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Info)
             {
-                UnityEngine.Debug.Log($"Info  | {msg}");
+                UnityEngine.Debug.Log($"I | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -91,7 +94,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Info)
             {
-                UnityEngine.Debug.Log($"Info  | {msg}");
+                UnityEngine.Debug.Log($"I | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -100,7 +103,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Info)
             {
-                UnityEngine.Debug.Log($"Info  | {msg}");
+                UnityEngine.Debug.Log($"I | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -109,7 +112,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Info)
             {
-                UnityEngine.Debug.Log($"Info  | {msg}");
+                UnityEngine.Debug.Log($"I | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -118,7 +121,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Warning)
             {
-                UnityEngine.Debug.LogWarning($"Warn  | {msg}");
+                UnityEngine.Debug.LogWarning($"W | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -127,7 +130,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Warning)
             {
-                UnityEngine.Debug.LogWarning($"Warn  | {msg}");
+                UnityEngine.Debug.LogWarning($"W | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -136,7 +139,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Warning)
             {
-                UnityEngine.Debug.LogWarning($"Warn  | {msg}");
+                UnityEngine.Debug.LogWarning($"W | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -145,7 +148,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Warning)
             {
-                UnityEngine.Debug.LogWarning($"Warn  | {msg}");
+                UnityEngine.Debug.LogWarning($"W | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -154,7 +157,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Error)
             {
-                UnityEngine.Debug.LogError($"Error | {msg}");
+                UnityEngine.Debug.LogError($"E | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -163,7 +166,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Error)
             {
-                UnityEngine.Debug.LogError($"Error | {msg}");
+                UnityEngine.Debug.LogError($"E | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -172,7 +175,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Error)
             {
-                UnityEngine.Debug.LogError($"Error | {msg}");
+                UnityEngine.Debug.LogError($"E | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -181,7 +184,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Error)
             {
-                UnityEngine.Debug.LogError($"Error | {msg}");
+                UnityEngine.Debug.LogError($"E | {Frame.Data,-4} | Global  | {msg}");
             }
         }
 
@@ -191,6 +194,32 @@ namespace BovineLabs.Core
             if (Level >= LogLevel.Fatal)
             {
                 UnityEngine.Debug.LogException(ex);
+            }
+        }
+
+        [HideInCallstack]
+        public static void Log128(FixedString128Bytes msg, LogLevel level)
+        {
+            switch (level)
+            {
+                case LogLevel.Disabled:
+                    break;
+                case LogLevel.Fatal:
+                case LogLevel.Error:
+                    LogVerbose(msg);
+                    break;
+                case LogLevel.Warning:
+                    LogWarning(msg);
+                    break;
+                case LogLevel.Info:
+                    LogInfo(msg);
+                    break;
+                case LogLevel.Debug:
+                    LogDebug(msg);
+                    break;
+                case LogLevel.Verbose:
+                    LogVerbose(msg);
+                    break;
             }
         }
 
@@ -220,6 +249,10 @@ namespace BovineLabs.Core
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
+        }
+
+        internal struct FrameType
+        {
         }
     }
 }

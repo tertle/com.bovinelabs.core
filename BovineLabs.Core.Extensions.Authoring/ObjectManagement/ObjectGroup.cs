@@ -8,14 +8,15 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     using System;
     using System.Collections.Generic;
     using BovineLabs.Core.ObjectManagement;
+    using BovineLabs.Core.PropertyDrawers;
     using UnityEngine;
 
     [AutoRef("ObjectManagementSettings", "objectGroups", nameof(ObjectGroup), "ObjectGroups")]
     public sealed class ObjectGroup : ScriptableObject, IUID
     {
-        [HideInInspector] // So the field is not editable even in debug mode.
+        [InspectorReadOnly]
         [SerializeField]
-        private GroupId id;
+        private short id;
 
         [SerializeField]
         [ObjectCategories]
@@ -39,12 +40,12 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         int IUID.ID
         {
             get => this.id;
-            set => this.id = new GroupId { ID = (short)value };
+            set => this.id = (short)value;
         }
 
         public static implicit operator GroupId(ObjectGroup group)
         {
-            return group == null ? default : group.id;
+            return group == null ? default : new GroupId(group.id);
         }
 
         public IEnumerable<ObjectDefinition> GetAllDefinitions()

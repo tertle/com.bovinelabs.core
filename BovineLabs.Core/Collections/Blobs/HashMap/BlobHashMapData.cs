@@ -25,6 +25,13 @@ namespace BovineLabs.Core.Collections
         {
             it.Key = key;
 
+            if (this.BucketCapacityMask < 0)
+            {
+                it.NextIndex = -1;
+                item = default;
+                return false;
+            }
+
             // ReSharper disable once Unity.BurstAccessingManagedMethod
             var bucket = key.GetHashCode() & this.BucketCapacityMask;
             it.NextIndex = this.Buckets[bucket];

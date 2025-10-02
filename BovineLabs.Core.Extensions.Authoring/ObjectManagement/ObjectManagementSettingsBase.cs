@@ -30,7 +30,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
                 if (this.objectDefinitionMap == null)
                 {
-                    var notNull = this.ObjectDefinitions.Where(o => o.Prefab).ToArray();
+                    var notNull = this.ObjectDefinitions.Where(o => o).ToArray();
                     var distinct = notNull.Distinct(default(PrefabDistinct)).ToArray();
                     if (distinct.Length != notNull.Length)
                     {
@@ -69,7 +69,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                 return;
             }
 
-            if (this.ObjectDefinitions.Count != this.objectDefinitionMap.Count)
+            if (this.ObjectDefinitions.Count(o => o) != this.objectDefinitionMap.Count)
             {
                 this.objectDefinitionMap = null;
             }
@@ -147,11 +147,6 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 #if !BL_DISABLE_LIFECYCLE
         private void SetupLookups(IBaker baker, Entity entity)
         {
-            if (this.ObjectDefinitions.Count == 0)
-            {
-                return;
-            }
-
             var maps = new Dictionary<Type, object>();
 
             foreach (var d in this.ObjectDefinitions)

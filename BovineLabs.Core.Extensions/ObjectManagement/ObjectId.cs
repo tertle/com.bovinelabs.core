@@ -17,6 +17,8 @@ namespace BovineLabs.Core.ObjectManagement
     [Serializable]
     public readonly struct ObjectId : IComponentData, IEquatable<ObjectId>, IComparable<ObjectId>
     {
+        public static readonly ObjectId Null = default;
+
         private const int ModBytes = 10;
         private const int ModShift = 32 - ModBytes;
         private const int IDMask = (1 << ModShift) - 1;

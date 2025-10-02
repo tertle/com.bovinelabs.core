@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.4.6] - 2025-10-03
+
+### Breaking
+* FeatureWindow now uses new EditorSettings scripting defines which will make existing projects incorrectly appear like features are disabled until reenabled again
+
+### Added
+* Can now load scenes as subscenes
+* EnableableComponentAsset and a new shared ComponentAssetBase
+* FrameCount to BlLogger
+* Color support for config vars
+* Right click context menu for config vars to reset or copy values
+* New platform shared scripting defines in EditorSettings
+* IJobForThread to schedule work across a fixed number of threads
+* Custom inspector for EntitySceneReference
+* SettingsSingleton<T> to reduce boilerplate
+* ObjectInspectorProxy and PropertyInspector to inspector anything using Unitys prperty package
+* ViewModelToolbar to inspect all UI Toolkit view models
+
+### Changed
+* Reload Toolbar Button no longer requires extensions (as you can hide it with new Unity Toolbar)
+* Reworked the toolbar buttons a little
+* TimeProfiler is now burstable
+* Reworked the alive detection in the favourite/selection windows to fix odd Unity behaviour
+* SubSceneLoadingSystem now pauses by default to fix fast world creation
+* CameraMain now auto generates if no authoring setup.
+
+### Fixed
+* Startup Scene was incorrectly using Async causing it to break if it was a heavier scene
+* FromToRotation
+* Feature and Selection window selection when scrolled down
+* Setting values with DynamicHashMap custom inspector
+* Errors when BlobHashMap when capacity is 0
+* Unloading runtime live scenes
+* LoadPrefabAsEntity when no LEG
+
+### Removed
+* Support for Editor Toolbar below Unity 6.3
+* ToEuler in mathex as math package has this method now
+* KSettings, now uses SettingsSingleton<T>
+
 ## [1.4.5.1] - 2025-08-17
 
 ### Fixed

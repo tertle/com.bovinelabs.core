@@ -11,6 +11,7 @@ namespace BovineLabs.Core.ConfigVars
     using BovineLabs.Core.Utility;
     using Unity.Burst;
     using Unity.Collections;
+    using UnityEngine;
     using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
     using UnityEditor;
@@ -76,7 +77,7 @@ namespace BovineLabs.Core.ConfigVars
 
                 if (container is NullConfigVarContainer)
                 {
-                    Debug.LogError($"Error | ConfigVar on field ({field.Name} in {field.DeclaringType?.Name}) of type ({field.FieldType}) is not a supported type");
+                    Debug.LogError($"E | ConfigVar on field ({field.Name} in {field.DeclaringType?.Name}) of type ({field.FieldType}) is not a supported type");
                     continue;
                 }
 
@@ -87,12 +88,12 @@ namespace BovineLabs.Core.ConfigVars
                     try
                     {
                         container.StringValue = value;
-                        Debug.Log($"Info  | ConfigVar {configVar.Name} set from command line to {value}");
+                        Debug.Log($"I | ConfigVar {configVar.Name} set from command line to {value}");
                     }
                     catch (Exception)
                     {
                         Debug.LogError(
-                            $"Error | Trying to set a ConfigVar {configVar.Name} value of {value} which is not in the right type format. Falling back to default.");
+                            $"E | Trying to set a ConfigVar {configVar.Name} value of {value} which is not in the right type format. Falling back to default.");
 
                         container.StringValue = configVar.DefaultValue;
                     }
@@ -138,13 +139,13 @@ namespace BovineLabs.Core.ConfigVars
         {
             if (AllInternal.ContainsKey(configVar))
             {
-                Debug.LogError($"Error | Trying to register ConfigVar {configVar.Name} twice");
+                Debug.LogError($"E | Trying to register ConfigVar {configVar.Name} twice");
                 return;
             }
 
             if (!ValidateNameRegex.IsMatch(configVar.Name))
             {
-                Debug.LogError($"Error | Trying to register ConfigVar with invalid name: {configVar.Name}");
+                Debug.LogError($"E | Trying to register ConfigVar with invalid name: {configVar.Name}");
                 return;
             }
 
@@ -158,6 +159,7 @@ namespace BovineLabs.Core.ConfigVars
                 SharedStatic<int> intField => new ConfigVarSharedStaticContainer<int>(intField),
                 SharedStatic<float> floatField => new ConfigVarSharedStaticContainer<float>(floatField),
                 SharedStatic<bool> boolField => new ConfigVarSharedStaticContainer<bool>(boolField),
+                SharedStatic<Color> colorField => new ConfigVarSharedStaticColorContainer(colorField),
                 SharedStatic<FixedString32Bytes> stringField32 => new ConfigVarSharedStaticStringContainer<FixedString32Bytes>(stringField32),
                 SharedStatic<FixedString64Bytes> stringField64 => new ConfigVarSharedStaticStringContainer<FixedString64Bytes>(stringField64),
                 SharedStatic<FixedString128Bytes> stringField128 => new ConfigVarSharedStaticStringContainer<FixedString128Bytes>(stringField128),

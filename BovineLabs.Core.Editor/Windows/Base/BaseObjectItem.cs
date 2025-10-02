@@ -54,7 +54,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
         public GlobalObjectId GlobalId { get; }
 
         /// <summary>Gets a value indicating whether the referenced object is still alive.</summary>
-        public bool IsAlive => this.ObjectRef.IsAlive;
+        public bool IsAlive => this.ObjectRef is { IsAlive: true, Target: UnityEngine.Object } && this.ObjectRef.Target.GetType().Name == this.TypeName;
 
         /// <summary>Gets a value indicating whether this is an asset (vs scene object).</summary>
         public bool IsAsset => !string.IsNullOrEmpty(this.AssetPath);
@@ -66,9 +66,8 @@ namespace BovineLabs.Core.Editor.Windows.Base
             // First try to get from weak reference (fastest)
             var obj = this.ObjectRef.Target as UnityEngine.Object;
 
-            // MonoImporter is the wrong type but is what replaces it and we don't want this
-            // We only want to reinter the MonoScript
-            if (obj != null && obj.GetType() != typeof(MonoImporter))
+            // Unity replaces assets with the importer (MonoImporter, AssetImporter) when unloading an asset so it appears loaded, but it's the wrong type
+            if (obj != null && obj.GetType().Name == this.TypeName)
             {
                 return obj;
             }

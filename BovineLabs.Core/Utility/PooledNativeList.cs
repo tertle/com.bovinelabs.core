@@ -94,6 +94,11 @@ namespace BovineLabs.Core.Utility
         /// </remarks>
         public void Dispose()
         {
+            if (!this.list.IsCreated)
+            {
+                return;
+            }
+
             ref var lp = ref PooledNativeList.Pool.Data.GetThreadList();
 
             this.list.Clear();

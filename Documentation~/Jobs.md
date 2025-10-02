@@ -4,12 +4,26 @@
 
 Custom job types that extend Unity's job system for efficient iteration over hash maps and other specialized data structures.
 
-**Key Features:**
-- Efficient iteration over hash maps and sets
-- Parallel processing support for performance-critical operations
-- Extension methods for safe data access within jobs
-
 ## Job Types
+
+### IJobForThread
+Splits a linear workload across a fixed number of worker threads, giving each thread a contiguous slice of indices.
+
+```cs
+[BurstCompile]
+private struct AccumulateJob : IJobForThread
+{
+    public NativeArray<float> Values;
+
+    public void Execute(int index)
+    {
+        Values[index] = math.sqrt(Values[index]);
+    }
+}
+
+// Schedule across 4 worker threads
+state.Dependency = job.ScheduleParallel(Values.Length, 4, state.Dependency);
+```
 
 ### IJobParallelForDeferBatch
 Combines IJobParallelForDefer and IJobParallelForBatch for deferred scheduling with batch processing.

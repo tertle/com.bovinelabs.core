@@ -13,6 +13,8 @@ namespace BovineLabs.Core.Editor.ConfigVars
     using Unity.Burst;
     using Unity.Collections;
     using UnityEditor;
+    using UnityEditor.UIElements;
+    using UnityEngine;
     using UnityEngine.UIElements;
 
     /// <summary> A panel that draws a collection of config vars. </summary>
@@ -108,6 +110,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
                 SharedStatic<int> sharedStatic => SetupField(new IntegerField(), configVar, sharedStatic),
                 SharedStatic<float> sharedStatic => SetupField(new FloatField(), configVar, sharedStatic),
                 SharedStatic<bool> sharedStatic => SetupField(new Toggle(), configVar, sharedStatic),
+                SharedStatic<Color> sharedStatic => SetupColorField(configVar, sharedStatic),
                 SharedStatic<FixedString32Bytes> sharedStatic => SetupTextField(configVar, sharedStatic),
                 SharedStatic<FixedString64Bytes> sharedStatic => SetupTextField(configVar, sharedStatic),
                 SharedStatic<FixedString128Bytes> sharedStatic => SetupTextField(configVar, sharedStatic),
@@ -128,6 +131,12 @@ namespace BovineLabs.Core.Editor.ConfigVars
         {
             var field = new TextField();
             return SetupField(field, configVar, new ConfigVarStringBinding<T>(field, configVar, sharedStatic));
+        }
+
+        private static BaseField<Color> SetupColorField(ConfigVarAttribute configVar, SharedStatic<Color> sharedStatic)
+        {
+            var field = new ColorField();
+            return SetupField(field, configVar, new ConfigVarColorBinding(field, configVar, sharedStatic));
         }
 
         private static BaseField<T> SetupField<T>(BaseField<T> field, ConfigVarAttribute configVar, IConfigVarBinding<T> binding)

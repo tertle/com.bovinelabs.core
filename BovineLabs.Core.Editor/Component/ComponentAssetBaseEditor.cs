@@ -10,8 +10,8 @@ namespace BovineLabs.Core.Editor.Component
     using UnityEditor.UIElements;
     using UnityEngine.UIElements;
 
-    [CustomEditor(typeof(ComponentAsset))]
-    public class ComponentAssetEditor : ElementEditor
+    [CustomEditor(typeof(ComponentAssetBase), isFallback = true)]
+    public class ComponentAssetBaseEditor : ElementEditor
     {
         private SerializedProperty? componentNameProperty;
 

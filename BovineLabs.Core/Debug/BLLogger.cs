@@ -1,4 +1,4 @@
-﻿// <copyright file="BLDebug.cs" company="BovineLabs">
+﻿// <copyright file="BLLogger.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -22,11 +22,12 @@ namespace BovineLabs.Core
         [ConfigVar(LogLevelName, LogLevelDefaultValue, "The log level debugging for BovineLabs libraries.")]
         internal static readonly SharedStatic<int> CurrentLogLevel = SharedStatic<int>.GetOrCreate<BLLogger>();
 
-        public static LogLevel Level => (LogLevel)CurrentLogLevel.Data;
+        internal FixedString32Bytes World;
+        internal int Frame;
 
         public bool IsValid => !this.World.IsEmpty;
 
-        internal FixedString32Bytes World;
+        public static LogLevel Level => (LogLevel)CurrentLogLevel.Data;
 
         [Conditional("UNITY_EDITOR")]
         [HideInCallstack]
@@ -34,7 +35,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Verbose)
             {
-                UnityEngine.Debug.Log($"V | {this.World} | {msg}");
+                UnityEngine.Debug.Log($"V | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -44,7 +45,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Verbose)
             {
-                UnityEngine.Debug.Log($"V | {this.World} | {msg}");
+                UnityEngine.Debug.Log($"V | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -55,7 +56,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Debug)
             {
-                UnityEngine.Debug.Log($"Debug | {this.World} | {msg}");
+                UnityEngine.Debug.Log($"D | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -66,7 +67,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Debug)
             {
-                UnityEngine.Debug.Log($"Debug | {this.World} | {msg}");
+                UnityEngine.Debug.Log($"D | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -77,7 +78,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Debug)
             {
-                UnityEngine.Debug.Log($"Debug | {this.World} | {msg}");
+                UnityEngine.Debug.Log($"D | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -88,7 +89,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Debug)
             {
-                UnityEngine.Debug.Log($"Debug | {this.World} | {msg}");
+                UnityEngine.Debug.Log($"D | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -97,7 +98,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Info)
             {
-                UnityEngine.Debug.Log($"Info  | {this.World} | {msg}");
+                UnityEngine.Debug.Log($"I | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -106,7 +107,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Info)
             {
-                UnityEngine.Debug.Log($"Info  | {this.World} | {msg}");
+                UnityEngine.Debug.Log($"I | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -115,7 +116,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Info)
             {
-                UnityEngine.Debug.Log($"Info  | {this.World} | {msg}");
+                UnityEngine.Debug.Log($"I | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -124,7 +125,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Info)
             {
-                UnityEngine.Debug.Log($"Info  | {this.World} | {msg}");
+                UnityEngine.Debug.Log($"I | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -133,7 +134,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Warning)
             {
-                UnityEngine.Debug.LogWarning($"Warn  | {this.World} | {msg}");
+                UnityEngine.Debug.LogWarning($"W | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -142,7 +143,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Warning)
             {
-                UnityEngine.Debug.LogWarning($"Warn  | {this.World} | {msg}");
+                UnityEngine.Debug.LogWarning($"W | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -151,7 +152,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Warning)
             {
-                UnityEngine.Debug.LogWarning($"Warn  | {this.World} | {msg}");
+                UnityEngine.Debug.LogWarning($"W | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -160,7 +161,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Warning)
             {
-                UnityEngine.Debug.LogWarning($"Warn  | {this.World} | {msg}");
+                UnityEngine.Debug.LogWarning($"W | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -169,7 +170,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Error)
             {
-                UnityEngine.Debug.LogError($"Error | {this.World} | {msg}");
+                UnityEngine.Debug.LogError($"E | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -178,7 +179,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Error)
             {
-                UnityEngine.Debug.LogError($"Error | {this.World} | {msg}");
+                UnityEngine.Debug.LogError($"E | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -187,7 +188,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Error)
             {
-                UnityEngine.Debug.LogError($"Error | {this.World} | {msg}");
+                UnityEngine.Debug.LogError($"E | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
 
@@ -196,7 +197,7 @@ namespace BovineLabs.Core
         {
             if (Level >= LogLevel.Error)
             {
-                UnityEngine.Debug.LogError($"Error | {this.World} | {msg}");
+                UnityEngine.Debug.LogError($"E | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
         }
     }

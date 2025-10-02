@@ -22,6 +22,9 @@ namespace BovineLabs.Core.Editor.Settings
         public const string DefaultSettingsResourceDirectory = "Assets/Settings/";
 
         [SerializeField]
+        private string[] scriptingDefineSymbols = Array.Empty<string>();
+
+        [SerializeField]
         private KeyPath[] paths = Array.Empty<KeyPath>();
 
 #if BL_CORE_EXTENSIONS && !BL_DISABLE_SUBSCENE
@@ -39,6 +42,8 @@ namespace BovineLabs.Core.Editor.Settings
 
         [SerializeField]
         private KeyAuthoring[] settingAuthoring = { new() { World = "service" } };
+
+        public IReadOnlyList<string> ScriptingDefineSymbols => this.scriptingDefineSymbols;
 
 #if BL_CORE_EXTENSIONS && !BL_DISABLE_SUBSCENE
         public IReadOnlyList<SceneAsset> PrebakeScenes => this.prebakeScenes;

@@ -5,7 +5,6 @@
 namespace BovineLabs.Core.Editor
 {
     using System.Linq;
-    using BovineLabs.Core.Keys;
     using BovineLabs.Core.Settings;
     using UnityEditor;
     using UnityEditor.Build;
@@ -17,7 +16,7 @@ namespace BovineLabs.Core.Editor
         public override void PrepareForBuild(BuildPlayerContext buildPlayerContext)
         {
             Revert();
-            IncludeKSettings();
+            IncludeSettingsSingleton();
         }
 
         /// <inheritdoc/>
@@ -26,7 +25,7 @@ namespace BovineLabs.Core.Editor
             Revert();
         }
 
-        private static void IncludeKSettings()
+        private static void IncludeSettingsSingleton()
         {
             var preloadedAssets = PlayerSettings.GetPreloadedAssets().ToList();
 
@@ -46,7 +45,7 @@ namespace BovineLabs.Core.Editor
 
         private static void Revert()
         {
-            // Revert back to original state by removing all KSettings  from preloaded assets.
+            // Revert back to original state by removing all SettingsSingleton from preloaded assets.
             PlayerSettings.SetPreloadedAssets(PlayerSettings.GetPreloadedAssets().Where(x => x is not SettingsSingleton).ToArray());
         }
     }

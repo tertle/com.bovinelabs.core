@@ -5,9 +5,27 @@
 namespace BovineLabs.Core.Settings
 {
     using System;
-    using JetBrains.Annotations;
     using UnityEditor;
     using UnityEngine;
+    using UnityEngine.Assertions;
+
+    public abstract class SettingsSingleton<T> : SettingsSingleton
+        where T : SettingsSingleton
+    {
+        private static T settings;
+
+        public static T I
+        {
+            get => GetSingleton(ref settings)!;
+            private set => settings = value;
+        }
+
+        protected sealed override void Initialize()
+        {
+            Assert.AreEqual(this.GetType(), typeof(T));
+            I = this as T;
+        }
+    }
 
     [Serializable]
     public abstract class SettingsSingleton : ScriptableObject, ISettings

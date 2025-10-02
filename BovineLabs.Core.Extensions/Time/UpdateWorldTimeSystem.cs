@@ -3,7 +3,7 @@
 // </copyright>
 
 #if !BL_DISABLE_TIME
-namespace BovineLabs.Core.Time
+namespace BovineLabs.Core
 {
     using BovineLabs.Core.Extensions;
     using Unity.Burst;

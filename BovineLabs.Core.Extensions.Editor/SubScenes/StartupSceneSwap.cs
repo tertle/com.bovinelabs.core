@@ -30,22 +30,12 @@ namespace BovineLabs.Core.Editor.SubScenes
                     var scene = EditorSettingsUtility.GetSettings<EditorSettings>().StartupScene;
                     if (scene == null)
                     {
+                        sceneAssetPath = string.Empty;
                         return;
                     }
 
                     sceneAssetPath = AssetDatabase.GetAssetPath(scene);
-                    var activeScene = SceneManager.GetActiveScene();
-
-                    // If already active, don't need to load
-                    if (sceneAssetPath == activeScene.path)
-                    {
-                        sceneAssetPath = string.Empty;
-                    }
-                    else
-                    {
-                        EditorSceneManager.SaveOpenScenes();
-                    }
-
+                    EditorSceneManager.SaveOpenScenes();
                     return;
                 }
 
@@ -53,15 +43,12 @@ namespace BovineLabs.Core.Editor.SubScenes
                 {
                     if (!string.IsNullOrWhiteSpace(sceneAssetPath))
                     {
-                        EditorSceneManager.LoadSceneAsyncInPlayMode(sceneAssetPath, new LoadSceneParameters { loadSceneMode = LoadSceneMode.Single });
+                        if (SceneManager.GetActiveScene().path != sceneAssetPath)
+                        {
+                            EditorSceneManager.LoadSceneInPlayMode(sceneAssetPath, new LoadSceneParameters { loadSceneMode = LoadSceneMode.Single });
+                        }
                     }
 
-                    return;
-                }
-
-                default:
-                {
-                    sceneAssetPath = string.Empty;
                     return;
                 }
             }

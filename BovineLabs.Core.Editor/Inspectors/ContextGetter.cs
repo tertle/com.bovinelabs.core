@@ -10,15 +10,18 @@ namespace BovineLabs.Core.Editor.Inspectors
     using Unity.Entities.Editor;
     using Unity.Entities.UI;
 
-    internal interface IContextGetter
+    public interface IEntityContext
     {
-        public InspectionContext Context { get; }
-
         public Entity Entity { get; }
 
         public World World { get; }
 
         public EntityManager EntityManager { get; }
+    }
+
+    internal interface IContextGetter : IEntityContext
+    {
+        public InspectionContext Context { get; }
 
         public bool IsReadOnly { get; }
     }

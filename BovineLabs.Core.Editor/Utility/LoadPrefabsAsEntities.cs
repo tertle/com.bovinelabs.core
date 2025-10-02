@@ -136,6 +136,13 @@ namespace BovineLabs.Core.Editor.Utility
                         }
                     }
                 }
+                else
+                {
+                    if (world.EntityManager.HasComponent<Prefab>(prefab))
+                    {
+                        world.EntityManager.RemoveComponent<Prefab>(prefab);
+                    }
+                }
 
                 EntitySelectionProxy.SelectEntity(world, prefab);
             }

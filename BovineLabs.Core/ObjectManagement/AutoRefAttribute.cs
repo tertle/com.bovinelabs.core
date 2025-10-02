@@ -37,8 +37,8 @@ namespace BovineLabs.Core.ObjectManagement
             this.FieldName = fieldName;
         }
 
-        public AutoRefAttribute(string managerType, string fieldName, string name, string subDirectory, bool createNull = true)
-            : this(managerType, fieldName, NameToDirectory(name), Path.Combine("Assets/Settings/", subDirectory), $"{name.FirstCharToUpper()}.asset",
+        public AutoRefAttribute(string managerType, string fieldName, string key, string subDirectory, bool createNull = true)
+            : this(managerType, fieldName, NameToDirectory(key), Path.Combine("Assets/Settings/", subDirectory), $"{key.FirstCharToUpper()}.asset",
                 createNull)
         {
         }

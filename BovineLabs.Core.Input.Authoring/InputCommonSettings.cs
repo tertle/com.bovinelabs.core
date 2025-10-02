@@ -44,8 +44,8 @@ namespace BovineLabs.Core.Input.Authoring
 
             var defaultSettings = new InputDefault
             {
-                Asset = this.asset!,
-                CursorPosition = baker.DependsOn(this.cursorPosition)!,
+                Asset = this.asset,
+                CursorPosition = this.cursorPosition,
             };
 
             var toEnable = baker.AddBuffer<InputDefaultEnabled>(entity);

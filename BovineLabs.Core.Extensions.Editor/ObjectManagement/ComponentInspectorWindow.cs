@@ -72,7 +72,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
             var value = keys[index].Value;
             var settings = EditorSettingsUtility.GetSettings<ObjectManagementSettings>();
 
-            this.definitions = settings.ObjectDefinitions.Where(o => (o.Categories & (1 << value)) != 0).Where(o => o.Prefab != null).ToArray();
+            this.definitions = settings.ObjectDefinitions.Where(o => o && o.Prefab != null).Where(o => (o.Categories & (1 << value)) != 0).ToArray();
             this.components =
                 this.definitions.SelectMany(o => o.Prefab!.GetComponents<Component>()).Select(c => c.GetType()).Distinct().ToDictionary(c => c.Name, c => c);
 

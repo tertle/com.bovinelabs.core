@@ -10,9 +10,18 @@ namespace BovineLabs.Core.ObjectManagement
 
     /// <summary> The ID of an object. </summary>
     [Serializable]
-    public struct GroupId : IComponentData, IEquatable<GroupId>, IComparable<GroupId>
+    public readonly struct GroupId : IComponentData, IEquatable<GroupId>, IComparable<GroupId>
     {
-        public short ID;
+        public static readonly GroupId Null = default;
+
+        public readonly short ID;
+
+        /// <summary> Initializes a new instance of the <see cref="GroupId"/> struct. </summary>
+        /// <param name="id"> The groups ID. </param>
+        public GroupId(short id)
+        {
+            this.ID = id;
+        }
 
         public static implicit operator short(GroupId id)
         {
@@ -21,7 +30,7 @@ namespace BovineLabs.Core.ObjectManagement
 
         public static implicit operator GroupId(short id)
         {
-            return new GroupId { ID = id };
+            return new GroupId(id);
         }
 
         /// <inheritdoc />
@@ -36,6 +45,7 @@ namespace BovineLabs.Core.ObjectManagement
             return this.ID;
         }
 
+        /// <inheritdoc/>
         public int CompareTo(GroupId other)
         {
             return this.ID.CompareTo(other.ID);

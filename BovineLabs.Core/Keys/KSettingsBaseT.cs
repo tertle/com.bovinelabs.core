@@ -4,15 +4,30 @@
 
 namespace BovineLabs.Core.Keys
 {
+    using System;
     using System.Collections.Generic;
+    using BovineLabs.Core.Settings;
+    using JetBrains.Annotations;
+    using UnityEngine;
+
+    public interface IKsettings
+    {
+    }
 
     /// <summary>
-    /// <see cref="KSettingsBase"/> with the value Type, this is used for custom tooling but should not be implemented directly.
+    /// The base KSettings file for defining custom enums, layers, keys. Do not implement this directly, implement <see cref="KSettings{T,TV}" />.
     /// Instead implement <see cref="KSettings{T,TV}" /> or rarely <see cref="KSettingsBase{T,TV}" />.
     /// </summary>
     /// <typeparam name="TV"> The value. </typeparam>
-    public abstract class KSettingsBase<TV> : KSettingsBase
+    [Serializable]
+    [SettingSubDirectory("K")]
+    public abstract class KSettingsBase<TV> : SettingsSingleton, IKsettings
     {
+        [Multiline]
+        [UsedImplicitly]
+        [SerializeField]
+        private string description = string.Empty;
+
         public abstract IEnumerable<NameValue<TV>> Keys { get; }
     }
 }

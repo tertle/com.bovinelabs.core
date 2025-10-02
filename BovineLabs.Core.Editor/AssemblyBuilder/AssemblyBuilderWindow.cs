@@ -19,6 +19,8 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
         private const string AssemblyInfoTemplate =
             "// <copyright file=\"AssemblyInfo.cs\" company=\"{0}\">\n// Copyright (c) {0}. All rights reserved.\n// </copyright>\n\nusing System.Runtime.CompilerServices;\n";
 
+        private const string DisableTypeRegistration = "using Unity.Entities;\n\n[assembly: DisableAutoTypeRegistration]\n";
+
         private const string DisableAutoCreationTemplate = "using Unity.Entities;\n\n[assembly: DisableAutoCreation]";
         private const string InternalAccessTemplate = "\n[assembly: InternalsVisibleTo(\"{0}\")]";
 
@@ -154,7 +156,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 {
                     if (internalAccess)
                     {
-                        this.AddInternalAccess(nameField, folder, "Data");
+                        this.WriteAssemblyInfo(nameField, folder, false, "Data");
                     }
                 }
                 else
@@ -178,15 +180,15 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                         {
                             if (label == "Main")
                             {
-                                this.AddInternalAccess(nameField, folder, "Data", "Main", "Authoring");
+                                this.WriteAssemblyInfo(nameField, folder, false, "Data", "Main", "Authoring");
                             }
                             else if (label == "Server")
                             {
-                                this.AddInternalAccess(nameField, folder, "Data", "Main", "Server", "Authoring");
+                                this.WriteAssemblyInfo(nameField, folder, false, "Data", "Main", "Server", "Authoring");
                             }
                             else if (label == "Authoring")
                             {
-                                this.AddInternalAccess(nameField, folder, "Data", "Main", "Authoring", "Debug");
+                                this.WriteAssemblyInfo(nameField, folder, true, "Data", "Main", "Authoring", "Debug");
                             }
                         }
                     }
@@ -278,7 +280,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             return this.rootVisualElement.Q<Toggle>(toggleName).value;
         }
 
-        private void AddInternalAccess(string nameField, string folder, params string[] ignore)
+        private void WriteAssemblyInfo(string nameField, string folder, bool disableAutoTypeRegistration, params string[] ignore)
         {
             var otherAssemblies =
                 this
@@ -292,6 +294,12 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             var assemblyInfoPath = GetAssemblyInfoPath(folder);
 
             var internalAccessTemplate = GetAssemblyInfoHeader();
+
+            if (disableAutoTypeRegistration)
+            {
+                internalAccessTemplate += DisableTypeRegistration;
+            }
+
             foreach (var assembly in otherAssemblies.OrderBy(s => s))
             {
                 internalAccessTemplate += string.Format(InternalAccessTemplate, assembly);

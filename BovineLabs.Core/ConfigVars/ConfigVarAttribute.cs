@@ -7,6 +7,7 @@ namespace BovineLabs.Core.ConfigVars
     using System;
     using System.Globalization;
     using Unity.Burst;
+    using UnityEngine;
 
     /// <summary> The attribute defining a config variable. This should only be placed on a <see cref="SharedStatic{T}" />. </summary>
     [AttributeUsage(AttributeTargets.Field)]
@@ -60,6 +61,20 @@ namespace BovineLabs.Core.ConfigVars
         {
         }
 
+        /// <summary> Initializes a new instance of the <see cref="ConfigVarAttribute" /> class. </summary>
+        /// <param name="name"> The name and key of the variable. </param>
+        /// <param name="r"> The default red color. </param>
+        /// <param name="g"> The default green color. </param>
+        /// <param name="b"> The default blue color. </param>
+        /// <param name="a"> The default alpha color. </param>
+        /// <param name="description"> A description of the variable. </param>
+        /// <param name="isReadOnly"> Is the variable readonly. </param>
+        /// <param name="isHidden"> Is the variable hidden from the config var window. </param>
+        public ConfigVarAttribute(string name, float r, float g, float b, float a, string description, bool isReadOnly = false, bool isHidden = false)
+            : this(name, ColorToString(new Color(r, g, b, a)), description, isReadOnly, isHidden)
+        {
+        }
+
         /// <summary> Gets the name of the config var. </summary>
         public string Name { get; }
 
@@ -103,6 +118,29 @@ namespace BovineLabs.Core.ConfigVars
             {
                 return (base.GetHashCode() * 397) ^ this.Name.GetHashCode();
             }
+        }
+
+        public static string ColorToString(Color color)
+        {
+            return
+                $"{color.r.ToString(CultureInfo.InvariantCulture)}:{color.g.ToString(CultureInfo.InvariantCulture)}:" +
+                $"{color.b.ToString(CultureInfo.InvariantCulture)}:{color.a.ToString(CultureInfo.InvariantCulture)}";
+        }
+
+        public static Color StringToColor(string color)
+        {
+            var parts = color.Split(':');
+            if (parts.Length != 4)
+            {
+                return default;
+            }
+
+            float.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var r);
+            float.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var g);
+            float.TryParse(parts[2], NumberStyles.Any, CultureInfo.InvariantCulture, out var b);
+            float.TryParse(parts[3], NumberStyles.Any, CultureInfo.InvariantCulture, out var a);
+
+            return new Color(r, g, b, a);
         }
     }
 }

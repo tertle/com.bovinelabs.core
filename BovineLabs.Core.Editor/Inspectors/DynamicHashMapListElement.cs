@@ -21,7 +21,8 @@ namespace BovineLabs.Core.Editor.Inspectors
         {
         }
 
-        private DynamicHashMap<TKey, TValue> GetMap => this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity, true).AsHashMap<TBuffer, TKey, TValue>();
+        private DynamicHashMap<TKey, TValue> GetMap(bool isReadOnly = true) =>
+            this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity, isReadOnly).AsHashMap<TBuffer, TKey, TValue>();
 
         /// <inheritdoc/>
         public override bool IsValid()
@@ -32,7 +33,7 @@ namespace BovineLabs.Core.Editor.Inspectors
         /// <inheritdoc/>
         protected override void PopulateList(List<KVP> list)
         {
-            var map = this.GetMap;
+            var map = this.GetMap();
 
             using var e = map.GetEnumerator();
             while (e.MoveNext())
@@ -47,7 +48,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             var keys = newValues.Slice().SliceWithStride<TKey>();
             var values = newValues.Slice().SliceWithStride<TValue>(UnsafeUtility.SizeOf<TKey>());
 
-            var map = this.GetMap;
+            var map = this.GetMap(false);
             map.Clear();
             map.AddBatchUnsafe(keys, values);
         }

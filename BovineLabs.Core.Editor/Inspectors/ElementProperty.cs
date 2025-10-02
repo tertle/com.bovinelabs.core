@@ -68,6 +68,7 @@ namespace BovineLabs.Core.Editor.Inspectors
                     this.parent = new Foldout { text = this.GetDisplayName(rootProperty) };
                     this.parent.AddToClassList("unity-collection-view");
                     this.parent.AddToClassList("unity-list-view");
+                    this.parent.AddToClassList("unity-list-view__foldout-header");
                     break;
             }
 

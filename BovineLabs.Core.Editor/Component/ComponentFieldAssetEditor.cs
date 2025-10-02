@@ -68,7 +68,7 @@ namespace BovineLabs.Core.Editor.Component
         {
             this.fieldNames.Clear();
 
-            var componentAsset = this.componentProperty!.objectReferenceValue as ComponentAsset;
+            var componentAsset = this.componentProperty!.objectReferenceValue as ComponentAssetBase;
             if (componentAsset)
             {
                 try

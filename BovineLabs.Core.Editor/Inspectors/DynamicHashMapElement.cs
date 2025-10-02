@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Editor.Inspectors
     using System.Collections.Generic;
     using BovineLabs.Core.Editor.SearchWindow;
     using BovineLabs.Core.Iterators;
+    using Unity.Entities;
     using UnityEditor.UIElements;
     using UnityEngine.UIElements;
 
@@ -66,6 +67,29 @@ namespace BovineLabs.Core.Editor.Inspectors
             }
 
             this.schedule.Execute(this.Update).Every(250);
+        }
+
+        public Action<IEntityContext, TKey, TValue> SearchSetValue
+        {
+            get
+            {
+                if (this.searchElement == null)
+                {
+                    return (_, _, _) =>
+                    {
+                    };
+                }
+
+                return this.searchElement.SetValue;
+            }
+
+            set
+            {
+                if (this.searchElement != null)
+                {
+                    this.searchElement.SetValue = value;
+                }
+            }
         }
 
         private void ListValueChanged(ChangeEvent<bool> evt)

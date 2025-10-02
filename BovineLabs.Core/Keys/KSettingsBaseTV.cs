@@ -5,6 +5,7 @@
 namespace BovineLabs.Core.Keys
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -86,6 +87,7 @@ namespace BovineLabs.Core.Keys
             return name;
         }
 
+        [SuppressMessage("ReSharper", "NotDisposedResourceIsReturned", Justification = "No Required")]
         public static UnsafeList<FixedNameValue<TV>>.Enumerator Enumerator()
         {
             return Ordered.Data.IsCreated ? Ordered.Data.GetEnumerator() : default;

@@ -32,18 +32,40 @@ namespace BovineLabs.Core.Editor.Helpers
             WriteData(serializedProperty, path, bytes);
         }
 
+        public static TextAsset CreateForAsset(TextAsset asset, string defaultName, byte[] bytes)
+        {
+            return !TryGetPath(asset, defaultName, out var path) ? asset : WriteData(path, bytes);
+        }
+
+        private static bool TryGetPath(TextAsset data, string defaultName, out string path)
+        {
+            path = data == null
+                ? EditorUtility.SaveFilePanelInProject($"Save {defaultName}", $"{defaultName}.bytes", "bytes", "Save text data to file")
+                : AssetDatabase.GetAssetPath(data);
+
+            return !string.IsNullOrWhiteSpace(path);
+        }
+
         private static bool TryGetPath(SerializedProperty serializedProperty, string defaultName, out string path)
         {
             var data = serializedProperty.objectReferenceValue;
 
             path = data == null
-                ? EditorUtility.SaveFilePanelInProject($"Save {defaultName}", $"{defaultName}.bytes", "bytes", "Save nav mesh data to file")
+                ? EditorUtility.SaveFilePanelInProject($"Save {defaultName}", $"{defaultName}.bytes", "bytes", "Save text data to file")
                 : AssetDatabase.GetAssetPath(data);
 
             return !string.IsNullOrWhiteSpace(path);
         }
 
         private static void WriteData(SerializedProperty serializedProperty, string path, byte[] bytes)
+        {
+            var textAsset = WriteData(path, bytes);
+
+            serializedProperty.objectReferenceValue = textAsset;
+            serializedProperty.serializedObject.ApplyModifiedProperties();
+        }
+
+        private static TextAsset WriteData(string path, byte[] bytes)
         {
             var dataPath = Application.dataPath;
             dataPath = dataPath.Remove(dataPath.LastIndexOf("Assets", StringComparison.Ordinal), "Assets".Length);
@@ -52,8 +74,7 @@ namespace BovineLabs.Core.Editor.Helpers
             File.WriteAllBytes(dataPath, bytes);
             AssetDatabase.Refresh();
 
-            serializedProperty.objectReferenceValue = AssetDatabase.LoadAssetAtPath<TextAsset>(path);
-            serializedProperty.serializedObject.ApplyModifiedProperties();
+            return AssetDatabase.LoadAssetAtPath<TextAsset>(path);
         }
     }
 }

@@ -55,13 +55,26 @@ namespace BovineLabs.Core.Input
         protected override void OnStartRunning()
         {
             this.input = SystemAPI.GetSingleton<InputDefault>();
-            this.input.CursorPosition.Value.action.performed += this.OnCursorPositionPerformed;
+            if (this.input.CursorPosition.Value != null)
+            {
+                this.input.CursorPosition.Value.action.performed += this.OnCursorPositionPerformed;
+            }
+            else
+            {
+                SystemAPI.GetSingleton<BLLogger>().LogError("Input CursorPosition not setup");
+            }
+
             this.anyButtonPress = InputSystem.onAnyButtonPress.Call(this.OnButtonPressed);
         }
 
+        /// <inheritdoc/>
         protected override void OnStopRunning()
         {
-            this.input.CursorPosition.Value.action.performed -= this.OnCursorPositionPerformed;
+            if (this.input.CursorPosition.Value != null)
+            {
+                this.input.CursorPosition.Value.action.performed -= this.OnCursorPositionPerformed;
+            }
+
             this.anyButtonPress!.Dispose();
         }
 

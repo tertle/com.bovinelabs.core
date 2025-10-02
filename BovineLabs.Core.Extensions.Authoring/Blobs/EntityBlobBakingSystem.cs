@@ -18,15 +18,14 @@ namespace BovineLabs.Core.Authoring.Blobs
     {
         private NativeHashMap<int, int> tempBlobMap;
 
-        private BlobAssetStore worldBlobStore;
+        private BlobAssetStore sceneBlobStore;
         private BlobAssetStore localBlobAssetStore;
 
         /// <inheritdoc/>
         public void OnCreate(ref SystemState state)
         {
             this.tempBlobMap = new NativeHashMap<int, int>(0, Allocator.Persistent);
-            this.worldBlobStore = state.World.GetExistingSystemManaged<BakingSystem>().BlobAssetStore;
-
+            this.sceneBlobStore = state.World.GetExistingSystemManaged<BakingSystem>().BlobAssetStore;
             this.localBlobAssetStore = new BlobAssetStore(128);
         }
 
@@ -37,13 +36,16 @@ namespace BovineLabs.Core.Authoring.Blobs
             this.localBlobAssetStore.Dispose();
         }
 
-#if BL_ENTITIES_CUSTOM
+        /// <inheritdoc/>
         [BurstCompile]
-#endif
         public void OnUpdate(ref SystemState state)
         {
             // Remove any existing blob data for live baking
-            state.EntityManager.RemoveComponent<EntityBlob>(SystemAPI.QueryBuilder().WithAll<EntityBlob>().Build());
+            state.EntityManager.RemoveComponent<EntityBlob>(SystemAPI
+                .QueryBuilder()
+                .WithAll<EntityBlob>()
+                .WithOptions(EntityQueryOptions.IncludePrefab | EntityQueryOptions.IncludeDisabledEntities)
+                .Build());
 
             var map = this.GroupBlobs(ref state);
 
@@ -58,14 +60,19 @@ namespace BovineLabs.Core.Authoring.Blobs
                 this.PopulateMap(ref blobBuilder, ref blobMap, map, entity);
 
                 var bar = blobBuilder.CreateBlobAssetReference<BlobPerfectHashMap<int, int>>(Allocator.Persistent);
-                this.worldBlobStore.TryAdd(ref bar);
+                this.sceneBlobStore.TryAdd(ref bar);
                 state.EntityManager.AddComponentData(entity, new EntityBlob { Value = bar });
             }
         }
 
         private NativeParallelMultiHashMap<Entity, EntityBlobBakedData> GroupBlobs(ref SystemState state)
         {
-            var query = SystemAPI.QueryBuilder().WithAll<EntityBlobBakedData>().Build();
+            var query = SystemAPI
+                .QueryBuilder()
+                .WithAll<EntityBlobBakedData>()
+                .WithOptions(EntityQueryOptions.IncludePrefab | EntityQueryOptions.IncludeDisabledEntities)
+                .Build();
+
             var map = new NativeParallelMultiHashMap<Entity, EntityBlobBakedData>(query.CalculateEntityCount(), state.WorldUpdateAllocator);
 
             state.Dependency = new GroupJob

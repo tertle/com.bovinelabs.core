@@ -11,7 +11,6 @@ namespace BovineLabs.Core.Camera
     using UnityEngine;
 
     [WorldSystemFilter(WorldSystemFilterFlags.Presentation)]
-    [UpdateAfter(typeof(CameraMainSystem))]
     [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
     public partial class CameraFrustumSystem : SystemBase
     {
@@ -25,6 +24,11 @@ namespace BovineLabs.Core.Camera
                 .Query<RefRW<CameraFrustumPlanes>, RefRW<CameraFrustumCorners>, SystemAPI.ManagedAPI.UnityEngineComponent<Camera>>())
             {
                 var camera = cameraWrapper.Value;
+
+                if (camera == null)
+                {
+                    continue;
+                }
 
                 GeometryUtility.CalculateFrustumPlanes(camera.projectionMatrix * camera.worldToCameraMatrix, this.sourcePlanes);
 

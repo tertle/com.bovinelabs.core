@@ -41,8 +41,11 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
             foreach (var objectDefinition in settings.ObjectDefinitions)
             {
-                var definitionSo = new SerializedObject(objectDefinition);
-                ObjectGroupUtil.UpdateGroup(this.serializedObject, definitionSo);
+                if (objectDefinition)
+                {
+                    var definitionSo = new SerializedObject(objectDefinition);
+                    ObjectGroupUtil.UpdateGroup(this.serializedObject, definitionSo);
+                }
             }
         }
 

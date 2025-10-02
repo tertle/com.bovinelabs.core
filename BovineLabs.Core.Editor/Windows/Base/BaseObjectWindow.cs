@@ -209,9 +209,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
                 return;
             }
 
-            this.StatusBar.style.display = this.Service.ShowStatusBar
-                ? DisplayStyle.Flex
-                : DisplayStyle.None;
+            this.StatusBar.style.display = this.Service.ShowStatusBar ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         protected virtual void RefreshPreferencesDependentUI()
@@ -222,10 +220,26 @@ namespace BovineLabs.Core.Editor.Windows.Base
             this.UpdateStatusBarVisibility();
         }
 
-        protected TItem? GetItemAtPosition(Vector2 localPosition)
+        protected TItem? GetItemAtPosition(Vector2 listLocalPosition)
         {
+            var scrollView = this.MainListView.Q<ScrollView>();
+            if (scrollView == null)
+            {
+                return null;
+            }
+
+            // Convert ListView-local point to world, then to content-local
+            var world = this.MainListView.LocalToWorld(listLocalPosition);
+
+            // Ignore clicks outside the content viewport (e.g., on scrollbars)
+            if (!scrollView.contentViewport.worldBound.Contains(world))
+            {
+                return null;
+            }
+
+            var contentLocal = scrollView.contentContainer.WorldToLocal(world);
             var itemHeight = this.Service.ItemHeight;
-            var index = (int)(localPosition.y / itemHeight);
+            var index = Mathf.FloorToInt(contentLocal.y / itemHeight);
 
             if (index >= 0 && index < this.FilteredItems.Count)
             {
@@ -256,6 +270,9 @@ namespace BovineLabs.Core.Editor.Windows.Base
         protected void BindListItemCommon(VisualElement element, TItem item)
         {
             var itemHeight = this.Service.ItemHeight;
+
+            // Attach item to element for hit-testing (context menus, etc.)
+            element.userData = item;
 
             element.style.minHeight = itemHeight;
 
@@ -291,10 +308,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
                     icon.style.display = DisplayStyle.None;
                 }
 
-                label.text = item.GetDisplayText(
-                    this.Service.ShowTimestamps,
-                    this.Service.ShowAssetPaths,
-                    this.Service.ShowTypeNames,
+                label.text = item.GetDisplayText(this.Service.ShowTimestamps, this.Service.ShowAssetPaths, this.Service.ShowTypeNames,
                     this.GetTimestampFormat());
 
                 if (!item.IsAlive && this.Service.GreyOutMissingObjects)
@@ -416,6 +430,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
                 value = this.CurrentSearchText,
                 tooltip = "Search by object name or type",
             };
+
             this.SearchField.AddToClassList("toolbar-search-field");
 
             this.SearchField.RegisterValueChangedCallback(evt =>
@@ -431,6 +446,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
                 text = "All",
                 tooltip = "Filter by object type",
             };
+
             this.TypeFilterMenu.AddToClassList("toolbar-filter-menu");
 
             this.RefreshTypeFilterMenu();
@@ -441,6 +457,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
                 tooltip = "Settings",
                 variant = ToolbarMenu.Variant.Popup,
             };
+
             this.SettingsMenu.AddToClassList("toolbar-settings-menu");
 
             this.CreateSettingsMenu();
@@ -499,10 +516,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
             }
 
             var allTypes = new List<string> { "All" };
-            allTypes.AddRange(this.AllItems
-                .Select(item => item.TypeName)
-                .Distinct()
-                .OrderBy(t => t));
+            allTypes.AddRange(this.AllItems.Select(item => item.TypeName).Distinct().OrderBy(t => t));
 
             this.TypeFilterMenu.menu.MenuItems().Clear();
 
@@ -513,9 +527,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
                     this.CurrentTypeFilter = action.name;
                     this.TypeFilterMenu.text = action.name;
                     this.RefreshItemsList();
-                }, action => action.name == this.CurrentTypeFilter
-                    ? DropdownMenuAction.Status.Checked
-                    : DropdownMenuAction.Status.Normal);
+                }, action => action.name == this.CurrentTypeFilter ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
             }
 
             if (!allTypes.Contains(this.CurrentTypeFilter))
@@ -530,8 +542,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
             if (!string.IsNullOrEmpty(this.CurrentSearchText))
             {
                 var searchLower = this.CurrentSearchText.ToLowerInvariant();
-                if (!item.Name.ToLowerInvariant().Contains(searchLower) &&
-                    !item.TypeName.ToLowerInvariant().Contains(searchLower))
+                if (!item.Name.ToLowerInvariant().Contains(searchLower) && !item.TypeName.ToLowerInvariant().Contains(searchLower))
                 {
                     return false;
                 }
@@ -567,15 +578,13 @@ namespace BovineLabs.Core.Editor.Windows.Base
                 var currentTime = EditorApplication.timeSinceStartup;
                 var timeSinceLastClick = currentTime - this.lastClickTime;
 
-                if (this.lastClickedItem == item && timeSinceLastClick < this.Service.DoubleClickThreshold)
+                if (Equals(this.lastClickedItem, item) && timeSinceLastClick < this.Service.DoubleClickThreshold)
                 {
-                    // Double-click detected
                     this.OnListItemDoubleClicked(item);
-                    this.lastClickedItem = null; // Reset to prevent triple-click issues
+                    this.lastClickedItem = null;
                 }
                 else
                 {
-                    // Single click or first click of potential double-click
                     this.OnListItemClicked(item);
                     this.lastClickedItem = item;
                 }

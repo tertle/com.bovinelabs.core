@@ -5,11 +5,13 @@
 namespace BovineLabs.Core.Editor.FeatureWindow
 {
     using System.Collections.Generic;
+    using System.Linq;
+    using BovineLabs.Core.Editor.Settings;
     using BovineLabs.Core.Editor.UI;
     using UnityEditor;
-    using UnityEditor.Build;
     using UnityEngine;
     using UnityEngine.UIElements;
+    using EditorSettings = BovineLabs.Core.Editor.Settings.EditorSettings;
 
     public class FeatureWindow : EditorWindow
     {
@@ -38,7 +40,7 @@ namespace BovineLabs.Core.Editor.FeatureWindow
         private void OnEnable()
         {
             this.defines.Clear();
-            this.defines.AddRange(GetDefines());
+            this.defines.AddRange(EditorSettingsUtility.GetSettings<EditorSettings>().ScriptingDefineSymbols);
 
             var root = this.rootVisualElement;
             Window.Clone(root);
@@ -75,7 +77,7 @@ namespace BovineLabs.Core.Editor.FeatureWindow
 
         private void SetupApplyButton()
         {
-            this.rootVisualElement.Q<Button>("ApplyChanges").clicked += () => ApplyDefines(this.defines.ToArray());
+            this.rootVisualElement.Q<Button>("ApplyChanges").clicked += this.UpdateScriptingDefines;
         }
 
         private void SetupFeature(VisualElement e)
@@ -121,22 +123,74 @@ namespace BovineLabs.Core.Editor.FeatureWindow
             button.AddToClassList(isEnabled ? enabledStyle : disabledStyle);
         }
 
-        private static NamedBuildTarget GetTarget()
+        private void UpdateScriptingDefines()
         {
-            var buildTarget = EditorUserBuildSettings.activeBuildTarget;
-            var targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
-            return NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+            var settings = EditorSettingsUtility.GetSettings<EditorSettings>();
+
+            var existingDefines = settings.ScriptingDefineSymbols;
+
+            var add = new List<string>();
+            var remove = new List<string>();
+
+            foreach (var c in existingDefines)
+            {
+                if (!this.defines.Contains(c))
+                {
+                    remove.Add(c);
+                }
+            }
+
+            foreach (var c in this.defines)
+            {
+                if (!existingDefines.Contains(c))
+                {
+                    add.Add(c);
+                }
+            }
+
+            var so = new SerializedObject(settings);
+            var property = so.FindProperty("scriptingDefineSymbols");
+
+            foreach (var define in remove)
+            {
+                RemoveDefine(property, define);
+            }
+
+            foreach (var define in add)
+            {
+                AddDefine(property, define);
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            ScriptingDefineSymbolsEditor.ApplyDefinesToAll(add, remove);
         }
 
-        private static string[] GetDefines()
+        private static void RemoveDefine(SerializedProperty property, string value)
         {
-            PlayerSettings.GetScriptingDefineSymbols(GetTarget(), out var defines);
-            return defines;
+            for (var i = 0; i < property.arraySize; i++)
+            {
+                if (property.GetArrayElementAtIndex(i).stringValue == value)
+                {
+                    property.DeleteArrayElementAtIndex(i);
+                    return;
+                }
+            }
         }
 
-        private static void ApplyDefines(string[] defines)
+        private static void AddDefine(SerializedProperty property, string value)
         {
-            PlayerSettings.SetScriptingDefineSymbols(GetTarget(), defines);
+            for (var i = 0; i < property.arraySize; i++)
+            {
+                // Already exists
+                if (property.GetArrayElementAtIndex(i).stringValue == value)
+                {
+                    return;
+                }
+            }
+
+            property.arraySize++;
+            property.GetArrayElementAtIndex(property.arraySize - 1).stringValue = value;
         }
     }
 }

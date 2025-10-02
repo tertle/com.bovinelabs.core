@@ -21,6 +21,14 @@ namespace BovineLabs.Core.Input
         {
             // Disable all action maps by default
             var inputAsset = SystemAPI.GetSingleton<InputDefault>().Asset;
+
+            if (inputAsset == null)
+            {
+                SystemAPI.GetSingleton<BLLogger>().LogError("Input asset not setup");
+                this.Enabled = false;
+                return;
+            }
+
             inputAsset.Value.Disable();
 
             // Enable defaults
@@ -41,6 +49,11 @@ namespace BovineLabs.Core.Input
             }
 
             var inputAsset = SystemAPI.GetSingleton<InputDefault>().Asset;
+            if (inputAsset == null)
+            {
+                return;
+            }
+
             foreach (var state in enables.AsNativeArray())
             {
                 this.SetInputEnable(inputAsset, state.Input, state.Enable);

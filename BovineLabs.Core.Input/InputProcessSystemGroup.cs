@@ -12,6 +12,7 @@ namespace BovineLabs.Core.Input
 #endif
 
     [WorldSystemFilter(Worlds.ClientLocal, WorldSystemFilterFlags.Presentation)]
+
     [UpdateAfter(typeof(InputSystemGroup))]
 #if UNITY_NETCODE
     [UpdateInGroup(typeof(GhostInputSystemGroup))]

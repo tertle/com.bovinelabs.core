@@ -17,9 +17,9 @@ namespace BovineLabs.Core.SubScenes
     /// <summary> System that loads our SubScenes depending on the world and the SubScene load mode. </summary>
     [UpdateInGroup(typeof(AfterSceneSystemGroup), OrderFirst = true)]
     [WorldSystemFilter(Worlds.SimulationService)]
-    [CreateAfter(typeof(BLDebugSystem))]
-    public unsafe partial struct SubSceneLoadingSystem : ISystem
+    public unsafe partial struct SubSceneLoadingSystem : ISystem, ISystemStartStop
     {
+        private bool initialized;
         private NativeList<Entity> waitingForLoad;
 
 #if UNITY_EDITOR
@@ -33,6 +33,20 @@ namespace BovineLabs.Core.SubScenes
 #if UNITY_EDITOR
             this.requiredScenes = new NativeHashSet<Entity>(4, Allocator.Persistent);
 #endif
+        }
+
+        [BurstCompile]
+        public void OnStartRunning(ref SystemState state)
+        {
+            if (!this.initialized)
+            {
+                PauseGame.Pause(ref state, true);
+                this.initialized = true;
+            }
+        }
+
+        public void OnStopRunning(ref SystemState state)
+        {
         }
 
         /// <inheritdoc />
