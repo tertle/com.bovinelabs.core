@@ -13,6 +13,7 @@ namespace BovineLabs.Core.Collections
             Index = int.MinValue,
             NeighborhoodTimes = float.NaN,
         };
+
         public float2 NeighborhoodTimes;
         public int Index;
     }

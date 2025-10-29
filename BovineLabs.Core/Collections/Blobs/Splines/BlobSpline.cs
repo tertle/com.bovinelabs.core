@@ -133,10 +133,169 @@ namespace BovineLabs.Core.Collections
             }
         }
 
+        public Spline ToSpline()
+        {
+            var spline = new Spline(this.Count, this.Closed);
+
+            if (this.Count == 0)
+            {
+                return spline;
+            }
+
+            var knots = new BezierKnot[this.Count];
+            for (var i = 0; i < this.Count; ++i)
+            {
+                knots[i] = this.Knots[i];
+            }
+
+            spline.Knots = knots;
+
+            return spline;
+        }
+
         /// <summary> Get a <see cref="BezierCurve"/> from a knot index. </summary>
         /// <param name="index">The knot index that serves as the first control point for this curve.</param>
         /// <returns> A <see cref="BezierCurve"/> formed by the knot at index and the next knot. </returns>
         public BezierCurve GetCurve(int index) => this.Curves[index];
+
+        /// <summary>Compute interpolated position, tangent, and up vector for a normalized spline ratio.</summary>
+        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
+        /// <param name="position">The evaluated position.</param>
+        /// <param name="tangent">The evaluated tangent (not normalized).</param>
+        /// <param name="upVector">The evaluated up vector.</param>
+        /// <returns>True if the evaluation succeeded.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Evaluate(float t, out float3 position, out float3 tangent, out float3 upVector)
+        {
+            if (this.Count < 1)
+            {
+                position = float3.zero;
+                tangent = new float3(0f, 0f, 1f);
+                upVector = new float3(0f, 1f, 0f);
+                return false;
+            }
+
+            var curveIndex = this.SplineToCurveT(t, out var curveT);
+            var curve = this.GetCurve(curveIndex);
+
+            position = EvaluatePosition(curve, curveT);
+            tangent = EvaluateTangent(curve, curveT);
+            upVector = this.GetCurveUpVector(curveIndex, curveT);
+
+            return true;
+        }
+
+        /// <summary>Compute interpolated position and tangent for a normalized spline ratio.</summary>
+        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
+        /// <param name="position">The evaluated position.</param>
+        /// <param name="tangent">The evaluated tangent (not normalized).</param>
+        /// <returns>True if the evaluation succeeded.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Evaluate(float t, out float3 position, out float3 tangent)
+        {
+            var success = this.Evaluate(t, out position, out tangent, out _);
+            return success;
+        }
+
+        /// <summary>Compute an interpolated position for a normalized spline ratio.</summary>
+        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
+        /// <param name="position">The evaluated position.</param>
+        /// <returns>True if the evaluation succeeded.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Evaluate(float t, out float3 position)
+        {
+            var success = this.Evaluate(t, out position, out _, out _);
+            return success;
+        }
+
+        /// <summary>Return an interpolated position at ratio <paramref name="t"/>.</summary>
+        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
+        /// <returns>A position on the spline.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float3 EvaluatePosition(float t)
+        {
+            return this.Evaluate(t, out var position) ? position : float3.zero;
+        }
+
+        /// <summary>Return an interpolated position for a specific curve.</summary>
+        /// <param name="curveIndex">The curve index.</param>
+        /// <param name="curveT">A value between 0 and 1 representing the ratio along the curve.</param>
+        /// <returns>A position on the curve.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float3 EvaluatePosition(int curveIndex, float curveT)
+        {
+            return EvaluatePosition(this.GetCurve(curveIndex), curveT);
+        }
+
+        /// <summary>Return an interpolated tangent at ratio <paramref name="t"/>.</summary>
+        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
+        /// <returns>A tangent (not normalized) on the spline.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float3 EvaluateTangent(float t)
+        {
+            if (this.Count < 1)
+            {
+                return new float3(0f, 0f, 1f);
+            }
+
+            var curveIndex = this.SplineToCurveT(t, out var curveT);
+            return EvaluateTangent(this.GetCurve(curveIndex), curveT);
+        }
+
+        /// <summary>Return an interpolated up vector at ratio <paramref name="t"/>.</summary>
+        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
+        /// <returns>An up vector on the spline.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float3 EvaluateUpVector(float t)
+        {
+            if (this.Count < 1)
+            {
+                return new float3(0f, 1f, 0f);
+            }
+
+            var curveIndex = this.SplineToCurveT(t, out var curveT);
+            return this.GetCurveUpVector(curveIndex, curveT);
+        }
+
+        /// <summary>Convert a normalized spline ratio to a curve index and ratio.</summary>
+        /// <param name="splineT">A value between 0 and 1 representing the ratio along the spline.</param>
+        /// <param name="curveT">The resulting ratio along the returned curve.</param>
+        /// <returns>The curve index for the provided spline ratio.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int SplineToCurveT(float splineT, out float curveT)
+        {
+            return this.SplineToCurveT(splineT, out curveT, true);
+        }
+
+        /// <summary>Convert a curve index and ratio into a normalized spline ratio.</summary>
+        /// <param name="curve">Curve index with fractional component as the curve ratio.</param>
+        /// <returns>A normalized spline ratio.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float CurveToSplineT(float curve)
+        {
+            if (this.Count <= 1 || curve <= 0f)
+            {
+                return 0f;
+            }
+
+            var curveCount = this.Closed ? this.Count : math.max(0, this.Count - 1);
+            if (curve >= curveCount)
+            {
+                return 1f;
+            }
+
+            var curveIndex = (int)math.floor(curve);
+            var accumulatedLength = 0f;
+
+            for (var i = 0; i < curveIndex; ++i)
+            {
+                accumulatedLength += this.GetCurveLength(i);
+            }
+
+            accumulatedLength += this.GetCurveLength(curveIndex) * math.frac(curve);
+
+            return this.Length <= math.EPSILON ? 0f : accumulatedLength / this.Length;
+        }
 
         /// <summary> Get the length of a <see cref="BezierCurve"/>. </summary>
         /// <param name="curveIndex">The 0 based index of the curve to find length for.</param>
@@ -222,6 +381,54 @@ namespace BovineLabs.Core.Collections
             }
 
             return 1f;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int SplineToCurveT(float splineT, out float curveT, bool useLookup)
+        {
+            var knotCount = this.Count;
+            if (knotCount <= 1 || this.Length <= math.EPSILON)
+            {
+                curveT = 0f;
+                return 0;
+            }
+
+            splineT = math.clamp(splineT, 0f, 1f);
+            var targetLength = splineT * this.Length;
+
+            var start = 0f;
+            var curveCount = this.Closed ? knotCount : math.max(0, knotCount - 1);
+
+            for (var i = 0; i < curveCount; ++i)
+            {
+                var index = i % knotCount;
+                var curveLength = this.GetCurveLength(index);
+
+                if ((targetLength <= start + curveLength) || (i == curveCount - 1))
+                {
+                    if (curveLength <= math.EPSILON)
+                    {
+                        curveT = 0f;
+                        return index;
+                    }
+
+                    if (useLookup && this.SegmentLengthsLookupTable.Length > 0)
+                    {
+                        curveT = this.GetCurveInterpolation(index, targetLength - start);
+                    }
+                    else
+                    {
+                        curveT = math.saturate((targetLength - start) / math.max(curveLength, math.EPSILON));
+                    }
+
+                    return index;
+                }
+
+                start += curveLength;
+            }
+
+            curveT = 1f;
+            return this.Closed ? knotCount - 1 : math.max(0, knotCount - 2);
         }
 
         private float3 CalculateUpVector(int curveIndex, float curveT)

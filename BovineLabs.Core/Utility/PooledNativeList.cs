@@ -10,8 +10,10 @@ namespace BovineLabs.Core.Utility
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
-    using UnityEditor;
     using UnityEngine;
+#if UNITY_EDITOR
+    using UnityEditor;
+#endif
 
     /// <summary>
     /// A pooled wrapper around NativeList that reuses allocated memory across instances to reduce allocation pressure.
@@ -49,9 +51,6 @@ namespace BovineLabs.Core.Utility
             {
                 // Nothing in the pool, just create a new one
                 this.list = new NativeList<T>(0, data.Allocator);
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                this.oldHandle = this.list.m_Safety;
-#endif
             }
             else
             {
@@ -59,15 +58,15 @@ namespace BovineLabs.Core.Utility
                 var byteList = lp[^1];
                 lp.RemoveAt(lp.Length - 1);
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                // Replace our safety as it's not valid within the job as we've stored these inside another container so can't be injected
-                this.oldHandle = byteList.m_Safety;
-                byteList.m_Safety = AtomicSafetyHandle.GetTempMemoryHandle();
-#endif
-
                 this.list = UnsafeUtility.As<NativeList<byte>, NativeList<T>>(ref byteList);
                 this.list.m_ListData->m_capacity = byteList.Capacity / UnsafeUtility.SizeOf<T>();
             }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            // Replace our safety as it's not valid within the job as we've stored these inside another container so can't be injected
+            this.oldHandle = this.list.m_Safety;
+            this.list.m_Safety = AtomicSafetyHandle.Create();
+#endif
 
             return this;
         }
@@ -108,6 +107,9 @@ namespace BovineLabs.Core.Utility
             byteList.m_ListData->m_capacity = this.list.Capacity * UnsafeUtility.SizeOf<T>();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            // Release the Temp handle
+            AtomicSafetyHandle.CheckDeallocateAndThrow(byteList.m_Safety);
+            AtomicSafetyHandle.Release(byteList.m_Safety);
             byteList.m_Safety = this.oldHandle;
 #endif
 

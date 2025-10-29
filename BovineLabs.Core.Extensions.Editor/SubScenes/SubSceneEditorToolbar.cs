@@ -165,7 +165,8 @@ namespace BovineLabs.Core.Editor.SubScenes
                     .Where(scene => scene)
                     .Concat(EditorBuildSettings.scenes.Select(s => AssetDatabase.LoadAssetAtPath<SceneAsset>(s.path)))
                     .Distinct()
-                    .OrderBy(s => s.name);
+                    .Where(sa => sa)
+                    .OrderBy(sa => sa.name);
 
                 foreach (var scene in scenes)
                 {

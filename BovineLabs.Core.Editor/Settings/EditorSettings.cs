@@ -16,10 +16,8 @@ namespace BovineLabs.Core.Editor.Settings
     [SettingsGroup("Core")]
     public class EditorSettings : ScriptableObject, ISettings
     {
-        public const string SettingsKey = "settings";
-        public const string SettingsResourceKey = "settings.resource";
+        public const string SettingsKey = "bl.settings";
         public const string DefaultSettingsDirectory = "Assets/Settings/Settings";
-        public const string DefaultSettingsResourceDirectory = "Assets/Settings/";
 
         [SerializeField]
         private string[] scriptingDefineSymbols = Array.Empty<string>();

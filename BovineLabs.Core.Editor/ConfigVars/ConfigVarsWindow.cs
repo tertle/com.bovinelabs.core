@@ -79,15 +79,11 @@ namespace BovineLabs.Core.Editor.ConfigVars
         {
             if (EditorUtility.DisplayDialog("Confirm Reset To Default", "Reset all config vars to default values?", "Reset", "Cancel"))
             {
-                foreach (var panel in this.panels)
+                foreach (var c in ConfigVarManager.All)
                 {
-                    foreach (var configVar in panel.Value.ConfigVars)
-                    {
-                        EditorPrefs.DeleteKey(configVar.ConfigVar.Name);
-                    }
+                    EditorPrefs.DeleteKey(c.Key.Name);
+                    c.Value.StringValue = c.Key.DefaultValue;
                 }
-
-                // TODO REFRESG
             }
         }
     }

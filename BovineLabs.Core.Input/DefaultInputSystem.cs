@@ -20,8 +20,7 @@ namespace BovineLabs.Core.Input
 #endif
 
     [WorldSystemFilter(WorldSystemFilterFlags.Presentation)]
-    [UpdateAfter(typeof(CameraFrustumSystem))]
-    [UpdateAfter(typeof(CameraMainSystem))]
+    [UpdateAfter(typeof(CameraSystemGroup))]
     [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
     public partial class DefaultInputSystem : SystemBase
     {

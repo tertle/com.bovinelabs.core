@@ -36,9 +36,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
             if (attr.Flags)
             {
-                var choices = k.Select(s => s.Name).ToList();
-                var defaultValue = GetDefaultValue(property.ulongValue, k, choices);
-                var remap = GetRemap(k, choices);
+                var defaultValue = GetData(k, property.ulongValue, out var choices, out var remap);
 
                 var popup = new MaskField(property.displayName, choices, defaultValue);
                 popup.AddToClassList(BaseField<int>.alignedFieldUssClassName);
@@ -100,9 +98,29 @@ namespace BovineLabs.Core.Editor.Inspectors
             return value;
         }
 
-        private static Dictionary<int, int> GetRemap(IEnumerable<(string Name, int Value)> data, IReadOnlyList<string> choices)
+        private static int GetData((string Name, int Value)[] values, ulong value, out List<string> choices, out Dictionary<int, int> remap)
         {
-            var nameToValue = data.ToDictionary(key => key.Name, key => key.Value);
+            Dictionary<string, int> nameToValue = new();
+
+            foreach (var n in values)
+            {
+                var k = n.Name;
+                var unique = 2;
+
+                while (!nameToValue.TryAdd(k, n.Value))
+                {
+                    k = $"{n.Name} {unique++}";
+                }
+            }
+
+            choices = nameToValue.Keys.ToList();
+            remap = GetRemap(nameToValue, choices);
+
+            return GetDefaultValue(value, nameToValue, choices);
+        }
+
+        private static Dictionary<int, int> GetRemap(Dictionary<string, int> nameToValue, IReadOnlyList<string> choices)
+        {
             var remap = new Dictionary<int, int>();
             for (var index = 0; index < choices.Count; index++)
             {
@@ -112,9 +130,10 @@ namespace BovineLabs.Core.Editor.Inspectors
             return remap;
         }
 
-        private static int GetDefaultValue(ulong c, IEnumerable<(string Name, int Value)> data, IList<string> choices)
+        private static int GetDefaultValue(ulong c, Dictionary<string, int> nameToValue, IList<string> choices)
         {
-            var setup = data.ToDictionary(key => key.Value, key => key.Name);
+            var setup = nameToValue.ToDictionary(k => k.Value, k => k.Key);
+
             var defaultValue = 0;
             while (c != 0)
             {

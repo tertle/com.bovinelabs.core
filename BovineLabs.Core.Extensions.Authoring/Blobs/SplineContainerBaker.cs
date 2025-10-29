@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_SPLINES && BL_BAKE_SPLINE
+#if UNITY_SPLINES
 namespace BovineLabs.Core.Authoring.Blobs
 {
     using BovineLabs.Core.Blobs;

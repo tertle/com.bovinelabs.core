@@ -5,14 +5,12 @@
 #if !BL_DISABLE_CAMERA
 namespace BovineLabs.Core.Camera
 {
-    using BovineLabs.Core.Groups;
     using Unity.Entities;
     using Unity.Transforms;
     using UnityEngine;
 
-    [WorldSystemFilter(WorldSystemFilterFlags.Presentation)]
     [UpdateBefore(typeof(CameraFrustumSystem))]
-    [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
+    [UpdateInGroup(typeof(CameraSystemGroup))]
     public partial class CameraMainSystem : SystemBase
     {
         /// <inheritdoc />
@@ -30,7 +28,7 @@ namespace BovineLabs.Core.Camera
                 {
                     // User hasn't setup an entity, create our own
                     entity = this.EntityManager.CreateEntity(typeof(CameraMain), typeof(LocalTransform), typeof(CameraFrustumPlanes),
-                        typeof(CameraFrustumCorners));
+                        typeof(CameraFrustumCorners), typeof(Camera));
                 }
                 else
                 {

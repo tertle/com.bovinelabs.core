@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.4.7] - 2025-10-30
+
+### Added
+* MemoryLabelAllocator that wraps unity 6.3 MemoryLabel (with backwards compatability support for <6.3)
+* CurveRemapUtility
+* CameraSystemGroup
+* ToSpline() on BlobSpline
+* Evaluate to BlobSpline
+
+### Changed
+* Trying to use a list from PooledNativeList after it has returned will now throw exceptions
+
+### Fixed
+* ConfigVar reset
+* BitFieldAttributeEditor now supports multiple fields with same name
+* Pause fix for netcode 1.9
+* NativeWorkQueue now supports custom allocators
+
+### Removed
+* ResourceSettingsAttribute - use SettingsSingleton which will auto include in builds
+
 ## [1.4.6] - 2025-10-03
 
 ### Breaking

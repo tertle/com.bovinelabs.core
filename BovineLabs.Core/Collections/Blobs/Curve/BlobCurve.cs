@@ -37,6 +37,8 @@ namespace BovineLabs.Core.Collections
 
         public float Duration => this.header.Duration;
 
+        public bool IsCreated => this.SegmentCount > 0;
+
         public static BlobAssetReference<BlobCurve> Create(AnimationCurve curve, Allocator allocator = Allocator.Persistent)
         {
             var builder = new BlobBuilder(Allocator.Temp);

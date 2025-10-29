@@ -11,7 +11,6 @@ namespace BovineLabs.Core.Pause
 
     public class PauseRateManager : IRateManager
     {
-        private readonly IRateManager existingRateManager;
         private EntityQuery pauseQuery;
 
         private bool wasPaused;
@@ -21,28 +20,30 @@ namespace BovineLabs.Core.Pause
         public PauseRateManager(ComponentSystemGroup group)
         {
             this.pauseQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<PauseGame>().WithOptions(EntityQueryOptions.IncludeSystems).Build(group);
-            this.existingRateManager = group.RateManager;
+            this.ExistingRateManager = group.RateManager;
         }
 
         /// <inheritdoc/>
         float IRateManager.Timestep
         {
-            get => this.existingRateManager?.Timestep ?? 0;
+            get => this.ExistingRateManager?.Timestep ?? 0;
             set
             {
-                if (this.existingRateManager != null)
+                if (this.ExistingRateManager != null)
                 {
-                    this.existingRateManager.Timestep = value;
+                    this.ExistingRateManager.Timestep = value;
                 }
             }
         }
+
+        public IRateManager ExistingRateManager { get; }
 
         /// <inheritdoc/>
         bool IRateManager.ShouldGroupUpdate(ComponentSystemGroup group)
         {
             if (this.hasUpdatedThisFrame)
             {
-                if (this.existingRateManager?.ShouldGroupUpdate(group) ?? false)
+                if (this.ExistingRateManager?.ShouldGroupUpdate(group) ?? false)
                 {
                     return true;
                 }
@@ -84,9 +85,9 @@ namespace BovineLabs.Core.Pause
 
                 if (!isPauseAll)
                 {
-                    if (this.existingRateManager != null)
+                    if (this.ExistingRateManager != null)
                     {
-                        while (this.existingRateManager.ShouldGroupUpdate(group))
+                        while (this.ExistingRateManager.ShouldGroupUpdate(group))
                         {
                             PauseUtility.UpdateAlwaysSystems(group);
                         }
@@ -100,7 +101,7 @@ namespace BovineLabs.Core.Pause
                 return false;
             }
 
-            if (!this.existingRateManager?.ShouldGroupUpdate(group) ?? false)
+            if (!this.ExistingRateManager?.ShouldGroupUpdate(group) ?? false)
             {
                 return false;
             }

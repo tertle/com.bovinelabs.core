@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Authoring.Settings
 {
     using System;
     using System.Linq;
+    using BovineLabs.Core.Settings;
     using Unity.Entities;
     using UnityEngine;
 
@@ -20,6 +21,8 @@ namespace BovineLabs.Core.Authoring.Settings
             /// <inheritdoc />
             public override void Bake(SettingsAuthoring authoring)
             {
+                this.AddComponent<SettingsTag>(this.GetEntity(TransformUsageFlags.None));
+
                 foreach (var setting in authoring.settings.Distinct())
                 {
                     if (!setting)

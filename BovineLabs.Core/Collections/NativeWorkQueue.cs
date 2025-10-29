@@ -40,12 +40,11 @@ namespace BovineLabs.Core.Collections
         public NativeWorkQueue(int maxQueueSize, AllocatorManager.AllocatorHandle allocator)
         {
             this.allocator = allocator.Handle;
-            this.queue = (T*)allocator.Allocate(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), maxQueueSize);
-            this.queueWriteHead =
-                (int*)UnsafeUtility.MallocTracked(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator, 0); // TODO allocator?
+            this.queue = (T*)AllocatorManager.Allocate(allocator, UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), maxQueueSize);
+            this.queueWriteHead = (int*)AllocatorManager.Allocate(allocator, UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>());
 
-            this.queueReadHead = (int*)UnsafeUtility.MallocTracked(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator, 0);
-            this.currentRef = (int*)UnsafeUtility.MallocTracked(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator.ToAllocator, 0);
+            this.queueReadHead = (int*)AllocatorManager.Allocate(allocator, UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>());
+            this.currentRef = (int*)AllocatorManager.Allocate(allocator, UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>());
 
             this.Capacity = maxQueueSize;
 
@@ -86,9 +85,9 @@ namespace BovineLabs.Core.Collections
 #endif
 
             AllocatorManager.Free(this.allocator, this.queue, this.Capacity);
-            UnsafeUtility.FreeTracked(this.queueWriteHead, this.allocator.ToAllocator);
-            UnsafeUtility.FreeTracked(this.queueReadHead, this.allocator.ToAllocator);
-            UnsafeUtility.FreeTracked(this.currentRef, this.allocator.ToAllocator);
+            AllocatorManager.Free(this.allocator, this.queueWriteHead);
+            AllocatorManager.Free(this.allocator, this.queueReadHead);
+            AllocatorManager.Free(this.allocator, this.currentRef);
         }
 
         public void Update()

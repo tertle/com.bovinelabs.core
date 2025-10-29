@@ -5,13 +5,11 @@
 #if !BL_DISABLE_CAMERA
 namespace BovineLabs.Core.Camera
 {
-    using BovineLabs.Core.Groups;
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
 
-    [WorldSystemFilter(WorldSystemFilterFlags.Presentation)]
-    [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
+    [UpdateInGroup(typeof(CameraSystemGroup))]
     public partial class CameraFrustumSystem : SystemBase
     {
         private readonly Plane[] sourcePlanes = new Plane[6];

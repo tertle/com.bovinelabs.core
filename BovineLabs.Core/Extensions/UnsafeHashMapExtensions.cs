@@ -24,6 +24,26 @@ namespace BovineLabs.Core.Extensions
             return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data.Ptr, idx);
         }
 
+        public static ref TValue GetOrAddRef<TKey, TValue>(ref this UnsafeHashMap<TKey, TValue> hashMap, TKey key, TValue defaultValue, out bool added)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            var idx = hashMap.m_Data.Find(key);
+
+            if (idx == -1)
+            {
+                idx = hashMap.m_Data.AddNoFind(key);
+                UnsafeUtility.WriteArrayElement(hashMap.m_Data.Ptr, idx, defaultValue);
+                added = true;
+            }
+            else
+            {
+                added = false;
+            }
+
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data.Ptr, idx);
+        }
+
         public static bool Remove<TKey, TValue>(ref this UnsafeHashMap<TKey, TValue> hashMap, TKey key, out TValue value)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged

@@ -219,24 +219,9 @@ namespace BovineLabs.Core.Editor.Settings
             {
                 case 0:
                 {
-                    string? directory;
-                    var resourceAttribute = type.GetCustomAttribute<ResourceSettingsAttribute>();
-                    if (resourceAttribute != null)
-                    {
-                        var resources = "Resources";
-                        if (!string.IsNullOrWhiteSpace(resourceAttribute.Directory))
-                        {
-                            resources = Path.Combine(resources, resourceAttribute.Directory);
-                        }
-
-                        directory = GetAssetDirectory(EditorSettings.SettingsResourceKey, EditorSettings.DefaultSettingsResourceDirectory, resources, allowCreate);
-                    }
-                    else
-                    {
-                        var subDirectoryAttribute = type.GetCustomAttribute<SettingSubDirectoryAttribute>();
-                        var subDirectory = subDirectoryAttribute != null ? subDirectoryAttribute.Directory : string.Empty;
-                        directory = GetAssetDirectory(EditorSettings.SettingsKey, EditorSettings.DefaultSettingsDirectory, subDirectory, allowCreate: allowCreate);
-                    }
+                    var subDirectoryAttribute = type.GetCustomAttribute<SettingSubDirectoryAttribute>();
+                    var subDirectory = subDirectoryAttribute != null ? subDirectoryAttribute.Directory : string.Empty;
+                    var directory = GetAssetDirectory(EditorSettings.SettingsKey, EditorSettings.DefaultSettingsDirectory, subDirectory, allowCreate: allowCreate);
 
                     if (directory == null)
                     {

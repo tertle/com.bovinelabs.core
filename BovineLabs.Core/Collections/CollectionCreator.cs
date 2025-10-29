@@ -19,6 +19,16 @@ namespace BovineLabs.Core.Collections
             return hashMap;
         }
 
+        public static UnsafeHashMap<TKey, TValue>* CreateHashMap<TKey, TValue>(int initialCapacity, int minGrowth, AllocatorManager.AllocatorHandle allocator)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            var hashMap = AllocatorManager.Allocate<UnsafeHashMap<TKey, TValue>>(allocator);
+            *hashMap = default;
+            hashMap->m_Data.Init(initialCapacity, sizeof(TValue), minGrowth, allocator);
+            return hashMap;
+        }
+
         public static void Destroy<TKey, TValue>(UnsafeHashMap<TKey, TValue>* hashMap)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged

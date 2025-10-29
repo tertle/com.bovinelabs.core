@@ -9,24 +9,30 @@ namespace BovineLabs.Core.Tests.Utility
     using NUnit.Framework;
     using Unity.Burst;
     using Unity.Collections;
+    using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using Unity.PerformanceTesting;
+    using UnityEngine;
 
     public partial class PooledNativeListPerformanceTests : ECSTestsFixture
     {
         private const int EntityCount = 10_000;
-        private const int BufferCount = 1_000;
+        private const int BufferCount1 = 1_000;
+        private const int BufferCount2 = 10_000;
+        private const int BufferCount3 = 100_000;
 
-        [Test]
+        [TestCase(BufferCount1)]
+        [TestCase(BufferCount2)]
+        [TestCase(BufferCount3)]
         [Performance]
-        public void PoolTest()
+        public void PoolTest(int bufferCount)
         {
             var archetype = this.World.EntityManager.CreateArchetype(typeof(TestBuffer), typeof(TestResult));
             var entities = this.World.EntityManager.CreateEntity(archetype, EntityCount, Allocator.Temp);
             foreach (var e in entities)
             {
                 var buffer = this.World.EntityManager.GetBuffer<TestBuffer>(e);
-                buffer.ResizeUninitialized(BufferCount);
+                buffer.ResizeUninitialized(bufferCount);
             }
 
             var system = this.World.CreateSystem<System1>();
@@ -34,16 +40,18 @@ namespace BovineLabs.Core.Tests.Utility
             Measure.Method(() => system.Update(this.WorldUnmanaged)).WarmupCount(5).MeasurementCount(10).Run();
         }
 
-        [Test]
+        [TestCase(BufferCount1)]
+        [TestCase(BufferCount2)]
+        [TestCase(BufferCount3)]
         [Performance]
-        public void TempList()
+        public void TempList(int bufferCount)
         {
             var archetype = this.World.EntityManager.CreateArchetype(typeof(TestBuffer), typeof(TestResult));
             var entities = this.World.EntityManager.CreateEntity(archetype, EntityCount, Allocator.Temp);
             foreach (var e in entities)
             {
                 var buffer = this.World.EntityManager.GetBuffer<TestBuffer>(e);
-                buffer.ResizeUninitialized(BufferCount);
+                buffer.ResizeUninitialized(bufferCount);
             }
 
             var system = this.World.CreateSystem<System2>();
@@ -51,19 +59,40 @@ namespace BovineLabs.Core.Tests.Utility
             Measure.Method(() => system.Update(this.WorldUnmanaged)).WarmupCount(5).MeasurementCount(10).Run();
         }
 
-        [Test]
+        [TestCase(BufferCount1)]
+        [TestCase(BufferCount2)]
+        [TestCase(BufferCount3)]
         [Performance]
-        public void StackAlloc()
+        public void StackAlloc(int bufferCount)
         {
             var archetype = this.World.EntityManager.CreateArchetype(typeof(TestBuffer), typeof(TestResult));
             var entities = this.World.EntityManager.CreateEntity(archetype, EntityCount, Allocator.Temp);
             foreach (var e in entities)
             {
                 var buffer = this.World.EntityManager.GetBuffer<TestBuffer>(e);
-                buffer.ResizeUninitialized(BufferCount);
+                buffer.ResizeUninitialized(bufferCount);
             }
 
             var system = this.World.CreateSystem<System3>();
+
+            Measure.Method(() => system.Update(this.WorldUnmanaged)).WarmupCount(5).MeasurementCount(10).Run();
+        }
+
+        [TestCase(BufferCount1)]
+        [TestCase(BufferCount2)]
+        [TestCase(BufferCount3)]
+        [Performance]
+        public void TempListPerThread(int bufferCount)
+        {
+            var archetype = this.World.EntityManager.CreateArchetype(typeof(TestBuffer), typeof(TestResult));
+            var entities = this.World.EntityManager.CreateEntity(archetype, EntityCount, Allocator.Temp);
+            foreach (var e in entities)
+            {
+                var buffer = this.World.EntityManager.GetBuffer<TestBuffer>(e);
+                buffer.ResizeUninitialized(bufferCount);
+            }
+
+            var system = this.World.CreateSystem<System4>();
 
             Measure.Method(() => system.Update(this.WorldUnmanaged)).WarmupCount(5).MeasurementCount(10).Run();
         }
@@ -85,17 +114,22 @@ namespace BovineLabs.Core.Tests.Utility
                 {
                     // Get a list from the pool
                     using var intList = PooledNativeList<int>.Make();
+                    var list = intList.List;
+                    if (list.Capacity < counts.Length)
+                    {
+                        list.Capacity = counts.Length;
+                    }
 
                     foreach (var i in counts)
                     {
                         if (i.Value % 10 == 0)
                         {
-                            intList.List.Add(i.Value);
+                            list.AddNoResize(i.Value);
                         }
                     }
 
                     var sum = 0;
-                    foreach (var a in intList.List.AsArray())
+                    foreach (var a in list.AsArray())
                     {
                         sum += a;
                     }
@@ -127,7 +161,7 @@ namespace BovineLabs.Core.Tests.Utility
                     {
                         if (i.Value % 10 == 0)
                         {
-                            list.Add(i.Value);
+                            list.AddNoResize(i.Value);
                         }
                     }
 
@@ -188,6 +222,56 @@ namespace BovineLabs.Core.Tests.Utility
         private struct TestResult : IComponentData
         {
             public int Value;
+        }
+
+        public partial struct System4 : ISystem
+        {
+            [BurstCompile]
+            public void OnUpdate(ref SystemState state)
+            {
+                new TempListJob().ScheduleParallel();
+
+                state.Dependency.Complete();
+            }
+
+            [BurstCompile]
+            private partial struct TempListJob : IJobEntity
+            {
+                [NativeDisableContainerSafetyRestriction]
+                private NativeList<int> list;
+
+                private void Execute(in DynamicBuffer<TestBuffer> counts, ref TestResult result)
+                {
+                    if (!this.list.IsCreated)
+                    {
+                        this.list = new NativeList<int>(counts.Length, Allocator.Temp);
+                    }
+                    else
+                    {
+                        this.list.Clear();
+                        if (this.list.Capacity < counts.Length)
+                        {
+                            this.list.Capacity = counts.Length;
+                        }
+                    }
+
+                    foreach (var i in counts)
+                    {
+                        if (i.Value % 10 == 0)
+                        {
+                            this.list.AddNoResize(i.Value);
+                        }
+                    }
+
+                    var sum = 0;
+                    foreach (var a in this.list.AsArray())
+                    {
+                        sum += a;
+                    }
+
+                    result.Value = sum;
+                }
+            }
         }
     }
 }

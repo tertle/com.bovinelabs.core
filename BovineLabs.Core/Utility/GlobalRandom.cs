@@ -4,15 +4,15 @@
 
 namespace BovineLabs.Core.Utility
 {
-#if UNITY_EDITOR
-#endif
     using BovineLabs.Core.Collections;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Mathematics;
-    using UnityEditor;
     using UnityEngine;
     using Random = Unity.Mathematics.Random;
+#if UNITY_EDITOR
+    using UnityEditor;
+#endif
 
     /// <summary> Globally accessible random values even from bursted jobs. </summary>
     public static class GlobalRandom
