@@ -1,3 +1,5 @@
+# GITHUB VERSION IS NO LONGER UPDATED. PLEASE GET FROM [GITLAB](https://gitlab.com/tertle/com.bovinelabs.core)
+
 # BovineLabs Core
 
 BovineLabs Core provides extensions, containers, and tools for building games with Unity DOTS (Data-Oriented Technology Stack).
