@@ -44,7 +44,7 @@ namespace Unity.Collections
         /// <param name="allocator"> The allocator to use. </param>
         public NativeMultiHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
         {
-            this.data = HashMapHelper<TKey>.Alloc(initialCapacity, sizeof(TValue), HashMapHelper<TKey>.kMinimumCapacity, allocator);
+            this.data = HashMapHelper<TKey>.Alloc(initialCapacity, sizeof(TValue), 256, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);

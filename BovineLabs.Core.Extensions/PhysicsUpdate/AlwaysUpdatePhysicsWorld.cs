@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if BL_PHYSICS_ALWAYS_UPDATE
+#if !BL_DISABLE_PHYSICS_ALWAYS_UPDATE && UNITY_PHYSICS
 namespace BovineLabs.Core.PhysicsUpdate
 {
     using Unity.Entities;

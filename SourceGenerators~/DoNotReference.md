@@ -1,1 +1,0 @@
-This is garbage and should not be used as a learning resource or referenced.

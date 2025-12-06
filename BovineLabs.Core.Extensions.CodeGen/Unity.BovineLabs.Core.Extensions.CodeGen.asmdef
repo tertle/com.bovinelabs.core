@@ -1,0 +1,24 @@
+{
+    "name": "Unity.BovineLabs.Core.Extensions.CodeGen",
+    "rootNamespace": "",
+    "references": [
+        "BovineLabs.Core.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Mono.Cecil.dll",
+        "Mono.Cecil.Rocks.dll",
+        "Mono.Cecil.Pdb.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_6000_3_OR_NEWER"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

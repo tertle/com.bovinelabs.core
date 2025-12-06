@@ -1,7 +1,7 @@
 {
   "name": "com.bovinelabs.core",
   "description": "Core library for building games with DOTS.",
-  "version": "1.4.7",
+  "version": "1.5.0",
   "unity": "6000.0",
   "displayName": "BovineLabs Core",
   "dependencies": {
@@ -14,12 +14,5 @@
   ],
   "author": {
     "name": "BovineLabs"
-  },
-  "samples": [
-    {
-      "displayName": "Basic",
-      "description": "Basic setup for asset management, editor and input.",
-      "path": "Basics~"
-    }
-  ]
+  }
 }

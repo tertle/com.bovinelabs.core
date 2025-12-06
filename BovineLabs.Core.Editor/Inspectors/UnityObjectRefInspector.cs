@@ -81,7 +81,11 @@ namespace BovineLabs.Core.Editor.Inspectors
     {
     }
 
-#if !BL_DISABLE_INPUT
+    [UsedImplicitly]
+    internal class AudioClipUnityObjectRefInspector : UnityObjectRefInspector<AudioClip>
+    {
+    }
+
     [UsedImplicitly]
     internal class InputActionAssetUnityObjectRefInspector : UnityObjectRefInspector<UnityEngine.InputSystem.InputActionAsset>
     {
@@ -91,5 +95,4 @@ namespace BovineLabs.Core.Editor.Inspectors
     internal class InputActionReferenceUnityObjectRefInspector : UnityObjectRefInspector<UnityEngine.InputSystem.InputActionReference>
     {
     }
-#endif
 }

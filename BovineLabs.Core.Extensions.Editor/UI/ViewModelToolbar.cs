@@ -93,7 +93,7 @@ namespace BovineLabs.Core.Editor.UI
             menu.DropDown(worldBound);
         }
 
-        public static string GetFriendlyName(Type type)
+        private static string GetFriendlyName(Type type)
         {
             if (type.IsGenericType)
             {

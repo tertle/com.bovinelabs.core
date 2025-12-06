@@ -10,6 +10,7 @@ namespace BovineLabs.Core.Editor.SubScenes
     using Unity.Entities;
     using Unity.Scenes;
     using UnityEditor;
+    using UnityEngine;
     using EditorSettings = BovineLabs.Core.Editor.Settings.EditorSettings;
 
     [WorldSystemFilter(WorldSystemFilterFlags.Editor)]

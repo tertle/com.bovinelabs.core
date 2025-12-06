@@ -90,6 +90,18 @@ namespace BovineLabs.Core.Editor.ConfigVars
                 return (IConfigVarContainer<T>)container;
             }
 
+            if (typeof(T) == typeof(Vector4))
+            {
+                var container = new ConfigVarSharedStaticVector4Container((SharedStatic<Vector4>)(object)sharedStatic);
+                return (IConfigVarContainer<T>)container;
+            }
+
+            if (typeof(T) == typeof(Rect))
+            {
+                var container = new ConfigVarSharedStaticRectContainer((SharedStatic<Rect>)(object)sharedStatic);
+                return (IConfigVarContainer<T>)container;
+            }
+
             return new ConfigVarSharedStaticContainer<T>(sharedStatic);
         }
 

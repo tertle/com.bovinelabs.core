@@ -12,6 +12,7 @@ namespace BovineLabs.Core.Editor
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using UnityEngine;
 
     [Configurable]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.Editor)]
@@ -21,18 +22,30 @@ namespace BovineLabs.Core.Editor
         [ConfigVar("debug.selection", true, "Write the current hierarchy selection to SelectedEntity and SelectedEntities.")]
         public static readonly SharedStatic<bool> IsEnabled = SharedStatic<bool>.GetOrCreate<SelectedEntityEditorSystem>();
 
-        private NativeList<int> instanceIds;
         private NativeList<Entity> entities;
+
+#if UNITY_6000_4_OR_NEWER
+        private NativeList<EntityId> instanceIds;
+        private NativeParallelMultiHashMap<EntityId, Entity> entityLookup;
+#else
+        private NativeList<int> instanceIds;
         private NativeParallelMultiHashMap<int, Entity> entityLookup;
+#endif
 
         private JobHandle lastFrame;
 
         /// <inheritdoc />
         protected override void OnCreate()
         {
-            this.instanceIds = new NativeList<int>(512, Allocator.Persistent);
             this.entities = new NativeList<Entity>(512, Allocator.Persistent);
+
+#if UNITY_6000_4_OR_NEWER
+            this.instanceIds = new NativeList<EntityId>(512, Allocator.Persistent);
+            this.entityLookup = new NativeParallelMultiHashMap<EntityId, Entity>(1024, Allocator.Persistent);
+#else
+            this.instanceIds = new NativeList<int>(512, Allocator.Persistent);
             this.entityLookup = new NativeParallelMultiHashMap<int, Entity>(1024, Allocator.Persistent);
+#endif
 
             this.EntityManager.CreateEntity(typeof(SelectedEntity), typeof(SelectedEntities));
         }
@@ -103,7 +116,11 @@ namespace BovineLabs.Core.Editor
         [BurstCompile]
         private struct ResizeJob : IJob
         {
+#if UNITY_6000_4_OR_NEWER
+            public NativeParallelMultiHashMap<EntityId, Entity> EntityLookup;
+#else
             public NativeParallelMultiHashMap<int, Entity> EntityLookup;
+#endif
             public int Count;
 
             public void Execute()
@@ -119,7 +136,11 @@ namespace BovineLabs.Core.Editor
         [BurstCompile]
         private struct BuildInstanceIDToEntityIndexJob : IJobChunk
         {
+#if UNITY_6000_4_OR_NEWER
+            public NativeParallelMultiHashMap<EntityId, Entity>.ParallelWriter EntityLookup;
+#else
             public NativeParallelMultiHashMap<int, Entity>.ParallelWriter EntityLookup;
+#endif
 
             [ReadOnly]
             public ComponentTypeHandle<EntityGuid> GuidType;
@@ -130,7 +151,12 @@ namespace BovineLabs.Core.Editor
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 var entities = chunk.GetNativeArray(this.EntityType);
-                var guids = chunk.GetNativeArray(ref this.GuidType).Slice().SliceWithStride<int>();
+                var guids = chunk.GetNativeArray(ref this.GuidType).Slice()
+#if UNITY_6000_4_OR_NEWER
+                    .SliceWithStride<EntityId>();
+#else
+                    .SliceWithStride<int>();
+#endif
                 this.EntityLookup.AddBatchUnsafe(guids, entities);
             }
         }
@@ -138,11 +164,17 @@ namespace BovineLabs.Core.Editor
         [BurstCompile]
         private struct SetSelectionJob : IJob
         {
+#if UNITY_6000_4_OR_NEWER
             [ReadOnly]
-            public NativeParallelMultiHashMap<int, Entity> EntityLookup;
-
+            public NativeList<EntityId> InstanceIDs;
+            [ReadOnly]
+            public NativeParallelMultiHashMap<EntityId, Entity> EntityLookup;
+#else
             [ReadOnly]
             public NativeList<int> InstanceIDs;
+            [ReadOnly]
+            public NativeParallelMultiHashMap<int, Entity> EntityLookup;
+#endif
 
             [ReadOnly]
             public NativeList<Entity> Entities;

@@ -55,6 +55,7 @@ namespace BovineLabs.Core.Editor.SubScenes
             where T : IDropDown;
 
         [UsedImplicitly]
+        [MainToolbarPreset]
         [MainToolbarElement(ScenePath, defaultDockPosition = MainToolbarDockPosition.Middle)]
         public static MainToolbarElement SceneSelection()
         {

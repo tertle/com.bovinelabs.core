@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.5.0] - 2025-12-06
+
+### Added
+* New Manager Window that'll show once, now handles Extensions and can install other BovineLabs packages
+* 6.4a4+ support
+* 2.6.3 collections support
+* Vector4 and Rect configvar support.
+* IFacet, IAspect replacement
+* Diagnostic warnings for Input and DynamicMaps
+* Readonly support for CodeGenHelpers
+* BurstTrampoline for easy breaking out of burst into managed code
+* SyncEnableStateUtil
+* PhysicsLayerUtil
+* CameraMain to editor world for tooling
+* AudioClipUnityObjectRefInspector
+* Schedule to IJobHashMapDefer
+* MainToolbarPresetAttribute and an IL PostProcessor to allow toolbar elements to be visible by default
+
+### Changed
+* Exposed mingrowth on UnsafeMultiHashMap
+* Changed how Input works to work around Unity bug loses references to the Assets, run Update Settings from the setting BovineLabs->Settings->Core->Editor
+* InputCommon no longer has Physics dependency
+* Added overload to ClearRewind for enforced safety.
+* PhysicsUpdate is now enablable as an extension
+
+### Fixed
+* GlobalRandom now initializes earlier to ensure it's ready before OnCreate when using AutomaticBootstrap
+
+### Removed
+* EntityCache
+* FeatureWindow, replaced by Manager
+
 ## [1.4.7] - 2025-10-30
 
 ### Added

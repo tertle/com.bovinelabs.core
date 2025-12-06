@@ -36,10 +36,11 @@ namespace Unity.Collections
         /// <summary> Initializes a new instance of the <see cref="UnsafeMultiHashMap{TKey, TValue}" /> struct. </summary>
         /// <param name="initialCapacity"> The number of key-value pairs that should fit in the initial allocation. </param>
         /// <param name="allocator"> The allocator to use. </param>
-        public UnsafeMultiHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
+        /// <param name="minGrowth"> The min growth of the hashmap </param>
+        public UnsafeMultiHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator, int minGrowth = 256)
         {
             this.data = default;
-            this.data.Init(initialCapacity, sizeof(TValue), HashMapHelper<TKey>.kMinimumCapacity, allocator);
+            this.data.Init(initialCapacity, sizeof(TValue), minGrowth, allocator);
         }
 
         /// <summary> Gets a value indicating whether whether this hash map has been allocated (and not yet deallocated). </summary>

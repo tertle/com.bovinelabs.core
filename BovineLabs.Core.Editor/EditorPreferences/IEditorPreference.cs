@@ -19,7 +19,9 @@ namespace BovineLabs.Core.Editor.EditorPreferences
         /// Method called when a change is detected in the UI.
         /// </summary>
         /// <param name="path">Path to the changed property.</param>
-        void OnPreferenceChanged(PropertyPath path);
+        void OnPreferenceChanged(PropertyPath path)
+        {
+        }
 
         /// <summary>
         /// Get the searchable keywords in this preferences group.

@@ -43,6 +43,15 @@ namespace BovineLabs.Core.Extensions
             return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data->Ptr, idx);
         }
 
+        public static ref TValue GetRefNoSafety<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            var idx = hashMap.m_Data->Find(key);
+            Check.Assume(idx != -1);
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data->Ptr, idx);
+        }
+
         public static bool Remove<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key, out TValue value)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged

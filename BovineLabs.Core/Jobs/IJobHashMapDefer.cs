@@ -31,30 +31,27 @@ namespace BovineLabs.Core.Jobs
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var jobProducer = new JobHashMapVisitKeyValueProducer<TJob>
-            {
-                HashMap = (HashMapWrapper*)hashMap.m_Data,
-                JobData = jobData,
-            };
-
-            JobHashMapVisitKeyValueProducer<TJob>.Initialize();
-            var reflectionData = JobHashMapVisitKeyValueProducer<TJob>.ReflectionData.Data;
-            CollectionHelper.CheckReflectionDataCorrect<TJob>(reflectionData);
-
-            var scheduleParams = new JobsUtility.JobScheduleParameters(
-                UnsafeUtility.AddressOf(ref jobProducer), reflectionData, dependsOn, ScheduleMode.Parallel);
-
             void* atomicSafetyHandlePtr = null;
-            // Calculate the deferred atomic safety handle before constructing JobScheduleParameters so
-            // DOTS Runtime can validate the deferred list statically similar to the reflection based
-            // validation in Big Unity.
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var safety = hashMap.m_Safety;
+            atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
+#endif
+            return ScheduleInternal(jobData, (HashMapWrapper*)hashMap.m_Data, minIndicesPerJobCount, dependsOn, ScheduleMode.Parallel, atomicSafetyHandlePtr);
+        }
+
+        public static unsafe JobHandle Schedule<TJob, TKey, TValue>(
+            this TJob jobData, NativeHashMap<TKey, TValue> hashMap, int minIndicesPerJobCount, JobHandle dependsOn = default)
+            where TJob : unmanaged, IJobHashMapDefer
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            void* atomicSafetyHandlePtr = null;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             var safety = hashMap.m_Safety;
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
 
-            var lengthPtr = (byte*)&hashMap.m_Data->BucketCapacity - sizeof(void*);
-            return JobsUtility.ScheduleParallelForDeferArraySize(ref scheduleParams, minIndicesPerJobCount, lengthPtr, atomicSafetyHandlePtr);
+            return ScheduleInternal(jobData, (HashMapWrapper*)hashMap.m_Data, minIndicesPerJobCount, dependsOn, ScheduleMode.Single, atomicSafetyHandlePtr);
         }
 
         public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
@@ -63,30 +60,28 @@ namespace BovineLabs.Core.Jobs
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var jobProducer = new JobHashMapVisitKeyValueProducer<TJob>
-            {
-                HashMap = (HashMapWrapper*)hashMap.data,
-                JobData = jobData,
-            };
-
-            JobHashMapVisitKeyValueProducer<TJob>.Initialize();
-            var reflectionData = JobHashMapVisitKeyValueProducer<TJob>.ReflectionData.Data;
-            CollectionHelper.CheckReflectionDataCorrect<TJob>(reflectionData);
-
-            var scheduleParams = new JobsUtility.JobScheduleParameters(
-                UnsafeUtility.AddressOf(ref jobProducer), reflectionData, dependsOn, ScheduleMode.Parallel);
-
             void* atomicSafetyHandlePtr = null;
-            // Calculate the deferred atomic safety handle before constructing JobScheduleParameters so
-            // DOTS Runtime can validate the deferred list statically similar to the reflection based
-            // validation in Big Unity.
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             var safety = hashMap.m_Safety;
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
 
-            var lengthPtr = (byte*)&hashMap.data->BucketCapacity - sizeof(void*);
-            return JobsUtility.ScheduleParallelForDeferArraySize(ref scheduleParams, minIndicesPerJobCount, lengthPtr, atomicSafetyHandlePtr);
+            return ScheduleInternal(jobData, (HashMapWrapper*)hashMap.data, minIndicesPerJobCount, dependsOn, ScheduleMode.Parallel, atomicSafetyHandlePtr);
+        }
+
+        public static unsafe JobHandle Schedule<TJob, TKey, TValue>(
+            this TJob jobData, NativeMultiHashMap<TKey, TValue> hashMap, int minIndicesPerJobCount, JobHandle dependsOn = default)
+            where TJob : unmanaged, IJobHashMapDefer
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            void* atomicSafetyHandlePtr = null;
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var safety = hashMap.m_Safety;
+            atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
+#endif
+
+            return ScheduleInternal(jobData, (HashMapWrapper*)hashMap.data, minIndicesPerJobCount, dependsOn, ScheduleMode.Single, atomicSafetyHandlePtr);
         }
 
         public static unsafe JobHandle ScheduleParallel<TJob, TKey>(
@@ -94,30 +89,27 @@ namespace BovineLabs.Core.Jobs
             where TJob : unmanaged, IJobHashMapDefer
             where TKey : unmanaged, IEquatable<TKey>
         {
-            var jobProducer = new JobHashMapVisitKeyValueProducer<TJob>
-            {
-                HashMap = (HashMapWrapper*)hashMap.m_Data,
-                JobData = jobData,
-            };
-
-            JobHashMapVisitKeyValueProducer<TJob>.Initialize();
-            var reflectionData = JobHashMapVisitKeyValueProducer<TJob>.ReflectionData.Data;
-            CollectionHelper.CheckReflectionDataCorrect<TJob>(reflectionData);
-
-            var scheduleParams = new JobsUtility.JobScheduleParameters(
-                UnsafeUtility.AddressOf(ref jobProducer), reflectionData, dependsOn, ScheduleMode.Parallel);
-
             void* atomicSafetyHandlePtr = null;
-            // Calculate the deferred atomic safety handle before constructing JobScheduleParameters so
-            // DOTS Runtime can validate the deferred list statically similar to the reflection based
-            // validation in Big Unity.
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             var safety = hashMap.m_Safety;
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
 
-            var lengthPtr = (byte*)&hashMap.m_Data->BucketCapacity - sizeof(void*);
-            return JobsUtility.ScheduleParallelForDeferArraySize(ref scheduleParams, minIndicesPerJobCount, lengthPtr, atomicSafetyHandlePtr);
+            return ScheduleInternal(jobData, (HashMapWrapper*)hashMap.m_Data, minIndicesPerJobCount, dependsOn, ScheduleMode.Parallel, atomicSafetyHandlePtr);
+        }
+
+        public static unsafe JobHandle Schedule<TJob, TKey>(
+            this TJob jobData, NativeHashSet<TKey> hashMap, int minIndicesPerJobCount, JobHandle dependsOn = default)
+            where TJob : unmanaged, IJobHashMapDefer
+            where TKey : unmanaged, IEquatable<TKey>
+        {
+            void* atomicSafetyHandlePtr = null;
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var safety = hashMap.m_Safety;
+            atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
+#endif
+
+            return ScheduleInternal(jobData, (HashMapWrapper*)hashMap.m_Data, minIndicesPerJobCount, dependsOn, ScheduleMode.Single, atomicSafetyHandlePtr);
         }
 
         /// <summary>
@@ -129,6 +121,27 @@ namespace BovineLabs.Core.Jobs
             where T : struct, IJobHashMapDefer
         {
             JobHashMapVisitKeyValueProducer<T>.Initialize();
+        }
+
+        private static unsafe JobHandle ScheduleInternal<TJob>(
+            TJob jobData, HashMapWrapper* hashMap, int minIndicesPerJobCount, JobHandle dependsOn, ScheduleMode scheduleMode, void* atomicSafetyHandlePtr)
+            where TJob : unmanaged, IJobHashMapDefer
+        {
+            var jobProducer = new JobHashMapVisitKeyValueProducer<TJob>
+            {
+                HashMap = hashMap,
+                JobData = jobData,
+            };
+
+            JobHashMapVisitKeyValueProducer<TJob>.Initialize();
+            var reflectionData = JobHashMapVisitKeyValueProducer<TJob>.ReflectionData.Data;
+            CollectionHelper.CheckReflectionDataCorrect<TJob>(reflectionData);
+
+            var scheduleParams = new JobsUtility.JobScheduleParameters(
+                UnsafeUtility.AddressOf(ref jobProducer), reflectionData, dependsOn, scheduleMode);
+
+            var lengthPtr = (byte*)&hashMap->BucketCapacity - sizeof(void*);
+            return JobsUtility.ScheduleParallelForDeferArraySize(ref scheduleParams, minIndicesPerJobCount, lengthPtr, atomicSafetyHandlePtr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -249,14 +262,14 @@ namespace BovineLabs.Core.Jobs
             [NativeDisableUnsafePtrRestriction]
             internal int* Buckets;
 
-            private int Count;
-            private int Capacity;
-            private int Log2MinGrowth;
-            private int BucketCapacity;
-            private int AllocatedIndex;
-            private int FirstFreeIdx;
-            private int SizeOfTValue;
-            private AllocatorManager.AllocatorHandle Allocator;
+            internal int Count;
+            internal int Capacity;
+            internal int Log2MinGrowth;
+            internal int BucketCapacity;
+            internal int AllocatedIndex;
+            internal int FirstFreeIdx;
+            internal int SizeOfTValue;
+            internal AllocatorManager.AllocatorHandle Allocator;
         }
     }
 }

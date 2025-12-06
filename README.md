@@ -8,11 +8,7 @@ If you want to support my work or get access to a few private libraries, [Buy Me
 
 ## Installation
 
-Use the version that matches your Unity Entities version. The incremental versions do not have to match. For example, users on Entities 1.3.X should use Core 1.3.Y.
-
 The latest version of the library is available on [GitLab](https://gitlab.com/tertle/com.bovinelabs.core). The project is actively worked on daily in various branches.
-
-Every month or so, a new stable version is pushed to [GitHub](https://github.com/tertle/com.bovinelabs.core) and [OpenUPM](https://openupm.com/packages/com.bovinelabs.core/).
 
 Once installed, the library provides utilities, custom containers, and high-performance extensions without disrupting your existing workflow.
 
@@ -25,9 +21,9 @@ Once installed, the library provides utilities, custom containers, and high-perf
 | [Debug](Documentation~/Debug.md)                                 | Comprehensive debugging and assertion utilities with Burst compatibility and ECS-specific debugging support                           |
 | [DynamicHashMap](Documentation~/DynamicHashMap.md)               | Adds HashMap support to entities                                                                                                      |
 | [EntityCommands](Documentation~/EntityCommands.md)               | Provides a shared interface between EntityManager, EntityCommandBuffer, EntityCommandBuffer.ParallelWriter and IBaker                 |
+| [Facets](Documentation~/Facets.md)                               | Source-generated `IFacet` helpers that provide aspect-like access via lookups and chunk iteration                                     |
 | [Extensions](Documentation~/Extensions.md)                       | Extension methods that enhance Unity's DOTS APIs with performance optimizations and convenience methods                               |
 | [Functions](Documentation~/Functions.md)                         | Extensible way to add support for extending jobs to other developers or modders                                                       |
-| [Input](Documentation~/Input.md)                                 | Support for input integrated with entities using source generation and common properties                                              |
 | [Iterators](Documentation~/Iterators.md)                         | High-performance iterator utilities for ECS applications with Burst-compatible enumeration capabilities                               |
 | [Jobs](Documentation~/Jobs.md)                                   | Custom jobs (IJobForThread, IJobParallelForDeferBatch, IJobHashMapDefer, IJobParallelHashMapDefer)                                    |
 | [K](Documentation~/K.md)                                         | K is a type-safe, Burst-compatible alternative to Enums and LayerMasks that allows you to define key-value pairs in settings files    |
@@ -38,6 +34,7 @@ Once installed, the library provides utilities, custom containers, and high-perf
 
 | Utility                                                 | Description                                                                                         |
 |---------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| [BurstTrampoline](Documentation~/BurstTrampoline.md)    | Invoke managed delegates from Burst code with reusable trampolines and optional out parameters      |
 | [Global Random](Documentation~/GlobalRandom.md)         | A static random usable from everywhere, even parallel burst jobs                                    |
 | [PooledNativeList](Documentation~/PooledNativeList.md)  | High-performance, thread-safe pooling system for Unity's NativeList collections                     |
 | [Utility](Documentation~/Utility.md)                    | Comprehensive collection of utility classes and helpers for high-performance Unity DOTS development |
@@ -53,6 +50,7 @@ The Core library maintains the status quo in your project by default. However, t
 | [Analyzers](Documentation~/Analyzers.md)                | Automatic Roslyn analyzer integration infrastructure for seamless code analysis and style enforcement |
 | [Camera](Documentation~/Camera.md)                      | ECS camera integration with frustum culling and Unity Camera synchronization                          |
 | [EntityBlob](Documentation~/EntityBlob.md)              | Memory-efficient storage of multiple BlobAssetReferences in a single blob using perfect hash maps     |
+| [Input](Documentation~/Input.md)                        | Support for input integrated with entities using source generation and common properties              |
 | [Life Cycle](Documentation~/LifeCycle.md)               | Framework for managing entity initialization and destruction                                          |
 | [Object Management](Documentation~/ObjectManagement.md) | Automatic ID, category and group management                                                           |
 | [Pause](Documentation~/Pause.md)                        | World-level pause system with fine-grained control over system updates during pause states            |

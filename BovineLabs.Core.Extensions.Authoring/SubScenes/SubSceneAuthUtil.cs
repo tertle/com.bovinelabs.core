@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Authoring.SubScenes
     using System.Collections.Generic;
     using BovineLabs.Core.EntityCommands;
     using BovineLabs.Core.SubScenes;
+    using Unity.Entities;
     using Unity.Entities.Serialization;
     using UnityEditor;
 
@@ -23,7 +24,10 @@ namespace BovineLabs.Core.Authoring.SubScenes
             ref T commands, SubSceneSetId id, SubSceneLoadFlags targetWorld, bool isRequired, bool waitForLoad, bool autoLoad, List<SceneAsset> scenes)
             where T : IEntityCommands
         {
-            commands.AddComponent(new SubSceneLoadData
+            commands.AddComponent(new ComponentTypeSet(typeof(SubSceneLoadData), typeof(LoadSubScene), typeof(SubSceneLoaded), typeof(SubSceneEntity),
+                typeof(SubSceneBuffer)));
+
+            commands.SetComponent(new SubSceneLoadData
             {
                 ID = id,
                 WaitForLoad = waitForLoad || isRequired, // Is required should always wait
@@ -31,16 +35,11 @@ namespace BovineLabs.Core.Authoring.SubScenes
                 IsRequired = isRequired,
             });
 
-            commands.AddComponent<LoadSubScene>(); // Is required should always default load
             commands.SetComponentEnabled<LoadSubScene>(autoLoad || isRequired); // Is required should always default load
-
-            commands.AddComponent<SubSceneLoaded>(); // Is required should always default load
             commands.SetComponentEnabled<SubSceneLoaded>(false); // Is required should always default load
-
-            commands.AddBuffer<SubSceneEntity>(); // Is required should always default load
             commands.SetComponentEnabled<SubSceneEntity>(false); // Is required should always default load
 
-            var sceneLoad = commands.AddBuffer<SubSceneBuffer>();
+            var sceneLoad = commands.SetBuffer<SubSceneBuffer>();
             foreach (var sceneAsset in scenes)
             {
                 if (sceneAsset == null)

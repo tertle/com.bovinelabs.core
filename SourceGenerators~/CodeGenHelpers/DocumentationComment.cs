@@ -55,7 +55,7 @@ namespace CodeGenHelpers
             where T : BuilderBase<T>, IParameterized<T>
         {
             var unusedParameters = parameterDocs.Where(p =>
-                !parameters.Any(x => x.Type == p.Key)).ToArray();
+                !parameters.Any(x => x.Name == p.Key)).ToArray();
             foreach (var parameter in unusedParameters)
                 parameterDocs.Remove(parameter.Key);
         }

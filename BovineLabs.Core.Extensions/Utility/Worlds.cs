@@ -26,5 +26,21 @@ namespace BovineLabs.Core
         public const WorldSystemFilterFlags All = SimulationEditor | Service;
 
         public const WorldFlags ServiceWorld = (WorldFlags)(1 << 16) | WorldFlags.Live;
+
+        /// <summary> Determines whether a world is a service world. </summary>
+        /// <param name="world">The world instance to check.</param>
+        /// <returns>True if the world has the <see cref="Worlds.ServiceWorld" /> flag.</returns>
+        public static bool IsServiceWorld(this World world)
+        {
+            return (world.Flags & ServiceWorld) == ServiceWorld;
+        }
+
+        /// <summary> Determines whether a world is a service world. </summary>
+        /// <param name="world">The world instance to check.</param>
+        /// <returns>True if the world has the <see cref="Worlds.ServiceWorld" /> flag.</returns>
+        public static bool IsServiceWorld(this WorldUnmanaged world)
+        {
+            return (world.Flags & ServiceWorld) == ServiceWorld;
+        }
     }
 }

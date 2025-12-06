@@ -3,7 +3,6 @@
 // </copyright>
 
 #if !BL_DISABLE_CAMERA
-
 namespace BovineLabs.Core.Camera
 {
     using Unity.Mathematics;

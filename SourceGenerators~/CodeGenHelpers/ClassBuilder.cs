@@ -85,6 +85,8 @@ namespace CodeGenHelpers
 
         public bool IsSealed { get; private set; }
 
+        public bool IsReadOnly { get; private set; }
+
         public ClassBuilder WithSummary(string summary)
         {
             _xmlDoc = new SummaryDocumentationComment { Summary = summary };
@@ -106,6 +108,12 @@ namespace CodeGenHelpers
         public ClassBuilder Sealed()
         {
             IsSealed = true;
+            return this;
+        }
+
+        public ClassBuilder ReadOnly(bool isReadOnly = true)
+        {
+            IsReadOnly = isReadOnly;
             return this;
         }
 
@@ -301,7 +309,8 @@ namespace CodeGenHelpers
 
         public ClassBuilder AddNestedClass(ITypeSymbol typeSymbol) =>
             AddNestedClass(typeSymbol.Name, true, typeSymbol.DeclaredAccessibility)
-                .OfType(typeSymbol.TypeKind);
+                .OfType(typeSymbol.TypeKind)
+                .ReadOnly(typeSymbol.IsReadOnly);
 
         public ClassBuilder AddNestedClass(string name, bool partial, Accessibility? accessModifier = null)
         {
@@ -370,6 +379,7 @@ namespace CodeGenHelpers
                 IsStatic ? "static" : null,
                 IsSealed ? "sealed" : null,
                 IsAbstract ? "abstract" : null,
+                IsReadOnly && Kind == TypeKind.Struct ? "readonly" : null,
                 _isPartial ? "partial" : null,
                 (Kind == TypeKind.Struct ? "struct" : Kind.ToString()).ToLowerInvariant(), // Unity breaks here with Structure
                 $"{Name}{_generics}",

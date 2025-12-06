@@ -15,16 +15,12 @@ namespace BovineLabs.Core.Input
     using UnityEngine.InputSystem;
     using UnityEngine.InputSystem.Utilities;
     using Object = UnityEngine.Object;
-#if UNITY_PHYSICS
-    using Ray = Unity.Physics.Ray;
-#endif
 
     [WorldSystemFilter(WorldSystemFilterFlags.Presentation)]
     [UpdateAfter(typeof(CameraSystemGroup))]
     [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
     public partial class DefaultInputSystem : SystemBase
     {
-        private InputDefault input;
         private InputCommon inputCommon;
 
         private IDisposable anyButtonPress;
@@ -34,8 +30,8 @@ namespace BovineLabs.Core.Input
         /// <inheritdoc />
         protected override void OnCreate()
         {
-            this.RequireForUpdate<InputDefault>();
             this.RequireForUpdate(SystemAPI.QueryBuilder().WithAll<CameraMain, Camera>().Build());
+            this.EntityManager.CreateEntity(typeof(InputCommon));
 
             // Start out of the screen until actual input occurs
             // This stops being moused out and thinking you are near an edge in game view
@@ -53,10 +49,10 @@ namespace BovineLabs.Core.Input
         /// <inheritdoc />
         protected override void OnStartRunning()
         {
-            this.input = SystemAPI.GetSingleton<InputDefault>();
-            if (this.input.CursorPosition.Value != null)
+            var input = InputCommonSettings.I;
+            if (input.CursorPosition != null)
             {
-                this.input.CursorPosition.Value.action.performed += this.OnCursorPositionPerformed;
+                input.CursorPosition.action.performed += this.OnCursorPositionPerformed;
             }
             else
             {
@@ -69,9 +65,9 @@ namespace BovineLabs.Core.Input
         /// <inheritdoc/>
         protected override void OnStopRunning()
         {
-            if (this.input.CursorPosition.Value != null)
+            if (InputCommonSettings.I.CursorPosition != null)
             {
-                this.input.CursorPosition.Value.action.performed -= this.OnCursorPositionPerformed;
+                InputCommonSettings.I.CursorPosition.action.performed -= this.OnCursorPositionPerformed;
             }
 
             this.anyButtonPress!.Dispose();
@@ -93,7 +89,6 @@ namespace BovineLabs.Core.Input
 
             this.inputCommon.ApplicationFocus = this.focus.Value;
 
-#if UNITY_PHYSICS
             if (math.all(this.inputCommon.CursorCameraViewPoint))
             {
                 // ScreenPointToRay fails if out of bounds so we clamp it.
@@ -103,17 +98,12 @@ namespace BovineLabs.Core.Input
                     : math.clamp(this.inputCommon.CursorScreenPoint, float2.zero, this.inputCommon.CursorScreenPoint);
 
                 var cameraRay = camera.ScreenPointToRay((Vector2)screenPointForRay);
-                this.inputCommon.CameraRay = new Ray
-                {
-                    Origin = cameraRay.origin,
-                    Displacement = cameraRay.direction,
-                };
+                this.inputCommon.CameraRay = cameraRay;
             }
             else
             {
                 this.inputCommon.CameraRay = default;
             }
-#endif
 
             SystemAPI.SetSingleton(this.inputCommon);
 

@@ -22,6 +22,7 @@ namespace BovineLabs.Core.Editor.Utility
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
+        [MainToolbarPreset]
         [MainToolbarElement(ReloadPath, defaultDockPosition = MainToolbarDockPosition.Middle)]
         [UsedImplicitly]
         private static MainToolbarElement Reload()

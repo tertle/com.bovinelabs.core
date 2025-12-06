@@ -13,14 +13,14 @@ namespace BovineLabs.Core.Input
     {
         protected override void OnCreate()
         {
-            this.RequireForUpdate<InputDefault>();
+            this.EntityManager.CreateEntity(typeof(InputActionMapEnable));
         }
 
         /// <inheritdoc />
         protected override void OnStartRunning()
         {
             // Disable all action maps by default
-            var inputAsset = SystemAPI.GetSingleton<InputDefault>().Asset;
+            var inputAsset = InputCommonSettings.I.Asset;
 
             if (inputAsset == null)
             {
@@ -29,13 +29,12 @@ namespace BovineLabs.Core.Input
                 return;
             }
 
-            inputAsset.Value.Disable();
+            inputAsset.Disable();
 
             // Enable defaults
-            var map = SystemAPI.GetSingletonBuffer<InputDefaultEnabled>();
-            foreach (var m in map)
+            foreach (var actionMap in InputCommonSettings.I.DefaultEnabled)
             {
-                this.SetInputEnable(inputAsset, m.ActionMap, true);
+                this.SetInputEnable(inputAsset, actionMap, true);
             }
         }
 
@@ -48,7 +47,7 @@ namespace BovineLabs.Core.Input
                 return;
             }
 
-            var inputAsset = SystemAPI.GetSingleton<InputDefault>().Asset;
+            var inputAsset = InputCommonSettings.I.Asset;
             if (inputAsset == null)
             {
                 return;

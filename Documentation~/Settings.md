@@ -7,6 +7,7 @@ The Settings system provides a framework for managing configuration data in Unit
 **Key Features:**
 - ScriptableObject-based settings with organized editor interface
 - Automatic creation and management of settings assets
+- Global singleton settings that initialize automatically and are included in builds
 - World targeting to control which ECS worlds receive settings
 - Integrated with SubScenes for easy world management
 
@@ -14,9 +15,11 @@ The Settings system provides a framework for managing configuration data in Unit
 
 - **ISettings**: Base interface for all settings
 - **SettingsBase**: Abstract base class for ECS-integrated settings
+- **SettingsSingleton**: Base class for global settings assets with automatic initialization
 - **SettingsAuthoring**: MonoBehaviour for configuring world-specific settings
 - **SettingsGroupAttribute**: Categorizes settings in the editor window
 - **SettingsWorldAttribute**: Specifies target worlds for settings
+- **SettingSubDirectoryAttribute**: Places generated assets into a subfolder under the settings root
 
 ## Creating Settings
 
@@ -64,6 +67,10 @@ public class GameplaySettings : SettingsBase
 2. Settings are automatically created in `Assets/Settings/Settings` folder
 3. Configure values in the inspector panel
 
+### Asset Organization
+
+Apply `[SettingSubDirectory("UI")]` (or any folder name) to a settings type to place its asset inside `Assets/Settings/Settings/UI`. You can also override the root directory through `BovineLabs → Settings → Core → Editor Settings` in the Paths section, which `EditorSettingsUtility` uses whenever it creates or locates assets.
+
 ### ECS World Integration
 
 1. Create a subscene for your target world(s)
@@ -72,7 +79,7 @@ public class GameplaySettings : SettingsBase
 
 ### Automatic Assignment
 
-Settings can be automatically assigned to world-specific SettingsAuthoring prefabs:
+`SettingsBase` assets are automatically injected into the default or world-specific `SettingsAuthoring` prefabs defined in `Core → Editor Settings` whenever the settings window touches them. If assignments fall out of sync (for example after renaming worlds or manually editing the prefabs) you can rebuild them manually:
 
 1. Create prefabs with `SettingsAuthoring` components
 2. Navigate to `BovineLabs → Settings → Core → Editor Settings`
@@ -98,15 +105,35 @@ var gameSettings = AuthoringSettingsUtility.GetSettings<GameplaySettings>();
 var settings = SystemAPI.GetSingleton<GameplayData>();
 ```
 
-### Resource Settings
-For settings accessible through Unity's Resources system:
+**Global Singletons:**
+```csharp
+var inputActions = ControlSettings.I.Asset;
+```
+
+## SettingsSingleton
+
+Use `SettingsSingleton<T>` for global data that needs to exist before worlds are created (InputAction assets, UI configuration, lookup tables, etc.). These assets still implement `ISettings`, so they appear in the Settings window, follow `[SettingsGroup]`, and are created in the same directory as other settings.
+
+### Creating a Singleton
 
 ```csharp
-[ResourceSettings("MyGame")]
-public class ResourceGameSettings : ScriptableObject, ISettings
+public class ControlSettings : SettingsSingleton<ControlSettings>
 {
-    // Implementation
+    [SerializeField] private InputActionAsset asset;
+    [SerializeField] private ControlSchema[] schemas = Array.Empty<ControlSchema>();
+
+    public InputActionAsset Asset => this.asset;
+    public IReadOnlyList<ControlSchema> Schemas => this.schemas;
 }
 ```
 
-Access via `Resources.Load<ResourceGameSettings>("MyGame/ResourceGameSettings")`.
+Create or open the asset from the Settings window and configure it like any other ScriptableObject. Access it anywhere with `ControlSettings.I`.
+
+### Lifetime and Initialization
+
+- `SettingsSingleton` uses `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]` and `[InitializeOnLoadMethod]` to call `Initialize` for every asset before gameplay code executes, so `ControlSettings.I` is valid immediately in both the editor and players.
+- Only one asset per type should exist; the settings window enforces this when it creates the asset.
+
+### Build Inclusion
+
+During `BuildPlayer`, `CoreBuildSetup` temporarily adds every `SettingsSingleton` asset to `PlayerSettings.preloadedAssets`, guaranteeing the ScriptableObjects are included in the player build without having to reference them from scenes or Resources. After the build finishes, the processor removes those temporary entries so project settings stay clean.

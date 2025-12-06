@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <ui:VisualElement data-source-type="BovineLabs.Core.Editor.Welcome.PackageElement, BovineLabs.Core.Editor" class="bl-library-card">
+        <ui:VisualElement picking-mode="Ignore" class="bl-library-card__row">
+            <ui:Label text="Title" name="Title" binding-path="Title" picking-mode="Ignore" class="bl-library-card__title"/>
+            <ui:Button text="Install" name="InstallButton" class="bl-button bl-button--primary bl-library-card__install bl-url"/>
+        </ui:VisualElement>
+        <ui:Label text="Description" name="Description" binding-path="Description" picking-mode="Ignore" class="bl-library-card__body"/>
+    </ui:VisualElement>
+</ui:UXML>

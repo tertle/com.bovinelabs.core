@@ -24,6 +24,12 @@ namespace BovineLabs.Core.Settings
         {
             Assert.AreEqual(this.GetType(), typeof(T));
             I = this as T;
+
+            this.OnInitialize();
+        }
+
+        protected virtual void OnInitialize()
+        {
         }
     }
 
@@ -64,7 +70,6 @@ namespace BovineLabs.Core.Settings
         }
 
 #if UNITY_EDITOR
-
         [InitializeOnLoadMethod]
         private static void InitializeInEditor()
         {

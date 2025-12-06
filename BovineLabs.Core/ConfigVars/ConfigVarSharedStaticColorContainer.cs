@@ -29,8 +29,8 @@ namespace BovineLabs.Core.ConfigVars
         /// <inheritdoc />
         string IConfigVarContainer.StringValue
         {
-            get => ConfigVarAttribute.ColorToString(this.field.Data);
-            set => this.field.Data = ConfigVarAttribute.StringToColor(value);
+            get => ConfigVarAttribute.RectToVector4(this.field.Data);
+            set => this.field.Data = ConfigVarAttribute.StringToVector4(value);
         }
 
         /// <inheritdoc/>

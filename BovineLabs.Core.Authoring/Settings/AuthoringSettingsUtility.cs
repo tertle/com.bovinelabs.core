@@ -30,17 +30,42 @@ namespace BovineLabs.Core.Authoring.Settings
                 return (T)cached;
             }
 
-            var settings = GetSettings<T>(type);
-            CachedSettings.Add(type, settings);
-            return settings;
+            var result = TryGetSettings<T>(type, out var settings);
+            if (!result)
+            {
+                throw new Exception($"Settings not found for {typeof(T)}, ensure they've been created by opening the settings window");
+            }
+
+            CachedSettings.Add(type, settings!);
+            return settings!;
         }
 
-        private static T GetSettings<T>(Type type)
+        /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
+        /// <param name="settings"> The settings if found. </param>
+        /// <typeparam name="T"> The settings type. </typeparam>
+        /// <returns> True if settings is created. </returns>
+        /// <exception cref="Exception"> Thrown if more than 1 instance found in project. </exception>
+        public static bool TryGetSettings<T>(out T? settings)
+            where T : ScriptableObject, ISettings
+        {
+            var type = typeof(T);
+            return TryGetSettings(type, out settings);
+        }
+
+        private static bool TryGetSettings<T>(Type type, out T? settings)
             where T : ScriptableObject, ISettings
         {
             var filter = type.Namespace == null ? type.Name : $"{type.Namespace}.{type.Name}";
             var assets = AssetDatabase.FindAssets($"t:{filter}");
-            return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(assets.First()));
+
+            if (assets.Length == 0)
+            {
+                settings = null;
+                return false;
+            }
+
+            settings = AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(assets.First()));
+            return true;
         }
     }
 }

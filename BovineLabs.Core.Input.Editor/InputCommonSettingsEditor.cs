@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Input.Editor
     using System.Linq;
     using BovineLabs.Core.Editor.Inspectors;
     using BovineLabs.Core.Input;
-    using BovineLabs.Core.Input.Authoring;
     using UnityEditor;
     using UnityEngine.UIElements;
 

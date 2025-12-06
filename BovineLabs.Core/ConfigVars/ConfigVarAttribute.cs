@@ -63,15 +63,15 @@ namespace BovineLabs.Core.ConfigVars
 
         /// <summary> Initializes a new instance of the <see cref="ConfigVarAttribute" /> class. </summary>
         /// <param name="name"> The name and key of the variable. </param>
-        /// <param name="r"> The default red color. </param>
-        /// <param name="g"> The default green color. </param>
-        /// <param name="b"> The default blue color. </param>
-        /// <param name="a"> The default alpha color. </param>
+        /// <param name="x"> The default x value. </param>
+        /// <param name="y"> The default y value. </param>
+        /// <param name="z"> The default z value. </param>
+        /// <param name="w"> The default w value. </param>
         /// <param name="description"> A description of the variable. </param>
         /// <param name="isReadOnly"> Is the variable readonly. </param>
         /// <param name="isHidden"> Is the variable hidden from the config var window. </param>
-        public ConfigVarAttribute(string name, float r, float g, float b, float a, string description, bool isReadOnly = false, bool isHidden = false)
-            : this(name, ColorToString(new Color(r, g, b, a)), description, isReadOnly, isHidden)
+        public ConfigVarAttribute(string name, float x, float y, float z, float w, string description, bool isReadOnly = false, bool isHidden = false)
+            : this(name, RectToVector4(new Vector4(x, y, z, w)), description, isReadOnly, isHidden)
         {
         }
 
@@ -120,16 +120,16 @@ namespace BovineLabs.Core.ConfigVars
             }
         }
 
-        public static string ColorToString(Color color)
+        public static string RectToVector4(Vector4 v4)
         {
             return
-                $"{color.r.ToString(CultureInfo.InvariantCulture)}:{color.g.ToString(CultureInfo.InvariantCulture)}:" +
-                $"{color.b.ToString(CultureInfo.InvariantCulture)}:{color.a.ToString(CultureInfo.InvariantCulture)}";
+                $"{v4.x.ToString(CultureInfo.InvariantCulture)}:{v4.y.ToString(CultureInfo.InvariantCulture)}:" +
+                $"{v4.z.ToString(CultureInfo.InvariantCulture)}:{v4.w.ToString(CultureInfo.InvariantCulture)}";
         }
 
-        public static Color StringToColor(string color)
+        public static Vector4 StringToVector4(string s)
         {
-            var parts = color.Split(':');
+            var parts = s.Split(':');
             if (parts.Length != 4)
             {
                 return default;
@@ -140,7 +140,7 @@ namespace BovineLabs.Core.ConfigVars
             float.TryParse(parts[2], NumberStyles.Any, CultureInfo.InvariantCulture, out var b);
             float.TryParse(parts[3], NumberStyles.Any, CultureInfo.InvariantCulture, out var a);
 
-            return new Color(r, g, b, a);
+            return new Vector4(r, g, b, a);
         }
     }
 }

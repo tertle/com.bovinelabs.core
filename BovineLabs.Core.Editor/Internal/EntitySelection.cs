@@ -81,7 +81,11 @@ namespace BovineLabs.Core.Editor.Internal
             }
         }
 
+#if UNITY_6000_4_OR_NEWER
+        public static void GetAllSelectionsInWorld(World world, NativeList<Entity> entities, NativeList<EntityId> instanceIds)
+#else
         public static void GetAllSelectionsInWorld(World world, NativeList<Entity> entities, NativeList<int> instanceIds)
+#endif
         {
             foreach (var s in Selection.objects)
             {
@@ -99,7 +103,11 @@ namespace BovineLabs.Core.Editor.Internal
 
                     case GameObject go:
                     {
+#if UNITY_6000_4_OR_NEWER
+                        instanceIds.Add(go.GetEntityId());
+#else
                         instanceIds.Add(go.GetInstanceID());
+#endif
                         break;
                     }
                 }

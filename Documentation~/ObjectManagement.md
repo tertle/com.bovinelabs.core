@@ -146,7 +146,7 @@ Managed via K in the Object Categories window under `BovineLabs -> Settings`.
 Access via the standard K system:
 
 ```cs
-var flag = K<ObjectCategories>.NameToKey("actor");
+var flag = ObjectCategories.NameToKey("actor");
 ```
 
 The `[ObjectCategories(bool flag = true)]` attribute provides a custom drawer for selecting categories in editors.

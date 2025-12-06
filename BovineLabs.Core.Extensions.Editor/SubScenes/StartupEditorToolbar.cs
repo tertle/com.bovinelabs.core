@@ -36,6 +36,7 @@ namespace BovineLabs.Core.Editor.SubScenes
         }
 
         [UsedImplicitly]
+        [MainToolbarPreset]
         [MainToolbarElement(StartupPath, defaultDockPosition = MainToolbarDockPosition.Middle)]
         public static MainToolbarElement Startup()
         {

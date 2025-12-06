@@ -27,7 +27,12 @@
   "excludePlatforms": [],
   "allowUnsafeCode": true,
   "overrideReferences": false,
-  "precompiledReferences": [],
+  "precompiledReferences": [
+    "Unity.CompilationPipeline.Common.dll",
+    "Mono.Cecil.dll",
+    "Mono.Cecil.Rocks.dll",
+    "Mono.Cecil.Pdb.dll"
+  ],
   "autoReferenced": false,
   "defineConstraints": [],
   "versionDefines": [

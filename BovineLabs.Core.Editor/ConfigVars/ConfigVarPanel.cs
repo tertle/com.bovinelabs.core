@@ -111,6 +111,8 @@ namespace BovineLabs.Core.Editor.ConfigVars
                 SharedStatic<float> sharedStatic => SetupField(new FloatField(), configVar, sharedStatic),
                 SharedStatic<bool> sharedStatic => SetupField(new Toggle(), configVar, sharedStatic),
                 SharedStatic<Color> sharedStatic => SetupColorField(configVar, sharedStatic),
+                SharedStatic<Vector4> sharedStatic => SetupVector4Field(configVar, sharedStatic),
+                SharedStatic<Rect> sharedStatic => SetupRectField(configVar, sharedStatic),
                 SharedStatic<FixedString32Bytes> sharedStatic => SetupTextField(configVar, sharedStatic),
                 SharedStatic<FixedString64Bytes> sharedStatic => SetupTextField(configVar, sharedStatic),
                 SharedStatic<FixedString128Bytes> sharedStatic => SetupTextField(configVar, sharedStatic),
@@ -138,6 +140,19 @@ namespace BovineLabs.Core.Editor.ConfigVars
             var field = new ColorField();
             return SetupField(field, configVar, new ConfigVarColorBinding(field, configVar, sharedStatic));
         }
+
+        private static BaseField<Vector4> SetupVector4Field(ConfigVarAttribute configVar, SharedStatic<Vector4> sharedStatic)
+        {
+            var field = new Vector4Field();
+            return SetupField(field, configVar, new ConfigVarVector4Binding(field, configVar, sharedStatic));
+        }
+
+        private static BaseField<Rect> SetupRectField(ConfigVarAttribute configVar, SharedStatic<Rect> sharedStatic)
+        {
+            var field = new RectField();
+            return SetupField(field, configVar, new ConfigVarRectBinding(field, configVar, sharedStatic));
+        }
+
 
         private static BaseField<T> SetupField<T>(BaseField<T> field, ConfigVarAttribute configVar, IConfigVarBinding<T> binding)
         {

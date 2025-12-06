@@ -7,9 +7,6 @@ namespace BovineLabs.Core.Input
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
-#if UNITY_PHYSICS
-    using Ray = Unity.Physics.Ray;
-#endif
 
     public struct InputCommon : IComponentData
     {
@@ -37,11 +34,10 @@ namespace BovineLabs.Core.Input
         /// <summary> Gets a value indicating whether the application has focus. </summary>
         public bool ApplicationFocus;
 
-#if UNITY_PHYSICS
         /// <summary> A ray going from camera through the current <see cref="CursorScreenPoint" /> using <see cref="Camera.ScreenPointToRay(Vector3)" />. </summary>
         /// <remarks> Displacement is set as a unit vector. </remarks>
-        public Ray CameraRay;
-#endif
+        public CameraRay CameraRay;
+
         /// <summary> Gets a value indicating whether any button was pressed. </summary>
         public bool AnyButtonPress;
 

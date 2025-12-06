@@ -8,6 +8,7 @@ namespace BovineLabs.Core.SingletonCollection
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+    using Unity.Jobs;
 
     public interface ISingletonCollectionUtil<TC>
         where TC : unmanaged
@@ -19,12 +20,15 @@ namespace BovineLabs.Core.SingletonCollection
         where T : unmanaged, ISingletonCollection<TC>
         where TC : unmanaged
     {
+        private readonly JobHandle* previousHandle;
         private DoubleRewindableAllocators allocator;
         private EntityQuery query;
 
-        public SingletonCollectionUtil(ref SystemState state, int initialSizeInBytes = 16 * 1024, Allocator allocator = Allocator.Persistent)
+        public SingletonCollectionUtil(ref SystemState state, int initialSizeInBytes = 16 * 1024)
         {
-            this.allocator = new DoubleRewindableAllocators(allocator, initialSizeInBytes);
+            this.allocator = new DoubleRewindableAllocators(Allocator.Persistent, initialSizeInBytes);
+            this.previousHandle = AllocatorManager.Allocate<JobHandle>(Allocator.Persistent);
+            *this.previousHandle = default;
 
             this.ContainersUnsafe = UnsafeList<TC>.Create(1, Allocator.Persistent);
 
@@ -46,9 +50,12 @@ namespace BovineLabs.Core.SingletonCollection
         /// <summary> Gets the underlying container. Don't use this unless you really know what you're doing. </summary>
         public UnsafeList<TC>* ContainersUnsafe { get; }
 
-        public void ClearRewind()
+        public void ClearRewind(JobHandle handle)
         {
             this.ContainersUnsafe->Clear();
+
+            this.previousHandle->Complete();
+            *this.previousHandle = handle;
 
             this.allocator.Update();
             var s = this.query.GetSingletonRW<T>();
@@ -57,8 +64,9 @@ namespace BovineLabs.Core.SingletonCollection
 
         public void Dispose()
         {
-            UnsafeList<TC>.Destroy(this.ContainersUnsafe);
+            AllocatorManager.Free(Allocator.Persistent, this.previousHandle);
 
+            UnsafeList<TC>.Destroy(this.ContainersUnsafe);
             this.allocator.Dispose();
         }
     }

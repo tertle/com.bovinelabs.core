@@ -15,8 +15,6 @@ namespace BovineLabs.Core.ConfigVars
     using Debug = UnityEngine.Debug;
 #if UNITY_EDITOR
     using UnityEditor;
-#else
-    using UnityEngine;
 #endif
 
     /// <summary> The manager for the config vars. Is pretty automated. </summary>
@@ -160,6 +158,8 @@ namespace BovineLabs.Core.ConfigVars
                 SharedStatic<float> floatField => new ConfigVarSharedStaticContainer<float>(floatField),
                 SharedStatic<bool> boolField => new ConfigVarSharedStaticContainer<bool>(boolField),
                 SharedStatic<Color> colorField => new ConfigVarSharedStaticColorContainer(colorField),
+                SharedStatic<Vector4> colorField => new ConfigVarSharedStaticVector4Container(colorField),
+                SharedStatic<Rect> colorField => new ConfigVarSharedStaticRectContainer(colorField),
                 SharedStatic<FixedString32Bytes> stringField32 => new ConfigVarSharedStaticStringContainer<FixedString32Bytes>(stringField32),
                 SharedStatic<FixedString64Bytes> stringField64 => new ConfigVarSharedStaticStringContainer<FixedString64Bytes>(stringField64),
                 SharedStatic<FixedString128Bytes> stringField128 => new ConfigVarSharedStaticStringContainer<FixedString128Bytes>(stringField128),

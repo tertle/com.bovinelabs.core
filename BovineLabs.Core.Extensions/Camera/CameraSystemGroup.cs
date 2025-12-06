@@ -8,7 +8,7 @@ namespace BovineLabs.Core.Camera
     using BovineLabs.Core.Groups;
     using Unity.Entities;
 
-    [WorldSystemFilter(WorldSystemFilterFlags.Presentation, WorldSystemFilterFlags.Presentation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.Presentation | WorldSystemFilterFlags.Editor, WorldSystemFilterFlags.Presentation)]
     [UpdateInGroup(typeof(BeginSimulationSystemGroup))]
     public partial class CameraSystemGroup : ComponentSystemGroup
     {

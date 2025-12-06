@@ -73,7 +73,8 @@ the code is regenerated.";
             var builder = Create(typeSymbol.ContainingNamespace, indentStyle);
             return builder.AddClass(typeSymbol.Name)
                 .WithAccessModifier(typeSymbol.DeclaredAccessibility)
-                .OfType(typeSymbol.TypeKind);
+                .OfType(typeSymbol.TypeKind)
+                .ReadOnly(typeSymbol.IsReadOnly);
         }
 
         public CodeBuilder AddNamespaceImport(string importedNamespace)

@@ -64,6 +64,15 @@ namespace BovineLabs.Core.Collections
             return hashSet;
         }
 
+        public static UnsafeHashSet<T>* CreateHashSet<T>(int initialCapacity, int minGrowth, AllocatorManager.AllocatorHandle allocator)
+            where T : unmanaged, IEquatable<T>
+        {
+            var hashSet = AllocatorManager.Allocate<UnsafeHashSet<T>>(allocator);
+            *hashSet = default;
+            hashSet->m_Data.Init(initialCapacity, 0, minGrowth, allocator);
+            return hashSet;
+        }
+
         public static void Destroy<T>(UnsafeHashSet<T>* hashMap)
             where T : unmanaged, IEquatable<T>
         {

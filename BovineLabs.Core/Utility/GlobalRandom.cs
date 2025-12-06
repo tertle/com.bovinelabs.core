@@ -367,7 +367,7 @@ namespace BovineLabs.Core.Utility
 #if UNITY_EDITOR
         [InitializeOnLoadMethod]
 #endif
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         public static void Initialize()
         {
             if (ThreadRandoms.Data.IsCreated)
