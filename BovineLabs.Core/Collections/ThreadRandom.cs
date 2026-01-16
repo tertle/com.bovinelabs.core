@@ -38,7 +38,8 @@ namespace BovineLabs.Core.Collections
         public ref Random GetRandomRef()
         {
 #if UNITY_EDITOR
-            Assert.IsTrue(JobsUtility.IsExecutingJob || UnityEditorInternal.InternalEditorUtility.CurrentThreadIsMainThread());
+            UnityEngine.Debug.Assert(JobsUtility.IsExecutingJob || UnityEditorInternal.InternalEditorUtility.CurrentThreadIsMainThread(),
+                "Can only be used on main or worker threads");
 #endif
             ref var randoms = ref UnsafeUtility.ArrayElementAsRef<Randoms>(this.buffer, JobsUtility.ThreadIndex);
             return ref randoms.Random;

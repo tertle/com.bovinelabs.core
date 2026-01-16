@@ -11,12 +11,11 @@ namespace BovineLabs.Core.Editor.SubScenes
     using UnityEngine.SceneManagement;
     using EditorSettings = BovineLabs.Core.Editor.Settings.EditorSettings;
 
-    [InitializeOnLoad]
     public static class StartupSceneSwap
     {
         private static string sceneAssetPath = string.Empty;
 
-        static StartupSceneSwap()
+        internal static void Initialize()
         {
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }

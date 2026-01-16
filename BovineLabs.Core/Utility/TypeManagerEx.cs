@@ -20,9 +20,7 @@ namespace BovineLabs.Core.Utility
         private static UnsafeList<FixedString128Bytes> typeNames;
         private static UnsafeList<FixedString128Bytes> systemTypeNames;
 
-#if UNITY_EDITOR
-        [UnityEditor.InitializeOnLoadMethod]
-#else
+#if !UNITY_EDITOR
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded)]
 #endif
         public static void Initialize()

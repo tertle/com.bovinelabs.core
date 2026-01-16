@@ -4,7 +4,6 @@
 
 namespace BovineLabs.Core.Editor.Internal
 {
-    using BovineLabs.Core.Internal;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using Unity.Entities.Serialization;
@@ -17,7 +16,7 @@ namespace BovineLabs.Core.Editor.Internal
             where T : Object
         {
 #if UNITY_6000_3_OR_NEWER
-            var guid = GlobalObjectId.GetGlobalObjectIdSlow((EntityId)unityObjectRef.GetInstanceId());
+            var guid = GlobalObjectId.GetGlobalObjectIdSlow(UnsafeUtility.As<int, EntityId>(ref unityObjectRef.Id.instanceId));
 #else
             var guid = GlobalObjectId.GetGlobalObjectIdSlow(unityObjectRef.GetInstanceId());
 #endif

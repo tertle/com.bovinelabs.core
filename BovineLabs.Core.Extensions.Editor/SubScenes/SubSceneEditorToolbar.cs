@@ -43,7 +43,7 @@ namespace BovineLabs.Core.Editor.SubScenes
 
         static SubSceneEditorToolbar()
         {
-            ConfigVarManager.Init();
+            ConfigVarManager.Initialize();
             SceneManager.sceneLoaded += (_, _) => CleanupOldSubScenes();
             EditorApplication.playModeStateChanged += SceneOnPlayModeStatusChanged;
         }

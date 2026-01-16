@@ -5,7 +5,7 @@
 BurstTrampoline provides a lightweight bridge from Burst-compiled code to managed delegates. It keeps a static invoker alive and pins the managed target with a `GCHandle`, letting you jump out of Burst easily.
 
 **Highlights:**
-- Works with zero to three input parameters through `BurstTrampoline`, `BurstTrampoline<T>`, `BurstTrampoline<T1, T2>`, and `BurstTrampoline<T1, T2, T3>`
+- Works with zero to four input parameters through `BurstTrampoline`, `BurstTrampoline<T>`, `BurstTrampoline<T1, T2>`, `BurstTrampoline<T1, T2, T3>`, and `BurstTrampoline<T1, T2, T3, T4>`
 - `BurstTrampolineOut` variants let managed code return data back to Burst callers
 
 ## Example

@@ -6,11 +6,11 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <OutDir>..\..\Libraries\CodeGenHelpers\</OutDir>
+      <OutDir>..\..\BovineLabs.Core\CodeGenHelpers\</OutDir>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <OutDir>..\..\Libraries\CodeGenHelpers\</OutDir>
+      <OutDir>..\..\BovineLabs.Core\CodeGenHelpers\</OutDir>
     </PropertyGroup>
 
     <ItemGroup>

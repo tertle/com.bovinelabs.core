@@ -4,11 +4,13 @@
 
 namespace BovineLabs.Core.Tests.Iterators
 {
+    using System;
     using System.Collections.Generic;
     using BovineLabs.Core.Iterators;
     using BovineLabs.Testing;
     using NUnit.Framework;
     using Unity.Collections;
+    using Unity.Collections.LowLevel.Unsafe;
 
     public class DynamicHashMapTests : ECSTestsFixture
     {
@@ -197,16 +199,103 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.AreEqual(count, hashMap.Count);
         }
 
+        [Test]
+        public unsafe void ValuesPointer_IsAlignedToValueType()
+        {
+            var hashMap = this.CreateHashMapLong();
+
+            var align = UnsafeUtility.AlignOf<long>();
+            var valuesPtr = (ulong)hashMap.Helper->Values;
+            Assert.AreEqual(0u, valuesPtr % (ulong)align);
+        }
+
+        [Test]
+        public unsafe void Resize_WithHoles_RebuildsAndClearsFreeList()
+        {
+            const int count = 256;
+            var hashMap = this.CreateHashMap();
+
+            for (var i = 0; i < count; i++)
+            {
+                hashMap.Add(i, (byte)i);
+            }
+
+            // Create holes.
+            for (var i = 0; i < count; i += 2)
+            {
+                Assert.IsTrue(hashMap.Remove(i));
+            }
+
+            Assert.AreEqual(count / 2, hashMap.Count);
+
+            // Force a resize while the map has holes.
+            hashMap.Capacity *= 2;
+
+            var helper = hashMap.Helper;
+            Assert.AreEqual(-1, helper->FirstFreeIdx);
+            Assert.AreEqual(helper->Count, helper->AllocatedIndex);
+
+            for (var i = 1; i < count; i += 2)
+            {
+                Assert.IsTrue(hashMap.TryGetValue(i, out var value));
+                Assert.AreEqual((byte)i, value);
+            }
+
+            for (var i = 0; i < count; i += 2)
+            {
+                Assert.IsFalse(hashMap.TryGetValue(i, out _));
+            }
+        }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+        [Test]
+        public void AddBatchUnsafe_WithHoles_Throws()
+        {
+            var hashMap = this.CreateHashMap();
+
+            for (var i = 0; i < 32; i++)
+            {
+                hashMap.Add(i, (byte)i);
+            }
+
+            // Create holes.
+            for (var i = 0; i < 32; i += 2)
+            {
+                Assert.IsTrue(hashMap.Remove(i));
+            }
+
+            var keys = new NativeArray<int>(2, Allocator.Temp);
+            var values = new NativeArray<byte>(2, Allocator.Temp);
+            keys[0] = 100;
+            keys[1] = 101;
+            values[0] = 1;
+            values[1] = 2;
+
+            Assert.Throws<InvalidOperationException>(() => hashMap.AddBatchUnsafe(keys, values));
+        }
+#endif
+
         private DynamicHashMap<int, byte> CreateHashMap()
         {
             var entity = this.Manager.CreateEntity(typeof(TestHashMap));
             return this.Manager.GetBuffer<TestHashMap>(entity).InitializeHashMap<TestHashMap, int, byte>(0, MinGrowth).AsHashMap<TestHashMap, int, byte>();
         }
 
+        private DynamicHashMap<int, long> CreateHashMapLong()
+        {
+            var entity = this.Manager.CreateEntity(typeof(TestHashMapLong));
+            return this.Manager.GetBuffer<TestHashMapLong>(entity).InitializeHashMap<TestHashMapLong, int, long>(0, MinGrowth).AsHashMap<TestHashMapLong, int, long>();
+        }
+
         private struct TestHashMap : IDynamicHashMap<int, byte>
         {
             /// <inheritdoc />
             byte IDynamicHashMap<int, byte>.Value { get; }
+        }
+
+        private struct TestHashMapLong : IDynamicHashMap<int, long>
+        {
+            byte IDynamicHashMap<int, long>.Value { get; }
         }
     }
 }

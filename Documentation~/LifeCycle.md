@@ -53,6 +53,7 @@ Create systems that run on entity initialization:
 [UpdateInGroup(typeof(InitializeSystemGroup))]
 public partial struct InitializePlayerSystem : ISystem
 {
+    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         new InitializeJob().ScheduleParallel();
@@ -91,6 +92,7 @@ Trigger entity destruction by enabling the `DestroyEntity` component:
 [UpdateInGroup(typeof(SimulationSystemGroup))]
 public partial struct HealthDestroySystem : ISystem
 {
+    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         new DestroyJob().ScheduleParallel();
@@ -118,6 +120,7 @@ Perform actions on entities before they're destroyed using `DestroySystemGroup`:
 [UpdateInGroup(typeof(DestroySystemGroup))]
 public partial struct TrackDestroyedMonsterSystem : ISystem
 {
+    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         new TrackJob { Tracking = SystemAPI.GetSingleton<DestroyedMonsterList>().Map }.Schedule();
@@ -171,6 +174,7 @@ public partial struct ExplosionTimerSystem : ISystem
         destroyTimer.OnCreate(ref state);
     }
 
+    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         destroyTimer.OnUpdate(ref state);

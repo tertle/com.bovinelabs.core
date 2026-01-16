@@ -15,6 +15,9 @@ namespace BovineLabs.Core.Iterators
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
+    /// <summary> A fixed-size, collision-free hash map stored in a dynamic buffer. </summary>
+    /// <typeparam name="TKey"> The key type. </typeparam>
+    /// <typeparam name="TValue"> The value type. </typeparam>
     [DebuggerTypeProxy(typeof(DynamicPerfectHashMapDebuggerTypeProxy<,>))]
     public readonly unsafe struct DynamicPerfectHashMap<TKey, TValue> : IEnumerable<KVPair<TKey, TValue>>
         where TKey : unmanaged, IEquatable<TKey>
@@ -33,10 +36,13 @@ namespace BovineLabs.Core.Iterators
         internal DynamicPerfectHashMapHelper<TKey, TValue>* Helper { get; }
 
         /// <summary> Gets and sets values by key. </summary>
-        /// <remarks> Getting a key that is not present will throw. Setting a key that is not already present will add the key. </remarks>
         /// <param name="key"> The key to look up. </param>
         /// <value> The value associated with the key. </value>
-        /// <exception cref="ArgumentException"> For getting, thrown if the key was not present. </exception>
+        /// <remarks>
+        /// Getting a key that is not present will throw.
+        /// Setting a key that is not already present will add the key if the slot is empty; otherwise it will throw if the slot is occupied by a different key.
+        /// </remarks>
+        /// <exception cref="ArgumentException"> Thrown if the key is not present. </exception>
         public TValue this[TKey key]
         {
             get
@@ -57,9 +63,26 @@ namespace BovineLabs.Core.Iterators
                 if (Hint.Unlikely(!this.TryGetIndex(key, out var index)))
                 {
                     this.ThrowKeyNotPresent(key);
+                    return;
                 }
 
-                this.Helper->Values[index] = value;
+                var values = this.Helper->Values;
+                var current = values[index];
+
+                if (!current.Equals(this.Helper->NullValue))
+                {
+                    if (!this.Helper->Keys[index].Equals(key))
+                    {
+                        this.ThrowKeyNotPresent(key);
+                        return;
+                    }
+
+                    values[index] = value;
+                    return;
+                }
+
+                this.Helper->Keys[index] = key;
+                values[index] = value;
             }
         }
 
@@ -76,10 +99,20 @@ namespace BovineLabs.Core.Iterators
                 return false;
             }
 
-            var value = item = this.Helper->Values[index];
-            return !value.Equals(this.Helper->NullValue);
+            var value = this.Helper->Values[index];
+            if (value.Equals(this.Helper->NullValue) || !this.Helper->Keys[index].Equals(key))
+            {
+                item = default;
+                return false;
+            }
+
+            item = value;
+            return true;
         }
 
+        /// <summary> Checks whether the map contains a key. </summary>
+        /// <param name="key"> The key to look up. </param>
+        /// <returns> True if the key is present. </returns>
         public bool ContainsKey(TKey key)
         {
             this.buffer.CheckReadAccess();
@@ -89,36 +122,20 @@ namespace BovineLabs.Core.Iterators
             }
 
             var value = this.Helper->Values[index];
-            return !value.Equals(this.Helper->NullValue);
+            return !value.Equals(this.Helper->NullValue) && this.Helper->Keys[index].Equals(key);
         }
 
-        public TValue GetNoCheck(TKey key)
-        {
-            this.buffer.CheckReadAccess();
-            if (!this.TryGetIndex(key, out var index))
-            {
-                this.ThrowKeyNotPresent(key);
-                return default;
-            }
-
-            return this.Helper->Values[index];
-        }
-
-        /// <summary>
-        /// This method is not implemented. Use <see cref="GetEnumerator" /> instead.
-        /// </summary>
-        /// <returns> Throws NotImplementedException. </returns>
-        /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
+        /// <summary> This method is not implemented for this type. </summary>
+        /// <returns> An enumerator. </returns>
+        /// <exception cref="NotImplementedException"> Always thrown. </exception>
         public IEnumerator<KVPair<TKey, TValue>> GetEnumerator()
         {
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// This method is not implemented. Use <see cref="GetEnumerator" /> instead.
-        /// </summary>
-        /// <returns> Throws NotImplementedException. </returns>
-        /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
+        /// <summary> This method is not implemented for this type. </summary>
+        /// <returns> An enumerator. </returns>
+        /// <exception cref="NotImplementedException"> Always thrown. </exception>
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();
@@ -166,11 +183,15 @@ namespace BovineLabs.Core.Iterators
     {
         private readonly DynamicPerfectHashMapHelper<TKey, TValue>* helper;
 
+        /// <summary> Initializes a new instance of the <see cref="DynamicPerfectHashMapDebuggerTypeProxy{TKey, TValue}" /> class. </summary>
+        /// <param name="target"> The target map. </param>
         public DynamicPerfectHashMapDebuggerTypeProxy(DynamicPerfectHashMap<TKey, TValue> target)
         {
             this.helper = target.Helper;
         }
 
+        /// <summary> Gets the key/value pairs present in the map. </summary>
+        /// <value> A list of pairs. </value>
         public List<Pair<TKey, TValue>> Items
         {
             get

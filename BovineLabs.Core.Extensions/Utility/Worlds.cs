@@ -4,7 +4,9 @@
 
 namespace BovineLabs.Core
 {
+    using BovineLabs.Core.Extensions;
     using Unity.Entities;
+    using Unity.NetCode;
 
     public static class Worlds
     {
@@ -32,7 +34,7 @@ namespace BovineLabs.Core
         /// <returns>True if the world has the <see cref="Worlds.ServiceWorld" /> flag.</returns>
         public static bool IsServiceWorld(this World world)
         {
-            return (world.Flags & ServiceWorld) == ServiceWorld;
+            return world.Unmanaged.IsServiceWorld();
         }
 
         /// <summary> Determines whether a world is a service world. </summary>
@@ -41,6 +43,28 @@ namespace BovineLabs.Core
         public static bool IsServiceWorld(this WorldUnmanaged world)
         {
             return (world.Flags & ServiceWorld) == ServiceWorld;
+        }
+
+        /// <summary> Determines whether a world is a service world. </summary>
+        /// <param name="world">The world instance to check.</param>
+        /// <returns>True if the world has the <see cref="Worlds.ServiceWorld" /> flag.</returns>
+        public static bool IsLocalWorld(this World world)
+        {
+            return world.Unmanaged.IsLocalWorld();
+        }
+
+        /// <summary> Determines whether a world is a service world. </summary>
+        /// <param name="world">The world instance to check.</param>
+        /// <returns>True if the world has the <see cref="Worlds.ServiceWorld" /> flag.</returns>
+        public static bool IsLocalWorld(this WorldUnmanaged world)
+        {
+            // Make sure it's a game world (eliminates service + anything else custom)
+            if ((world.Flags & WorldFlags.Game) != WorldFlags.Game)
+            {
+                return false;
+            }
+
+            return !world.IsClientWorld() && !world.IsThinClientWorld() && !world.IsServerWorld();
         }
     }
 }

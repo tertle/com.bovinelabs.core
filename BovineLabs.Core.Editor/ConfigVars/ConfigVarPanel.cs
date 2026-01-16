@@ -20,6 +20,10 @@ namespace BovineLabs.Core.Editor.ConfigVars
     /// <summary> A panel that draws a collection of config vars. </summary>
     public sealed class ConfigVarPanel : ISettingsPanel
     {
+        private const string FieldClassName = "config-var__field";
+        private const string HighlightClassName = "search";
+        private const string ReadOnlyClassName = "config-var__readonly";
+
         /// <summary> Initializes a new instance of the <see cref="ConfigVarPanel" /> class. </summary>
         /// <param name="displayName"> The display name of the panel. </param>
         public ConfigVarPanel(string displayName)
@@ -52,17 +56,10 @@ namespace BovineLabs.Core.Editor.ConfigVars
                 var readOnly = attribute.IsReadOnly && EditorApplication.isPlaying;
                 var field = CreateVisualElement(attribute, fieldInfo);
 
-                // TODO move to uss
-                if (!allMatch && MatchesSearchContext(attribute.Name, searchContext))
-                {
-                    field.style.backgroundColor = ConfigVarStyle.Style.HighlightColor;
-                }
-
-                if (readOnly)
-                {
-                    // TODO
-                    // field.style.color = new StyleColor();
-                }
+                field.AddToClassList(FieldClassName);
+                var shouldHighlight = !allMatch && MatchesSearchContext(attribute.Name, searchContext);
+                field.EnableInClassList(HighlightClassName, shouldHighlight);
+                field.EnableInClassList(ReadOnlyClassName, readOnly);
 
                 this.Fields.Add((attribute, field));
                 rootElement.Add(field);
@@ -167,6 +164,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
         {
             var isEnabled = !configVar.IsReadOnly || !isPlaying;
             field.SetEnabled(isEnabled);
+            field.EnableInClassList(ReadOnlyClassName, !isEnabled);
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange state)

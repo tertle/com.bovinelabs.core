@@ -11,10 +11,17 @@ namespace BovineLabs.Core.Editor.Settings
     using UnityEditor;
     using UnityEditor.Build;
 
-    [InitializeOnLoad]
     public static class ScriptingDefineSymbolsEditor
     {
-        static ScriptingDefineSymbolsEditor()
+        public static void ApplyDefinesToAll(IReadOnlyList<string> scriptingDefines, IReadOnlyList<string> removeDefines)
+        {
+            foreach (var target in GetInstalledNamedBuildTargets())
+            {
+                ApplyDefines(target, scriptingDefines, removeDefines);
+            }
+        }
+
+        internal static void Initialize()
         {
             if (!EditorSettingsUtility.TryGetSettings<EditorSettings>(out var settings))
             {
@@ -29,14 +36,6 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             ApplyDefinesToAll(scriptingDefines, Array.Empty<string>());
-        }
-
-        public static void ApplyDefinesToAll(IReadOnlyList<string> scriptingDefines, IReadOnlyList<string> removeDefines)
-        {
-            foreach (var target in GetInstalledNamedBuildTargets())
-            {
-                ApplyDefines(target, scriptingDefines, removeDefines);
-            }
         }
 
         private static void ApplyDefines(NamedBuildTarget target, IReadOnlyList<string> addDefines, IReadOnlyList<string> removeDefines)

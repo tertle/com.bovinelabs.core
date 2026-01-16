@@ -114,17 +114,22 @@ namespace BovineLabs.Core.Iterators.Columns
             this.capacity = newCapacity;
 
             this.keysOffset = offset;
-            this.nextOffset = this.keysOffset + sizeof(T) * newCapacity;
-            this.prevOffset = this.nextOffset + sizeof(int) * newCapacity;
+            this.nextOffset = CollectionHelper.Align(this.keysOffset + (sizeof(T) * newCapacity), UnsafeUtility.AlignOf<int>());
+            this.prevOffset = CollectionHelper.Align(this.nextOffset + (sizeof(int) * newCapacity), UnsafeUtility.AlignOf<int>());
             this.head = -1;
         }
 
         int IColumn<T>.CalculateDataSize(int newCapacity)
         {
             var keySize = sizeof(T) * newCapacity;
+
+            var nextOffset = CollectionHelper.Align(keySize, UnsafeUtility.AlignOf<int>());
             var nextSize = sizeof(int) * newCapacity;
+
+            var prevOffset = CollectionHelper.Align(nextOffset + nextSize, UnsafeUtility.AlignOf<int>());
             var prevSize = sizeof(int) * newCapacity;
-            return keySize + nextSize + prevSize;
+
+            return prevOffset + prevSize;
         }
 
         void IColumn<T>.Add(T key, int idx)

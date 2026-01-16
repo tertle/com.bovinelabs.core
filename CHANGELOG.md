@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.5.1] - 2025-12-23
+
+### Added
+* Menu toggle added to WelcomeWindow
+* Welcome window config
+* Added 4 mod BurstTrampoline
+* More safety on PooledNativeList
+* BovineLabsBootstrap experimental hostworld support for netcode (if enabled)
+
+### Changed
+* Reduced InitializeOnLoad count to 1 
+* Improved configvar window styling
+
+### Fixed
+* BurstTrampoline on certain IL2CPP configs
+* CreateEditorWorld on leaving play mode
+* TryGetValue for DynamicUntypedHashMap if offsetting was > 256
+* DynamicUntypedHashMap resizeData incorrectly potentially adding too much capacity.
+
+### Removed
+* WorldAllocator
+* EditorWorldSafeShutdown
+
 ## [1.5.0] - 2025-12-06
 
 ### Added

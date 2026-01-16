@@ -5,9 +5,9 @@
 namespace BovineLabs.Core.Input.Editor
 {
     using System;
-    using System.Linq;
     using BovineLabs.Core.Editor.Inspectors;
     using BovineLabs.Core.Input;
+    using BovineLabs.Core.Utility;
     using UnityEditor;
     using UnityEngine.UIElements;
 
@@ -34,23 +34,15 @@ namespace BovineLabs.Core.Input.Editor
 
         private void Refresh()
         {
-            var baseType = typeof(IInputSettings);
-
             var property = this.serializedObject.FindProperty(SettingsProperty);
             var debugProperty = this.serializedObject.FindProperty(DebugSettingsProperty);
 
             ClearNullReferences(property);
             ClearNullReferences(debugProperty);
 
-            foreach (var type in AppDomain
-                .CurrentDomain
-                .GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(t => t != baseType)
-                .Where(t => t.IsClass && t is { IsInterface: false, IsAbstract: false })
-                .Where(t => baseType.IsAssignableFrom(t)))
+            foreach (var type in ReflectionUtility.GetAllImplementations<IInputSettings>())
             {
-                var isDebug = type.FullName!.Contains("Debug");
+                var isDebug = type.FullName!.EndsWith("Debug");
 
                 if (TypeExistsInArray(property, type, out var index))
                 {

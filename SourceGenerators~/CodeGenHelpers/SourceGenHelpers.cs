@@ -4,24 +4,40 @@
 
 namespace CodeGenHelpers
 {
+    using System;
+    using System.Globalization;
     using System.IO;
-    using System.Linq;
-    using System.Threading;
-    using Microsoft.CodeAnalysis;
 
     public static class SourceGenHelpers
     {
         public static void Log(string message)
         {
-            // Ignore IO exceptions in case there is already a lock, could use a named mutex but don't want to eat the performance cost
+            // Logging should never throw; this is best-effort and used primarily from exception handlers.
             try
             {
-                var generatedCodePath = @"Logs\";
+                var generatedCodePath = "Logs";
+                Directory.CreateDirectory(generatedCodePath);
+
                 var sourceGenLogPath = Path.Combine(generatedCodePath, "CoreGenerator.log");
                 using var writer = File.AppendText(sourceGenLogPath);
-                writer.WriteLine(message);
+
+                var timestamp = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+                var prefix = $"[{timestamp}] ";
+
+                if (message == null)
+                {
+                    writer.WriteLine(prefix);
+                    return;
+                }
+
+                var normalized = message.Replace("\r\n", "\n");
+                var lines = normalized.Split('\n');
+                foreach (var line in lines)
+                {
+                    writer.WriteLine(prefix + line);
+                }
             }
-            catch (IOException)
+            catch (Exception)
             {
             }
         }

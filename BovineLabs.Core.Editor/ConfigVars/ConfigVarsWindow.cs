@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
         /// <inheritdoc />
         protected override void GetPanels(List<ISettingsPanel> settingPanels)
         {
-            ConfigVarManager.Init();
+            ConfigVarManager.Initialize();
 
             foreach (var p in this.panels)
             {

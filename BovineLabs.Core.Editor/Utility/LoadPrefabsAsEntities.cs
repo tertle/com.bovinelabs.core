@@ -12,21 +12,20 @@ namespace BovineLabs.Core.Editor.Utility
     using UnityEditor;
     using UnityEngine;
 
-    [InitializeOnLoad]
     public static class LoadPrefabsAsEntities
     {
         private static World? selectedWorld;
         private static bool loading;
 
-        static LoadPrefabsAsEntities()
-        {
-            Editor.finishedDefaultHeaderGUI += OnPostHeaderGUI;
-        }
-
         public static bool Enabled
         {
             get => EditorPrefs.GetBool("bl.debug.prefab-loading", false);
             set => EditorPrefs.SetBool("bl.debug.prefab-loading", value);
+        }
+
+        internal static void Initialize()
+        {
+            Editor.finishedDefaultHeaderGUI += OnPostHeaderGUI;
         }
 
         private static void OnPostHeaderGUI(Editor editor)

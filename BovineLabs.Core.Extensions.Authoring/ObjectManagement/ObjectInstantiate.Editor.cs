@@ -18,7 +18,6 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     // I don't usually like having editor code in authoring and prefer it in the editor assembly, however this work requires
     // ExecuteAlways and the GameObject callbacks.
     [ExecuteAlways]
-    [InitializeOnLoad]
     [Configurable]
     public partial class ObjectInstantiate
     {
@@ -30,12 +29,6 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         private ObjectDefinitionAuthoring? preview;
         private GameObject[] previewChildren = Array.Empty<GameObject>();
         private ObjectDefinition? previousDefinition;
-
-        static ObjectInstantiate()
-        {
-            Selection.selectionChanged += OnSelectionChanged;
-            ObjectChangeEvents.changesPublished += ChangesPublished;
-        }
 
         public static void TryReplace(GameObject newGameObject)
         {
@@ -74,6 +67,12 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         {
             this.DestroyPreview();
             this.CreatePreview();
+        }
+
+        internal static void Initialize()
+        {
+            Selection.selectionChanged += OnSelectionChanged;
+            ObjectChangeEvents.changesPublished += ChangesPublished;
         }
 
         private void CreatePreview()

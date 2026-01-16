@@ -30,7 +30,7 @@ namespace BovineLabs.Core
 
         private World serviceWorld;
 
-#if !UNITY_SERVER
+#if !UNITY_NETCODE && !UNITY_SERVER
         private World gameWorld;
 #endif
 
@@ -40,7 +40,7 @@ namespace BovineLabs.Core
         /// <summary> Gets the service world if it exists. </summary>
         public static World ServiceWorld => Instance.serviceWorld;
 
-#if !UNITY_SERVER
+#if !UNITY_NETCODE
         /// <summary> Gets the single player world if it exists. </summary>
         public static World GameWorld => Instance.gameWorld;
 #endif
@@ -58,16 +58,18 @@ namespace BovineLabs.Core
         {
             Instance = this;
 
-            WorldAllocator.Initialize();
-
             this.Initialize();
             return true;
         }
 
         /// <summary> Creates a local game world as long as we aren't a dedicated server. </summary>
-        /// <exception cref="InvalidOperationException"> If there is already a local gmae world. </exception>
+        /// <exception cref="InvalidOperationException"> If there is already a local game world. </exception>
         public void CreateGameWorld()
         {
+#if UNITY_NETCODE
+            this.CreateClientServerWorlds(true);
+#else
+
 #if !UNITY_SERVER
             if (this.gameWorld != null)
             {
@@ -75,7 +77,6 @@ namespace BovineLabs.Core
             }
 
             this.gameWorld = new World("GameWorld", WorldFlags.Game);
-            WorldAllocator.CreateAllocator(this.gameWorld.Unmanaged.SequenceNumber);
 
             World.DefaultGameObjectInjectionWorld = this.gameWorld; // replace default injection world
 
@@ -85,11 +86,15 @@ namespace BovineLabs.Core
 
             InitializeWorld(this.gameWorld);
 #endif
+#endif
         }
 
         /// <summary> Destroys the game world. </summary>
         public void DestroyGameWorld()
         {
+#if UNITY_NETCODE
+            this.DestroyClientServerWorlds();
+#else
 #if !UNITY_SERVER
             if (this.gameWorld is not { IsCreated: true })
             {
@@ -98,8 +103,9 @@ namespace BovineLabs.Core
 
             World.DefaultGameObjectInjectionWorld = ServiceWorld;
 
-            DisposeWorld(this.gameWorld);
+            this.gameWorld.Dispose();
             this.gameWorld = null;
+#endif
 #endif
         }
 
@@ -208,13 +214,6 @@ namespace BovineLabs.Core
                 t != EntityInternals.CompanionGameObjectUpdateSystemType;
 
             // TODO do we need transform, companion, fixed/variable update etc
-        }
-
-        private static void DisposeWorld(World world)
-        {
-            var sn = world.SequenceNumber;
-            world.Dispose();
-            WorldAllocator.DisposeAllocator(sn);
         }
 
         private struct FrameRateKey

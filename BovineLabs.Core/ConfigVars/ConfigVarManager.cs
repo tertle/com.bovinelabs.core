@@ -46,12 +46,10 @@ namespace BovineLabs.Core.ConfigVars
 
         /// <summary> Initializes the <see cref="ConfigVarAttribute" />s throughout the project. </summary>
 
-#if UNITY_EDITOR
-        [InitializeOnLoadMethod]
-#else
+#if !UNITY_EDITOR
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
 #endif
-        public static void Init()
+        public static void Initialize()
         {
             if (isInitialized)
             {

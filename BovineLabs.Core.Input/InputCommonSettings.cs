@@ -81,45 +81,5 @@ namespace BovineLabs.Core.Input
             }
 #endif
         }
-
-        /// <inheritdoc />
-//         public override void Bake(Baker<SettingsAuthoring> baker)
-//         {
-//             var entity = baker.GetEntity(TransformUsageFlags.None);
-//
-//             var cts = new ComponentTypeSet(typeof(InputDefault), typeof(InputDefaultEnabled), typeof(InputCommon), typeof(InputActionMapEnable));
-//             baker.AddComponent(entity, cts);
-//
-//             baker.SetComponent(entity, new InputDefault
-//             {
-//                 Asset = this.asset,
-//                 CursorPosition = this.cursorPosition,
-//             });
-//
-//             var toEnable = baker.SetBuffer<InputDefaultEnabled>(entity);
-//             foreach (var actionMap in this.defaultEnabled)
-//             {
-//                 toEnable.Add(new InputDefaultEnabled { ActionMap = actionMap });
-//             }
-//
-//             var wrapper = new BakerWrapper(baker, entity);
-//
-//             foreach (var s in this.settings)
-//             {
-//                 s?.Bake(wrapper);
-//             }
-//
-// #if !BL_DEBUG
-//             if (baker.IsBakingForEditor())
-// #endif
-//             {
-//                 foreach (var s in this.debugSettings)
-//                 {
-//                     s?.Bake(wrapper);
-//                 }
-//             }
-//         }
-
-
     }
 }

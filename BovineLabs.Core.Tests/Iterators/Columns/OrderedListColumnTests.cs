@@ -11,9 +11,28 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
     using BovineLabs.Testing;
     using JetBrains.Annotations;
     using NUnit.Framework;
+    using Unity.Collections.LowLevel.Unsafe;
 
     public class OrderedListColumnTests : ECSTestsFixture
     {
+        [Test]
+        public unsafe void OrderedListColumnPointers_AreAligned_SmallCapacity()
+        {
+            var map = this.CreateSmallCapacityOrderedMap();
+
+            ref var column = ref map.Column;
+            ref var layout = ref UnsafeUtility.As<OrderedListColumn<short>, OrderedListColumnLayout<short>>(ref column);
+
+            var columnPtr = (byte*)UnsafeUtility.AddressOf(ref column);
+            var keysPtr = columnPtr + layout.KeysOffset;
+            var nextPtr = columnPtr + layout.NextOffset;
+            var prevPtr = columnPtr + layout.PrevOffset;
+
+            Assert.AreEqual(0ul, (ulong)keysPtr % (ulong)UnsafeUtility.AlignOf<short>(), "Keys pointer should be aligned to T");
+            Assert.AreEqual(0ul, (ulong)nextPtr % (ulong)UnsafeUtility.AlignOf<int>(), "Next pointer should be aligned to int");
+            Assert.AreEqual(0ul, (ulong)prevPtr % (ulong)UnsafeUtility.AlignOf<int>(), "Prev pointer should be aligned to int");
+        }
+
         [Test]
         public void WithOrderedColumn_ShouldMaintainSortedOrder()
         {
@@ -572,10 +591,36 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
                 .AsVariableMap<TestOrderedMap, int, float, int, OrderedListColumn<int>>();
         }
 
+        private DynamicVariableMap<long, short, short, OrderedListColumn<short>> CreateSmallCapacityOrderedMap()
+        {
+            var entity = this.Manager.CreateEntity(typeof(TestSmallOrderedMap));
+            return this
+                .Manager
+                .GetBuffer<TestSmallOrderedMap>(entity)
+                .InitializeVariableMap<TestSmallOrderedMap, long, short, short, OrderedListColumn<short>>(0, 1)
+                .AsVariableMap<TestSmallOrderedMap, long, short, short, OrderedListColumn<short>>();
+        }
+
         private struct TestOrderedMap : IDynamicVariableMap<int, float, int, OrderedListColumn<int>>
         {
             [UsedImplicitly]
             byte IDynamicVariableMap<int, float, int, OrderedListColumn<int>>.Value { get; }
+        }
+
+        private struct TestSmallOrderedMap : IDynamicVariableMap<long, short, short, OrderedListColumn<short>>
+        {
+            [UsedImplicitly]
+            byte IDynamicVariableMap<long, short, short, OrderedListColumn<short>>.Value { get; }
+        }
+
+        private struct OrderedListColumnLayout<T>
+            where T : unmanaged, IEquatable<T>, IComparable<T>
+        {
+            public int KeysOffset;
+            public int NextOffset;
+            public int PrevOffset;
+            public int Head;
+            public int Capacity;
         }
     }
 }

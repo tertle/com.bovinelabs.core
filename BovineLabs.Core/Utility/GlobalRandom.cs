@@ -8,11 +8,7 @@ namespace BovineLabs.Core.Utility
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Mathematics;
-    using UnityEngine;
     using Random = Unity.Mathematics.Random;
-#if UNITY_EDITOR
-    using UnityEditor;
-#endif
 
     /// <summary> Globally accessible random values even from bursted jobs. </summary>
     public static class GlobalRandom
@@ -364,11 +360,10 @@ namespace BovineLabs.Core.Utility
             return Thread.NextQuaternionRotation();
         }
 
-#if UNITY_EDITOR
-        [InitializeOnLoadMethod]
+#if !UNITY_EDITOR
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
 #endif
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        public static void Initialize()
+        internal static void Initialize()
         {
             if (ThreadRandoms.Data.IsCreated)
             {

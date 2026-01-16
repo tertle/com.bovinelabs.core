@@ -10,10 +10,9 @@ namespace BovineLabs.Core.Editor
     using UnityEditor;
     using Resources = UnityEngine.Resources;
 
-    [InitializeOnLoad]
-    public static class SetWorldToEditorWindows
+    internal static class SetWorldToEditorWindows
     {
-        static SetWorldToEditorWindows()
+        internal static void Initialize()
         {
             BovineLabsBootstrap.GameWorldCreated += SetWorldToDOTSEditorWindow;
         }

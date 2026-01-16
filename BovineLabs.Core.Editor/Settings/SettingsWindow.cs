@@ -84,8 +84,7 @@ namespace BovineLabs.Core.Editor.Settings
 
         private static IEnumerable<(Type Settings, Type Panel)> GetAllSettingsBasePanels()
         {
-            return from t in AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes())
-                where !t.IsAbstract && !t.IsInterface && !t.IsGenericType
+            return from t in ReflectionUtility.GetAllImplementations(typeof(SettingsBasePanel<>))
                 let i = t.BaseType
                 where i is { IsGenericType: true } && i.GetGenericTypeDefinition() == typeof(SettingsBasePanel<>)
                 select (i.GetGenericArguments()[0], t);

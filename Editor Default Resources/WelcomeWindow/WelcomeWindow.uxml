@@ -12,18 +12,19 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement class="bl-hero__meta">
-                <ui:Label text="v1.5.0" class="bl-pill bl-pill--accent"/>
-                <ui:Label text="Unity 6.0+" class="bl-pill"/>
+                <ui:Label text="v1.5.1" class="bl-pill bl-pill--accent"/>
+                <ui:Label text="Unity 6.3+" class="bl-pill"/>
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement class="bl-tabs">
             <ui:Button text="Overview" name="TabOverview" class="bl-tab bl-tab--active"/>
+            <ui:Button text="Config" name="TabConfig" class="bl-tab"/>
             <ui:Button text="Extensions" name="TabExtensions" class="bl-tab"/>
             <ui:Button text="Packages" name="TabPackages" class="bl-tab"/>
         </ui:VisualElement>
         <ui:VisualElement class="bl-tab-panels">
             <ui:ScrollView name="ContentOverview" class="bl-tab-panel  bl-tab-panel--active">
-                <ui:VisualElement class="bl-card bl-card--feature">
+                <ui:VisualElement class="bl-card bl-card--subtle">
                     <ui:VisualElement class="bl-card__header">
                         <ui:Label text="Features" class="bl-card__title"/>
                     </ui:VisualElement>
@@ -68,12 +69,33 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:ScrollView>
+            <ui:VisualElement name="ContentConfig" class="bl-tab-panel bl-tab-panel--split">
+                <ui:ScrollView class="bl-tab-panel__scroll">
+                    <ui:VisualElement class="bl-card bl-card--feature">
+                        <ui:VisualElement class="bl-card__header">
+                            <ui:Label text="Configuration" class="bl-card__title"/>
+                        </ui:VisualElement>
+                        <ui:Label text="Project-wide preferences." class="bl-card__subtitle"/>
+                        <ui:VisualElement class="bl-feature-list">
+                            <BovineLabs.Core.Editor.Welcome.FeatureToggle text="Menu location" name="MenuLocationToggle" define="BL_TOOLS_MENU" description="Move the menu root from BovineLabs/ to Tools/BovineLabs/"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="bl-card bl-card--feature">
+                        <ui:VisualElement class="bl-card__header">
+                            <ui:Label text="Local configuration" class="bl-card__title"/>
+                        </ui:VisualElement>
+                        <ui:Label text="Per-machine preferences stored via ConfigVars." class="bl-card__subtitle"/>
+                        <ui:VisualElement class="bl-feature-list">
+                            <BovineLabs.Core.Editor.Welcome.FeatureToggle text="Inspector search" name="InspectorSearchToggle" description="Enable the search button in the inspector"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:ScrollView>
+            </ui:VisualElement>
             <ui:VisualElement name="ContentExtensions" class="bl-tab-panel bl-tab-panel--split">
                 <ui:ScrollView class="bl-tab-panel__scroll">
                     <ui:VisualElement class="bl-card bl-card--feature">
                         <ui:VisualElement class="bl-card__header">
                             <ui:Label text="Extensions" class="bl-card__title"/>
-                            <ui:Label text="Unity 6.3+" class="bl-badge bl-badge--outline"/>
                         </ui:VisualElement>
                         <ui:Label text="Enable extensions first, then optionally disable the modules you don&#39;t want." class="bl-card__subtitle"/>
                         <ui:Button text="Extensions Disabled" name="EnableExtensions" class="bl-button bl-button--block bl-button--ghost"/>
@@ -96,7 +118,7 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:ScrollView name="ContentPackages" class="bl-tab-panel">
-                <ui:VisualElement class="bl-card bl-card--subtle">
+                <ui:VisualElement class="bl-card bl-card--feature">
                     <ui:VisualElement class="bl-card__header">
                         <ui:Label text="Open Source" class="bl-card__title"/>
                     </ui:VisualElement>
@@ -111,7 +133,7 @@
                         <BovineLabs.Core.Editor.Welcome.PackageElement name="TimelineLink" title="Timeline" description="Burst-friendly DOTS implementation of Unity Timeline." url="https://gitlab.com/tertle/com.bovinelabs.timeline" package-name="com.bovinelabs.timeline" git-url="https://gitlab.com/tertle/com.bovinelabs.timeline.git"/>
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement class="bl-card bl-card--subtle">
+                <ui:VisualElement class="bl-card bl-card--feature">
                     <ui:VisualElement class="bl-card__header">
                         <ui:Label text="Component tier" class="bl-card__title"/>
                     </ui:VisualElement>
@@ -124,7 +146,7 @@
                         <BovineLabs.Core.Editor.Welcome.PackageElement name="VibeLink" title="Vibe (coming soon)" description="Feel library for DOTS built on timeline."/>
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement class="bl-card bl-card--subtle">
+                <ui:VisualElement class="bl-card bl-card--feature">
                     <ui:VisualElement class="bl-card__header">
                         <ui:Label text="System tier" class="bl-card__title"/>
                     </ui:VisualElement>

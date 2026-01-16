@@ -6,6 +6,7 @@
 namespace BovineLabs.Core
 {
     using System;
+    using System.Diagnostics;
     using BovineLabs.Core.ConfigVars;
     using BovineLabs.Core.Extensions;
     using Unity.Burst;
@@ -35,22 +36,34 @@ namespace BovineLabs.Core
 
         /// <summary> Creates the client and server world as long as we aren't dedicated. </summary>
         /// <exception cref="InvalidOperationException"> If there is already a server or client world. </exception>
-        public void CreateClientServerWorlds()
+        /// <param name="isLocal"> Should the game be local. </param>
+        public void CreateClientServerWorlds(bool isLocal)
         {
             var requestedPlayType = RequestedPlayType;
-#if !UNITY_CLIENT
-            if (requestedPlayType != PlayType.Client)
+
+#if NETCODE_EXPERIMENTAL_SINGLE_WORLD_HOST && !UNITY_CLIENT && !UNITY_SERVER
+            if (NetCodeConfig.Global != null && NetCodeConfig.Global.HostWorldModeSelection == NetCodeConfig.HostWorldMode.SingleWorld &&
+                requestedPlayType == PlayType.ClientAndServer)
             {
-                this.CreateServerWorld();
+                this.CreateSingleWorldHost(isLocal);
             }
+            else
+#endif
+            {
+#if !UNITY_CLIENT
+                if (requestedPlayType != PlayType.Client)
+                {
+                    this.CreateServerWorldInternal(isLocal);
+                }
 #endif
 
 #if !UNITY_SERVER
-            if (requestedPlayType != PlayType.Server)
-            {
-                this.CreateClientWorld();
-            }
+                if (requestedPlayType != PlayType.Server)
+                {
+                    this.CreateClientWorld();
+                }
 #endif
+            }
         }
 
         /// <summary> Destroys the client and server worlds if they exist. </summary>
@@ -67,24 +80,37 @@ namespace BovineLabs.Core
 #endif
         }
 
-#if !UNITY_CLIENT
-        /// <summary> Creates a server world. </summary>
+#if NETCODE_EXPERIMENTAL_SINGLE_WORLD_HOST && !UNITY_CLIENT && !UNITY_SERVER
+        /// <summary> Creates a client server host world. </summary>
         /// <exception cref="InvalidOperationException"> If there is already a server world. </exception>
-        public void CreateServerWorld()
+        /// <param name="isLocal"> Should the game be local. </param>
+        public void CreateSingleWorldHost(bool isLocal)
         {
             if (ServerWorld != null)
             {
                 throw new InvalidOperationException("ServerWorld has not been correctly cleaned up");
             }
 
-            var world = CreateServerWorld("ServerWorld");
-            WorldAllocator.CreateAllocator(world.Unmanaged.SequenceNumber);
-            Assert.IsNotNull(ServerWorld);
+            if (ClientWorld != null)
+            {
+                throw new InvalidOperationException("ClientWorld has not been correctly cleaned up");
+            }
 
-            World.DefaultGameObjectInjectionWorld = world; // replace default injection world
-            InitializeWorld(world);
-            InitializeNetCodeWorld(world);
-            this.ServerListen(world);
+            var clientServerWorld = CreateSingleWorldHost("ClientAndServerWorld");
+
+            World.DefaultGameObjectInjectionWorld = clientServerWorld; // replace default injection world
+            InitializeWorld(clientServerWorld);
+            InitializeNetCodeWorld(clientServerWorld);
+            this.ServerListen(clientServerWorld, isLocal);
+        }
+#endif
+
+#if !UNITY_CLIENT
+        /// <summary> Creates a server world. </summary>
+        /// <exception cref="InvalidOperationException"> If there is already a server world. </exception>
+        public void CreateServerWorld()
+        {
+            this.CreateServerWorldInternal(false);
         }
 
         /// <summary> Destroys all server worlds. </summary>
@@ -92,10 +118,9 @@ namespace BovineLabs.Core
         {
             for (var index = ServerWorlds.Count - 1; index >= 0; index--)
             {
-                DisposeWorld(ServerWorlds[index]);
+                ServerWorlds[index].Dispose();
             }
         }
-
 #endif
 
 #if !UNITY_SERVER
@@ -109,7 +134,6 @@ namespace BovineLabs.Core
             }
 
             var world = CreateClientWorld("ClientWorld");
-            WorldAllocator.CreateAllocator(world.Unmanaged.SequenceNumber);
             Assert.IsNotNull(ClientWorld);
 
 #if !UNITY_CLIENT
@@ -129,7 +153,6 @@ namespace BovineLabs.Core
         public new void CreateThinClientWorld()
         {
             var world = ClientServerBootstrap.CreateThinClientWorld();
-            WorldAllocator.CreateAllocator(world.Unmanaged.SequenceNumber);
 
             InitializeWorld(world);
             InitializeNetCodeWorld(world);
@@ -141,20 +164,36 @@ namespace BovineLabs.Core
         {
             for (var index = ClientWorlds.Count - 1; index >= 0; index--)
             {
-                DisposeWorld(ClientWorlds[index]);
+                ClientWorlds[index].Dispose();
             }
 
             for (var index = ThinClientWorlds.Count - 1; index >= 0; index--)
             {
-                DisposeWorld(ThinClientWorlds[index]);
+                ThinClientWorlds[index].Dispose();
             }
         }
 #endif
 
 #if !UNITY_CLIENT
-        private void ServerListen(World world)
+        private void CreateServerWorldInternal(bool isLocal)
         {
-            var ep = GetNetworkEndpoint();
+            if (ServerWorld != null)
+            {
+                throw new InvalidOperationException("ServerWorld has not been correctly cleaned up");
+            }
+
+            var world = CreateServerWorld("ServerWorld");
+            Assert.IsNotNull(ServerWorld);
+
+            World.DefaultGameObjectInjectionWorld = world; // replace default injection world
+            InitializeWorld(world);
+            InitializeNetCodeWorld(world);
+            this.ServerListen(world, isLocal);
+        }
+
+        private void ServerListen(World world, bool isLocal)
+        {
+            var ep = GetNetworkEndpoint(isLocal);
             var driver = world.EntityManager.GetSingletonRW<NetworkStreamDriver>();
             if (RequireConnectionApproval.Data)
             {
@@ -168,7 +207,7 @@ namespace BovineLabs.Core
 #if !UNITY_SERVER
         private void ClientConnect(World world)
         {
-            var ep = GetNetworkEndpoint();
+            var ep = GetNetworkEndpoint(false);
             var driver = world.EntityManager.GetSingletonRW<NetworkStreamDriver>();
             if (RequireConnectionApproval.Data)
             {
@@ -179,13 +218,20 @@ namespace BovineLabs.Core
         }
 #endif
 
-        private static NetworkEndpoint GetNetworkEndpoint()
+        private static NetworkEndpoint GetNetworkEndpoint(bool isLocal)
         {
+            if (isLocal)
+            {
+                return NetworkEndpoint.LoopbackIpv4.WithPort(7979);
+            }
+
             return NetworkEndpoint.TryParse(AddressVar.Data.ToString(), (ushort)Port.Data, out var endpoint)
                 ? endpoint
                 : NetworkEndpoint.LoopbackIpv4.WithPort(7979);
         }
 
+        [Conditional("UNITY_EDITOR")]
+        [Conditional("DEVELOPMENT_BUILD")]
         private static void InitializeNetCodeWorld(World world)
         {
             // This allows sending RPCs between a stand alone build and the editor for testing purposes in the event when you finish this example

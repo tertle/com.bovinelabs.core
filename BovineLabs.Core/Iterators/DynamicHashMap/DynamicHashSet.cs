@@ -109,7 +109,7 @@ namespace BovineLabs.Core.Iterators
         /// <returns> True if a key-value pair was removed. </returns>
         public readonly bool Remove(T item)
         {
-            this.buffer.CheckReadAccess();
+            this.buffer.CheckWriteAccess();
             this.RefCheck();
             return this.helper->TryRemove(item) != -1;
         }

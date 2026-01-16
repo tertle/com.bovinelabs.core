@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Tests.Utility
 {
+    using System;
     using BovineLabs.Core.Utility;
     using NUnit.Framework;
     using Unity.Burst;
@@ -206,6 +207,29 @@ namespace BovineLabs.Core.Tests.Utility
 
                 Assert.AreEqual(100, intList.List.Length);
             }
+        }
+
+        [Test]
+        public void UsingReturnedList_ThrowsInEditor()
+        {
+            var pooledList = PooledNativeList<int>.Make();
+            pooledList.List.Add(1);
+
+            pooledList.Dispose();
+
+            Assert.Catch<InvalidOperationException>(() => pooledList.List.Add(2));
+        }
+
+        [Test]
+        public void DoubleDisposeFromCopy_ThrowsInEditor()
+        {
+            var pooledList = PooledNativeList<int>.Make();
+            pooledList.List.Add(1);
+
+            var pooledListCopy = pooledList;
+            pooledList.Dispose();
+
+            Assert.Catch<InvalidOperationException>(() => pooledListCopy.Dispose());
         }
 
         [Test]

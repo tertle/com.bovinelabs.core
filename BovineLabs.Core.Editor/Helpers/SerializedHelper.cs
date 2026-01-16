@@ -56,17 +56,12 @@ namespace BovineLabs.Core.Editor.Helpers
                             yield return iterator.Copy();
                         }
 
-                        if (iterator.propertyType != SerializedPropertyType.ObjectReference) // TODO probably a few more things here
+                        if (iterator.propertyType != SerializedPropertyType.ObjectReference) // probably a few more things here
                         {
                             foreach (var child in GetChildren(iterator))
                             {
                                 // TODO like to be able to iterate lower
-                                yield return child; /* .Copy();
-
-                                foreach (var i in IterateAllChildrenAndFlatten(child))
-                                {
-                                    yield return i;
-                                }*/
+                                yield return child;
                             }
                         }
                     }

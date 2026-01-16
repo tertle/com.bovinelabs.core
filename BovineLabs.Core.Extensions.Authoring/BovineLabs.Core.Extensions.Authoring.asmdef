@@ -17,7 +17,6 @@
         "Unity.Mathematics.Extensions",
         "Unity.Physics",
         "Unity.Scenes",
-        "Unity.Splines",
         "Unity.Transforms"
     ],
     "includePlatforms": [],
@@ -40,11 +39,6 @@
             "name": "com.unity.netcode",
             "expression": "",
             "define": "UNITY_NETCODE"
-        },
-        {
-            "name": "com.unity.splines",
-            "expression": "",
-            "define": "UNITY_SPLINES"
         }
     ],
     "noEngineReferences": false

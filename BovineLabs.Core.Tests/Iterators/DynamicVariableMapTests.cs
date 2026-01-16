@@ -11,9 +11,38 @@ namespace BovineLabs.Core.Tests.Iterators
     using BovineLabs.Testing;
     using JetBrains.Annotations;
     using NUnit.Framework;
+    using Unity.Collections.LowLevel.Unsafe;
 
     public class DynamicVariableMapTests : ECSTestsFixture
     {
+        [Test]
+        public unsafe void KeysAndColumnPointers_AreAligned_SmallCapacity()
+        {
+            var map = this.CreateSmallCapacityMap();
+
+            var helper = map.Helper;
+            Assert.IsNotNull((IntPtr)helper, "Helper pointer should not be null");
+
+            // Core arrays should be aligned for their element types
+            Assert.AreEqual(0ul, (ulong)helper->Values % (ulong)UnsafeUtility.AlignOf<short>(), "Values pointer should be aligned");
+            Assert.AreEqual(0ul, (ulong)helper->KeyHash.Keys % (ulong)UnsafeUtility.AlignOf<long>(), "Keys pointer should be aligned to TKey");
+            Assert.AreEqual(0ul, (ulong)helper->KeyHash.Next % (ulong)UnsafeUtility.AlignOf<int>(), "Next pointer should be aligned to int");
+            Assert.AreEqual(0ul, (ulong)helper->KeyHash.Buckets % (ulong)UnsafeUtility.AlignOf<int>(), "Buckets pointer should be aligned to int");
+
+            // Column internal layout should be aligned too (MultiHashColumn has int arrays after the T array)
+            ref var column = ref map.Column;
+            ref var layout = ref UnsafeUtility.As<MultiHashColumn<short>, MultiHashColumnLayout<short>>(ref column);
+
+            var columnPtr = (byte*)UnsafeUtility.AddressOf(ref column);
+            var keysPtr = columnPtr + layout.KeysOffset;
+            var nextPtr = columnPtr + layout.NextOffset;
+            var bucketsPtr = columnPtr + layout.BucketsOffset;
+
+            Assert.AreEqual(0ul, (ulong)keysPtr % (ulong)UnsafeUtility.AlignOf<short>(), "Column keys pointer should be aligned to T");
+            Assert.AreEqual(0ul, (ulong)nextPtr % (ulong)UnsafeUtility.AlignOf<int>(), "Column next pointer should be aligned to int");
+            Assert.AreEqual(0ul, (ulong)bucketsPtr % (ulong)UnsafeUtility.AlignOf<int>(), "Column buckets pointer should be aligned to int");
+        }
+
         [Test]
         public void WhenAddingItems_ShouldBeRetrievableByKey()
         {
@@ -509,10 +538,35 @@ namespace BovineLabs.Core.Tests.Iterators
                 .AsVariableMap<TestMap, int, float, short, MultiHashColumn<short>>();
         }
 
+        private DynamicVariableMap<long, short, short, MultiHashColumn<short>> CreateSmallCapacityMap()
+        {
+            var entity = this.Manager.CreateEntity(typeof(TestLongKeyShortValueMap));
+            return this
+                .Manager
+                .GetBuffer<TestLongKeyShortValueMap>(entity)
+                .InitializeVariableMap<TestLongKeyShortValueMap, long, short, short, MultiHashColumn<short>>(0, 1)
+                .AsVariableMap<TestLongKeyShortValueMap, long, short, short, MultiHashColumn<short>>();
+        }
+
         private struct TestMap : IDynamicVariableMap<int, float, short, MultiHashColumn<short>>
         {
             [UsedImplicitly]
             byte IDynamicVariableMap<int, float, short, MultiHashColumn<short>>.Value { get; }
+        }
+
+        private struct TestLongKeyShortValueMap : IDynamicVariableMap<long, short, short, MultiHashColumn<short>>
+        {
+            [UsedImplicitly]
+            byte IDynamicVariableMap<long, short, short, MultiHashColumn<short>>.Value { get; }
+        }
+
+        private struct MultiHashColumnLayout<T>
+            where T : unmanaged, IEquatable<T>
+        {
+            public int KeysOffset;
+            public int NextOffset;
+            public int BucketsOffset;
+            public int Capacity;
         }
     }
 }

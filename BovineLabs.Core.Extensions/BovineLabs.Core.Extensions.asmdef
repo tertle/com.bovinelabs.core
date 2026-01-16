@@ -16,7 +16,6 @@
         "Unity.Physics",
         "Unity.ResourceManager",
         "Unity.Scenes",
-        "Unity.Splines",
         "Unity.Transforms",
         "Unity.Transforms.Hybrid",
         "Unity.Physics.Custom"
@@ -55,11 +54,6 @@
             "name": "com.unity.entities",
             "expression": "1.4.0-pre.3",
             "define": "UNITY_ENTITIES_1_4_0_pre_3"
-        },
-        {
-          "name": "com.unity.splines",
-          "expression": "",
-          "define": "UNITY_SPLINES"
         }
     ],
     "noEngineReferences": false

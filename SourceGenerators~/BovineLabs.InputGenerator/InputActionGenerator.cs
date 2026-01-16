@@ -342,6 +342,7 @@ namespace BovineLabs.InputGenerator
                 .AddNestedClass("Settings", Accessibility.Private)
                 .AddAttribute("Serializable")
                 .AddInterface("IInputSettings")
+                .DontSortPropertiesByName()
                 .AddProperty("Name", Accessibility.Public)
                 .AddAttribute("HideInInspector")
                 .AddAttribute("UsedImplicitly")

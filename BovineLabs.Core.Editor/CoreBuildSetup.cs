@@ -34,7 +34,7 @@ namespace BovineLabs.Core.Editor
             foreach (var guid in kSettings)
             {
                 var asset = AssetDatabase.LoadAssetAtPath<SettingsSingleton>(AssetDatabase.GUIDToAssetPath(guid));
-                if (asset != null)
+                if (asset != null && asset.IncludeInBuild)
                 {
                     preloadedAssets.Add(asset);
                 }

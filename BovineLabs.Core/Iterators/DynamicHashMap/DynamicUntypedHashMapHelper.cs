@@ -163,7 +163,7 @@ namespace BovineLabs.Core.Iterators
                 out var typeOffset, out var dataOffset);
 
             var oldValue = (byte*)UnsafeUtility.Malloc(data->Capacity * sizeof(int), UnsafeUtility.AlignOf<byte>(), Allocator.Temp);
-            var oldKeys = (TKey*)UnsafeUtility.Malloc(data->Capacity * sizeof(TKey), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
+            var oldKeys = (TKey*)UnsafeUtility.Malloc(data->Capacity * sizeof(TKey), UnsafeUtility.AlignOf<TKey>(), Allocator.Temp);
             var oldNext = (int*)UnsafeUtility.Malloc(data->Capacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
             var oldBuckets = (int*)UnsafeUtility.Malloc(data->BucketCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
             var oldTypes = (int*)UnsafeUtility.Malloc(data->Capacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
@@ -234,12 +234,12 @@ namespace BovineLabs.Core.Iterators
         internal static void ResizeData(DynamicBuffer<byte> buffer, ref DynamicUntypedHashMapHelper<TKey>* data, int newCapacity)
         {
             // This hashmap doesn't allow shrinking
-            if (newCapacity < data->DataCapacity)
+            if (newCapacity <= data->DataCapacity)
             {
                 return;
             }
 
-            var toAllocate = (newCapacity - data->Capacity) * sizeof(int);
+            var toAllocate = (newCapacity - data->DataCapacity) * sizeof(int);
 
             // As data is stored at end of buffer, we just need to increase buffer capacity size
             var newBufferCapacity = buffer.Length + toAllocate;
@@ -292,8 +292,12 @@ namespace BovineLabs.Core.Iterators
                 // Sets don't need to allocate, element should already exist
                 if (add)
                 {
-                    var minNewCapacity = (data->DataAllocatedIndex * sizeof(int)) + sizeof(TValue);
-                    if (minNewCapacity > data->DataCapacity * sizeof(int))
+                    Check.Assume(sizeof(TValue) % sizeof(int) == 0);
+
+                    data->DataAllocatedIndex = AlignDataAllocatedIndex<TValue>(data->DataAllocatedIndex);
+
+                    var minNewCapacity = data->DataAllocatedIndex + (sizeof(TValue) / sizeof(int));
+                    if (minNewCapacity > data->DataCapacity)
                     {
                         var newCap = data->DataCapacity;
                         do
@@ -310,7 +314,6 @@ namespace BovineLabs.Core.Iterators
                     var dst = (int*)data->Values + idx;
                     *dst = data->DataAllocatedIndex;
 
-                    Check.Assume(sizeof(TValue) % sizeof(int) == 0);
                     data->DataAllocatedIndex += sizeof(TValue) / sizeof(int);
                 }
                 else
@@ -375,13 +378,17 @@ namespace BovineLabs.Core.Iterators
             var isLarge = sizeof(TValue) > sizeof(int);
             if (isLarge)
             {
-                var minNewCapacity = (data->DataAllocatedIndex * sizeof(int)) + sizeof(TValue);
-                if (minNewCapacity > data->DataCapacity * sizeof(int))
+                Check.Assume(sizeof(TValue) % sizeof(int) == 0);
+
+                data->DataAllocatedIndex = AlignDataAllocatedIndex<TValue>(data->DataAllocatedIndex);
+
+                var minNewCapacity = data->DataAllocatedIndex + (sizeof(TValue) / sizeof(int));
+                if (minNewCapacity > data->DataCapacity)
                 {
                     var newCap = data->DataCapacity;
                     do
                     {
-                        newCap += CalcCapacityCeilPow2(newCap + (1 << data->Log2MinGrowth), data->Log2MinGrowth);
+                        newCap = CalcCapacityCeilPow2(newCap + (1 << data->Log2MinGrowth), data->Log2MinGrowth);
                     }
                     while (newCap < minNewCapacity);
 
@@ -390,8 +397,6 @@ namespace BovineLabs.Core.Iterators
 
                 var ptr = data->Data + data->DataAllocatedIndex;
                 UnsafeUtility.MemCpy(ptr, &value, sizeof(TValue));
-
-                Check.Assume(sizeof(TValue) % sizeof(int) == 0);
 
                 var dst = (int*)data->Values + idx;
                 *dst = data->DataAllocatedIndex;
@@ -449,20 +454,9 @@ namespace BovineLabs.Core.Iterators
 
             if (idx != -1)
             {
-                this.CheckType<TValue>(idx);
-
-                var value = this.Values + (idx * sizeof(int));
-
-                if (UnsafeUtility.SizeOf<TValue>() > sizeof(int))
+                fixed (DynamicUntypedHashMapHelper<TKey>* data = &this)
                 {
-                    idx = *value;
-
-                    // TODO range check
-                    item = *(TValue*)(this.Data + idx);
-                }
-                else
-                {
-                    item = *(TValue*)value;
+                    item = GetValue<TValue>(data, idx);
                 }
 
                 return true;
@@ -503,6 +497,7 @@ namespace BovineLabs.Core.Iterators
             var sizeOfTKey = sizeof(TKey);
             var sizeOfInt = sizeof(int);
             var sizeOfTypeIndex = sizeof(int);
+            var alignOfTKey = UnsafeUtility.AlignOf<TKey>();
 
             var valuesSize = sizeOfInt * capacity;
             var keysSize = sizeOfTKey * capacity;
@@ -510,15 +505,19 @@ namespace BovineLabs.Core.Iterators
             var bucketSize = sizeOfInt * bucketCapacity;
             var typeSize = sizeOfTypeIndex * capacity;
             var dataSize = sizeOfInt * dataCapacity;
-            var totalSize = valuesSize + keysSize + nextSize + bucketSize + typeSize + dataSize;
 
-            outKeyOffset = valuesSize;
-            outNextOffset = outKeyOffset + keysSize;
-            outBucketOffset = outNextOffset + nextSize;
-            outTypeOffset = outBucketOffset + bucketSize;
-            outDataOffset = outTypeOffset + typeSize;
+            // Layout is:
+            // Values (int[capacity]) -> Keys (TKey[capacity]) -> Next (int[capacity]) -> Buckets (int[bucketCapacity]) -> Types (int[capacity]) -> Data (int[dataCapacity])
+            // Explicitly align each segment to avoid misaligned reads/writes on strict platforms.
+            outKeyOffset = CollectionHelper.Align(valuesSize, alignOfTKey);
+            outNextOffset = CollectionHelper.Align(outKeyOffset + keysSize, sizeOfInt);
+            outBucketOffset = CollectionHelper.Align(outNextOffset + nextSize, sizeOfInt);
+            outTypeOffset = CollectionHelper.Align(outBucketOffset + bucketSize, sizeOfInt);
 
-            return totalSize;
+            // Large values are stored in the Data segment; align the segment so values with higher alignment (e.g. 16) can be stored correctly.
+            outDataOffset = CollectionHelper.Align(outTypeOffset + typeSize, 16);
+
+            return outDataOffset + dataSize;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -555,6 +554,23 @@ namespace BovineLabs.Core.Iterators
             {
                 throw new InvalidOperationException($"Type {actual} does not match stored {expected}");
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int AlignDataAllocatedIndex<TValue>(int dataAllocatedIndex)
+            where TValue : unmanaged
+        {
+            var align = UnsafeUtility.AlignOf<TValue>();
+
+            // Data is stored in int units; align the int index so (Data + index) satisfies the TValue alignment.
+            // If align < sizeof(int), the base alignment is already sufficient.
+            var alignInts = align / sizeof(int);
+            if (alignInts <= 1)
+            {
+                return dataAllocatedIndex;
+            }
+
+            return CollectionHelper.Align(dataAllocatedIndex, alignInts);
         }
     }
 }

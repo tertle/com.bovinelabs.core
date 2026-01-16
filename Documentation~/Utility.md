@@ -68,6 +68,7 @@ Advanced entity query iteration with chunk-based enumeration.
 Transform hierarchy utilities for parent-child relationships.
 - `SetupParent()` - Establish parent-child relationships
 - Handles LocalToWorld calculations and Child buffer management
+- `SetupLocalToWorld()` - Compute and set LocalToWorld for all entities in a LinkedEntityGroup
 
 ### `WorldUtility`
 World management helpers for world filtering.

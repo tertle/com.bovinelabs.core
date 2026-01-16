@@ -6,14 +6,11 @@ namespace BovineLabs.Core.Utility
 {
     using System;
     using System.Runtime.InteropServices;
+    using Unity;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
-    using UnityEngine;
-#if UNITY_EDITOR
-    using UnityEditor;
-#endif
 
     /// <summary>
     /// A pooled wrapper around NativeList that reuses allocated memory across instances to reduce allocation pressure.
@@ -123,14 +120,19 @@ namespace BovineLabs.Core.Utility
                 // Pool is full, dispose the list instead
                 byteList.Dispose();
             }
+
+            this.list = default;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            this.oldHandle = default;
+#endif
         }
     }
 
     internal static unsafe class PooledNativeList
     {
-        internal static readonly SharedStatic<Data> Pool = SharedStatic<Data>.GetOrCreate<Data>();
-
         internal const int MaxPoolSizePerThread = 8;
+        internal static readonly SharedStatic<Data> Pool = SharedStatic<Data>.GetOrCreate<Data>();
 
         /// <summary>
         /// Initializes the global pool data structure used by all PooledNativeList instances.
@@ -139,10 +141,9 @@ namespace BovineLabs.Core.Utility
         /// This method is called automatically during Unity initialization and should not be called manually.
         /// Creates thread-local storage for each worker thread to avoid contention.
         /// </remarks>
-#if UNITY_EDITOR
-        [InitializeOnLoadMethod]
+#if !UNITY_EDITOR
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
 #endif
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Initialize()
         {
             if (Pool.Data.IsCreated)
@@ -176,6 +177,11 @@ namespace BovineLabs.Core.Utility
 
             public ref UnsafeList<NativeList<byte>> GetThreadList()
             {
+#if UNITY_EDITOR
+                UnityEngine.Debug.Assert(JobsUtility.IsExecutingJob || UnityEditorInternal.InternalEditorUtility.CurrentThreadIsMainThread(),
+                    "Can only be used on main or worker threads");
+#endif
+
                 ref var list = ref UnsafeUtility.ArrayElementAsRef<ThreadData>(this.buffer, JobsUtility.ThreadIndex);
                 return ref list.ThreadList;
             }

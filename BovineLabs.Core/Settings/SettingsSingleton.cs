@@ -36,6 +36,8 @@ namespace BovineLabs.Core.Settings
     [Serializable]
     public abstract class SettingsSingleton : ScriptableObject, ISettings
     {
+        public virtual bool IncludeInBuild => true;
+
         // Simple helper for setting up singletons
         protected static T GetSingleton<T>(ref T field)
             where T : SettingsSingleton
@@ -70,8 +72,7 @@ namespace BovineLabs.Core.Settings
         }
 
 #if UNITY_EDITOR
-        [InitializeOnLoadMethod]
-        private static void InitializeInEditor()
+        internal static void InitializeInEditor()
         {
             LoadAll();
         }

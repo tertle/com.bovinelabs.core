@@ -49,10 +49,9 @@ namespace BovineLabs.Core.Iterators
 
             var indexSize = column.CalculateDataSize(capacity);
             var totalSize = CalculateDataSize(
-                capacity, bucketCapacity, indexSize, out var keyOffset, out var nextOffset, out var bucketOffset, out var indexOffset);
+                capacity, bucketCapacity, indexSize, out var dataOffset, out var keyOffset, out var nextOffset, out var bucketOffset, out var indexOffset);
 
-            var hashMapDataSize = sizeof(DynamicVariableMapHelper<TKey, TValue, T, TC>);
-            buffer.ResizeUninitialized(hashMapDataSize + totalSize);
+            buffer.ResizeUninitialized(dataOffset + totalSize);
 
             var data = buffer.AsVariableHelper<TKey, TValue, T, TC>();
 
@@ -60,12 +59,12 @@ namespace BovineLabs.Core.Iterators
             data->Capacity = capacity;
             data->BucketCapacityMask = bucketCapacity - 1;
 
-            data->ValuesOffset = hashMapDataSize;
-            data->KeyHash = new HashHelper<TKey>((byte*)data, &data->KeyHash, hashMapDataSize, keyOffset, nextOffset, bucketOffset);
+            data->ValuesOffset = dataOffset;
+            data->KeyHash = new HashHelper<TKey>((byte*)data, &data->KeyHash, dataOffset, keyOffset, nextOffset, bucketOffset);
 
             var offset = (int)((byte*)&data->Column - (byte*)data);
             Check.Assume(offset < int.MaxValue);
-            offset = hashMapDataSize + indexOffset - offset;
+            offset = dataOffset + indexOffset - offset;
 
             column.Initialize(offset, capacity);
             data->Column = column;
@@ -109,7 +108,7 @@ namespace BovineLabs.Core.Iterators
         {
             var indexSize = data->Column.CalculateDataSize(newCapacity);
             var totalSize = CalculateDataSize(
-                newCapacity, newBucketCapacity,  indexSize, out var keyOffset, out var nextOffset, out var bucketOffset, out var indexOffset);
+                newCapacity, newBucketCapacity,  indexSize, out var dataOffset, out var keyOffset, out var nextOffset, out var bucketOffset, out var indexOffset);
 
             var oldValue = (TValue*)UnsafeUtility.Malloc(data->Capacity * sizeof(TValue), UnsafeUtility.AlignOf<TValue>(), Allocator.Temp);
             UnsafeUtility.MemCpy(oldValue, data->Values, data->Capacity * sizeof(TValue));
@@ -124,22 +123,21 @@ namespace BovineLabs.Core.Iterators
             var oldAllocatedIndex = data->AllocatedIndex;
 
             var oldLog2MinGrowth = data->Log2MinGrowth;
-            var hashMapDataSize = sizeof(DynamicVariableMapHelper<TKey, TValue, T, TC>);
 
-            buffer.ResizeUninitialized(hashMapDataSize + totalSize);
+            buffer.ResizeUninitialized(dataOffset + totalSize);
 
             data = buffer.AsVariableHelper<TKey, TValue, T, TC>();
             data->Capacity = newCapacity;
             data->BucketCapacityMask = newBucketCapacity - 1;
             data->Log2MinGrowth = oldLog2MinGrowth;
 
-            data->ValuesOffset = hashMapDataSize;
-            data->KeyHash = new HashHelper<TKey>((byte*)data, &data->KeyHash, hashMapDataSize, keyOffset, nextOffset, bucketOffset);
+            data->ValuesOffset = dataOffset;
+            data->KeyHash = new HashHelper<TKey>((byte*)data, &data->KeyHash, dataOffset, keyOffset, nextOffset, bucketOffset);
 
             data->Column = default;
             var offset = (int)((byte*)&data->Column - (byte*)data);
             Check.Assume(offset < int.MaxValue);
-            offset = hashMapDataSize + indexOffset - offset;
+            offset = dataOffset + indexOffset - offset;
 
             data->Column.Initialize(offset, newCapacity);
 
@@ -171,6 +169,8 @@ namespace BovineLabs.Core.Iterators
                     }
                 }
             }
+
+            UnsafeUtility.Free(oldValue, Allocator.Temp);
         }
 
         private static int AddInternal(
@@ -369,27 +369,36 @@ namespace BovineLabs.Core.Iterators
         }
 
         private static int CalculateDataSize(
-            int capacity, int bucketCapacity, int indexSize, out int outKeyOffset, out int outNextOffset, out int outBucketOffset, out int outIndexOffset)
+            int capacity, int bucketCapacity, int indexSize,
+            out int outDataOffset, out int outKeyOffset, out int outNextOffset, out int outBucketOffset, out int outIndexOffset)
         {
             var sizeOfTKey = sizeof(TKey);
             var sizeOfTValue = sizeof(TValue);
             var sizeOfInt = sizeof(int);
 
+            var hashMapDataSize = sizeof(DynamicVariableMapHelper<TKey, TValue, T, TC>);
+            var alignOfTValue = UnsafeUtility.AlignOf<TValue>();
+            outDataOffset = CollectionHelper.Align(hashMapDataSize, math.max(16, alignOfTValue));
+
             var valuesSize = sizeOfTValue * capacity;
 
+            var keysOffset = CollectionHelper.Align(valuesSize, UnsafeUtility.AlignOf<TKey>());
             var keysSize = sizeOfTKey * capacity;
+
+            var nextOffset = CollectionHelper.Align(keysOffset + keysSize, UnsafeUtility.AlignOf<int>());
             var nextSize = sizeOfInt * capacity;
+
+            var bucketOffset = CollectionHelper.Align(nextOffset + nextSize, UnsafeUtility.AlignOf<int>());
             var bucketSize = sizeOfInt * bucketCapacity;
 
-            var totalSize = valuesSize + keysSize + nextSize + bucketSize + indexSize;
+            var indexOffset = CollectionHelper.Align(bucketOffset + bucketSize, math.max(16, UnsafeUtility.AlignOf<T>()));
 
-            outKeyOffset = valuesSize;
-            outNextOffset = outKeyOffset + keysSize;
-            outBucketOffset = outNextOffset + nextSize;
+            outKeyOffset = keysOffset;
+            outNextOffset = nextOffset;
+            outBucketOffset = bucketOffset;
+            outIndexOffset = indexOffset;
 
-            outIndexOffset = outBucketOffset + bucketSize;
-
-            return totalSize;
+            return indexOffset + indexSize;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

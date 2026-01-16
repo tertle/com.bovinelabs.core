@@ -106,10 +106,8 @@ namespace BovineLabs.Core.Iterators
             capacity = CalcCapacityCeilPow2(0, capacity, log2MinGrowth);
 
             var bucketCapacity = GetBucketSize(capacity);
-            var totalSize = CalculateDataSize(capacity, bucketCapacity, sizeOfValueT, out var keyOffset, out var nextOffset, out var bucketOffset);
-
-            var hashMapDataSize = sizeof(DynamicHashMapHelper<TKey>);
-            buffer.ResizeUninitialized(hashMapDataSize + totalSize);
+            var totalSize = CalculateDataSize(capacity, bucketCapacity, sizeOfValueT, out var valuesOffset, out var keysOffset, out var nextOffset, out var bucketOffset);
+            buffer.ResizeUninitialized(totalSize);
 
             var data = buffer.AsHelper<TKey>();
 
@@ -118,10 +116,10 @@ namespace BovineLabs.Core.Iterators
             data->BucketCapacityMask = bucketCapacity - 1;
             data->SizeOfTValue = sizeOfValueT;
 
-            data->ValuesOffset = hashMapDataSize;
-            data->KeysOffset = hashMapDataSize + keyOffset;
-            data->NextOffset = hashMapDataSize + nextOffset;
-            data->BucketsOffset = hashMapDataSize + bucketOffset;
+            data->ValuesOffset = valuesOffset;
+            data->KeysOffset = keysOffset;
+            data->NextOffset = nextOffset;
+            data->BucketsOffset = bucketOffset;
 
             data->Clear(); // sets FirstFreeIdx, Count, AllocatedIndex
         }
@@ -141,29 +139,39 @@ namespace BovineLabs.Core.Iterators
 
         internal static void ResizeExact(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data, int newCapacity, int newBucketCapacity)
         {
-            var totalSize = CalculateDataSize(newCapacity, newBucketCapacity, data->SizeOfTValue, out var keyOffset, out var nextOffset, out var bucketOffset);
-
-            var oldValue = (byte*)UnsafeUtility.Malloc(data->Capacity * data->SizeOfTValue, UnsafeUtility.AlignOf<byte>(), Allocator.Temp);
-            var oldKeys = (TKey*)UnsafeUtility.Malloc(data->Capacity * sizeof(TKey), UnsafeUtility.AlignOf<TKey>(), Allocator.Temp);
-            var oldNext = (int*)UnsafeUtility.Malloc(data->Capacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
-            var oldBuckets = (int*)UnsafeUtility.Malloc(data->BucketCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
-
-            UnsafeUtility.MemCpy(oldValue, data->Values, data->Capacity * data->SizeOfTValue);
-            UnsafeUtility.MemCpy(oldKeys, data->Keys, data->Capacity * sizeof(TKey));
-            UnsafeUtility.MemCpy(oldNext, data->Next, data->Capacity * sizeof(int));
-            UnsafeUtility.MemCpy(oldBuckets, data->Buckets, data->BucketCapacity * sizeof(int));
+            var totalSize = CalculateDataSize(newCapacity, newBucketCapacity, data->SizeOfTValue, out var valuesOffset, out var keysOffset, out var nextOffset, out var bucketOffset);
 
             var oldCapacity = data->Capacity;
             var oldBucketCapacity = data->BucketCapacity;
             var oldCount = data->Count;
-            var oldFirstFreeIdx = data->FirstFreeIdx;
             var oldAllocatedIndex = data->AllocatedIndex;
+            var oldFirstFreeIdx = data->FirstFreeIdx;
+            var hasHoles = oldFirstFreeIdx != -1 || oldAllocatedIndex != oldCount;
+
+            // Fast path: growing a holeless map can keep the existing dense indices.
+            var canFastGrow = !hasHoles && newCapacity > oldCapacity;
+
+            var oldValue = (byte*)UnsafeUtility.Malloc(oldAllocatedIndex * data->SizeOfTValue, UnsafeUtility.AlignOf<byte>(), Allocator.Temp);
+            var oldKeys = (TKey*)UnsafeUtility.Malloc(oldAllocatedIndex * sizeof(TKey), UnsafeUtility.AlignOf<TKey>(), Allocator.Temp);
+
+            int* oldNext = null;
+            int* oldBuckets = null;
+
+            if (!canFastGrow)
+            {
+                oldNext = (int*)UnsafeUtility.Malloc(oldCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
+                oldBuckets = (int*)UnsafeUtility.Malloc(oldBucketCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
+                UnsafeUtility.MemCpy(oldNext, data->Next, oldCapacity * sizeof(int));
+                UnsafeUtility.MemCpy(oldBuckets, data->Buckets, oldBucketCapacity * sizeof(int));
+            }
+
+            UnsafeUtility.MemCpy(oldValue, data->Values, oldAllocatedIndex * data->SizeOfTValue);
+            UnsafeUtility.MemCpy(oldKeys, data->Keys, oldAllocatedIndex * sizeof(TKey));
 
             var oldLog2MinGrowth = data->Log2MinGrowth;
             var sizeOfT = data->SizeOfTValue;
-            var hashMapDataSize = sizeof(DynamicHashMapHelper<TKey>);
 
-            buffer.ResizeUninitialized(hashMapDataSize + totalSize);
+            buffer.ResizeUninitialized(totalSize);
 
             data = buffer.AsHelper<TKey>();
             data->Capacity = newCapacity;
@@ -171,48 +179,38 @@ namespace BovineLabs.Core.Iterators
             data->Log2MinGrowth = oldLog2MinGrowth;
             data->SizeOfTValue = sizeOfT;
 
-            data->ValuesOffset = hashMapDataSize;
-            data->KeysOffset = hashMapDataSize + keyOffset;
-            data->NextOffset = hashMapDataSize + nextOffset;
-            data->BucketsOffset = hashMapDataSize + bucketOffset;
+            data->ValuesOffset = valuesOffset;
+            data->KeysOffset = keysOffset;
+            data->NextOffset = nextOffset;
+            data->BucketsOffset = bucketOffset;
 
-            if (newCapacity > oldCapacity)
+            data->Clear();
+
+            if (canFastGrow)
             {
+                // Keep dense indices and only rebuild bucket chains.
                 data->Count = oldCount;
-                data->FirstFreeIdx = oldFirstFreeIdx;
                 data->AllocatedIndex = oldAllocatedIndex;
 
-                // var keys = data->Keys;
-                var next = data->Next;
+                UnsafeUtility.MemCpy(data->Values, oldValue, oldAllocatedIndex * sizeOfT);
+                UnsafeUtility.MemCpy(data->Keys, oldKeys, oldAllocatedIndex * sizeof(TKey));
+
                 var buckets = data->Buckets;
+                var next = data->Next;
 
-                UnsafeUtility.MemCpy(data->Values, oldValue, oldCapacity * sizeOfT);
-                UnsafeUtility.MemCpy(data->Keys, oldKeys, oldCapacity * sizeof(TKey));
-
-                // re-hash the buckets, first clear the new bucket list, then insert all values from the old list
                 UnsafeUtility.MemSet(next, 0xff, newCapacity * sizeof(int));
-                UnsafeUtility.MemSet(buckets, 0xff, newBucketCapacity * 4);
+                UnsafeUtility.MemSet(buckets, 0xff, newBucketCapacity * sizeof(int));
 
-                for (var i = 0; i < oldBucketCapacity; i++)
+                for (var idx = 0; idx < oldCount; ++idx)
                 {
-                    for (var idx = oldBuckets[i]; idx != -1; idx = oldNext[idx])
-                    {
-                        var bucket = data->GetBucket(oldKeys[idx]);
-                        next[idx] = buckets[bucket];
-                        buckets[bucket] = idx;
-                    }
-                }
-
-                if (data->AllocatedIndex > data->Capacity)
-                {
-                    data->AllocatedIndex = data->Capacity;
+                    var bucket = data->GetBucket(oldKeys[idx]);
+                    next[idx] = buckets[bucket];
+                    buckets[bucket] = idx;
                 }
             }
             else
             {
-                data->Clear();
-
-                // TODO can this be made faster?
+                // Match Unity.Collections behavior: rebuild the map on resize, which also removes holes/free-list state.
                 for (var i = 0; i < oldBucketCapacity; ++i)
                 {
                     for (var idx = oldBuckets[i]; idx != -1; idx = oldNext[idx])
@@ -256,6 +254,7 @@ namespace BovineLabs.Core.Iterators
             DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data, [NoAlias] TKey* keys, [NoAlias] byte* values, int length)
         {
             var helper = buffer.AsHelper<TKey>();
+            helper->CheckNoHolesForAddBatchUnsafe();
 
             var oldLength = helper->Count;
             var newLength = oldLength + length;
@@ -291,6 +290,7 @@ namespace BovineLabs.Core.Iterators
             where TValue : unmanaged
         {
             var helper = buffer.AsHelper<TKey>();
+            helper->CheckNoHolesForAddBatchUnsafe();
 
             Check.Assume(keys.Length == values.Length, "keys.Length != values.Length");
 
@@ -331,6 +331,7 @@ namespace BovineLabs.Core.Iterators
             where TValue : unmanaged
         {
             var helper = buffer.AsHelper<TKey>();
+            helper->CheckNoHolesForAddBatchUnsafe();
 
             Check.Assume(keys.Length == values.Length, "keys.Length != values.Length");
 
@@ -751,22 +752,45 @@ namespace BovineLabs.Core.Iterators
         }
 
         private static int CalculateDataSize(
-            int capacity, int bucketCapacity, int sizeOfTValue, out int outKeyOffset, out int outNextOffset, out int outBucketOffset)
+            int capacity,
+            int bucketCapacity,
+            int sizeOfTValue,
+            out int outValuesOffset,
+            out int outKeysOffset,
+            out int outNextOffset,
+            out int outBucketOffset)
         {
             var sizeOfTKey = sizeof(TKey);
             var sizeOfInt = sizeof(int);
 
+            var valuesOffset = CollectionHelper.Align(sizeof(DynamicHashMapHelper<TKey>), 16);
             var valuesSize = sizeOfTValue * capacity;
+
+            var keysOffset = CollectionHelper.Align(valuesOffset + valuesSize, UnsafeUtility.AlignOf<TKey>());
             var keysSize = sizeOfTKey * capacity;
+
+            var nextOffset = CollectionHelper.Align(keysOffset + keysSize, UnsafeUtility.AlignOf<int>());
             var nextSize = sizeOfInt * capacity;
+
+            var bucketOffset = CollectionHelper.Align(nextOffset + nextSize, UnsafeUtility.AlignOf<int>());
             var bucketSize = sizeOfInt * bucketCapacity;
-            var totalSize = valuesSize + keysSize + nextSize + bucketSize;
 
-            outKeyOffset = valuesSize;
-            outNextOffset = outKeyOffset + keysSize;
-            outBucketOffset = outNextOffset + nextSize;
+            outValuesOffset = valuesOffset;
+            outKeysOffset = keysOffset;
+            outNextOffset = nextOffset;
+            outBucketOffset = bucketOffset;
 
-            return totalSize;
+            return bucketOffset + bucketSize;
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private void CheckNoHolesForAddBatchUnsafe()
+        {
+            if (this.FirstFreeIdx != -1 || this.AllocatedIndex != this.Count)
+            {
+                throw new InvalidOperationException("AddBatchUnsafe requires a map with no holes. Call Flatten() first.");
+            }
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

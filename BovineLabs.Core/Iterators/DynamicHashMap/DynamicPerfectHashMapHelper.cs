@@ -76,6 +76,11 @@ namespace BovineLabs.Core.Iterators
 
         internal static void Init(DynamicBuffer<byte> buffer, NativeArray<TKey> keys, NativeArray<TValue> values, TValue nullValue)
         {
+            if (keys.Length != values.Length)
+            {
+                throw new ArgumentException("Keys and values must have the same length.");
+            }
+
             var data = Init(buffer, keys, nullValue);
 
             var dataKeys = data->Keys;
@@ -95,16 +100,14 @@ namespace BovineLabs.Core.Iterators
             AssertCollisionFree(keys, uniqueSet);
 
             var size = FindSize(keys, uniqueSet);
-            var totalSize = CalculateDataSize(size, out var valueOffset);
-
-            var hashMapDataSize = sizeof(DynamicPerfectHashMapHelper<TKey, TValue>);
-            buffer.ResizeUninitialized(hashMapDataSize + totalSize);
+            var totalSize = CalculateDataSize(size, out var keysOffset, out var valuesOffset);
+            buffer.ResizeUninitialized(totalSize);
 
             var data = buffer.AsHelper<TKey, TValue>();
 
             data->Size = size;
-            data->KeysOffset = hashMapDataSize;
-            data->ValuesOffset = hashMapDataSize + valueOffset;
+            data->KeysOffset = keysOffset;
+            data->ValuesOffset = valuesOffset;
             data->NullValue = nullValue;
 
             var dataValues = data->Values;
@@ -149,18 +152,19 @@ namespace BovineLabs.Core.Iterators
             return false;
         }
 
-        private static int CalculateDataSize(int count, out int outValueOffset)
+        private static int CalculateDataSize(int count, out int outKeysOffset, out int outValuesOffset)
         {
-            var sizeOfTKey = sizeof(TKey);
-            var sizeOfTValue = sizeof(TValue);
+            var headerSize = sizeof(DynamicPerfectHashMapHelper<TKey, TValue>);
+            var keysOffset = CollectionHelper.Align(headerSize, UnsafeUtility.AlignOf<TKey>());
 
-            var keysSize = sizeOfTKey * count;
-            var valuesSize = sizeOfTValue * count;
-            var totalSize = valuesSize + keysSize;
+            var keysSize = sizeof(TKey) * count;
+            var valuesOffset = CollectionHelper.Align(keysOffset + keysSize, UnsafeUtility.AlignOf<TValue>());
+            var valuesSize = sizeof(TValue) * count;
 
-            outValueOffset = keysSize;
+            outKeysOffset = keysOffset;
+            outValuesOffset = valuesOffset;
 
-            return totalSize;
+            return valuesOffset + valuesSize;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

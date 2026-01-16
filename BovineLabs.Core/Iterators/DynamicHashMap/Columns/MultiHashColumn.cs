@@ -66,20 +66,27 @@ namespace BovineLabs.Core.Iterators.Columns
         void IColumn<T>.Initialize(int offset, int newCapacity)
         {
             this.capacity = newCapacity;
-            var next = sizeof(T) * newCapacity;
-            var bucket = sizeof(int) * newCapacity + next;
 
             this.keysOffset = offset;
-            this.nextOffset = next + offset;
-            this.bucketsOffset = bucket + offset;
+
+            var nextOffset = CollectionHelper.Align(this.keysOffset + (sizeof(T) * newCapacity), UnsafeUtility.AlignOf<int>());
+            this.nextOffset = nextOffset;
+
+            var bucketsOffset = CollectionHelper.Align(this.nextOffset + (sizeof(int) * newCapacity), UnsafeUtility.AlignOf<int>());
+            this.bucketsOffset = bucketsOffset;
         }
 
         int IColumn<T>.CalculateDataSize(int newCapacity)
         {
             var keySize = sizeof(T) * newCapacity;
+
+            var nextOffset = CollectionHelper.Align(keySize, UnsafeUtility.AlignOf<int>());
             var nextSize = sizeof(int) * newCapacity;
+
+            var bucketsOffset = CollectionHelper.Align(nextOffset + nextSize, UnsafeUtility.AlignOf<int>());
             var bucketSize = sizeof(int) * GetBucketCapacity(newCapacity);
-            return keySize + nextSize + bucketSize;
+
+            return bucketsOffset + bucketSize;
         }
 
         T IColumn<T>.GetValue(int idx)
