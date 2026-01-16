@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.2] - 2026-01-16
+
+### Fixed
+* Compiling < 6.3 - this will be the last support version
+* No longer requires unity input system
+
 ## [1.5.1] - 2025-12-23
 
 ### Added

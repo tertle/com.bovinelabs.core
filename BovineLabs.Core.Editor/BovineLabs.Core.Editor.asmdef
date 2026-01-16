@@ -1,71 +1,82 @@
 {
-  "name": "BovineLabs.Core.Editor",
-  "rootNamespace": "",
-  "references": [
-    "BovineLabs.Core",
-    "BovineLabs.Core.Authoring",
-    "Unity.Burst",
-    "Unity.Collections",
-    "Unity.Entities",
-    "Unity.Entities.Editor",
-    "Unity.Entities.Hybrid",
-    "Unity.Entities.UI",
-    "Unity.Entities.UI.Editor",
-    "Unity.InputSystem",
-    "Unity.InternalAPIEditorBridge.002",
-    "Unity.Mathematics",
-    "Unity.Scenes",
-    "Unity.Scenes.Editor",
-    "Unity.Physics",
-    "Unity.Serialization.Editor",
-    "Unity.Transforms",
-    "Unity.VisualEffectGraph.Editor"
-  ],
-  "includePlatforms": [
-    "Editor"
-  ],
-  "excludePlatforms": [],
-  "allowUnsafeCode": true,
-  "overrideReferences": false,
-  "precompiledReferences": [
-    "Unity.CompilationPipeline.Common.dll",
-    "Mono.Cecil.dll",
-    "Mono.Cecil.Rocks.dll",
-    "Mono.Cecil.Pdb.dll"
-  ],
-  "autoReferenced": false,
-  "defineConstraints": [],
-  "versionDefines": [
-    {
-      "name": "com.bovinelabs.game",
-      "expression": "0",
-      "define": "BL_GAME"
-    },
-    {
-      "name": "com.unity.ui",
-      "expression": "",
-      "define": "UNITY_UI_TOOLKIT"
-    },
-    {
-      "name": "com.unity.entities.graphics",
-      "expression": "",
-      "define": "UNITY_GRAPHICS"
-    },
-    {
-      "name": "com.unity.physics",
-      "expression": "",
-      "define": "UNITY_PHYSICS"
-    },
-    {
-      "name": "com.unity.netcode",
-      "expression": "",
-      "define": "UNITY_NETCODE"
-    },
-    {
-      "name": "com.unity.visualeffectgraph",
-      "expression": "",
-      "define": "UNITY_VFX_GRAPH"
-    }
-  ],
-  "noEngineReferences": false
+    "name": "BovineLabs.Core.Editor",
+    "rootNamespace": "",
+    "references": [
+        "BovineLabs.Core",
+        "BovineLabs.Core.Authoring",
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Entities.Editor",
+        "Unity.Entities.Hybrid",
+        "Unity.Entities.UI",
+        "Unity.Entities.UI.Editor",
+        "Unity.InputSystem",
+        "Unity.InternalAPIEditorBridge.002",
+        "Unity.Mathematics",
+        "Unity.Scenes",
+        "Unity.Scenes.Editor",
+        "Unity.Splines",
+        "Unity.Physics",
+        "Unity.Serialization.Editor",
+        "Unity.Transforms",
+        "Unity.VisualEffectGraph.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [
+        "Unity.CompilationPipeline.Common.dll",
+        "Mono.Cecil.dll",
+        "Mono.Cecil.Rocks.dll",
+        "Mono.Cecil.Pdb.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.bovinelabs.game",
+            "expression": "0",
+            "define": "BL_GAME"
+        },
+        {
+            "name": "com.unity.ui",
+            "expression": "",
+            "define": "UNITY_UI_TOOLKIT"
+        },
+        {
+            "name": "com.unity.entities.graphics",
+            "expression": "",
+            "define": "UNITY_GRAPHICS"
+        },
+        {
+            "name": "com.unity.physics",
+            "expression": "",
+            "define": "UNITY_PHYSICS"
+        },
+        {
+            "name": "com.unity.netcode",
+            "expression": "",
+            "define": "UNITY_NETCODE"
+        },
+        {
+            "name": "com.unity.visualeffectgraph",
+            "expression": "",
+            "define": "UNITY_VFX_GRAPH"
+        },
+        {
+            "name": "com.unity.splines",
+            "expression": "",
+            "define": "UNITY_SPLINES"
+        },
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "",
+            "define": "UNITY_INPUT"
+        }
+    ],
+    "noEngineReferences": false
 }

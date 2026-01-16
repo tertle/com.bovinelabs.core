@@ -18,8 +18,9 @@ namespace BovineLabs.Core.Editor.Internal
 #if UNITY_6000_3_OR_NEWER
             var guid = GlobalObjectId.GetGlobalObjectIdSlow(UnsafeUtility.As<int, EntityId>(ref unityObjectRef.Id.instanceId));
 #else
-            var guid = GlobalObjectId.GetGlobalObjectIdSlow(unityObjectRef.GetInstanceId());
+            var guid = GlobalObjectId.GetGlobalObjectIdSlow(unityObjectRef.Id.instanceId);
 #endif
+
             var rgGuid = UnsafeUtility.As<GlobalObjectId, RuntimeGlobalObjectId>(ref guid);
             return new UntypedWeakReferenceId(rgGuid, WeakReferenceGenerationType.UnityObject);
         }
