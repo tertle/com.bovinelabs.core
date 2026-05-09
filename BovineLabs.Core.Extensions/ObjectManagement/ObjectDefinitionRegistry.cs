@@ -20,6 +20,11 @@ namespace BovineLabs.Core.ObjectManagement
         }
 
         public Entity this[ObjectId id] => this.objectDefinitions[id];
+
+        public bool TryGetValue(ObjectId id, out Entity entity)
+        {
+            return this.objectDefinitions.TryGetValue(id, out entity);
+        }
     }
 }
 #endif

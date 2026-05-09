@@ -17,7 +17,9 @@
         "Unity.Mathematics.Extensions",
         "Unity.Physics",
         "Unity.Scenes",
-        "Unity.Transforms"
+        "Unity.Transforms",
+        "Unity.Entities.Build",
+        "Unity.NetCode.Authoring.Hybrid"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

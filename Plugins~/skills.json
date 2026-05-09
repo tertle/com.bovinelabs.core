@@ -1,0 +1,52 @@
+[
+    {
+        "id": "bl-core-config-vars",
+        "displayName": "Core - Config Var",
+        "description": "Use for ConfigVars, including declaration, manager wiring, initialization behavior, and editor window bindings."
+    },
+    {
+        "id": "bl-core-inspectors",
+        "displayName": "Core - Inspectors",
+        "description": "Use for custom inspectors and property drawers, including ElementEditor, ElementProperty, and prefab-aware inspector behavior."
+    },
+    {
+        "id": "bl-core-lifecycle",
+        "displayName": "Core - Lifecycle",
+        "description": "Use for lifecycle initialization and destruction flows, including InitializeEntity, InitializeSubSceneEntity, DestroyEntity, and system-group ordering."
+    },
+    {
+        "id": "bl-core-object-management",
+        "displayName": "Core - Object Management",
+        "description": "Use for object management workflows, including ObjectDefinition and ObjectGroup authoring, ObjectId storage, LookupAuthoring baking, AutoRef processing, and runtime registries."
+    },
+    {
+        "id": "bl-core-settings",
+        "displayName": "Core - Settings",
+        "description": "Use for settings assets and retrieval paths, including ISettings, SettingsBase, SettingsSingleton, world routing, and build-time setup."
+    },
+    {
+        "id": "bl-core-pause",
+        "displayName": "Core - Pause",
+        "description": "Use for pause behavior, including PauseGame, IUpdateWhilePaused and IDisableWhilePaused markers, PauseUtility overrides, and pause-aware system groups."
+    },
+    {
+        "id": "bl-core-subscenes",
+        "displayName": "Core - SubScenes",
+        "description": "Use for subscene loading workflows, including SubSceneSettings and SubSceneSet authoring, world targeting, runtime load state, asset loading, and editor tooling."
+    },
+    {
+        "id": "bl-core-system-groups",
+        "displayName": "Core - System Groups",
+        "description": "Use for core system-group placement and ordering, including BeforeScene and AfterScene, BeginSimulation, transform groups, relevancy, and pause-aware simulation roots."
+    },
+    {
+        "id": "bl-core-entity-commands",
+        "displayName": "Core - Entity Commands",
+        "description": "Use for IEntityCommands workflows, including reusable builder methods, shared component setup, command buffers, parallel jobs, and EntityManager-based tests or editor setup."
+    },
+    {
+        "id": "bl-core-states",
+        "displayName": "Core - States",
+        "description": "Use for state workflows, including StateModel and StateFlagModel variants, StateAPI.Register, history support, and enableable-state behavior."
+    }
+]

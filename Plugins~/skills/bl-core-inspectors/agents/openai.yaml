@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Inspectors Usage"
+  short_description: "Implement and debug com.bovinelabs.core custom inspectors and property drawers with prefab-aware behavior."

@@ -77,7 +77,9 @@ namespace BovineLabs.Core.Extensions
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             if (impl->_QueryData->HasEnableableComponents != 0)
+            {
                 throw new InvalidOperationException("Can't call GetFirstEntity() on queries containing enableable component types.");
+            }
 #endif
             impl->GetFirstChunkAndEntity(TypeManager.GetTypeIndex<Entity>(), out _, out var chunk, out var entityIndexInChunk);
             var archetype = impl->_Access->EntityComponentStore->GetArchetype(chunk);
@@ -102,7 +104,9 @@ namespace BovineLabs.Core.Extensions
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(impl->_Access->EntityComponentStore->m_RecordToJournal != 0) && !isReadOnly)
             {
+#pragma warning disable 0618
                 impl->RecordSingletonJournalRW(chunk, typeIndex, EntitiesJournaling.RecordType.GetBufferRW);
+#pragma warning restore 0618
             }
 #endif
 
@@ -137,9 +141,11 @@ namespace BovineLabs.Core.Extensions
 
             impl->GetSingletonChunkAndEntity(typeIndex, out var indexInArchetype, out var chunk, out var entityIndexInChunk);
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#pragma warning disable 0618
             if (Hint.Unlikely(impl->_Access->EntityComponentStore->m_RecordToJournal != 0) && !isReadOnly)
             {
                 impl->RecordSingletonJournalRW(chunk, typeIndex, EntitiesJournaling.RecordType.GetBufferRW);
+#pragma warning restore 0618
             }
 #endif
 
@@ -191,8 +197,10 @@ namespace BovineLabs.Core.Extensions
             int stride = archetype->SizeOfs[typeIndexInArchetype];
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#pragma warning disable 0618
             if (Hint.Unlikely(archetype->EntityComponentStore->m_RecordToJournal != 0) && isWriting)
             {
+
                 EntitiesJournaling.AddRecord(
                     recordType: EntitiesJournaling.RecordType.GetBufferRW,
                     entityComponentStore: archetype->EntityComponentStore,
@@ -202,6 +210,7 @@ namespace BovineLabs.Core.Extensions
                     types: &archetype->Types[typeIndexInArchetype].TypeIndex,
                     typeCount: 1);
             }
+#pragma warning restore 0618
 #endif
 
             var typeInfo = TypeManager.GetTypeInfo(typeIndex);

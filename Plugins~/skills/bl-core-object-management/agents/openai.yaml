@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Object Management Usage"
+  short_description: "Work on com.bovinelabs.core object definitions, ObjectId storage, groups, LookupAuthoring map baking, auto-id/autoref, registries, and runtime lookups."

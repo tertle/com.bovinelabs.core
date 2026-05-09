@@ -10,6 +10,7 @@
 - Extension helpers for zero to three inputs and common `out` patterns
 - `ArgumentsFromPtr<T>()` for safe payload unpacking on the managed side
 - No user-facing `MonoPInvokeCallback` or delegate boilerplate
+- Explicit lifecycle initialization instead of Burst-reachable static constructors
 
 ## Core API
 
@@ -28,6 +29,13 @@ Core members:
 - `Invoke(void* argumentsPtr, int argumentsSize)`
 - `Invoke<T>(ref T arguments)`
 - `ArgumentsFromPtr<T>(void* argumentsPtr, int size)`
+
+## Initialization
+
+Store trampolines in `SharedStatic<BurstTrampoline>` fields and assign them from an explicit Unity lifecycle callback after Burst shared statics have been reset and before Burst execution can touch them.
+Do not construct `new BurstTrampoline(&ManagedCallback)` in a static constructor that can be reached from Burst-compiled code.
+
+Use `InitializeOnLoadMethod` in the editor and `RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)` in players.
 
 ## Helper payload types
 
@@ -70,8 +78,13 @@ public struct AudioFacade : IComponentData
 public unsafe partial struct AudioSyncSystem : ISystem
 {
     public static readonly SharedStatic<BurstTrampoline> AudioSource = SharedStatic<BurstTrampoline>.GetOrCreate<AudioSyncSystem>();
-    
-    static AudioSyncSystem()
+
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoadMethod]
+#else
+    [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
+#endif
+    private static void InitializeTrampolines()
     {
         AudioSource.Data = new BurstTrampoline(&AudioSourceChangedPacked);
     }

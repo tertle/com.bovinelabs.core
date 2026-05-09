@@ -49,32 +49,27 @@ namespace BovineLabs.Core.Spatial
         }
 
         public JobHandle Build(
-            NativeList<T> positions, JobHandle dependency, ResizeNativeParallelHashMapJob resizeStub = default, QuantizeJob quantizeStub = default)
+            NativeList<T> positions, JobHandle dependency, ResizeNativeParallelHashMapJob resizeStub = default, QuantizeJob quantizeJob = default)
         {
-            return this.Build(positions.AsDeferredJobArray(), dependency, resizeStub, quantizeStub);
+            return this.Build(positions.AsDeferredJobArray(), dependency, resizeStub, quantizeJob);
         }
 
         [SuppressMessage("ReSharper", "UnusedParameter.Global", Justification = "Sneaky way to allow this to run in bursted ISystem")]
         public JobHandle Build(
-            NativeArray<T> positions, JobHandle dependency, ResizeNativeParallelHashMapJob resizeStub = default, QuantizeJob quantizeStub = default)
+            NativeArray<T> positions, JobHandle dependency, ResizeNativeParallelHashMapJob resizeJob = default, QuantizeJob quantizeJob = default)
         {
-            // Deferred native arrays are supported so we must part it into the job to get the length
-            dependency = new ResizeNativeParallelHashMapJob
-            {
-                Length = positions,
-                Map = this.map,
-            }.Schedule(dependency);
+            resizeJob.Length = positions;
+            resizeJob.Map = this.map;
+            dependency = resizeJob.Schedule(dependency);
 
             var workers = math.max(1, JobsUtility.JobWorkerCount);
-            dependency = new QuantizeJob
-            {
-                Positions = positions,
-                Map = this.map,
-                QuantizeStep = this.quantizeStep,
-                QuantizeWidth = this.quantizeSize,
-                HalfSize = this.halfSize,
-                Workers = workers,
-            }.ScheduleParallel(workers, 1, dependency);
+            quantizeJob.Positions = positions;
+            quantizeJob.Map = this.map;
+            quantizeJob.QuantizeStep = this.quantizeStep;
+            quantizeJob.QuantizeWidth = this.quantizeSize;
+            quantizeJob.HalfSize = this.halfSize;
+            quantizeJob.Workers = workers;
+            dependency = quantizeJob.ScheduleParallel(workers, 1, dependency);
 
             dependency = new SpatialMap.CalculateMap
             {

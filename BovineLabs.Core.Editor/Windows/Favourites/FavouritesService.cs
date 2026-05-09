@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
         }
 
         /// <summary>Gets the current favourites as a read-only list.</summary>
-        public override IReadOnlyList<FavouritesItem> Items => new List<FavouritesItem>(this.favourites);
+        public override IReadOnlyList<FavouritesItem> Items => this.favourites;
 
         /// <summary>Gets the singleton instance of the favourites service.</summary>
         public static FavouritesService Instance
@@ -170,22 +170,21 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             return this.favourites.Any(f => f.GlobalId.Equals(objectId));
         }
 
-        /// <summary>Reorders a favourite item to a new position relative to another item.</summary>
-        /// <param name="itemToMove"> The item to move. </param>
-        /// <param name="targetItem"> The item to move it relative to. </param>
-        public void ReorderFavourite(FavouritesItem itemToMove, FavouritesItem targetItem)
+        /// <summary>Reorders a favourite item to a new position.</summary>
+        /// <param name="fromIndex">The current index of the item.</param>
+        /// <param name="toIndex">The target index for the item.</param>
+        public void ReorderFavourite(int fromIndex, int toIndex)
         {
-            var oldIndex = this.favourites.IndexOf(itemToMove);
-            var newIndex = this.favourites.IndexOf(targetItem);
-
-            if (oldIndex == -1 || newIndex == -1 || oldIndex == newIndex)
+            if (fromIndex < 0 || fromIndex >= this.favourites.Count ||
+                toIndex < 0 || toIndex >= this.favourites.Count ||
+                fromIndex == toIndex)
             {
                 return;
             }
 
-            // Simple swap of the two items
-            this.favourites[oldIndex] = targetItem;
-            this.favourites[newIndex] = itemToMove;
+            var item = this.favourites[fromIndex];
+            this.favourites.RemoveAt(fromIndex);
+            this.favourites.Insert(toIndex, item);
 
             this.Save();
             this.NotifyItemsChanged();
@@ -221,22 +220,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
         {
             try
             {
-                this.Preferences.FavouritesData.Clear();
-
-                foreach (var item in this.favourites)
-                {
-                    var serializableItem = new SerializableFavouriteItem
-                    {
-                        Name = item.Name,
-                        TypeName = item.TypeName,
-                        AssetPath = item.AssetPath,
-                        Timestamp = item.Timestamp.ToBinary(),
-                        GlobalIdString = item.GlobalId.ToString(),
-                        Icon = GlobalObjectId.GetGlobalObjectIdSlow(item.Icon).ToString(),
-                    };
-
-                    this.Preferences.FavouritesData.Add(serializableItem);
-                }
+                this.Preferences.FavouritesData = CreateSerializableItems<FavouritesItem, SerializableFavouriteItem>(this.favourites);
             }
             catch (Exception ex)
             {
@@ -254,19 +238,13 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
                     return;
                 }
 
-                var pathCache = new Dictionary<string, Object>();
-                var allObjects = Resources.FindObjectsOfTypeAll<Object>().ToList();
+                var loadedObjects = new LoadedObjectLookup();
 
                 foreach (var item in this.Preferences.FavouritesData)
                 {
-                    // Create favourite item
-                    GlobalObjectId.TryParse(item.GlobalIdString, out var savedGlobalId);
-                    var obj = TryGetAssetIfLoaded(item.AssetPath, allObjects, pathCache);
-
-                    var timestamp = DateTime.FromBinary(item.Timestamp);
-
-                    GlobalObjectId.TryParse(item.Icon, out var iconId);
-                    var icon = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(iconId) as Texture2D;
+                    var obj = loadedObjects.TryGetObject(item, out var savedGlobalId);
+                    var timestamp = LoadedObjectLookup.GetTimestamp(item);
+                    var icon = LoadedObjectLookup.GetIcon(obj);
 
                     var favouriteItem = new FavouritesItem(obj, item.Name, item.TypeName, item.AssetPath, savedGlobalId, icon, timestamp);
                     this.favourites.Add(favouriteItem);

@@ -15,18 +15,17 @@ namespace BovineLabs.Core.ObjectManagement
     /// that can be instantiated at runtime via <see cref="ObjectDefinitionRegistry" />.
     /// </summary>
     [Serializable]
-    public readonly struct ObjectId : IComponentData, IEquatable<ObjectId>, IComparable<ObjectId>
+    public struct ObjectId : IComponentData, IEquatable<ObjectId>, IComparable<ObjectId>
     {
-        public static readonly ObjectId Null = default;
+        public const int MaxModsIds = 1 << ModBytes;
 
         private const int ModBytes = 10;
         private const int ModShift = 32 - ModBytes;
         private const int IDMask = (1 << ModShift) - 1;
 
-        public const int MaxModsIds = 1 << ModBytes;
+        public static readonly ObjectId Null = default;
 
-        [CreateProperty(ReadOnly = true)]
-        private readonly int rawValue;
+        public int RawValue;
 
         public ObjectId(int id, ushort mod = 0)
         {
@@ -42,14 +41,14 @@ namespace BovineLabs.Core.ObjectManagement
             }
 #endif
 
-            this.rawValue = mod << ModShift | id;
+            this.RawValue = mod << ModShift | id;
         }
 
         [CreateProperty]
-        public ushort Mod => (ushort)(this.rawValue >> ModShift);
+        public ushort Mod => (ushort)(this.RawValue >> ModShift);
 
         [CreateProperty]
-        public int ID => this.rawValue & IDMask;
+        public int ID => this.RawValue & IDMask;
 
         public static bool operator ==(ObjectId left, ObjectId right)
         {
@@ -64,7 +63,7 @@ namespace BovineLabs.Core.ObjectManagement
         /// <inheritdoc/>
         public int CompareTo(ObjectId other)
         {
-            return this.rawValue.CompareTo(other.rawValue);
+            return this.RawValue.CompareTo(other.RawValue);
         }
 
         /// <inheritdoc/>
@@ -87,13 +86,13 @@ namespace BovineLabs.Core.ObjectManagement
         /// <inheritdoc />
         public bool Equals(ObjectId other)
         {
-            return this.rawValue == other.rawValue;
+            return this.RawValue == other.RawValue;
         }
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return this.rawValue;
+            return this.RawValue;
         }
     }
 }

@@ -170,32 +170,22 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private DynamicMultiHashMap<int, byte> CreateHashMap()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestHashMap));
+            var entity = this.Manager.CreateEntity(typeof(DynamicMultiHashMapTestsBuffer));
             return this
                 .Manager
-                .GetBuffer<TestHashMap>(entity)
-                .InitializeMultiHashMap<TestHashMap, int, byte>(0, MinGrowth)
-                .AsMultiHashMap<TestHashMap, int, byte>();
+                .GetBuffer<DynamicMultiHashMapTestsBuffer>(entity)
+                .InitializeMultiHashMap<DynamicMultiHashMapTestsBuffer, int, byte>(0, MinGrowth)
+                .AsMultiHashMap<DynamicMultiHashMapTestsBuffer, int, byte>();
         }
 
         private DynamicMultiHashMap<int, long> CreateHashMapLong()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestHashMapLong));
+            var entity = this.Manager.CreateEntity(typeof(DynamicMultiHashMapTestsLongBuffer));
             return this
                 .Manager
-                .GetBuffer<TestHashMapLong>(entity)
-                .InitializeMultiHashMap<TestHashMapLong, int, long>(0, MinGrowth)
-                .AsMultiHashMap<TestHashMapLong, int, long>();
-        }
-
-        private struct TestHashMap : IDynamicMultiHashMap<int, byte>
-        {
-            byte IDynamicMultiHashMap<int, byte>.Value { get; }
-        }
-
-        private struct TestHashMapLong : IDynamicMultiHashMap<int, long>
-        {
-            byte IDynamicMultiHashMap<int, long>.Value { get; }
+                .GetBuffer<DynamicMultiHashMapTestsLongBuffer>(entity)
+                .InitializeMultiHashMap<DynamicMultiHashMapTestsLongBuffer, int, long>(0, MinGrowth)
+                .AsMultiHashMap<DynamicMultiHashMapTestsLongBuffer, int, long>();
         }
     }
 }

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Lifecycle Usage"
+  short_description: "Design and debug com.bovinelabs.core lifecycle initialization and destruction flows with proper system-group ordering."

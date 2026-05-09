@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Config Vars Usage"
+  short_description: "Add, change, and debug com.bovinelabs.core ConfigVars, manager initialization, and editor bindings."

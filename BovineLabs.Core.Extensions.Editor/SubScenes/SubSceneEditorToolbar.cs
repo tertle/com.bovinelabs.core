@@ -49,6 +49,7 @@ namespace BovineLabs.Core.Editor.SubScenes
             ConfigVarManager.Initialize();
             SceneManager.sceneLoaded += (_, _) => CleanupOldSubScenes();
             EditorApplication.playModeStateChanged += SceneOnPlayModeStatusChanged;
+            AssemblyReloadEvents.beforeAssemblyReload += SaveEditorSubScenesBeforeAssemblyReload;
         }
 
         private delegate bool AddSetDelegate<in T>(T dropDown, SubSceneSetBase set, string setPath)
@@ -109,6 +110,19 @@ namespace BovineLabs.Core.Editor.SubScenes
             }
 
             EditorSubScenes.Clear();
+        }
+
+        private static void SaveEditorSubScenesBeforeAssemblyReload()
+        {
+            foreach (var s in EditorSubScenes)
+            {
+                if (!s.Value)
+                {
+                    continue;
+                }
+
+                SubSceneInspectorUtility.SaveScene(s.Value);
+            }
         }
 
         private static void CleanupOldSubScenes()

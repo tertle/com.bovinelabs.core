@@ -12,14 +12,17 @@ namespace BovineLabs.Core.SubScenes
         public static bool IncludeScene(this IBaker baker, SubSceneLoadFlags flags)
         {
 #if UNITY_NETCODE
-            if (baker.IsClient())
+            if (!baker.IsBakingForEditor())
             {
-                return (flags & (SubSceneLoadFlags.Client | SubSceneLoadFlags.ThinClient)) != 0;
-            }
+                if (baker.IsClient())
+                {
+                    return (flags & (SubSceneLoadFlags.Client | SubSceneLoadFlags.ThinClient)) != 0;
+                }
 
-            if (baker.IsServer())
-            {
-                return (flags & SubSceneLoadFlags.Server) != 0;
+                if (baker.IsServer())
+                {
+                    return (flags & SubSceneLoadFlags.Server) != 0;
+                }
             }
 #endif
             return true;

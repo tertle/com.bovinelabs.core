@@ -28,6 +28,14 @@ namespace BovineLabs.DynamicGenerator
             DiagnosticSeverity.Error,
             true);
 
+        internal static readonly DiagnosticDescriptor NestedTypeDescriptor = new DiagnosticDescriptor(
+            "BLDYN0003",
+            "Nested dynamic buffer generation is skipped",
+            "Type '{0}' is nested. DynamicGenerator only emits top-level extension classes, so generation was skipped for this type.",
+            Category,
+            DiagnosticSeverity.Warning,
+            true);
+
         public static Diagnostic NonStruct(INamedTypeSymbol typeSymbol, Location location)
         {
             return Diagnostic.Create(
@@ -40,6 +48,14 @@ namespace BovineLabs.DynamicGenerator
         {
             return Diagnostic.Create(
                 MultipleInterfacesDescriptor,
+                location ?? typeSymbol.Locations[0],
+                typeSymbol.ToDisplayString(DynamicGenerator.ShortTypeFormat));
+        }
+
+        public static Diagnostic NestedType(INamedTypeSymbol typeSymbol, Location location)
+        {
+            return Diagnostic.Create(
+                NestedTypeDescriptor,
                 location ?? typeSymbol.Locations[0],
                 typeSymbol.ToDisplayString(DynamicGenerator.ShortTypeFormat));
         }

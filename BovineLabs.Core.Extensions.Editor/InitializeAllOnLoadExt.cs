@@ -20,7 +20,6 @@ namespace BovineLabs.Core.Editor
             InitializeAllOnLoad.Initialize();
 
             SetWorldToEditorWindows.Initialize();
-            WorldSafeShutdown.Initialize();
 
 #if !BL_DISABLE_SUBSCENE
             StartupSceneSwap.Initialize();

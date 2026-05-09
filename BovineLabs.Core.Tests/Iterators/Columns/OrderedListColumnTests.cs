@@ -583,34 +583,22 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
 
         private DynamicVariableMap<int, float, int, OrderedListColumn<int>> CreateOrderedMap(int growth = 64)
         {
-            var entity = this.Manager.CreateEntity(typeof(TestOrderedMap));
+            var entity = this.Manager.CreateEntity(typeof(OrderedListColumnTestsBuffer));
             return this
                 .Manager
-                .GetBuffer<TestOrderedMap>(entity)
-                .InitializeVariableMap<TestOrderedMap, int, float, int, OrderedListColumn<int>>(0, growth)
-                .AsVariableMap<TestOrderedMap, int, float, int, OrderedListColumn<int>>();
+                .GetBuffer<OrderedListColumnTestsBuffer>(entity)
+                .InitializeVariableMap<OrderedListColumnTestsBuffer, int, float, int, OrderedListColumn<int>>(0, growth)
+                .AsVariableMap<OrderedListColumnTestsBuffer, int, float, int, OrderedListColumn<int>>();
         }
 
         private DynamicVariableMap<long, short, short, OrderedListColumn<short>> CreateSmallCapacityOrderedMap()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestSmallOrderedMap));
+            var entity = this.Manager.CreateEntity(typeof(OrderedListColumnTestsSmallBuffer));
             return this
                 .Manager
-                .GetBuffer<TestSmallOrderedMap>(entity)
-                .InitializeVariableMap<TestSmallOrderedMap, long, short, short, OrderedListColumn<short>>(0, 1)
-                .AsVariableMap<TestSmallOrderedMap, long, short, short, OrderedListColumn<short>>();
-        }
-
-        private struct TestOrderedMap : IDynamicVariableMap<int, float, int, OrderedListColumn<int>>
-        {
-            [UsedImplicitly]
-            byte IDynamicVariableMap<int, float, int, OrderedListColumn<int>>.Value { get; }
-        }
-
-        private struct TestSmallOrderedMap : IDynamicVariableMap<long, short, short, OrderedListColumn<short>>
-        {
-            [UsedImplicitly]
-            byte IDynamicVariableMap<long, short, short, OrderedListColumn<short>>.Value { get; }
+                .GetBuffer<OrderedListColumnTestsSmallBuffer>(entity)
+                .InitializeVariableMap<OrderedListColumnTestsSmallBuffer, long, short, short, OrderedListColumn<short>>(0, 1)
+                .AsVariableMap<OrderedListColumnTestsSmallBuffer, long, short, short, OrderedListColumn<short>>();
         }
 
         private struct OrderedListColumnLayout<T>

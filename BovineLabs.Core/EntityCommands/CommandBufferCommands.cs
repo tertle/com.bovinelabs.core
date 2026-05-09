@@ -149,5 +149,17 @@ namespace BovineLabs.Core.EntityCommands
         {
             this.commandBuffer.SetComponentEnabled<T>(entity, enabled);
         }
+
+        public void AddSharedComponent<T>(Entity entity, in T component)
+            where T : unmanaged, ISharedComponentData
+        {
+            this.commandBuffer.AddSharedComponent(entity, component);
+        }
+
+        public void SetSharedComponent<T>(Entity entity, in T component)
+            where T : unmanaged, ISharedComponentData
+        {
+            this.commandBuffer.SetSharedComponent(entity, component);
+        }
     }
 }

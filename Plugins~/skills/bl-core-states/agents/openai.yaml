@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core States Usage"
+  short_description: "Create and debug com.bovinelabs.core state models, registration, history variants, and enableable-state behavior."

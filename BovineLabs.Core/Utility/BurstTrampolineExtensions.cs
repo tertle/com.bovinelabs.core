@@ -59,6 +59,12 @@ namespace BovineLabs.Core.Utility
             wrapper.Invoke(ref arguments);
         }
 
+        public static void InvokeRef<TRef>(this BurstTrampoline wrapper, ref TRef value)
+            where TRef : unmanaged
+        {
+            wrapper.Invoke(ref value);
+        }
+
         public static void InvokeOut<TOut>(this BurstTrampoline wrapper, out TOut value)
             where TOut : unmanaged
         {

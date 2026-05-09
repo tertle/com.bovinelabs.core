@@ -98,22 +98,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             var openButton = element.Q<Button>();
             if (openButton != null)
             {
-                // Clear existing callbacks
-                openButton.UnregisterCallback<ClickEvent>(this.OnOpenButtonClick);
-
-                if (openButton.userData is Action previousHandler)
-                {
-                    openButton.clicked -= previousHandler;
-                }
-
-                Action clickHandler = () =>
-                {
-                    AssetDatabase.OpenAsset(item.GetObject());
-                };
-
-                openButton.userData = clickHandler;
-                openButton.clicked += clickHandler;
-                openButton.RegisterCallback<ClickEvent>(this.OnOpenButtonClick);
+                this.BindButtonClickAction(openButton, () => AssetDatabase.OpenAsset(item.GetObject()), this.OnOpenButtonClick);
             }
         }
 
@@ -140,10 +125,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             if (item.IsAsset)
             {
                 evt.menu.AppendAction("Open Object", _ => AssetDatabase.OpenAsset(item.GetObject()));
-            }
-
-            if (item.IsAsset)
-            {
                 evt.menu.AppendAction("Show in Project", _ => EditorGUIUtility.PingObject(item.GetObject()));
             }
 
@@ -301,9 +282,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             if (fromIndex >= 0 && fromIndex < this.FilteredItems.Count &&
                 toIndex >= 0 && toIndex < this.FilteredItems.Count)
             {
-                var itemToMove = this.FilteredItems[fromIndex];
-                var targetItem = this.FilteredItems[toIndex];
-                this.favouritesService?.ReorderFavourite(itemToMove, targetItem);
+                this.favouritesService?.ReorderFavourite(fromIndex, toIndex);
             }
         }
     }

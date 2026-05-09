@@ -150,11 +150,13 @@ namespace BovineLabs.Core.Extensions
             var elementAlign = typeInfo.AlignmentInBytes;
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#pragma warning disable 0618
             if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0) && !chunkBufferTypeHandle.IsReadOnly)
             {
                 chunk.JournalAddRecord(EntitiesJournaling.RecordType.GetBufferRW, chunkBufferTypeHandle.m_TypeIndex,
                     chunkBufferTypeHandle.m_GlobalSystemVersion);
             }
+#pragma warning restore 0618
 #endif
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -517,6 +519,7 @@ namespace BovineLabs.Core.Extensions
         }
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#pragma warning disable 0618
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static void JournalAddRecord(
             this ref ArchetypeChunk chunk, EntitiesJournaling.RecordType recordType, TypeIndex typeIndex, uint globalSystemVersion, void* data = null,
@@ -528,6 +531,7 @@ namespace BovineLabs.Core.Extensions
                     typeCount: 1, data: data, dataLength: dataLength);
             }
         }
+#pragma warning restore 0618
 #endif
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

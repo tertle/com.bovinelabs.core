@@ -10,12 +10,14 @@ namespace CodeGenHelpers
     {
         private SwitchBuilder _parent { get; }
         private string _case { get; }
+        private bool _default { get; }
         private Action<ICodeWriter>? _content;
 
-        public SwitchCaseBuilder(SwitchBuilder parent, string @case)
+        public SwitchCaseBuilder(SwitchBuilder parent, string @case, bool @default = false)
         {
             _parent = parent;
             _case = @case;
+            _default = @default;
         }
 
         public SwitchBuilder WithContent(Action<ICodeWriter> contentDelegate)
@@ -38,7 +40,7 @@ namespace CodeGenHelpers
             }
             else
             {
-                writer.AppendLine($"case {_case}:");
+                writer.AppendLine(_default ? "default:" : $"case {_case}:");
                 writer.IncreaseIndent();
                 _content?.Invoke(writer);
                 writer.AppendLine("break;");

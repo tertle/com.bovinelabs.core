@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core System Groups Usage"
+  short_description: "Place and debug com.bovinelabs.core system groups with correct scene, simulation, transform, relevancy, and pause-aware ordering."

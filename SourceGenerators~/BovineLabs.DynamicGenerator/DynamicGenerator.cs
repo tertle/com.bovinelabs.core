@@ -33,36 +33,33 @@ namespace BovineLabs.DynamicGenerator
 
         private static void Execute(SourceProductionContext context, DynamicCandidate candidate)
         {
-            DynamicResult result;
             try
             {
-                result = GetSemanticTargetForGeneration(candidate, context.CancellationToken);
+                var result = GetSemanticTargetForGeneration(candidate, context.CancellationToken);
+                if (result == null)
+                {
+                    return;
+                }
+
+                foreach (var diagnostic in result.Diagnostics)
+                {
+                    context.ReportDiagnostic(diagnostic);
+                }
+
+                if (result.Data == null)
+                {
+                    return;
+                }
+
+                var builder = ProcessData(result.Data);
+                if (builder != null)
+                {
+                    context.AddSource(builder);
+                }
             }
             catch (Exception ex)
             {
-                SourceGenHelpers.Log($"Exception occurred: {ex.Message}\n{ex.StackTrace}");
-                return;
-            }
-
-            if (result == null)
-            {
-                return;
-            }
-
-            foreach (var diagnostic in result.Diagnostics)
-            {
-                context.ReportDiagnostic(diagnostic);
-            }
-
-            if (result.Data == null)
-            {
-                return;
-            }
-
-            var builder = ProcessData(result.Data);
-            if (builder != null)
-            {
-                context.AddSource(builder);
+                SourceGenHelpers.Log(ex.ToString());
             }
         }
 
@@ -129,6 +126,12 @@ namespace BovineLabs.DynamicGenerator
             if (dynamicInterfaces.Count > 1)
             {
                 diagnostics.Add(DynamicDiagnostics.MultipleInterfaces(typeSymbol, typeSyntax.Identifier.GetLocation()));
+                return new DynamicResult(null, diagnostics);
+            }
+
+            if (typeSymbol.ContainingType != null)
+            {
+                diagnostics.Add(DynamicDiagnostics.NestedType(typeSymbol, typeSyntax.Identifier.GetLocation()));
                 return new DynamicResult(null, diagnostics);
             }
 
@@ -218,6 +221,14 @@ namespace BovineLabs.DynamicGenerator
                     .AddNamespaceImport("System.Runtime.CompilerServices")
                     .MakeStaticClass();
 
+                AddTypeImports(builder, data.TypeSymbol);
+                AddTypeImports(builder, data.Type1Symbol);
+                AddTypeImports(builder, data.Type2Symbol);
+                AddTypeImports(builder, data.Type3Symbol);
+                AddTypeImports(builder, data.Type4Symbol);
+                AddTypeImports(builder, data.Type5Symbol);
+                AddTypeImports(builder, data.Type6Symbol);
+
                 InitializeMethod(builder, data);
                 AsMapMethod(builder, data);
 
@@ -227,6 +238,36 @@ namespace BovineLabs.DynamicGenerator
             {
                 SourceGenHelpers.Log(ex.ToString());
                 return null;
+            }
+        }
+
+        private static void AddTypeImports(ClassBuilder builder, ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol == null)
+            {
+                return;
+            }
+
+            switch (typeSymbol)
+            {
+                case IArrayTypeSymbol arrayType:
+                    AddTypeImports(builder, arrayType.ElementType);
+                    break;
+                case IPointerTypeSymbol pointerType:
+                    AddTypeImports(builder, pointerType.PointedAtType);
+                    break;
+                case INamedTypeSymbol namedType:
+                    if (!namedType.ContainingNamespace.IsGlobalNamespace)
+                    {
+                        builder.AddNamespaceImport(namedType.ContainingNamespace);
+                    }
+
+                    foreach (var typeArgument in namedType.TypeArguments)
+                    {
+                        AddTypeImports(builder, typeArgument);
+                    }
+
+                    break;
             }
         }
 
@@ -335,6 +376,12 @@ namespace BovineLabs.DynamicGenerator
                 this.TypeSymbol = typeSymbol;
                 this.TypeName = GetName(typeSymbol);
                 this.Type = type;
+                this.Type1Symbol = type1;
+                this.Type2Symbol = type2;
+                this.Type3Symbol = type3;
+                this.Type4Symbol = type4;
+                this.Type5Symbol = type5;
+                this.Type6Symbol = type6;
                 this.Type1 = GetName(type1);
                 this.Type2 = GetName(type2);
                 this.Type3 = GetName(type3);
@@ -348,6 +395,18 @@ namespace BovineLabs.DynamicGenerator
             public string TypeName { get; }
 
             public DynamicType Type { get; }
+
+            public ITypeSymbol Type1Symbol { get; }
+
+            public ITypeSymbol Type2Symbol { get; }
+
+            public ITypeSymbol Type3Symbol { get; }
+
+            public ITypeSymbol Type4Symbol { get; }
+
+            public ITypeSymbol Type5Symbol { get; }
+
+            public ITypeSymbol Type6Symbol { get; }
 
             public string Type1 { get; }
 

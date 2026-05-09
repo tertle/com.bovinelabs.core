@@ -14,6 +14,7 @@ namespace BovineLabs.Core.Utility
     /// </summary>
     public unsafe readonly struct BurstTrampoline
     {
+        private static GCHandle cachedWrapperHandle;
         private static IntPtr cachedWrapperPtr;
 
         [NativeDisableUnsafePtrRestriction]
@@ -54,7 +55,7 @@ namespace BovineLabs.Core.Utility
             }
 
             WrapperDelegate wrapperDelegate = Wrapper;
-            GCHandle.Alloc(wrapperDelegate);
+            cachedWrapperHandle = GCHandle.Alloc(wrapperDelegate);
             cachedWrapperPtr = Marshal.GetFunctionPointerForDelegate(wrapperDelegate);
         }
 

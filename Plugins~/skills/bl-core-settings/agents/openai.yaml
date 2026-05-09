@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Settings Usage"
+  short_description: "Create and wire com.bovinelabs.core settings assets, retrieval paths, and world routing behavior."

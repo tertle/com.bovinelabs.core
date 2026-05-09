@@ -27,6 +27,8 @@ namespace BovineLabs.Core
 
         public const WorldSystemFilterFlags SimulationEditor = Simulation | WorldSystemFilterFlags.Editor;
 
+        public const WorldSystemFilterFlags SimulationMenuEditor = SimulationMenu | WorldSystemFilterFlags.Editor;
+
         public const WorldSystemFilterFlags All = SimulationEditor | Service | Menu;
 
         public const WorldFlags ServiceWorld = (WorldFlags)(1 << 16) | WorldFlags.Live;

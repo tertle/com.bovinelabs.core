@@ -73,7 +73,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
             }
 
             // If weak reference is null, try to reload using GlobalObjectId
-            if (!this.GlobalId.assetGUID.Empty() || this.GlobalId.identifierType != 0)
+            if (HasValidObjectId(this.GlobalId))
             {
                 obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(this.GlobalId);
                 if (obj != null)
@@ -86,11 +86,11 @@ namespace BovineLabs.Core.Editor.Windows.Base
                 }
             }
 
-            // Finally, try asset path for assets (fallback)
-            if (!string.IsNullOrEmpty(this.AssetPath))
+            // Old preference entries may not have a valid GlobalObjectId. Path fallback is only safe when no exact identity was persisted.
+            if (!HasValidObjectId(this.GlobalId) && !string.IsNullOrEmpty(this.AssetPath))
             {
                 obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(this.AssetPath);
-                if (obj != null)
+                if (obj != null && obj.GetType().Name == this.TypeName)
                 {
                     this.ObjectRef.Target = obj;
                     this.Icon = AssetPreview.GetMiniThumbnail(obj);
@@ -99,6 +99,11 @@ namespace BovineLabs.Core.Editor.Windows.Base
             }
 
             return null;
+        }
+
+        internal static bool HasValidObjectId(GlobalObjectId objectId)
+        {
+            return !objectId.assetGUID.Empty() || objectId.identifierType != 0;
         }
 
         /// <summary>Gets a display string for the item.</summary>
@@ -133,5 +138,16 @@ namespace BovineLabs.Core.Editor.Windows.Base
 
             return result;
         }
+    }
+
+    [Serializable]
+    public abstract class SerializableObjectItem
+    {
+        public string Name = string.Empty;
+        public string TypeName = string.Empty;
+        public string AssetPath = string.Empty;
+        public long Timestamp;
+        public string GlobalIdString = string.Empty;
+        public string Icon = string.Empty;
     }
 }

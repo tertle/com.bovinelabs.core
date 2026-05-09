@@ -3,11 +3,6 @@
 
 /* Favourites Window Specific Styles */
 
-/* Add left padding to the base object-item-container for favourites */
-.object-item-container {
-    padding-left: 7px;
-}
-
 /* Favourite item open button */
 .favourite-item-open-button {
     width: 16px;

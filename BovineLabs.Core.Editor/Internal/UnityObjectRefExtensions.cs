@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Editor.Internal
         public static UntypedWeakReferenceId ToUntypedWeakReferenceId<T>(this UnityObjectRef<T> unityObjectRef)
             where T : Object
         {
-#if UNITY_6000_5_OR_NEWER
+#if UNITY_6000_4_OR_NEWER
             var guid = GlobalObjectId.GetGlobalObjectIdSlow(unityObjectRef.Id.entityId);
 #else
             var guid = GlobalObjectId.GetGlobalObjectIdSlow((EntityId)unityObjectRef.Id.instanceId);

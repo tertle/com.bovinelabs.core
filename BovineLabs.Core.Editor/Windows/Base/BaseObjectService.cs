@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using BovineLabs.Core.Editor.Utility;
     using Unity.Serialization.Editor;
     using UnityEditor;
@@ -148,35 +149,101 @@ namespace BovineLabs.Core.Editor.Windows.Base
             this.ItemsChanged?.Invoke(this.Items);
         }
 
-        protected static Object TryGetAssetIfLoaded(string assetPath, List<Object> allObjects, Dictionary<string, Object> allPaths)
+        protected static List<TSerializable> CreateSerializableItems<TObjectItem, TSerializable>(IReadOnlyList<TObjectItem> items)
+            where TObjectItem : BaseObjectItem
+            where TSerializable : SerializableObjectItem, new()
         {
-            if (allPaths.TryGetValue(assetPath, out var loadedObject))
+            return CreateSerializableItems<TObjectItem, TSerializable>(items, 0, items.Count, null);
+        }
+
+        protected static List<TSerializable> CreateSerializableItems<TObjectItem, TSerializable>(
+            IReadOnlyList<TObjectItem> items, int startIndex, int count, Action<TObjectItem, TSerializable> configure)
+            where TObjectItem : BaseObjectItem
+            where TSerializable : SerializableObjectItem, new()
+        {
+            var data = new List<TSerializable>(count);
+            for (var index = 0; index < count; index++)
             {
-                return loadedObject;
+                var item = items[startIndex + index];
+                var serializableItem = new TSerializable
+                {
+                    Name = item.Name,
+                    TypeName = item.TypeName,
+                    AssetPath = item.AssetPath,
+                    Timestamp = item.Timestamp.ToBinary(),
+                    GlobalIdString = item.GlobalId.ToString(),
+                    Icon = string.Empty,
+                };
+
+                configure?.Invoke(item, serializableItem);
+                data.Add(serializableItem);
             }
 
-            var index = 0;
+            return data;
+        }
 
-            try
+        protected sealed class LoadedObjectLookup
+        {
+            private readonly List<Object> allObjects = Resources.FindObjectsOfTypeAll<Object>().ToList();
+            private readonly Dictionary<GlobalObjectId, Object> objectsById = new();
+
+            public Object TryGetObject(SerializableObjectItem item, out GlobalObjectId objectId)
             {
-                for (index = 0; index < allObjects.Count; index++)
+                objectId = ParseObjectId(item.GlobalIdString);
+                if (!BaseObjectItem.HasValidObjectId(objectId))
                 {
-                    var obj = allObjects[index];
-                    var path = AssetDatabase.GetAssetPath(obj);
-                    allPaths.TryAdd(path, obj);
+                    return null;
+                }
 
-                    if (path == assetPath)
+                if (this.objectsById.TryGetValue(objectId, out var loadedObject))
+                {
+                    return loadedObject;
+                }
+
+                var index = 0;
+
+                try
+                {
+                    for (index = 0; index < this.allObjects.Count; index++)
                     {
-                        return obj;
+                        var obj = this.allObjects[index];
+                        if (obj == null)
+                        {
+                            continue;
+                        }
+
+                        var loadedObjectId = GlobalObjectId.GetGlobalObjectIdSlow(obj);
+                        if (!BaseObjectItem.HasValidObjectId(loadedObjectId))
+                        {
+                            continue;
+                        }
+
+                        this.objectsById.TryAdd(loadedObjectId, obj);
+
+                        if (loadedObjectId.Equals(objectId))
+                        {
+                            index++;
+                            return obj;
+                        }
                     }
                 }
-            }
-            finally
-            {
-                allObjects.RemoveRange(0, index);
+                finally
+                {
+                    this.allObjects.RemoveRange(0, index);
+                }
+
+                return null;
             }
 
-            return null;
+            public static DateTime GetTimestamp(SerializableObjectItem item)
+            {
+                return DateTime.FromBinary(item.Timestamp);
+            }
+
+            public static Texture2D GetIcon(Object obj)
+            {
+                return obj == null ? null : AssetPreview.GetMiniThumbnail(obj);
+            }
         }
 
         /// <summary>Removes a specific history item.</summary>
@@ -196,6 +263,12 @@ namespace BovineLabs.Core.Editor.Windows.Base
         {
             // Notify that history has changed to trigger UI refresh
             this.NotifyItemsChanged();
+        }
+
+        private static GlobalObjectId ParseObjectId(string globalIdString)
+        {
+            GlobalObjectId.TryParse(globalIdString, out var objectId);
+            return objectId;
         }
     }
 }

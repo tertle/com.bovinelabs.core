@@ -123,7 +123,7 @@ namespace BovineLabs.Core.Tests.Iterators
             var hashMap = this.CreateHashMap();
 
             // Test with new key
-            ref var value1 = ref hashMap.GetOrAddRef(42, 50);
+            ref var value1 = ref hashMap.GetOrAddRefUnsafe(42, 50);
             Assert.AreEqual(50, value1);
             Assert.AreEqual(1, hashMap.Count);
 
@@ -132,7 +132,7 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.AreEqual(75, hashMap[42]);
 
             // Test with existing key
-            ref var value2 = ref hashMap.GetOrAddRef(42, 125);
+            ref var value2 = ref hashMap.GetOrAddRefUnsafe(42, 125);
             Assert.AreEqual(75, value2); // Should return existing value, not default
             Assert.AreEqual(1, hashMap.Count); // Still only one element
         }
@@ -143,12 +143,12 @@ namespace BovineLabs.Core.Tests.Iterators
             var hashMap = this.CreateHashMap();
 
             // Test with new key
-            ref var value1 = ref hashMap.GetOrAddRef(42, out var wasAdded1, 50);
+            ref var value1 = ref hashMap.GetOrAddRefUnsafe(42, out var wasAdded1, 50);
             Assert.IsTrue(wasAdded1);
             Assert.AreEqual(50, value1);
 
             // Test with existing key
-            ref var value2 = ref hashMap.GetOrAddRef(42, out var wasAdded2, 125);
+            ref var value2 = ref hashMap.GetOrAddRefUnsafe(42, out var wasAdded2, 125);
             Assert.IsFalse(wasAdded2);
             Assert.AreEqual(50, value2); // Should return existing value
         }
@@ -277,25 +277,14 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private DynamicHashMap<int, byte> CreateHashMap()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestHashMap));
-            return this.Manager.GetBuffer<TestHashMap>(entity).InitializeHashMap<TestHashMap, int, byte>(0, MinGrowth).AsHashMap<TestHashMap, int, byte>();
+            var entity = this.Manager.CreateEntity(typeof(DynamicHashMapTestsBuffer));
+            return this.Manager.GetBuffer<DynamicHashMapTestsBuffer>(entity).InitializeHashMap<DynamicHashMapTestsBuffer, int, byte>(0, MinGrowth).AsHashMap<DynamicHashMapTestsBuffer, int, byte>();
         }
 
         private DynamicHashMap<int, long> CreateHashMapLong()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestHashMapLong));
-            return this.Manager.GetBuffer<TestHashMapLong>(entity).InitializeHashMap<TestHashMapLong, int, long>(0, MinGrowth).AsHashMap<TestHashMapLong, int, long>();
-        }
-
-        private struct TestHashMap : IDynamicHashMap<int, byte>
-        {
-            /// <inheritdoc />
-            byte IDynamicHashMap<int, byte>.Value { get; }
-        }
-
-        private struct TestHashMapLong : IDynamicHashMap<int, long>
-        {
-            byte IDynamicHashMap<int, long>.Value { get; }
+            var entity = this.Manager.CreateEntity(typeof(DynamicHashMapTestsLongBuffer));
+            return this.Manager.GetBuffer<DynamicHashMapTestsLongBuffer>(entity).InitializeHashMap<DynamicHashMapTestsLongBuffer, int, long>(0, MinGrowth).AsHashMap<DynamicHashMapTestsLongBuffer, int, long>();
         }
     }
 }

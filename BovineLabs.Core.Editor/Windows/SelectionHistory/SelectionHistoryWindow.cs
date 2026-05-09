@@ -118,55 +118,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             }
 
             var item = this.FilteredItems[index];
-            this.BindListItemCommon(element, item);
-
-            // Handle pin button for history items
-            var pinButton = element.Q<Button>();
-            if (pinButton != null)
-            {
-                pinButton.text = string.Empty;
-                pinButton.tooltip = item.IsLocked ? "Unlock from top" : "Lock to top";
-
-                if (item.IsLocked)
-                {
-                    pinButton.RemoveFromClassList("unlocked");
-                    pinButton.AddToClassList("locked");
-                }
-                else
-                {
-                    pinButton.RemoveFromClassList("locked");
-                    pinButton.AddToClassList("unlocked");
-                }
-
-                // Clear existing callbacks
-                pinButton.UnregisterCallback<ClickEvent>(this.OnPinButtonClick);
-
-                // Remove existing click handler if any
-                if (pinButton.userData is Action previousHandler)
-                {
-                    pinButton.clicked -= previousHandler;
-                }
-
-                // Create new click handler
-                Action clickHandler = () => this.historyService?.ToggleLock(item);
-
-                pinButton.userData = clickHandler;
-                pinButton.clicked += clickHandler;
-                pinButton.RegisterCallback<ClickEvent>(this.OnPinButtonClick);
-
-                // Add visual distinction for locked items
-                var container = element;
-                if (item.IsLocked)
-                {
-                    container.RemoveFromClassList("unlocked-item");
-                    container.AddToClassList("locked-item");
-                }
-                else
-                {
-                    container.RemoveFromClassList("locked-item");
-                    container.AddToClassList("unlocked-item");
-                }
-            }
+            this.BindHistoryItem(element, item);
         }
 
         /// <inheritdoc/>
@@ -254,6 +206,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             this.FilteredItems.Clear();
             this.FilteredItems.AddRange(this.filteredNormalItems);
 
+            this.lockedItemsListView!.reorderable = !this.IsFiltered();
             this.RefreshLockedSection();
         }
 
@@ -323,35 +276,55 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             }
 
             var item = this.filteredLockedItems[index];
+            this.BindHistoryItem(element, item);
+        }
+
+        private void BindHistoryItem(VisualElement element, SelectionHistoryItem item)
+        {
             this.BindListItemCommon(element, item);
+            this.BindPinButton(element, item);
+            this.UpdateItemLockClasses(element, item.IsLocked);
+        }
 
-            // Handle pin button for locked items
+        private void BindPinButton(VisualElement element, SelectionHistoryItem item)
+        {
             var pinButton = element.Q<Button>();
-            if (pinButton != null)
+            if (pinButton == null)
             {
-                pinButton.text = string.Empty;
-                pinButton.tooltip = "Unlock from top";
+                return;
+            }
 
-                pinButton.RemoveFromClassList("unlocked");
-                pinButton.AddToClassList("locked");
+            pinButton.text = string.Empty;
+            pinButton.tooltip = item.IsLocked ? "Unlock from top" : "Lock to top";
+            this.UpdateLockButtonClasses(pinButton, item.IsLocked);
+            this.BindButtonClickAction(pinButton, () => this.historyService?.ToggleLock(item), this.OnPinButtonClick);
+        }
 
-                // Clear existing callbacks
-                pinButton.UnregisterCallback<ClickEvent>(this.OnPinButtonClick);
+        private void UpdateLockButtonClasses(VisualElement element, bool isLocked)
+        {
+            if (isLocked)
+            {
+                element.RemoveFromClassList("unlocked");
+                element.AddToClassList("locked");
+            }
+            else
+            {
+                element.RemoveFromClassList("locked");
+                element.AddToClassList("unlocked");
+            }
+        }
 
-                if (pinButton.userData is Action previousHandler)
-                {
-                    pinButton.clicked -= previousHandler;
-                }
-
-                Action clickHandler = () => this.historyService?.ToggleLock(item);
-
-                pinButton.userData = clickHandler;
-                pinButton.clicked += clickHandler;
-                pinButton.RegisterCallback<ClickEvent>(this.OnPinButtonClick);
-
-                var container = element;
-                container.RemoveFromClassList("unlocked-item");
-                container.AddToClassList("locked-item");
+        private void UpdateItemLockClasses(VisualElement element, bool isLocked)
+        {
+            if (isLocked)
+            {
+                element.RemoveFromClassList("unlocked-item");
+                element.AddToClassList("locked-item");
+            }
+            else
+            {
+                element.RemoveFromClassList("locked-item");
+                element.AddToClassList("unlocked-item");
             }
         }
 
@@ -473,6 +446,11 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
         private void OnLockedItemReordered(int fromIndex, int toIndex)
         {
             this.historyService?.ReorderLockedItem(fromIndex, toIndex);
+        }
+
+        private bool IsFiltered()
+        {
+            return !string.IsNullOrEmpty(this.CurrentSearchText) || this.CurrentTypeFilter != "All";
         }
 
         private void OnWindowResize(GeometryChangedEvent evt)

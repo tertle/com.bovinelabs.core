@@ -5,7 +5,6 @@
 namespace BovineLabs.Core.Editor
 {
     using BovineLabs.Core.ConfigVars;
-    using BovineLabs.Core.Editor.ObjectManagement;
     using BovineLabs.Core.Editor.Settings;
     using BovineLabs.Core.Editor.Utility;
     using BovineLabs.Core.Editor.Welcome;
@@ -40,6 +39,7 @@ namespace BovineLabs.Core.Editor
             LoadPrefabsAsEntities.Initialize();
             WelcomeWindow.Initialize();
             InspectorSearch.Initialize();
+            WorldSafeShutdown.Initialize();
         }
     }
 }

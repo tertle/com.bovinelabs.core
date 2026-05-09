@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Extensions
 {
+    using BovineLabs.Core;
     using Unity.Entities;
 
     /// <summary>
@@ -69,6 +70,26 @@ namespace BovineLabs.Core.Extensions
         public static bool IsServerWorld(this WorldUnmanaged world)
         {
             return (world.Flags & WorldFlags.GameServer) == WorldFlags.GameServer;
+        }
+
+        /// <summary>
+        /// Determines whether a world should follow server/local authoritative behavior.
+        /// </summary>
+        /// <param name="world">The world instance to check.</param>
+        /// <returns>True if the world is a server or local world.</returns>
+        public static bool IsServerLocalWorld(this World world)
+        {
+            return world.Unmanaged.IsServerLocalWorld();
+        }
+
+        /// <summary>
+        /// Determines whether an unmanaged world should follow server/local authoritative behavior.
+        /// </summary>
+        /// <param name="world">The unmanaged world instance to check.</param>
+        /// <returns>True if the world is a server or local world.</returns>
+        public static bool IsServerLocalWorld(this WorldUnmanaged world)
+        {
+            return world.IsServerWorld() || world.IsLocalWorld();
         }
 
         /// <summary>Determines whether a world is the editor world.</summary>

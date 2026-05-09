@@ -324,6 +324,20 @@ namespace BovineLabs.Core.Editor.Windows.Base
             }
         }
 
+        protected void BindButtonClickAction(Button button, Action clickHandler, EventCallback<ClickEvent> clickEventHandler)
+        {
+            button.UnregisterCallback(clickEventHandler);
+
+            if (button.userData is Action previousHandler)
+            {
+                button.clicked -= previousHandler;
+            }
+
+            button.userData = clickHandler;
+            button.clicked += clickHandler;
+            button.RegisterCallback(clickEventHandler);
+        }
+
         protected virtual string GetTimestampFormat() => "HH:mm:ss";
 
         /// <summary>
@@ -617,6 +631,13 @@ namespace BovineLabs.Core.Editor.Windows.Base
             if (this.Service.HighlightCurrentSelection)
             {
                 var selection = Selection.activeGameObject ? Selection.activeGameObject : Selection.activeObject;
+                if (selection == null)
+                {
+                    container.RemoveFromClassList("currently-selected");
+                    container.RemoveFromClassList("not-selected");
+                    return;
+                }
+
                 var objectId = GlobalObjectId.GetGlobalObjectIdSlow(selection);
 
                 if (item.GlobalId.Equals(objectId))

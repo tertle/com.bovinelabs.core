@@ -445,13 +445,8 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private DynamicHashMap<int, byte> CreateHashMap()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestHashMap));
-            return this.Manager.GetBuffer<TestHashMap>(entity).InitializeHashMap<TestHashMap, int, byte>(0, MinGrowth).AsHashMap<TestHashMap, int, byte>();
-        }
-
-        private struct TestHashMap : IDynamicHashMap<int, byte>
-        {
-            byte IDynamicHashMap<int, byte>.Value { get; }
+            var entity = this.Manager.CreateEntity(typeof(DynamicHashMapPerformanceTestsBuffer));
+            return this.Manager.GetBuffer<DynamicHashMapPerformanceTestsBuffer>(entity).InitializeHashMap<DynamicHashMapPerformanceTestsBuffer, int, byte>(0, MinGrowth).AsHashMap<DynamicHashMapPerformanceTestsBuffer, int, byte>();
         }
     }
 }

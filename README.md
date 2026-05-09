@@ -43,9 +43,7 @@ Once installed, the library provides utilities, custom containers, and high-perf
 
 ## Extensions
 
-The Core library maintains the status quo in your project by default. However, there are powerful features that can be manually enabled, which may require changes to your workflow. To enable these features, navigate to the `BovineLabs -> Toggle Features` menu.
-
-![Toggle Features](Documentation~/Images/ToggleFeatures.png)
+The Core library maintains the status quo in your project by default. However, there are powerful features that can be manually enabled, which may require changes to your workflow. To enable these features, navigate to the `BovineLabs -> Manager` menu.
 
 | Feature                                                 | Description                                                                                           |
 |---------------------------------------------------------|-------------------------------------------------------------------------------------------------------|

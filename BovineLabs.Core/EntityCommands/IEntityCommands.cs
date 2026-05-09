@@ -69,5 +69,11 @@ namespace BovineLabs.Core.EntityCommands
 
         void SetComponentEnabled<T>(Entity entity, bool enabled)
             where T : unmanaged, IEnableableComponent;
+
+        void AddSharedComponent<T>(Entity entity, in T component)
+            where T : unmanaged, ISharedComponentData;
+
+        void SetSharedComponent<T>(Entity entity, in T component)
+            where T : unmanaged, ISharedComponentData;
     }
 }

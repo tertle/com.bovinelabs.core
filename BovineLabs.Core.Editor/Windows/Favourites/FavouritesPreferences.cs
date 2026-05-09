@@ -57,13 +57,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
     }
 
     [Serializable]
-    public class SerializableFavouriteItem
+    public class SerializableFavouriteItem : SerializableObjectItem
     {
-        public string Name = string.Empty;
-        public string TypeName = string.Empty;
-        public string AssetPath = string.Empty;
-        public long Timestamp;
-        public string GlobalIdString = string.Empty;
-        public string Icon = string.Empty;
     }
 }

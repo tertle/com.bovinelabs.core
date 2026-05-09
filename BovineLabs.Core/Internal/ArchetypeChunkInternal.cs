@@ -98,7 +98,9 @@ namespace BovineLabs.Core.Internal
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
             {
+#pragma warning disable 0618
                 chunk.JournalAddRecord(EntitiesJournaling.RecordType.GetBufferRW, handle.m_TypeIndex, handle.m_GlobalSystemVersion);
+#pragma warning restore 0618
             }
 #endif
         }
@@ -127,7 +129,9 @@ namespace BovineLabs.Core.Internal
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
             {
+#pragma warning disable 0618
                 chunk.JournalAddRecord(EntitiesJournaling.RecordType.GetBufferRW, handle.m_TypeIndex, handle.m_GlobalSystemVersion);
+#pragma warning restore 0618
             }
 #endif
         }
@@ -154,7 +158,9 @@ namespace BovineLabs.Core.Internal
                 var length = chunk.Count;
                 var byteLen = length * typeSize;
 
+#pragma warning disable 0618
                 chunk.JournalAddRecord(EntitiesJournaling.RecordType.GetComponentDataRW, handle.m_TypeIndex, handle.m_GlobalSystemVersion, ptr, byteLen);
+#pragma warning restore 0618
             }
 #endif
         }

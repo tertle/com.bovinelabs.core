@@ -12,6 +12,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     using Unity.Mathematics;
     using UnityEngine;
 
+    [DisallowMultipleComponent]
     public class ObjectDefinitionAuthoring : MonoBehaviour
     {
         // TODO readonly

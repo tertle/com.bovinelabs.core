@@ -170,7 +170,29 @@ namespace BovineLabs.Core.Iterators
             UnsafeUtility.WriteArrayElement(this.helper->Values, idx, item);
         }
 
+        [Obsolete("Use GetOrAddRefUnsafe")]
         public ref TValue GetOrAddRef(TKey key, TValue defaultValue = default)
+        {
+            return ref this.GetOrAddRefUnsafe(key, defaultValue);
+        }
+
+        [Obsolete("Use GetOrAddRefUnsafe")]
+        public ref TValue GetOrAddRef(TKey key, out bool add, TValue defaultValue = default)
+        {
+            return ref this.GetOrAddRefUnsafe(key, out add, defaultValue);
+        }
+
+        /// <summary>
+        /// Gets the value for a key or adds <paramref name="defaultValue" /> and returns it by reference.
+        /// </summary>
+        /// <remarks>
+        /// Unsafe because the returned ref points directly into the hash map storage. Consume it immediately and do not keep or use it after any later
+        /// write to the same hash map, such as add, get-or-add, remove, clear, flatten, shift-down, or capacity-changing operations.
+        /// </remarks>
+        /// <param name="key"> The key to look up. </param>
+        /// <param name="defaultValue"> Value to add if the key is not present. </param>
+        /// <returns> A reference to the value stored in the hash map. </returns>
+        public ref TValue GetOrAddRefUnsafe(TKey key, TValue defaultValue = default)
         {
             this.buffer.CheckWriteAccess();
             this.RefCheck();
@@ -185,7 +207,18 @@ namespace BovineLabs.Core.Iterators
             return ref UnsafeUtility.ArrayElementAsRef<TValue>(this.helper->Values, idx);
         }
 
-        public ref TValue GetOrAddRef(TKey key, out bool add, TValue defaultValue = default)
+        /// <summary>
+        /// Gets the value for a key or adds <paramref name="defaultValue" /> and returns it by reference.
+        /// </summary>
+        /// <remarks>
+        /// Unsafe because the returned ref points directly into the hash map storage. Consume it immediately and do not keep or use it after any later
+        /// write to the same hash map, such as add, get-or-add, remove, clear, flatten, shift-down, or capacity-changing operations.
+        /// </remarks>
+        /// <param name="key"> The key to look up. </param>
+        /// <param name="add"> Outputs whether a new entry was added. </param>
+        /// <param name="defaultValue"> Value to add if the key is not present. </param>
+        /// <returns> A reference to the value stored in the hash map. </returns>
+        public ref TValue GetOrAddRefUnsafe(TKey key, out bool add, TValue defaultValue = default)
         {
             this.buffer.CheckWriteAccess();
             this.RefCheck();

@@ -194,11 +194,15 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary> Gets a value if it exists otherwise adds it then returns it by ref. </summary>
+        /// <remarks>
+        /// Unsafe because the returned ref points directly into the hash map storage. Consume it immediately and do not keep or use it after any later
+        /// write to the same hash map, such as add-or-set, get-or-add, clear, or capacity-changing operations.
+        /// </remarks>
         /// <param name="key"> The key to add. </param>
         /// <param name="defaultValue"> Value to use if the key doesn't exist. </param>
         /// <typeparam name="TValue"> The type of value. </typeparam>
         /// <returns> The value in the map. </returns>
-        public ref TValue GetOrAddRef<TValue>(TKey key, TValue defaultValue = default)
+        public ref TValue GetOrAddRefUnsafe<TValue>(TKey key, TValue defaultValue = default)
             where TValue : unmanaged
         {
             this.CheckWrite();

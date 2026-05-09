@@ -10,6 +10,7 @@
         "Unity.Entities.Hybrid.HybridComponents",
         "Unity.Mathematics",
         "Unity.Mathematics.Extensions",
+        "Unity.NetCode",
         "Unity.Physics",
         "Unity.Scenes",
         "Unity.Splines",

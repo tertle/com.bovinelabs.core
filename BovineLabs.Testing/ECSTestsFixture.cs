@@ -54,7 +54,9 @@ namespace BovineLabs.Testing
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
             // In case entities journaling is initialized, clear it
+#pragma warning disable CS0618 // Type or member is obsolete
             EntitiesJournaling.Clear();
+#pragma warning restore CS0618 // Type or member is obsolete
 #endif
         }
 

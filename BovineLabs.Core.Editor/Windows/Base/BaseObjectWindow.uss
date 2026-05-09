@@ -39,7 +39,10 @@
 
 /* List View Item Styling */
 .unity-list-view__item {
-    padding: 0;
+    padding-left: 7px;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
 }
 
 .unity-list-view__item:hover {

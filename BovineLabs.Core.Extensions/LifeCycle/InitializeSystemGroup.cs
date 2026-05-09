@@ -15,7 +15,7 @@ namespace BovineLabs.Core.LifeCycle
     /// <summary>
     /// Handles initialization of entities. Updates before DestroySystemGroup to allow access to data from destroyed entities.
     /// </summary>
-    [WorldSystemFilter(Worlds.SimulationEditor | Worlds.Menu, Worlds.Simulation)]
+    [WorldSystemFilter(Worlds.SimulationMenuEditor, Worlds.Simulation)]
     [UpdateAfter(typeof(InstantiateCommandBufferSystem))]
     [UpdateBefore(typeof(DestroySystemGroup))]
     [UpdateInGroup(typeof(BeforeSceneSystemGroup))]

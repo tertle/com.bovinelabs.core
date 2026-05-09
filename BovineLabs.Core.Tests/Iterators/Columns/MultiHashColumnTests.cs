@@ -491,18 +491,12 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
 
         private DynamicVariableMap<int, float, short, MultiHashColumn<short>> CreateMap(int growth = 64)
         {
-            var entity = this.Manager.CreateEntity(typeof(TestMap));
+            var entity = this.Manager.CreateEntity(typeof(MultiHashColumnTestsBuffer));
             return this
                 .Manager
-                .GetBuffer<TestMap>(entity)
-                .InitializeVariableMap<TestMap, int, float, short, MultiHashColumn<short>>(0, growth)
-                .AsVariableMap<TestMap, int, float, short, MultiHashColumn<short>>();
-        }
-
-        private struct TestMap : IDynamicVariableMap<int, float, short, MultiHashColumn<short>>
-        {
-            [UsedImplicitly]
-            byte IDynamicVariableMap<int, float, short, MultiHashColumn<short>>.Value { get; }
+                .GetBuffer<MultiHashColumnTestsBuffer>(entity)
+                .InitializeVariableMap<MultiHashColumnTestsBuffer, int, float, short, MultiHashColumn<short>>(0, growth)
+                .AsVariableMap<MultiHashColumnTestsBuffer, int, float, short, MultiHashColumn<short>>();
         }
     }
 }

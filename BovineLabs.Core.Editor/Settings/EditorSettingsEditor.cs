@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Editor.Settings
 {
+    using System;
     using System.Collections.Generic;
     using BovineLabs.Core.Authoring.Settings;
     using BovineLabs.Core.Editor.Inspectors;
@@ -49,6 +50,8 @@ namespace BovineLabs.Core.Editor.Settings
                 property.serializedObject.ApplyModifiedProperties();
             });
 
+            EventCallback<ChangeEvent<string>> changeCallback = null;
+
             var listView = new ListView(this.scriptingDefineSymbols)
             {
                 selectionType = SelectionType.None,
@@ -79,13 +82,15 @@ namespace BovineLabs.Core.Editor.Settings
             {
                 var tf = (TextField)element;
                 tf.value = this.scriptingDefineSymbols[index];
-                tf.RegisterValueChangedCallback(evt => this.scriptingDefineSymbols[index] = evt.newValue);
+
+                changeCallback = evt => this.scriptingDefineSymbols[index] = evt.newValue;
+                tf.RegisterValueChangedCallback(changeCallback);
             }
 
             void UnbindItem(VisualElement element, int index)
             {
                 var tf = (TextField)element;
-                tf.UnregisterValueChangedCallback(evt => this.scriptingDefineSymbols[index] = evt.newValue);
+                tf.UnregisterValueChangedCallback(changeCallback);
             }
 
             void Revert()

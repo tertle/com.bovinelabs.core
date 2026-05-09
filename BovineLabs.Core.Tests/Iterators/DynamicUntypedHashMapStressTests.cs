@@ -29,11 +29,11 @@ namespace BovineLabs.Core.Tests.Iterators
         {
             const int count = 4096;
 
-            var entity = this.Manager.CreateEntity(typeof(TestBuffer));
-            var buffer = this.Manager.GetBuffer<TestBuffer>(entity);
+            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapStressTestsBuffer));
+            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapStressTestsBuffer>(entity);
 
             // Start extremely small to maximize the number of resizes.
-            var hashMap = buffer.InitializeUntypedHashMap<TestBuffer, int>(1).AsUntypedHashMap<TestBuffer, int>();
+            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>(1).AsUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>();
 
             var expectedInt = new Dictionary<int, int>(count);
             var expectedShort = new Dictionary<int, short>(count);
@@ -103,11 +103,11 @@ namespace BovineLabs.Core.Tests.Iterators
         {
             const int count = 2048;
 
-            var entity = this.Manager.CreateEntity(typeof(TestBuffer));
-            var buffer = this.Manager.GetBuffer<TestBuffer>(entity);
+            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapStressTestsBuffer));
+            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapStressTestsBuffer>(entity);
 
             // Start tiny so both the map and the Data segment will be resized repeatedly.
-            var hashMap = buffer.InitializeUntypedHashMap<TestBuffer, int>(1).AsUntypedHashMap<TestBuffer, int>();
+            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>(1).AsUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>();
 
             // Insert alternating large types: float3 (3 ints) then Large (4 ints) so the allocation index would misalign without alignment.
             for (var i = 0; i < count; i++)
@@ -151,10 +151,10 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void Stress_OverwriteExistingLarge_DoesNotReallocateOrCorrupt()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestBuffer));
-            var buffer = this.Manager.GetBuffer<TestBuffer>(entity);
+            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapStressTestsBuffer));
+            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapStressTestsBuffer>(entity);
 
-            var hashMap = buffer.InitializeUntypedHashMap<TestBuffer, int>(1).AsUntypedHashMap<TestBuffer, int>();
+            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>(1).AsUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>();
 
             const int key = 12345;
 
@@ -196,10 +196,10 @@ namespace BovineLabs.Core.Tests.Iterators
             const int operations = 5000;
             const int keySpace = 2048;
 
-            var entity = this.Manager.CreateEntity(typeof(TestBuffer));
-            var buffer = this.Manager.GetBuffer<TestBuffer>(entity);
+            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapStressTestsBuffer));
+            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapStressTestsBuffer>(entity);
 
-            var hashMap = buffer.InitializeUntypedHashMap<TestBuffer, int>(1).AsUntypedHashMap<TestBuffer, int>();
+            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>(1).AsUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>();
 
             var expectedInt = new Dictionary<int, int>();
             var expectedFloat3 = new Dictionary<int, float3>();
@@ -231,7 +231,7 @@ namespace BovineLabs.Core.Tests.Iterators
                     }
                     else
                     {
-                        ref var r = ref hashMap.GetOrAddRef(key, value);
+                        ref var r = ref hashMap.GetOrAddRefUnsafe(key, value);
                         r = value;
                     }
 
@@ -247,7 +247,7 @@ namespace BovineLabs.Core.Tests.Iterators
                     }
                     else
                     {
-                        ref var r = ref hashMap.GetOrAddRef(key, value);
+                        ref var r = ref hashMap.GetOrAddRefUnsafe(key, value);
                         r = value;
                     }
 
@@ -272,12 +272,6 @@ namespace BovineLabs.Core.Tests.Iterators
                 Assert.IsTrue(hashMap.TryGetValue(kv.Key, out float3 actual));
                 Assert.AreEqual(kv.Value, actual);
             }
-        }
-
-        [InternalBufferCapacity(0)]
-        private struct TestBuffer : IDynamicUntypedHashMap<int>
-        {
-            byte IDynamicUntypedHashMap<int>.Value { get; }
         }
 
         public struct Large

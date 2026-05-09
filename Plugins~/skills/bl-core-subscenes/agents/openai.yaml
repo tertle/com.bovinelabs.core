@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core SubScenes Usage"
+  short_description: "Create and debug com.bovinelabs.core subscene settings, world-targeted loading, asset loading, and editor scene tooling."

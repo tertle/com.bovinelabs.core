@@ -10,9 +10,9 @@ namespace BovineLabs.Core.LifeCycle
     using Unity.Entities;
 
     /// <summary>
-    /// Initializes entities that were created from subscenes or ghosts (if using netcode).
+    /// Initializes entities created from subscenes or ghosts (if using netcode).
     /// </summary>
-    [WorldSystemFilter(Worlds.SimulationMenu)]
+    [WorldSystemFilter(Worlds.SimulationMenuEditor)]
     [UpdateInGroup(typeof(BeginSimulationSystemGroup), OrderFirst = true)]
     public partial class SceneInitializeSystem : SystemBase, IUpdateWhilePaused
     {

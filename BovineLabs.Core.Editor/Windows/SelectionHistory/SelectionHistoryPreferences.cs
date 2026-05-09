@@ -78,14 +78,8 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
     }
 
     [Serializable]
-    public class SerializableHistoryItem
+    public class SerializableHistoryItem : SerializableObjectItem
     {
-        public string Name = string.Empty;
-        public string TypeName = string.Empty;
-        public string AssetPath = string.Empty;
-        public long Timestamp;
         public bool IsLocked;
-        public string GlobalIdString = string.Empty;
-        public string Icon = string.Empty;
     }
 }

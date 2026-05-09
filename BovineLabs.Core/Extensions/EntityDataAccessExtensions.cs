@@ -95,6 +95,7 @@ namespace BovineLabs.Core.Extensions
         }
 
 #if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#pragma warning disable 0618
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void JournalAddRecord(EntityComponentStore* store, Entity entity, TypeIndex typeIndex, uint version, void* data)
         {
@@ -134,6 +135,7 @@ namespace BovineLabs.Core.Extensions
                 access.m_WorldUnmanaged.SequenceNumber, access.m_WorldUnmanaged.ExecutingSystem, originSystem: in originSystem, entities: entities,
                 entityCount: entityCount, types: &type, typeCount: 1);
         }
+#pragma warning restore 0618
 #endif
     }
 }

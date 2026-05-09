@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Pause Usage"
+  short_description: "Wire and debug com.bovinelabs.core pause modes, marker interfaces, and pause-aware system-group behavior."

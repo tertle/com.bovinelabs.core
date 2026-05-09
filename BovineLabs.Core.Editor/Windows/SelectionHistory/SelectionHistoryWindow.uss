@@ -74,14 +74,9 @@
     color: rgba(255, 255, 255, 0.7);
 }
 
-/* Unlocked item styling - add left padding to base object-item-container */
-.unlocked-item {
-    padding-left: 7px;
-}
-
-/* Locked item styling - add left padding and visual indicator to base object-item-container */
+/* Locked item styling - add visual indicator to base object-item-container */
 .locked-item {
-    padding-left: 4px;
+    padding-left: 0;
     border-left-width: 3px;
     border-left-color: rgba(100, 150, 255, 0.8);
 }

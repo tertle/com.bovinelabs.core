@@ -24,10 +24,10 @@ namespace BovineLabs.Core.Tests.Iterators
             input.Add(-6772, 3);
             input.Add(1234, 4);
 
-            var entity = this.Manager.CreateEntity(typeof(TestBuffer));
-            var buffer = this.Manager.GetBuffer<TestBuffer>(entity);
+            var entity = this.Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
+            var buffer = this.Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
 
-            var hashMap = buffer.InitializePerfectHashMap<TestBuffer, int, short>(input, -1).AsPerfectHashMap<TestBuffer, int, short>();
+            var hashMap = buffer.InitializePerfectHashMap<DynamicPerfectHashMapTestsBuffer, int, short>(input, -1).AsPerfectHashMap<DynamicPerfectHashMapTestsBuffer, int, short>();
             Assert.AreEqual((short)0, hashMap[1]);
             Assert.AreEqual((short)1, hashMap[98658]);
             Assert.AreEqual((short)2, hashMap[0]);
@@ -41,10 +41,10 @@ namespace BovineLabs.Core.Tests.Iterators
             var input = new NativeHashMap<int, short>(1, Allocator.Temp);
             input.Add(123, 7);
 
-            var entity = this.Manager.CreateEntity(typeof(TestBuffer));
-            var buffer = this.Manager.GetBuffer<TestBuffer>(entity);
+            var entity = this.Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
+            var buffer = this.Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
 
-            var hashMap = buffer.InitializePerfectHashMap<TestBuffer, int, short>(input, -1).AsPerfectHashMap<TestBuffer, int, short>();
+            var hashMap = buffer.InitializePerfectHashMap<DynamicPerfectHashMapTestsBuffer, int, short>(input, -1).AsPerfectHashMap<DynamicPerfectHashMapTestsBuffer, int, short>();
 
             Assert.IsFalse(hashMap.TryGetValue(999, out _));
             Assert.IsFalse(hashMap.ContainsKey(999));
@@ -67,10 +67,10 @@ namespace BovineLabs.Core.Tests.Iterators
             values[3] = 3;
             values[4] = 4;
 
-            var entity = this.Manager.CreateEntity(typeof(TestBuffer));
-            var buffer = this.Manager.GetBuffer<TestBuffer>(entity);
+            var entity = this.Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
+            var buffer = this.Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
 
-            Assert.Throws<ArgumentException>(() => buffer.InitializePerfectHashMap<TestBuffer, int, short>(keys, values, -1));
+            Assert.Throws<ArgumentException>(() => buffer.InitializePerfectHashMap<DynamicPerfectHashMapTestsBuffer, int, short>(keys, values, -1));
         }
 
         [Test]
@@ -84,11 +84,11 @@ namespace BovineLabs.Core.Tests.Iterators
             values[0] = 10;
             values[1] = 20;
 
-            var entity = this.Manager.CreateEntity(typeof(TestBufferByteLong));
-            var buffer = this.Manager.GetBuffer<TestBufferByteLong>(entity);
+            var entity = this.Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsByteLongBuffer));
+            var buffer = this.Manager.GetBuffer<DynamicPerfectHashMapTestsByteLongBuffer>(entity);
 
             var hashMap = buffer.InitializePerfectHashMap(keys, values, long.MinValue)
-                .AsPerfectHashMap<TestBufferByteLong, byte, long>();
+                .AsPerfectHashMap<DynamicPerfectHashMapTestsByteLongBuffer, byte, long>();
 
             var align = UnsafeUtility.AlignOf<long>();
             var valuesPtr = (ulong)hashMap.Helper->Values;
@@ -105,22 +105,11 @@ namespace BovineLabs.Core.Tests.Iterators
             var values = new NativeArray<short>(1, Allocator.Temp);
             values[0] = 3;
 
-            var entity = this.Manager.CreateEntity(typeof(TestBuffer));
-            var buffer = this.Manager.GetBuffer<TestBuffer>(entity);
+            var entity = this.Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
+            var buffer = this.Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
 
             Assert.Throws<ArgumentException>(() => buffer.InitializePerfectHashMap(keys, values, (short)-1));
         }
 
-        [InternalBufferCapacity(0)]
-        private struct TestBuffer : IDynamicPerfectHashMap<int, short>
-        {
-            byte IDynamicPerfectHashMap<int, short>.Value { get; }
-        }
-
-        [InternalBufferCapacity(0)]
-        private struct TestBufferByteLong : IDynamicPerfectHashMap<byte, long>
-        {
-            byte IDynamicPerfectHashMap<byte, long>.Value { get; }
-        }
     }
 }

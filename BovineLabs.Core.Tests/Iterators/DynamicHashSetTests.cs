@@ -192,33 +192,27 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void Remove_ReadOnlyBuffer_Throws()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestHashSet));
+            var entity = this.Manager.CreateEntity(typeof(DynamicHashSetTestsBuffer));
 
-            var rw = this.Manager.GetBuffer<TestHashSet>(entity).InitializeHashSet<TestHashSet, int>(0, MinGrowth);
-            var setRw = rw.AsHashSet<TestHashSet, int>();
+            var rw = this.Manager.GetBuffer<DynamicHashSetTestsBuffer>(entity).InitializeHashSet<DynamicHashSetTestsBuffer, int>(0, MinGrowth);
+            var setRw = rw.AsHashSet<DynamicHashSetTestsBuffer, int>();
             setRw.Add(1);
             Assert.IsTrue(setRw.Contains(1));
 
-            var ro = this.Manager.GetBuffer<TestHashSet>(entity, true);
-            var setRo = ro.AsHashSet<TestHashSet, int>();
+            var ro = this.Manager.GetBuffer<DynamicHashSetTestsBuffer>(entity, true);
+            var setRo = ro.AsHashSet<DynamicHashSetTestsBuffer, int>();
             Assert.Throws<InvalidOperationException>(() => setRo.Remove(1));
         }
 #endif
 
         private DynamicHashSet<int> CreateSet()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestHashSet));
+            var entity = this.Manager.CreateEntity(typeof(DynamicHashSetTestsBuffer));
             return this
                 .Manager
-                .GetBuffer<TestHashSet>(entity)
-                .InitializeHashSet<TestHashSet, int>(0, MinGrowth)
-                .AsHashSet<TestHashSet, int>();
-        }
-
-        private struct TestHashSet : IDynamicHashSet<int>
-        {
-            byte IDynamicHashSet<int>.Value { get; }
+                .GetBuffer<DynamicHashSetTestsBuffer>(entity)
+                .InitializeHashSet<DynamicHashSetTestsBuffer, int>(0, MinGrowth)
+                .AsHashSet<DynamicHashSetTestsBuffer, int>();
         }
     }
 }
-

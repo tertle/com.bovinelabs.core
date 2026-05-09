@@ -141,5 +141,17 @@ namespace BovineLabs.Core.Authoring.EntityCommands
         {
             this.baker.SetComponentEnabled<T>(entity, enabled);
         }
+
+        public void AddSharedComponent<T>(Entity entity, in T component)
+            where T : unmanaged, ISharedComponentData
+        {
+            this.baker.AddSharedComponent(entity, component);
+        }
+
+        public void SetSharedComponent<T>(Entity entity, in T component)
+            where T : unmanaged, ISharedComponentData
+        {
+            this.baker.SetSharedComponent(entity, component);
+        }
     }
 }

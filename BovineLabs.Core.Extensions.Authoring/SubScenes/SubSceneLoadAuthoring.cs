@@ -49,16 +49,16 @@ namespace BovineLabs.Core.Authoring.SubScenes
             {
                 var buffer = this.AddBuffer<AssetLoad>(this.GetEntity(TransformUsageFlags.None));
 
-                foreach (var s in settings.AssetSets)
+                foreach (var set in settings.AssetSets)
                 {
-                    if (!this.IncludeScene(s.TargetWorld))
+                    if (!this.IncludeScene(set.TargetWorld))
                     {
                         continue;
                     }
 
-                    var targetWorld = SubSceneLoadUtil.ConvertFlags(s.TargetWorld);
+                    var targetWorld = SubSceneLoadUtil.ConvertFlags(set.TargetWorld);
 
-                    foreach (var asset in s.Assets)
+                    foreach (var asset in set.Assets)
                     {
                         if (asset == null)
                         {

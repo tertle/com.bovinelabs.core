@@ -530,34 +530,22 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private DynamicVariableMap<int, float, short, MultiHashColumn<short>> CreateMap(int growth = 64)
         {
-            var entity = this.Manager.CreateEntity(typeof(TestMap));
+            var entity = this.Manager.CreateEntity(typeof(DynamicVariableMapTestsBuffer));
             return this
                 .Manager
-                .GetBuffer<TestMap>(entity)
-                .InitializeVariableMap<TestMap, int, float, short, MultiHashColumn<short>>(0, growth)
-                .AsVariableMap<TestMap, int, float, short, MultiHashColumn<short>>();
+                .GetBuffer<DynamicVariableMapTestsBuffer>(entity)
+                .InitializeVariableMap<DynamicVariableMapTestsBuffer, int, float, short, MultiHashColumn<short>>(0, growth)
+                .AsVariableMap<DynamicVariableMapTestsBuffer, int, float, short, MultiHashColumn<short>>();
         }
 
         private DynamicVariableMap<long, short, short, MultiHashColumn<short>> CreateSmallCapacityMap()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestLongKeyShortValueMap));
+            var entity = this.Manager.CreateEntity(typeof(DynamicVariableMapTestsLongKeyShortValueBuffer));
             return this
                 .Manager
-                .GetBuffer<TestLongKeyShortValueMap>(entity)
-                .InitializeVariableMap<TestLongKeyShortValueMap, long, short, short, MultiHashColumn<short>>(0, 1)
-                .AsVariableMap<TestLongKeyShortValueMap, long, short, short, MultiHashColumn<short>>();
-        }
-
-        private struct TestMap : IDynamicVariableMap<int, float, short, MultiHashColumn<short>>
-        {
-            [UsedImplicitly]
-            byte IDynamicVariableMap<int, float, short, MultiHashColumn<short>>.Value { get; }
-        }
-
-        private struct TestLongKeyShortValueMap : IDynamicVariableMap<long, short, short, MultiHashColumn<short>>
-        {
-            [UsedImplicitly]
-            byte IDynamicVariableMap<long, short, short, MultiHashColumn<short>>.Value { get; }
+                .GetBuffer<DynamicVariableMapTestsLongKeyShortValueBuffer>(entity)
+                .InitializeVariableMap<DynamicVariableMapTestsLongKeyShortValueBuffer, long, short, short, MultiHashColumn<short>>(0, 1)
+                .AsVariableMap<DynamicVariableMapTestsLongKeyShortValueBuffer, long, short, short, MultiHashColumn<short>>();
         }
 
         private struct MultiHashColumnLayout<T>

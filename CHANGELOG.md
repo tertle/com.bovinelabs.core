@@ -1,10 +1,47 @@
 # Changelog
 
+## [1.6.1] - 2026-05-09
+
+### Added
+* `IEntityCommands` support for add/set shared components
+* `SpatialHexMap` and spatial documentation for hex-keyed spatial lookups
+* Package-distributed Core skills under `Plugins~/skills`
+* `ObjectDefinitionRegistry.TryGetValue`
+* `ObjectId.RawValue` for raw packed ID access
+* `WorldExtensions.IsServerLocalWorld`
+* `NetUtility` helpers for NetCode-enabled runtime checks
+* `DynamicUntypedHashMap.Add<TValue>` for add-only untyped map writes
+* `BurstTrampolineExtensions.InvokeRef<TRef>` for mutable payload callbacks
+* CodeGenHelpers switch builders now support default cases
+
+### Changed
+* Dynamic iterator test buffers moved to top-level uniquely named types
+* Hash map `GetOrAddRef` APIs renamed to `GetOrAddRefUnsafe`, with obsolete shims left on the old names and documentation clarifying the returned ref must be consumed immediately and not used after later writes to the same container
+* `ObjectId` storage updated to support ghost serialization
+* `SceneInitializeSystem` now runs in editor worlds
+* `BakingWorldFlagsSystem` now supplies client/server flags in baking worlds
+* `BurstTrampoline` documentation now recommends explicit lifecycle initialization instead of static constructor setup
+* `WorldSafeShutdown` moved into `BovineLabs.Core.Utility`
+* Core documentation and image assets no longer rely on Git LFS
+* Internal Unity asmref layout cleaned up and renamed for consistency
+
+### Fixed
+* DynamicGenerator no longer throws when generation fails
+* DynamicGenerator now imports namespaces required by generic type arguments
+* DynamicGenerator now reports nested dynamic buffer types instead of attempting invalid code generation
+* SubSceneEditorToolbar now saves edited subscenes before domain reload closes the temporary editor subscene
+* SubScene load flag filtering now only applies in build baking worlds
+* Unity 6.5 warnings in journaling/internal helpers and test fixtures
+* Unity 6000.4.4f+ `UnityObjectRef` internal ID handling
+* Favourites window drag reordering persistence
+* Favourites and Selection History window persistence now reloads by `GlobalObjectId`, saves preferences atomically, handles cleared selections, and keeps filtered locked history stable
+* Favourites and Selection History window styling on newer Unity versions
+* Welcome window spacing
+
 ## [1.6.0] - 2026-03-13
 
 ### Breaking
 * Unity 6.3+ only
-* Package now targets 6000.3 / Entities 1.4.3
 * Input moved to Bridge
 * Camera moved to Bridge
 

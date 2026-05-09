@@ -27,6 +27,13 @@ namespace CodeGenHelpers
             return builder;
         }
 
+        public SwitchCaseBuilder AddDefault()
+        {
+            var builder = new SwitchCaseBuilder(this, "_", true);
+            _switchCases.Add(builder);
+            return builder;
+        }
+
         public ICodeWriter Close()
         {
             if (_writer is CodeWriter codeWriter)

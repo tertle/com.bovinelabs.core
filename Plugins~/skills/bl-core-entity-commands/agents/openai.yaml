@@ -1,0 +1,3 @@
+interface:
+  display_name: "Core Entity Commands Usage"
+  short_description: "Build reusable com.bovinelabs.core IEntityCommands helpers across bakers, command buffers, parallel jobs, tests, and shared components."
