@@ -9,7 +9,11 @@ namespace BovineLabs.Core.Editor.EditorPreferences
     using System.Linq;
     using System.Reflection;
     using Unity.Entities.UI;
+#if UNITY_6000_6_OR_NEWER
+    using Unity.Entities.Editor.Serialization;
+#else
     using Unity.Serialization.Editor;
+#endif
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.UIElements;

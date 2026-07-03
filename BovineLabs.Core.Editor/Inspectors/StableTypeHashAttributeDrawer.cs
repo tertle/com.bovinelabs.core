@@ -59,11 +59,6 @@ namespace BovineLabs.Core.Editor.Inspectors
                     continue;
                 }
 
-                if (t.TypeIndex.IsManagedComponent)
-                {
-                    continue;
-                }
-
                 var type = t.Type;
 
                 if (type == null)

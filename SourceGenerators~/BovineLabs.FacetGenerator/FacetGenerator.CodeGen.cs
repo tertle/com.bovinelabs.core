@@ -251,7 +251,10 @@ namespace BovineLabs.FacetGenerator
                     .AddProperty(field.LookupFieldName, Accessibility.Public)
                     .SetType(field.FieldTypeName);
 
-                singletonField.AddAttribute("ReadOnly");
+                if (field.HasReadOnlyAttribute)
+                {
+                    singletonField.AddAttribute("ReadOnly");
+                }
             }
 
             var indexer = lookup
@@ -562,7 +565,7 @@ namespace BovineLabs.FacetGenerator
             {
                 var handleField = typeHandle.AddProperty(field.HandleName, Accessibility.Public).SetType(field.HandleTypeName);
 
-                if (field.IsReadOnly)
+                if (field.IsReadOnly && (!field.IsSingleton || field.HasReadOnlyAttribute))
                 {
                     handleField.AddAttribute("ReadOnly");
                 }

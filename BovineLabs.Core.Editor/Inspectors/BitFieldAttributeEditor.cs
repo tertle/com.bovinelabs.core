@@ -55,16 +55,13 @@ namespace BovineLabs.Core.Editor.Inspectors
             else
             {
                 var current = property.intValue;
-                var index = 0;
-                for (; index < k.Length; index++)
-                {
-                    if (current == k[index].Value)
-                    {
-                        break;
-                    }
-                }
-
                 var choices = k.Select(s => s.Value).ToList();
+                var index = choices.IndexOf(current);
+                if (index == -1)
+                {
+                    choices.Add(current);
+                    index = choices.Count - 1;
+                }
 
                 var popup = new PopupField<int>(property.displayName, choices, index, FormatCallback, FormatCallback);
                 popup.AddToClassList(BaseField<int>.alignedFieldUssClassName);
@@ -78,7 +75,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
                 string FormatCallback(int i)
                 {
-                    return k.FirstOrDefault(key => i == key.Value).Name ?? "[None]";
+                    return k.FirstOrDefault(key => i == key.Value).Name ?? $"[Missing {i}]";
                 }
             }
         }

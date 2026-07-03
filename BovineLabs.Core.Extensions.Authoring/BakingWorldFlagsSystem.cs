@@ -20,13 +20,13 @@ namespace BovineLabs.Core.Authoring
             switch (settings)
             {
                 case NetCodeServerSettings:
-                    state.WorldUnmanaged.GetImpl().Flags |= WorldFlags.GameClient;
-                    break;
-                case NetCodeClientSettings:
                     state.WorldUnmanaged.GetImpl().Flags |= WorldFlags.GameServer;
                     break;
+                case NetCodeClientSettings:
+                    state.WorldUnmanaged.GetImpl().Flags |= WorldFlags.GameClient;
+                    break;
                 case NetCodeClientAndServerSettings:
-                    state.WorldUnmanaged.GetImpl().Flags |= WorldFlags.GameClient | WorldFlags.GameClient;
+                    state.WorldUnmanaged.GetImpl().Flags |= WorldFlags.GameClient | WorldFlags.GameServer;
                     break;
             }
         }

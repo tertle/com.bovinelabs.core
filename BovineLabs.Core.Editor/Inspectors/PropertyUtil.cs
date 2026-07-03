@@ -11,22 +11,15 @@ namespace BovineLabs.Core.Editor.Inspectors
     {
         public static PropertyField CreateProperty(SerializedProperty property, SerializedObject serializedObject)
         {
-            var field = new PropertyField(property)
-            {
-                name = "PropertyField:" + property?.propertyPath,
-            };
-
+            var field = new PropertyField(property) { name = "PropertyField:" + property?.propertyPath };
             field.Bind(serializedObject);
             return field;
         }
 
         public static PropertyField CreateProperty(SerializedProperty property)
         {
-            var field = new PropertyField(property)
-            {
-                name = "PropertyField:" + property?.propertyPath,
-            };
-
+            var field = new PropertyField(property) { name = "PropertyField:" + property.propertyPath };
+            field.Bind(property.serializedObject);
             return field;
         }
     }

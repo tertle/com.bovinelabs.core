@@ -17,82 +17,94 @@ namespace BovineLabs.Core.ObjectManagement
     [Serializable]
     public struct ObjectId : IComponentData, IEquatable<ObjectId>, IComparable<ObjectId>
     {
-        public const int MaxModsIds = 1 << ModBytes;
-
-        private const int ModBytes = 10;
-        private const int ModShift = 32 - ModBytes;
-        private const int IDMask = (1 << ModShift) - 1;
+        public const int MaxModsIds = BLId.MaxModsIds;
 
         public static readonly ObjectId Null = default;
 
-        public int RawValue;
+        [UnityEngine.SerializeField]
+        private BLId value;
 
         public ObjectId(int id, ushort mod = 0)
         {
-#if UNITY_EDITOR
-            if (id > IDMask)
-            {
-                throw new ArgumentOutOfRangeException(nameof(id), "Id too large");
-            }
+            this.value = new BLId(id, mod);
+        }
 
-            if (mod >= MaxModsIds)
-            {
-                throw new ArgumentOutOfRangeException(nameof(mod), "Mod id too large");
-            }
-#endif
-
-            this.RawValue = mod << ModShift | id;
+        public ObjectId(BLId id)
+        {
+            this.value = id;
         }
 
         [CreateProperty]
-        public ushort Mod => (ushort)(this.RawValue >> ModShift);
+        public int RawValue
+        {
+            readonly get => this.value.RawValue;
+            set => this.value.RawValue = value;
+        }
 
         [CreateProperty]
-        public int ID => this.RawValue & IDMask;
+        public readonly ushort Mod => this.value.Mod;
+
+        [CreateProperty]
+        public readonly int ID => this.value.ID;
+
+        public static implicit operator BLId(ObjectId id)
+        {
+            return id.value;
+        }
+
+        public static explicit operator ObjectId(BLId id)
+        {
+            return new ObjectId(id);
+        }
 
         public static bool operator ==(ObjectId left, ObjectId right)
         {
-            return left.ID == right.ID;
+            return left.value == right.value;
         }
 
         public static bool operator !=(ObjectId left, ObjectId right)
         {
-            return left.ID != right.ID;
+            return left.value != right.value;
         }
 
-        /// <inheritdoc/>
-        public int CompareTo(ObjectId other)
+        public readonly ObjectId WithMod(ushort mod)
         {
-            return this.RawValue.CompareTo(other.RawValue);
+            return new ObjectId(this.value.WithMod(mod));
         }
 
         /// <inheritdoc/>
-        public override string ToString()
+        public readonly int CompareTo(ObjectId other)
+        {
+            return this.value.CompareTo(other.value);
+        }
+
+        /// <inheritdoc/>
+        public override readonly string ToString()
         {
             return $"ID:{this.ID}";
         }
 
-        public FixedString32Bytes ToFixedString()
+        public readonly FixedString32Bytes ToFixedString()
         {
             return $"ID:{this.ID}";
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is ObjectId other && this.Equals(other);
         }
 
         /// <inheritdoc />
-        public bool Equals(ObjectId other)
+        public readonly bool Equals(ObjectId other)
         {
-            return this.RawValue == other.RawValue;
+            return this.value.Equals(other.value);
         }
 
         /// <inheritdoc />
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
-            return this.RawValue;
+            return this.value.GetHashCode();
         }
     }
 }

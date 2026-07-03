@@ -25,7 +25,7 @@ namespace BovineLabs.Core.Extensions
         {
             var data = ChunkDataUtility.GetComponentDataWithTypeRW(chunk, archetype, indexInChunk, typeIndex, globalVersion, ref cache);
 
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(access.EntityComponentStore->m_RecordToJournal != 0))
             {
                 JournalAddRecord(access.EntityComponentStore, entity, typeIndex, globalVersion, data);
@@ -94,7 +94,7 @@ namespace BovineLabs.Core.Extensions
 #endif
         }
 
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
 #pragma warning disable 0618
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void JournalAddRecord(EntityComponentStore* store, Entity entity, TypeIndex typeIndex, uint version, void* data)
@@ -125,15 +125,6 @@ namespace BovineLabs.Core.Extensions
 
             EntitiesJournaling.AddRecord(recordType, store, version, &entity, 1, types: &typeIndex, typeCount: 1, data: recordData,
                 dataLength: recordDataLength);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void SetComponentEnabled(
-            ref this EntityDataAccess access, in SystemHandle originSystem, Entity* entities, int entityCount, TypeIndex type, bool value)
-        {
-            EntitiesJournaling.AddRecord(value ? EntitiesJournaling.RecordType.EnableComponent : EntitiesJournaling.RecordType.DisableComponent,
-                access.m_WorldUnmanaged.SequenceNumber, access.m_WorldUnmanaged.ExecutingSystem, originSystem: in originSystem, entities: entities,
-                entityCount: entityCount, types: &type, typeCount: 1);
         }
 #pragma warning restore 0618
 #endif

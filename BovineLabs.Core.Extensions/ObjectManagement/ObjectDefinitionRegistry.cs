@@ -8,7 +8,6 @@ namespace BovineLabs.Core.ObjectManagement
     using Unity.Collections;
     using Unity.Entities;
 
-    [InternalBufferCapacity(0)]
     public struct ObjectDefinitionRegistry : IComponentData
     {
         [ReadOnly]

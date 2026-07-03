@@ -1,3 +1,4 @@
 interface:
-  display_name: "Core Object Management Usage"
-  short_description: "Work on com.bovinelabs.core object definitions, ObjectId storage, groups, LookupAuthoring map baking, auto-id/autoref, registries, and runtime lookups."
+  display_name: "Core Object Management"
+  short_description: "Work with Core object identities"
+  default_prompt: "Use $bl-core-object-management to implement or debug this object-management workflow."

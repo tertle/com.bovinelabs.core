@@ -15,6 +15,13 @@ namespace BovineLabs.Core.Extensions
     {
         private const EntityQueryOptions QueryOptions = EntityQueryOptions.IncludeSystems;
 
+        public static Entity GetEntityFromIndex(this EntityManager entityManager, int index)
+        {
+            return index is < 0 or >= EntityComponentStore.EntityStore.MaximumTheoreticalAmountOfEntities
+                ? Entity.Null
+                : entityManager.GetEntityByEntityIndex(index);
+        }
+
         public static int NumberOfArchetype(this EntityManager entityManager)
         {
             return entityManager.GetCheckedEntityDataAccess()->EntityComponentStore->m_Archetypes.Length;
@@ -205,17 +212,6 @@ namespace BovineLabs.Core.Extensions
             }
 
             return query.GetSingletonRW<T>();
-        }
-
-        public static T GetSingletonObject<T>(this EntityManager em, bool completeDependency = true)
-        {
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
-            if (completeDependency)
-            {
-                query.CompleteDependency();
-            }
-
-            return em.GetComponentObject<T>(query.GetSingletonEntity());
         }
 
         public static bool TryGetSingleton<T>(this EntityManager em, out T component, bool completeDependency = true)

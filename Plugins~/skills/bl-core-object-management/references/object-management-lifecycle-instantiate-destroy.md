@@ -9,7 +9,7 @@ Use this reference for object-management runtime flows that resolve ObjectId to 
 3. `BovineLabs.Core.Extensions/ObjectManagement/ObjectGroupMatcher.cs`
 4. `Documentation~/ObjectManagement.md`
 
-For lifecycle internals, also read the `core-lifecycle-usage` skill references rather than duplicating lifecycle rules here.
+For lifecycle internals, also read `$bl-core-lifecycle` rather than duplicating lifecycle rules here.
 
 ## Runtime Data Flow
 

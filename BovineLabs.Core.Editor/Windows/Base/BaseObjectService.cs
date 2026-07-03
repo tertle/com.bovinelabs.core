@@ -8,7 +8,11 @@ namespace BovineLabs.Core.Editor.Windows.Base
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Editor.Utility;
+#if UNITY_6000_6_OR_NEWER
+    using Unity.Entities.Editor.Serialization;
+#else
     using Unity.Serialization.Editor;
+#endif
     using UnityEditor;
     using UnityEngine;
     using Object = UnityEngine.Object;

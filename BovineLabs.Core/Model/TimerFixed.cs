@@ -133,9 +133,9 @@ namespace BovineLabs.Core.Model
             {
                 for (var i = 0; i < length; i++)
                 {
-#if UNITY_BURST_EXPERIMENTAL_LOOP_INTRINSICS
-                    Loop.ExpectVectorized();
-#endif
+// #if UNITY_BURST_EXPERIMENTAL_LOOP_INTRINSICS
+//                     Loop.ExpectVectorized();
+// #endif
                     remainings[i] = math.max(0, remainings[i] - deltaTime);
                     isOn[i] = remainings[i] != 0;
                 }

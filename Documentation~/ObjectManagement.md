@@ -80,6 +80,42 @@ public void OnUpdate(ref SystemState state)
 }
 ```
 
+## World Object Registry
+
+### Summary
+WorldObjectRegistry maps live initialized entities by their `ObjectId`. It is for runtime systems that need to find concrete world entities after lifecycle
+initialization, while ObjectDefinitionRegistry remains the prefab-definition lookup.
+
+Multiple live entities may share the same `ObjectId`. Use the first-match helper only when any matching entity is acceptable; otherwise iterate all values for
+the key or pass the concrete entity through the gameplay flow.
+
+### Runtime
+`WorldObjectRegistryCreateSystem` creates a singleton dynamic multi-hash map and registers `(ObjectId, Entity)` pairs when entities enter
+`InitializeEntity` or `InitializeSubSceneEntity`. `WorldObjectRegistryDestroySystem` removes the exact pair when entities enter `DestroyEntity`.
+
+```cs
+public void OnUpdate(ref SystemState state)
+{
+    var worldObjects = SystemAPI.GetSingletonBuffer<WorldObjectRegistry>();
+    if (worldObjects.TryGetFirstValue(targetId, out var target))
+    {
+        // Use any live entity with this ObjectId.
+    }
+}
+```
+
+To handle every live entity with a shared id:
+
+```cs
+var worldObjects = SystemAPI.GetSingletonBuffer<WorldObjectRegistry>()
+    .AsMultiHashMap<WorldObjectRegistry, ObjectId, Entity>();
+var values = worldObjects.GetValuesForKey(targetId);
+while (values.MoveNext())
+{
+    var target = values.Current;
+}
+```
+
 ### Search Integration
 ObjectDefinition implements a `ObjectDefinitionSearchProvider` that integrates with Unity's search system, enabling powerful filtering during authoring workflows.
 

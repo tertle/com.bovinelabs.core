@@ -1,3 +1,4 @@
 interface:
-  display_name: "Core SubScenes Usage"
-  short_description: "Create and debug com.bovinelabs.core subscene settings, world-targeted loading, asset loading, and editor scene tooling."
+  display_name: "Core SubScenes"
+  short_description: "Load and manage Core subscenes"
+  default_prompt: "Use $bl-core-subscenes to implement or debug this Core subscene flow."

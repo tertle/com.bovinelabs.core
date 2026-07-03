@@ -11,6 +11,7 @@ namespace BovineLabs.Core.Utility
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Profiling;
+    using UnityEngine.Assemblies;
 #if UNITY_EDITOR
     using UnityEditor;
     using UnityEditor.Compilation;
@@ -25,7 +26,7 @@ namespace BovineLabs.Core.Utility
         private static readonly Dictionary<System.Reflection.Assembly, Type[]> AssemblyNonGenericTypes = new();
         private static readonly Dictionary<System.Reflection.Assembly, MethodInfo[]> AssemblyMethods = new();
 
-        private static System.Reflection.Assembly[] allAssemblies;
+        private static IReadOnlyList<System.Reflection.Assembly> allAssemblies;
         private static Type[] allTypes;
         private static Type[] allUnmanagedTypes;
         private static Type[] allTypesWithImplementation;
@@ -37,7 +38,11 @@ namespace BovineLabs.Core.Utility
 #endif
 
         /// <summary> Gets all currently loaded assemblies in the AppDomain. </summary>
-        public static System.Reflection.Assembly[] AllAssemblies => allAssemblies ??= AppDomain.CurrentDomain.GetAssemblies();
+#if UNITY_6000_4_OR_NEWER
+        public static IReadOnlyList<System.Reflection.Assembly> AllAssemblies => allAssemblies ??= CurrentAssemblies.GetLoadedAssemblies();
+#else
+        public static IReadOnlyList<System.Reflection.Assembly> AllAssemblies => allAssemblies ??= AppDomain.CurrentDomain.GetAssemblies();
+#endif
 
         /// <summary> Gets all types across all loaded assemblies. </summary>
         public static Type[] AllTypes => allTypes ??= AllAssemblies.SelectMany(GetTypes).ToArray();

@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !BL_DISABLE_SUBSCENE && !UNITY_DISABLE_MANAGED_COMPONENTS
+#if !UNITY_6000_6_OR_NEWER && !BL_DISABLE_SUBSCENE && !UNITY_DISABLE_MANAGED_COMPONENTS
 namespace BovineLabs.Core.SubScenes
 {
     using System;

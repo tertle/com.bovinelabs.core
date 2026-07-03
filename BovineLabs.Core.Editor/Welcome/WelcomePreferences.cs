@@ -6,7 +6,11 @@ namespace BovineLabs.Core.Editor.Welcome
 {
     using System;
     using BovineLabs.Core.Editor.EditorPreferences;
+#if UNITY_6000_6_OR_NEWER
+    using Unity.Entities.Editor.Serialization;
+#else
     using Unity.Serialization.Editor;
+#endif
     using UnityEngine;
 
     /// <summary>

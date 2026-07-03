@@ -100,8 +100,12 @@ namespace BovineLabs.Core.Extensions
             }
 #endif
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+            CheckSingletonBufferQueryAccess(impl, typeIndex, isReadOnly);
+#endif
+
             impl->GetSingletonChunkAndEntity(typeIndex, out var indexInArchetype, out var chunk, out var entityIndexInChunk);
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(impl->_Access->EntityComponentStore->m_RecordToJournal != 0) && !isReadOnly)
             {
 #pragma warning disable 0618
@@ -139,8 +143,12 @@ namespace BovineLabs.Core.Extensions
             }
 #endif
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+            CheckSingletonBufferQueryAccess(impl, typeIndex, isReadOnly);
+#endif
+
             impl->GetSingletonChunkAndEntity(typeIndex, out var indexInArchetype, out var chunk, out var entityIndexInChunk);
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
 #pragma warning disable 0618
             if (Hint.Unlikely(impl->_Access->EntityComponentStore->m_RecordToJournal != 0) && !isReadOnly)
             {
@@ -171,6 +179,42 @@ namespace BovineLabs.Core.Extensions
             return hasSingleton;
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+        private static void CheckSingletonBufferQueryAccess(EntityQueryImpl* impl, TypeIndex typeIndex, bool isReadOnly)
+        {
+            for (var i = 0; i < impl->_QueryData->RequiredComponentsCount; i++)
+            {
+                var component = impl->_QueryData->RequiredComponents[i];
+                if (component.TypeIndex != typeIndex || component.AccessModeType == ComponentType.AccessMode.Exclude)
+                {
+                    continue;
+                }
+
+                if (isReadOnly)
+                {
+                    return;
+                }
+
+                if (component.AccessModeType == ComponentType.AccessMode.ReadWrite)
+                {
+                    return;
+                }
+
+                break;
+            }
+
+            var typeName = typeIndex.ToFixedString();
+            if (isReadOnly)
+            {
+                throw new InvalidOperationException(
+                    $"GetSingletonBufferNoSync<{typeName}>(true) requires {typeName} to be included in the EntityQuery.");
+            }
+
+            throw new InvalidOperationException(
+                $"GetSingletonBufferNoSync<{typeName}>(false) requires {typeName} to be included in the EntityQuery with read-write access.");
+        }
+#endif
+
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
         private static void AssertRange(int index, int count)
@@ -196,7 +240,7 @@ namespace BovineLabs.Core.Extensions
             var length = chunk.Count;
             int stride = archetype->SizeOfs[typeIndexInArchetype];
 
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
 #pragma warning disable 0618
             if (Hint.Unlikely(archetype->EntityComponentStore->m_RecordToJournal != 0) && isWriting)
             {

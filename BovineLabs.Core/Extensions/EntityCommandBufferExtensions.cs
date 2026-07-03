@@ -69,18 +69,27 @@ namespace BovineLabs.Core.Extensions
             ref readonly var type = ref TypeManager.GetTypeInfo(typeIndex);
             var sizeNeeded = EntityCommandBufferData.Align(sizeof(EntityBufferCommand) + type.SizeInChunk, Align64BIT);
 
+#if !UNITY_6000_6_OR_NEWER
             ecbd.ResetCommandBatching(chain);
+#endif
             var cmd = (EntityBufferCommand*)ecbd.Reserve(chain, sortKey, sizeNeeded);
 
             cmd->Header.Header.CommandType = op;
             cmd->Header.Header.TotalSize = sizeNeeded;
             cmd->Header.Header.SortKey = chain->m_LastSortKey;
             cmd->Header.Entity = e;
+#if UNITY_6000_6_OR_NEWER
+            cmd->Header.EntityCount = 0;
+            cmd->Header.Entities = null;
+#else
             cmd->Header.IdentityIndex = 0;
             cmd->Header.BatchCount = 1;
+#endif
             cmd->ComponentTypeIndex = typeIndex;
             cmd->ComponentSize = (short)type.SizeInChunk;
+#if !UNITY_6000_6_OR_NEWER
             cmd->ValueRequiresEntityFixup = 0;
+#endif
 
             var header = &cmd->BufferNode.TempBuffer;
             BufferHeader.Initialize(header, type.BufferCapacity);
@@ -98,11 +107,13 @@ namespace BovineLabs.Core.Extensions
 
             internalCapacity = type.BufferCapacity;
 
+#if !UNITY_6000_6_OR_NEWER
             if (TypeManager.HasEntityReferences(typeIndex))
             {
                 cmd->ValueRequiresEntityFixup = 1;
                 ecbd.m_BufferWithFixups.Add(1);
             }
+#endif
 
             return header;
         }

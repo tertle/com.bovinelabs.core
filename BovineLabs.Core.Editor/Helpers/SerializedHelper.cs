@@ -68,10 +68,11 @@ namespace BovineLabs.Core.Editor.Helpers
             }
         }
 
-        public static IEnumerable<SerializedProperty> GetChildren(SerializedProperty property)
+        public static IEnumerable<SerializedProperty> GetChildren(SerializedProperty property, bool skipSingleRoot = false)
         {
-            var currentProperty = property.Copy();
-            var nextSiblingProperty = property.Copy();
+            var rootProperty = skipSingleRoot && TryGetSingleChildRoot(property, out var singleChildRoot) ? singleChildRoot : property;
+            var currentProperty = rootProperty.Copy();
+            var nextSiblingProperty = rootProperty.Copy();
             nextSiblingProperty.Next(false);
 
             if (currentProperty.Next(true))
@@ -87,6 +88,43 @@ namespace BovineLabs.Core.Editor.Helpers
                 }
                 while (currentProperty.Next(false));
             }
+        }
+
+        public static bool TryGetSingleChildRoot(SerializedProperty property, out SerializedProperty childRoot)
+        {
+            childRoot = null;
+
+            var nextSiblingProperty = property.Copy();
+            nextSiblingProperty.Next(false);
+
+            var firstChildProperty = property.Copy();
+            if (!firstChildProperty.Next(true) || SerializedProperty.EqualContents(firstChildProperty, nextSiblingProperty))
+            {
+                return false;
+            }
+
+            var secondChildProperty = firstChildProperty.Copy();
+            if (secondChildProperty.Next(false) && !SerializedProperty.EqualContents(secondChildProperty, nextSiblingProperty))
+            {
+                return false;
+            }
+
+            if (firstChildProperty.propertyType != SerializedPropertyType.Generic || firstChildProperty.isArray)
+            {
+                return false;
+            }
+
+            var childRootNextSiblingProperty = firstChildProperty.Copy();
+            childRootNextSiblingProperty.Next(false);
+
+            var grandChildProperty = firstChildProperty.Copy();
+            if (!grandChildProperty.Next(true) || SerializedProperty.EqualContents(grandChildProperty, childRootNextSiblingProperty))
+            {
+                return false;
+            }
+
+            childRoot = firstChildProperty.Copy();
+            return true;
         }
 
         public static Type GetFieldType(this SerializedProperty property)

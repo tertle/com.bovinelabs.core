@@ -33,6 +33,12 @@ namespace BovineLabs.Core.Iterators
 
         internal int BucketCapacity => this.BucketCapacityMask + 1;
 
+        internal readonly bool IsDense
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => this.FirstFreeIdx == -1 && this.AllocatedIndex == this.Count;
+        }
+
         internal byte* Values
         {
             get
@@ -105,21 +111,20 @@ namespace BovineLabs.Core.Iterators
             var log2MinGrowth = (byte)(32 - math.lzcnt(math.max(1, minGrowth) - 1));
             capacity = CalcCapacityCeilPow2(0, capacity, log2MinGrowth);
 
-            var bucketCapacity = GetBucketSize(capacity);
-            var totalSize = CalculateDataSize(capacity, bucketCapacity, sizeOfValueT, out var valuesOffset, out var keysOffset, out var nextOffset, out var bucketOffset);
+            var totalSize = CalculateDataSize(capacity, sizeOfValueT, out var layout);
             buffer.ResizeUninitialized(totalSize);
 
             var data = buffer.AsHelper<TKey>();
 
             data->Log2MinGrowth = log2MinGrowth;
             data->Capacity = capacity;
-            data->BucketCapacityMask = bucketCapacity - 1;
+            data->BucketCapacityMask = layout.BucketCapacity - 1;
             data->SizeOfTValue = sizeOfValueT;
 
-            data->ValuesOffset = valuesOffset;
-            data->KeysOffset = keysOffset;
-            data->NextOffset = nextOffset;
-            data->BucketsOffset = bucketOffset;
+            data->ValuesOffset = layout.ValuesOffset;
+            data->KeysOffset = layout.KeysOffset;
+            data->NextOffset = layout.NextOffset;
+            data->BucketsOffset = layout.BucketsOffset;
 
             data->Clear(); // sets FirstFreeIdx, Count, AllocatedIndex
         }
@@ -139,7 +144,7 @@ namespace BovineLabs.Core.Iterators
 
         internal static void ResizeExact(DynamicBuffer<byte> buffer, ref DynamicHashMapHelper<TKey>* data, int newCapacity, int newBucketCapacity)
         {
-            var totalSize = CalculateDataSize(newCapacity, newBucketCapacity, data->SizeOfTValue, out var valuesOffset, out var keysOffset, out var nextOffset, out var bucketOffset);
+            var totalSize = CalculateDataSize(newCapacity, newBucketCapacity, data->SizeOfTValue, out var layout);
 
             var oldCapacity = data->Capacity;
             var oldBucketCapacity = data->BucketCapacity;
@@ -179,10 +184,10 @@ namespace BovineLabs.Core.Iterators
             data->Log2MinGrowth = oldLog2MinGrowth;
             data->SizeOfTValue = sizeOfT;
 
-            data->ValuesOffset = valuesOffset;
-            data->KeysOffset = keysOffset;
-            data->NextOffset = nextOffset;
-            data->BucketsOffset = bucketOffset;
+            data->ValuesOffset = layout.ValuesOffset;
+            data->KeysOffset = layout.KeysOffset;
+            data->NextOffset = layout.NextOffset;
+            data->BucketsOffset = layout.BucketsOffset;
 
             data->Clear();
 
@@ -373,6 +378,81 @@ namespace BovineLabs.Core.Iterators
             ResizeExact(buffer, ref data, capacity, GetBucketSize(capacity));
         }
 
+        internal static DynamicHashMapDenseWriteView<TKey> BeginDenseRebuild(
+            void* buffer, int bufferLength, int count, int capacity, int sizeOfTValue, int log2MinGrowth)
+        {
+            Check.Assume(buffer != null, "Buffer must not be null.");
+            Check.Assume(count >= 0, "Count must be non-negative.");
+            Check.Assume(capacity >= count, "Capacity must be greater than or equal to count.");
+            Check.Assume(sizeOfTValue >= 0, "Value size must be non-negative.");
+            Check.Assume(log2MinGrowth >= 0 && log2MinGrowth < 31, "Log2MinGrowth is out of range.");
+
+            var totalSize = CalculateDataSize(capacity, sizeOfTValue, out var layout);
+            Check.Assume(bufferLength >= totalSize, "Buffer length is too small for the requested layout.");
+
+            var data = (DynamicHashMapHelper<TKey>*)buffer;
+            data->ValuesOffset = layout.ValuesOffset;
+            data->KeysOffset = layout.KeysOffset;
+            data->NextOffset = layout.NextOffset;
+            data->BucketsOffset = layout.BucketsOffset;
+            data->Count = 0;
+            data->Capacity = capacity;
+            data->BucketCapacityMask = layout.BucketCapacity - 1;
+            data->Log2MinGrowth = log2MinGrowth;
+            data->AllocatedIndex = 0;
+            data->FirstFreeIdx = -1;
+            data->SizeOfTValue = sizeOfTValue;
+
+            return new DynamicHashMapDenseWriteView<TKey>
+            {
+                Data = data,
+                Count = count,
+                TotalSize = totalSize,
+            };
+        }
+
+        internal static void CompleteDenseRebuild(
+            ref DynamicHashMapDenseWriteView<TKey> view,
+            DynamicHashMapRebuildOrder rebuildOrder = DynamicHashMapRebuildOrder.Default,
+            DynamicHashMapDuplicatePolicy duplicatePolicy = DynamicHashMapDuplicatePolicy.RejectDuplicateKeys)
+        {
+            var data = view.Data;
+            Check.Assume(data != null, "Dense write view is invalid.");
+            Check.Assume(view.Count >= 0 && view.Count <= data->Capacity, "Dense write view count is out of range.");
+
+            UnsafeUtility.MemSet(data->Next, 0xff, data->Capacity * sizeof(int));
+            UnsafeUtility.MemSet(data->Buckets, 0xff, data->BucketCapacity * sizeof(int));
+
+            var buckets = data->Buckets;
+            var next = data->Next;
+            var keys = data->Keys;
+
+            if (rebuildOrder == DynamicHashMapRebuildOrder.PreservePackedChainOrder)
+            {
+                for (var idx = view.Count - 1; idx >= 0; --idx)
+                {
+                    var bucket = data->GetBucket(keys[idx]);
+                    CheckNoDuplicateKey(keys, next, buckets[bucket], keys[idx], duplicatePolicy);
+                    next[idx] = buckets[bucket];
+                    buckets[bucket] = idx;
+                }
+            }
+            else
+            {
+                for (var idx = 0; idx < view.Count; ++idx)
+                {
+                    var bucket = data->GetBucket(keys[idx]);
+                    CheckNoDuplicateKey(keys, next, buckets[bucket], keys[idx], duplicatePolicy);
+                    next[idx] = buckets[bucket];
+                    buckets[bucket] = idx;
+                }
+            }
+
+            data->Count = view.Count;
+            data->AllocatedIndex = view.Count;
+            data->FirstFreeIdx = -1;
+        }
+
         internal void Clear()
         {
             UnsafeUtility.MemSet(this.Buckets, 0xff, this.BucketCapacity * sizeof(int));
@@ -387,6 +467,64 @@ namespace BovineLabs.Core.Iterators
         internal int GetBucket(in TKey key)
         {
             return (int)((uint)key.GetHashCode() & this.BucketCapacityMask);
+        }
+
+        internal int CopyActiveEntriesTo(byte* keysDestination, int keyStride, byte* valuesDestination, int valueStride)
+        {
+            return this.CopyActiveEntriesTo(keysDestination, keyStride, valuesDestination, valueStride, DynamicHashMapTraversalOrder.DenseIndex);
+        }
+
+        internal int CopyActiveEntriesTo(
+            byte* keysDestination, int keyStride, byte* valuesDestination, int valueStride, DynamicHashMapTraversalOrder traversalOrder)
+        {
+            Check.Assume(keysDestination != null || this.Count == 0, "Keys destination must not be null.");
+            Check.Assume(valuesDestination != null || this.Count == 0 || this.SizeOfTValue == 0, "Values destination must not be null.");
+            Check.Assume(keyStride >= sizeof(TKey), "Key stride is too small.");
+            Check.Assume(valueStride >= this.SizeOfTValue, "Value stride is too small.");
+
+            if (this.Count == 0)
+            {
+                return 0;
+            }
+
+            if (traversalOrder == DynamicHashMapTraversalOrder.DenseIndex && this.IsDense)
+            {
+                UnsafeUtility.MemCpyStride(keysDestination, keyStride, this.Keys, sizeof(TKey), sizeof(TKey), this.Count);
+
+                if (this.SizeOfTValue > 0)
+                {
+                    UnsafeUtility.MemCpyStride(valuesDestination, valueStride, this.Values, this.SizeOfTValue, this.SizeOfTValue, this.Count);
+                }
+
+                return this.Count;
+            }
+
+            var keys = this.Keys;
+            var values = this.Values;
+            var buckets = this.Buckets;
+            var next = this.Next;
+            var packedIndex = 0;
+
+            for (int i = 0, capacity = this.BucketCapacity; i < capacity && packedIndex < this.Count; ++i)
+            {
+                var entryIndex = buckets[i];
+
+                while (entryIndex != -1)
+                {
+                    UnsafeUtility.MemCpy(keysDestination + (packedIndex * keyStride), keys + entryIndex, sizeof(TKey));
+
+                    if (this.SizeOfTValue > 0)
+                    {
+                        UnsafeUtility.MemCpy(valuesDestination + (packedIndex * valueStride), values + (entryIndex * this.SizeOfTValue), this.SizeOfTValue);
+                    }
+
+                    packedIndex++;
+                    entryIndex = next[entryIndex];
+                }
+            }
+
+            Check.Assume(packedIndex == this.Count, "Active entry traversal did not visit Count entries.");
+            return packedIndex;
         }
 
         internal int Find(TKey key)
@@ -513,6 +651,44 @@ namespace BovineLabs.Core.Iterators
 
             this.Count -= removed;
             return removed;
+        }
+
+        internal void Remove(HashMapIterator<TKey> it)
+        {
+            if ((uint)it.EntryIndex >= (uint)this.Capacity)
+            {
+                ThrowInvalidIterator();
+                return;
+            }
+
+            this.CheckIteratorKey(it);
+
+            var bucket = this.GetBucket(it.Key);
+            var entryIdx = this.Buckets[bucket];
+
+            if (entryIdx == it.EntryIndex)
+            {
+                this.Buckets[bucket] = this.Next[entryIdx];
+            }
+            else
+            {
+                while (entryIdx >= 0 && entryIdx < this.Capacity && this.Next[entryIdx] != it.EntryIndex)
+                {
+                    entryIdx = this.Next[entryIdx];
+                }
+
+                if ((uint)entryIdx >= (uint)this.Capacity)
+                {
+                    ThrowInvalidIterator();
+                    return;
+                }
+
+                this.Next[entryIdx] = this.Next[it.EntryIndex];
+            }
+
+            this.Next[it.EntryIndex] = this.FirstFreeIdx;
+            this.FirstFreeIdx = it.EntryIndex;
+            this.Count--;
         }
 
         internal bool TryGetValue<TValue>(TKey key, out TValue item)
@@ -751,36 +927,90 @@ namespace BovineLabs.Core.Iterators
             return idx;
         }
 
+        internal static int CalculateDataSize(int capacity, int sizeOfTValue, out DynamicHashMapLayout layout)
+        {
+            Check.Assume(TryCalculateDataSize(capacity, sizeOfTValue, out layout), "Invalid DynamicHashMap layout.");
+            return layout.TotalSize;
+        }
+
+        internal static bool TryCalculateDataSize(int capacity, int sizeOfTValue, out DynamicHashMapLayout layout)
+        {
+            layout = default;
+
+            if (capacity <= 0 || sizeOfTValue < 0 || capacity > 0x20000000)
+            {
+                return false;
+            }
+
+            var bucketCapacity = math.ceilpow2(GetBucketSize(capacity));
+            return TryCalculateDataSize(capacity, bucketCapacity, sizeOfTValue, out layout);
+        }
+
         private static int CalculateDataSize(
             int capacity,
             int bucketCapacity,
             int sizeOfTValue,
-            out int outValuesOffset,
-            out int outKeysOffset,
-            out int outNextOffset,
-            out int outBucketOffset)
+            out DynamicHashMapLayout layout)
         {
+            Check.Assume(TryCalculateDataSize(capacity, bucketCapacity, sizeOfTValue, out layout), "Invalid DynamicHashMap layout.");
+            return layout.TotalSize;
+        }
+
+        private static bool TryCalculateDataSize(
+            int capacity,
+            int bucketCapacity,
+            int sizeOfTValue,
+            out DynamicHashMapLayout layout)
+        {
+            layout = default;
+
+            if (capacity <= 0 || bucketCapacity <= 0 || sizeOfTValue < 0)
+            {
+                return false;
+            }
+
             var sizeOfTKey = sizeof(TKey);
             var sizeOfInt = sizeof(int);
 
-            var valuesOffset = CollectionHelper.Align(sizeof(DynamicHashMapHelper<TKey>), 16);
-            var valuesSize = sizeOfTValue * capacity;
+            var valuesOffset = Align(sizeof(DynamicHashMapHelper<TKey>), 16);
+            var valuesSize = (long)sizeOfTValue * capacity;
 
-            var keysOffset = CollectionHelper.Align(valuesOffset + valuesSize, UnsafeUtility.AlignOf<TKey>());
-            var keysSize = sizeOfTKey * capacity;
+            var keysOffset = Align(valuesOffset + valuesSize, UnsafeUtility.AlignOf<TKey>());
+            var keysSize = (long)sizeOfTKey * capacity;
 
-            var nextOffset = CollectionHelper.Align(keysOffset + keysSize, UnsafeUtility.AlignOf<int>());
-            var nextSize = sizeOfInt * capacity;
+            var nextOffset = Align(keysOffset + keysSize, UnsafeUtility.AlignOf<int>());
+            var nextSize = (long)sizeOfInt * capacity;
 
-            var bucketOffset = CollectionHelper.Align(nextOffset + nextSize, UnsafeUtility.AlignOf<int>());
-            var bucketSize = sizeOfInt * bucketCapacity;
+            var bucketOffset = Align(nextOffset + nextSize, UnsafeUtility.AlignOf<int>());
+            var bucketSize = (long)sizeOfInt * bucketCapacity;
 
-            outValuesOffset = valuesOffset;
-            outKeysOffset = keysOffset;
-            outNextOffset = nextOffset;
-            outBucketOffset = bucketOffset;
+            var totalSize = bucketOffset + bucketSize;
 
-            return bucketOffset + bucketSize;
+            if (valuesOffset > int.MaxValue || keysOffset > int.MaxValue || nextOffset > int.MaxValue || bucketOffset > int.MaxValue ||
+                totalSize <= 0 || totalSize > int.MaxValue)
+            {
+                return false;
+            }
+
+            layout = new DynamicHashMapLayout
+            {
+                ValuesOffset = (int)valuesOffset,
+                KeysOffset = (int)keysOffset,
+                NextOffset = (int)nextOffset,
+                BucketsOffset = (int)bucketOffset,
+                Capacity = capacity,
+                BucketCapacity = bucketCapacity,
+                SizeOfTValue = sizeOfTValue,
+                TotalSize = (int)totalSize,
+            };
+
+            return true;
+        }
+
+        private static long Align(long size, int alignment)
+        {
+            var mask = alignment - 1L;
+            return (size + mask) & ~mask;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -795,12 +1025,47 @@ namespace BovineLabs.Core.Iterators
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
+        private void CheckIteratorKey(HashMapIterator<TKey> it)
+        {
+            if (!UnsafeUtility.ReadArrayElement<TKey>(this.Keys, it.EntryIndex).Equals(it.Key))
+            {
+                ThrowInvalidIterator();
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private static void ThrowInvalidIterator()
+        {
+            throw new ArgumentException("Iterator is invalid.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckDoesNotExist(TKey key)
         {
             if (this.Find(key) != -1)
             {
                 throw new ArgumentException($"An item with the same key has already been added: {key}");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private static void CheckNoDuplicateKey(TKey* keys, int* next, int bucketHead, TKey key, DynamicHashMapDuplicatePolicy duplicatePolicy)
+        {
+            if (duplicatePolicy == DynamicHashMapDuplicatePolicy.AllowDuplicateKeys)
+            {
+                return;
+            }
+
+            for (var entryIdx = bucketHead; entryIdx != -1; entryIdx = next[entryIdx])
+            {
+                if (UnsafeUtility.ReadArrayElement<TKey>(keys, entryIdx).Equals(key))
+                {
+                    throw new ArgumentException($"An item with the same key has already been added: {key}");
+                }
             }
         }
 

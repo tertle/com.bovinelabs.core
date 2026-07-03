@@ -109,6 +109,37 @@ namespace BovineLabs.Core.Iterators
         }
 
         /// <summary>
+        /// Adds a key-value pair when that exact pair is not already present.
+        /// </summary>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        /// <typeparam name="T">The value type used for equality. This should match <see cref="TValue"/>.</typeparam>
+        /// <returns>True when the pair was added; false when the exact pair already exists.</returns>
+        public bool TryAddUniquePair<T>(TKey key, T item)
+            where T : unmanaged, IEquatable<TValue>
+        {
+            this.buffer.CheckWriteAccess();
+            this.RefCheck();
+            CheckValueSize<T>();
+
+            if (this.helper->TryGetFirstValue(key, out TValue value, out var it))
+            {
+                do
+                {
+                    if (item.Equals(value))
+                    {
+                        return false;
+                    }
+                }
+                while (this.helper->TryGetNextValue(out value, ref it));
+            }
+
+            var idx = DynamicHashMapHelper<TKey>.AddMulti(this.buffer, ref this.helper, key);
+            UnsafeUtility.WriteArrayElement(this.helper->Values, idx, item);
+            return true;
+        }
+
+        /// <summary>
         /// Removes a key-value pair.
         /// </summary>
         /// <param name="key"> The key to remove. </param>
@@ -118,6 +149,52 @@ namespace BovineLabs.Core.Iterators
             this.buffer.CheckWriteAccess();
             this.RefCheck();
             return this.helper->Remove(key);
+        }
+
+        /// <summary>
+        /// Removes a single key-value pair represented by an iterator.
+        /// </summary>
+        /// <param name="it">An iterator representing the key-value pair to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if the iterator is invalid.</exception>
+        public readonly void Remove(HashMapIterator<TKey> it)
+        {
+            this.buffer.CheckWriteAccess();
+            this.RefCheck();
+            this.helper->Remove(it);
+        }
+
+        /// <summary>
+        /// Removes one exact key-value pair.
+        /// </summary>
+        /// <param name="key">The key to remove.</param>
+        /// <param name="value">The value to remove.</param>
+        /// <typeparam name="T">The value type used for equality. This should match <see cref="TValue"/>.</typeparam>
+        /// <returns>True when a matching pair was removed.</returns>
+        public readonly bool Remove<T>(TKey key, T value)
+            where T : unmanaged, IEquatable<TValue>
+        {
+            this.buffer.CheckWriteAccess();
+            this.RefCheck();
+            CheckValueSize<T>();
+
+            if (!this.helper->TryGetFirstValue(key, out TValue item, out var it))
+            {
+                return false;
+            }
+
+            do
+            {
+                if (!value.Equals(item))
+                {
+                    continue;
+                }
+
+                this.helper->Remove(it);
+                return true;
+            }
+            while (this.helper->TryGetNextValue(out item, ref it));
+
+            return false;
         }
 
         /// <summary> Returns the value associated with a key. </summary>
@@ -322,6 +399,17 @@ namespace BovineLabs.Core.Iterators
             if (keys != values)
             {
                 throw new ArgumentException("Key and value array don't match");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private static void CheckValueSize<T>()
+            where T : unmanaged
+        {
+            if (UnsafeUtility.SizeOf<T>() != UnsafeUtility.SizeOf<TValue>())
+            {
+                throw new InvalidOperationException("DynamicMultiHashMap exact-pair operation value type must match the map value type size.");
             }
         }
     }

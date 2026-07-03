@@ -653,6 +653,55 @@ namespace BovineLabs.Core.Iterators
             return false;
         }
 
+        internal int TryRemove(TKey key)
+        {
+            if (this.Count == 0)
+            {
+                return -1;
+            }
+
+            var bucket = this.GetBucket(key);
+
+            var prevEntry = -1;
+            var entryIdx = this.Buckets[bucket];
+
+            while ((uint)entryIdx < (uint)this.Capacity)
+            {
+                if (UnsafeUtility.ReadArrayElement<TKey>(this.Keys, entryIdx).Equals(key))
+                {
+                    this.RemoveAt(bucket, prevEntry, entryIdx);
+                    return 1;
+                }
+
+                prevEntry = entryIdx;
+                entryIdx = this.Next[entryIdx];
+            }
+
+            return -1;
+        }
+
+        internal NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+        {
+            var result = CollectionHelper.CreateNativeArray<TKey>(this.Count, allocator, NativeArrayOptions.UninitializedMemory);
+
+            var keys = this.Keys;
+            var buckets = this.Buckets;
+            var next = this.Next;
+
+            for (int i = 0, count = 0, max = result.Length, capacity = this.BucketCapacity; i < capacity && count < max; i++)
+            {
+                var bucket = buckets[i];
+
+                while (bucket != -1)
+                {
+                    result[count++] = UnsafeUtility.ReadArrayElement<TKey>(keys, bucket);
+                    bucket = next[bucket];
+                }
+            }
+
+            return result;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int CalcCapacityCeilPow2(int count, int capacity, int log2MinGrowth)
         {
@@ -675,6 +724,59 @@ namespace BovineLabs.Core.Iterators
         private static int GetBucketSize(int capacity)
         {
             return capacity * 2;
+        }
+
+        private void RemoveAt(int bucket, int prevEntry, int entryIdx)
+        {
+            var next = this.Next;
+            var buckets = this.Buckets;
+            var nextEntry = next[entryIdx];
+
+            if (prevEntry < 0)
+            {
+                buckets[bucket] = nextEntry;
+            }
+            else
+            {
+                next[prevEntry] = nextEntry;
+            }
+
+            var lastIndex = this.Count - 1;
+            if (entryIdx != lastIndex)
+            {
+                var lastKey = UnsafeUtility.ReadArrayElement<TKey>(this.Keys, lastIndex);
+                var lastBucket = this.GetBucket(lastKey);
+                var lastPrevEntry = -1;
+                var lastEntryIdx = buckets[lastBucket];
+
+                while (lastEntryIdx != lastIndex)
+                {
+                    lastPrevEntry = lastEntryIdx;
+                    lastEntryIdx = next[lastEntryIdx];
+                }
+
+                if (lastPrevEntry < 0)
+                {
+                    buckets[lastBucket] = entryIdx;
+                }
+                else
+                {
+                    next[lastPrevEntry] = entryIdx;
+                }
+
+                UnsafeUtility.WriteArrayElement(this.Keys, entryIdx, lastKey);
+                UnsafeUtility.WriteArrayElement(this.Sizes, entryIdx, UnsafeUtility.ReadArrayElement<ushort>(this.Sizes, lastIndex));
+                UnsafeUtility.MemCpy(this.Values + (entryIdx * sizeof(int)), this.Values + (lastIndex * sizeof(int)), sizeof(int));
+                next[entryIdx] = next[lastIndex];
+            }
+
+            next[lastIndex] = -1;
+            this.Count--;
+
+            if (this.Count == 0)
+            {
+                this.DataAllocatedIndex = 0;
+            }
         }
 
         private static int CalculateDataSize(

@@ -27,6 +27,10 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         protected virtual ParentTypes ParentType { get; } = ParentTypes.Foldout;
 
+        protected virtual bool SkipSingleRoot => false;
+
+        protected virtual bool IterateChildren => true;
+
         protected VisualElement Parent => this.parent!;
 
         protected SerializedObject SerializedObject => this.serializedObject!;
@@ -39,7 +43,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             this.RootProperty = rootProperty;
             this.serializedObject = rootProperty.serializedObject;
 
-            var iterateChildren = rootProperty.propertyType == SerializedPropertyType.Generic;
+            var iterateChildren = this.IterateChildren && rootProperty.propertyType == SerializedPropertyType.Generic;
 
             switch (this.ParentType)
             {
@@ -65,7 +69,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 
                 case ParentTypes.Foldout:
                 default:
-                    this.parent = new Foldout { text = this.GetDisplayName(rootProperty) };
+                    this.parent = new Foldout { text = this.GetDisplayName(rootProperty), tooltip = this.GetTooltip(rootProperty) };
                     this.parent.AddToClassList("unity-collection-view");
                     this.parent.AddToClassList("unity-list-view");
                     this.parent.AddToClassList("unity-list-view__foldout-header");
@@ -78,7 +82,7 @@ namespace BovineLabs.Core.Editor.Inspectors
             {
                 if (iterateChildren)
                 {
-                    foreach (var property in SerializedHelper.GetChildren(rootProperty))
+                    foreach (var property in SerializedHelper.GetChildren(rootProperty, this.SkipSingleRoot))
                     {
                         var element = this.CreateElement(property);
                         if (element != null)
@@ -89,7 +93,17 @@ namespace BovineLabs.Core.Editor.Inspectors
                 }
                 else
                 {
-                    var element = this.CreateElement(rootProperty);
+                    var root = this.SkipSingleRoot && SerializedHelper.TryGetSingleChildRoot(rootProperty, out var singleChildRoot)
+                        ? singleChildRoot
+                        : rootProperty;
+
+                    var element = this.CreateElement(root);
+
+                    if (element is PropertyField pf)
+                    {
+                        pf.label = this.GetDisplayName(rootProperty);
+                    }
+
                     if (element != null)
                     {
                         this.Parent.Add(element);
@@ -126,6 +140,11 @@ namespace BovineLabs.Core.Editor.Inspectors
         protected virtual string GetDisplayName(SerializedProperty property)
         {
             return property.displayName;
+        }
+
+        protected virtual string GetTooltip(SerializedProperty property)
+        {
+            return property.tooltip;
         }
 
         protected virtual VisualElement CreateElement(SerializedProperty property)

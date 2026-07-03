@@ -4,13 +4,16 @@
   "references": [
     "BovineLabs.Core",
     "BovineLabs.Core.Editor",
+    "BovineLabs.Core.Extensions",
+    "BovineLabs.Core.Extensions.Authoring",
     "BovineLabs.Testing",
     "Unity.Burst",
     "Unity.Collections",
     "Unity.Entities",
+    "Unity.Localization",
     "Unity.Mathematics",
     "Unity.Mathematics.Extensions",
-    "Unity.PerformanceTesting",
+    "Unity.NetCode",
     "Unity.Scenes",
     "Unity.Transforms",
     "UnityEngine.TestRunner",
@@ -29,6 +32,17 @@
   "defineConstraints": [
     "UNITY_INCLUDE_TESTS"
   ],
-  "versionDefines": [],
+  "versionDefines": [
+    {
+      "name": "com.unity.netcode",
+      "expression": "",
+      "define": "UNITY_NETCODE"
+    },
+    {
+      "name": "com.unity.localization",
+      "expression": "",
+      "define": "UNITY_LOCALIZATION"
+    }
+  ],
   "noEngineReferences": false
 }

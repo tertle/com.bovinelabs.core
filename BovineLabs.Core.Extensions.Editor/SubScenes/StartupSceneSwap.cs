@@ -34,7 +34,11 @@ namespace BovineLabs.Core.Editor.SubScenes
                     }
 
                     sceneAssetPath = AssetDatabase.GetAssetPath(scene);
-                    EditorSceneManager.SaveOpenScenes();
+                    if (HasOpenSceneOnDisk())
+                    {
+                        EditorSceneManager.SaveOpenScenes();
+                    }
+
                     return;
                 }
 
@@ -51,6 +55,20 @@ namespace BovineLabs.Core.Editor.SubScenes
                     return;
                 }
             }
+        }
+
+        private static bool HasOpenSceneOnDisk()
+        {
+            for (var i = 0; i < SceneManager.sceneCount; i++)
+            {
+                var scene = SceneManager.GetSceneAt(i);
+                if (scene.isLoaded && !string.IsNullOrEmpty(scene.path))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

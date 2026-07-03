@@ -237,8 +237,7 @@ namespace BovineLabs.Core
                 : NetworkEndpoint.LoopbackIpv4.WithPort(7979);
         }
 
-        [Conditional("UNITY_EDITOR")]
-        [Conditional("DEVELOPMENT_BUILD")]
+        [Conditional("UNITY_ENABLE_CHECKS")]
         private static void InitializeNetCodeWorld(World world)
         {
             // This allows sending RPCs between a stand alone build and the editor for testing purposes in the event when you finish this example

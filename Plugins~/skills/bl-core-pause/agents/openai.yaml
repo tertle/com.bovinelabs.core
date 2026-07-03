@@ -1,3 +1,4 @@
 interface:
-  display_name: "Core Pause Usage"
-  short_description: "Wire and debug com.bovinelabs.core pause modes, marker interfaces, and pause-aware system-group behavior."
+  display_name: "Core Pause"
+  short_description: "Configure Core pause-aware systems"
+  default_prompt: "Use $bl-core-pause to implement or debug this pause behavior."

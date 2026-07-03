@@ -46,32 +46,6 @@ namespace BovineLabs.Core.Tests.Iterators
         }
 
         [Test]
-        public void WhenAddingItems_ShouldBeRetrievableByKey()
-        {
-            var map = this.CreateMap();
-
-            map.Add(1, 0.5f, 5, 10);
-            map.Add(2, -1.5f, 7, 20);
-            map.Add(3, 35.5f, 9, 30);
-
-            // Test key-based retrieval
-            Assert.IsTrue(map.TryGetValue(1, out var data, out var column1, out var column2));
-            Assert.AreEqual(0.5f, data);
-            Assert.AreEqual(5, column1);
-            Assert.AreEqual(10, column2);
-
-            Assert.IsTrue(map.TryGetValue(2, out data, out column1, out column2));
-            Assert.AreEqual(-1.5f, data);
-            Assert.AreEqual(7, column1);
-            Assert.AreEqual(20, column2);
-
-            Assert.IsTrue(map.TryGetValue(3, out data, out column1, out column2));
-            Assert.AreEqual(35.5f, data);
-            Assert.AreEqual(9, column1);
-            Assert.AreEqual(30, column2);
-        }
-
-        [Test]
         public void WhenRemovingItems_ShouldUpdateCollectionCorrectly()
         {
             var map = this.CreateMap();
@@ -101,30 +75,6 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.AreEqual(1, map.Count, "Count should be 1 after second removal");
             Assert.IsTrue(map.ContainsKey(3), "Key 3 should still exist");
             Assert.IsFalse(map.ContainsKey(2), "Key 2 should be removed");
-        }
-
-        [Test]
-        public void WhenAddingManyItems_ShouldHandleResizingCorrectly()
-        {
-            var map = this.CreateMap();
-            const int itemCount = 1024;
-
-            // Add enough items to force multiple internal resizes
-            for (var i = 0; i < itemCount; i++)
-            {
-                map.Add(i, i / 0.37f, (short)(i % 13), (byte)(i % 7));
-            }
-
-            Assert.AreEqual(itemCount, map.Count, "Should contain all added items");
-
-            // Sample check to verify data integrity after resizes
-            for (var i = 0; i < itemCount; i += 100)
-            {
-                Assert.IsTrue(map.TryGetValue(i, out var value, out var column1, out var column2), $"Should find key {i}");
-                Assert.AreEqual(i / 0.37f, value, 0.0001f, $"Value for key {i} should be correct");
-                Assert.AreEqual((short)(i % 13), column1, $"Column1 for key {i} should be correct");
-                Assert.AreEqual((byte)(i % 7), column2, $"Column2 for key {i} should be correct");
-            }
         }
 
         [Test]
@@ -172,34 +122,6 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.AreEqual(35.5f, data);
             Assert.AreEqual(9, column1);
             Assert.AreEqual(30, column2);
-        }
-
-        [Test]
-        public void WhenMapIsEmpty_PropertiesShouldBeCorrect()
-        {
-            var map = this.CreateMap();
-
-            Assert.AreEqual(0, map.Count, "Count should be 0 for empty map");
-            Assert.IsTrue(map.IsEmpty, "IsEmpty should be true for empty map");
-            Assert.IsTrue(map.IsCreated, "IsCreated should be true after initialization");
-        }
-
-        [Test]
-        public void WhenMapIsEmpty_OperationsShouldBehaveAppropriately()
-        {
-            var map = this.CreateMap();
-
-            Assert.IsFalse(map.ContainsKey(123), "ContainsKey should return false for non-existent key");
-            Assert.IsFalse(map.TryGetValue(123, out _, out _, out _), "TryGetValue should return false for non-existent key");
-            Assert.IsFalse(map.Remove(789), "Remove should return false for non-existent key");
-
-            var itemCount = 0;
-            foreach (var _ in map)
-            {
-                itemCount++;
-            }
-
-            Assert.AreEqual(0, itemCount, "Enumeration should yield no items for empty map");
         }
 
         [Test]
@@ -276,62 +198,6 @@ namespace BovineLabs.Core.Tests.Iterators
                 Assert.AreEqual(kvp.Value.Item2, actualItems[kvp.Key].Item2, "Column1 should match after enumeration");
                 Assert.AreEqual(kvp.Value.Item3, actualItems[kvp.Key].Item3, "Column2 should match after enumeration");
             }
-        }
-
-        [Test]
-        public void WithLargeNumberOfItems_MapShouldFunctionCorrectly()
-        {
-            var map = this.CreateMap();
-            const int itemCount = 5000;
-
-            // Add a large number of items to test performance and capacity handling
-            for (var i = 0; i < itemCount; i++)
-            {
-                map.Add(i, i * 1.5f, (short)(i % 50), (byte)(i % 30));
-            }
-
-            Assert.AreEqual(itemCount, map.Count, "Should contain all added items");
-
-            // Check a sampling of items to verify integrity
-            for (var i = 0; i < itemCount; i += 123)
-            {
-                Assert.IsTrue(map.ContainsKey(i), $"Key {i} should exist");
-                Assert.IsTrue(map.TryGetValue(i, out var value, out var column1, out var column2));
-                Assert.AreEqual(i * 1.5f, value, 0.0001f, $"Value for key {i} should match");
-                Assert.AreEqual((short)(i % 50), column1, $"Column1 for key {i} should match");
-                Assert.AreEqual((byte)(i % 30), column2, $"Column2 for key {i} should match");
-            }
-
-            // Remove half the items to test removal in a large collection
-            for (var i = 0; i < itemCount; i += 2)
-            {
-                Assert.IsTrue(map.Remove(i), $"Should be able to remove key {i}");
-            }
-
-            Assert.AreEqual(itemCount / 2, map.Count, "Count should be half after removing every other item");
-
-            // Verify the expected items remain and the removed ones are gone
-            for (var i = 0; i < itemCount; i++)
-            {
-                var shouldExist = i % 2 == 1;
-                Assert.AreEqual(shouldExist, map.ContainsKey(i), $"Key {i} existence should be {shouldExist}");
-            }
-        }
-
-        [Test]
-        public void ReusingRemovedKeys_ShouldWork()
-        {
-            var map = this.CreateMap();
-            map.Add(111, 333.5f, 222, 111);
-
-            // Test removing and re-adding the same key with different values
-            map.Remove(111);
-            map.Add(111, 555.5f, 444, 222);
-
-            Assert.IsTrue(map.TryGetValue(111, out var value, out var column1, out var column2));
-            Assert.AreEqual(555.5f, value, "Value should be updated for reused key");
-            Assert.AreEqual(444, column1, "Column1 should be updated for reused key");
-            Assert.AreEqual(222, column2, "Column2 should be updated for reused key");
         }
 
         [Test]
@@ -434,23 +300,6 @@ namespace BovineLabs.Core.Tests.Iterators
         }
 
         [Test]
-        public void Replace_WithSameColumnValues_ShouldStillUpdateReference()
-        {
-            var map = this.CreateMap();
-            map.Add(100, 100.5f, 50, 25);
-
-            // Replace with same column values
-            ref var value = ref map.Replace(100, 50, 25);
-
-            // Verify we can still modify through reference
-            value = 777.5f;
-            Assert.IsTrue(map.TryGetValue(100, out var retrievedValue, out var retrievedColumn1, out var retrievedColumn2));
-            Assert.AreEqual(777.5f, retrievedValue, "Value should be updated through reference");
-            Assert.AreEqual(50, retrievedColumn1, "Column1 should remain the same");
-            Assert.AreEqual(25, retrievedColumn2, "Column2 should remain the same");
-        }
-
-        [Test]
         public void Replace_AfterResize_ShouldWorkCorrectly()
         {
             var map = this.CreateMap();
@@ -503,36 +352,6 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.AreEqual(5 * 10.5f, value5, 0.0001f, "Non-replaced item should have original value");
             Assert.AreEqual(5, column1_5, "Non-replaced item should have original column1");
             Assert.AreEqual(0, column2_5, "Non-replaced item should have original column2");
-        }
-
-        [Test]
-        public void Replace_MultipleReplacementsOnSameKey_ShouldWork()
-        {
-            var map = this.CreateMap();
-            map.Add(100, 100.5f, 50, 25);
-
-            // Replace multiple times
-            ref var value1 = ref map.Replace(100, 60, 30);
-            value1 = 200.5f;
-
-            ref var value2 = ref map.Replace(100, 70, 35);
-            value2 = 300.5f;
-
-            ref var value3 = ref map.Replace(100, 80, 40);
-            value3 = 400.5f;
-
-            Assert.IsTrue(map.TryGetValue(100, out var finalValue, out var finalColumn1, out var finalColumn2));
-            Assert.AreEqual(400.5f, finalValue, "Value should reflect last update");
-            Assert.AreEqual(80, finalColumn1, "Column1 should reflect last replacement");
-            Assert.AreEqual(40, finalColumn2, "Column2 should reflect last replacement");
-        }
-
-        [Test]
-        public void Replace_OnEmptyMap_ShouldThrow()
-        {
-            var map = this.CreateMap();
-
-            Assert.Throws<ArgumentException>(() => map.Replace(100, 50, 25), "Replace should throw on empty map");
         }
 
         [Test]

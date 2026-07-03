@@ -22,8 +22,27 @@ namespace BovineLabs.Core.SubScenes
         private bool initialized;
         private NativeList<Entity> waitingForLoad;
 
+#if UNITY_6000_6_OR_NEWER
+        private static readonly SharedStatic<BurstTrampoline> CreateImportEntityTrampoline = SharedStatic<BurstTrampoline>.GetOrCreate<SubSceneLoadingSystem>();
+#endif
+
 #if UNITY_EDITOR
         private NativeHashSet<Entity> requiredScenes;
+#endif
+
+#if UNITY_6000_6_OR_NEWER
+        // TODO ideally use [OnCodeInitializing] but this doesn't work with SharedStatics atm
+#if UNITY_EDITOR
+
+        [UnityEditor.InitializeOnLoadMethod]
+#else
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
+#endif
+        private static void InitializeTrampolines()
+        {
+            CreateImportEntity.Initialize();
+            CreateImportEntityTrampoline.Data = new BurstTrampoline(&CreateImportEntity.Execute);
+        }
 #endif
 
         /// <inheritdoc />
@@ -234,7 +253,7 @@ namespace BovineLabs.Core.SubScenes
             var debug = SystemAPI.GetSingleton<BLLogger>();
 #endif
 
-            var toLoad = new NativeList<Entity>(64, state.WorldUpdateAllocator);
+            var toLoad = new NativeList<SubSceneEntity>(64, state.WorldUpdateAllocator);
             var subSceneLoadDataHandle = SystemAPI.GetComponentTypeHandle<SubSceneLoadData>(true);
             var subSceneEntityHandle = SystemAPI.GetBufferTypeHandle<SubSceneEntity>(true);
             var subSceneLoadedHandle = SystemAPI.GetComponentTypeHandle<SubSceneLoaded>();
@@ -254,7 +273,7 @@ namespace BovineLabs.Core.SubScenes
 
                     foreach (var ss in subSceneEntities)
                     {
-                        toLoad.Add(ss.Entity);
+                        toLoad.Add(ss);
 
 #if UNITY_EDITOR
                         state.EntityManager.GetName(ss.Entity, out var name);
@@ -276,9 +295,14 @@ namespace BovineLabs.Core.SubScenes
             }
 
             var loadingParams = new SceneSystem.LoadParameters { AutoLoad = true };
-            foreach (var entity in toLoad)
+            foreach (var scene in toLoad)
             {
-                SceneSystem.LoadSceneAsync(state.WorldUnmanaged, entity, loadingParams);
+#if UNITY_6000_6_OR_NEWER
+                var importEntity = state.EntityManager.CreateEntity();
+                CreateImportEntityTrampoline.Data.Invoke(state.EntityManager, importEntity, scene.Scene);
+                loadingParams.ImportEntity = importEntity;
+#endif
+                SceneSystem.LoadSceneAsync(state.WorldUnmanaged, scene.Entity, loadingParams);
             }
 
             if (this.waitingForLoad.Length > 0)
@@ -351,6 +375,13 @@ namespace BovineLabs.Core.SubScenes
 
             foreach (var e in toUnload)
             {
+#if UNITY_6000_6_OR_NEWER
+                var importEntity = state.EntityManager.GetComponentData<RequestSceneLoaded>(e).ImportEntity;
+                if (importEntity != Entity.Null)
+                {
+                    state.EntityManager.DestroyEntity(importEntity);
+                }
+#endif
                 SceneSystem.UnloadScene(state.WorldUnmanaged, e);
             }
         }

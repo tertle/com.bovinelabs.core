@@ -39,7 +39,7 @@ namespace BovineLabs.Core.Editor.Dependency
                     continue;
                 }
 
-                if (t.TypeIndex.IsManagedComponent || t.Type == null)
+                if (t.Type == null)
                 {
                     continue;
                 }

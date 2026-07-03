@@ -1,3 +1,4 @@
 interface:
-  display_name: "Core Lifecycle Usage"
-  short_description: "Design and debug com.bovinelabs.core lifecycle initialization and destruction flows with proper system-group ordering."
+  display_name: "Core Lifecycle"
+  short_description: "Implement Core entity lifecycle flows"
+  default_prompt: "Use $bl-core-lifecycle to implement or debug this Core lifecycle flow."

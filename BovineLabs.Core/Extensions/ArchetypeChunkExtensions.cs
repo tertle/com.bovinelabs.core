@@ -135,7 +135,7 @@ namespace BovineLabs.Core.Extensions
 #endif
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            //Expect the safety to be set and valid
+            // Expect the safety to be set and valid
             AtomicSafetyHandle.CheckReadAndThrow(chunkBufferTypeHandle.m_Safety1);
 #endif
             var internalCapacity = archetype->BufferCapacities[typeIndexInArchetype];
@@ -149,7 +149,7 @@ namespace BovineLabs.Core.Extensions
             var elementSize = typeInfo.ElementSize;
             var elementAlign = typeInfo.AlignmentInBytes;
 
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
 #pragma warning disable 0618
             if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0) && !chunkBufferTypeHandle.IsReadOnly)
             {
@@ -518,7 +518,7 @@ namespace BovineLabs.Core.Extensions
             return chunks.GetEnabledArrayForTypeInChunk(memoryOrderIndexInArchetype, chunkListIndex);
         }
 
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
 #pragma warning disable 0618
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static void JournalAddRecord(
@@ -533,15 +533,5 @@ namespace BovineLabs.Core.Extensions
         }
 #pragma warning restore 0618
 #endif
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [Conditional("UNITY_DOTS_DEBUG")]
-        private static void CheckZeroSizedComponentData<T>(in ComponentTypeHandle<T> chunkComponentType)
-        {
-            if (chunkComponentType.IsZeroSized)
-            {
-                throw new ArgumentException($"ArchetypeChunk.GetNativeArray<{typeof(T)}> cannot be called on zero-sized IComponentData");
-            }
-        }
     }
 }

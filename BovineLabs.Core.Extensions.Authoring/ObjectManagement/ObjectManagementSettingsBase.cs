@@ -11,6 +11,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
     using BovineLabs.Core.Assertions;
     using BovineLabs.Core.Authoring.Settings;
     using BovineLabs.Core.ObjectManagement;
+    using BovineLabs.Core.Utility;
     using Unity.Entities;
     using UnityEngine;
 
@@ -46,7 +47,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
         public sealed override void Bake(Baker<SettingsAuthoring> baker)
         {
-            var entity = baker.CreateAdditionalEntity(TransformUsageFlags.None);
+            var entity = baker.CreateAdditionalEntity(TransformUsageFlags.None, entityName: "Object Management");
 
             this.SetupRegistry(baker, entity);
             this.SetupGroups(baker, entity); // TODO MOD SUPPORT
@@ -108,13 +109,13 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 
         private void SetupGroups(IBaker baker, Entity entity)
         {
+            var objectGroupRegistry = baker.AddBuffer<ObjectGroupRegistry>(entity).Initialize().AsMap();
+            var objectGroupMatcher = baker.AddBuffer<ObjectGroupMatcher>(entity).Initialize().AsMap();
+
             if (this.ObjectGroups.Count == 0)
             {
                 return;
             }
-
-            var objectGroupRegistry = baker.AddBuffer<ObjectGroupRegistry>(entity).Initialize().AsMap();
-            var objectGroupMatcher = baker.AddBuffer<ObjectGroupMatcher>(entity).Initialize().AsMap();
 
             foreach (var group in this.ObjectGroups)
             {
@@ -149,6 +150,10 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
         {
             var maps = new Dictionary<Type, object>();
 
+            CreateLookupMaps(baker, entity, maps, typeof(ILookupAuthoring<,>), typeof(ManagedBuffer<,>));
+            CreateLookupMaps(baker, entity, maps, typeof(ILookupAosAuthoring<,>), typeof(ManagedAosBuffer<,>));
+            CreateLookupMaps(baker, entity, maps, typeof(ILookupMultiAuthoring<,>), typeof(ManagedMultiBuffer<,>));
+
             foreach (var d in this.ObjectDefinitions)
             {
                 if (!d || !d.Prefab)
@@ -159,6 +164,29 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
                 foreach (var c in d.Prefab.GetComponents<ILookupAuthoring>())
                 {
                     c.Bake(baker, entity, d, maps);
+                }
+            }
+        }
+
+        private static void CreateLookupMaps(IBaker baker, Entity entity, Dictionary<Type, object> maps, Type lookupAuthoringType, Type managedBufferType)
+        {
+            foreach (var type in ReflectionUtility.GetAllOpenGenericImplementations(lookupAuthoringType))
+            {
+                foreach (var lookupInterface in type.GetInterfaces())
+                {
+                    if (!lookupInterface.IsGenericType || lookupInterface.GetGenericTypeDefinition() != lookupAuthoringType)
+                    {
+                        continue;
+                    }
+
+                    var arguments = lookupInterface.GetGenericArguments();
+                    var mapType = arguments[0];
+                    if (maps.ContainsKey(mapType))
+                    {
+                        continue;
+                    }
+
+                    maps[mapType] = Activator.CreateInstance(managedBufferType.MakeGenericType(mapType, arguments[1]), baker, entity);
                 }
             }
         }

@@ -2,12 +2,13 @@
 
 ## Summary
 
-BovineLabs Core provides two UI Toolkit base classes for editor tooling:
+BovineLabs Core provides UI Toolkit base classes for editor tooling:
 
 - **`ElementEditor`** for `[CustomEditor]` inspectors.
 - **`ElementProperty`** for `[CustomPropertyDrawer]` drawers.
+- **`GraphToolkitElementProperty`** for Unity 6.5+ Graph Toolkit property drawers.
 
-Both default to Unity's `PropertyField` rendering and let you selectively override only the fields that need custom behavior.
+The base classes default to Unity's `PropertyField` rendering and let you selectively override only the fields that need custom behavior.
 
 ## Core Types
 
@@ -47,6 +48,19 @@ Useful members:
 - `Cache<T>()`: per-root-property cached state for fields/properties used across callbacks.
   Use this when the same drawer type can be created multiple times at once (for example list/array elements). It prevents shared state between elements, which otherwise can cause callbacks to read/write the wrong `SerializedProperty`.
 - `GetDisplayName(...)`: override to customize foldout/label title (especially useful for list elements).
+- `GetTooltip(...)`: override to customize foldout tooltips.
+
+### `GraphToolkitElementProperty`
+
+Base for custom property drawers rendered inside Unity Graph Toolkit inspectors and inline value editors.
+
+Key behavior:
+- Available on Unity 6.5+.
+- Derives from `ElementProperty`.
+- Inline by default (`ParentType.None`) so it matches Graph Toolkit field rows.
+- Adds Graph Toolkit label/input USS classes to nested `PropertyField`s and mirrors Graph Toolkit inspector label-width sizing.
+- Uses Graph Toolkit wrapper owner titles and tooltips for foldouts when `UseFoldout` is enabled.
+- Exposes `UseFoldout`; override it to `true` only when the drawer should use a normal nested struct foldout.
 
 ### `PrefabElementEditor` and `PrefabElementProperty`
 
@@ -185,9 +199,33 @@ namespace Example.Editor
 }
 ```
 
+## Example: `GraphToolkitElementProperty`
+
+When default child-field rendering is enough, the drawer can be empty:
+
+```csharp
+namespace Example.Editor
+{
+    using BovineLabs.Core.Editor.Inspectors;
+    using UnityEditor;
+
+    [CustomPropertyDrawer(typeof(ExampleData))]
+    public class ExampleDataGraphToolkitProperty : GraphToolkitElementProperty
+    {
+    }
+}
+```
+
+For foldout-style rendering:
+
+```csharp
+protected override bool UseFoldout => true;
+```
+
 ## Implementation Notes
 
 - Prefer `CreatePropertyField(...)` from these base classes so bindings match the correct serialized object.
+- Use `GraphToolkitElementProperty` instead of `ElementProperty` for custom drawers rendered inside Graph Toolkit inspectors or inline value editors.
 - Return `null` from `CreateElement` to intentionally skip rendering a property.
 - For list/array element drawers, override `GetDisplayName` to replace generic names like `Element 0`.
 - In `ElementProperty`, do not store callback state in instance fields when the drawer may render multiple elements at once; store it in `Cache<T>()` to avoid cross-element data access bugs.

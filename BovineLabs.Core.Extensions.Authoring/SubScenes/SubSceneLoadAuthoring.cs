@@ -51,6 +51,11 @@ namespace BovineLabs.Core.Authoring.SubScenes
 
                 foreach (var set in settings.AssetSets)
                 {
+                    if (!set)
+                    {
+                        continue;
+                    }
+
                     if (!this.IncludeScene(set.TargetWorld))
                     {
                         continue;

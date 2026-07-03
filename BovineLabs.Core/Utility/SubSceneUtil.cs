@@ -4,20 +4,12 @@
 
 namespace BovineLabs.Core.Utility
 {
-    using BovineLabs.Core.Extensions;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Scenes;
 
     public struct SubSceneUtil
     {
-        public enum StreamingStatus
-        {
-            None,
-            Loading,
-            Loaded,
-        }
-
         [ReadOnly]
         private ComponentLookup<SceneReference> sceneReferences;
 
@@ -27,63 +19,18 @@ namespace BovineLabs.Core.Utility
         [ReadOnly]
         private ComponentLookup<SceneSectionStreamingSystem.StreamingState> streamingStates;
 
-        [ReadOnly]
-        private ComponentLookup<RequestSceneLoaded> requestSceneLoadeds;
-
         public SubSceneUtil(ref SystemState state)
         {
             this.sceneReferences = state.GetComponentLookup<SceneReference>(true);
             this.resolvedSectionEntitys = state.GetBufferLookup<ResolvedSectionEntity>(true);
             this.streamingStates = state.GetComponentLookup<SceneSectionStreamingSystem.StreamingState>(true);
-            this.requestSceneLoadeds = state.GetComponentLookup<RequestSceneLoaded>(true);
         }
 
-        public static void LoadScene(ref SystemState state, Entity entity)
+        public enum StreamingStatus
         {
-            if (state.EntityManager.HasComponent<RequestSceneLoaded>(entity))
-            {
-                state.EntityManager.GetSingleton<BLLogger>().LogWarning("Trying to open SubScene that is already open.");
-                return;
-            }
-
-            state.EntityManager.AddComponent<RequestSceneLoaded>(entity);
-
-            var resolvedSectionEntities = state.EntityManager.GetBuffer<ResolvedSectionEntity>(entity);
-            foreach (var section in resolvedSectionEntities.ToNativeArray(Allocator.Temp))
-            {
-                OpenSection(ref state, section.SectionEntity);
-            }
-        }
-
-        public static void OpenSection(ref SystemState state, Entity section)
-        {
-            state.EntityManager.AddComponent<RequestSceneLoaded>(section);
-        }
-
-        public static void UnloadScene(ref SystemState state, Entity entity)
-        {
-            if (!state.EntityManager.HasComponent<RequestSceneLoaded>(entity))
-            {
-                state.EntityManager.GetSingleton<BLLogger>().LogWarning("Trying to close SubScene that isn't open.");
-                return;
-            }
-
-            state.EntityManager.RemoveComponent<RequestSceneLoaded>(entity);
-
-            var resolvedSectionEntities = state.EntityManager.GetBuffer<ResolvedSectionEntity>(entity);
-
-            foreach (var section in resolvedSectionEntities.ToNativeArray(Allocator.Temp))
-            {
-                UnloadScene(ref state, section.SectionEntity);
-            }
-        }
-
-        public static void CloseSection(ref SystemState state, Entity section)
-        {
-            if (state.EntityManager.HasComponent<RequestSceneLoaded>(section))
-            {
-                state.EntityManager.RemoveComponent<RequestSceneLoaded>(section);
-            }
+            None,
+            Loading,
+            Loaded,
         }
 
         /// <summary> Check if a subscene is loaded. </summary>
@@ -172,7 +119,6 @@ namespace BovineLabs.Core.Utility
             this.sceneReferences.Update(ref state);
             this.resolvedSectionEntitys.Update(ref state);
             this.streamingStates.Update(ref state);
-            this.requestSceneLoadeds.Update(ref state);
         }
 
         /// <summary> Check if a subscene is loaded. </summary>
@@ -298,44 +244,6 @@ namespace BovineLabs.Core.Utility
         public bool IsSectionLoadedOrLoading(Entity sectionEntity)
         {
             return this.streamingStates.HasComponent(sectionEntity);
-        }
-
-        public void UnloadScene(EntityCommandBuffer ecb, Entity entity)
-        {
-            if (!this.requestSceneLoadeds.HasComponent(entity))
-            {
-                BLGlobalLogger.LogWarning("Trying to close SubScene that isn't open.");
-                return;
-            }
-
-            ecb.RemoveComponent<RequestSceneLoaded>(entity);
-
-            var resolvedSectionEntities = this.resolvedSectionEntitys[entity];
-
-            foreach (var section in resolvedSectionEntities)
-            {
-                if (this.requestSceneLoadeds.HasComponent(section.SectionEntity))
-                {
-                    ecb.RemoveComponent<RequestSceneLoaded>(section.SectionEntity);
-                }
-            }
-        }
-
-        public void LoadScene(EntityCommandBuffer ecb, Entity entity)
-        {
-            if (this.requestSceneLoadeds.HasComponent(entity))
-            {
-                BLGlobalLogger.LogWarning("Trying to open SubScene that is already open.");
-                return;
-            }
-
-            ecb.AddComponent<RequestSceneLoaded>(entity);
-
-            var resolvedSectionEntities = this.resolvedSectionEntitys[entity];
-            foreach (var section in resolvedSectionEntities)
-            {
-                ecb.AddComponent<RequestSceneLoaded>(section.SectionEntity);
-            }
         }
     }
 

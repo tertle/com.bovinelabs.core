@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Tests.Iterators
     using BovineLabs.Core.Utility;
     using BovineLabs.Testing;
     using NUnit.Framework;
+    using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using Unity.Mathematics;
@@ -163,6 +164,55 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.IsTrue(hashMap.TryGetValue(key, out Large value));
             Assert.AreEqual(3UL, value.TestValue0);
             Assert.AreEqual(4UL, value.TestValue1);
+        }
+
+        [Test]
+        public void Remove_MovesLastEntryAndKeepsRemainingValues()
+        {
+            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
+            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
+
+            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
+
+            hashMap.AddOrSet(1, 11);
+            hashMap.AddOrSet(2, new float3(1, 2, 3));
+            hashMap.AddOrSet(3, new Large { TestValue0 = 30, TestValue1 = 31 });
+
+            Assert.IsTrue(hashMap.Remove(2));
+            Assert.AreEqual(2, hashMap.Count);
+            Assert.IsFalse(hashMap.TryGetValue(2, out float3 _));
+            Assert.IsFalse(hashMap.Remove(99));
+
+            Assert.IsTrue(hashMap.TryGetValue(1, out int first));
+            Assert.AreEqual(11, first);
+
+            Assert.IsTrue(hashMap.TryGetValue(3, out Large moved));
+            Assert.AreEqual(30UL, moved.TestValue0);
+            Assert.AreEqual(31UL, moved.TestValue1);
+
+            hashMap.AddOrSet(4, (short)44);
+
+            Assert.IsTrue(hashMap.TryGetValue(4, out short added));
+            Assert.AreEqual(44, added);
+            Assert.AreEqual(3, hashMap.Count);
+        }
+
+        [Test]
+        public void GetKeyArray_ReturnsCurrentKeysAfterRemove()
+        {
+            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
+            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
+
+            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
+
+            hashMap.AddOrSet(1, 10);
+            hashMap.AddOrSet(2, 20);
+            hashMap.AddOrSet(3, 30);
+            hashMap.Remove(2);
+
+            var keys = hashMap.GetKeyArray(Allocator.Temp);
+
+            CollectionAssert.AreEquivalent(new[] { 1, 3 }, keys.ToArray());
         }
 
         [Test]

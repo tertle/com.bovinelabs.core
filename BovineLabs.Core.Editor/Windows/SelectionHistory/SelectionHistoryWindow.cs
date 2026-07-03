@@ -8,7 +8,11 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Editor.Windows.Base;
+#if UNITY_6000_6_OR_NEWER
+    using Unity.Entities.Editor.Serialization;
+#else
     using Unity.Serialization.Editor;
+#endif
     using UnityEditor;
     using UnityEditor.UIElements;
     using UnityEngine;

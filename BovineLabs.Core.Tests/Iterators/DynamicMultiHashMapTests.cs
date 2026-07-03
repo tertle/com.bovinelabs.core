@@ -93,6 +93,182 @@ namespace BovineLabs.Core.Tests.Iterators
         }
 
         [Test]
+        public void Add_AllowsDuplicateExactPairs()
+        {
+            var hashMap = this.CreateHashMap();
+
+            hashMap.Add(7, 1);
+            hashMap.Add(7, 1);
+            hashMap.Add(7, 2);
+
+            Assert.AreEqual(3, hashMap.Count);
+            AssertValues(hashMap, 7, 2, 1, 1);
+        }
+
+        [Test]
+        public void TryAddUniquePair_IgnoresDuplicatePair()
+        {
+            var hashMap = this.CreateHashMap();
+
+            Assert.IsTrue(hashMap.TryAddUniquePair(7, (byte)1));
+            Assert.IsFalse(hashMap.TryAddUniquePair(7, (byte)1));
+            Assert.IsTrue(hashMap.TryAddUniquePair(7, (byte)2));
+
+            Assert.AreEqual(2, hashMap.Count);
+            AssertValues(hashMap, 7, 2, 1);
+        }
+
+        [Test]
+        public void RemoveExactPair_PreservesOtherValuesForKey()
+        {
+            var hashMap = this.CreateHashMap();
+            hashMap.Add(7, 1);
+            hashMap.Add(7, 2);
+            hashMap.Add(7, 3);
+            hashMap.Add(8, 2);
+
+            Assert.IsTrue(hashMap.Remove(7, (byte)2));
+            Assert.IsFalse(hashMap.Remove(7, (byte)4));
+
+            Assert.AreEqual(3, hashMap.Count);
+            AssertValues(hashMap, 7, 3, 1);
+            AssertValues(hashMap, 8, 2);
+        }
+
+        [Test]
+        public void RemoveIterator_FirstValue_RemovesOnlyCurrentValue()
+        {
+            var hashMap = this.CreateHashMap();
+            hashMap.Add(7, 1);
+            hashMap.Add(7, 2);
+            hashMap.Add(7, 3);
+
+            Assert.IsTrue(hashMap.TryGetFirstValue(7, out var value, out var it));
+            Assert.AreEqual(3, value);
+
+            hashMap.Remove(it);
+
+            Assert.AreEqual(2, hashMap.Count);
+            AssertValues(hashMap, 7, 2, 1);
+        }
+
+        [Test]
+        public void RemoveIterator_MiddleValue_CanContinueIteration()
+        {
+            var hashMap = this.CreateHashMap();
+            hashMap.Add(7, 1);
+            hashMap.Add(7, 2);
+            hashMap.Add(7, 3);
+
+            Assert.IsTrue(hashMap.TryGetFirstValue(7, out var value, out var it));
+            Assert.AreEqual(3, value);
+            Assert.IsTrue(hashMap.TryGetNextValue(out value, ref it));
+            Assert.AreEqual(2, value);
+
+            hashMap.Remove(it);
+
+            Assert.AreEqual(2, hashMap.Count);
+            Assert.IsTrue(hashMap.TryGetNextValue(out value, ref it));
+            Assert.AreEqual(1, value);
+            Assert.IsFalse(hashMap.TryGetNextValue(out _, ref it));
+            AssertValues(hashMap, 7, 3, 1);
+        }
+
+        [Test]
+        public void RemoveIterator_LastValue_RemovesTail()
+        {
+            var hashMap = this.CreateHashMap();
+            hashMap.Add(7, 1);
+            hashMap.Add(7, 2);
+            hashMap.Add(7, 3);
+
+            Assert.IsTrue(hashMap.TryGetFirstValue(7, out var value, out var it));
+            Assert.AreEqual(3, value);
+            Assert.IsTrue(hashMap.TryGetNextValue(out value, ref it));
+            Assert.AreEqual(2, value);
+            Assert.IsTrue(hashMap.TryGetNextValue(out value, ref it));
+            Assert.AreEqual(1, value);
+
+            hashMap.Remove(it);
+
+            Assert.AreEqual(2, hashMap.Count);
+            Assert.IsFalse(hashMap.TryGetNextValue(out _, ref it));
+            AssertValues(hashMap, 7, 3, 2);
+        }
+
+        [Test]
+        public void RemoveIterator_FirstValue_CanContinueIteration()
+        {
+            var hashMap = this.CreateHashMap();
+            hashMap.Add(7, 1);
+            hashMap.Add(7, 2);
+            hashMap.Add(7, 3);
+
+            Assert.IsTrue(hashMap.TryGetFirstValue(7, out var value, out var it));
+            Assert.AreEqual(3, value);
+
+            hashMap.Remove(it);
+
+            Assert.IsTrue(hashMap.TryGetNextValue(out value, ref it));
+            Assert.AreEqual(2, value);
+            Assert.IsTrue(hashMap.TryGetNextValue(out value, ref it));
+            Assert.AreEqual(1, value);
+            Assert.IsFalse(hashMap.TryGetNextValue(out _, ref it));
+        }
+
+        [Test]
+        public unsafe void RemoveIterator_PreservesCollidingKey()
+        {
+            var hashMap = this.CreateHashMap();
+            var key = 1;
+            var collidingKey = key + hashMap.Helper->BucketCapacity;
+
+            hashMap.Add(key, 10);
+            hashMap.Add(collidingKey, 20);
+            hashMap.Add(key, 30);
+
+            Assert.IsTrue(hashMap.TryGetFirstValue(key, out var value, out var it));
+            Assert.AreEqual(30, value);
+
+            hashMap.Remove(it);
+
+            AssertValues(hashMap, key, 10);
+            AssertValues(hashMap, collidingKey, 20);
+        }
+
+        [Test]
+        public void RemoveIterator_ReusesFreedSlot()
+        {
+            var hashMap = this.CreateHashMap();
+            hashMap.Add(7, 1);
+            hashMap.Add(7, 2);
+
+            Assert.IsTrue(hashMap.TryGetFirstValue(7, out _, out var removed));
+            var removedEntryIndex = removed.EntryIndex;
+
+            hashMap.Remove(removed);
+            hashMap.Add(8, 3);
+
+            Assert.IsTrue(hashMap.TryGetFirstValue(8, out var value, out var added));
+            Assert.AreEqual(3, value);
+            Assert.AreEqual(removedEntryIndex, added.EntryIndex);
+        }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+        [Test]
+        public void RemoveIterator_WithRemovedIterator_Throws()
+        {
+            var hashMap = this.CreateHashMap();
+            hashMap.Add(7, 1);
+
+            Assert.IsTrue(hashMap.TryGetFirstValue(7, out _, out var it));
+            hashMap.Remove(it);
+
+            Assert.Throws<ArgumentException>(() => hashMap.Remove(it));
+        }
+#endif
+
+        [Test]
         public unsafe void ValuesPointer_IsAlignedToValueType()
         {
             var hashMap = this.CreateHashMapLong();
@@ -167,6 +343,18 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.Throws<InvalidOperationException>(() => hashMap.AddBatchUnsafe(keys, values));
         }
 #endif
+
+        private static void AssertValues(DynamicMultiHashMap<int, byte> hashMap, int key, params byte[] expected)
+        {
+            var values = hashMap.GetValuesForKey(key);
+            for (var i = 0; i < expected.Length; i++)
+            {
+                Assert.IsTrue(values.MoveNext());
+                Assert.AreEqual(expected[i], values.Current);
+            }
+
+            Assert.IsFalse(values.MoveNext());
+        }
 
         private DynamicMultiHashMap<int, byte> CreateHashMap()
         {

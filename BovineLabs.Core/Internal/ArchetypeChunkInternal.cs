@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Internal
 
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, handle.GlobalSystemVersion);
 
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
             {
                 var ptr = ChunkDataUtility.GetComponentDataWithTypeRW(chunk.m_Chunk, archetype, 0, handle.m_TypeIndex, handle.GlobalSystemVersion,
@@ -63,7 +63,7 @@ namespace BovineLabs.Core.Internal
 
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, version);
 
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
             {
                 var ptr = ChunkDataUtility.GetComponentDataWithTypeRW(chunk.m_Chunk, archetype, 0, handle.m_TypeIndex, handle.GlobalSystemVersion,
@@ -95,7 +95,7 @@ namespace BovineLabs.Core.Internal
             // This should (=S) be thread safe int writes are atomic in c#
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, handle.GlobalSystemVersion);
 
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
             {
 #pragma warning disable 0618
@@ -126,7 +126,7 @@ namespace BovineLabs.Core.Internal
             // This should (=S) be thread safe int writes are atomic in c#
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, version);
 
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
             {
 #pragma warning disable 0618
@@ -150,7 +150,7 @@ namespace BovineLabs.Core.Internal
 
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, handle.GlobalSystemVersion);
 
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
             if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
             {
                 var ptr = ChunkDataUtility.GetComponentDataRW(chunk.m_Chunk, archetype, 0, typeIndexInArchetype, handle.GlobalSystemVersion);

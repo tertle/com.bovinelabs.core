@@ -28,6 +28,11 @@ namespace BovineLabs.Core
 
         internal static void Create(World world)
         {
+            if (world.EntityManager.HasSingleton<BLLogger>())
+            {
+                return;
+            }
+
             var entity = world.EntityManager.CreateEntity<BLLogger>("BL Logger");
 
             var worldName = world.Name.TrimEnd("World").TrimEnd();

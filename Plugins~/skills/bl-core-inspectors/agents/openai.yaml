@@ -1,3 +1,4 @@
 interface:
-  display_name: "Core Inspectors Usage"
-  short_description: "Implement and debug com.bovinelabs.core custom inspectors and property drawers with prefab-aware behavior."
+  display_name: "Core Inspectors"
+  short_description: "Build Core inspectors and drawers"
+  default_prompt: "Use $bl-core-inspectors to implement or debug this Core inspector or property drawer."

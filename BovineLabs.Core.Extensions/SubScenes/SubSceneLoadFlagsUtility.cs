@@ -14,14 +14,27 @@ namespace BovineLabs.Core.SubScenes
 #if UNITY_NETCODE
             if (!baker.IsBakingForEditor())
             {
+                if (baker.IsClient() && baker.IsServer())
+                {
+                    return true;
+                }
+
+                const SubSceneLoadFlags networkFlags = SubSceneLoadFlags.Server | SubSceneLoadFlags.Client | SubSceneLoadFlags.ThinClient;
+
                 if (baker.IsClient())
                 {
-                    return (flags & (SubSceneLoadFlags.Client | SubSceneLoadFlags.ThinClient)) != 0;
+                    // Ignore things that only appear on server
+                    return (flags & networkFlags) != SubSceneLoadFlags.Server;
                 }
 
                 if (baker.IsServer())
                 {
-                    return (flags & SubSceneLoadFlags.Server) != 0;
+                    var match = flags & networkFlags;
+
+                    // Ignore things that only appear on client
+                    return match != SubSceneLoadFlags.Client &&
+                        match != SubSceneLoadFlags.ThinClient &&
+                        match != (SubSceneLoadFlags.Client | SubSceneLoadFlags.ThinClient);
                 }
             }
 #endif

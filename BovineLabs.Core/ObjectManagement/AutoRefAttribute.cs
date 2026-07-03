@@ -27,7 +27,7 @@ namespace BovineLabs.Core.ObjectManagement
     /// }
     /// </code>
     /// </example>
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class AutoRefAttribute : Attribute
     {
         public AutoRefAttribute(string managerType, string fieldName)
@@ -56,6 +56,8 @@ namespace BovineLabs.Core.ObjectManagement
         public string ManagerType { get; }
 
         public string FieldName { get; }
+
+        public string ReferenceFieldName { get; set; }
 
         public string DirectoryKey { get; }
 

@@ -1,3 +1,4 @@
 interface:
-  display_name: "Core Config Vars Usage"
-  short_description: "Add, change, and debug com.bovinelabs.core ConfigVars, manager initialization, and editor bindings."
+  display_name: "Core Config Vars"
+  short_description: "Work with BovineLabs Core ConfigVars"
+  default_prompt: "Use $bl-core-config-vars to add or debug this Core config variable."

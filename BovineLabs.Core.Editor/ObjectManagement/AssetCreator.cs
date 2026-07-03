@@ -70,20 +70,18 @@ namespace BovineLabs.Core.Editor.ObjectManagement
 
         private static AutoRefAttribute TryGetAttribute(SerializedObject serializedObject, SerializedProperty serializedProperty, Type type)
         {
-            var attribute = type.GetCustomAttribute<AutoRefAttribute>();
+            var attributes = type.GetCustomAttributes<AutoRefAttribute>(true).ToArray();
+            var attribute = attributes.FirstOrDefault(a => a.ManagerType == serializedObject.targetObject.name && a.FieldName == serializedProperty.name);
 
-            if (attribute == null)
+            if (attribute == null && attributes.Length == 0)
             {
                 BLGlobalLogger.LogErrorString(
                     $"Type {type} is using AssetCreator but without {nameof(AutoRefAttribute)} so the item will not be added to the object.");
             }
-            else if (attribute.ManagerType != serializedObject.targetObject.name)
+            else if (attribute == null)
             {
-                BLGlobalLogger.LogErrorString($"Type {type} is using AssetCreator but the {nameof(AutoRefAttribute)} targets a different manager.");
-            }
-            else if (attribute.FieldName != serializedProperty.name)
-            {
-                BLGlobalLogger.LogErrorString($"Type {type} is using AssetCreator but the {nameof(AutoRefAttribute)} targets a different field.");
+                BLGlobalLogger.LogErrorString(
+                    $"Type {type} is using AssetCreator but no {nameof(AutoRefAttribute)} targets {serializedObject.targetObject.name}.{serializedProperty.name}.");
             }
 
             return attribute;

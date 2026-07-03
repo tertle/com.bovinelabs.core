@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Iterators
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Extensions;
+    using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
@@ -191,6 +192,28 @@ namespace BovineLabs.Core.Iterators
 
             var idx = this.helper->Find(key);
             return idx != -1;
+        }
+
+        /// <summary>
+        /// Removes a key-value pair.
+        /// </summary>
+        /// <param name="key"> The key to remove. </param>
+        /// <returns> True if a key-value pair was removed. </returns>
+        public readonly bool Remove(TKey key)
+        {
+            this.buffer.CheckWriteAccess();
+            this.RefCheck();
+            return this.helper->TryRemove(key) != -1;
+        }
+
+        /// <summary> Returns an array with a copy of all this hash map's keys (in no particular order). </summary>
+        /// <param name="allocator"> The allocator to use. </param>
+        /// <returns> An array with a copy of all this hash map's keys (in no particular order). </returns>
+        public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+        {
+            this.buffer.CheckReadAccess();
+            this.RefCheck();
+            return this.helper->GetKeyArray(allocator);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

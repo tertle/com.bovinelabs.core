@@ -1,3 +1,4 @@
 interface:
-  display_name: "Core States Usage"
-  short_description: "Create and debug com.bovinelabs.core state models, registration, history variants, and enableable-state behavior."
+  display_name: "Core States"
+  short_description: "Implement BovineLabs Core states"
+  default_prompt: "Use $bl-core-states to implement or debug this Core state model."

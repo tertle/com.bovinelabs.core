@@ -46,11 +46,6 @@ namespace BovineLabs.Core.Editor.ChangeFilterTracking
                     continue;
                 }
 
-                if (typeInfo.TypeIndex.IsManagedComponent)
-                {
-                    continue;
-                }
-
                 var type = typeInfo.Type;
 
                 var attribute = type?.GetCustomAttribute<ChangeFilterTrackingAttribute>();

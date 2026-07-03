@@ -50,12 +50,14 @@ namespace BovineLabs.Core.SubScenes
             var subsceneReferences = query.ToComponentDataArray<SceneReference>(this.WorldUpdateAllocator);
             for (var i = 0; i < entities.Length; i++)
             {
-                if (!this.loading.Remove(subsceneReferences[i].SceneGUID, out var subScene))
+                if (!this.loading.Remove(subsceneReferences[i].SceneGUID, out SubScene subScene))
                 {
                     continue;
                 }
 
+#pragma warning disable 0618 // managed API obsolete; internal/test caller still needs it.
                 this.EntityManager.AddComponentObject(entities[i], subScene);
+#pragma warning restore 0618
             }
 #endif
         }

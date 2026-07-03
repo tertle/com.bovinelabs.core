@@ -11,7 +11,6 @@ namespace BovineLabs.Core.Tests.Models
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Mathematics;
-    using Unity.PerformanceTesting;
 
     [BurstCompile]
     public unsafe class TimerEnableableTests
@@ -58,40 +57,6 @@ namespace BovineLabs.Core.Tests.Models
             }
         }
 
-        [TestCase(128 * 256 * 8)]
-        [Performance]
-        public void CalculatePerformance(int count)
-        {
-            Allocate(count, Allocator.Persistent, out var remainings, out var isOn);
-
-            Measure
-                .Method(() =>
-                {
-                    CalculateNew(remainings, isOn, count, 0.6f);
-                })
-                .Run();
-
-            UnsafeUtility.Free(remainings, Allocator.Persistent);
-            UnsafeUtility.Free(isOn, Allocator.Persistent);
-        }
-
-        [TestCase(128 * 256 * 8)]
-        [Performance]
-        public void CalculatePerformanceOld(int count)
-        {
-            Allocate(count, Allocator.Persistent, out var remainings, out var isOn);
-
-            Measure
-                .Method(() =>
-                {
-                    CalculateOld(remainings, isOn, count, 0.6f);
-                })
-                .Run();
-
-            UnsafeUtility.Free(remainings, Allocator.Persistent);
-            UnsafeUtility.Free(isOn, Allocator.Persistent);
-        }
-
         private static void Allocate(int count, Allocator allocator, out float* remainings, out ulong* isOn)
         {
             remainings = (float*)UnsafeUtility.Malloc(count * sizeof(float), UnsafeUtility.AlignOf<float>(), allocator);
@@ -112,96 +77,6 @@ namespace BovineLabs.Core.Tests.Models
                 {
                     remainings[i] = 0;
                 }
-            }
-        }
-
-        // [BurstCompile]
-        // private static void CalculateNew([NoAlias] float* remainings, [NoAlias] ulong* isOn, int length, float deltaTime)
-        // {
-        //     const int perIt = 128;
-        //
-        //     var count = length / perIt;
-        //
-        //     for (var i = 0; i < count; i++)
-        //     {
-        //         TimerEnableable.CalculateOn(remainings + (i * perIt), isOn + (i * 2), length / 128, deltaTime);
-        //     }
-        //
-        //     var r = length % perIt;
-        //     TimerEnableable.CalculateOn(remainings + (count * perIt), isOn + (count * 2), r, deltaTime);
-        // }
-
-        [BurstCompile]
-        private static void CalculateOld([NoAlias] float* remainings, [NoAlias] ulong* isOn, int length, float deltaTime)
-        {
-            const int perIt = 128;
-
-            var count = length / perIt;
-
-            for (var i = 0; i < count; i++)
-            {
-                CalculateOld128(remainings + (i * perIt), isOn + (i * 2), length / 128, deltaTime);
-            }
-
-            var r = length % perIt;
-            CalculateOld128(remainings + (count * perIt), isOn + (count * 2), r, deltaTime);
-        }
-
-        private static void CalculateOld128([NoAlias] float* remainings, [NoAlias] ulong* isOn, int length, float deltaTime)
-        {
-            var length0 = math.min(64, length);
-
-            for (var i = 0; i < length0; i++)
-            {
-                remainings[i] = math.max(0, remainings[i] - deltaTime);
-                UnsafeBitArray.Set(isOn, i, remainings[i] != 0);
-            }
-
-            isOn += 1;
-            var length1 = length - 64;
-            remainings += 64;
-
-            for (var i = 0; i < length1; i++)
-            {
-                remainings[i] = math.max(0, remainings[i] - deltaTime);
-                UnsafeBitArray.Set(isOn, i, remainings[i] != 0);
-            }
-        }
-
-        [BurstCompile]
-        private static void CalculateNew([NoAlias] float* remainings, [NoAlias] ulong* isOn, int length, float deltaTime)
-        {
-            const int perIt = 128;
-
-            var count = length / perIt;
-
-            for (var i = 0; i < count; i++)
-            {
-                CalculateNew128(remainings + (i * perIt), isOn + (i * 2), length / 128, deltaTime);
-            }
-
-            var r = length % perIt;
-            CalculateNew128(remainings + (count * perIt), isOn + (count * 2), r, deltaTime);
-        }
-
-        private static void CalculateNew128([NoAlias] float* remainings, [NoAlias] ulong* isOn, int length, float deltaTime)
-        {
-            var u0 = isOn;
-            var length0 = math.min(64, length);
-
-            for (var i = 0; i < length0; i++)
-            {
-                remainings[i] = math.max(0, remainings[i] - deltaTime);
-                UnsafeBitArray.Set(u0, i, remainings[i] != 0);
-            }
-
-            var u1 = isOn + 1;
-            var length1 = math.min(64, length - 64);
-
-            for (var i = 0; i < length1; i++)
-            {
-                remainings[i + 64] = math.max(0, remainings[i + 64] - deltaTime);
-                UnsafeBitArray.Set(u1, i, remainings[i + 64] != 0);
             }
         }
 

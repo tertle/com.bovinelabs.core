@@ -1,3 +1,4 @@
 interface:
-  display_name: "Core Entity Commands Usage"
-  short_description: "Build reusable com.bovinelabs.core IEntityCommands helpers across bakers, command buffers, parallel jobs, tests, and shared components."
+  display_name: "Core Entity Commands"
+  short_description: "Use Core entity-command abstractions"
+  default_prompt: "Use $bl-core-entity-commands to choose and implement the correct entity-command path."

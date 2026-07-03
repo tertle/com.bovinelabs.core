@@ -14,6 +14,11 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     {
     }
 
+    [CustomEditor(typeof(ILookupAosAuthoring<,>), true)]
+    public class LookupAosAuthoringEditor : PrefabElementEditor
+    {
+    }
+
     [CustomEditor(typeof(ILookupMultiAuthoring<,>), true)]
     public class LookupMultiAuthoringEditor : PrefabElementEditor
     {

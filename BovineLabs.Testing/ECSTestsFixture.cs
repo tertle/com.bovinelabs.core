@@ -52,7 +52,7 @@ namespace BovineLabs.Testing
 
             this.BlobAssetStore = new BlobAssetStore(128);
 
-#if (UNITY_EDITOR || DEVELOPMENT_BUILD) && !DISABLE_ENTITIES_JOURNALING
+#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
             // In case entities journaling is initialized, clear it
 #pragma warning disable CS0618 // Type or member is obsolete
             EntitiesJournaling.Clear();

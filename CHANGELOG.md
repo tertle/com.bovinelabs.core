@@ -1,5 +1,50 @@
 # Changelog
 
+## [1.6.2] - 2026-07-03
+
+### Added
+* `GraphToolkitElementProperty` for Unity 6.5+ Graph Toolkit custom property drawers that need Core `ElementProperty` behavior with Graph Toolkit label alignment, wrapper owner foldout titles, and foldout tooltips
+* `ElementProperty.SkipSingleRoot` for wrapper drawers that should unwrap one composite root child before creating property fields
+* `AutoRefAttribute.ReferenceFieldName` for auto-populated manager entries that preserve per-entry data alongside object references
+* `ObjectManagementImportExtensionAttribute` for including non-`.asset` imports in object-management processing
+* `IAutoRefPostProcessor` for manager cleanup after AutoRef updates a field
+* `BLId` for packed mod/local IDs and `ObjectId` conversions backed by the shared ID payload
+* `UnmanagedLocalizedReference` for unmanaged Unity Localization table and entry references
+* Optional Savanna save attribute wrappers for packages that can compile without Savanna installed
+* `NativeParallelHashMapFallback` for parallel hash map fallback storage
+* World object registry lifecycle systems for stable world-scoped object references
+* `DynamicMultiHashMap` iterator removal support for removing the current element
+* `DynamicMultiHashMap.TryAddUniquePair` and value removal support
+* `DynamicUntypedHashMap.Remove` and `GetKeyArray` for filtering untyped dynamic maps without knowing stored value types
+* `DynamicHashMap` and `DynamicMultiHashMap` NetCode optimized support through the unified `GhostDynamicHashMapAttribute`
+* `BlobStringRef` for blob-backed string references
+* `AosHashMap` and AoS lookup authoring support for object-management lookup maps
+
+### Changed
+* Updated obsolete API usage for Unity 6.6 compatibility
+* Object management AutoRef processing now resolves settings managers, scans derived asset types, and preserves list or array entries keyed by object reference
+* AutoRef attributes now support multiple settings targets per asset type, including inherited base-schema and derived-schema lists
+* Facet-generated singletons now support mutable access
+* Editor serialization helpers now support the current Entities editor namespace
+* `ElementProperty` now supports direct single-root property fields
+* Core test coverage was pruned to remove low-value tests
+* SubScene loading on Unity 6.6+ now uses import entities for post-load setup instead of `SubSceneUtil` structural helpers
+* Core package skills were synced with current workflow guidance
+* Entities journaling and NetCode diagnostic hooks now use `UNITY_INCLUDE_INSTRUMENTATION` or `UNITY_ENABLE_CHECKS` instead of `DEVELOPMENT_BUILD`
+* Dynamic hash map NetCode serializers now share one transport core and use interface inference for map versus multimap serializer generation
+
+### Fixed
+* Assembly Builder now keeps type registration enabled while building assemblies
+* `BakingWorldFlagsSystem` now assigns server and client baking world flags to the matching NetCode baking settings.
+* Bit-field popup drawers now preserve unknown serialized values instead of falling back to the first configured option.
+* Object management now bakes `ObjectGroupRegistry` and `ObjectGroupMatcher` buffers even when no object groups are configured.
+* Object management lookup baking now precomputes lookup buffers for lookup authoring map types, including empty optional lookup maps.
+* SubScene asset baking now skips unassigned asset sets instead of throwing during bake.
+* SubScene load flag filtering now keeps shared NetCode bake targets while excluding client-only and server-only content from the opposite player bake.
+* Startup scene swapping now skips saving when the editor only has an unsaved empty scene open.
+* Singleton buffer query access now validates matching singleton buffer queries before access
+* Unity 6.6/Burst compatibility for atomic intrinsics, timer loops, SubScene import entity setup, and managed component editor filtering
+
 ## [1.6.1] - 2026-05-09
 
 ### Added

@@ -1,3 +1,4 @@
 interface:
-  display_name: "Core Settings Usage"
-  short_description: "Create and wire com.bovinelabs.core settings assets, retrieval paths, and world routing behavior."
+  display_name: "Core Settings"
+  short_description: "Author and retrieve Core settings"
+  default_prompt: "Use $bl-core-settings to create, wire, or debug these Core settings."
