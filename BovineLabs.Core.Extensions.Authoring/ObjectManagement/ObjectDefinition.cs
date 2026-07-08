@@ -5,6 +5,7 @@
 #if !BL_DISABLE_OBJECT_DEFINITION
 namespace BovineLabs.Core.Authoring.ObjectManagement
 {
+    using BovineLabs.Core.Asset;
     using BovineLabs.Core.ObjectManagement;
     using BovineLabs.Core.PropertyDrawers;
     using JetBrains.Annotations;

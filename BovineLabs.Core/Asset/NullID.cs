@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.ObjectManagement
+namespace BovineLabs.Core.Asset
 {
     using UnityEngine;
 

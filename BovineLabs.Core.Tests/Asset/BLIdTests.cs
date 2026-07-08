@@ -2,10 +2,13 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Tests.ObjectManagement
+namespace BovineLabs.Core.Tests.Asset
 {
     using System;
+    using BovineLabs.Core.Asset;
+#if BL_CORE_EXTENSIONS && !BL_DISABLE_OBJECT_DEFINITION
     using BovineLabs.Core.ObjectManagement;
+#endif
     using NUnit.Framework;
 
     public class BLIdTests

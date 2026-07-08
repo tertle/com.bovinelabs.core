@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Editor.ObjectManagement
+namespace BovineLabs.Core.Editor.Asset
 {
     using System;
     using System.Collections;
@@ -10,8 +10,8 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using BovineLabs.Core.Asset;
     using BovineLabs.Core.Editor.Settings;
-    using BovineLabs.Core.ObjectManagement;
     using BovineLabs.Core.Settings;
     using BovineLabs.Core.Utility;
     using JetBrains.Annotations;

@@ -6,6 +6,7 @@
 namespace BovineLabs.Core.Editor.SubScenes
 {
     using BovineLabs.Core.Authoring.SubScenes;
+    using BovineLabs.Core.Editor.Asset;
     using BovineLabs.Core.Editor.Inspectors;
     using BovineLabs.Core.Editor.ObjectManagement;
     using UnityEditor;

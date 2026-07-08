@@ -2,17 +2,17 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Editor.ObjectManagement
+namespace BovineLabs.Core.Editor.Asset
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using BovineLabs.Core.Asset;
     using BovineLabs.Core.Editor.Inspectors;
     using BovineLabs.Core.Editor.SearchWindow;
     using BovineLabs.Core.Editor.UI;
-    using BovineLabs.Core.ObjectManagement;
     using BovineLabs.Core.Utility;
     using UnityEditor;
     using UnityEditor.UIElements;

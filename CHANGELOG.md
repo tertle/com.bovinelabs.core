@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.4] - 2026-07-08
+
+### Changed
+* Backported Core ObjectManagement to Asset change
+
 ## [1.6.3] - 2026-07-08
 
 ### Fixed

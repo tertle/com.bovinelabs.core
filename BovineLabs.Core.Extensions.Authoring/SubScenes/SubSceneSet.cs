@@ -5,7 +5,7 @@
 #if !BL_DISABLE_SUBSCENE
 namespace BovineLabs.Core.Authoring.SubScenes
 {
-    using BovineLabs.Core.ObjectManagement;
+    using BovineLabs.Core.Asset;
 
     [AutoRef(nameof(SubSceneSettings), nameof(SubSceneSettings.SceneSets), nameof(SubSceneSet), "Scenes")]
     public class SubSceneSet : SubSceneSetBase, IUID

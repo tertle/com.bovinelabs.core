@@ -6,6 +6,7 @@
 namespace BovineLabs.Core.Editor.ObjectManagement
 {
     using BovineLabs.Core.Authoring.ObjectManagement;
+    using BovineLabs.Core.Editor.Asset;
     using BovineLabs.Core.Editor.Inspectors;
     using UnityEditor;
     using UnityEngine.UIElements;

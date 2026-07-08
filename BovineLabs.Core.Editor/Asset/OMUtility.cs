@@ -2,12 +2,12 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Editor.ObjectManagement
+namespace BovineLabs.Core.Editor.Asset
 {
     using System;
     using System.IO;
+    using BovineLabs.Core.Asset;
     using BovineLabs.Core.Editor.Settings;
-    using BovineLabs.Core.ObjectManagement;
     using UnityEditor;
     using UnityEngine;
 

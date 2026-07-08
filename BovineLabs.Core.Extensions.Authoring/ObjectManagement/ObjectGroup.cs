@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Authoring.ObjectManagement
 {
     using System;
     using System.Collections.Generic;
+    using BovineLabs.Core.Asset;
     using BovineLabs.Core.ObjectManagement;
     using BovineLabs.Core.PropertyDrawers;
     using UnityEngine;

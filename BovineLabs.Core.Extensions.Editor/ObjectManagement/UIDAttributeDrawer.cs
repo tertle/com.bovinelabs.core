@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Editor.ObjectManagement
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using BovineLabs.Core.Asset;
     using BovineLabs.Core.ObjectManagement;
     using UnityEditor;
     using UnityEditor.UIElements;

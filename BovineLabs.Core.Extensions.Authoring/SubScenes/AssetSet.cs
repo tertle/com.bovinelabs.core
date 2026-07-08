@@ -6,6 +6,7 @@
 namespace BovineLabs.Core.Authoring.SubScenes
 {
     using System.Collections.Generic;
+    using BovineLabs.Core.Asset;
     using BovineLabs.Core.ObjectManagement;
     using BovineLabs.Core.SubScenes;
     using UnityEngine;

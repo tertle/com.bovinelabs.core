@@ -6,6 +6,7 @@
 namespace BovineLabs.Core.ObjectManagement
 {
     using System;
+    using BovineLabs.Core.Asset;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Properties;

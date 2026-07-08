@@ -2,15 +2,15 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-namespace BovineLabs.Core.Tests.ObjectManagement
+namespace BovineLabs.Core.Tests.Asset
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Reflection;
     using System.Text.RegularExpressions;
-    using BovineLabs.Core.Editor.ObjectManagement;
-    using BovineLabs.Core.ObjectManagement;
+    using BovineLabs.Core.Asset;
+    using BovineLabs.Core.Editor.Asset;
     using NUnit.Framework;
     using UnityEditor;
     using UnityEngine;
