@@ -46,6 +46,7 @@ namespace BovineLabs.Core.Tests.ObjectManagement
             Assert.Throws<ArgumentOutOfRangeException>(() => _ = new BLId(1, (ushort)BLId.MaxModsIds));
         }
 
+#if BL_CORE_EXTENSIONS && !BL_DISABLE_OBJECT_DEFINITION
         [Test]
         public void ObjectId_PacksLocalAndModIds()
         {
@@ -59,5 +60,6 @@ namespace BovineLabs.Core.Tests.ObjectManagement
             Assert.AreEqual(8, fromBLId.Mod);
             Assert.AreEqual(new ObjectId(43, 8), fromBLId);
         }
+#endif
     }
 }

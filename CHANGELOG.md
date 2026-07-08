@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.3] - 2026-07-08
+
+### Fixed
+* Fixed unit tests errors when extensions not enabled.
+
 ## [1.6.2] - 2026-07-03
 
 ### Added

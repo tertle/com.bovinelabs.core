@@ -2,6 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+#if BL_CORE_EXTENSIONS && !BL_DISABLE_OBJECT_DEFINITION && !BL_DISABLE_LIFECYCLE
 namespace BovineLabs.Core.Tests.ObjectManagement
 {
     using BovineLabs.Core.Iterators;
@@ -138,3 +139,4 @@ namespace BovineLabs.Core.Tests.ObjectManagement
         }
     }
 }
+#endif
