@@ -154,14 +154,16 @@ namespace BovineLabs.Core.Spatial
             [Conditional("UNITY_DOTS_DEBUG")]
             private void ValidatePosition(float2 position, int2 quantized)
             {
-                if (math.any(quantized >= this.QuantizeWidth))
+                if (SpatialMap.IsWithinBounds(quantized, this.QuantizeWidth))
                 {
-                    var min = new int2(-this.HalfSize);
-                    var max = new int2(this.HalfSize - 1);
-
-                    BLGlobalLogger.LogError512($"Position {position} is outside the size of the world, min={min} max={max}");
-                    throw new ArgumentException($"Position {position} is outside the size of the world, min={min} max={max}");
+                    return;
                 }
+
+                var min = new int2(-this.HalfSize);
+                var max = new int2(this.HalfSize - 1);
+
+                BLGlobalLogger.LogError512($"Position {position} is outside the size of the world, min={min} max={max}");
+                throw new ArgumentException($"Position {position} is outside the size of the world, min={min} max={max}");
             }
         }
     }
@@ -178,6 +180,27 @@ namespace BovineLabs.Core.Spatial
         public static int Hash(int2 quantized, int width)
         {
             return quantized.x + (quantized.y * width);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsWithinBounds(int2 quantized, int width)
+        {
+            return math.all(quantized >= int2.zero) && math.all(quantized < width);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int2 Clamp(int2 quantized, int width)
+        {
+            return math.clamp(quantized, int2.zero, new int2(width - 1));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float CellMinDistanceSq(float2 position, int2 cell, float step, int2 halfSize)
+        {
+            var cellMin = (new float2(cell.x, cell.y) * step) - new float2(halfSize.x, halfSize.y);
+            var cellMax = cellMin + step;
+            var delta = math.max(math.max(cellMin - position, position - cellMax), 0f);
+            return math.lengthsq(delta);
         }
 
         /// <summary> Readonly copy for querying the map. </summary>
@@ -208,6 +231,24 @@ namespace BovineLabs.Core.Spatial
             public int Hash(int2 quantized)
             {
                 return SpatialMap.Hash(quantized, this.quantizeWidth);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool IsWithinBounds(int2 quantized)
+            {
+                return SpatialMap.IsWithinBounds(quantized, this.quantizeWidth);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int2 Clamp(int2 quantized)
+            {
+                return SpatialMap.Clamp(quantized, this.quantizeWidth);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public float CellMinDistanceSq(float2 position, int2 cell)
+            {
+                return SpatialMap.CellMinDistanceSq(position, cell, this.quantizeStep, this.halfSize);
             }
         }
 
