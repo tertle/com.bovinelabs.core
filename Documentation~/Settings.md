@@ -146,6 +146,21 @@ Opening the Settings window or calling `EditorSettingsUtility.GetSettings<T>()` 
 
 The selected authoring prefab still has to be present in content baked into the intended ECS world. The attribute alone does not load a SubScene or prefab.
 
+## Provide ECS Settings to the Editor World
+
+Editor systems can require settings even when the SubScene that normally contains them is not open. Core always loads **Default Settings Authoring** as an
+Editor fallback. **Additional Editor World Settings** contains route keys resolved through the existing **Settings Authoring** mappings and includes
+`client` by default. Core loads each resolved prefab through `SceneSystem`, so normal baker dependencies continue to invalidate and rebake it when a
+referenced settings asset changes. Empty or unresolved additional keys are invalid and throw when the Editor world is created.
+
+The fallback is active only while no normal instance of that same prefab exists in the Editor world. When a SubScene supplies the prefab, Core restores
+`Prefab` to the fallback's original linked entities; when that instance disappears, Core removes `Prefab` again. The fallback therefore remains loaded for
+dependency tracking without creating duplicate settings singletons. Existing `Disabled` components on linked entities are never changed.
+
+`SettingsAuthoring` is only valid on a prefab root; baking throws when it is placed on a scene GameObject or below a prefab root. Systems in Simulation or
+Presentation observe the resolved settings state. An Initialization system that consumes these settings must update after
+`EditorSettingsFallbackSystem`.
+
 ## Retrieve Settings in Editor and Authoring Code
 
 ### Editor tooling

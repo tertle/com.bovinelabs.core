@@ -28,12 +28,18 @@ namespace BovineLabs.Core.Editor.Settings
         [SerializeField]
         private SettingsAuthoring defaultSettingsAuthoring;
 
+        [Tooltip("Additional world settings routes loaded as fallbacks in edit mode. Default settings are always included.")]
+        [SerializeField]
+        private string[] additionalEditorWorldSettings = { "client" };
+
         [SerializeField]
         private KeyAuthoring[] settingAuthoring = { new() { World = "service" } };
 
         public IReadOnlyList<string> ScriptingDefineSymbols => this.scriptingDefineSymbols;
 
         public SettingsAuthoring DefaultSettingsAuthoring => this.defaultSettingsAuthoring;
+
+        public IReadOnlyList<string> AdditionalEditorWorldSettings => this.additionalEditorWorldSettings;
 
         public IReadOnlyList<KeyAuthoring> SettingsAuthorings => this.settingAuthoring;
 

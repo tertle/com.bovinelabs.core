@@ -1,7 +1,7 @@
 {
   "name": "com.bovinelabs.core",
   "description": "Core library for building games with DOTS.",
-  "version": "2.0.0-pre.1",
+  "version": "2.0.0-pre.2",
   "unity": "6000.7",
   "displayName": "BovineLabs Core",
   "documentationUrl": "https://gitlab.com/tertle/com.bovinelabs.core/-/blob/main/Documentation~/index.md",
