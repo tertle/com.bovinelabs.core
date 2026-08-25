@@ -15,7 +15,7 @@ namespace BovineLabs.Core
     [Configurable]
     [WorldSystemFilter(WorldSystemFilterFlags.Default | WorldSystemFilterFlags.ThinClientSimulation | WorldSystemFilterFlags.Editor)]
     [UpdateInGroup(typeof(InitializationSystemGroup), OrderFirst = true)]
-    public partial class BLDebugSystem : InitSystemBase
+    public partial class BLDebugSystem : SystemBase
     {
         private const int DefaultMinLength = 0;
 
