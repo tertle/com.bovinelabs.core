@@ -23,7 +23,9 @@ namespace BovineLabs.FacetGenerator
         internal static readonly DiagnosticDescriptor UnsupportedFieldDescriptor = new DiagnosticDescriptor(
             "BLFCT0002",
             "Facet field type not supported",
-            "Field '{0}' of type '{1}' is not supported. Supported types are RefRO<T>, RefRW<T>, EnabledRefRO<T>, EnabledRefRW<T>, DynamicBuffer<T>, ComponentLookup<T>, BufferLookup<T>, Entity, EntityStorageInfo, EntityStorageInfoLookup, and fields marked with [Singleton].",
+            "Field '{0}' of type '{1}' is not supported. Supported types are RefRO<T>, RefRW<T>, EnabledRefRO<T>, " +
+            "FacetEnabledRefRW<T>, DynamicBuffer<T>, ComponentLookup<T>, BufferLookup<T>, Entity, EntityStorageInfo, " +
+            "EntityStorageInfoLookup, and fields marked with [Singleton].",
             Category,
             DiagnosticSeverity.Error,
             true);
@@ -38,8 +40,8 @@ namespace BovineLabs.FacetGenerator
 
         internal static readonly DiagnosticDescriptor ReadOnlyRefRWDescriptor = new DiagnosticDescriptor(
             "BLFCT0004",
-            "ReadOnly not supported on RefRW",
-            "ReadOnlyAttribute is not supported on '{0}'. Use RefRO<{1}> if you only require read-only access.",
+            "ReadOnly not supported on writable facet reference",
+            "ReadOnlyAttribute is not supported on '{0}'. Use {1}<{2}> if you only require read-only access.",
             Category,
             DiagnosticSeverity.Error,
             true);
@@ -104,12 +106,13 @@ namespace BovineLabs.FacetGenerator
             return Diagnostic.Create(NoFieldsDescriptor, location, typeSymbol.ToDisplayString(FacetGenerator.ShortTypeFormat));
         }
 
-        public static Diagnostic ReadOnlyRefRW(IFieldSymbol fieldSymbol, Location location)
+        public static Diagnostic ReadOnlyRefRW(IFieldSymbol fieldSymbol, Location location, string replacementType)
         {
             return Diagnostic.Create(
                 ReadOnlyRefRWDescriptor,
                 location ?? fieldSymbol.Locations[0],
                 fieldSymbol.Name,
+                replacementType,
                 GetComponentName(fieldSymbol));
         }
 

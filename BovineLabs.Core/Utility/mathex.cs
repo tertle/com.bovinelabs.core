@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Utility
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Assertions;
-    using Unity.Assertions;
     using Unity.Burst;
     using Unity.Burst.CompilerServices;
     using Unity.Collections;

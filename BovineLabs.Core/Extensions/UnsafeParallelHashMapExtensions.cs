@@ -26,14 +26,6 @@ namespace BovineLabs.Core.Extensions
             return writer;
         }
 
-        [Obsolete("Use GetOrAddRefUnsafe")]
-        public static ref TValue GetOrAddRef<TKey, TValue>(this UnsafeParallelHashMap<TKey, TValue> hashMap, TKey key, TValue defaultValue = default)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            return ref hashMap.GetOrAddRefUnsafe(key, defaultValue);
-        }
-
         /// <summary>
         /// Gets the value for a key or adds <paramref name="defaultValue" /> and returns it by reference.
         /// </summary>
@@ -115,7 +107,7 @@ namespace BovineLabs.Core.Extensions
             return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, idx);
         }
 
-        public static ref TValue GetOrAddRef<TKey, TValue>(
+        public static ref TValue GetOrAddRefUnsafe<TKey, TValue>(
             this UnsafeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, TKey key, TValue defaultValue = default)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged

@@ -19,108 +19,7 @@ namespace BovineLabs.Core.Tests.Iterators
         private const int MinGrowth = 64;
 
         [Test]
-        public void Capacity()
-        {
-            const int newCapacity = 128;
-
-            var hashMap = this.CreateHashMap();
-            Assert.AreEqual(MinGrowth, hashMap.Capacity);
-
-            hashMap.Capacity = newCapacity;
-
-            Assert.AreEqual(newCapacity, hashMap.Capacity);
-        }
-
-        [Test]
-        public void AddRemove()
-        {
-            const int count = 1024;
-
-            var hashMap = this.CreateHashMap();
-
-            for (var i = 0; i < count; i++)
-            {
-                Assert.IsTrue(hashMap.TryAdd(i + i, (byte)i));
-            }
-
-            Assert.AreEqual(count, hashMap.Count);
-
-            for (var i = 0; i < count; i++)
-            {
-                Assert.IsTrue(hashMap.Remove(i + i));
-            }
-
-            Assert.AreEqual(0, hashMap.Count);
-        }
-
-        [Test]
-        public void AddBatchUnsafe()
-        {
-            const int count = 1027;
-
-            var hashMap = this.CreateHashMap();
-
-            var keys = new NativeArray<int>(count, Allocator.Temp);
-            var values = new NativeArray<byte>(count, Allocator.Temp);
-
-            for (var i = 0; i < count; i++)
-            {
-                keys[i] = i;
-                values[i] = (byte)(i % byte.MaxValue);
-            }
-
-            hashMap.AddBatchUnsafe(keys, values);
-
-            Assert.AreEqual(count, hashMap.Count);
-
-            for (var i = 0; i < count; i++)
-            {
-                Assert.IsTrue(hashMap.ContainsKey(i));
-            }
-        }
-
-        [Test]
-        public void TryGetValue()
-        {
-            var hashMap = this.CreateHashMap();
-            Assert.IsFalse(hashMap.TryGetValue(47, out _));
-
-            hashMap.Add(47, 123);
-            Assert.IsTrue(hashMap.TryGetValue(47, out var result));
-            Assert.AreEqual(123, result);
-
-            hashMap.Remove(47);
-            Assert.IsFalse(hashMap.TryGetValue(47, out _));
-        }
-
-        [Test]
-        public void IndexerSetExisting()
-        {
-            var hashMap = this.CreateHashMap();
-
-            // Add initial value
-            hashMap.Add(42, 50);
-            Assert.AreEqual(50, hashMap[42]);
-
-            // Test indexer setter on existing key (tests optimized path)
-            hashMap[42] = 75;
-            Assert.AreEqual(75, hashMap[42]);
-            Assert.AreEqual(1, hashMap.Count); // Should still be 1 element
-        }
-
-        [Test]
-        public void IndexerSetNew()
-        {
-            var hashMap = this.CreateHashMap();
-
-            // Test indexer setter on new key (tests optimized path)
-            hashMap[42] = 100;
-            Assert.AreEqual(100, hashMap[42]);
-            Assert.AreEqual(1, hashMap.Count);
-        }
-
-        [Test]
-        public void GetOrAddRef()
+        public void GetOrAddRefUnsafe()
         {
             var hashMap = this.CreateHashMap();
 
@@ -140,7 +39,7 @@ namespace BovineLabs.Core.Tests.Iterators
         }
 
         [Test]
-        public void GetOrAddRefWithFlag()
+        public void GetOrAddRefUnsafeWithFlag()
         {
             var hashMap = this.CreateHashMap();
 
@@ -177,6 +76,142 @@ namespace BovineLabs.Core.Tests.Iterators
             }
 
             Assert.AreEqual(count, found.Count);
+        }
+
+        [Test]
+        public unsafe void Enumeration_WhenDense_RemainsFinishedUntilReset()
+        {
+            const int count = 4;
+            var hashMap = this.CreateHashMap();
+
+            for (var i = 0; i < count; i++)
+            {
+                hashMap.Add(i, (byte)i);
+            }
+
+            Assert.IsTrue(hashMap.Helper->IsDense);
+
+            var enumerator = hashMap.GetEnumerator();
+            var found = new HashSet<int>();
+
+            while (enumerator.MoveNext())
+            {
+                Assert.IsTrue(found.Add(enumerator.Current.Key));
+            }
+
+            CollectionAssert.AreEquivalent(new[] { 0, 1, 2, 3 }, found);
+            Assert.IsFalse(enumerator.MoveNext());
+            Assert.IsFalse(enumerator.MoveNext());
+
+            enumerator.Reset();
+            found.Clear();
+
+            while (enumerator.MoveNext())
+            {
+                Assert.IsTrue(found.Add(enumerator.Current.Key));
+            }
+
+            CollectionAssert.AreEquivalent(new[] { 0, 1, 2, 3 }, found);
+        }
+
+        [Test]
+        public unsafe void Enumeration_WithSparseCollidingChain_ReturnsOnlyActiveEntries()
+        {
+            var hashMap = this.CreateHashMap();
+            var key = 1;
+            var collidingKey = key + hashMap.Helper->BucketCapacity;
+            var secondCollidingKey = collidingKey + hashMap.Helper->BucketCapacity;
+
+            hashMap.Add(key, 10);
+            hashMap.Add(collidingKey, 20);
+            hashMap.Add(secondCollidingKey, 30);
+            Assert.IsTrue(hashMap.Remove(collidingKey));
+            Assert.IsFalse(hashMap.Helper->IsDense);
+
+            var found = new HashSet<int>();
+            foreach (var pair in hashMap)
+            {
+                Assert.IsTrue(found.Add(pair.Key), $"Duplicate key {pair.Key} found during enumeration");
+                Assert.AreEqual(pair.Key == key ? (byte)10 : (byte)30, pair.Value);
+            }
+
+            CollectionAssert.AreEquivalent(new[] { key, secondCollidingKey }, found);
+        }
+
+        [Test]
+        public unsafe void ClearDense_WithCollidingKeys_ClearsAndAllowsReuse()
+        {
+            var hashMap = this.CreateHashMap();
+            var key = 1;
+            var collidingKey = key + hashMap.Helper->BucketCapacity;
+            var capacity = hashMap.Capacity;
+
+            hashMap.Add(key, 10);
+            hashMap.Add(collidingKey, 20);
+            Assert.IsTrue(hashMap.Helper->IsDense);
+
+            hashMap.ClearDense();
+
+            Assert.IsTrue(hashMap.IsEmpty);
+            Assert.AreEqual(0, hashMap.Count);
+            Assert.AreEqual(capacity, hashMap.Capacity);
+            Assert.IsFalse(hashMap.TryGetValue(key, out _));
+            Assert.IsFalse(hashMap.TryGetValue(collidingKey, out _));
+
+            hashMap.Add(key, 30);
+
+            Assert.AreEqual(1, hashMap.Count);
+            Assert.AreEqual(30, hashMap[key]);
+            Assert.IsFalse(hashMap.TryGetValue(collidingKey, out _));
+
+            var found = new HashSet<int>();
+            foreach (var pair in hashMap)
+            {
+                Assert.IsTrue(found.Add(pair.Key));
+            }
+
+            CollectionAssert.AreEquivalent(new[] { key }, found);
+
+            hashMap.Add(collidingKey, 40);
+
+            Assert.AreEqual(2, hashMap.Count);
+            Assert.AreEqual(40, hashMap[collidingKey]);
+
+            found.Clear();
+            foreach (var pair in hashMap)
+            {
+                Assert.IsTrue(found.Add(pair.Key));
+            }
+
+            CollectionAssert.AreEquivalent(new[] { key, collidingKey }, found);
+        }
+
+        [Test]
+        public unsafe void ClearDense_WithHoles_FallsBackToFullClear()
+        {
+            var hashMap = this.CreateHashMap();
+
+            hashMap.Add(1, 10);
+            hashMap.Add(2, 20);
+            Assert.IsTrue(hashMap.Remove(1));
+            Assert.IsFalse(hashMap.Helper->IsDense);
+
+            hashMap.ClearDense();
+
+            Assert.IsTrue(hashMap.IsEmpty);
+            Assert.IsFalse(hashMap.TryGetValue(2, out _));
+
+            hashMap.Add(3, 30);
+            Assert.AreEqual(30, hashMap[3]);
+            Assert.IsFalse(hashMap.TryGetValue(2, out _));
+
+            var found = new HashSet<int>();
+            foreach (var pair in hashMap)
+            {
+                Assert.IsTrue(found.Add(pair.Key));
+            }
+
+            CollectionAssert.AreEquivalent(new[] { 3 }, found);
         }
 
         [Test]

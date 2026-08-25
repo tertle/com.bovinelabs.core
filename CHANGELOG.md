@@ -1,5 +1,70 @@
 # Changelog
 
+## [2.0.0-pre.1] - 2026-08-22
+
+### Added
+* `BLId` inspector displays decoded read-only ID and mod values instead of the packed raw value
+* Core editor toolbar button helpers
+* `ProfilerRecorderGroup` for aggregating one or more profiler counters
+* NetCode input compatibility wrappers for optional command and event input types
+* `NativeQueueExtensions` helper validation for creating parallel writers from writable queues
+* `DynamicDictionary` and `DynamicMultiDictionary` entry-backed lookup maps with dictionary lookup authoring support
+* Generated `AsMap` extensions for `IDynamicDictionaryEntry` and `IDynamicMultiDictionaryEntry` buffer types
+* Documentation overview, table of contents, getting-started and troubleshooting guides
+* Dedicated ConfigVars, entry-backed dynamic collection, and testing guides
+* `WorldExtensions.IsClientOnlyWorld` helpers for managed and unmanaged worlds
+* Automatic creation of missing installed-package settings assets after packages are added or updated
+* Baking worlds now install a baking-only `BLLogger` singleton before baking systems update
+* `NativeArrayFactory<T>.CreateFromJob` for creating owned native arrays from jobs with Unity's built-in allocators
+* `ComponentTagAsset` for authoring stable references to zero-sized ECS component tags
+* Public `ComponentFieldAsset` accessors for the selected component hash, component type, field type, and cached field offset
+
+### Changed
+* `AutoRefImportExtensionAttribute` was renamed to `AutoRefImportAttribute`
+* `BLId` moved into base Core and `ObjectId` exposes its payload for ghost serialization
+* `BLId` now reserves 8 bits for mod identifiers and 24 bits for local identifiers, with the bit counts exposed as public constants
+* `GhostDynamicHashMapAttribute` now uses simplified optional-NetCode defaults and supports raw stable unmanaged hash map ghosts
+* Generated dynamic hash map ghost serializers are now marked for Burst compilation
+* ConfigVars editor window layout was modernized
+* The BovineLabs Package Manager moved out of Core into the standalone `com.bovinelabs` package
+* `EnableableComponentAsset` was renamed to `ComponentEnableableAsset`
+* `ComponentAsset`, `ComponentEnableableAsset`, and `ComponentTagAsset` now derive from `TypeAsset`, store assembly-qualified type names, and resolve
+  stable type hashes on demand
+* `TypeAsset.ResolveType` now throws descriptive exceptions for unassigned or unresolvable type names
+* Existing 1.x component asset selections are not migrated automatically and must be reassigned after upgrading
+* Core editor and runtime initialization now use Unity lifecycle attributes
+* AutoRef, IUID, UID drawer, and asset creation editor tooling moved to namespace `BovineLabs.Core.Asset`
+* Standalone Core Extensions feature modules moved to Nerve, including lifecycle, pause, subscene, relevancy, physics-state, clone, and
+  object-management support
+* Remaining Core extension helpers were consolidated into the main Core, Authoring, and Editor assemblies
+* Existing Core guides were source-verified and expanded with current assembly, ownership, lifecycle, limitation, and troubleshooting guidance
+
+### Fixed
+* Settings singletons now initialize before the splash screen instead of during code initialization, avoiding build-time initialization errors
+* ConfigVar editor persistence is now scoped by project instead of sharing bare `EditorPrefs` keys across every Unity project
+* Rect ConfigVars now restore their height correctly when deserialized from their string representation
+* Dynamic hash collection NetCode serializers now use concrete generated Burst function pointers without generic AOT entry-point warnings
+* Empty dynamic hash collection buffers matching their NetCode baseline no longer resend an unchanged length every tick
+* Fixed-string global fatal and error dispatch now uses error logging instead of the editor-only verbose path
+* Asynchronous fallback hash-map disposal now releases both owned native containers
+* Immediate and scheduled fallback hash-map clearing now discards queued overflow entries and registers downstream generic Burst specializations
+* Enableable and tag component assets again reject assigned types that no longer satisfy their specialized contracts
+* ScriptedImporter IUID subassets now retain assigned IDs across deterministic reimports, and AutoRef managers refresh after later imports and removals
+
+### Removed
+* BlobStringRef
+* Public custom-hash insertion and fallback-storage APIs from `NativeParallelMultiHashMapFallback` and `NativeParallelMultiHashMapExtensions`
+* Legacy Unity 6.0-6.6 compatibility branches now that Core requires Unity 6.7+
+* Core Functions API, including `Functions`, `FunctionsBuilder`, and `IFunction`
+* Public `TypeManagerEx` helpers; remaining type-name support is internal
+* `ComponentAssetBase` and `StableTypeHashAttribute`; component asset inspectors now filter registered ECS type-name selections directly
+* Standalone `BovineLabs.Core.Extensions*` assemblies
+* Core states APIs
+* `InitializeAllOnLoad`, `LoadPrefabsAsEntities`, and `FixHierarchySystem`
+* Obsolete Change Filter Tracking documentation for the removed editor feature
+* Package-distributed Codex skills and the `Plugins~/skills.json` catalog
+* Unsupported no-pointer `DynamicHashMap` and `DynamicMultiHashMap` NetCode registration and serializer-state overloads
+
 ## [1.6.4] - 2026-07-08
 
 ### Changed
@@ -16,7 +81,7 @@
 * `GraphToolkitElementProperty` for Unity 6.5+ Graph Toolkit custom property drawers that need Core `ElementProperty` behavior with Graph Toolkit label alignment, wrapper owner foldout titles, and foldout tooltips
 * `ElementProperty.SkipSingleRoot` for wrapper drawers that should unwrap one composite root child before creating property fields
 * `AutoRefAttribute.ReferenceFieldName` for auto-populated manager entries that preserve per-entry data alongside object references
-* `ObjectManagementImportExtensionAttribute` for including non-`.asset` imports in object-management processing
+* `AutoRefImportExtensionAttribute` for including non-`.asset` imports in object-management processing
 * `IAutoRefPostProcessor` for manager cleanup after AutoRef updates a field
 * `BLId` for packed mod/local IDs and `ObjectId` conversions backed by the shared ID payload
 * `UnmanagedLocalizedReference` for unmanaged Unity Localization table and entry references
@@ -91,7 +156,7 @@
 * Favourites window drag reordering persistence
 * Favourites and Selection History window persistence now reloads by `GlobalObjectId`, saves preferences atomically, handles cleared selections, and keeps filtered locked history stable
 * Favourites and Selection History window styling on newer Unity versions
-* Welcome window spacing
+* Package manager window spacing
 
 ## [1.6.0] - 2026-03-13
 
@@ -159,8 +224,8 @@
 ## [1.5.1] - 2025-12-23
 
 ### Added
-* Menu toggle added to WelcomeWindow
-* Welcome window config
+* Menu toggle added to PackageManagerWindow
+* Package manager window config
 * Added 4 mod BurstTrampoline
 * More safety on PooledNativeList
 * BovineLabsBootstrap experimental hostworld support for netcode (if enabled)
@@ -182,7 +247,7 @@
 ## [1.5.0] - 2025-12-06
 
 ### Added
-* New Manager Window that'll show once, now handles Extensions and can install other BovineLabs packages
+* New package manager window that'll show once, now handles Extensions and can install other BovineLabs packages
 * 6.4a4+ support
 * 2.6.3 collections support
 * Vector4 and Rect configvar support.
@@ -299,7 +364,7 @@
 * Added SceneInitializeSystem where InitializeSystemGroup used to exist that initializes new subscenes and ghosts
 
 ### Fixed
-* Id bug in ObjectManagementProcessor which was causing ids to duplicate
+* Id bug in AutoRefProcessor which was causing ids to duplicate
 
 ### Removed
 * ISpline from BlobSpline so you can no longer accidentaly use block breaking extension methods
@@ -408,7 +473,7 @@
 * SearchView issue with having to double click
 * SearchView error on hitting escape in nested menu
 * Timing issue with SubSceneLoadingManagedSystem and subscribing to SceneManager.sceneLoaded
-* ObjectManagementProcessor no longer triggers save unless it triggered dirtying the asset
+* AutoRefProcessor no longer triggers save unless it triggered dirtying the asset
 * SubSceneEditorToolbar can again unload SubScenes
 * CodeGenHelpers FullyQualifiedName not working with nested classes
 * CodeGenHelpers not working in global namespace

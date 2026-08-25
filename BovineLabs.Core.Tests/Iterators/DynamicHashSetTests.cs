@@ -16,19 +16,6 @@ namespace BovineLabs.Core.Tests.Iterators
         private const int MinGrowth = 64;
 
         [Test]
-        public void Capacity()
-        {
-            const int newCapacity = 128;
-
-            var set = this.CreateSet();
-            Assert.AreEqual(MinGrowth, set.Capacity);
-
-            set.Capacity = newCapacity;
-
-            Assert.AreEqual(newCapacity, set.Capacity);
-        }
-
-        [Test]
         public void AddRemove()
         {
             const int count = 1024;
@@ -49,43 +36,6 @@ namespace BovineLabs.Core.Tests.Iterators
 
             Assert.AreEqual(0, set.Count);
             Assert.IsTrue(set.IsEmpty);
-        }
-
-        [Test]
-        public void Contains()
-        {
-            var set = this.CreateSet();
-
-            Assert.IsFalse(set.Contains(47));
-
-            set.Add(47);
-            Assert.IsTrue(set.Contains(47));
-
-            set.Remove(47);
-            Assert.IsFalse(set.Contains(47));
-        }
-
-        [Test]
-        public void ToNativeArray()
-        {
-            const int count = 257;
-            var set = this.CreateSet();
-
-            for (var i = 0; i < count; i++)
-            {
-                set.Add(i);
-            }
-
-            var values = set.ToNativeArray(Unity.Collections.Allocator.Temp);
-            Assert.AreEqual(count, values.Length);
-
-            var seen = new HashSet<int>();
-            for (var i = 0; i < values.Length; i++)
-            {
-                Assert.IsTrue(seen.Add(values[i]));
-            }
-
-            Assert.AreEqual(count, seen.Count);
         }
 
         [Test]

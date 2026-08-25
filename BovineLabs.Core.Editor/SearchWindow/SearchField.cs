@@ -6,11 +6,13 @@
 namespace BovineLabs.Core.Editor.SearchWindow
 {
     using BovineLabs.Core.Editor.UI;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEngine.UIElements;
 
     [UxmlElement]
     internal partial class SearchField : TextField
     {
+        [NoAutoStaticsCleanup]
         private static readonly UITemplate SearchFieldTemplate = new(SearchWindow.RootUIPath + "SearchField");
 
         private VisualElement searchContainer;

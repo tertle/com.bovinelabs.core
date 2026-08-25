@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Memory
     using System.Threading;
     using AOT;
     using BovineLabs.Core.Assertions;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -50,11 +51,11 @@ namespace BovineLabs.Core.Memory
         /// <summary>
         /// Initialize the allocator by constructing a label for <see cref="Allocator.Persistent"/>.
         /// </summary>
-        /// <param name="areaName">Area name associated with the label.</param>
-        /// <param name="objectName">Object name associated with the label.</param>
-        public void Initialize(string areaName, string objectName)
+        /// <param name="category">Category associated with the label.</param>
+        /// <param name="name">Object name associated with the label.</param>
+        public void Initialize(FixedString32Bytes category, FixedString64Bytes name)
         {
-            var label = new MemoryLabel(areaName, objectName);
+            var label = MemoryUtil.CreateLabel(category, name);
             this.memoryLabel = label;
         }
 

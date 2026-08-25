@@ -2,10 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_EDITOR || BL_DEBUG
-#define BL_DEBUG_UPDATE
-#endif
-
 namespace BovineLabs.Core
 {
     using BovineLabs.Core.ConfigVars;
@@ -57,7 +53,7 @@ namespace BovineLabs.Core
         protected override void OnUpdate()
         {
             var frameCount = UnityEngine.Time.frameCount;
-            this.World.EntityManager.GetSingletonRW<BLLogger>().ValueRW.Frame = frameCount;
+            SystemAPI.GetSingletonRW<BLLogger>().ValueRW.Frame = frameCount;
             BLGlobalLogger.Frame.Data = frameCount;
         }
     }

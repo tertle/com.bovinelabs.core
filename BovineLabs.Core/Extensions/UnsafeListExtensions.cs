@@ -29,16 +29,6 @@ namespace BovineLabs.Core.Extensions
             ptr = (T*)((byte*)unsafeList.Ptr + (idx * UnsafeUtility.SizeOf<T>()));
         }
 
-        public static NativeArray<T> AsArray<T>(this UnsafeList<T> list)
-            where T : unmanaged
-        {
-            var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(list.Ptr, list.Length, Allocator.None);
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, AtomicSafetyHandle.GetTempMemoryHandle());
-#endif
-            return array;
-        }
-
         public static int IndexOf<T, TPredicate>(this UnsafeList<T> collection, TPredicate predicate)
             where T : unmanaged
             where TPredicate : IPredicate<T>

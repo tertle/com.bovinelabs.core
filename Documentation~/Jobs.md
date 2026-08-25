@@ -1,168 +1,198 @@
 # Jobs
 
-## Summary
+Core adds several low-level Burst-compatible job producers for workloads that Unity's standard jobs do not cover directly.
 
-Custom job types that extend Unity's job system for efficient iteration over hash maps and other specialized data structures.
+```csharp
+using BovineLabs.Core.Collections;
+using BovineLabs.Core.Jobs;
+```
 
-## Job Types
+## Choose a job type
 
-### IJobForThread
-Splits a linear workload across a fixed number of worker threads, giving each thread a contiguous slice of indices.
+| Requirement | Job interface | Execute shape |
+|---|---|---|
+| Divide a known range across a fixed number of workers | `IJobForThread` | `Execute(int index)` |
+| Batch a length that is produced by an earlier job | `IJobParallelForDeferBatch` | `Execute(int startIndex, int count)` |
+| Visit `NativeHashMap`, `NativeMultiHashMap`, or `NativeHashSet` entries | `IJobHashMapDefer` | `ExecuteNext(int entryIndex, int jobIndex)` |
+| Visit `NativeParallelHashMap` or `NativeParallelMultiHashMap` entries | `IJobParallelHashMapDefer` | `ExecuteNext(int entryIndex, int jobIndex)` |
+| Run setup and teardown once per worker around chunk processing | `IJobChunkWorkerBeginEnd` | Worker hooks plus the `IJobChunk` execute signature |
 
-```cs
+All scheduling methods return a `JobHandle`. Chain it into the owner's dependency and keep every input container valid until that handle completes.
+
+## IJobForThread
+
+`IJobForThread` divides `arrayLength` into contiguous slices for the requested number of workers, then invokes `Execute` once per index.
+
+```csharp
 [BurstCompile]
-private struct AccumulateJob : IJobForThread
+private struct SquareJob : IJobForThread
 {
     public NativeArray<float> Values;
 
     public void Execute(int index)
     {
-        Values[index] = math.sqrt(Values[index]);
+        this.Values[index] *= this.Values[index];
     }
 }
 
-// Schedule across 4 worker threads
-state.Dependency = job.ScheduleParallel(Values.Length, 4, state.Dependency);
+var job = new SquareJob { Values = values };
+dependency = job.ScheduleParallel(values.Length, threadCount: 4, dependency);
 ```
 
-### IJobParallelForDeferBatch
-Combines IJobParallelForDefer and IJobParallelForBatch for deferred scheduling with batch processing.
+The scheduler clamps `threadCount` to at least one. Choose a fixed count only when contiguous per-worker slices are useful; use `IJobFor` for ordinary work-stealing iteration.
 
-### IJobHashMapDefer
-Iterates over single-threaded hash map collections.
+## IJobParallelForDeferBatch
 
-```cs
+Use this when a dependency determines the final list length. The scheduled job must also contain the same list used for deferred scheduling.
+
+```csharp
 [BurstCompile]
-private struct ProcessHashMapJob : IJobHashMapDefer
+private struct ScaleBatchJob : IJobParallelForDeferBatch
 {
-    [ReadOnly] public NativeHashMap<int, Entity> EntityMap;
-    public EntityCommandBuffer.ParallelWriter ECB;
-    
-    public void ExecuteNext(int entryIndex, int jobIndex)
+    public NativeList<float> Values;
+
+    public void Execute(int startIndex, int count)
     {
-        this.Read(EntityMap, entryIndex, out int key, out Entity value);
-        
-        if (key > 100)
+        var end = startIndex + count;
+
+        for (var i = startIndex; i < end; i++)
         {
-            ECB.DestroyEntity(jobIndex, value);
+            this.Values[i] *= 2;
         }
     }
 }
 
-// Schedule the job
-state.Dependency = job.ScheduleParallel(myHashMap, 32, state.Dependency);
+dependency = new ScaleBatchJob
+{
+    Values = values,
+}.ScheduleParallel(values, innerloopBatchCount: 64, dependency);
 ```
 
-**Supported Collections:**
+Supported count sources include:
+
+- `NativeList<T>` with `Schedule`, `ScheduleParallel`, or `ScheduleParallelByRef`.
+- `NativeReference<int>` with `ScheduleParallel`.
+- An unsafe count pointer with `ScheduleParallel` or `ScheduleParallelByRef`.
+
+Prefer the `NativeList<T>` overload. Pointer count overloads bypass container safety and require the pointed-to storage to remain valid through scheduling and execution.
+
+## IJobHashMapDefer
+
+This producer walks occupied entries without first copying keys or values.
+
+Supported containers:
+
 - `NativeHashMap<TKey, TValue>`
-- `NativeHashSet<T>`
-- `UnsafeHashMap<TKey, TValue>`
-- `UnsafeHashSet<T>`
+- `NativeMultiHashMap<TKey, TValue>`
+- `NativeHashSet<TKey>`
 
-### IJobParallelHashMapDefer
-Iterates over parallel hash map collections for better performance with large datasets.
+Each has `Schedule` and `ScheduleParallel` overloads. The collection is read during traversal and must not be resized, cleared, or otherwise mutated until the job completes.
 
-```cs
+```csharp
 [BurstCompile]
-private struct ProcessParallelHashMapJob : IJobParallelHashMapDefer
+private struct CollectPositiveJob : IJobHashMapDefer
 {
-    [ReadOnly] public NativeParallelHashMap<int, float3> PositionMap;
-    [WriteOnly] public NativeArray<float3> Results;
-    
+    [ReadOnly]
+    public NativeHashMap<int, float> Input;
+
+    public NativeQueue<float>.ParallelWriter Output;
+
     public void ExecuteNext(int entryIndex, int jobIndex)
     {
-        this.Read(PositionMap, entryIndex, out int key, out float3 position);
-        Results[entryIndex] = math.transform(someMatrix, position);
-    }
-}
+        this.Read(this.Input, entryIndex, out var key, out var value);
 
-// Schedule with parallel execution
-state.Dependency = job.ScheduleParallel(myParallelHashMap, 32, state.Dependency);
-```
-
-**Supported Collections:**
-- `NativeParallelHashMap<TKey, TValue>`
-- `NativeParallelMultiHashMap<TKey, TValue>`
-- `UnsafeParallelHashMap<TKey, TValue>`
-- `UnsafeParallelMultiHashMap<TKey, TValue>`
-
-## Extension Methods
-
-```cs
-// Read key-value pair from hash map
-this.Read(hashMap, entryIndex, out TKey key, out TValue value);
-
-// Read only key from hash set
-this.Read(hashSet, entryIndex, out T key);
-
-// Check if entry exists at index
-bool exists = this.IsValid(hashMap, entryIndex);
-
-// Get hash map capacity
-int capacity = this.GetCapacity(hashMap);
-```
-
-## Best Practices
-
-- Use appropriate batch sizes (typically 32-128)
-- Minimize random memory access patterns
-- Always use `[BurstCompile]` on job structs
-- Properly chain job dependencies
-
-## Common Patterns
-
-### Entity Processing
-```cs
-[BurstCompile]
-private struct EntityProcessingJob : IJobParallelHashMapDefer
-{
-    [ReadOnly] public NativeParallelHashMap<Entity, ComponentData> ComponentMap;
-    [ReadOnly] public ComponentLookup<SomeComponent> ComponentLookup;
-    
-    public void ExecuteNext(int entryIndex, int jobIndex)
-    {
-        this.Read(ComponentMap, entryIndex, out Entity entity, out ComponentData data);
-        
-        if (ComponentLookup.HasComponent(entity))
+        if (key >= 0 && value > 0)
         {
-            var component = ComponentLookup[entity];
-            // Process component...
+            this.Output.Enqueue(value);
         }
     }
 }
+
+dependency = new CollectPositiveJob
+{
+    Input = input,
+    Output = output.AsParallelWriter(),
+}.ScheduleParallel(input, minIndicesPerJobCount: 64, dependency);
 ```
 
-### Filtering and Transformation
-```cs
+For a hash set, use the matching overload:
+
+```csharp
+this.Read(this.InputSet, entryIndex, out var key);
+```
+
+`entryIndex` is an internal hash-map slot, not a dense zero-to-`Count` result index. Use it only with `Read` for the same collection unless the destination is sized for the source's full internal capacity.
+
+## IJobParallelHashMapDefer
+
+This variant supports:
+
+- `NativeParallelHashMap<TKey, TValue>` and its `ReadOnly` view.
+- `NativeParallelMultiHashMap<TKey, TValue>` and its `ReadOnly` view.
+
+It exposes only `ScheduleParallel`. Read an entry with `this.Read(map, entryIndex, out key, out value)`.
+
+`IJobParallelHashMapDefer` also has optional default interface hooks:
+
+```csharp
+void OnWorkerBegin();
+void ExecuteNext(int entryIndex, int jobIndex);
+void OnBucketEnd();
+void OnWorkerEnd();
+```
+
+`OnWorkerBegin` and `OnWorkerEnd` run only for workers that receive work. `OnBucketEnd` runs after a non-empty bucket. Keep hook state inside the job or in correctly partitioned native storage; a copied job struct is not shared managed state.
+
+## IJobChunkWorkerBeginEnd
+
+Use `IJobChunkWorkerBeginEnd` when chunk processing needs one setup and teardown call per participating worker.
+
+```csharp
 [BurstCompile]
-private struct FilterAndTransformJob : IJobHashMapDefer
+private struct ProcessChunksJob : IJobChunkWorkerBeginEnd
 {
-    [ReadOnly] public NativeHashMap<int, float> InputMap;
-    [WriteOnly] public NativeList<float>.ParallelWriter OutputList;
-    
-    public void ExecuteNext(int entryIndex, int jobIndex)
+    [ReadOnly]
+    public ComponentTypeHandle<InputData> InputHandle;
+
+    public void OnWorkerBegin()
     {
-        this.Read(InputMap, entryIndex, out int key, out float value);
-        
-        if (value > 0.5f)
+    }
+
+    public void Execute(
+        in ArchetypeChunk chunk,
+        int unfilteredChunkIndex,
+        bool useEnabledMask,
+        in v128 chunkEnabledMask)
+    {
+        var inputs = chunk.GetNativeArray(ref this.InputHandle);
+        var enumerator = new ChunkEntityEnumerator(useEnabledMask, chunkEnabledMask, chunk.Count);
+
+        while (enumerator.NextEntityIndex(out var entityIndex))
         {
-            OutputList.AddNoResize(math.sqrt(value));
+            var input = inputs[entityIndex];
         }
     }
+
+    public void OnWorkerEnd()
+    {
+    }
 }
+
+dependency = new ProcessChunksJob
+{
+    InputHandle = inputHandle,
+}.ScheduleParallel(query, dependency);
 ```
 
-## Troubleshooting
+Available forms are `Schedule`, `ScheduleByRef`, `ScheduleParallel`, `ScheduleParallelByRef`, `Run`, and `RunByRef`. Prefer scheduled forms in systems and update cached handles before constructing the job.
 
-**Job not executing:**
-- Ensure the hash map is not empty
-- Check that dependencies are properly set
-- Verify batch size is appropriate
+## Safety and performance
 
-**Performance problems:**
-- Increase batch size for better parallelization
-- Avoid excessive memory allocations in jobs
+- Mark read-only inputs with `[ReadOnly]` and use parallel writers for shared outputs.
+- Do not assume hash-map entry order is deterministic.
+- Do not mutate a traversed hash map while a defer job is using its bucket and next-pointer storage.
+- Treat `minIndicesPerJobCount` as work-stealing granularity, not a promised number of calls.
+- Store the returned handle. A fire-and-forget schedule can race container disposal or later writes.
+- Generic closed job types normally receive generated early initialization. Register unusual generic specializations when Unity cannot discover them.
 
-**Memory issues:**
-- Properly dispose of temporary collections
-- Use correct allocator types (TempJob, Persistent, etc.)
+See [Collections](Collections.md) for the container inventory and [Iterators](Iterators.md) for query, chunk-mask, and dynamic-map iteration.

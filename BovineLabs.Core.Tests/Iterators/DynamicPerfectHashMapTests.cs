@@ -110,6 +110,5 @@ namespace BovineLabs.Core.Tests.Iterators
 
             Assert.Throws<ArgumentException>(() => buffer.InitializePerfectHashMap(keys, values, (short)-1));
         }
-
     }
 }

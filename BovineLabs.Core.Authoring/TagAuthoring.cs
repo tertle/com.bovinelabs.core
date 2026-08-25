@@ -28,14 +28,7 @@ namespace BovineLabs.Core.Authoring
 
                     this.DependsOn(c);
 
-                    var tag = c.GetComponentType();
-                    if (tag == null)
-                    {
-                        BLGlobalLogger.LogWarningString($"Missing type on TagAuthoring for {authoring.gameObject.name}");
-                        continue;
-                    }
-
-                    this.AddComponent(entity, tag);
+                    this.AddComponent(entity, c.ResolveType());
                 }
             }
         }

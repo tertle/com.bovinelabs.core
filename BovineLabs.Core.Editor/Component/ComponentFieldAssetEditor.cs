@@ -4,7 +4,6 @@
 
 namespace BovineLabs.Core.Editor.Component
 {
-    using System;
     using System.Collections.Generic;
     using System.Reflection;
     using BovineLabs.Core.Editor.Inspectors;
@@ -68,21 +67,15 @@ namespace BovineLabs.Core.Editor.Component
         {
             this.fieldNames.Clear();
 
-            var componentAsset = this.componentProperty!.objectReferenceValue as ComponentAssetBase;
+            var componentAsset = this.componentProperty!.objectReferenceValue as ComponentAsset;
             if (componentAsset)
             {
-                try
-                {
-                    var type = componentAsset.GetComponentType();
-                    var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public);
+                var type = componentAsset.ResolveType();
+                var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public);
 
-                    foreach (var field in fields)
-                    {
-                        this.fieldNames.Add(field.Name);
-                    }
-                }
-                catch (InvalidCastException)
+                foreach (var field in fields)
                 {
+                    this.fieldNames.Add(field.Name);
                 }
             }
 

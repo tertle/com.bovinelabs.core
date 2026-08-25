@@ -13,7 +13,6 @@ namespace BovineLabs.Core.Editor.Settings
     using UnityEditor;
     using UnityEngine;
 
-    [SettingsGroup("Core")]
     public class EditorSettings : ScriptableObject, ISettings
     {
         public const string SettingsKey = "bl.settings";
@@ -25,15 +24,6 @@ namespace BovineLabs.Core.Editor.Settings
         [SerializeField]
         private KeyPath[] paths = Array.Empty<KeyPath>();
 
-#if BL_CORE_EXTENSIONS && !BL_DISABLE_SUBSCENE
-        [Header("Scenes")]
-        [SerializeField]
-        private SceneAsset[] prebakeScenes = Array.Empty<SceneAsset>();
-
-        [SerializeField]
-        private SceneAsset startupScene;
-#endif
-
         [Header("Settings")]
         [SerializeField]
         private SettingsAuthoring defaultSettingsAuthoring;
@@ -42,12 +32,6 @@ namespace BovineLabs.Core.Editor.Settings
         private KeyAuthoring[] settingAuthoring = { new() { World = "service" } };
 
         public IReadOnlyList<string> ScriptingDefineSymbols => this.scriptingDefineSymbols;
-
-#if BL_CORE_EXTENSIONS && !BL_DISABLE_SUBSCENE
-        public IReadOnlyList<SceneAsset> PrebakeScenes => this.prebakeScenes;
-
-        public SceneAsset StartupScene => this.startupScene;
-#endif
 
         public SettingsAuthoring DefaultSettingsAuthoring => this.defaultSettingsAuthoring;
 

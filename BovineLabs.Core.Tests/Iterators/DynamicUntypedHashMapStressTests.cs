@@ -4,26 +4,16 @@
 
 namespace BovineLabs.Core.Tests.Iterators
 {
-    using System;
     using System.Collections.Generic;
     using BovineLabs.Core.Iterators;
-    using BovineLabs.Core.Utility;
     using BovineLabs.Testing;
     using NUnit.Framework;
     using Unity.Collections.LowLevel.Unsafe;
-    using Unity.Entities;
     using Unity.Mathematics;
     using Random = Unity.Mathematics.Random;
 
     public class DynamicUntypedHashMapStressTests : ECSTestsFixture
     {
-        [SetUp]
-        public override void Setup()
-        {
-            base.Setup();
-            TypeManagerEx.Initialize();
-        }
-
         [Test]
         public void Stress_MixedTypes_ManyKeys_PreserveValuesAcrossResizes()
         {

@@ -1,4 +1,4 @@
-﻿// <copyright file="AssemblyBuilderWindow.cs" company="BovineLabs">
+// <copyright file="AssemblyBuilderWindow.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
     using System.Linq;
     using BovineLabs.Core.Editor.UI;
     using BovineLabs.Core.Editor.Utility;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.UIElements;
@@ -17,12 +18,15 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
     public class AssemblyBuilderWindow : EditorWindow
     {
         private const string AssemblyInfoTemplate =
-            "// <copyright file=\"AssemblyInfo.cs\" company=\"{0}\">\n// Copyright (c) {0}. All rights reserved.\n// </copyright>\n\nusing System.Runtime.CompilerServices;\n";
+            "// <copyright file=\"AssemblyInfo.cs\" company=\"{0}\">\n" +
+            "// Copyright (c) {0}. All rights reserved.\n" +
+            "// </copyright>\n\nusing System.Runtime.CompilerServices;\n";
 
         private const string DisableAutoCreationTemplate = "using Unity.Entities;\n\n[assembly: DisableAutoCreation]";
         private const string InternalAccessTemplate = "\n[assembly: InternalsVisibleTo(\"{0}\")]";
 
         private const string RootUIPath = "Packages/com.bovinelabs.core/Editor Default Resources/AssemblyBuilder/";
+        [NoAutoStaticsCleanup]
         private static readonly UITemplate AssemblyBuilderTemplate = new(RootUIPath + "AssemblyBuilder");
 
         [MenuItem(EditorMenus.RootMenuTools + "Assembly Builder", priority = 1007)]
@@ -146,7 +150,9 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                     new List<string>();
 
                 references.Add("BovineLabs.Core");
-                references.Add("BovineLabs.Core.Extensions");
+#if UNITY_NERVE
+                references.Add("BovineLabs.Nerve");
+#endif
 
                 // Also add our main references
                 references.AddRange(this.GetCommonReferences());
@@ -212,12 +218,14 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                                 AddAnchor(references);
                             }
 
-                            definition.defineConstraints.Add("UNITY_EDITOR || BL_DEBUG");
+                            definition.defineConstraints.Add("UNITY_INCLUDE_INSTRUMENTATION");
                             break;
 
                         case "Authoring":
                             references.Add("BovineLabs.Core.Authoring");
-                            references.Add("BovineLabs.Core.Extensions.Authoring");
+#if UNITY_NERVE
+                            references.Add("BovineLabs.Nerve.Authoring");
+#endif
                             definition.defineConstraints.Add("UNITY_EDITOR");
                             break;
 
@@ -245,7 +253,9 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                             else if (label == "Editor")
                             {
                                 references.Add("BovineLabs.Core.Editor");
-                                references.Add("BovineLabs.Core.Extensions.Editor");
+#if UNITY_NERVE
+                                references.Add("BovineLabs.Nerve.Editor");
+#endif
                             }
 
                             break;

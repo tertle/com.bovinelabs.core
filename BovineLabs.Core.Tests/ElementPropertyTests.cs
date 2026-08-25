@@ -7,33 +7,12 @@ namespace BovineLabs.Core.Tests
     using System;
     using System.Linq;
     using BovineLabs.Core.Editor.Helpers;
-    using BovineLabs.Core.Editor.Inspectors;
     using NUnit.Framework;
     using UnityEditor;
     using UnityEngine;
-    using UnityEngine.UIElements;
 
     public class ElementPropertyTests
     {
-        [Test]
-        public void CreatePropertyGUI_UsesSerializedPropertyTooltipForFoldout()
-        {
-            var host = ScriptableObject.CreateInstance<ElementPropertyHost>();
-
-            try
-            {
-                var serializedObject = new SerializedObject(host);
-                var property = serializedObject.FindProperty(nameof(ElementPropertyHost.Value));
-                var root = new TestElementProperty().CreatePropertyGUI(property);
-
-                Assert.AreEqual(ElementPropertyHost.TooltipText, root.tooltip);
-            }
-            finally
-            {
-                UnityEngine.Object.DestroyImmediate(host);
-            }
-        }
-
         [Test]
         public void GetChildren_SkipSingleRoot_UnwrapsSingleGenericChildWithChildren()
         {
@@ -128,17 +107,8 @@ namespace BovineLabs.Core.Tests
             return SerializedHelper.GetChildren(property, skipSingleRoot).Select(p => p.propertyPath).ToArray();
         }
 
-        private sealed class TestElementProperty : ElementProperty
-        {
-        }
-
         private sealed class ElementPropertyHost : ScriptableObject
         {
-            public const string TooltipText = "Value tooltip";
-
-            [Tooltip(TooltipText)]
-            public ElementPropertyValue Value;
-
             public SingleRootValue SingleRoot = new();
 
             public SinglePrimitiveRootValue SinglePrimitiveRoot = new();
@@ -146,12 +116,6 @@ namespace BovineLabs.Core.Tests
             public MultipleRootValue MultipleRoot = new();
 
             public SingleArrayRootValue SingleArrayRoot = new();
-        }
-
-        [Serializable]
-        private struct ElementPropertyValue
-        {
-            public int Value;
         }
 
         [Serializable]

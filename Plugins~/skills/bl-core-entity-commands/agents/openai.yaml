@@ -1,4 +1,0 @@
-interface:
-  display_name: "Core Entity Commands"
-  short_description: "Use Core entity-command abstractions"
-  default_prompt: "Use $bl-core-entity-commands to choose and implement the correct entity-command path."

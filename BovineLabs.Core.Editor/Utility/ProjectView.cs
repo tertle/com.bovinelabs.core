@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Editor.Utility
     using System;
     using System.IO;
     using System.Reflection;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using Object = UnityEngine.Object;
 
@@ -14,12 +15,19 @@ namespace BovineLabs.Core.Editor.Utility
     {
         public static class Internal
         {
+            [NoAutoStaticsCleanup]
             private static readonly Func<string> GetActiveFolderPathFunc;
+
+            [NoAutoStaticsCleanup]
             private static readonly Func<object> GetProjectBrowserIfExistsFunc;
 
+            [NoAutoStaticsCleanup]
             private static readonly MethodInfo ShowFolderContentsMethod;
+
+            [NoAutoStaticsCleanup]
             private static readonly MethodInfo EndPingMethod;
 
+            [NoAutoStaticsCleanup]
             private static readonly FieldInfo ViewMode;
 
             static Internal()
@@ -38,6 +46,7 @@ namespace BovineLabs.Core.Editor.Utility
                 EndPingMethod = ProjectBrowserType.GetMethod("EndPing", BindingFlags.Instance | BindingFlags.NonPublic)!;
             }
 
+            [NoAutoStaticsCleanup]
             public static Type ProjectBrowserType { get; }
 
             public static string GetDirectory()

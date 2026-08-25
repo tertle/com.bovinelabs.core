@@ -328,7 +328,7 @@ namespace BovineLabs.FacetGenerator
                         continue;
                     }
 
-                    var lookupExpression = field.IsBuffer
+                    var lookupExpression = field.UsesBufferStorage
                         ? $"state.GetBufferLookup<{field.ComponentTypeName}>({readOnlyArgument})"
                         : $"state.GetComponentLookup<{field.ComponentTypeName}>({readOnlyArgument})";
 
@@ -609,7 +609,7 @@ namespace BovineLabs.FacetGenerator
                         continue;
                     }
 
-                    var method = field.IsBuffer ? "GetBufferTypeHandle" : "GetComponentTypeHandle";
+                    var method = field.UsesBufferStorage ? "GetBufferTypeHandle" : "GetComponentTypeHandle";
                     var readOnly = field.IsReadOnly ? "true" : string.Empty;
                     body.AppendLine($"this.{field.HandleName} = state.{method}<{field.ComponentTypeName}>({readOnly});");
                 }
@@ -911,22 +911,17 @@ namespace BovineLabs.FacetGenerator
 
                     break;
 
-                case FacetFieldKind.EnabledRefRW:
-                    if (inTryGet || field.IsOptional)
-                    {
-                        writer.AppendLine($"var {name} = {lookup}.GetEnabledRefRWOptional<{field.ComponentTypeName}>(entity);");
+                case FacetFieldKind.FacetEnabledRefRW:
+                    writer.AppendLine(
+                        $"var {name} = new FacetEnabledRefRW<{field.ComponentTypeName}>(" +
+                        $"{lookup}.GetEnabledRefRWOptional<{field.ComponentTypeName}>(entity), true);");
 
-                        if (!field.IsOptional)
-                        {
-                            using (writer.Block($"if (!{name}.IsValid)"))
-                            {
-                                writer.AppendLine("return false;");
-                            }
-                        }
-                    }
-                    else
+                    if (inTryGet && !field.IsOptional)
                     {
-                        writer.AppendLine($"var {name} = {lookup}.GetEnabledRefRW<{field.ComponentTypeName}>(entity);");
+                        using (writer.Block($"if (!{name}.IsValid)"))
+                        {
+                            writer.AppendLine("return false;");
+                        }
                     }
 
                     break;
@@ -1044,9 +1039,25 @@ namespace BovineLabs.FacetGenerator
 
                     break;
 
-                case FacetFieldKind.EnabledRefRW:
+                case FacetFieldKind.FacetEnabledRefRW:
+                    var accessor = inTryGet || field.IsOptional ? "GetOptionalEnabledRefRW" : "GetEnabledRefRW";
+                    writer.AppendLine(
+                        $"var {name} = new FacetEnabledRefRW<{field.ComponentTypeName}>(" +
+                        $"{resolved}.{accessor}<{field.ComponentTypeName}>(index), false);");
+
+                    if (inTryGet && !field.IsOptional)
+                    {
+                        using (writer.Block($"if (!{name}.IsValid)"))
+                        {
+                            writer.AppendLine("facet = default;");
+                            writer.AppendLine("return false;");
+                        }
+                    }
+
+                    break;
+
                 case FacetFieldKind.EnabledRefRO:
-                    var rw = field.Kind == FacetFieldKind.EnabledRefRW ? "RW" : "RO";
+                    const string rw = "RO";
                     if (field.IsOptional)
                     {
                         writer.AppendLine($"var {name} = {resolved}.GetOptionalEnabledRef{rw}<{field.ComponentTypeName}>(index);");
@@ -1111,8 +1122,11 @@ namespace BovineLabs.FacetGenerator
             if (field.IsEnabled)
             {
                 var accessor = field.IsOptional ? "GetOptionalEnabledRef" : "GetEnabledRef";
-                var rw = field.Kind == FacetFieldKind.EnabledRefRW ? "RW" : "RO";
-                return $"{field.ResolvedFieldName}.{accessor}{rw}<{field.ComponentTypeName}>(index)";
+                var rw = field.Kind == FacetFieldKind.EnabledRefRO ? "RO" : "RW";
+                var expression = $"{field.ResolvedFieldName}.{accessor}{rw}<{field.ComponentTypeName}>(index)";
+                return field.Kind == FacetFieldKind.FacetEnabledRefRW
+                    ? $"new FacetEnabledRefRW<{field.ComponentTypeName}>({expression}, false)"
+                    : expression;
             }
 
             var constructor = field.Kind == FacetFieldKind.RefRO

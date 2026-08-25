@@ -31,18 +31,6 @@ namespace BovineLabs.Core.Extensions
             ptr = (T*)((byte*)nativeList.Ptr + (idx * UnsafeUtility.SizeOf<T>()));
         }
 
-        public static IntPtr GetUnsafeIntPtr<T>(this NativeList<T> list)
-            where T : unmanaged
-        {
-            return (IntPtr)list.GetUnsafePtr();
-        }
-
-        public static IntPtr GetUnsafeReadOnlyIntPtr<T>(this NativeList<T> list)
-            where T : unmanaged
-        {
-            return (IntPtr)list.GetUnsafeReadOnlyPtr();
-        }
-
         public static void Insert<T>(this NativeList<T> list, int index, T item)
             where T : unmanaged
         {
@@ -79,51 +67,6 @@ namespace BovineLabs.Core.Extensions
             {
                 list.Add(e);
             }
-        }
-
-        public static void ClearAddRange<T>(this NativeList<T> list, IEnumerable<T> enumerable)
-            where T : unmanaged
-        {
-            list.Clear();
-            list.AddRange(enumerable);
-        }
-
-        public static void ClearAddRange<T>(this NativeList<T> list, NativeArray<T> array)
-            where T : unmanaged
-        {
-            list.Clear();
-            list.AddRange(array);
-        }
-
-        public static void ClearAddRange<T>(this NativeList<T> list, NativeHashSet<T> hashSet)
-            where T : unmanaged, IEquatable<T>
-        {
-            list.Clear();
-
-            using var se = hashSet.GetEnumerator();
-            while (se.MoveNext())
-            {
-                list.Add(se.Current);
-            }
-        }
-
-        public static bool Compare<T>(this NativeList<T> list, NativeHashSet<T> hashSet)
-            where T : unmanaged, IEquatable<T>
-        {
-            if (list.Length != hashSet.Count)
-            {
-                return false;
-            }
-
-            foreach (var l in list)
-            {
-                if (!hashSet.Contains(l))
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

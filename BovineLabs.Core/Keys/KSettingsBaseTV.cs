@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Keys
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
+    using Unity.Scripting.LifecycleManagement;
 
     /// <summary>
     /// K is an Enum or LayerMask alternative that allows your key value pairs to be defined in setting files.
@@ -30,8 +31,10 @@ namespace BovineLabs.Core.Keys
         private static readonly SharedStatic<UnsafeList<FixedNameValue<TV>>> Ordered =
             SharedStatic<UnsafeList<FixedNameValue<TV>>>.GetOrCreate<UnsafeList<FixedNameValue<TV>>, T>();
 
+        [NoAutoStaticsCleanup]
         private static T settings;
 
+        [NoAutoStaticsCleanup]
         public static T I
         {
             get => GetSingleton(ref settings);

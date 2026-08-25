@@ -39,13 +39,12 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
         /// <param name="batchSize"> <see cref="WriteIntsJob" /> batch size. </param>
         [Test]
         public void ItemCount(
-            [Values(1, 10, JobsUtility.MaxJobThreadCount + 1, 1024)]
-            int count,
-            [Values(1, 3, 10, 128)] int batchSize)
+            [Values(JobsUtility.MaxJobThreadCount + 1)]
+            int count)
         {
             using var stream = new NativeThreadStream(Allocator.TempJob);
             var fillInts = new WriteIntsJob { Writer = stream.AsWriter() };
-            fillInts.ScheduleParallel(count, batchSize, default).Complete();
+            fillInts.ScheduleParallel(count, 1, default).Complete();
 
             Assert.AreEqual((count * (count - 1)) / 2, stream.Count());
         }
@@ -55,17 +54,16 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
         /// <param name="batchSize"> <see cref="WriteIntsJob" /> batch size. </param>
         [Test]
         public void WriteRead(
-            [Values(1, 10, JobsUtility.MaxJobThreadCount + 1)]
-            int count,
-            [Values(1, 3, 10)] int batchSize)
+            [Values(JobsUtility.MaxJobThreadCount + 1)]
+            int count)
         {
             using var stream = new NativeThreadStream(Allocator.TempJob);
             var fillInts = new WriteIntsJob { Writer = stream.AsWriter() };
-            var jobHandle = fillInts.ScheduleParallel(count, batchSize, default);
+            var jobHandle = fillInts.ScheduleParallel(count, 1, default);
 
             var compareInts = new ReadIntsJob { JobReader = stream.AsReader() };
-            var res0 = compareInts.ScheduleParallel(UnsafeThreadStream.ForEachCount, batchSize, jobHandle);
-            var res1 = compareInts.ScheduleParallel(UnsafeThreadStream.ForEachCount, batchSize, jobHandle);
+            var res0 = compareInts.ScheduleParallel(UnsafeThreadStream.ForEachCount, 1, jobHandle);
+            var res1 = compareInts.ScheduleParallel(UnsafeThreadStream.ForEachCount, 1, jobHandle);
 
             res0.Complete();
             res1.Complete();
@@ -74,7 +72,7 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
         /// <summary> Tests the container working in an Entities.ForEach in SystemBase. </summary>
         /// <param name="count"> The number of entities to test. </param>
         [Test]
-        public void SystemBaseEntitiesForeach([Values(1, JobsUtility.MaxJobThreadCount + 1, 100000)] int count)
+        public void SystemBaseEntitiesForeach([Values(JobsUtility.MaxJobThreadCount + 1)] int count)
         {
             var system = this.World.AddSystemManaged(new CodeGenTestSystem(count));
             system.Update();

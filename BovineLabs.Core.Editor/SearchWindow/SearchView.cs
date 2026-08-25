@@ -10,12 +10,14 @@ namespace BovineLabs.Core.Editor.SearchWindow
     using System.Linq;
     using System.Text;
     using BovineLabs.Core.Editor.UI;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.UIElements;
 
     public class SearchView : VisualElement
     {
+        [NoAutoStaticsCleanup]
         private static readonly UITemplate SearchViewTemplate = new(SearchWindow.RootUIPath + "SearchView");
 
         private readonly ListView list;

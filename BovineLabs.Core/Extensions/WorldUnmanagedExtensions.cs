@@ -6,7 +6,6 @@ namespace BovineLabs.Core.Extensions
 {
     using JetBrains.Annotations;
     using Unity.Burst.CompilerServices;
-    using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
     using Unity.Jobs.LowLevel.Unsafe;
@@ -18,16 +17,6 @@ namespace BovineLabs.Core.Extensions
         {
             var typeIndex = TypeManager.GetSystemTypeIndex<T>();
             return world.GetExistingUnmanagedSystem(typeIndex) != SystemHandle.Null;
-        }
-
-        public static unsafe void GetAllSystemDependencies(this WorldUnmanaged world, NativeList<JobHandle> dependencies)
-        {
-            using var e = world.GetImpl().m_SystemStatePtrMap.GetEnumerator();
-            while (e.MoveNext())
-            {
-                var systemState = (SystemState*)e.Current.Value;
-                dependencies.Add(systemState->m_JobHandle);
-            }
         }
 
         public static unsafe JobHandle GetTrackedJobHandle(this WorldUnmanaged world)

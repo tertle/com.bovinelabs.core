@@ -1,0 +1,30 @@
+# Table of contents
+
+- [About Core](index.md)
+- [Getting started](getting-started.md)
+- [Troubleshooting](troubleshooting.md)
+- ECS data and execution
+  - [Collections](Collections.md)
+  - [Dynamic buffer collections](DynamicCollections.md)
+  - [Generated dynamic hash maps](DynamicHashMap.md)
+  - [Entity commands](EntityCommands.md)
+  - [Facets](Facets.md)
+  - [Iterators](Iterators.md)
+  - [Jobs](Jobs.md)
+  - [Singleton collections](SingletonCollection.md)
+  - [Spatial](Spatial.md)
+- Configuration and authoring
+  - [Settings](Settings.md)
+  - [ConfigVars](ConfigVars.md)
+  - [K](K.md)
+  - [Asset](Asset.md)
+  - [Inspectors](Inspectors.md)
+- Diagnostics and testing
+  - [Debugging and logging](Debug.md)
+  - [Testing](Testing.md)
+- Focused utilities
+  - [Burst trampoline](BurstTrampoline.md)
+  - [Extensions](Extensions.md)
+  - [Global random](GlobalRandom.md)
+  - [PooledNativeList](PooledNativeList.md)
+  - [Utility](Utility.md)

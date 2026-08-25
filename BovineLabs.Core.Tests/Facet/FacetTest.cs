@@ -15,9 +15,9 @@ namespace BovineLabs.Core.Tests.Facet
         [FacetOptional] private RefRO<ComponentC> compC;
         [FacetOptional] private RefRW<ComponentD> compD;
         private EnabledRefRO<EnabledA> enableA;
-        private EnabledRefRW<EnabledB> enableB;
+        private FacetEnabledRefRW<EnabledB> enableB;
         [FacetOptional] private EnabledRefRO<EnabledC> enableC;
-        [FacetOptional] private EnabledRefRW<EnabledD> enableD;
+        [FacetOptional] private FacetEnabledRefRW<EnabledD> enableD;
         [ReadOnly] private DynamicBuffer<BufferA> bufferA;
         private DynamicBuffer<BufferB> bufferB;
         [FacetOptional] [ReadOnly] private DynamicBuffer<BufferC> bufferC;
@@ -26,8 +26,6 @@ namespace BovineLabs.Core.Tests.Facet
         [ReadOnly][Singleton] private DynamicBuffer<SingletonB> singletonB;
         [Facet] private Facet2Test facet2;
         [FacetOptional] [Facet] private Facet3Test facet3;
-
-        public partial struct Lookup {} // Optional but this allows using the lookup within an IJobEntity
     }
 
     public partial struct Facet2Test : IFacet

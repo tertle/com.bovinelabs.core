@@ -27,15 +27,6 @@ namespace BovineLabs.Core.Extensions
             return entityManager.GetCheckedEntityDataAccess()->EntityComponentStore->m_Archetypes.Length;
         }
 
-        public static DynamicBuffer<T> GetChunkBuffer<T>(this EntityManager em, Entity entity)
-            where T : unmanaged, IBufferElementData
-        {
-            var store = em.GetCheckedEntityDataAccess()->EntityComponentStore;
-            store->AssertEntitiesExist(&entity, 1);
-            var chunk = store->GetChunk(entity);
-            return em.GetBuffer<T>(chunk.MetaChunkEntity);
-        }
-
         // Only use these for tests
         public static ComponentLookup<T> GetComponentLookup<T>(this EntityManager entityManager, bool isReadOnly = false)
             where T : unmanaged, IComponentData
@@ -68,109 +59,6 @@ namespace BovineLabs.Core.Extensions
                 isReadOnly);
         }
 
-        public static void* GetComponentDataRaw(this EntityManager entityManager, Entity entity, ComponentType componentType)
-        {
-            var access = entityManager.GetCheckedEntityDataAccess();
-
-            return access->GetComponentDataRawRW(entity, componentType.TypeIndex);
-        }
-
-        public static void AddSharedComponentRaw(this EntityManager entityManager, EntityQuery entityQuery, ComponentType componentType, void* componentData)
-        {
-            var access = entityManager.GetCheckedEntityDataAccess();
-            access->AssertMainThread();
-            access->AssertQueryIsValid(entityQuery);
-            var queryImpl = entityQuery._GetImpl();
-            if (queryImpl->IsEmptyIgnoreFilter)
-            {
-                return;
-            }
-
-            var size = TypeManager.GetTypeInfo(componentType.TypeIndex).ElementSize;
-            var defaultValue = stackalloc byte[size];
-
-            var changes = access->BeginStructuralChanges();
-            var newSharedComponentDataIndex = access->InsertSharedComponent_Unmanaged(componentType.TypeIndex, 0, componentData, defaultValue);
-            access->AddSharedComponentDataToQueryDuringStructuralChange_Unmanaged(queryImpl, newSharedComponentDataIndex, componentType, componentData);
-            access->EndStructuralChanges(ref changes);
-        }
-
-        public static void AddSharedComponentManaged(
-            this EntityManager entityManager, EntityQuery entityQuery, ComponentType componentType, object componentData)
-        {
-            var access = entityManager.GetCheckedEntityDataAccess();
-            access->AssertQueryIsValid(entityQuery);
-            var queryImpl = entityQuery._GetImpl();
-            if (queryImpl->IsEmptyIgnoreFilter)
-            {
-                return;
-            }
-
-            var changes = access->BeginStructuralChanges();
-            var newSharedComponentDataIndex = access->InsertSharedComponent_Managed(componentType.TypeIndex, 0, componentData);
-            access->AddSharedComponentDataToQueryDuringStructuralChange(queryImpl, newSharedComponentDataIndex, componentType);
-
-            access->EndStructuralChanges(ref changes);
-        }
-
-        public static void* GetSharedComponentRaw(this EntityManager entityManager, Entity entity, ComponentType componentType)
-        {
-            var access = entityManager.GetCheckedEntityDataAccess();
-            var sharedComponentIndex = access->EntityComponentStore->GetSharedComponentDataIndex(entity, componentType.TypeIndex);
-
-            return access->EntityComponentStore->GetSharedComponentDataAddr_Unmanaged(sharedComponentIndex, componentType.TypeIndex);
-        }
-
-        public static object GetSharedComponentManagedBoxed(this EntityManager entityManager, Entity entity, ComponentType componentType)
-        {
-            var access = entityManager.GetCheckedEntityDataAccess();
-            var sharedComponentIndex = access->EntityComponentStore->GetSharedComponentDataIndex(entity, componentType.TypeIndex);
-
-            return access->ManagedComponentStore.GetSharedComponentDataBoxed(sharedComponentIndex, componentType.TypeIndex);
-        }
-
-        /// <summary> Gets or creates the <see cref="T" /> singleton entity. </summary>
-        /// <param name="em"> The entity manager. </param>
-        /// <typeparam name="T"> The singleton type. </typeparam>
-        /// <returns> The entity. </returns>
-        public static Entity GetOrCreateSingletonEntity<T>(this EntityManager em)
-        {
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
-            if (!query.IsEmptyIgnoreFilter)
-            {
-                return query.GetSingletonEntity();
-            }
-
-            var entity = em.CreateEntity();
-            em.AddComponent<T>(entity);
-
-            return entity;
-        }
-
-        public static Entity GetSingletonEntity<T>(this EntityManager em)
-        {
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
-            query.CompleteDependency();
-
-            return query.GetSingletonEntity();
-        }
-
-        public static bool TryGetSingletonEntity<T>(this EntityManager em, out Entity entity)
-        {
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
-
-            if (query.CalculateEntityCount() != 1)
-            {
-                entity = Entity.Null;
-
-                return false;
-            }
-
-            entity = query.GetSingletonEntity();
-
-            return true;
-        }
-
         public static bool HasSingleton<T>(this EntityManager em)
         {
             using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
@@ -188,18 +76,6 @@ namespace BovineLabs.Core.Extensions
             }
 
             return query.GetSingleton<T>();
-        }
-
-        public static void SetSingleton<T>(this EntityManager em, T value, bool completeDependency = true)
-            where T : unmanaged, IComponentData
-        {
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
-            if (completeDependency)
-            {
-                query.CompleteDependency();
-            }
-
-            query.SetSingleton(value);
         }
 
         public static RefRW<T> GetSingletonRW<T>(this EntityManager em, bool completeDependency = true)
@@ -250,59 +126,6 @@ namespace BovineLabs.Core.Extensions
             using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
             return query.GetSingletonBufferNoSync<T>(isReadOnly);
         }
-
-        public static bool TryGetSingletonBuffer<T>(this EntityManager em, out DynamicBuffer<T> buffer, bool isReadOnly = false)
-            where T : unmanaged, IBufferElementData
-        {
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithOptions(QueryOptions).Build(em);
-
-            if (query.CalculateEntityCount() != 1)
-            {
-                buffer = default;
-
-                return false;
-            }
-
-            buffer = query.GetSingletonBuffer<T>(isReadOnly);
-
-            return true;
-        }
-
-#if !UNITY_DISABLE_MANAGED_COMPONENTS
-        public static T GetManagedSingleton<T>(this EntityManager em, bool completeDependency = true)
-            where T : class
-        {
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
-            if (completeDependency)
-            {
-                query.CompleteDependency();
-            }
-
-            return query.GetSingleton<T>();
-        }
-
-        public static bool TryGetManagedSingleton<T>(this EntityManager em, out T component, bool completeDependency = true)
-            where T : class
-        {
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<T>().WithOptions(QueryOptions).Build(em);
-
-            if (query.CalculateEntityCount() != 1)
-            {
-                component = default;
-
-                return false;
-            }
-
-            if (completeDependency)
-            {
-                query.CompleteDependency();
-            }
-
-            component = query.GetSingleton<T>();
-
-            return true;
-        }
-#endif
 
         public static Entity CreateEntity<T>(this EntityManager em, T component, FixedString64Bytes name)
             where T : unmanaged, IComponentData

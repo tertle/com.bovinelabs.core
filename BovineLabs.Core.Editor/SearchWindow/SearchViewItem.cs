@@ -6,10 +6,12 @@
 namespace BovineLabs.Core.Editor.SearchWindow
 {
     using BovineLabs.Core.Editor.UI;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEngine.UIElements;
 
     internal class SearchViewItem : VisualElement
     {
+        [NoAutoStaticsCleanup]
         private static readonly UITemplate SearchItemTemplate = new(SearchWindow.RootUIPath + "SearchItem");
 
         private readonly VisualElement icon;

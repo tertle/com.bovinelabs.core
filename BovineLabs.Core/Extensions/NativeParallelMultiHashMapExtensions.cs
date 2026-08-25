@@ -589,7 +589,7 @@ namespace BovineLabs.Core.Extensions
             }
         }
 
-        public static void Add<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, TKey key, TValue item, int hash)
+        internal static void Add<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, TKey key, TValue item, int hash)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
@@ -651,22 +651,8 @@ namespace BovineLabs.Core.Extensions
             buckets[bucket] = idx;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [Conditional("UNITY_DOTS_DEBUG")]
-        private static void CheckIndexOutOfBounds(UnsafeParallelHashMapData* data, int idx)
-        {
-            if (idx < 0 || idx >= data->keyCapacity)
-            {
-                throw new InvalidOperationException("Internal HashMap error");
-            }
-        }
-
-        /// <summary>
-        /// Recalculates buckets with hashes already temp cached in the next array
-        /// </summary>
-        /// <param name="hashMap"> </param>
-        /// <typeparam name="TKey"> </typeparam>
-        /// <typeparam name="TValue"> </typeparam>
+        /// <summary> Rebuilds buckets using hashes temporarily cached in the entry next pointers. </summary>
+        /// <remarks> Call only before the cached hashes have been replaced with bucket-chain links. </remarks>
         public static void RecalculateBucketsCached<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -677,20 +663,15 @@ namespace BovineLabs.Core.Extensions
             var length = hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength;
 
             var data = hashMap.GetUnsafeBucketData();
-            var keys = (TKey*)data.keys;
             var buckets = (int*)data.buckets;
             var nextPtrs = (int*)data.next;
 
             for (var idx = 0; idx < length; idx++)
             {
-                var bucket = keys[idx].GetHashCode() & data.bucketCapacityMask;
+                var bucket = nextPtrs[idx] & data.bucketCapacityMask;
                 nextPtrs[idx] = buckets[bucket];
                 buckets[bucket] = idx;
             }
-
-            // var bucket = keys[idx].GetHashCode() & data.bucketCapacityMask;
-            // nextPtrs[idx] = buckets[bucket];
-            // buckets[bucket] = idx;
         }
 
         public static void SetAllocatedIndexLength<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, int length)
@@ -698,31 +679,6 @@ namespace BovineLabs.Core.Extensions
             where TValue : unmanaged
         {
             hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength = length;
-        }
-
-        public static TKey FirstKey<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> map)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            return map.m_MultiHashMapData.m_Buffer->FirstKey<TKey>();
-        }
-
-        public static bool TryGetFirstKeyValue<TKey, TValue>(
-            this NativeParallelMultiHashMap<TKey, TValue> map, TKey key, out TKey storedKey, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            CheckRead(map);
-            return TryGetFirstKeyValueAtomic(map.m_MultiHashMapData.m_Buffer, key, out storedKey, out item, out it);
-        }
-
-        public static bool TryGetNextKeyValue<TKey, TValue>(
-            this NativeParallelMultiHashMap<TKey, TValue> map, out TKey storedKey, out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            CheckRead(map);
-            return TryGetNextKeyValueAtomic(map.m_MultiHashMapData.m_Buffer, out storedKey, out item, ref it);
         }
 
         private static void GetUniqueArray<TKey, TValue>(UnsafeParallelMultiHashMap<TKey, TValue> container, NativeList<TKey> keys)
@@ -734,63 +690,6 @@ namespace BovineLabs.Core.Extensions
             keys.Sort();
             var uniques = keys.AsArray().Unique();
             keys.ResizeUninitialized(uniques);
-        }
-
-        private static bool TryGetFirstKeyValueAtomic<TKey, TValue>(
-            UnsafeParallelHashMapData* data, TKey key, out TKey storedKey, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            it.key = key;
-
-            if (data->allocatedIndexLength <= 0)
-            {
-                it.EntryIndex = it.NextEntryIndex = -1;
-                storedKey = default;
-                item = default;
-                return false;
-            }
-
-            // First find the slot based on the hash
-            var buckets = (int*)data->buckets;
-            var bucket = key.GetHashCode() & data->bucketCapacityMask;
-            it.EntryIndex = it.NextEntryIndex = buckets[bucket];
-            return TryGetNextKeyValueAtomic(data, out storedKey, out item, ref it);
-        }
-
-        private static bool TryGetNextKeyValueAtomic<TKey, TValue>(
-            UnsafeParallelHashMapData* data, out TKey storedKey, out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            var entryIdx = it.NextEntryIndex;
-            it.NextEntryIndex = -1;
-            it.EntryIndex = -1;
-            storedKey = default;
-            item = default;
-            if (entryIdx < 0 || entryIdx >= data->keyCapacity)
-            {
-                return false;
-            }
-
-            var nextPtrs = (int*)data->next;
-            while (!UnsafeUtility.ReadArrayElement<TKey>(data->keys, entryIdx).Equals(it.key))
-            {
-                entryIdx = nextPtrs[entryIdx];
-                if (entryIdx < 0 || entryIdx >= data->keyCapacity)
-                {
-                    return false;
-                }
-            }
-
-            it.NextEntryIndex = nextPtrs[entryIdx];
-            it.EntryIndex = entryIdx;
-
-            // Read the value
-            storedKey = UnsafeUtility.ReadArrayElement<TKey>(data->keys, entryIdx);
-            item = UnsafeUtility.ReadArrayElement<TValue>(data->values, entryIdx);
-
-            return true;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -818,13 +717,13 @@ namespace BovineLabs.Core.Extensions
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckRead<TKey, TValue>(NativeParallelMultiHashMap<TKey, TValue> map)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private static void CheckIndexOutOfBounds(UnsafeParallelHashMapData* data, int idx)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(map.m_Safety);
-#endif
+            if (idx < 0 || idx >= data->keyCapacity)
+            {
+                throw new InvalidOperationException("Internal HashMap error");
+            }
         }
     }
 }

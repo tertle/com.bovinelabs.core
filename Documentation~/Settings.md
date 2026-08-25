@@ -1,139 +1,273 @@
 # Settings
 
-## Summary
+The Settings framework discovers project configuration `ScriptableObject` types, creates and organizes their assets, and presents them in **BovineLabs > Settings**. Choose the settings shape according to how the configured data must reach runtime code.
 
-The Settings system provides a framework for managing configuration data in Unity projects with DOTS support. Create settings as ScriptableObjects with automatic ECS integration.
+For process-wide developer tuning, command-line overrides, or Burst-compatible values that do not belong in a project asset, see [ConfigVars](ConfigVars.md).
 
-**Key Features:**
-- ScriptableObject-based settings with organized editor interface
-- Automatic creation and management of settings assets
-- Global singleton settings that initialize automatically and are included in builds
-- World targeting to control which ECS worlds receive settings
-- Integrated with SubScenes for easy world management
+## Choose a Settings Type
 
-## Core Components
+| Shape | Use it for | Runtime path |
+|---|---|---|
+| `ScriptableObject, ISettings` | Editor tooling or configuration referenced explicitly by another asset | Reference or load the asset yourself |
+| `SettingsBase` | Authoring data that must bake ECS components into selected worlds | Read the baked ECS component |
+| `SettingsSingleton<T>` | A configured global asset needed before ECS worlds or by managed runtime code | Access `T.I` |
 
-- **ISettings**: Base interface for all settings
-- **SettingsBase**: Abstract base class for ECS-integrated settings
-- **SettingsSingleton**: Base class for global settings assets with automatic initialization
-- **SettingsAuthoring**: MonoBehaviour for configuring world-specific settings
-- **SettingsGroupAttribute**: Categorizes settings in the editor window
-- **SettingsWorldAttribute**: Specifies target worlds for settings
-- **SettingSubDirectoryAttribute**: Places generated assets into a subfolder under the settings root
+Implementing `ISettings` provides Settings-window discovery and asset creation. It does not by itself include the asset in a player or create ECS data.
 
-## Creating Settings
+## Assemblies
 
-### Basic Settings
-For simple configuration without ECS integration:
+The Core assemblies have `autoReferenced` disabled:
 
-```csharp
-[SettingsGroup("Game")]
-public class GameConfiguration : ScriptableObject, ISettings
-{
-    [SerializeField] private float musicVolume = 0.75f;
-    [SerializeField] private bool enableTutorials = true;
-    
-    public float MusicVolume => musicVolume;
-    public bool EnableTutorials => enableTutorials;
-}
-```
+| Assembly | Settings surface |
+|---|---|
+| `BovineLabs.Core` | `ISettings`, attributes, `SettingsSingleton<T>`, and `SettingsTag` |
+| `BovineLabs.Core.Authoring` | `SettingsBase`, `SettingsAuthoring`, and `AuthoringSettingsUtility` |
+| `BovineLabs.Core.Editor` | Settings window, `EditorSettingsUtility`, editor routing, and custom settings panels |
 
-### ECS-Integrated Settings
-For settings that need to be baked into ECS worlds, inherit from SettingsBase:
+`BovineLabs.Core.Authoring` is constrained to `UNITY_EDITOR`. Do not call `AuthoringSettingsUtility` from player code.
+
+## Plain Settings Assets
+
+Use `ScriptableObject, ISettings` when the Settings window should own and display an asset but no automatic ECS or global runtime integration is required.
 
 ```csharp
-[SettingsGroup("Game")]
-[SettingsWorld("Client", "Server")]
-public class GameplaySettings : SettingsBase
+namespace Example.Settings
 {
-    [SerializeField] private float playerMoveSpeed = 5.0f;
-    [SerializeField] private int maxHealth = 100;
-    
-    public override void Bake(Baker<SettingsAuthoring> baker)
+    using BovineLabs.Core.Settings;
+    using UnityEngine;
+
+    [SettingsGroup("Game")]
+    public sealed class GameConfiguration : ScriptableObject, ISettings
     {
-        var entity = baker.GetEntity(TransformUsageFlags.None);
-        baker.AddComponent(entity, new GameplayData 
-        { 
-            MoveSpeed = playerMoveSpeed,
-            Health = maxHealth,
-        });
+        [SerializeField]
+        private float musicVolume = 0.75f;
+
+        [SerializeField]
+        private bool enableTutorials = true;
+
+        public float MusicVolume => this.musicVolume;
+
+        public bool EnableTutorials => this.enableTutorials;
     }
 }
 ```
 
-## Setup
+Reference this asset from another included asset, load it through project-specific code, or use it only in editor tooling. The Settings framework does not automatically preload plain `ISettings` assets in a player.
 
-1. Open the Settings Window via `BovineLabs → Settings`
-2. Settings are automatically created in `Assets/Settings/Settings` folder
-3. Configure values in the inspector panel
+## ECS-Integrated Settings
 
-### Asset Organization
+Inherit `SettingsBase` when the settings asset should bake ECS data through `SettingsAuthoring`.
 
-Apply `[SettingSubDirectory("UI")]` (or any folder name) to a settings type to place its asset inside `Assets/Settings/Settings/UI`. You can also override the root directory through `BovineLabs → Settings → Core → Editor Settings` in the Paths section, which `EditorSettingsUtility` uses whenever it creates or locates assets.
-
-### ECS World Integration
-
-1. Create a subscene for your target world(s)
-2. Add a GameObject with `SettingsAuthoring` component
-3. Assign the settings you want in this world
-
-### Automatic Assignment
-
-`SettingsBase` assets are automatically injected into the default or world-specific `SettingsAuthoring` prefabs defined in `Core → Editor Settings` whenever the settings window touches them. If assignments fall out of sync (for example after renaming worlds or manually editing the prefabs) you can rebuild them manually:
-
-1. Create prefabs with `SettingsAuthoring` components
-2. Navigate to `BovineLabs → Settings → Core → Editor Settings`
-3. Assign prefabs to `Default Settings Authoring` and `Settings Authoring` array
-4. Click "Update Settings" to automatically sort settings by world targeting
-
-## Using Settings
-
-### Accessing Settings
-
-**In Editor Tools:**
 ```csharp
-var gameConfig = EditorSettingsUtility.GetSettings<GameConfiguration>();
+namespace Example.Settings
+{
+    using BovineLabs.Core.Authoring.Settings;
+    using BovineLabs.Core.Settings;
+    using Unity.Entities;
+    using UnityEngine;
+
+    public struct GameplayData : IComponentData
+    {
+        public float MoveSpeed;
+        public int MaxHealth;
+    }
+
+    [SettingsGroup("Game")]
+    [SettingsWorld("Client", "Server")]
+    public sealed class GameplaySettings : SettingsBase
+    {
+        [SerializeField]
+        private float playerMoveSpeed = 5;
+
+        [SerializeField]
+        private int maxHealth = 100;
+
+        public override void Bake(Baker<SettingsAuthoring> baker)
+        {
+            var entity = baker.GetEntity(TransformUsageFlags.None);
+            baker.AddComponent(entity, new GameplayData
+            {
+                MoveSpeed = this.playerMoveSpeed,
+                MaxHealth = this.maxHealth,
+            });
+        }
+    }
+}
 ```
 
-**During Baking:**
-```csharp
-var gameSettings = AuthoringSettingsUtility.GetSettings<GameplaySettings>();
-```
+`SettingsAuthoring` adds `SettingsTag` to its entity, registers a baking dependency on each distinct settings asset, and invokes `Bake` on that asset. All settings assigned to one authoring component bake onto the same entity.
 
-**In ECS Systems:**
+At runtime, read the component through normal ECS APIs:
+
 ```csharp
 var settings = SystemAPI.GetSingleton<GameplayData>();
 ```
 
-**Global Singletons:**
+This requires exactly one matching component in the world. Avoid loading multiple `SettingsAuthoring` objects that bake the same singleton component into one world.
+
+## Create and Organize Assets
+
+In an interactive editor, when the Package Manager adds or updates a package, Core makes one pass over every settings type owned by an installed package and
+creates any missing assets after registration finishes. The pass includes settings activated in an existing package by a newly installed optional dependency.
+It does not run on ordinary domain reloads, create settings declared by project assemblies, or remove settings left behind by removed packages. Open
+**BovineLabs > Settings** to create project settings or after editing an embedded package without changing its registration.
+
+1. Open **BovineLabs > Settings** and select a settings panel.
+2. Configure the generated asset.
+3. Configure paths and ECS authoring assignments under **Core > Editor Settings**.
+
+The default settings directory is `Assets/Settings/Settings`.
+
+Use `[SettingSubDirectory("UI")]` to create a new settings asset under `Assets/Settings/Settings/UI`. The configured root path in **Core > Editor Settings** is applied when an asset is created. Existing assets are discovered anywhere in the project and are not moved when the root or attribute changes.
+
+Only one asset of each settings type is valid. If duplicates exist, editor retrieval logs an error and uses one result; singleton initialization can initialize multiple assets and leave an order-dependent value in `T.I`.
+
+## Route ECS Settings to Worlds
+
+`SettingsWorldAttribute` is an editor-time routing key. It does not inspect or filter ECS worlds at runtime.
+
+Configure routing under **BovineLabs > Settings > Core > Editor Settings**:
+
+1. Create a prefab containing `SettingsAuthoring` for the default route.
+2. Create any additional `SettingsAuthoring` prefabs used by client, server, menu, service, or other world-specific SubScenes.
+3. Assign the default prefab to **Default Settings Authoring**.
+4. Add world-key and prefab pairs to **Settings Authoring**.
+5. Click **Update Settings** to clear and rebuild every authoring assignment.
+
+Routing behavior:
+
+- A `SettingsBase` without `[SettingsWorld]` goes to the default authoring.
+- Keys are matched case-insensitively against the configured world-key entries.
+- A blank key routes to the default authoring.
+- If none of the declared keys resolves to an assigned authoring, the setting falls back to default.
+- Repeating a resolved authoring in the attribute does not duplicate the asset in that authoring.
+
+Opening the Settings window or calling `EditorSettingsUtility.GetSettings<T>()` asks the editor utility to add a `SettingsBase` to its configured authoring. Use **Update Settings** after changing keys, prefabs, attributes, or multi-world mappings so every assignment is rebuilt from a clean state.
+
+The selected authoring prefab still has to be present in content baked into the intended ECS world. The attribute alone does not load a SubScene or prefab.
+
+## Retrieve Settings in Editor and Authoring Code
+
+### Editor tooling
+
 ```csharp
-var bootstrap = GameBootstrapSettings.I.BootConfig;
+using BovineLabs.Core.Editor.Settings;
+
+var settings = EditorSettingsUtility.GetSettings<GameConfiguration>();
 ```
 
-## SettingsSingleton
+`GetSettings<T>()` creates a missing asset and, when Core Editor Settings has a default authoring configured, attempts to wire `SettingsBase` into editor authoring configuration. Use `TryGetSettings<T>(out var settings)` when inspection must not create files or directories.
 
-Use `SettingsSingleton<T>` for global data that needs to exist before worlds are created (UI configuration, lookup tables, boot config assets, etc.). These assets still implement `ISettings`, so they appear in the Settings window, follow `[SettingsGroup]`, and are created in the same directory as other settings.
-
-### Creating a Singleton
+### Baking and authoring
 
 ```csharp
-public class GameBootstrapSettings : SettingsSingleton<GameBootstrapSettings>
-{
-    [SerializeField] private TextAsset bootConfig;
-    [SerializeField] private string defaultProfile = "Default";
+using BovineLabs.Core.Authoring.Settings;
 
-    public TextAsset BootConfig => this.bootConfig;
-    public string DefaultProfile => this.defaultProfile;
+var settings = this.DependsOn(AuthoringSettingsUtility.GetSettings<GameplaySettings>());
+```
+
+`AuthoringSettingsUtility.GetSettings<T>()` finds an existing asset and throws when none exists. Open the Settings window first to create it. When another baker reads the asset, register it with `DependsOn` so edits invalidate the bake.
+
+`AuthoringSettingsUtility.TryGetSettings<T>()` reports absence without creating an asset.
+
+## Global SettingsSingleton Assets
+
+Use `SettingsSingleton<T>` for managed configuration that must be available before ECS worlds are created, such as UI maps, boot assets, and lookup tables.
+
+```csharp
+namespace Example.Settings
+{
+    using BovineLabs.Core.Settings;
+    using UnityEngine;
+
+    [SettingsGroup("Game")]
+    public sealed class GameBootstrapSettings : SettingsSingleton<GameBootstrapSettings>
+    {
+        [SerializeField]
+        private TextAsset bootConfig;
+
+        [SerializeField]
+        private string defaultProfile = "Default";
+
+        public TextAsset BootConfig => this.bootConfig;
+
+        public string DefaultProfile => this.defaultProfile;
+
+        protected override void OnInitialize()
+        {
+            // Rebuild non-serialized lookup state derived from the configured fields here.
+        }
+    }
 }
 ```
 
-Create or open the asset from the Settings window and configure it like any other ScriptableObject. Access it anywhere with `GameBootstrapSettings.I`.
+Access the initialized asset with:
 
-### Lifetime and Initialization
+```csharp
+var bootConfig = GameBootstrapSettings.I.BootConfig;
+```
 
-- `SettingsSingleton` uses `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]` and `[InitializeOnLoadMethod]` to call `Initialize` for every asset before gameplay code executes, so `GameBootstrapSettings.I` is valid immediately in both the editor and players.
-- Only one asset per type should exist; the settings window enforces this when it creates the asset.
+### Initialization
 
-### Build Inclusion
+- Players initialize loaded singleton assets before the splash screen.
+- The shared BovineLabs `[InitializeOnLoad]` editor initializer initializes singleton assets after editor load.
+- `OnInitialize()` runs after the concrete asset becomes `T.I`; use it to rebuild non-serialized state.
+- `T.I` lazily creates a transient default instance when no asset has initialized. This keeps the property non-null but does not provide configured serialized values and does not call `OnInitialize()` on that transient instance.
 
-During `BuildPlayer`, `CoreBuildSetup` temporarily adds every `SettingsSingleton` asset with `IncludeInBuild == true` to `PlayerSettings.preloadedAssets`, guaranteeing the ScriptableObjects are included in the player build without having to reference them from scenes or Resources. Override `IncludeInBuild` and return `false` if a singleton should stay editor-only. After the build finishes, the processor removes those temporary entries so project settings stay clean.
+Treat a transient singleton as a setup failure when configured data is required.
+
+### Build inclusion
+
+Before a player build, `CoreBuildSetup`:
+
+1. Removes existing `SettingsSingleton` entries from `PlayerSettings.preloadedAssets`.
+2. Adds every discovered singleton whose `IncludeInBuild` is `true`.
+3. Removes all `SettingsSingleton` entries again after the build.
+
+The build processor therefore owns preloaded-asset handling for this settings type. Do not rely on manually maintained `SettingsSingleton` entries in `PlayerSettings.preloadedAssets`.
+
+Override `IncludeInBuild` and return `false` only when the configured asset must be excluded from the player. Accessing `T.I` in that player can still create an unconfigured transient instance.
+
+## Customize the Settings Window
+
+`[SettingsGroup("Name")]` groups related settings panels. Without it, the panel uses the settings type's display name.
+
+The Settings window hides panels with no visible serialized properties by default. Add `[AlwaysShowSettings]` when a custom editor draws the content or all serialized fields use `[HideInInspector]`.
+
+For a fully custom panel, derive directly from `SettingsBasePanel<T>`. Override `OnActivate`, `OnDeactivate`, or `GetKeyWords` as needed. The Settings window discovers direct subclasses and uses their group, display name, empty-state, and filtering behavior instead of `GenericSettingsPanel<T>`.
+
+## Troubleshooting
+
+### A settings asset is missing
+
+- After adding or updating a package, wait for Package Manager registration and compilation to finish.
+- Open **BovineLabs > Settings** to create discoverable project settings or to recover from an interrupted automatic pass.
+- Confirm the settings type is concrete, derives from `ScriptableObject`, and implements `ISettings`.
+- Confirm the editor assembly references `BovineLabs.Core.Editor`.
+- Use `EditorSettingsUtility.GetSettings<T>()` when creation is intended; `TryGetSettings` and `AuthoringSettingsUtility` do not create assets.
+
+### A settings asset was created in the wrong directory
+
+`SettingSubDirectory` and the configured settings root apply only during creation. Move an existing asset manually if its location should change, and keep only one asset of the type.
+
+### ECS settings are missing from a world
+
+- Confirm **Default Settings Authoring** is assigned.
+- Confirm every `[SettingsWorld]` key has the expected case-insensitive mapping.
+- Click **Update Settings** after routing changes.
+- Confirm the selected authoring prefab or SubScene is actually baked into the world.
+- Confirm the settings `Bake` method adds the expected component.
+
+### ECS singleton access reports zero or multiple matches
+
+Inspect the baked `SettingsTag` entities. The intended world should contain one settings authoring path for each singleton component type.
+
+### Baking does not react to a referenced settings edit
+
+When a baker fetches another settings asset through `AuthoringSettingsUtility`, pass that asset to `baker.DependsOn(...)`.
+
+### A configured SettingsSingleton is empty in a player
+
+- Confirm its asset exists and is unique.
+- Confirm `IncludeInBuild` is `true`.
+- Do not access `T.I` so early that it creates a transient instance before configured assets initialize.

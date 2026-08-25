@@ -90,13 +90,13 @@ namespace BovineLabs.Core.Utility
         /// <param name="compressedSize"> The compressed data size. </param>
         /// <param name="decompressedData"> The destination buffer to store the uncompressed data. </param>
         /// <param name="decompressedSize"> The decompressed size. </param>
-        /// <returns> True if decompression was successful. </returns>
+        /// <returns> True if decompression produced exactly <paramref name="decompressedSize" /> bytes. </returns>
         public static bool Decompress(Codec codec, in byte* compressedData, int compressedSize, byte* decompressedData, int decompressedSize)
         {
             switch (codec)
             {
                 case Codec.LZ4:
-                    return DecompressLZ4(compressedData, decompressedData, compressedSize, decompressedSize) > 0;
+                    return decompressedSize > 0 && DecompressLZ4(compressedData, decompressedData, compressedSize, decompressedSize) == decompressedSize;
                 default:
                     throw new ArgumentException($"Invalid codec '{codec}' specified");
             }

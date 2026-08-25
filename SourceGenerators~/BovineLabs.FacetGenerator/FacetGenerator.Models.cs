@@ -13,7 +13,7 @@ namespace BovineLabs.FacetGenerator
     {
         RefRW,
         RefRO,
-        EnabledRefRW,
+        FacetEnabledRefRW,
         EnabledRefRO,
         DynamicBuffer,
         Entity,
@@ -63,7 +63,9 @@ namespace BovineLabs.FacetGenerator
             INamedTypeSymbol entityStorageInfoType,
             INamedTypeSymbol entityStorageInfoLookupType,
             INamedTypeSymbol componentLookupType,
-            INamedTypeSymbol bufferLookupType)
+            INamedTypeSymbol bufferLookupType,
+            INamedTypeSymbol bufferElementDataType,
+            INamedTypeSymbol facetEnabledRefRWType)
         {
             this.FacetInterface = facetInterface;
             this.OptionalAttribute = optionalAttribute;
@@ -75,6 +77,8 @@ namespace BovineLabs.FacetGenerator
             this.EntityStorageInfoLookupType = entityStorageInfoLookupType;
             this.ComponentLookupType = componentLookupType;
             this.BufferLookupType = bufferLookupType;
+            this.BufferElementDataType = bufferElementDataType;
+            this.FacetEnabledRefRWType = facetEnabledRefRWType;
         }
 
         public INamedTypeSymbol FacetInterface { get; }
@@ -97,6 +101,10 @@ namespace BovineLabs.FacetGenerator
 
         public INamedTypeSymbol BufferLookupType { get; }
 
+        public INamedTypeSymbol BufferElementDataType { get; }
+
+        public INamedTypeSymbol FacetEnabledRefRWType { get; }
+
         public static FacetSymbols Create(Compilation compilation)
         {
             return new FacetSymbols(
@@ -109,7 +117,9 @@ namespace BovineLabs.FacetGenerator
                 compilation.GetTypeByMetadataName("Unity.Entities.EntityStorageInfo"),
                 compilation.GetTypeByMetadataName("Unity.Entities.EntityStorageInfoLookup"),
                 compilation.GetTypeByMetadataName("Unity.Entities.ComponentLookup`1"),
-                compilation.GetTypeByMetadataName("Unity.Entities.BufferLookup`1"));
+                compilation.GetTypeByMetadataName("Unity.Entities.BufferLookup`1"),
+                compilation.GetTypeByMetadataName("Unity.Entities.IBufferElementData"),
+                compilation.GetTypeByMetadataName("BovineLabs.Core.FacetEnabledRefRW`1"));
         }
     }
 
@@ -167,7 +177,14 @@ namespace BovineLabs.FacetGenerator
 
     internal sealed class FacetField
     {
-        public FacetField(IFieldSymbol symbol, ITypeSymbol componentType, FacetFieldKind kind, bool isOptional, bool isReadOnly, bool hasReadOnlyAttribute)
+        public FacetField(
+            IFieldSymbol symbol,
+            ITypeSymbol componentType,
+            FacetFieldKind kind,
+            bool isOptional,
+            bool isReadOnly,
+            bool hasReadOnlyAttribute,
+            bool isBufferElement = false)
         {
             this.Symbol = symbol;
             this.ComponentTypeSymbol = componentType;
@@ -175,6 +192,7 @@ namespace BovineLabs.FacetGenerator
             this.IsOptional = isOptional;
             this.IsReadOnly = isReadOnly;
             this.HasReadOnlyAttribute = hasReadOnlyAttribute;
+            this.IsBufferElement = isBufferElement;
             this.FieldTypeName = symbol.Type.ToDisplayString(FacetGenerator.ShortTypeFormat);
             this.ComponentTypeName = componentType.ToDisplayString(FacetGenerator.ShortTypeFormat);
             this.ArgumentName = this.FieldName is "entity" or "facet" ? $"{this.FieldName}Value" : this.FieldName;
@@ -192,6 +210,8 @@ namespace BovineLabs.FacetGenerator
 
         public bool HasReadOnlyAttribute { get; }
 
+        public bool IsBufferElement { get; }
+
         public bool IsEntity => this.Kind == FacetFieldKind.Entity;
 
         public bool IsEntityStorageInfo => this.Kind == FacetFieldKind.EntityStorageInfo;
@@ -206,7 +226,11 @@ namespace BovineLabs.FacetGenerator
 
         public bool IsBuffer => this.Kind == FacetFieldKind.DynamicBuffer;
 
-        public bool IsEnabled => this.Kind == FacetFieldKind.EnabledRefRW || this.Kind == FacetFieldKind.EnabledRefRO;
+        public bool UsesBufferStorage => this.IsBuffer || this.IsBufferElement;
+
+        public bool IsEnabled =>
+            this.Kind == FacetFieldKind.FacetEnabledRefRW ||
+            this.Kind == FacetFieldKind.EnabledRefRO;
 
         public bool IsFacet => this.Kind == FacetFieldKind.Facet;
 
@@ -289,7 +313,7 @@ namespace BovineLabs.FacetGenerator
                         ? this.FieldTypeName
                     : this.IsEntity
                         ? this.ComponentTypeName
-                        : this.IsBuffer
+                        : this.UsesBufferStorage
                             ? $"BufferLookup<{this.ComponentTypeName}>"
                             : $"ComponentLookup<{this.ComponentTypeName}>";
 
@@ -361,7 +385,7 @@ namespace BovineLabs.FacetGenerator
                         ? this.FieldTypeName
                     : this.IsEntity
                         ? "EntityTypeHandle"
-                        : this.IsBuffer
+                        : this.UsesBufferStorage
                             ? $"BufferTypeHandle<{this.ComponentTypeName}>"
                             : $"ComponentTypeHandle<{this.ComponentTypeName}>";
 

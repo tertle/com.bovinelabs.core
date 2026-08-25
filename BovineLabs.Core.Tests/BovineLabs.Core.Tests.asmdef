@@ -1,11 +1,10 @@
-﻿{
+{
   "name": "BovineLabs.Core.Tests",
   "rootNamespace": "",
   "references": [
     "BovineLabs.Core",
+    "BovineLabs.Core.Authoring",
     "BovineLabs.Core.Editor",
-    "BovineLabs.Core.Extensions",
-    "BovineLabs.Core.Extensions.Authoring",
     "BovineLabs.Testing",
     "Unity.Burst",
     "Unity.Collections",
@@ -35,7 +34,7 @@
   "versionDefines": [
     {
       "name": "com.unity.netcode",
-      "expression": "",
+      "expression": "6.7.0",
       "define": "UNITY_NETCODE"
     },
     {

@@ -2,7 +2,7 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if !UNITY_EDITOR && BL_DEBUG
+#if !UNITY_EDITOR && UNITY_INCLUDE_INSTRUMENTATION
 namespace BovineLabs.Core
 {
     using Unity.Entities;

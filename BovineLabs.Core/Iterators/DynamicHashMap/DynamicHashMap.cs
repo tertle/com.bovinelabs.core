@@ -132,6 +132,15 @@ namespace BovineLabs.Core.Iterators
             this.helper->Clear();
         }
 
+        /// <summary> Removes all key-value pairs by visiting only active entries when the map is dense. </summary>
+        /// <remarks> Falls back to <see cref="Clear" /> if the map contains holes. Does not change the capacity. </remarks>
+        public readonly void ClearDense()
+        {
+            this.buffer.CheckWriteAccess();
+            this.RefCheck();
+            this.helper->ClearDense();
+        }
+
         /// <summary>
         /// Adds a new key-value pair.
         /// </summary>
@@ -168,18 +177,6 @@ namespace BovineLabs.Core.Iterators
 
             var idx = DynamicHashMapHelper<TKey>.AddUnique(this.buffer, ref this.helper, key);
             UnsafeUtility.WriteArrayElement(this.helper->Values, idx, item);
-        }
-
-        [Obsolete("Use GetOrAddRefUnsafe")]
-        public ref TValue GetOrAddRef(TKey key, TValue defaultValue = default)
-        {
-            return ref this.GetOrAddRefUnsafe(key, defaultValue);
-        }
-
-        [Obsolete("Use GetOrAddRefUnsafe")]
-        public ref TValue GetOrAddRef(TKey key, out bool add, TValue defaultValue = default)
-        {
-            return ref this.GetOrAddRefUnsafe(key, out add, defaultValue);
         }
 
         /// <summary>

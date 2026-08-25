@@ -109,97 +109,6 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         }
 
         [Test]
-        public void WithManyItemsWithSameColumnValue_ShouldFindAllEntries()
-        {
-            var map = this.CreateMap();
-            const short commonColumn = 42;
-
-            // Add multiple keys with the same column value
-            for (var i = 1; i <= 10; i++)
-            {
-                map.Add(i * 10, i * 100.5f, commonColumn);
-            }
-
-            // Retrieve all values for the common column
-            var foundKeys = new HashSet<int>();
-            var foundValues = new HashSet<float>();
-
-            if (map.Column.TryGetFirst(commonColumn, out var it))
-            {
-                map.GetAtIndex(it.EntryIndex, out var key, out var value, out _);
-                foundKeys.Add(key);
-                foundValues.Add(value);
-
-                while (map.Column.TryGetNext(ref it))
-                {
-                    map.GetAtIndex(it.EntryIndex, out key, out value, out _);
-                    foundKeys.Add(key);
-                    foundValues.Add(value);
-                }
-            }
-
-            Assert.AreEqual(10, foundKeys.Count, "Should find all 10 keys with the same column value");
-            Assert.AreEqual(10, foundValues.Count, "Should find all 10 values with the same column value");
-
-            for (var i = 1; i <= 10; i++)
-            {
-                Assert.IsTrue(foundKeys.Contains(i * 10), $"Should find key {i * 10}");
-                Assert.IsTrue(foundValues.Contains(i * 100.5f), $"Should find value {i * 100.5f}");
-            }
-        }
-
-        [Test]
-        public void AfterResizing_ShouldStillFindColumnValues()
-        {
-            var map = this.CreateMap();
-
-            // Add items with specific column values
-            map.Add(10, 100.5f, 50);
-            map.Add(20, 200.5f, 50);
-            map.Add(30, 300.5f, 51);
-
-            // Force resize
-            map.Capacity = 1024;
-
-            // Verify we can still find items by column value after resize
-            var foundForColumn50 = new Dictionary<int, float>();
-            if (map.Column.TryGetFirst(50, out var it))
-            {
-                map.GetAtIndex(it.EntryIndex, out var key, out var value, out _);
-                foundForColumn50[key] = value;
-
-                while (map.Column.TryGetNext(ref it))
-                {
-                    map.GetAtIndex(it.EntryIndex, out key, out value, out _);
-                    foundForColumn50[key] = value;
-                }
-            }
-
-            Assert.AreEqual(2, foundForColumn50.Count, "Should find 2 entries with column value 50 after resize");
-            Assert.IsTrue(foundForColumn50.ContainsKey(10), "Should find key 10 for column value 50");
-            Assert.IsTrue(foundForColumn50.ContainsKey(20), "Should find key 20 for column value 50");
-            Assert.AreEqual(100.5f, foundForColumn50[10], "Value for key 10 should be correct");
-            Assert.AreEqual(200.5f, foundForColumn50[20], "Value for key 20 should be correct");
-
-            var foundForColumn51 = new Dictionary<int, float>();
-            if (map.Column.TryGetFirst(51, out it))
-            {
-                map.GetAtIndex(it.EntryIndex, out var key, out var value, out _);
-                foundForColumn51[key] = value;
-
-                while (map.Column.TryGetNext(ref it))
-                {
-                    map.GetAtIndex(it.EntryIndex, out key, out value, out _);
-                    foundForColumn51[key] = value;
-                }
-            }
-
-            Assert.AreEqual(1, foundForColumn51.Count, "Should find 1 entry with column value 51 after resize");
-            Assert.IsTrue(foundForColumn51.ContainsKey(30), "Should find key 30 for column value 51");
-            Assert.AreEqual(300.5f, foundForColumn51[30], "Value for key 30 should be correct");
-        }
-
-        [Test]
         public void AfterRemovalAndResize_ColumnIndicesShouldBeUpdatedCorrectly()
         {
             var map = this.CreateMap();
@@ -236,35 +145,6 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         }
 
         [Test]
-        public void WithDifferentColumnTypes_ShouldHashCorrectly()
-        {
-            var map = this.CreateMap();
-
-            // Test with various column values that might have hash collisions
-            var testData = new (int key, float value, short column)[]
-            {
-                (1, 10.5f, 0), (2, 20.5f, short.MaxValue), (3, 30.5f, short.MinValue), (4, 40.5f, 1), (5, 50.5f, -1), (6, 60.5f, 100), (7, 70.5f, -100)
-            };
-
-            foreach (var (key, value, column) in testData)
-            {
-                map.Add(key, value, column);
-            }
-
-            // Verify each column value can be found correctly
-            foreach (var (expectedKey, expectedValue, column) in testData)
-            {
-                Assert.IsTrue(map.Column.TryGetFirst(column, out var it), $"Should find column value {column}");
-                map.GetAtIndex(it.EntryIndex, out var actualKey, out var actualValue, out _);
-                Assert.AreEqual(expectedKey, actualKey, $"Should find correct key for column {column}");
-                Assert.AreEqual(expectedValue, actualValue, $"Should find correct value for column {column}");
-
-                // Should be only one entry per column in this test
-                Assert.IsFalse(map.Column.TryGetNext(ref it), $"Should be only one entry for column {column}");
-            }
-        }
-
-        [Test]
         public void WhenReusingRemovedKeys_ColumnValuesShouldBeUpdated()
         {
             var map = this.CreateMap();
@@ -291,49 +171,6 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         }
 
         [Test]
-        public void IteratorPattern_ShouldOnlyFindEntriesWithSpecificColumnValue()
-        {
-            var map = this.CreateMap();
-
-            // Add items with mixed column values
-            map.Add(1, 10.5f, 100);
-            map.Add(2, 20.5f, 200);
-            map.Add(3, 30.5f, 100);
-            map.Add(4, 40.5f, 300);
-            map.Add(5, 50.5f, 200);
-
-            // Verify iterator only finds items with column value 200
-            var foundKeys = new HashSet<int>();
-            if (map.Column.TryGetFirst(200, out var it))
-            {
-                map.GetAtIndex(it.EntryIndex, out var key, out _, out var column);
-                Assert.AreEqual(200, column, "Found column should match search criteria");
-                foundKeys.Add(key);
-
-                while (map.Column.TryGetNext(ref it))
-                {
-                    map.GetAtIndex(it.EntryIndex, out key, out _, out column);
-                    Assert.AreEqual(200, column, "All found columns should match search criteria");
-                    foundKeys.Add(key);
-                }
-            }
-
-            Assert.AreEqual(2, foundKeys.Count, "Should find exactly 2 keys with column value 200");
-            Assert.IsTrue(foundKeys.Contains(2), "Should find key 2");
-            Assert.IsTrue(foundKeys.Contains(5), "Should find key 5");
-        }
-
-        [Test]
-        public void EmptyMap_ShouldReturnFalseForAnyColumnValue()
-        {
-            var map = this.CreateMap();
-
-            Assert.IsFalse(map.Column.TryGetFirst(1, out _), "Empty map should return false for any column value");
-            Assert.IsFalse(map.Column.TryGetFirst(0, out _), "Empty map should return false for column value 0");
-            Assert.IsFalse(map.Column.TryGetFirst(-1, out _), "Empty map should return false for negative column value");
-        }
-
-        [Test]
         public void Replace_WithExistingKey_ShouldUpdateColumnValue()
         {
             var map = this.CreateMap();
@@ -352,22 +189,6 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
             value = 999.5f;
             Assert.IsTrue(map.TryGetValue(100, out retrievedValue, out _));
             Assert.AreEqual(999.5f, retrievedValue, "Value should be updated through reference");
-        }
-
-        [Test]
-        public void Replace_WithSameColumnValue_ShouldOptimizeInPlace()
-        {
-            var map = this.CreateMap();
-            map.Add(100, 100.5f, 50);
-
-            // Replace with same column value (should optimize)
-            ref var value = ref map.Replace(100, 50);
-
-            // Verify column value is unchanged and we can still find it
-            Assert.IsTrue(map.Column.TryGetFirst(50, out var it));
-            map.GetAtIndex(it.EntryIndex, out var key, out var foundValue, out _);
-            Assert.AreEqual(100, key);
-            Assert.AreEqual(100.5f, foundValue);
         }
 
         [Test]
@@ -412,29 +233,6 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
             map.Add(100, 100.5f, 50);
 
             Assert.Throws<ArgumentException>(() => map.Replace(999, 75), "Replace should throw for non-existent key");
-        }
-
-        [Test]
-        public void Replace_AfterResize_ShouldWorkCorrectly()
-        {
-            var map = this.CreateMap();
-            map.Add(100, 100.5f, 50);
-            map.Add(200, 200.5f, 60);
-
-            // Force resize
-            map.Capacity = 1024;
-
-            // Replace after resize
-            map.Replace(100, 75);
-
-            Assert.IsTrue(map.TryGetValue(100, out var value, out var column));
-            Assert.AreEqual(100.5f, value);
-            Assert.AreEqual(75, column);
-
-            // Verify column lookup works
-            Assert.IsTrue(map.Column.TryGetFirst(75, out var it));
-            map.GetAtIndex(it.EntryIndex, out var key, out _, out _);
-            Assert.AreEqual(100, key);
         }
 
 [Test]

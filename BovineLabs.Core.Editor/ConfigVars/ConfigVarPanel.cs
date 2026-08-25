@@ -1,4 +1,4 @@
-﻿// <copyright file="ConfigVarPanel.cs" company="BovineLabs">
+// <copyright file="ConfigVarPanel.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -9,7 +9,6 @@ namespace BovineLabs.Core.Editor.ConfigVars
     using System.Linq;
     using System.Reflection;
     using BovineLabs.Core.ConfigVars;
-    using BovineLabs.Core.Editor.Settings;
     using Unity.Burst;
     using Unity.Collections;
     using UnityEditor;
@@ -17,85 +16,133 @@ namespace BovineLabs.Core.Editor.ConfigVars
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    /// <summary> A panel that draws a collection of config vars. </summary>
-    public sealed class ConfigVarPanel : ISettingsPanel
+    /// <summary> Draws config vars in a grouped single-column list. </summary>
+    public sealed class ConfigVarPanel
     {
+        private const string GroupClassName = "config-var-group";
+        private const string GroupHeaderClassName = "config-var-group__header";
+        private const string GroupNameClassName = "config-var-group__name";
+        private const string RowClassName = "config-var__row";
         private const string FieldClassName = "config-var__field";
+        private const string FieldLabelClassName = "config-var__field-label";
+        private const string EmptyClassName = "config-var__empty";
         private const string HighlightClassName = "search";
         private const string ReadOnlyClassName = "config-var__readonly";
 
-        /// <summary> Initializes a new instance of the <see cref="ConfigVarPanel" /> class. </summary>
-        /// <param name="displayName"> The display name of the panel. </param>
-        public ConfigVarPanel(string displayName)
+        private readonly List<ConfigVarEntry> configVars = new();
+        private readonly List<FieldState> fields = new();
+
+        /// <summary> Replaces the visible config vars rendered by this panel. </summary>
+        /// <param name="configVars"> The config vars discovered by <see cref="ConfigVarManager" />. </param>
+        internal void SetConfigVars(IEnumerable<(ConfigVarAttribute ConfigVar, FieldInfo Field)> configVars)
         {
-            this.DisplayName = displayName;
-        }
+            this.configVars.Clear();
+            this.fields.Clear();
 
-        /// <inheritdoc />
-        public string DisplayName { get; }
-
-        /// <inheritdoc/>
-        public string GroupName => this.DisplayName;
-
-        /// <inheritdoc/>
-        public bool IsEmpty => false;
-
-        /// <summary> Gets a list of all the config vars this panel draws. </summary>
-        internal List<(ConfigVarAttribute ConfigVar, FieldInfo FieldInfo)> ConfigVars { get; } = new();
-
-        private List<(ConfigVarAttribute ConfigVar, VisualElement Field)> Fields { get; } = new();
-
-        /// <inheritdoc />
-        public void OnActivate(string searchContext, VisualElement rootElement)
-        {
-            // Matching the display name should show everything
-            var allMatch = string.IsNullOrWhiteSpace(searchContext);
-
-            foreach (var (attribute, fieldInfo) in this.ConfigVars)
+            foreach (var (configVar, fieldInfo) in configVars)
             {
-                var readOnly = attribute.IsReadOnly && EditorApplication.isPlaying;
-                var field = CreateVisualElement(attribute, fieldInfo);
+                if (configVar.IsHidden)
+                {
+                    continue;
+                }
 
-                field.AddToClassList(FieldClassName);
-                var shouldHighlight = !allMatch && MatchesSearchContext(attribute.Name, searchContext);
-                field.EnableInClassList(HighlightClassName, shouldHighlight);
-                field.EnableInClassList(ReadOnlyClassName, readOnly);
-
-                this.Fields.Add((attribute, field));
-                rootElement.Add(field);
+                this.configVars.Add(new ConfigVarEntry(configVar, fieldInfo));
             }
 
-            EditorApplication.playModeStateChanged += this.OnPlayModeStateChanged;
-            this.OnPlayModeStateChanged(EditorApplication.isPlaying ? PlayModeStateChange.EnteredPlayMode : PlayModeStateChange.EnteredEditMode);
+            this.configVars.Sort(CompareEntries);
         }
 
-        /// <inheritdoc />
-        public void OnDeactivate()
+        /// <summary> Renders matching config vars into the provided root. </summary>
+        /// <param name="searchContext"> Search text used to filter names, groups, and descriptions. </param>
+        /// <param name="rootElement"> The root element to fill. </param>
+        internal void Render(string searchContext, VisualElement rootElement)
         {
-            this.Fields.Clear();
+            rootElement.Clear();
+            this.fields.Clear();
 
-            EditorApplication.playModeStateChanged -= this.OnPlayModeStateChanged;
+            var filter = searchContext?.Trim() ?? string.Empty;
+            var matching = this.configVars.Where(c => c.Matches(filter)).ToList();
+
+            if (matching.Count == 0)
+            {
+                var empty = new Label("No config vars match the current search.");
+                empty.AddToClassList(EmptyClassName);
+                rootElement.Add(empty);
+                return;
+            }
+
+            foreach (var group in matching.GroupBy(c => c.GroupName))
+            {
+                var groupRoot = new VisualElement();
+                groupRoot.AddToClassList(GroupClassName);
+                rootElement.Add(groupRoot);
+
+                groupRoot.Add(CreateHeader(group.Key, GroupMatchesSearch(group.Key, filter)));
+
+                foreach (var entry in group)
+                {
+                    groupRoot.Add(this.CreateRow(entry, filter));
+                }
+            }
+
+            this.UpdatePlayModeState();
         }
 
-        /// <inheritdoc />
-        bool ISettingsPanel.MatchesFilter(string searchContext, bool allowEmpty)
+        internal void OnDeactivate()
         {
-            if (!allowEmpty && this.IsEmpty)
-            {
-                return false;
-            }
+            this.fields.Clear();
+        }
 
-            if (string.IsNullOrEmpty(searchContext))
+        internal void UpdatePlayModeState()
+        {
+            var isPlaying = EditorApplication.isPlaying;
+            foreach (var field in this.fields)
             {
-                return true;
+                UpdateState(field.Row, field.Field, field.ConfigVar, isPlaying);
             }
+        }
 
-            return this.ConfigVars.Any(s => MatchesSearchContext(s.ConfigVar.Name, searchContext));
+        private static int CompareEntries(ConfigVarEntry x, ConfigVarEntry y)
+        {
+            var group = string.Compare(x.GroupName, y.GroupName, StringComparison.Ordinal);
+            return group != 0 ? group : string.Compare(x.ConfigVar.Name, y.ConfigVar.Name, StringComparison.Ordinal);
+        }
+
+        private static VisualElement CreateHeader(string groupName, bool highlight)
+        {
+            var header = new VisualElement();
+            header.AddToClassList(GroupHeaderClassName);
+            header.EnableInClassList(HighlightClassName, highlight);
+
+            var name = new Label(groupName);
+            name.AddToClassList(GroupNameClassName);
+            header.Add(name);
+
+            return header;
+        }
+
+        private VisualElement CreateRow(ConfigVarEntry entry, string filter)
+        {
+            var row = new VisualElement();
+            row.AddToClassList(RowClassName);
+            row.EnableInClassList(HighlightClassName, !string.IsNullOrWhiteSpace(filter));
+
+            var field = CreateVisualElement(entry.ConfigVar, entry.FieldInfo);
+            field.AddToClassList(FieldClassName);
+            row.Add(field);
+
+            this.fields.Add(new FieldState(entry.ConfigVar, row, field));
+            return row;
+        }
+
+        private static bool GroupMatchesSearch(string groupName, string searchContext)
+        {
+            return !string.IsNullOrWhiteSpace(searchContext) && MatchesSearchContext(groupName, searchContext);
         }
 
         private static bool MatchesSearchContext(string s, string searchContext)
         {
-            return s.IndexOf(searchContext, StringComparison.InvariantCultureIgnoreCase) >= 0;
+            return !string.IsNullOrEmpty(s) && s.IndexOf(searchContext, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
 
         private static VisualElement CreateVisualElement(ConfigVarAttribute configVar, FieldInfo field)
@@ -126,7 +173,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
         }
 
         private static BaseField<string> SetupTextField<T>(ConfigVarAttribute configVar, SharedStatic<T> sharedStatic)
-            where T : unmanaged, IEquatable<T>
+            where T : unmanaged
         {
             var field = new TextField();
             return SetupField(field, configVar, new ConfigVarStringBinding<T>(field, configVar, sharedStatic));
@@ -150,34 +197,66 @@ namespace BovineLabs.Core.Editor.ConfigVars
             return SetupField(field, configVar, new ConfigVarRectBinding(field, configVar, sharedStatic));
         }
 
-
         private static BaseField<T> SetupField<T>(BaseField<T> field, ConfigVarAttribute configVar, IConfigVarBinding<T> binding)
         {
             field.binding = binding;
             field.label = configVar.Name;
+            field.labelElement.AddToClassList(FieldLabelClassName);
             field.tooltip = configVar.Description;
             field.value = binding.Value;
             return field;
         }
 
-        private static void UpdateState(VisualElement field, ConfigVarAttribute configVar, bool isPlaying)
+        private static void UpdateState(VisualElement row, VisualElement field, ConfigVarAttribute configVar, bool isPlaying)
         {
             var isEnabled = !configVar.IsReadOnly || !isPlaying;
             field.SetEnabled(isEnabled);
-            field.EnableInClassList(ReadOnlyClassName, !isEnabled);
+            row.EnableInClassList(ReadOnlyClassName, !isEnabled);
         }
 
-        private void OnPlayModeStateChanged(PlayModeStateChange state)
+        private readonly struct FieldState
         {
-            if (state is not (PlayModeStateChange.EnteredEditMode or PlayModeStateChange.EnteredPlayMode))
+            public FieldState(ConfigVarAttribute configVar, VisualElement row, VisualElement field)
             {
-                return;
+                this.ConfigVar = configVar;
+                this.Row = row;
+                this.Field = field;
             }
 
-            var isPlaying = EditorApplication.isPlaying;
-            foreach (var (configVar, field) in this.Fields)
+            public ConfigVarAttribute ConfigVar { get; }
+
+            public VisualElement Row { get; }
+
+            public VisualElement Field { get; }
+        }
+
+        private readonly struct ConfigVarEntry
+        {
+            public ConfigVarEntry(ConfigVarAttribute configVar, FieldInfo fieldInfo)
             {
-                UpdateState(field, configVar, isPlaying);
+                this.ConfigVar = configVar;
+                this.FieldInfo = fieldInfo;
+                this.GroupName = GetGroupName(configVar.Name);
+            }
+
+            public ConfigVarAttribute ConfigVar { get; }
+
+            public FieldInfo FieldInfo { get; }
+
+            public string GroupName { get; }
+
+            public bool Matches(string searchContext)
+            {
+                return string.IsNullOrWhiteSpace(searchContext)
+                       || MatchesSearchContext(this.ConfigVar.Name, searchContext)
+                       || MatchesSearchContext(this.ConfigVar.Description, searchContext)
+                       || MatchesSearchContext(this.GroupName, searchContext);
+            }
+
+            private static string GetGroupName(string configVarName)
+            {
+                var separator = configVarName.IndexOf('.');
+                return separator <= 0 ? "ungrouped" : configVarName.Substring(0, separator);
             }
         }
     }

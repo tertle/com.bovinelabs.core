@@ -9,7 +9,6 @@ namespace BovineLabs.Core.Collections
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
     using Unity.Mathematics;
-    using UnityEngine.Assertions;
 
     /// <summary> A thread safe random. As it's thread based it should not be used for anything requiring determinism. </summary>
     public unsafe struct ThreadRandom

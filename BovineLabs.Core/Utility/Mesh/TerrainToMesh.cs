@@ -3,7 +3,10 @@
 // </copyright>
 
 #if UNITY_TERRAIN
-// Modified version of com.unity.rendering.light-transport\Runtime\UnifiedRayTracing\Common\TerrainToMesh.cs
+// Contains modified code from com.unity.render-pipelines.core/Runtime/UnifiedRayTracing/Common/TerrainToMesh.cs.
+// com.unity.render-pipelines.core copyright © 2020 Unity Technologies ApS.
+// Licensed under the Unity Companion License for Unity-dependent projects:
+// https://unity.com/legal/licenses/unity-companion-license
 namespace BovineLabs.Core.Utility
 {
     using System;

@@ -43,7 +43,7 @@ namespace BovineLabs.Core.ConfigVars
 
         private static Rect Vector4ToRect(Vector4 v4)
         {
-            return new Rect(v4.x, v4.y, v4.z, v4.y);
+            return new Rect(v4.x, v4.y, v4.z, v4.w);
         }
     }
 }

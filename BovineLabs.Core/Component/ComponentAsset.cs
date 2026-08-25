@@ -4,17 +4,28 @@
 
 namespace BovineLabs.Core
 {
-    using BovineLabs.Core.PropertyDrawers;
+    using System;
+    using Unity.Entities;
     using UnityEngine;
 
     [CreateAssetMenu(menuName = "BovineLabs/Components/Component", fileName = "Component")]
-    public class ComponentAsset : ComponentAssetBase
+    public class ComponentAsset : TypeAsset
     {
-        [SerializeField]
-        [StableTypeHash(
-            StableTypeHashAttribute.TypeCategory.BufferData | StableTypeHashAttribute.TypeCategory.ComponentData, AllowEditorAssemblies = false)]
-        private ulong component;
+        public ulong GetStableTypeHash()
+        {
+            var typeIndex = TypeManager.GetTypeIndex(this.ResolveType());
+            return TypeManager.GetTypeInfo(typeIndex).StableTypeHash;
+        }
 
-        protected override ulong Component => this.component;
+        public override Type ResolveType()
+        {
+            var type = base.ResolveType();
+            this.ValidateType(TypeManager.GetTypeIndex(type));
+            return type;
+        }
+
+        protected virtual void ValidateType(TypeIndex typeIndex)
+        {
+        }
     }
 }

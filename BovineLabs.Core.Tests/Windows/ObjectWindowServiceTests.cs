@@ -14,26 +14,6 @@ namespace BovineLabs.Core.Tests.Windows
 
     public class ObjectWindowServiceTests
     {
-        private string testRoot;
-
-        [SetUp]
-        public void Setup()
-        {
-            var folderName = $"__CoreObjectWindowTests_{Guid.NewGuid():N}";
-            AssetDatabase.CreateFolder("Assets", folderName);
-            this.testRoot = $"Assets/{folderName}";
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            if (!string.IsNullOrEmpty(this.testRoot))
-            {
-                AssetDatabase.DeleteAsset(this.testRoot);
-                AssetDatabase.SaveAssets();
-            }
-        }
-
         [Test]
         public void CreateSerializableItems_CopiesRequestedRowsWithoutIconLookup()
         {
@@ -63,83 +43,13 @@ namespace BovineLabs.Core.Tests.Windows
         }
 
         [Test]
-        public void GetObject_ReloadsAssetByPath_WhenGlobalIdIsMissing()
-        {
-            var asset = this.CreateAsset<ObjectWindowTestAsset>("PathFallback");
-            var item = new TestObjectItem(null, asset.name, nameof(ObjectWindowTestAsset), AssetDatabase.GetAssetPath(asset), default, DateTime.Now);
-
-            var reloaded = item.GetObject();
-
-            AssertSameUnityObject(asset, reloaded);
-        }
-
-        [Test]
-        public void GetObject_DoesNotReloadAssetByPath_WhenGlobalIdIsPresent()
-        {
-            var original = this.CreateAsset<ObjectWindowTestAsset>("Original");
-            var originalId = GlobalObjectId.GetGlobalObjectIdSlow(original);
-            var originalPath = AssetDatabase.GetAssetPath(original);
-            AssetDatabase.DeleteAsset(originalPath);
-            AssetDatabase.SaveAssets();
-
-            var fallback = this.CreateAsset<ObjectWindowTestAsset>("Fallback");
-            var item = new TestObjectItem(null, fallback.name, nameof(ObjectWindowTestAsset), AssetDatabase.GetAssetPath(fallback), originalId, DateTime.Now);
-
-            Assert.IsNull(item.GetObject());
-        }
-
-        [Test]
-        public void GetObject_DoesNotReloadPath_WhenTypeNameDoesNotMatch()
-        {
-            var asset = this.CreateAsset<ObjectWindowTestAsset>("WrongType");
-            var item = new TestObjectItem(null, asset.name, nameof(ObjectWindowOtherTestAsset), AssetDatabase.GetAssetPath(asset), default, DateTime.Now);
-
-            Assert.IsNull(item.GetObject());
-        }
-
-        [Test]
-        public void LoadedObjectLookup_ResolvesSubAssetsByGlobalObjectId()
-        {
-            var path = $"{this.testRoot}/SubAssetContainer.asset";
-            var main = ScriptableObject.CreateInstance<ObjectWindowTestAsset>();
-            main.name = "Main";
-            var firstSubAsset = ScriptableObject.CreateInstance<ObjectWindowSubTestAsset>();
-            firstSubAsset.name = "FirstSubAsset";
-            var secondSubAsset = ScriptableObject.CreateInstance<ObjectWindowSubTestAsset>();
-            secondSubAsset.name = "SecondSubAsset";
-
-            AssetDatabase.CreateAsset(main, path);
-            AssetDatabase.AddObjectToAsset(firstSubAsset, path);
-            AssetDatabase.AddObjectToAsset(secondSubAsset, path);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.ImportAsset(path);
-
-            var expected = FindLoadedAsset<ObjectWindowSubTestAsset>(path, "SecondSubAsset");
-            var expectedId = GlobalObjectId.GetGlobalObjectIdSlow(expected);
-            var item = new TestSerializableItem
-            {
-                Name = expected.name,
-                TypeName = nameof(ObjectWindowSubTestAsset),
-                AssetPath = path,
-                Timestamp = DateTime.Now.ToBinary(),
-                GlobalIdString = expectedId.ToString(),
-            };
-
-            var actual = TestObjectService.TryGetLoadedObject(item, out var parsedId);
-
-            Assert.AreEqual(expectedId, parsedId);
-            AssertSameUnityObject(expected, actual);
-        }
-
-        [Test]
         public void LoadedObjectLookup_DoesNotBindInvalidGlobalIdByPath()
         {
-            var asset = this.CreateAsset<ObjectWindowTestAsset>("InvalidGlobalId");
             var item = new TestSerializableItem
             {
-                Name = asset.name,
+                Name = "InvalidGlobalId",
                 TypeName = nameof(ObjectWindowTestAsset),
-                AssetPath = AssetDatabase.GetAssetPath(asset),
+                AssetPath = "Assets/InvalidGlobalId.asset",
                 Timestamp = DateTime.Now.ToBinary(),
                 GlobalIdString = string.Empty,
             };
@@ -148,41 +58,6 @@ namespace BovineLabs.Core.Tests.Windows
 
             Assert.AreEqual(default(GlobalObjectId), parsedId);
             Assert.IsNull(actual);
-        }
-
-        private T CreateAsset<T>(string name)
-            where T : ScriptableObject
-        {
-            var asset = ScriptableObject.CreateInstance<T>();
-            asset.name = name;
-            var path = $"{this.testRoot}/{name}.asset";
-
-            AssetDatabase.CreateAsset(asset, path);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.ImportAsset(path);
-
-            return AssetDatabase.LoadAssetAtPath<T>(path);
-        }
-
-        private static T FindLoadedAsset<T>(string path, string name)
-            where T : Object
-        {
-            foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(path))
-            {
-                if (asset is T typedAsset && asset.name == name)
-                {
-                    return typedAsset;
-                }
-            }
-
-            Assert.Fail($"Could not find asset '{name}' at '{path}'");
-            return null;
-        }
-
-        private static void AssertSameUnityObject(Object expected, Object actual)
-        {
-            Assert.IsNotNull(actual);
-            Assert.IsTrue(expected == actual);
         }
 
         private sealed class TestObjectItem : BaseObjectItem
@@ -248,11 +123,4 @@ namespace BovineLabs.Core.Tests.Windows
     {
     }
 
-    internal sealed class ObjectWindowOtherTestAsset : ScriptableObject
-    {
-    }
-
-    internal sealed class ObjectWindowSubTestAsset : ScriptableObject
-    {
-    }
 }

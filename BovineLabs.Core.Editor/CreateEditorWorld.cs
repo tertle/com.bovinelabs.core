@@ -7,20 +7,18 @@ namespace BovineLabs.Core.Editor
 {
     using System.Threading.Tasks;
     using Unity.Entities;
-    using UnityEditor;
+    using UnityEditor.Scripting.LifecycleManagement;
 
-    internal static class CreateEditorWorld
+    internal static partial class CreateEditorWorld
     {
-        internal static async Task Initialize()
+        [OnEnteringEditMode]
+        private static void Initialize()
         {
-            EditorApplication.playModeStateChanged += change =>
-            {
-                if (change == PlayModeStateChange.EnteredEditMode)
-                {
-                    DefaultWorldInitialization.DefaultLazyEditModeInitialize();
-                }
-            };
+            _ = InitializeInternal();
+        }
 
+        private static async Task InitializeInternal()
+        {
             await Task.Yield();
 
             DefaultWorldInitialization.DefaultLazyEditModeInitialize();

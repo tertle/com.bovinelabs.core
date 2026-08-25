@@ -6,11 +6,11 @@ namespace BovineLabs.Core.Utility
 {
     using System;
     using System.Runtime.InteropServices;
-    using Unity;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
+    using Unity.Scripting.LifecycleManagement;
 
     /// <summary>
     /// A pooled wrapper around NativeList that reuses allocated memory across instances to reduce allocation pressure.
@@ -129,29 +129,21 @@ namespace BovineLabs.Core.Utility
         }
     }
 
-    internal static unsafe class PooledNativeList
+    internal static unsafe partial class PooledNativeList
     {
         internal const int MaxPoolSizePerThread = 8;
         internal static readonly SharedStatic<Data> Pool = SharedStatic<Data>.GetOrCreate<Data>();
 
-        /// <summary>
-        /// Initializes the global pool data structure used by all PooledNativeList instances.
-        /// </summary>
-        /// <remarks>
-        /// This method is called automatically during Unity initialization and should not be called manually.
-        /// Creates thread-local storage for each worker thread to avoid contention.
-        /// </remarks>
-#if !UNITY_EDITOR
-        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
-#endif
-        public static void Initialize()
+        [OnCodeLoaded]
+        private static void Initialize()
         {
-            if (Pool.Data.IsCreated)
-            {
-                return;
-            }
+            Pool.Data = new Data(Allocator.Persistent);
+        }
 
-            Pool.Data = new Data(Allocator.Domain);
+        [OnCodeUnloading]
+        private static void Shutdown()
+        {
+            Pool.Data.Dispose();
         }
 
         internal struct Data

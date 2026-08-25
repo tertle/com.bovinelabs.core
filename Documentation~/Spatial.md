@@ -1,9 +1,24 @@
-﻿# Spatial
-## Summary
-Spatial provides a very fast to generate spatial hashmap designed to be used when it needs to be rebuilt every frame.
-It is extremely fast to build while still providing excellent speeds for finding nearest neighbours.
+# Spatial maps
 
-Spatial map requires a type of ISpatialPosition 
+The spatial maps rebuild a broad-phase lookup from a flat array of positions. They store the index of each input element, so a query can use the same index to read a parallel entity or component array.
+
+```csharp
+using BovineLabs.Core.Spatial;
+```
+
+## Choosing a map
+
+| Requirement | Type | Query shape |
+|---|---|---|
+| Simple rectangular cell scan | `SpatialMap<T>` | Quantized square-grid bounds |
+| Circular searches with less corner overdraw | `SpatialHexMap<T>` | Axial hex rings |
+| Full 3D cell scan | `SpatialMap3<T>` | Quantized cubic-grid bounds |
+| Dense integer-key buckets with native safety | `SpatialKeyedMap<T>` | Quantized square-grid bounds |
+| Borrow and return position values directly | `LocalSpatialMap<T>` | Quantized square-grid bounds |
+
+These maps are intended for data that changes often and can be rebuilt before their readers run. They are broad-phase structures: always perform the exact distance or overlap test after retrieving candidates.
+
+`T` must be unmanaged and implement `ISpatialPosition`:
 
 ```csharp
 public interface ISpatialPosition
@@ -12,93 +27,192 @@ public interface ISpatialPosition
 }
 ```
 
-Core provides two 2D spatial map variants:
+Core's `SpatialPosition` stores a `float3` and exposes its `xz` coordinates through `ISpatialPosition`.
 
-- `SpatialMap<T>` for square-grid broad-phase queries
-- `HexSpatialMap<T>` for hex-grid broad-phase queries
+## Construction and ownership
 
-## Position Builder
-If you're just dealing with LocalTransform you can use the built in PositionBuilder efficiently convert LocalTransform into a SpatialPosition array for SpatialMap for you.
+The constructor order is `quantizeStep`, then `size`:
 
-## Params
-
-| Param        | Description                                                                                                                                             |
-|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Size| How big the world is. For example a value of 4096 means 4096x4096 or -2048 to 2048                                                                      |
-| QuantizeStep | The size of the chunks to break the world up into. A value of 16 for a size of 4096 means you'll have quantized size of 4096/16 = 256 (256 x 256 cells) |
-
-## Memory Usage
-Memory usage of the spatial map is defined by the quantizeSize squared, where quantizeSize is defined as size / quantizeStep;
-
-For reasonable size worlds memory usage remains quite small.
-However it's important to note if you have a very large world and a small quantizeStep this will explode.
-You can still use this on large worlds, you just need to use a reasonable step.
-
-Example of the explosion and a reasonable step
-
-`size = 8192, quantizeStep = 16. Memory usage is 1MB`
-
-`size = 262144, quantizeStep = 16. Memory usage is 1GB`
-
-`size = 262144, quantizeStep = 128. Memory usage is 4MB`
-
-## Dealing with Burst and Generics
-As SpatialMap is generic and contains generic jobs, burst generally does not like compiling this and you usually need to add a bunch of `[RegisterGenericJobType(typeof(T))]`.
-
-However I find this annoying and as a workaround the jobs have been included as optional parameters in the Build method.
 ```csharp
-public JobHandle Build(NativeArray<T> positions, JobHandle dependency, ResizeNativeKeyedMapJob resizeStub = default, QuantizeJob quantizeStub = default)
-```
-Therefore when using this method these parameters can be ignored. Only the positions and dependency need to be set.
-
-`HexSpatialMap<T>` follows the same build pattern:
-```csharp
-public JobHandle Build(NativeArray<T> positions, JobHandle dependency, ResizeNativeParallelHashMapJob resizeStub = default, QuantizeJob quantizeStub = default)
+var square = new SpatialMap<SpatialPosition>(quantizeStep: 16, size: 4096);
+var hex = new SpatialHexMap<SpatialPosition>(quantizeStep: 16, size: 4096);
 ```
 
-## HexSpatialMap
-`HexSpatialMap<T>` is intended for the same "rebuild every frame" broad-phase workflow, but stores entities in axial hex cells.
+- `size` is the width and height of a square world centered on the origin.
+- `quantizeStep` controls cell spacing. Smaller cells reduce candidates per cell but increase the number of cells a large query must visit.
+- The optional allocator defaults to `Allocator.Persistent`. The owner must call `Dispose()` after all map jobs complete.
+- Memory is driven primarily by the number of input positions and the native hash-map capacity. The configured world is not allocated as a dense `size / quantizeStep` grid.
+- Input positions must remain inside the configured world. Out-of-bounds positions are unsupported; checks/debug builds diagnose relevant bounds failures.
+- Do not rebuild or dispose a map while jobs are still reading a previous build. Chain every build and reader through the owning system dependency.
 
-### Hex Params
+`Build(...)` accepts either `NativeArray<T>` or `NativeList<T>` and returns the handle for the resize, quantize, and bucket-rebuild jobs:
 
-| Param        | Description |
-|--------------|-------------|
-| Size | Square world size in world units, centered on origin |
-| QuantizeStep | Horizontal center-to-center spacing between adjacent hex cell centers |
+```csharp
+state.Dependency = this.spatialMap.Build(positions, state.Dependency);
+```
 
-Internally the hex map derives `outerRadius = quantizeStep / sqrt(3)`.
-The constructor computes a conservative rectangular axial bounds envelope that covers the configured square world and build-time validation throws in checks/debug builds if a position quantizes outside that envelope.
+The positions array and every parallel array indexed through the map must stay valid until all readers complete.
 
-### Hex Query Pattern
-Hex queries should use ring traversal instead of rectangular nested loops:
+## Other map variants
 
-1. Quantize the query position with `ReadOnly.Quantized(...)`
-2. Process the center cell
-3. Compute a conservative ring count with `ReadOnly.SearchRange(radius)`
-4. Walk rings using `ReadOnly.Direction(...)`
-5. Skip invalid cells with `ReadOnly.IsWithinBounds(...)`
-6. Use `ReadOnly.CellMinDistanceSq(...)` before reading `ReadOnly.Map`
+`SpatialMap3<T>` is the three-dimensional counterpart to `SpatialMap<T>`. Its element type implements `ISpatialPosition3`, its configured `size` describes a cube centered on the origin, and its read-only view quantizes `float3` cells into `long` hashes. It retains the input-index lookup model and input-count-driven hash-map capacity.
 
-### Hex Example
+`SpatialKeyedMap<T>` uses a `NativeKeyedMap<int>` instead of `NativeParallelMultiHashMap<int, int>`. It still returns input indices, but it allocates a direct bucket for every possible square-grid key. Its bucket memory therefore scales with `ceil(size / quantizeStep)^2`; use it only when that bounded grid is reasonably sized and direct integer-key buckets are desirable.
+
+`LocalSpatialMap<T>` uses an unsafe partial keyed map and returns the `T` values themselves. It borrows the positions storage passed to `Build` rather than copying the values, so that array or deferred list storage must not move or expire until every reader completes. Its bucket memory also scales with the square-grid cell count, it does not provide native-container safety handles, and it has only immediate `Dispose()`; complete its jobs before disposal.
+
+## Gathering `LocalTransform` positions
+
+`PositionBuilder` gathers `LocalTransform.Position` values in an `EntityQuery`'s base-entity-index order:
+
+```csharp
+private const int WorldSize = 4096;
+private const float QuantizeStep = 16;
+
+private EntityQuery query;
+private PositionBuilder positionBuilder;
+private SpatialMap<SpatialPosition> spatialMap;
+private int quantizedSize;
+
+public void OnCreate(ref SystemState state)
+{
+    this.query = new EntityQueryBuilder(Allocator.Temp)
+        .WithAll<LocalTransform>()
+        .Build(ref state);
+
+    this.positionBuilder = new PositionBuilder(ref state, this.query);
+    this.spatialMap = new SpatialMap<SpatialPosition>(QuantizeStep, WorldSize);
+    this.quantizedSize = (int)math.ceil(WorldSize / QuantizeStep);
+}
+
+public void OnDestroy(ref SystemState state)
+{
+    state.Dependency.Complete();
+    this.spatialMap.Dispose();
+}
+
+public void OnUpdate(ref SystemState state)
+{
+    state.Dependency = this.positionBuilder.Gather(ref state, state.Dependency, out NativeArray<SpatialPosition> positions);
+    var entities = this.query.ToEntityListAsync(state.WorldUpdateAllocator, state.Dependency, out var entityDependency);
+    state.Dependency = this.spatialMap.Build(positions, entityDependency);
+
+    state.Dependency = new FindNeighboursJob
+    {
+        Entities = entities.AsDeferredJobArray(),
+        Positions = positions,
+        Map = this.spatialMap.AsReadOnly(),
+        QuantizedSize = this.quantizedSize,
+    }.ScheduleParallel(state.Dependency);
+}
+```
+
+The query must not require enableable-component filtering; `PositionBuilder` asserts that no enabled mask is in use. Its output comes from the world's rewindable allocator and is temporary. Do not retain it across allocator rewinds. When candidates must resolve back to entities, gather them from the same query as shown so the parallel indices remain aligned.
+
+## Square-grid example
+
+`SpatialMap<T>.AsReadOnly()` returns `SpatialMap.ReadOnly`. Quantize a search AABB, clamp it to the configured grid, visit the cells, and then apply the exact test:
 
 ```csharp
 [BurstCompile]
-private struct HexQueryJob : IJobEntity
+private partial struct FindNeighboursJob : IJobEntity
 {
+    private const float Radius = 10;
+
+    [ReadOnly]
+    public NativeArray<Entity> Entities;
+
+    [ReadOnly]
+    public NativeArray<SpatialPosition> Positions;
+
+    [ReadOnly]
+    public SpatialMap.ReadOnly Map;
+
+    public int QuantizedSize;
+
+    private void Execute(Entity entity, in LocalTransform transform, DynamicBuffer<Neighbour> neighbours)
+    {
+        neighbours.Clear();
+
+        var lower = new int2(0);
+        var upper = new int2(this.QuantizedSize - 1);
+        var min = math.clamp(this.Map.Quantized(transform.Position.xz - Radius), lower, upper);
+        var max = math.clamp(this.Map.Quantized(transform.Position.xz + Radius), lower, upper);
+        var radiusSq = Radius * Radius;
+
+        for (var y = min.y; y <= max.y; y++)
+        {
+            for (var x = min.x; x <= max.x; x++)
+            {
+                var hash = this.Map.Hash(new int2(x, y));
+                if (!this.Map.Map.TryGetFirstValue(hash, out var item, out var iterator))
+                {
+                    continue;
+                }
+
+                do
+                {
+                    var otherEntity = this.Entities[item];
+                    if (otherEntity == entity)
+                    {
+                        continue;
+                    }
+
+                    var otherPosition = this.Positions[item].Position;
+                    if (math.distancesq(transform.Position.xz, otherPosition.xz) <= radiusSq)
+                    {
+                        neighbours.Add(new Neighbour { Entity = otherEntity });
+                    }
+                }
+                while (this.Map.Map.TryGetNextValue(out item, ref iterator));
+            }
+        }
+    }
+}
+
+public struct Neighbour : IBufferElementData
+{
+    public Entity Entity;
+}
+```
+
+Compute `QuantizedSize` with `(int)math.ceil(size / quantizeStep)` when the map is created. Clamping is important: hashing an out-of-grid square cell can alias a valid linearized cell.
+
+## Hex-grid queries
+
+The current hex types are `SpatialHexMap<T>`, the static `SpatialHexMap` helper, and `SpatialHexMap.ReadOnly`.
+
+For a hex map, `quantizeStep` is the horizontal center-to-center distance between adjacent cells. The implementation derives `outerRadius = quantizeStep / sqrt(3)` and computes conservative axial bounds around the configured square world.
+
+Use ring traversal for radius searches:
+
+1. Quantize the query position.
+2. Process the center cell.
+3. Get a conservative ring count with `SearchRange(radius)`.
+4. Walk each ring with `Direction(side)`.
+5. Reject cells outside the configured bounds.
+6. Use `CellMinDistanceSq(...)` to reject cells that cannot intersect the search circle.
+7. Apply the exact candidate distance test.
+
+```csharp
+[BurstCompile]
+private struct HexQueryJob : IJob
+{
+    public float2 Position;
     public float Radius;
 
     [ReadOnly]
     public NativeArray<SpatialPosition> Positions;
 
     [ReadOnly]
-    public HexSpatialMap.ReadOnly Map;
+    public SpatialHexMap.ReadOnly Map;
 
-    private void Execute(in LocalTransform localTransform)
+    public void Execute()
     {
+        var center = this.Map.Quantized(this.Position);
         var radiusSq = this.Radius * this.Radius;
-        var center = this.Map.Quantized(localTransform.Position.xz);
 
-        this.ProcessCell(center, localTransform.Position.xz, radiusSq);
+        this.ProcessCell(center, radiusSq);
 
         var ringCount = this.Map.SearchRange(this.Radius);
         for (var ring = 1; ring <= ringCount; ring++)
@@ -108,19 +222,18 @@ private struct HexQueryJob : IJobEntity
             for (var side = 0; side < 6; side++)
             {
                 var direction = this.Map.Direction(side);
-
                 for (var step = 0; step < ring; step++)
                 {
-                    this.ProcessCell(cell, localTransform.Position.xz, radiusSq);
+                    this.ProcessCell(cell, radiusSq);
                     cell += direction;
                 }
             }
         }
     }
 
-    private void ProcessCell(int2 cell, float2 position, float radiusSq)
+    private void ProcessCell(int2 cell, float radiusSq)
     {
-        if (!this.Map.IsWithinBounds(cell) || this.Map.CellMinDistanceSq(position, cell) > radiusSq)
+        if (!this.Map.IsWithinBounds(cell) || this.Map.CellMinDistanceSq(this.Position, cell) > radiusSq)
         {
             return;
         }
@@ -133,10 +246,9 @@ private struct HexQueryJob : IJobEntity
 
         do
         {
-            var otherPosition = this.Positions[item].Position;
-            if (math.distancesq(position, otherPosition) <= radiusSq)
+            if (math.distancesq(this.Position, this.Positions[item].Position.xz) <= radiusSq)
             {
-                // Handle candidate
+                // Process candidate index `item`.
             }
         }
         while (this.Map.Map.TryGetNextValue(out item, ref iterator));
@@ -144,120 +256,9 @@ private struct HexQueryJob : IJobEntity
 }
 ```
 
-## Example
-### Setup
+The static helper also exposes `Quantized`, `Center`, `Hash`, `Direction`, `SearchRange`, `IsWithinBounds`, and `CellMinDistanceSq` overloads when a map instance is not available.
 
-```csharp
-public partial struct TestSystem : ISystem
-{
-    private PositionBuilder positionBuilder;
-    private SpatialMap<SpatialPosition> spatialMap;
+## Related guides
 
-    public void OnCreate(ref SystemState state)
-    {
-        var query = SystemAPI.QueryBuilder().WithAll<LocalTransform>().Build();
-        this.positionBuilder = new PositionBuilder(ref state, query);
-
-        const int size = 4096;
-        const int quantizeStep = 16;
-
-        this.spatialMap = new SpatialMap<SpatialPosition>(quantizeStep, size);
-    }
-
-    public void OnDestroy(ref SystemState state)
-    {
-        this.spatialMap.Dispose();
-    }
-
-    [BurstCompile]
-    public void OnUpdate(ref SystemState state)
-    {
-        state.Dependency = this.positionBuilder.Gather(ref state, state.Dependency, out NativeArray<SpatialPosition> positions);
-        state.Dependency = this.spatialMap.Build(positions, state.Dependency);
-```
-
-At this point the jobs to build your spatial map have been scheduled and you can pass it to jobs to query it
-
-### Using the SpatialMap
-
-The follow example finds and store all other entities within 10 of each other
-
-```csharp
-        // The entities in this will match the indices from the spatial map
-        var entities = this.query.ToEntityListAsync(state.WorldUpdateAllocator, state.Dependency, out var dependency);
-        state.Dependency = dependency;
-
-        new TestJob
-            {
-                Entities = entities.AsDeferredJobArray(),
-                Positions = positions,
-                SpatialMap = this.spatialMap.AsReadOnly(),
-            }
-            .ScheduleParallel();
-    }
-
-    // Find and store all other entities within 10 of each other
-    [BurstCompile]
-    private partial struct TestJob : IJobEntity
-    {
-        private const float Radius = 10;
-
-        [ReadOnly]
-        public NativeArray<Entity> Entities;
-
-        [ReadOnly]
-        public NativeArray<SpatialPosition> Positions;
-
-        [ReadOnly]
-        public SpatialMap.ReadOnly SpatialMap;
-
-        private void Execute(Entity entity, in LocalTransform localTransform, DynamicBuffer<Neighbours> neighbours)
-        {
-            neighbours.Clear();
-
-            // Find the min and max boxes
-            var min = this.SpatialMap.Quantized(localTransform.Position.xz - Radius);
-            var max = this.SpatialMap.Quantized(localTransform.Position.xz + Radius);
-
-            for (var j = min.y; j <= max.y; j++)
-            {
-                for (var i = min.x; i <= max.x; i++)
-                {
-                    var hash = this.SpatialMap.Hash(new int2(i, j));
-
-                    if (!this.SpatialMap.Map.TryGetFirstValue(hash, out int item, out var it))
-                    {
-                        continue;
-                    }
-
-                    do
-                    {
-                        var otherEntity = this.Entities[item];
-
-                        // Don't add ourselves
-                        if (otherEntity.Equals(entity))
-                        {
-                            continue;
-                        }
-
-                        var otherPosition = this.Positions[item].Position;
-
-                        // The spatialmap serves as the broad-phase but most of the time we still need to ensure entities are actually within range
-                        if (math.distancesq(localTransform.Position.xz, otherPosition.xz) <= Radius * Radius)
-                        {
-                            neighbours.Add(new Neighbours { Entity = otherEntity });
-                        }
-                    }
-                    while (this.SpatialMap.Map.TryGetNextValue(out item, ref it));
-                }
-
-            }
-        }
-    }
-
-    public struct Neighbours : IBufferElementData
-    {
-        public Entity Entity;
-    }
-}
-```
+- [Collections](Collections.md) covers the native containers used alongside the maps.
+- [Jobs](Jobs.md) covers the package's custom scheduling helpers.

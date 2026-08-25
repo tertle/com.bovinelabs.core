@@ -110,6 +110,63 @@ namespace BovineLabs.Core.Tests.Collections
             }
         }
 
+        [Test]
+        public void Dispose_WithDependency_DisposesOwnedContainers()
+        {
+            var map = new NativeParallelHashMapFallback<int, int>(1, Allocator.TempJob);
+
+            try
+            {
+                map.Dispose(default).Complete();
+
+                Assert.IsFalse(map.HashMap.IsCreated);
+                Assert.IsFalse(map.Fallback.IsCreated);
+            }
+            finally
+            {
+                if (map.HashMap.IsCreated)
+                {
+                    map.HashMap.Dispose();
+                }
+
+                if (map.Fallback.IsCreated)
+                {
+                    map.Fallback.Dispose();
+                }
+            }
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void Clear_WithPendingFallback_DoesNotRestoreEntriesOnApply(bool scheduled)
+        {
+            var map = new NativeParallelHashMapFallback<int, int>(1, Allocator.TempJob);
+
+            try
+            {
+                var writer = map.AsWriter();
+                writer.Add(1, 10);
+                writer.Add(2, 20);
+
+                if (scheduled)
+                {
+                    map.Clear(default).Complete();
+                }
+                else
+                {
+                    map.Clear();
+                }
+
+                map.Apply(default, out var reader).Complete();
+
+                Assert.AreEqual(0, reader.Count());
+            }
+            finally
+            {
+                map.Dispose();
+            }
+        }
+
         [BurstCompile]
         private struct WriteJob : IJobFor
         {

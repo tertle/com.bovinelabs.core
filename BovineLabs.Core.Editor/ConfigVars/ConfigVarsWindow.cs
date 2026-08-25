@@ -1,27 +1,25 @@
-﻿// <copyright file="ConfigVarsWindow.cs" company="BovineLabs">
+// <copyright file="ConfigVarsWindow.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 namespace BovineLabs.Core.Editor.ConfigVars
 {
-    using System;
-    using System.Collections.Generic;
+    using System.Linq;
     using BovineLabs.Core.ConfigVars;
-    using BovineLabs.Core.Editor.Settings;
     using UnityEditor;
     using UnityEditor.UIElements;
+    using UnityEngine;
     using UnityEngine.UIElements;
 
     /// <summary> Window for config vars. </summary>
-    public class ConfigVarsWindow : SettingsBaseWindow<ConfigVarsWindow>
+    public class ConfigVarsWindow : EditorWindow
     {
-        private readonly Dictionary<string, ConfigVarPanel> panels = new();
+        private const string StyleSheetPath = "Packages/com.bovinelabs.core/Editor Default Resources/ConfigVarsWindow/ConfigVarsWindow.uss";
 
-        /// <inheritdoc />
-        protected override string TitleText => "ConfigVars";
+        private readonly ConfigVarPanel panel = new();
 
-        /// <inheritdoc/>
-        protected override bool HideToggleShowEmpty => true;
+        private ToolbarSearchField searchField;
+        private VisualElement contentRoot;
 
         [MenuItem(EditorMenus.RootMenu + "ConfigVars", priority = -31)]
         internal static void OpenSettings()
@@ -29,62 +27,118 @@ namespace BovineLabs.Core.Editor.ConfigVars
             Open();
         }
 
-        /// <inheritdoc />
-        protected override void GetPanels(List<ISettingsPanel> settingPanels)
+        internal static ConfigVarsWindow Open()
         {
-            ConfigVarManager.Initialize();
-
-            foreach (var p in this.panels)
-            {
-                p.Value.OnDeactivate();
-            }
-
-            this.panels.Clear();
-
-            var configVars = ConfigVarManager.FindAllConfigVars();
-
-            foreach (var (configVar, field) in configVars)
-            {
-                if (configVar.IsHidden)
-                {
-                    continue;
-                }
-
-                var key = configVar.Name.Split('.');
-                var menu = key.Length < 2 ? "[null]" : key[0];
-
-                if (!this.panels.TryGetValue(menu, out var panel))
-                {
-                    panel = this.panels[menu] = new ConfigVarPanel(menu);
-                    settingPanels.Add(panel);
-                }
-
-                panel.ConfigVars.Add((configVar, field));
-            }
-
-            foreach (var p in this.panels)
-            {
-                p.Value.ConfigVars.Sort((p1, p2) => string.Compare(p1.ConfigVar.Name, p2.ConfigVar.Name, StringComparison.Ordinal));
-            }
+            var window = Resources.FindObjectsOfTypeAll<ConfigVarsWindow>().FirstOrDefault() ?? CreateInstance<ConfigVarsWindow>();
+            window.Show();
+            window.Focus();
+            window.minSize = new Vector2(450, 240);
+            return window;
         }
 
-        /// <inheritdoc />
-        protected override void InitializeToolbar(VisualElement rootElement)
+        private void OnEnable()
         {
+            this.titleContent = new GUIContent("ConfigVars", EditorGUIUtility.IconContent("VerticalLayoutGroup Icon").image);
+            this.minSize = new Vector2(450, 240);
+
+            this.SetupUI();
+            this.RefreshConfigVars();
+
+            EditorApplication.playModeStateChanged += this.OnPlayModeStateChanged;
+        }
+
+        private void OnDisable()
+        {
+            if (this.searchField != null)
+            {
+                this.searchField.UnregisterValueChangedCallback(this.OnSearchChanged);
+            }
+
+            this.panel.OnDeactivate();
+            EditorApplication.playModeStateChanged -= this.OnPlayModeStateChanged;
+        }
+
+        private void SetupUI()
+        {
+            var root = this.rootVisualElement;
+            root.Clear();
+            root.AddToClassList("config-vars-window");
+
+            if (AssetDatabase.LoadAssetAtPath<StyleSheet>(StyleSheetPath) is { } styleSheet)
+            {
+                root.styleSheets.Add(styleSheet);
+            }
+
+            var toolbar = new Toolbar();
+            toolbar.AddToClassList("config-vars-window__toolbar");
+
             var resetButton = new ToolbarButton(this.ResetToDefault) { text = "Reset To Default" };
-            rootElement.Add(resetButton);
+            toolbar.Add(resetButton);
+
+            var spacer = new ToolbarSpacer();
+            spacer.style.flexGrow = 1;
+            toolbar.Add(spacer);
+
+            this.searchField = new ToolbarSearchField();
+            this.searchField.AddToClassList("config-vars-window__search");
+            if (this.searchField.Q<TextField>() is { } textField)
+            {
+                textField.isDelayed = true;
+            }
+
+            this.searchField.RegisterValueChangedCallback(this.OnSearchChanged);
+            toolbar.Add(this.searchField);
+            root.Add(toolbar);
+
+            var scrollView = new ScrollView();
+            scrollView.AddToClassList("config-vars-window__scroll");
+            root.Add(scrollView);
+
+            this.contentRoot = new VisualElement();
+            this.contentRoot.AddToClassList("config-vars-window__content");
+            scrollView.Add(this.contentRoot);
+        }
+
+        private void RefreshConfigVars()
+        {
+            this.panel.SetConfigVars(ConfigVarManager.FindAllConfigVars());
+            this.RefreshContent();
+        }
+
+        private void RefreshContent()
+        {
+            this.panel.Render(this.searchField?.value, this.contentRoot);
+        }
+
+        private void OnSearchChanged(ChangeEvent<string> evt)
+        {
+            this.RefreshContent();
+        }
+
+        private void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state is not (PlayModeStateChange.EnteredEditMode or PlayModeStateChange.EnteredPlayMode))
+            {
+                return;
+            }
+
+            this.panel.UpdatePlayModeState();
         }
 
         private void ResetToDefault()
         {
-            if (EditorUtility.DisplayDialog("Confirm Reset To Default", "Reset all config vars to default values?", "Reset", "Cancel"))
+            if (!EditorUtility.DisplayDialog("Confirm Reset To Default", "Reset all config vars to default values?", "Reset", "Cancel"))
             {
-                foreach (var c in ConfigVarManager.All)
-                {
-                    EditorPrefs.DeleteKey(c.Key.Name);
-                    c.Value.StringValue = c.Key.DefaultValue;
-                }
+                return;
             }
+
+            foreach (var c in ConfigVarManager.All)
+            {
+                EditorPrefs.DeleteKey(ConfigVarManager.GetEditorPrefsKey(c.Key.Name));
+                c.Value.StringValue = c.Key.DefaultValue;
+            }
+
+            this.RefreshContent();
         }
     }
 }

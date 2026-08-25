@@ -1,170 +1,187 @@
 # Iterators
 
-BovineLabs Core provides comprehensive iterator utilities designed for high-performance ECS applications, offering Burst-compatible enumeration capabilities across various data structures optimized for Unity DOTS.
+Core provides focused iterators for dynamic-buffer maps, blob maps, entity queries, and enabled-mask-aware chunk work.
 
-## Dynamic HashMap Iterators
+## Choose an iterator
 
-The iterators for DynamicHashMap collections are part of the [DynamicHashMap](DynamicHashMap.md) system. For detailed information about DynamicHashMap usage, iteration patterns, and performance characteristics, see the [DynamicHashMap documentation](DynamicHashMap.md).
+| Data or workload | API |
+|---|---|
+| Every entry in a dynamic hash map or multimap | `foreach` / `DynamicHashMapEnumerator<TKey, TValue>` |
+| Values for one multimap key | `GetValuesForKey(key)` / `DynamicHashMapKeyEnumerator<TKey, TValue>` |
+| Every entry in a dynamic hash set | `DynamicHashSetEnumerator<T>` |
+| Untyped unsafe dynamic map | `GetUntypedIterator(...)` / `UntypedDynamicHashMapIterator` |
+| Every entry in a blob hash map or multimap | `BlobHashMapEnumerator<TKey, TValue>` |
+| Values for one blob multimap key | `TryGetFirstValue` / `TryGetNextValue` with `BlobMultiHashMapIterator<TKey>` |
+| Main-thread traversal of an `EntityQuery` | `QueryEntityEnumerator` |
+| Reusable enabled-mask handling inside a chunk job | `CustomChunkIterator<T>` |
 
-### Key Iterator Types
-- **`DynamicHashMapEnumerator<TKey, TValue>`** - Standard key-value pair enumeration
-- **`DynamicHashMapKeyEnumerator<TKey, TValue>`** - Multi-hash map value enumeration for specific keys
-- **`DynamicHashSetEnumerator<T>`** - Hash set enumeration (unique values only)
-- **`UntypedDynamicHashMapIterator`** - Type-unsafe iteration using `IntPtr`
+For parallel hash-map traversal without copying keys, see [Jobs](Jobs.md).
 
-All DynamicHashMap iterators are Burst-compatible and integrate seamlessly with the `DynamicBuffer<byte>` backing storage system.
+## Dynamic hash maps
 
-## Blob Collection Iterators
+Dynamic-map wrappers are in `BovineLabs.Core.Iterators`. Obtain them from the generated `AsMap()` extension described in [DynamicHashMap](DynamicHashMap.md).
 
-### `BlobHashMapEnumerator<TKey, TValue>`
-Enumerator for blob-based hash maps optimized for blob asset storage.
-- Read-only enumeration with `[NativeContainerIsReadOnly]`
-- Efficient bucket-based iteration
-- Integrated with Unity's blob asset system
-
-### `BlobMultiHashMapIterator<TKey>`
-Iterator for blob-based multi-hash maps with multiple values per key.
-- Optimized for blob storage patterns
-- Supports multi-value enumeration
-
-## Entity Query Iterators
-
-### `QueryEntityEnumerator`
-High-performance entity query iterator with chunk-based processing.
-- Optimized for ECS chunk iteration
-- Supports enabled component masks
-- Integrates with Unity's native query system
-
-### `ChunkEntityEnumerator`
-Per-chunk entity enumeration with enabled mask support.
-- Handles sparse and dense entity scenarios
-- Efficient bit manipulation for enabled components
-- Cache-friendly iteration patterns
-
-## Custom Chunk Iterator
-
-### `CustomChunkIterator<T>`
-Generic chunk iteration with custom execution logic.
-- Burst-compatible chunk processing
-- Automatic enabled mask handling
-- Optimized for both sparse and dense entity scenarios
-
-### `ICustomChunkIterator`
-Interface for custom chunk iteration implementations.
-- Extensible iteration patterns
-- Supports custom processing logic
-- Enables advanced iteration scenarios
-
-## Lookup Utilities
-
-### `UnsafeComponentLookup<T>`
-Direct component access by entity with maximum performance.
-- Unsafe direct memory access
-- Cached archetype lookups for efficiency
-- Support for both read and write operations
-
-### `UnsafeBufferLookup<T>`
-Direct buffer access by entity for dynamic buffer operations.
-- High-performance buffer access
-- Minimal overhead for buffer operations
-
-### `ChangeFilterLookup<T>`
-Change detection and filtering during iteration.
-- Efficient change detection
-- Version tracking for optimization
-- Critical for performance in ECS systems
-
-### `SharedComponentLookup<T>`
-Shared component access across multiple entities.
-- Optimized for shared data patterns
-- Reduced memory footprint
-
-### `UnsafeEnableableLookup<T>`
-Enableable component state management during iteration.
-- Efficient enabled/disabled state checking
-- Supports conditional processing
-
-## Key Design Patterns
-
-### KVPair Structure
-Custom `KVPair<TKey, TValue>` structure providing:
-- Reference-based value access
-- Efficient memory layout
-- Debugger display attributes
-- Null pattern support
-
-### Native Container Integration
-All iterators follow Unity's Native Container patterns:
-- `[NativeContainer]` attributes for safety system integration
-- `[NativeContainerIsReadOnly]` for read-only access optimization
-- `[NativeDisableUnsafePtrRestriction]` for performance-critical unsafe operations
-
-### Burst Compatibility
-All iterators are designed to be Burst-compatible:
-- No managed allocations during iteration
-- Aggressive inlining with `[MethodImpl(MethodImplOptions.AggressiveInlining)]`
-- Unsafe pointer operations where performance is critical
-
-## Performance Optimizations
-
-### Enabled Mask Optimization
-The `CustomChunkIterator` uses sophisticated enabled mask handling:
-- Automatic detection of sparse vs dense scenarios
-- Range-based iteration for sparse data
-- Bit manipulation for dense data
-- Edge count optimization for boundary cases
-
-### Cache-Friendly Iteration
-- Archetype caching in lookup utilities
-- Bucket-based iteration for hash maps
-- Chunk-based entity processing for memory locality
-
-### Minimal Allocation
-- Struct-based implementations
-- Reuse of iterator state
-- Pooled temporary containers
-
-## Usage Patterns
-
-### Dynamic HashMap Enumeration
 ```csharp
-// Standard key-value enumeration
-foreach (var kvp in dynamicHashMap)
-{
-    // Access kvp.Key and kvp.Value
-}
+var inventory = buffer.AsMap();
 
-// Multi-hash map key enumeration
-foreach (var value in multiHashMap.GetValues(key))
+foreach (var pair in inventory)
 {
-    // Process each value for the key
+    var key = pair.Key;
+    var value = pair.Value;
 }
 ```
 
-### Entity Query Enumeration
+For a multimap, the per-key method is `GetValuesForKey`:
+
+```csharp
+foreach (var value in damageBySource.GetValuesForKey(sourceId))
+{
+    totalDamage += value;
+}
+```
+
+The main iterator types are:
+
+| Type | Purpose |
+|---|---|
+| `DynamicHashMapEnumerator<TKey, TValue>` | All map or multimap key-value pairs |
+| `DynamicHashMapKeyEnumerator<TKey, TValue>` | All multimap values for one key |
+| `DynamicHashSetEnumerator<T>` | All set values |
+| `UntypedDynamicHashMapIterator` | Unsafe pointer pairs from an untyped dynamic map |
+
+The `KVPair<TKey, TValue>.Value` returned by the typed dynamic-map enumerator is a ref into the backing buffer. Do not retain it after a resize or other operation that can relocate the buffer.
+
+## Blob hash maps
+
+`BlobHashMap<TKey, TValue>` and `BlobMultiHashMap<TKey, TValue>` are in `BovineLabs.Core.Collections`.
+
+```csharp
+ref var map = ref blobReference.Value.Map;
+
+foreach (var pair in map)
+{
+    var key = pair.Key;
+    var value = pair.Value;
+}
+```
+
+For a single multimap key:
+
+```csharp
+if (map.TryGetFirstValue(key, out var value, out var iterator))
+{
+    do
+    {
+        ref readonly var item = ref value.Ref;
+        // Read item.
+    }
+    while (map.TryGetNextValue(out value, ref iterator));
+}
+```
+
+`BlobMultiHashMapIterator<TKey>` is traversal state for the `TryGet*` methods; it is not itself a `foreach` enumerator. Blob data is immutable after construction, even though low-level accessors may expose refs.
+
+## Entity query enumeration
+
+`QueryEntityEnumerator` is a main-thread, allocation-free chunk iterator in `BovineLabs.Core.Utility`. It produces Unity's `ChunkEntityEnumerator` so enableable-component masks are handled correctly.
+
 ```csharp
 var queryEnumerator = new QueryEntityEnumerator(query);
+
 while (queryEnumerator.MoveNextChunk(out var chunk, out var entityEnumerator))
 {
     while (entityEnumerator.NextEntityIndex(out var entityIndex))
     {
-        // Process entity at entityIndex
+        // Read chunk arrays at entityIndex.
     }
 }
 ```
 
-### Custom Chunk Processing
+Call `Reset()` to traverse the same query again. Do not perform structural changes that invalidate query chunk storage during traversal.
+
+## Custom chunk iteration
+
+`CustomChunkIterator<T>` does not accept a query or a delegate. `T` must be an unmanaged `ICustomChunkIterator` implementation, supplied to the constructor. The wrapper only centralizes dense and enabled-mask iteration for one already-resolved chunk.
+
 ```csharp
-var iterator = new CustomChunkIterator<MyComponent>();
-iterator.Execute(query, (ref MyComponent component, int entityIndex) =>
+public struct Counter : IComponentData, IEnableableComponent
 {
-    // Process component for entity at entityIndex
-});
+    public int Value;
+}
+
+[BurstCompile]
+private struct ProcessChunkJob : IJobChunk
+{
+    public ComponentTypeHandle<Counter> CounterHandle;
+
+    public void Execute(
+        in ArchetypeChunk chunk,
+        int unfilteredChunkIndex,
+        bool useEnabledMask,
+        in v128 chunkEnabledMask)
+    {
+        var executor = new Increment
+        {
+            Counters = chunk.GetNativeArray(ref this.CounterHandle),
+        };
+
+        new CustomChunkIterator<Increment>(executor)
+            .Execute(chunk, useEnabledMask, chunkEnabledMask);
+    }
+
+    private struct Increment : ICustomChunkIterator
+    {
+        public NativeArray<Counter> Counters;
+
+        public void Execute(int entityIndexInChunk)
+        {
+            var counter = this.Counters[entityIndexInChunk];
+            counter.Value++;
+            this.Counters[entityIndexInChunk] = counter;
+        }
+    }
+}
 ```
 
-## Integration with Dynamic Collections
+The executor is copied into the wrapper. Put observable results in native containers or chunk arrays rather than expecting mutations to the executor struct itself to be returned.
 
-The iterators are tightly integrated with the package's dynamic collection system:
-- **DynamicHashMap**: Uses `DynamicBuffer<byte>` as backing storage
-- **Automatic Code Generation**: Extensions are generated for common usage patterns
-- **Type Safety**: Strong typing while maintaining performance characteristics
+## Lookup utilities
+
+The public `SystemState` entry points are in `BovineLabs.Core.Extensions`.
+
+| Lookup | Create | Refresh when cached | Use |
+|---|---|---|---|
+| `SharedComponentLookup<T>` | `state.GetSharedComponentLookup<T>(isReadOnly)` | `lookup.Update(ref state)` | Read unmanaged shared components by entity or shared index |
+| `ChangeFilterLookup<T>` | `state.GetChangeFilterLookup<T>(isReadOnly)` | `lookup.Update(ref state)` | Test or set chunk change versions through an entity |
+| `UnsafeEnableableLookup` | `state.GetUnsafeEnableableLookup()` | No update method | Dynamic `ComponentType` enable/disable access |
+| `UnsafeEntityDataAccess` | `state.GetUnsafeEntityDataAccess()` | `access.Update(ref state)` for current write version | Low-level typed-by-`ComponentType` pointers and untyped buffers |
+
+Example of a cached shared-component lookup:
+
+```csharp
+private SharedComponentLookup<Team> teamLookup;
+
+public void OnCreate(ref SystemState state)
+{
+    this.teamLookup = state.GetSharedComponentLookup<Team>(isReadOnly: true);
+}
+
+public void OnUpdate(ref SystemState state)
+{
+    this.teamLookup.Update(ref state);
+}
+```
+
+`UnsafeEnableableLookup` and `UnsafeEntityDataAccess` bypass parts of Unity's typed safety tracking. Register every accessed component with `state.AddDependency(...)`, chain job handles, and ensure parallel writes cannot target the same data.
+
+`UnsafeComponentLookup<T>` and `UnsafeBufferLookup<T>` exist as Core implementation types, but their construction helpers are currently internal to the Core assembly. They are not general consumer entry points; use Unity's `ComponentLookup<T>` / `BufferLookup<T>` or the public utilities above.
+
+## Lifetime and mutation rules
+
+- Do not resize, clear, or remove from a dynamic map while one of its enumerators or ref values is in use.
+- Do not keep an iterator after its dynamic buffer, blob asset, query, or container has become invalid.
+- A copied dynamic-map wrapper can become stale when another copy resizes the backing buffer. Keep mutation on one live wrapper.
+- Respect enableable masks. Use `ChunkEntityEnumerator` or `CustomChunkIterator<T>` instead of a raw `0..chunk.Count` loop when `useEnabledMask` is true.
+- Unsafe untyped iterators expose pointers, not ownership. Their source storage must outlive every access.
+
+See [DynamicHashMap](DynamicHashMap.md) for initialization and mutation APIs and [Collections](Collections.md) for the underlying collection types.

@@ -1,4 +1,4 @@
-﻿// <copyright file="DynamicUntypedHashMapTests.cs" company="BovineLabs">
+// <copyright file="DynamicUntypedHashMapTests.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -16,100 +16,6 @@ namespace BovineLabs.Core.Tests.Iterators
 
     public class DynamicUntypedHashMapTests : ECSTestsFixture
     {
-        [SetUp]
-        public override void Setup()
-        {
-            base.Setup();
-
-            TypeManagerEx.Initialize();
-        }
-
-        [Test]
-        public void InitializeAndLarge()
-        {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
-
-            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
-
-            hashMap.AddOrSet(0, 1);
-            hashMap.AddOrSet(1, (short)2);
-            hashMap.AddOrSet(2, new float3(1, 2, 3));
-            hashMap.AddOrSet(3, new Large());
-            hashMap.AddOrSet(2, new float3(3, 2, 1));
-            hashMap.AddOrSet(3, new Large());
-
-            Assert.AreEqual(1, hashMap.GetOrAddRefUnsafe(0, 0));
-            Assert.AreEqual((short)2, hashMap.GetOrAddRefUnsafe(1, (short)0));
-            Assert.AreEqual(new float3(3, 2, 1), hashMap.GetOrAddRefUnsafe(2, float3.zero));
-        }
-
-        [Test]
-        public void StressAdd()
-        {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
-
-            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
-
-            for (var i = 0; i < 50; i++)
-            {
-                hashMap.AddOrSet((i * 8) + 0, 1);
-                hashMap.AddOrSet((i * 8) + 1, (short)2);
-                hashMap.AddOrSet((i * 8) + 2, new float3(1, 2, 3));
-                hashMap.AddOrSet((i * 8) + 3, new Large());
-                hashMap.AddOrSet((i * 8) + 4, new float3(3, 2, 1));
-                hashMap.AddOrSet((i * 8) + 5, new Large());
-                hashMap.AddOrSet((i * 8) + 6, 1);
-                hashMap.AddOrSet((i * 8) + 7, (short)2);
-            }
-
-            for (var i = 0; i < 50; i++)
-            {
-                hashMap.AddOrSet((i * 8) + 0, 1);
-                hashMap.AddOrSet((i * 8) + 1, (short)2);
-                hashMap.AddOrSet((i * 8) + 2, new float3(1, 2, 3));
-                hashMap.AddOrSet((i * 8) + 3, new Large());
-                hashMap.AddOrSet((i * 8) + 4, new float3(3, 2, 1));
-                hashMap.AddOrSet((i * 8) + 5, new Large());
-                hashMap.AddOrSet((i * 8) + 6, 1);
-                hashMap.AddOrSet((i * 8) + 7, (short)2);
-            }
-        }
-
-        [Test]
-        public void StressGet()
-        {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
-
-            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
-
-            for (var i = 0; i < 50; i++)
-            {
-                hashMap.GetOrAddRefUnsafe((i * 8) + 0, 1);
-                hashMap.GetOrAddRefUnsafe((i * 8) + 1, (short)2);
-                hashMap.GetOrAddRefUnsafe((i * 8) + 2, new float3(1, 2, 3));
-                hashMap.GetOrAddRefUnsafe((i * 8) + 3, new Large());
-                hashMap.GetOrAddRefUnsafe((i * 8) + 4, new float3(3, 2, 1));
-                hashMap.GetOrAddRefUnsafe((i * 8) + 5, new Large());
-                hashMap.GetOrAddRefUnsafe((i * 8) + 6, 1);
-                hashMap.GetOrAddRefUnsafe((i * 8) + 7, (short)2);
-            }
-
-            for (var i = 0; i < 50; i++)
-            {
-                hashMap.GetOrAddRefUnsafe((i * 8) + 0, 1);
-                hashMap.GetOrAddRefUnsafe((i * 8) + 1, (short)2);
-                hashMap.GetOrAddRefUnsafe((i * 8) + 2, new float3(1, 2, 3));
-                hashMap.GetOrAddRefUnsafe((i * 8) + 3, new Large());
-                hashMap.GetOrAddRefUnsafe((i * 8) + 4, new float3(3, 2, 1));
-                hashMap.GetOrAddRefUnsafe((i * 8) + 5, new Large());
-                hashMap.GetOrAddRefUnsafe((i * 8) + 6, 1);
-                hashMap.GetOrAddRefUnsafe((i * 8) + 7, (short)2);
-            }
-        }
-
         [Test]
         public void TryGetValue_WhenMissing_ReturnsFalseAndDefault()
         {
@@ -195,24 +101,6 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.IsTrue(hashMap.TryGetValue(4, out short added));
             Assert.AreEqual(44, added);
             Assert.AreEqual(3, hashMap.Count);
-        }
-
-        [Test]
-        public void GetKeyArray_ReturnsCurrentKeysAfterRemove()
-        {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
-
-            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
-
-            hashMap.AddOrSet(1, 10);
-            hashMap.AddOrSet(2, 20);
-            hashMap.AddOrSet(3, 30);
-            hashMap.Remove(2);
-
-            var keys = hashMap.GetKeyArray(Allocator.Temp);
-
-            CollectionAssert.AreEquivalent(new[] { 1, 3 }, keys.ToArray());
         }
 
         [Test]

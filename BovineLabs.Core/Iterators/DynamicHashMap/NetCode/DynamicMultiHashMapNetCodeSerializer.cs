@@ -13,6 +13,7 @@ namespace BovineLabs.Core.Iterators
     using Unity.Entities;
     using Unity.NetCode;
     using Unity.NetCode.LowLevel.Unsafe;
+    using Unity.Scripting.LifecycleManagement;
 
     [BurstCompile]
     public static unsafe class DynamicMultiHashMapNetCodeSerializer<TBuffer, TKey, TValue>
@@ -23,16 +24,9 @@ namespace BovineLabs.Core.Iterators
         private const string DefaultDisplayName = "DynamicMultiHashMap Raw Compact";
 
         public static void AddToCollection(
-            ref GhostComponentSerializerCollectionData collectionData, ref SystemState systemState, FixedString64Bytes displayName = default)
-        {
-            AddToCollection(
-                ref collectionData, ref systemState, displayName, 0, null, GhostPrefabType.All, GhostSendType.AllClients, 1, SendToOwnerType.All, 0);
-        }
-
-        public static void AddToCollection(
             ref GhostComponentSerializerCollectionData collectionData, ref SystemState systemState, FixedString64Bytes displayName, ulong variantHash,
             string codecTypeFullName, GhostPrefabType prefabType, GhostSendType sendTypeOptimization, byte sendForChildEntities, SendToOwnerType sendToOwner,
-            byte isDefaultSerializer)
+            byte isDefaultSerializer, in DynamicHashCollectionNetCodeFunctionPointers functionPointers)
         {
             DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicMultiHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.AddToCollection(
                 ref collectionData,
@@ -44,7 +38,8 @@ namespace BovineLabs.Core.Iterators
                 sendTypeOptimization,
                 sendForChildEntities,
                 sendToOwner,
-                isDefaultSerializer);
+                isDefaultSerializer,
+                functionPointers);
         }
 
         public static ComponentTypeSerializationStrategy CreateSerializationStrategy(FixedString64Bytes displayName = default)
@@ -61,29 +56,6 @@ namespace BovineLabs.Core.Iterators
                     isDefaultSerializer);
         }
 
-        public static GhostComponentSerializer.State GetState(ref SystemState systemState)
-        {
-            return GetState(ref systemState, 0, null, GhostPrefabType.All, GhostSendType.AllClients, SendToOwnerType.All);
-        }
-
-        public static GhostComponentSerializer.State GetState(
-            ref SystemState systemState,
-            ulong variantHash,
-            string codecTypeFullName,
-            GhostPrefabType prefabType,
-            GhostSendType sendMask,
-            SendToOwnerType sendToOwner)
-        {
-            return DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicMultiHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.GetState(
-                ref systemState,
-                GetDisplayName(default),
-                variantHash,
-                codecTypeFullName ?? typeof(DynamicMultiHashMapRawGhostCodec<TKey, TValue>).FullName,
-                prefabType,
-                sendMask,
-                sendToOwner);
-        }
-
         public static void CopyToSnapshot(
             IntPtr stateData, IntPtr snapshotData, int snapshotOffset, int snapshotStride, IntPtr componentData, int componentStride, int count)
         {
@@ -98,7 +70,7 @@ namespace BovineLabs.Core.Iterators
                 stateData, snapshotData, snapshotOffset, snapshotStride, componentData, componentStride, count);
         }
 
-        internal static void Deserialize(
+        public static void Deserialize(
             IntPtr snapshotData, IntPtr baselineData, ref DataStreamReader reader, ref StreamCompressionModel compressionModel, IntPtr changeMaskData,
             int startOffset)
         {
@@ -106,19 +78,19 @@ namespace BovineLabs.Core.Iterators
                 snapshotData, baselineData, ref reader, ref compressionModel, changeMaskData, startOffset);
         }
 
-        internal static void RestoreFromBackup(IntPtr componentData, IntPtr backupData)
+        public static void RestoreFromBackup(IntPtr componentData, IntPtr backupData)
         {
             DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicMultiHashMapRawSerializerCodec<TBuffer, TKey, TValue>>
                 .RestoreFromBackup(componentData, backupData);
         }
 
-        internal static void PredictDelta(IntPtr snapshotData, IntPtr baseline1Data, IntPtr baseline2Data, ref GhostDeltaPredictor predictor)
+        public static void PredictDelta(IntPtr snapshotData, IntPtr baseline1Data, IntPtr baseline2Data, ref GhostDeltaPredictor predictor)
         {
             DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicMultiHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.PredictDelta(
                 snapshotData, baseline1Data, baseline2Data, ref predictor);
         }
 
-        internal static void SerializeBuffer(
+        public static void SerializeBuffer(
             IntPtr stateData, IntPtr snapshotData, int snapshotOffset, int snapshotStride, int maskOffsetInBits, int changeMaskBits,
             IntPtr componentData, IntPtr componentDataLen, int count, IntPtr baselines, ref DataStreamWriter writer,
             ref StreamCompressionModel compressionModel, IntPtr entityStartBit, IntPtr snapshotDynamicDataPtr,
@@ -130,7 +102,7 @@ namespace BovineLabs.Core.Iterators
                 dynamicSizePerEntity, dynamicSnapshotMaxOffset);
         }
 
-        internal static void PostSerializeBuffer(
+        public static void PostSerializeBuffer(
             IntPtr snapshotData, int snapshotOffset, int snapshotStride, int maskOffsetInBits, int changeMaskBits, int count, IntPtr baselines,
             ref DataStreamWriter writer, ref StreamCompressionModel compressionModel, IntPtr entityStartBit, IntPtr snapshotDynamicDataPtr,
             IntPtr dynamicSizePerEntity, int dynamicSnapshotMaxOffset)
@@ -158,16 +130,9 @@ namespace BovineLabs.Core.Iterators
         private const string DefaultDisplayName = "DynamicMultiHashMap Generated Compact";
 
         public static void AddToCollection(
-            ref GhostComponentSerializerCollectionData collectionData, ref SystemState systemState, FixedString64Bytes displayName = default)
-        {
-            AddToCollection(
-                ref collectionData, ref systemState, displayName, 0, null, GhostPrefabType.All, GhostSendType.AllClients, 1, SendToOwnerType.All, 0);
-        }
-
-        public static void AddToCollection(
             ref GhostComponentSerializerCollectionData collectionData, ref SystemState systemState, FixedString64Bytes displayName, ulong variantHash,
             string codecTypeFullName, GhostPrefabType prefabType, GhostSendType sendTypeOptimization, byte sendForChildEntities, SendToOwnerType sendToOwner,
-            byte isDefaultSerializer)
+            byte isDefaultSerializer, in DynamicHashCollectionNetCodeFunctionPointers functionPointers)
         {
             DynamicHashCollectionNetCodeSerializerCore<
                 TBuffer, TKey, TValue, DynamicMultiHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>.AddToCollection(
@@ -180,7 +145,8 @@ namespace BovineLabs.Core.Iterators
                     sendTypeOptimization,
                     sendForChildEntities,
                     sendToOwner,
-                    isDefaultSerializer);
+                    isDefaultSerializer,
+                    functionPointers);
         }
 
         public static ComponentTypeSerializationStrategy CreateSerializationStrategy(FixedString64Bytes displayName = default)
@@ -196,30 +162,6 @@ namespace BovineLabs.Core.Iterators
                     TBuffer, TKey, TValue, DynamicMultiHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>
                 .CreateSerializationStrategy(GetDisplayName(displayName), variantHash, prefabType, sendTypeOptimization, sendForChildEntities,
                     isDefaultSerializer);
-        }
-
-        public static GhostComponentSerializer.State GetState(ref SystemState systemState)
-        {
-            return GetState(ref systemState, 0, null, GhostPrefabType.All, GhostSendType.AllClients, SendToOwnerType.All);
-        }
-
-        public static GhostComponentSerializer.State GetState(
-            ref SystemState systemState,
-            ulong variantHash,
-            string codecTypeFullName,
-            GhostPrefabType prefabType,
-            GhostSendType sendMask,
-            SendToOwnerType sendToOwner)
-        {
-            return DynamicHashCollectionNetCodeSerializerCore<
-                TBuffer, TKey, TValue, DynamicMultiHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>.GetState(
-                    ref systemState,
-                    GetDisplayName(default),
-                    variantHash,
-                    codecTypeFullName ?? typeof(DynamicMultiHashMapGeneratedGhostCodec<TKey, TValue, TKeyCodec, TValueCodec>).FullName,
-                    prefabType,
-                    sendMask,
-                    sendToOwner);
         }
 
         public static void CopyToSnapshot(
@@ -238,7 +180,7 @@ namespace BovineLabs.Core.Iterators
                     stateData, snapshotData, snapshotOffset, snapshotStride, componentData, componentStride, count);
         }
 
-        internal static void Deserialize(
+        public static void Deserialize(
             IntPtr snapshotData, IntPtr baselineData, ref DataStreamReader reader, ref StreamCompressionModel compressionModel, IntPtr changeMaskData,
             int startOffset)
         {
@@ -247,21 +189,21 @@ namespace BovineLabs.Core.Iterators
                     snapshotData, baselineData, ref reader, ref compressionModel, changeMaskData, startOffset);
         }
 
-        internal static void RestoreFromBackup(IntPtr componentData, IntPtr backupData)
+        public static void RestoreFromBackup(IntPtr componentData, IntPtr backupData)
         {
             DynamicHashCollectionNetCodeSerializerCore<
                     TBuffer, TKey, TValue, DynamicMultiHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>
                 .RestoreFromBackup(componentData, backupData);
         }
 
-        internal static void PredictDelta(IntPtr snapshotData, IntPtr baseline1Data, IntPtr baseline2Data, ref GhostDeltaPredictor predictor)
+        public static void PredictDelta(IntPtr snapshotData, IntPtr baseline1Data, IntPtr baseline2Data, ref GhostDeltaPredictor predictor)
         {
             DynamicHashCollectionNetCodeSerializerCore<
                 TBuffer, TKey, TValue, DynamicMultiHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>.PredictDelta(
                     snapshotData, baseline1Data, baseline2Data, ref predictor);
         }
 
-        internal static void SerializeBuffer(
+        public static void SerializeBuffer(
             IntPtr stateData, IntPtr snapshotData, int snapshotOffset, int snapshotStride, int maskOffsetInBits, int changeMaskBits,
             IntPtr componentData, IntPtr componentDataLen, int count, IntPtr baselines, ref DataStreamWriter writer,
             ref StreamCompressionModel compressionModel, IntPtr entityStartBit, IntPtr snapshotDynamicDataPtr,
@@ -274,7 +216,7 @@ namespace BovineLabs.Core.Iterators
                     dynamicSizePerEntity, dynamicSnapshotMaxOffset);
         }
 
-        internal static void PostSerializeBuffer(
+        public static void PostSerializeBuffer(
             IntPtr snapshotData, int snapshotOffset, int snapshotStride, int maskOffsetInBits, int changeMaskBits, int count, IntPtr baselines,
             ref DataStreamWriter writer, ref StreamCompressionModel compressionModel, IntPtr entityStartBit, IntPtr snapshotDynamicDataPtr,
             IntPtr dynamicSizePerEntity, int dynamicSnapshotMaxOffset)
@@ -520,17 +462,21 @@ namespace BovineLabs.Core.Iterators
         private const int IntSize = sizeof(int);
         private const int BaselinesPerEntity = 4;
 
+        [NoAutoStaticsCleanup]
         private static bool stateInitialized;
+
+        [NoAutoStaticsCleanup]
         private static GhostComponentSerializer.State state;
 
         public static void AddToCollection(
             ref GhostComponentSerializerCollectionData collectionData, ref SystemState systemState, FixedString64Bytes displayName, ulong variantHash,
             string codecTypeFullName, GhostPrefabType prefabType, GhostSendType sendTypeOptimization, byte sendForChildEntities, SendToOwnerType sendToOwner,
-            byte isDefaultSerializer)
+            byte isDefaultSerializer, in DynamicHashCollectionNetCodeFunctionPointers functionPointers)
         {
             var strategy = CreateSerializationStrategy(displayName, variantHash, prefabType, sendTypeOptimization, sendForChildEntities, isDefaultSerializer);
             collectionData.AddSerializationStrategy(ref strategy);
-            var serializerState = GetState(ref systemState, displayName, strategy.Hash, codecTypeFullName, prefabType, sendTypeOptimization, sendToOwner);
+            var serializerState = GetState(
+                ref systemState, displayName, strategy.Hash, codecTypeFullName, prefabType, sendTypeOptimization, sendToOwner, functionPointers);
             collectionData.AddSerializer(serializerState);
         }
 
@@ -565,45 +511,15 @@ namespace BovineLabs.Core.Iterators
             string codecTypeFullName,
             GhostPrefabType prefabType,
             GhostSendType sendMask,
-            SendToOwnerType sendToOwner)
+            SendToOwnerType sendToOwner,
+            in DynamicHashCollectionNetCodeFunctionPointers functionPointers)
         {
             if (!stateInitialized)
             {
-                var codec = default(TCodec);
-                if (variantHash == 0)
-                {
-                    variantHash = codec.GetVariantHash();
-                }
-
-                var componentType = ComponentType.ReadWrite<TBuffer>();
-                state = new GhostComponentSerializer.State
-                {
-                    SerializerHash = codec.GetSerializerHash(),
-                    GhostFieldsHash = codec.GetGhostFieldsHash(codecTypeFullName),
-                    ComponentType = componentType,
-                    ComponentSize = UnsafeUtility.SizeOf<TBuffer>(),
-                    SnapshotSize = codec.SnapshotSize,
-                    ChangeMaskBits = codec.ChangeMaskBits,
-                    PrefabType = prefabType,
-                    SendMask = sendMask,
-                    SendToOwner = sendToOwner,
-                    VariantHash = variantHash,
-                    SerializationStrategyIndex = -1,
-                    SerializesEnabledBit = 0,
-#if UNITY_EDITOR || NETCODE_DEBUG
-                    ProfilerMarker = new Unity.Profiling.ProfilerMarker(displayName.ToString()),
-                    VariantTypeFullNameHash = codec.GetVariantTypeFullNameHash(),
-#endif
-                };
-
-                if (state.ComponentType.IsZeroSized)
-                {
-                    state.ComponentSize = 0;
-                }
-
-                stateInitialized |= SetupFunctionPointers(ref state, ref systemState);
+                InitializeState(displayName, variantHash, codecTypeFullName, prefabType, sendMask, sendToOwner);
             }
 
+            stateInitialized |= SetupFunctionPointers(ref state, ref systemState, functionPointers);
             return state;
         }
 
@@ -732,7 +648,9 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-        private static bool SetupFunctionPointers(ref GhostComponentSerializer.State serializerState, ref SystemState systemState)
+        private static bool SetupFunctionPointers(
+            ref GhostComponentSerializer.State serializerState, ref SystemState systemState,
+            in DynamicHashCollectionNetCodeFunctionPointers functionPointers)
         {
             if ((systemState.WorldUnmanaged.Flags & WorldFlags.GameServer) != WorldFlags.GameServer &&
                 (systemState.WorldUnmanaged.Flags & WorldFlags.GameClient) != WorldFlags.GameClient &&
@@ -741,18 +659,54 @@ namespace BovineLabs.Core.Iterators
                 return false;
             }
 
-            serializerState.PostSerializeBuffer = new PortableFunctionPointer<GhostComponentSerializer.PostSerializeBufferDelegate>(AOT_PostSerializeBuffer);
-            serializerState.SerializeBuffer = new PortableFunctionPointer<GhostComponentSerializer.SerializeBufferDelegate>(AOT_SerializeBuffer);
-            serializerState.CopyFromSnapshot = new PortableFunctionPointer<GhostComponentSerializer.CopyToFromSnapshotDelegate>(AOT_CopyFromSnapshot);
-            serializerState.CopyToSnapshot = new PortableFunctionPointer<GhostComponentSerializer.CopyToFromSnapshotDelegate>(AOT_CopyToSnapshot);
-            serializerState.RestoreFromBackup = new PortableFunctionPointer<GhostComponentSerializer.RestoreFromBackupDelegate>(AOT_RestoreFromBackup);
-            serializerState.PredictDelta = new PortableFunctionPointer<GhostComponentSerializer.PredictDeltaDelegate>(AOT_PredictDelta);
-            serializerState.Deserialize = new PortableFunctionPointer<GhostComponentSerializer.DeserializeDelegate>(AOT_Deserialize);
+            serializerState.PostSerializeBuffer = functionPointers.PostSerializeBuffer;
+            serializerState.SerializeBuffer = functionPointers.SerializeBuffer;
+            serializerState.CopyFromSnapshot = functionPointers.CopyFromSnapshot;
+            serializerState.CopyToSnapshot = functionPointers.CopyToSnapshot;
+            serializerState.RestoreFromBackup = functionPointers.RestoreFromBackup;
+            serializerState.PredictDelta = functionPointers.PredictDelta;
+            serializerState.Deserialize = functionPointers.Deserialize;
 #if UNITY_EDITOR || NETCODE_DEBUG
-            serializerState.ReportPredictionErrors = new PortableFunctionPointer<GhostComponentSerializer.ReportPredictionErrorsDelegate>(
-                AOT_ReportPredictionErrors);
+            serializerState.ReportPredictionErrors = functionPointers.ReportPredictionErrors;
 #endif
             return true;
+        }
+
+        private static void InitializeState(
+            FixedString64Bytes displayName, ulong variantHash, string codecTypeFullName, GhostPrefabType prefabType, GhostSendType sendMask,
+            SendToOwnerType sendToOwner)
+        {
+            var codec = default(TCodec);
+            if (variantHash == 0)
+            {
+                variantHash = codec.GetVariantHash();
+            }
+
+            var componentType = ComponentType.ReadWrite<TBuffer>();
+            state = new GhostComponentSerializer.State
+            {
+                SerializerHash = codec.GetSerializerHash(),
+                GhostFieldsHash = codec.GetGhostFieldsHash(codecTypeFullName),
+                ComponentType = componentType,
+                ComponentSize = UnsafeUtility.SizeOf<TBuffer>(),
+                SnapshotSize = codec.SnapshotSize,
+                ChangeMaskBits = codec.ChangeMaskBits,
+                PrefabType = prefabType,
+                SendMask = sendMask,
+                SendToOwner = sendToOwner,
+                VariantHash = variantHash,
+                SerializationStrategyIndex = -1,
+                SerializesEnabledBit = 0,
+#if UNITY_EDITOR || NETCODE_DEBUG
+                ProfilerMarker = new Unity.Profiling.ProfilerMarker(displayName.ToString()),
+                VariantTypeFullNameHash = codec.GetVariantTypeFullNameHash(),
+#endif
+            };
+
+            if (state.ComponentType.IsZeroSized)
+            {
+                state.ComponentSize = 0;
+            }
         }
 
         private static void SerializePackedBuffer(
@@ -804,13 +758,23 @@ namespace BovineLabs.Core.Iterators
         private static bool IsSameAsBaseline(
             IntPtr baseline0Ptr, int snapshotOffset, IntPtr baselineDynamicDataPtr, int length, byte* payload, int payloadBytes, int changeMaskBits)
         {
-            if (baseline0Ptr == IntPtr.Zero || baselineDynamicDataPtr == IntPtr.Zero || length <= 0)
+            if (baseline0Ptr == IntPtr.Zero)
             {
                 return false;
             }
 
             var baseLength = GetBaselineLength(baseline0Ptr, snapshotOffset);
             if (baseLength != length)
+            {
+                return false;
+            }
+
+            if (length == 0)
+            {
+                return true;
+            }
+
+            if (baselineDynamicDataPtr == IntPtr.Zero)
             {
                 return false;
             }
@@ -863,78 +827,6 @@ namespace BovineLabs.Core.Iterators
             throw new InvalidOperationException("Invalid dynamic hash collection NetCode compact snapshot payload.");
         }
 
-        [BurstCompile(DisableDirectCall = true)]
-        [AOT.MonoPInvokeCallback(typeof(GhostComponentSerializer.CopyToFromSnapshotDelegate))]
-        private static void AOT_CopyToSnapshot(
-            IntPtr stateData, IntPtr snapshotData, int snapshotOffset, int snapshotStride, IntPtr componentData, int componentStride, int count)
-        {
-            CopyToSnapshot(stateData, snapshotData, snapshotOffset, snapshotStride, componentData, componentStride, count);
-        }
-
-        [BurstCompile(DisableDirectCall = true)]
-        [AOT.MonoPInvokeCallback(typeof(GhostComponentSerializer.CopyToFromSnapshotDelegate))]
-        private static void AOT_CopyFromSnapshot(
-            IntPtr stateData, IntPtr snapshotData, int snapshotOffset, int snapshotStride, IntPtr componentData, int componentStride, int count)
-        {
-            CopyFromSnapshot(stateData, snapshotData, snapshotOffset, snapshotStride, componentData, componentStride, count);
-        }
-
-        [BurstCompile(DisableDirectCall = true)]
-        [AOT.MonoPInvokeCallback(typeof(GhostComponentSerializer.DeserializeDelegate))]
-        private static void AOT_Deserialize(
-            IntPtr snapshotData, IntPtr baselineData, ref DataStreamReader reader, ref StreamCompressionModel compressionModel, IntPtr changeMaskData,
-            int startOffset)
-        {
-            Deserialize(snapshotData, baselineData, ref reader, ref compressionModel, changeMaskData, startOffset);
-        }
-
-        [BurstCompile(DisableDirectCall = true)]
-        [AOT.MonoPInvokeCallback(typeof(GhostComponentSerializer.SerializeBufferDelegate))]
-        private static void AOT_SerializeBuffer(
-            IntPtr stateData, IntPtr snapshotData, int snapshotOffset, int snapshotStride, int maskOffsetInBits, int changeMaskBits,
-            IntPtr componentData, IntPtr componentDataLen, int count, IntPtr baselines, ref DataStreamWriter writer,
-            ref StreamCompressionModel compressionModel, IntPtr entityStartBit, IntPtr snapshotDynamicDataPtr, ref int snapshotDynamicDataOffset,
-            IntPtr dynamicSizePerEntity, int dynamicSnapshotMaxOffset)
-        {
-            SerializeBuffer(
-                stateData, snapshotData, snapshotOffset, snapshotStride, maskOffsetInBits, changeMaskBits, componentData, componentDataLen, count,
-                baselines, ref writer, ref compressionModel, entityStartBit, snapshotDynamicDataPtr, ref snapshotDynamicDataOffset,
-                dynamicSizePerEntity, dynamicSnapshotMaxOffset);
-        }
-
-        [BurstCompile(DisableDirectCall = true)]
-        [AOT.MonoPInvokeCallback(typeof(GhostComponentSerializer.PostSerializeBufferDelegate))]
-        private static void AOT_PostSerializeBuffer(
-            IntPtr snapshotData, int snapshotOffset, int snapshotStride, int maskOffsetInBits, int changeMaskBits, int count, IntPtr baselines,
-            ref DataStreamWriter writer, ref StreamCompressionModel compressionModel, IntPtr entityStartBit, IntPtr snapshotDynamicDataPtr,
-            IntPtr dynamicSizePerEntity, int dynamicSnapshotMaxOffset)
-        {
-            PostSerializeBuffer(
-                snapshotData, snapshotOffset, snapshotStride, maskOffsetInBits, changeMaskBits, count, baselines, ref writer, ref compressionModel,
-                entityStartBit, snapshotDynamicDataPtr, dynamicSizePerEntity, dynamicSnapshotMaxOffset);
-        }
-
-        [BurstCompile(DisableDirectCall = true)]
-        [AOT.MonoPInvokeCallback(typeof(GhostComponentSerializer.RestoreFromBackupDelegate))]
-        private static void AOT_RestoreFromBackup(IntPtr componentData, IntPtr backupData)
-        {
-            RestoreFromBackup(componentData, backupData);
-        }
-
-        [BurstCompile(DisableDirectCall = true)]
-        [AOT.MonoPInvokeCallback(typeof(GhostComponentSerializer.PredictDeltaDelegate))]
-        private static void AOT_PredictDelta(IntPtr snapshotData, IntPtr baseline1Data, IntPtr baseline2Data, ref GhostDeltaPredictor predictor)
-        {
-            PredictDelta(snapshotData, baseline1Data, baseline2Data, ref predictor);
-        }
-
-#if UNITY_EDITOR || NETCODE_DEBUG
-        [BurstCompile(DisableDirectCall = true)]
-        [AOT.MonoPInvokeCallback(typeof(GhostComponentSerializer.ReportPredictionErrorsDelegate))]
-        private static void AOT_ReportPredictionErrors(IntPtr componentData, IntPtr backupData, IntPtr errorsList, int errorsCount)
-        {
-        }
-#endif
     }
 }
 #endif

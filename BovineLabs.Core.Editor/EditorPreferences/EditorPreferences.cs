@@ -8,12 +8,9 @@ namespace BovineLabs.Core.Editor.EditorPreferences
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using Unity.Entities.UI;
-#if UNITY_6000_6_OR_NEWER
     using Unity.Entities.Editor.Serialization;
-#else
-    using Unity.Serialization.Editor;
-#endif
+    using Unity.Entities.UI;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEngine;
     using UnityEngine.UIElements;
@@ -26,7 +23,10 @@ namespace BovineLabs.Core.Editor.EditorPreferences
     public abstract class EditorPreferences<T> : SettingsProvider
         where T : EditorPreferenceAttribute
     {
+        [NoAutoStaticsCleanup]
         private static readonly Dictionary<string, List<IEditorPreference>> Preferences = new();
+
+        [NoAutoStaticsCleanup]
         private static readonly List<string> Keywords = new();
         private static readonly string Prefix = $"{typeof(EditorPreferences<T>).FullName}: ";
 

@@ -1,0 +1,74 @@
+.config-vars-window {
+    flex-grow: 1;
+}
+
+.config-vars-window__toolbar {
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(52, 52, 52);
+}
+
+.config-vars-window__search {
+    min-width: 220px;
+}
+
+.config-vars-window__scroll {
+    flex-grow: 1;
+}
+
+.config-vars-window__content {
+    padding: 4px 6px 8px 6px;
+}
+
+.config-var-group {
+    margin-bottom: 6px;
+}
+
+.config-var-group__header {
+    flex-direction: row;
+    align-items: center;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(128, 128, 128, 0.24);
+    margin-top: 4px;
+    margin-bottom: 2px;
+    padding: 1px 2px 2px 2px;
+}
+
+.config-var-group__name {
+    -unity-font-style: bold;
+    font-size: 12px;
+}
+
+.config-var__row {
+    border-radius: 4px;
+    padding: 1px 2px;
+}
+
+.config-var__field {
+    min-height: 18px;
+}
+
+.config-var__field-label {
+    width: 250px;
+    overflow: hidden;
+}
+
+.config-var__empty {
+    color: rgba(180, 180, 180, 0.88);
+    margin-top: 12px;
+}
+
+.search {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.unity-theme-light .search {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+.config-var__readonly {
+    opacity: 0.65;
+}
+
+.config-var__readonly .unity-base-field__input {
+    background-color: rgba(128, 128, 128, 0.08);
+}

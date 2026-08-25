@@ -96,6 +96,8 @@ namespace BovineLabs.FacetGenerator
             INamedTypeSymbol entityStorageInfoLookupType = symbols.EntityStorageInfoLookupType;
             INamedTypeSymbol componentLookupType = symbols.ComponentLookupType;
             INamedTypeSymbol bufferLookupType = symbols.BufferLookupType;
+            INamedTypeSymbol bufferElementDataType = symbols.BufferElementDataType;
+            INamedTypeSymbol facetEnabledRefRWType = symbols.FacetEnabledRefRWType;
 
             var fields = new List<FacetField>();
             foreach (var fieldSymbol in typeSymbol.GetMembers().OfType<IFieldSymbol>())
@@ -118,6 +120,8 @@ namespace BovineLabs.FacetGenerator
                     entityStorageInfoLookupType,
                     componentLookupType,
                     bufferLookupType,
+                    bufferElementDataType,
+                    facetEnabledRefRWType,
                     facetInterface,
                     diagnostics,
                     out var field))
@@ -153,6 +157,8 @@ namespace BovineLabs.FacetGenerator
                     entityStorageInfoLookupType,
                     componentLookupType,
                     bufferLookupType,
+                    bufferElementDataType,
+                    facetEnabledRefRWType,
                     facetInterface);
             }
 
@@ -350,6 +356,8 @@ namespace BovineLabs.FacetGenerator
             INamedTypeSymbol entityStorageInfoLookupType,
             INamedTypeSymbol componentLookupType,
             INamedTypeSymbol bufferLookupType,
+            INamedTypeSymbol bufferElementDataType,
+            INamedTypeSymbol facetEnabledRefRWType,
             INamedTypeSymbol facetInterface)
         {
             var invocations = new List<QueryBuilderInvocation>();
@@ -420,6 +428,8 @@ namespace BovineLabs.FacetGenerator
                         entityStorageInfoLookupType,
                         componentLookupType,
                         bufferLookupType,
+                        bufferElementDataType,
+                        facetEnabledRefRWType,
                         facetInterface,
                         null,
                         out var nestedField))
@@ -470,6 +480,8 @@ namespace BovineLabs.FacetGenerator
             INamedTypeSymbol entityStorageInfoLookupType,
             INamedTypeSymbol componentLookupType,
             INamedTypeSymbol bufferLookupType,
+            INamedTypeSymbol bufferElementDataType,
+            INamedTypeSymbol facetEnabledRefRWType,
             INamedTypeSymbol facetInterface,
             IList<Diagnostic> diagnostics,
             out FacetField field)
@@ -554,23 +566,38 @@ namespace BovineLabs.FacetGenerator
                 return true;
             }
 
+            if (facetEnabledRefRWType != null && SymbolEqualityComparer.Default.Equals(namedType.OriginalDefinition, facetEnabledRefRWType))
+            {
+                if (hasReadOnlyAttribute)
+                {
+                    diagnostics?.Add(FacetDiagnostics.ReadOnlyRefRW(fieldSymbol, fieldSymbol.Locations.FirstOrDefault(), "EnabledRefRO"));
+                    return false;
+                }
+
+                var customComponentType = namedType.TypeArguments[0];
+                var customIsBufferElement = ImplementsInterface(customComponentType, bufferElementDataType);
+                field = new FacetField(
+                    fieldSymbol,
+                    customComponentType,
+                    FacetFieldKind.FacetEnabledRefRW,
+                    isOptional,
+                    false,
+                    false,
+                    customIsBufferElement);
+                return true;
+            }
+
             FacetFieldKind kind;
             switch (namedType.Name)
             {
                 case "RefRW" when hasReadOnlyAttribute:
-                    diagnostics?.Add(FacetDiagnostics.ReadOnlyRefRW(fieldSymbol, fieldSymbol.Locations.FirstOrDefault()));
+                    diagnostics?.Add(FacetDiagnostics.ReadOnlyRefRW(fieldSymbol, fieldSymbol.Locations.FirstOrDefault(), "RefRO"));
                     return false;
                 case "RefRW":
                     kind = FacetFieldKind.RefRW;
                     break;
                 case "RefRO":
                     kind = FacetFieldKind.RefRO;
-                    break;
-                case "EnabledRefRW" when hasReadOnlyAttribute:
-                    diagnostics?.Add(FacetDiagnostics.ReadOnlyRefRW(fieldSymbol, fieldSymbol.Locations.FirstOrDefault()));
-                    return false;
-                case "EnabledRefRW":
-                    kind = FacetFieldKind.EnabledRefRW;
                     break;
                 case "EnabledRefRO":
                     kind = FacetFieldKind.EnabledRefRO;
@@ -584,13 +611,21 @@ namespace BovineLabs.FacetGenerator
             }
 
             var componentType = namedType.TypeArguments[0];
+            var isBufferElement = ImplementsInterface(componentType, bufferElementDataType);
             var isReadOnly =
                 kind == FacetFieldKind.RefRO ||
                 kind == FacetFieldKind.EnabledRefRO ||
-                hasReadOnlyAttribute && kind != FacetFieldKind.EnabledRefRW;
+                hasReadOnlyAttribute;
 
-            field = new FacetField(fieldSymbol, componentType, kind, isOptional, isReadOnly, hasReadOnlyAttribute);
+            field = new FacetField(fieldSymbol, componentType, kind, isOptional, isReadOnly, hasReadOnlyAttribute, isBufferElement);
             return true;
+        }
+
+        private static bool ImplementsInterface(ITypeSymbol type, INamedTypeSymbol interfaceType)
+        {
+            return interfaceType != null &&
+                   type is INamedTypeSymbol namedType &&
+                   namedType.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, interfaceType));
         }
 
         private static bool ShouldAddQueryBuilderInvocation(FacetField field)
@@ -611,7 +646,7 @@ namespace BovineLabs.FacetGenerator
             {
                 FacetFieldKind.RefRW => $"WithAllRW<{field.ComponentTypeName}>()",
                 FacetFieldKind.RefRO => $"WithAll<{field.ComponentTypeName}>()",
-                FacetFieldKind.EnabledRefRW => $"WithAllRW<{field.ComponentTypeName}>()",
+                FacetFieldKind.FacetEnabledRefRW => $"WithAllRW<{field.ComponentTypeName}>()",
                 FacetFieldKind.EnabledRefRO => $"WithAll<{field.ComponentTypeName}>()",
                 FacetFieldKind.DynamicBuffer when field.IsReadOnly => $"WithAll<{field.ComponentTypeName}>()",
                 FacetFieldKind.DynamicBuffer => $"WithAllRW<{field.ComponentTypeName}>()",

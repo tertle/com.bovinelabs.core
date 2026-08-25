@@ -1,4 +1,0 @@
-interface:
-  display_name: "Core System Groups"
-  short_description: "Choose Core system-group placement"
-  default_prompt: "Use $bl-core-system-groups to choose and verify this system group and ordering."

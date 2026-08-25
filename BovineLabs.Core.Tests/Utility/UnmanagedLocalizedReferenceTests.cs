@@ -50,7 +50,6 @@ namespace BovineLabs.Core.Tests.Utility
             Assert.IsFalse(default(UnmanagedLocalizedReference).IsValid);
             Assert.IsFalse(new UnmanagedLocalizedReference(tableGuid, 0).IsValid);
         }
-
     }
 }
 #endif

@@ -36,8 +36,7 @@ namespace BovineLabs.Core
             }
         }
 
-        [Conditional("UNITY_EDITOR")]
-        [Conditional("BL_DEBUG")]
+        [Conditional("UNITY_INCLUDE_INSTRUMENTATION")]
         [HideInCallstack]
         public static void LogDebug(in FixedString128Bytes msg)
         {
@@ -47,8 +46,7 @@ namespace BovineLabs.Core
             }
         }
 
-        [Conditional("UNITY_EDITOR")]
-        [Conditional("BL_DEBUG")]
+        [Conditional("UNITY_INCLUDE_INSTRUMENTATION")]
         [HideInCallstack]
         public static void LogDebugLong512(in FixedString512Bytes msg)
         {
@@ -58,8 +56,7 @@ namespace BovineLabs.Core
             }
         }
 
-        [Conditional("UNITY_EDITOR")]
-        [Conditional("BL_DEBUG")]
+        [Conditional("UNITY_INCLUDE_INSTRUMENTATION")]
         [HideInCallstack]
         public static void LogDebugLong4096(in FixedString4096Bytes msg)
         {
@@ -69,8 +66,7 @@ namespace BovineLabs.Core
             }
         }
 
-        [Conditional("UNITY_EDITOR")]
-        [Conditional("BL_DEBUG")]
+        [Conditional("UNITY_INCLUDE_INSTRUMENTATION")]
         [HideInCallstack]
         public static void LogDebugString(string msg)
         {
@@ -189,6 +185,39 @@ namespace BovineLabs.Core
         }
 
         [HideInCallstack]
+        public static void LogFatal(in FixedString128Bytes msg)
+        {
+            if (Level >= LogLevel.Fatal)
+            {
+                UnityEngine.Debug.LogError($"F | {Frame.Data,-4} | Global  | {msg}");
+            }
+
+            throw new Exception("Fatal exception");
+        }
+
+        [HideInCallstack]
+        public static void LogFatal512(in FixedString512Bytes msg)
+        {
+            if (Level >= LogLevel.Fatal)
+            {
+                UnityEngine.Debug.LogError($"F | {Frame.Data,-4} | Global  | {msg}");
+            }
+
+            throw new Exception("Fatal exception");
+        }
+
+        [HideInCallstack]
+        public static void LogFatal4096(in FixedString4096Bytes msg)
+        {
+            if (Level >= LogLevel.Fatal)
+            {
+                UnityEngine.Debug.LogError($"F | {Frame.Data,-4} | Global  | {msg}");
+            }
+
+            throw new Exception("Fatal exception");
+        }
+
+        [HideInCallstack]
         public static void LogFatal(Exception ex)
         {
             if (Level >= LogLevel.Fatal)
@@ -206,7 +235,7 @@ namespace BovineLabs.Core
                     break;
                 case LogLevel.Fatal:
                 case LogLevel.Error:
-                    LogVerbose(msg);
+                    LogError(msg);
                     break;
                 case LogLevel.Warning:
                     LogWarning(msg);

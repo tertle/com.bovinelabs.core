@@ -5,15 +5,21 @@
 namespace BovineLabs.Core.Settings
 {
     using System;
-    using UnityEditor;
+    using Unity.Entities;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEngine;
     using UnityEngine.Assertions;
+#if UNITY_EDITOR
+    using UnityEditor;
+#endif
 
     public abstract class SettingsSingleton<T> : SettingsSingleton
         where T : SettingsSingleton
     {
+        [NoAutoStaticsCleanup]
         private static T settings;
 
+        [NoAutoStaticsCleanup]
         public static T I
         {
             get => GetSingleton(ref settings)!;
@@ -34,7 +40,7 @@ namespace BovineLabs.Core.Settings
     }
 
     [Serializable]
-    public abstract class SettingsSingleton : ScriptableObject, ISettings
+    public abstract partial class SettingsSingleton : ScriptableObject, ISettings
     {
         public virtual bool IncludeInBuild => true;
 
@@ -51,6 +57,13 @@ namespace BovineLabs.Core.Settings
         }
 
         protected abstract void Initialize();
+
+#if UNITY_EDITOR
+        internal void InitializeCreatedAsset()
+        {
+            this.Initialize();
+        }
+#endif
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
         private static void LoadAll()
@@ -72,7 +85,8 @@ namespace BovineLabs.Core.Settings
         }
 
 #if UNITY_EDITOR
-        internal static void InitializeInEditor()
+        [InitializeOnLoadMethod]
+        private static void InitializeInEditor()
         {
             LoadAll();
         }

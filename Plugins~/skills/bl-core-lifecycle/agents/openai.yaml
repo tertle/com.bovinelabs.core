@@ -1,4 +1,0 @@
-interface:
-  display_name: "Core Lifecycle"
-  short_description: "Implement Core entity lifecycle flows"
-  default_prompt: "Use $bl-core-lifecycle to implement or debug this Core lifecycle flow."

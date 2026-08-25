@@ -1,4 +1,4 @@
-﻿// <copyright file="AutoRefAttribute.cs" company="BovineLabs">
+// <copyright file="AutoRefAttribute.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 

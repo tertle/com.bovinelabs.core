@@ -53,6 +53,26 @@ namespace BovineLabs.Core.Extensions
         }
 
         /// <summary>
+        /// Determines whether a world is a client without also being a server.
+        /// </summary>
+        /// <param name="world">The world instance to check.</param>
+        /// <returns>True if the world is a client or thin client and does not have the <see cref="WorldFlags.GameServer" /> flag set.</returns>
+        public static bool IsClientOnlyWorld(this World world)
+        {
+            return world.Unmanaged.IsClientOnlyWorld();
+        }
+
+        /// <summary>
+        /// Determines whether an unmanaged world is a client without also being a server.
+        /// </summary>
+        /// <param name="world">The unmanaged world instance to check.</param>
+        /// <returns>True if the world is a client or thin client and does not have the <see cref="WorldFlags.GameServer" /> flag set.</returns>
+        public static bool IsClientOnlyWorld(this WorldUnmanaged world)
+        {
+            return world.IsClientWorld() && !world.IsServerWorld();
+        }
+
+        /// <summary>
         /// Determines whether a world is a server.
         /// </summary>
         /// <param name="world">The world instance to check.</param>

@@ -5,17 +5,20 @@
 namespace BovineLabs.Core.Utility
 {
     using Unity.Entities;
+    using Unity.Scripting.LifecycleManagement;
 #if UNITY_EDITOR
     using UnityEditor;
 #else
     using UnityEngine;
 #endif
 
-    internal static class WorldSafeShutdown
+    internal static partial class WorldSafeShutdown
     {
-#if UNITY_EDITOR
-        internal static void Initialize()
+        // Can't use [OnExitingPlayMode] because it gets called after OnDisable/OnDestroy
+        [OnCodeInitializing]
+        private static void Initialize()
         {
+#if UNITY_EDITOR
             EditorApplication.playModeStateChanged += change =>
             {
                 if (change == PlayModeStateChange.ExitingPlayMode)
@@ -23,14 +26,10 @@ namespace BovineLabs.Core.Utility
                     OnQuit();
                 }
             };
-        }
 #else
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void Initialize()
-        {
             Application.quitting += OnQuit;
-        }
 #endif
+        }
 
         private static void OnQuit()
         {

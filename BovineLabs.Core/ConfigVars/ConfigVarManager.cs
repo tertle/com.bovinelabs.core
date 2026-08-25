@@ -12,17 +12,23 @@ namespace BovineLabs.Core.ConfigVars
     using BovineLabs.Core.Utility;
     using Unity.Burst;
     using Unity.Collections;
+    using Unity.Entities;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEngine;
 #if UNITY_EDITOR
     using UnityEditor;
 #endif
 
     /// <summary> The manager for the config vars. Is pretty automated. </summary>
-    public static class ConfigVarManager
+    public static partial class ConfigVarManager
     {
         private static readonly Regex ValidateNameRegex = new("^[a-z_+-][a-z0-9_+.-]*$");
+
+        [NoAutoStaticsCleanup]
         private static readonly Dictionary<ConfigVarAttribute, IConfigVarContainer> AllInternal = new();
-        private static bool isInitialized;
+#if UNITY_EDITOR
+        private const string EditorPrefsPrefix = "BovineLabs.Core.ConfigVars";
+#endif
 
         public static IReadOnlyDictionary<ConfigVarAttribute, IConfigVarContainer> All => AllInternal;
 
@@ -45,25 +51,10 @@ namespace BovineLabs.Core.ConfigVars
         }
 
         /// <summary> Initializes the <see cref="ConfigVarAttribute" />s throughout the project. </summary>
-
-#if !UNITY_EDITOR
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-#endif
-        public static void Initialize()
+        [OnCodeLoaded]
+        private static void Initialize()
         {
-            if (isInitialized)
-            {
-                return;
-            }
-
-#if UNITY_EDITOR
-            EditorApplication.quitting += Shutdown;
-            AppDomain.CurrentDomain.DomainUnload += (_, _) => Shutdown();
-#else
-            Application.quitting += Shutdown;
-#endif
-
-            isInitialized = true;
+            TypeManager.Initialize();
 
             // We make sure to always initialize the logger first so we can use this here
             foreach (var (configVar, field) in FindAllConfigVars().OrderByDescending(v => v.ConfigVar.Name == BLLogger.LogLevelName))
@@ -98,7 +89,7 @@ namespace BovineLabs.Core.ConfigVars
                 else
                 {
 #if UNITY_EDITOR
-                    container.StringValue = EditorPrefs.GetString(configVar.Name, configVar.DefaultValue);
+                    container.StringValue = EditorPrefs.GetString(GetEditorPrefsKey(configVar.Name), configVar.DefaultValue);
                     BLGlobalLogger.LogDebugString($"{configVar.Name} set from editor prefs to {container.StringValue}");
 #else
                     container.StringValue = configVar.DefaultValue;
@@ -109,31 +100,25 @@ namespace BovineLabs.Core.ConfigVars
             }
         }
 
+        [OnCodeUnloading]
         private static void Shutdown()
         {
 #if UNITY_EDITOR
-            if (!UnityEditorInternal.InternalEditorUtility.CurrentThreadIsMainThread())
-            {
-                throw new InvalidOperationException("Must be called from the main thread");
-            }
-#endif
-
-            if (!isInitialized)
-            {
-                return;
-            }
-
-            isInitialized = false;
-
-#if UNITY_EDITOR
             foreach (var (configVar, container) in AllInternal)
             {
-                EditorPrefs.SetString(configVar.Name, container.StringValue);
+                EditorPrefs.SetString(GetEditorPrefsKey(configVar.Name), container.StringValue);
             }
 #endif
 
             AllInternal.Clear();
         }
+
+#if UNITY_EDITOR
+        internal static string GetEditorPrefsKey(string configVarName)
+        {
+            return $"{EditorPrefsPrefix}.{PlayerSettings.productGUID}.{configVarName}";
+        }
+#endif
 
         private static void RegisterConfigVar(ConfigVarAttribute configVar, IConfigVarContainer container)
         {

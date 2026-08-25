@@ -463,6 +463,28 @@ namespace BovineLabs.Core.Iterators
             this.AllocatedIndex = 0;
         }
 
+        internal void ClearDense()
+        {
+            if (!this.IsDense)
+            {
+                this.Clear();
+                return;
+            }
+
+            var keys = this.Keys;
+            var buckets = this.Buckets;
+            var count = this.Count;
+
+            for (var i = 0; i < count; i++)
+            {
+                buckets[this.GetBucket(keys[i])] = -1;
+            }
+
+            this.Count = 0;
+            this.FirstFreeIdx = -1;
+            this.AllocatedIndex = 0;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal int GetBucket(in TKey key)
         {
@@ -1082,6 +1104,8 @@ namespace BovineLabs.Core.Iterators
 
         internal struct Enumerator
         {
+            private const int DenseTraversal = -1;
+
             [NativeDisableUnsafePtrRestriction]
             internal DynamicHashMapHelper<TKey>* Data;
             internal int Index;
@@ -1092,13 +1116,28 @@ namespace BovineLabs.Core.Iterators
             {
                 this.Data = data;
                 this.Index = -1;
-                this.BucketIndex = 0;
+                this.BucketIndex = data->IsDense ? DenseTraversal : 0;
                 this.NextIndex = -1;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal bool MoveNext()
             {
+                if (this.BucketIndex == DenseTraversal)
+                {
+                    var index = this.Index + 1;
+
+                    if (index < this.Data->Count)
+                    {
+                        this.Index = index;
+                        return true;
+                    }
+
+                    this.Index = -1;
+                    this.BucketIndex = this.Data->BucketCapacity;
+                    return false;
+                }
+
                 var next = this.Data->Next;
 
                 if (this.NextIndex != -1)
@@ -1133,7 +1172,7 @@ namespace BovineLabs.Core.Iterators
             internal void Reset()
             {
                 this.Index = -1;
-                this.BucketIndex = 0;
+                this.BucketIndex = this.Data->IsDense ? DenseTraversal : 0;
                 this.NextIndex = -1;
             }
 

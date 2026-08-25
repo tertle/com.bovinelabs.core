@@ -109,13 +109,6 @@ namespace BovineLabs.Core.Iterators
             DynamicUntypedHashMapHelper<TKey>.AddOrSetRaw(this.buffer, ref this.helper, key, value, length);
         }
 
-        [Obsolete("Use GetOrAddRefUnsafe")]
-        public ref TValue GetOrAddRef<TValue>(TKey key, TValue defaultValue = default)
-            where TValue : unmanaged
-        {
-            return ref this.GetOrAddRefUnsafe(key, defaultValue);
-        }
-
         /// <summary> Gets a value if it exists otherwise adds it then returns it by ref. </summary>
         /// <remarks>
         /// Unsafe because the returned ref points directly into the hash map storage. Consume it immediately and do not keep or use it after any later

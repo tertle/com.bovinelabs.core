@@ -1,156 +1,145 @@
 # Utility
 
-BovineLabs Core provides a comprehensive collection of utility classes and helpers designed for high-performance Unity DOTS development, covering mathematical operations, memory management, ECS patterns, and development tools.
+Core includes small runtime helpers for math, worlds, unmanaged data, reflection, and editor diagnostics. Most live in `BovineLabs.Core.Utility`; world flags live in `BovineLabs.Core`, and related extension methods live in `BovineLabs.Core.Extensions`.
 
-## Mathematical & Computation Utilities
+## Start with the focused guides
 
-### `mathex`
-Extended mathematical operations with vectorized implementations and SIMD optimizations.
-- SIMD-optimized min/max/sum operations for arrays
-- Quaternion to Euler conversion with multiple rotation orders
-- Angle interpolation (`SmoothDampAngle`, `LerpAngle`, `DeltaAngle`)
-- Statistical distributions (normal, gamma, Gaussian noise generation)
-- Mathematical constants (`Radians90`, `Radians180`)
+| Need | Guide |
+|---|---|
+| Call managed code synchronously from Burst | [BurstTrampoline](BurstTrampoline.md) |
+| Non-deterministic random values in parallel jobs | [GlobalRandom](GlobalRandom.md) |
+| Short-lived pooled list scratch | [PooledNativeList](PooledNativeList.md) |
+| Frequently rebuilt spatial broad phase | [Spatial](Spatial.md) |
+| Native and entity-backed containers | [Collections](Collections.md) |
+| Reusable entity construction across bakers/tests/runtime | [EntityCommands](EntityCommands.md) |
 
-### `IntersectionTests`
-High-performance geometric intersection algorithms.
-- `AABBTriangle()` - AABB vs triangle intersection testing
-
-### `PolygonUtility`
-Polygon processing utilities for geometric calculations.
-- `SignedArea()` - Calculate signed area of 2D/3D polygons
-- Clockwise/counter-clockwise detection methods
-
-### `HalfSizeTriangleMatrix`
-Memory-efficient triangular matrix operations.
-- `GetIndex()` - Convert 2D coordinates to 1D triangle matrix index
-
-## Memory Management & Performance
-
-### `PooledNativeList<T>`
-High-performance pooled native containers with thread-safe object pooling.
-- Reduces allocation overhead in hot paths
-- Automatic capacity management
-- Thread-safe implementation
-
-### `NoAllocHelpers`
-Zero-allocation collection utilities for performance-critical scenarios.
-- `ExtractArrayFromList()` - Access internal array of List<T>
-- `ResizeList()` - Resize lists without allocations
-
-## Threading & Synchronization
-
-### `EntityLock`
-Entity-specific locking mechanism with reference counting.
-- Thread-safe entity locking
-- Optimized for high-contention scenarios
-- Disposable lock pattern
-
-### `SpinLock`
-Low-level spinlock implementation for short-duration locks.
-- `Acquire()`, `TryAcquire()`, `Release()` methods
-- Optimized for minimal overhead
-
-## ECS & Entity Utilities
-
-### `QueryEntityEnumerator`
-Advanced entity query iteration with chunk-based enumeration.
-- Enabled component mask support
-- Performance-optimized iteration patterns
-
-### `TransformUtility`
-Transform hierarchy utilities for parent-child relationships.
-- `SetupParent()` - Establish parent-child relationships
-- Handles LocalToWorld calculations and Child buffer management
-- `SetupLocalToWorld()` - Compute and set LocalToWorld for all entities in a LinkedEntityGroup
-
-### `WorldUtility`
-World management helpers for world filtering.
-- `AllExcludingAdvanced()` - Filter worlds by live flags
-
-## Reflection & Type Utilities
-
-### `ReflectionUtility`
-Comprehensive reflection helpers with performance caching.
-- `GetAllImplementations<T>()` - Find all types implementing an interface
-- `GetAllWithAttribute<T>()` - Find types with specific attributes
-- `GetMethodsWithAttribute<T>()` - Find methods with attributes
-- Assembly filtering and caching for performance
-
-### `TypeUtility`
-Type system utilities for generic type operations.
-- `MatchesOpenGeneric()` - Check if type matches open generic
-- `GetOpenGenericArgumentType()` - Extract generic argument types
-
-## System Architecture
-
-### `InitSystemBase`
-Base class for initialization systems that run once.
-- Automatically removes itself from update list after first run
-- Ordered first in InitializationSystemGroup
-
-### `BovineLabsBootstrap`
-Application bootstrap framework for service and game world management.
-- Configurable frame rate and fixed update settings
-- NetCode integration support
+## World helpers
 
 ### `Worlds`
-World system filter flags with predefined combinations.
-- Service world, client/server world configurations
 
-## Data Structures & Containers
+`BovineLabs.Core.Worlds` defines the project-wide `WorldSystemFilterFlags` combinations used by package systems:
 
-### `BoolExtensions`
-Boolean utility extensions for branchless algorithms.
-- `AsByte()` - Convert bool to byte for performance
+- `ClientLocal`, `ServerLocal`, and `ServerLocalEditor`
+- `Simulation`, `SimulationService`, `SimulationMenu`, and editor combinations
+- custom `Service` and `Menu` filter bits
+- `All`
+- `ServiceWorld` and `MenuWorld` `WorldFlags` values for constructing those worlds
 
-### `IntFloatUnion`
-Type-safe union for int/float conversion with memory layout optimization.
+```csharp
+[WorldSystemFilter(Worlds.ServerLocal, Worlds.ServerLocal)]
+public partial struct AuthoritativeSystem : ISystem
+{
+}
+```
 
-### `ShortHalfUnion`
-Union for short/half float conversion.
+`Worlds.IsServiceWorld(...)` and `Worlds.IsLocalWorld(...)` work with managed and unmanaged worlds. `WorldExtensions` adds `IsClientWorld`, `IsServerWorld`, `IsThinClientWorld`, `IsServerLocalWorld`, and `IsEditorWorld` overloads.
 
-## Development & Debug Utilities
+Keep filter flags and instance flags distinct: `WorldSystemFilterFlags` select which systems belong in a world, while `WorldFlags` describe an existing world.
 
-### `TimeProfiler`
-Performance profiling utility for editor-only timing measurements.
-- Automatic disposal pattern
-- Configurable log levels
+### `WorldUtility`
 
-### `CommandLineArgs`
-Command line argument parsing utilities.
-- `TryGetArgument()` - Extract command line values
-- `Contains()` - Check for argument existence
+`WorldUtility.AllExcludingAdvanced()` enumerates the currently registered worlds whose flags include `WorldFlags.Live`.
 
-### `BurstUtil`
-Burst compiler utilities for development.
-- `IsEmpty()` - Burst-compatible EntityQuery.IsEmpty
-- `SetNotBurstCompiled()` - Debug helper for burst compilation detection
+### `InitSystemBase`
 
-## Mesh & Geometry Processing
+`InitSystemBase` is a managed `SystemBase` placed first in `InitializationSystemGroup`. Its default `OnUpdate` removes the system from the group's update list, which suits subclasses that perform one-time work in `OnCreate`. A subclass that overrides `OnUpdate` replaces that default removal behavior unless it calls the base implementation.
 
-### `ConvexHullBuilder`
-3D convex hull generation with Quickhull algorithm implementation.
-- Burst-compiled for performance
-- Mesh export functionality
+## ECS helpers
 
-### `MeshSimplifier`
-Mesh simplification algorithms for level-of-detail systems.
+### `TransformUtility.SetupLocalToWorld`
 
-### `TerrainToMesh`
-Terrain to mesh conversion utilities.
+`SetupLocalToWorld(...)` recomputes existing `LocalToWorld` values for a `LinkedEntityGroup` from `LocalTransform`, `Parent`, and optional `PostTransformMatrix` data. Use it when a linked hierarchy must be synchronized immediately rather than waiting for the normal transform systems.
 
-## Serialization & Data
+Important constraints:
 
-### `Serializer` / `Deserializer`
-Data serialization utilities for save/load systems.
+- It sets existing components; it does not add missing transform components.
+- Linked entities without `LocalToWorld` are skipped.
+- A missing `LocalTransform` in a traversed parent chain throws.
+- Parent cycles are rejected after a bounded traversal.
+- The overload taking explicit lookups is preferable when the caller already owns and updates them.
+
+### `QueryEntityEnumerator`
+
+`QueryEntityEnumerator` exposes low-level chunk iteration for an `EntityQuery`, including enabled masks through `ChunkEntityEnumerator`. Prefer Unity's normal query/job APIs unless this manual iteration is required. The caller owns dependency completion and must not perform structural changes while using the raw iteration state.
+
+### `WriteGroupMatcher<T>`
+
+`WriteGroupMatcher<T>` is a specialized helper for matching write-group component relationships. Use it only when implementing generic ECS code that must reproduce write-group filtering rules. It owns a persistent native array; complete its readers and call `Dispose()` from the owning system.
+
+## Math and geometry
+
+### `mathex`
+
+Frequently useful operations include:
+
+- vectorized `min`, `max`, `sum`, and `minMax` over arrays/pointers;
+- angle helpers such as `SmoothDampAngle`, `LerpAngle`, and `DeltaAngle`;
+- `Approximately` overloads and 2D/3D rotation helpers;
+- `GenerateGaussianNoise`, `NormalDistribution`, and `GammaDistribution` using an explicit `Unity.Mathematics.Random` state;
+- `FromToRotation` and perpendicular-vector helpers; and
+- constants including `Radians90`, `Radians180`, and `Radians360`.
+
+The lowercase aggregate methods are pointer-oriented Burst utilities; validate array lifetime and pass correct lengths.
+
+### Other geometry helpers
+
+- `IntersectionTests.AABBTriangle(...)` tests an AABB against a triangle.
+- `PolygonUtility` calculates signed area and clockwise/counter-clockwise orientation for `NativeArray<float2>` and `NativeArray<float3>` polygons.
+- `HalfSizeTriangleMatrix.GetIndex(...)` packs symmetric matrix coordinates into one triangular array.
+- `CurveRemapUtility.TryRemapToClipLength(...)` remaps clamp-wrapped `AnimationCurve` keys into clip-local time while preserving tangents.
+- `HSV` clamps hue/saturation/value inputs and converts them to `Color` with `ToColor()`.
+
+### Mesh utilities
+
+`ConvexHullBuilder`, `MeshSimplifier`, and `TerrainToMesh` are advanced mesh-processing helpers. `TerrainToMesh` is available only when the Terrain module integration is compiled. Their operations allocate result and working containers; use the requested allocator and dispose returned owning values according to each API.
+
+## Memory and synchronization
+
+### `NoAllocHelpers`
+
+`ExtractArrayFromList(...)` and `ResizeList(...)` access the private layout of managed `List<T>` to avoid normal copying/filling behavior. They are runtime-layout-sensitive unsafe optimizations. Prefer ordinary `List<T>` APIs unless profiling justifies the dependency on internal layout.
+
+### `EntityLock` and `SpinLock`
+
+These are low-level spin-based synchronization tools. Keep critical sections short and do not use them for work that can block or wait on jobs. Wrap the token returned by `EntityLock.Acquire(entity)` in `using`; the `EntityLock` owner must dispose its allocator-backed storage after all users finish. `SpinLock` has no token: pair `Acquire` or a successful `TryAcquire` with `Release`, normally through `try`/`finally`.
+
+## Reflection and type discovery
+
+`ReflectionUtility` caches loaded assemblies, types, methods, implementation searches, and attribute searches. `TypeUtility` checks inheritance against open generic base types and extracts their type arguments.
+
+These are managed reflection APIs, not Burst/job utilities. Discovery can still be expensive on first use; cache domain-specific results instead of repeatedly filtering the global type set in hot paths.
+
+## Raw serialization and compression
+
+### `Serializer` and `Deserializer`
+
+These types append and read unmanaged values from raw byte storage. `Serializer` owns an `UnsafeList<byte>` and must be disposed. `Deserializer` borrows a `NativeArray<byte>` or external pointer and advances `CurrentIndex` as values are read.
+
+They do not define a versioned save format, perform schema migration, normalize endianness, or add comprehensive bounds validation. The caller must define the layout, validate input length, and keep borrowed memory alive.
 
 ### `CodecService`
-Encoding/decoding services for data processing.
 
-## Application & Runtime Utilities
+`CodecService` currently exposes LZ4 compression through `Codec.LZ4`. Use `GetBoundedSize` when supplying a destination buffer. The overload that allocates an output pointer transfers its allocator lifetime to the caller; release owned non-temporary allocations with the same allocator. Decompression requires the exact expected uncompressed size and returns false when LZ4 produces a different number of bytes.
 
-### `HSV`
-HSV color space utilities for color manipulation.
-- `ToColor()` - Convert HSV to Unity Color
-- Clamped value validation
+## Diagnostics and command-line helpers
+
+### `TimeProfiler`
+
+`TimeProfiler` is an editor-only scoped timer gated by `BLLogger.Level`. Use `Start`, `StartWithMin`, or their string variants in a `using` scope. Player builds return a no-op value.
+
+### `CommandLineArgs`
+
+`TryGetArgument` expects separate option and value tokens:
+
+```text
+-app.target-frame-rate 60
+```
+
+`Contains` checks for a standalone option. Arguments are captured from `Environment.GetCommandLineArgs()` when the type initializes.
+
+### `BurstUtil`
+
+- `IsEmpty(ref EntityQuery)` provides a Burst-compiled query emptiness call.
+- `SetNotBurstCompiled(ref bool)` is discarded by Burst and can detect whether a path is running without Burst.
+
+For assertions and logging, see [Debug](Debug.md).

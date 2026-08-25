@@ -5,36 +5,12 @@
 namespace BovineLabs.Core.Extensions
 {
     using System;
-    using System.Runtime.CompilerServices;
     using BovineLabs.Core.Collections;
-    using Unity.Burst.CompilerServices;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
     public static unsafe class EntityDataAccessExtensions
     {
-        internal static byte* GetComponentDataWithTypeRO(
-            ref this EntityDataAccess access, ChunkIndex chunk, Archetype* archetype, int indexInChunk, TypeIndex typeIndex, ref LookupCache cache)
-        {
-            return ChunkDataUtility.GetComponentDataWithTypeRO(chunk, archetype, indexInChunk, typeIndex, ref cache);
-        }
-
-        internal static byte* GetComponentDataWithTypeRW(
-            ref this EntityDataAccess access, ChunkIndex chunk, Archetype* archetype, int indexInChunk, Entity entity, TypeIndex typeIndex, uint globalVersion,
-            ref LookupCache cache)
-        {
-            var data = ChunkDataUtility.GetComponentDataWithTypeRW(chunk, archetype, indexInChunk, typeIndex, globalVersion, ref cache);
-
-#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
-            if (Hint.Unlikely(access.EntityComponentStore->m_RecordToJournal != 0))
-            {
-                JournalAddRecord(access.EntityComponentStore, entity, typeIndex, globalVersion, data);
-            }
-#endif
-
-            return data;
-        }
-
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal static UntypedDynamicBuffer GetUntypedBuffer(
             ref this EntityDataAccess access, ComponentType componentType, Entity entity, AtomicSafetyHandle safety, AtomicSafetyHandle arrayInvalidationSafety,
@@ -93,40 +69,5 @@ namespace BovineLabs.Core.Extensions
             return new UntypedDynamicBuffer(header, internalCapacity, typeInfo.ElementSize, UntypedDynamicBuffer.AlignOf);
 #endif
         }
-
-#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
-#pragma warning disable 0618
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void JournalAddRecord(EntityComponentStore* store, Entity entity, TypeIndex typeIndex, uint version, void* data)
-        {
-            EntitiesJournaling.RecordType recordType;
-            void* recordData = null;
-            var recordDataLength = 0;
-            if (TypeManager.IsSharedComponentType(typeIndex))
-            {
-                // Getting RW data pointer on shared components should not be allowed
-                return;
-            }
-
-            if (TypeManager.IsManagedComponent(typeIndex))
-            {
-                recordType = EntitiesJournaling.RecordType.GetComponentObjectRW;
-            }
-            else if (TypeManager.IsBuffer(typeIndex))
-            {
-                recordType = EntitiesJournaling.RecordType.GetBufferRW;
-            }
-            else
-            {
-                recordType = EntitiesJournaling.RecordType.GetComponentDataRW;
-                recordData = data;
-                recordDataLength = TypeManager.GetTypeInfo(typeIndex).TypeSize;
-            }
-
-            EntitiesJournaling.AddRecord(recordType, store, version, &entity, 1, types: &typeIndex, typeCount: 1, data: recordData,
-                dataLength: recordDataLength);
-        }
-#pragma warning restore 0618
-#endif
     }
 }

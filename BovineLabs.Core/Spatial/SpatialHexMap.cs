@@ -209,6 +209,25 @@ namespace BovineLabs.Core.Spatial
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Distance(int2 a, int2 b)
+        {
+            var delta = a - b;
+            return math.max(math.max(math.abs(delta.x), math.abs(delta.y)), math.abs(delta.x + delta.y));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float OuterRadiusFromCellWidth(float cellWidth)
+        {
+            return cellWidth / Sqrt3;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float CellWidthFromOuterRadius(float outerRadius)
+        {
+            return outerRadius * Sqrt3;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 Center(int2 axial, float outerRadius)
         {
             return new float2(

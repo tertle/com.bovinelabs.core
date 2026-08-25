@@ -1,17 +1,17 @@
-﻿// <copyright file="AssemblyInfo.cs" company="BovineLabs">
+// <copyright file="AssemblyInfo.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using Unity.Entities;
-using UnityEngine;
 
 [assembly: InternalsVisibleTo("BovineLabs.Core.Editor")]
-[assembly: InternalsVisibleTo("BovineLabs.Core.Extensions")]
-[assembly: InternalsVisibleTo("BovineLabs.Core.Extensions.Authoring")]
-[assembly: InternalsVisibleTo("BovineLabs.Core.Extensions.Debug")]
-[assembly: InternalsVisibleTo("BovineLabs.Core.Extensions.Editor")]
+[assembly: InternalsVisibleTo("BovineLabs.Core.Authoring")]
+[assembly: InternalsVisibleTo("BovineLabs.Nerve")]
+[assembly: InternalsVisibleTo("BovineLabs.Nerve.Tests")]
+[assembly: InternalsVisibleTo("BovineLabs.Nerve.Authoring")]
+[assembly: InternalsVisibleTo("BovineLabs.Nerve.Debug")]
+[assembly: InternalsVisibleTo("BovineLabs.Nerve.Editor")]
 [assembly: InternalsVisibleTo("BovineLabs.Core.Tests")]
 [assembly: InternalsVisibleTo("BovineLabs.Testing")]
 

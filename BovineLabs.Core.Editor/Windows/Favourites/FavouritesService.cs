@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Editor.Windows.Base;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEngine;
     using Object = UnityEngine.Object;
@@ -19,6 +20,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
     {
         public const string PreferenceKey = "Favourites";
 
+        [NoAutoStaticsCleanup]
         private static FavouritesService instance;
 
         private readonly List<FavouritesItem> favourites = new();

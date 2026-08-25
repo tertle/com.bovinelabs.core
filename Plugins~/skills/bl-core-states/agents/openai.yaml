@@ -1,4 +1,0 @@
-interface:
-  display_name: "Core States"
-  short_description: "Implement BovineLabs Core states"
-  default_prompt: "Use $bl-core-states to implement or debug this Core state model."

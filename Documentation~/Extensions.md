@@ -1,145 +1,164 @@
 # Extensions
 
-BovineLabs Core provides extensive extension methods that enhance Unity's DOTS APIs with performance optimizations, convenience methods, and advanced functionality for ECS development.
+Most Core extensions are in:
 
-## Entity & Component Extensions
+```csharp
+using BovineLabs.Core.Extensions;
+```
 
-### `EntityManagerExtensions`
-Enhanced entity manager operations for advanced entity manipulation.
-- `GetChunkBuffer<T>()` - Access chunk-level buffers
-- `GetUntypedBuffer()` - Get untyped dynamic buffers
-- `NumberOfArchetype()` - Get archetype count information
+This page is a curated map of the public APIs. Prefer Unity's built-in API when it already expresses the operation; use the unsafe Core helpers only when their additional behavior is required.
 
-### `ComponentLookupExtensions`
-Optimized component lookup operations with performance enhancements.
-- `GetOptionalComponentDataRW<T>()` - Get writable component data with null safety
-- `GetRefRWNoChangeFilter<T>()` - Get reference without triggering change filters
+## Entity, query, and system APIs
 
-### `BufferLookupExtensions`
-Enhanced buffer lookup operations for dynamic buffer access.
+| Need | API | Important members |
+|---|---|---|
+| Immediate entity-manager access | `EntityManagerExtensions` | `GetComponentLookup<T>`, `GetBufferLookup<T>`, singleton access, `GetUntypedBuffer`, named `CreateEntity` overloads |
+| Low-level system state | `SystemStateExtensions` | `GetSharedComponentLookup<T>`, `GetChangeFilterLookup<T>`, `GetUnsafeEnableableLookup`, `GetUnsafeEntityDataAccess`, `AddDependency` |
+| Shared-filter inspection | `EntityQueryExtensions` | `QueryHasSharedFilter<T>`, `ReplaceSharedComponentFilter<T>` |
+| Runtime-type query construction | `EntityQueryBuilderExtensions` | `WithAll`, `WithAllRW`, `WithAny`, `WithAnyRW`, `WithNone` using `ComponentType` |
+| Chunk enable masks and dynamic buffer types | `ArchetypeChunkExtensions` | `GetDynamicBufferAccessor`, enabled-bit access, `GetEnabledMaskRO`, `ChunkIndex` |
+| Untyped ECB operations | `EntityCommandBufferExtensions` | `AddUntypedBuffer`, `UnsafeAddComponent` |
 
-### `SystemStateExtensions`
-Extended system state functionality for advanced system operations.
-- `GetUnsafeComponentLookup<T>()` - Get unsafe component lookups
-- `GetSharedComponentLookup<T>()` - Get shared component lookups
-- `GetUnsafeEntityDataAccess()` - Direct entity data access
+### EntityManager singleton access
 
-## Query & Archetype Extensions
+`EntityManagerExtensions` includes:
 
-### `EntityQueryExtensions`
-Advanced query operations and manipulation.
-- `QueryHasSharedFilter<T>()` - Check for shared component filters
-- `ReplaceSharedComponentFilter<T>()` - Replace shared component filters dynamically
+- `HasSingleton<T>()`
+- `GetSingleton<T>(completeDependency: true)`
+- `GetSingletonRW<T>(completeDependency: true)`
+- `TryGetSingleton<T>(out value, completeDependency: true)`
+- `GetSingletonBuffer<T>(isReadOnly)`
+- `GetSingletonBufferNoSync<T>(isReadOnly)`
 
-### `EntityQueryBuilderExtensions`
-Enhanced query building with additional functionality.
+The default accessors complete relevant dependencies. The `NoSync` form does not; the caller must already own the correct dependency ordering.
 
-### `ArchetypeChunkExtensions`
-Optimized chunk operations for performance-critical scenarios.
+Immediate `EntityManager` mutation is not job-safe and can cause structural changes. Use an entity command buffer for deferred runtime structural work. See [IEntityCommands](EntityCommands.md) for reusable entity-shape builders.
 
-## Collection Extensions
+### Lookups
 
-### `NativeArrayExtensions`
-Enhanced array operations with performance optimizations.
-- `ElementAt<T>()` - Get reference to array element
-- `ElementAtAsPtr<T>()` - Get pointer to array element
-- Predicate and selector interfaces for functional operations
+Core no longer defines `ComponentLookupExtensions` or `BufferLookupExtensions`. Use Unity's lookup APIs directly:
 
-### `NativeListExtensions`
-List manipulation utilities with enhanced functionality.
+```csharp
+var optional = componentLookup.GetRefRWOptional(entity);
+if (optional.IsValid)
+{
+    optional.ValueRW.Value++;
+}
 
-### `DynamicBufferExtensions`
-Buffer operations with performance and convenience enhancements.
-- `ResizeInitialized<T>()` - Resize buffer and clear memory
-- `AddRange<T>()` - Add multiple elements efficiently
-- `InsertAllocate<T>()` - Insert and allocate space in one operation
-- `AsNativeArrayRO<T>()` - Get read-only native array view
+if (bufferLookup.TryGetBuffer(entity, out var buffer))
+{
+    // Use buffer.
+}
+```
 
-### `UnsafeListExtensions`
-Performance-critical list operations using unsafe code.
+The old `GetOptionalComponentDataRW<T>` and `GetRefRWNoChangeFilter<T>` helpers are not current Core APIs. Unity's `GetRefRWOptional` is the supported optional-ref replacement; acquiring write access follows Unity's normal change-version rules.
 
-### Native Collection Extensions
-Extensions for Unity's native collections:
-- `NativeHashMapExtensions` - Enhanced hash map operations
-- `NativeHashSetExtensions` - Set manipulation utilities
-- `NativeParallelHashMapExtensions` - Parallel hash map operations
-- `NativeParallelMultiHashMapExtensions` - Multi-hash map utilities
-- `NativeSliceExtensions` - Slice manipulation
-- `NativeStreamExtensions` - Stream processing utilities
+Public Core lookup utilities and their refresh rules are covered in [Iterators](Iterators.md).
 
-## System & World Extensions
+## Native arrays, lists, and buffers
 
-### `WorldExtensions`
-World type checking and identification.
-- `IsClientWorld()` - Check if world is client (includes thin clients)
-- `IsServerWorld()` - Check if world is server
-- `IsThinClientWorld()` - Check if world is thin client
+| Type | Extension class | Common operations |
+|---|---|---|
+| `NativeArray<T>` | `NativeArrayExtensions` | ref access, `ElementAtRO`, `Fill`, `Clear`, `Reverse`, `Clone`, predicate-based `Where` / `Select` / `Any` / `All` |
+| `NativeList<T>` | `NativeListExtensions` | `ReserveNoResize`, `Insert`, `ResizeInitialized`, managed-array/enumerable `AddRange` |
+| `DynamicBuffer<T>` | `DynamicBufferExtensions` | `ResizeInitialized`, pointer `AddRange`, `InsertAllocate`, `GetPtr`, explicit access checks |
+| `UnsafeList<T>` | `UnsafeListExtensions` | `ReserveNoResize`, predicate `IndexOf` and `TryGetValue` |
+| `List<T>` | `ListExtensions` | `AddRangeNative`, `ClearAddRange`, `Resize` |
 
-### `ComponentSystemBaseExtensions`
-System utilities for component system operations.
+### Ref and pointer lifetimes
 
-### `EntityCommandBufferExtensions`
-Enhanced command buffer operations for batch entity operations.
+```csharp
+ref var value = ref values.ElementAt(index);
+ref readonly var readOnlyValue = ref values.ElementAtRO(index);
+var pointer = values.ElementAtAsPtr(index);
+```
 
-## Mathematics & Utility Extensions
+Refs and pointers are aliases into the container. They become invalid when the container is disposed or reallocated and must not outlive the job or scope that owns the container.
 
-### `MathematicsExtensions`
-Extended math operations beyond Unity.Mathematics.
-- `Encapsulate()` - Combine AABBs
-- `Expand()` - Expand AABB size
-- `IsDefault()` - Check if AABB is default
-- `Right()`, `Up()`, `Forward()` - Extract vectors from transformation matrices
+`DynamicBufferExtensions.AddRange` accepts a pointer and length. `InsertAllocate` returns a pointer to newly inserted storage. Both require an unsafe context and writable buffer access.
 
-### `PhysicsExtensions`
-Physics-related utilities for physics simulations.
+There is no current `AsNativeArrayRO<T>` Core extension. Use Unity's `DynamicBuffer<T>.AsNativeArray()` and preserve the read-only access mode supplied by the query or lookup.
 
-### `StringExtensions`
-String manipulation helpers for text processing.
+## Hash maps and sets
 
-### `GameObjectExtensions`
-GameObject utilities for authoring workflows.
+| Container | Extension class | Selected operations |
+|---|---|---|
+| `NativeHashMap<TKey, TValue>` | `NativeHashMapExtensions` | `GetOrAddRefUnsafe`, `Remove(key, out value)` |
+| `NativeHashSet<TKey>` | `NativeHashSetExtensions` | bucket reset/recalculation and low-level key access |
+| `NativeParallelHashMap<TKey, TValue>` | `NativeParallelHashMapExtensions` | reserve, batch population, bucket recalculation, ref access |
+| `NativeParallelMultiHashMap<TKey, TValue>` | `NativeParallelMultiHashMapExtensions` | unique-key collection, reserve, batch population, bucket recalculation |
+| `NativeParallelHashSet<TKey>` | `NativeParallelHashSetExtensions` | reserve, copy to list, batch population, first-key lookup |
+| `UnsafeHashMap<TKey, TValue>` | `UnsafeHashMapExtensions` | ref get-or-add and remove-with-value |
+| `UnsafeParallelHashMap<TKey, TValue>` | `UnsafeParallelHashMapExtensions` | per-thread writer, ref access, batch population |
 
-## Performance & Unsafe Extensions
+There is no separate `UnsafeParallelMultiHashMapExtensions` class.
 
-### `UnsafeParallelHashMapExtensions`
-High-performance unsafe hash map operations for critical paths.
+Methods named `Unsafe` frequently write directly into key/value storage, bypass duplicate checks, or require pre-reserved capacity. Read the method's source contract before using one. In particular, a ref returned by `GetOrAddRefUnsafe` or `GetRef` is invalid after any later map write that can relocate or reorganize storage.
 
-### `UnsafeParallelMultiHashMapExtensions`
-Unsafe multi-hash map operations for maximum performance.
+For entity-backed maps, use [DynamicHashMap](DynamicHashMap.md). For direct parallel traversal, use [Jobs](Jobs.md).
 
-### `UnsafeHashMapExtensions`
-Unsafe hash map utilities for performance-critical scenarios.
+## Queues and streams
 
-### `RefRWExtensions`
-Reference handling utilities for component access.
+- `NativeQueueExtensions.IsCreated` checks a `NativeQueue<T>.ParallelWriter`.
+- `NativeStreamExtensions.WriteLarge` and `ReadLarge` split data that exceeds a single native-stream allocation block.
+- `BufferAccessorExtensions.GetUnsafe` exposes a dynamic buffer from a `BufferAccessor<T>` without the normal accessor path.
 
-### `EntityDataAccessExtensions`
-Direct entity data access for advanced operations.
+The large stream and unsafe buffer APIs operate on raw memory. Keep element layout, reader/writer position, and source lifetime identical on both sides.
 
-## Specialized Extensions
+## Worlds and systems
 
-### `EntityStorageInfoLookupExtensions`
-Entity storage information utilities.
+`WorldExtensions` supports both `World` and `WorldUnmanaged`:
 
-### `EntitySceneReferenceExtensions`
-Scene reference manipulation for SubScene workflows.
+- `IsThinClientWorld()`
+- `IsClientWorld()`
+- `IsServerWorld()`
+- `IsServerLocalWorld()`
+- `IsEditorWorld()`
 
-### `MinMaxAABBExtensions`
-AABB manipulation utilities.
+`WorldUnmanagedExtensions` adds `SystemExists<T>()` and the advanced `GetTrackedJobHandle()` diagnostic helper. Core does not currently define `ComponentSystemBaseExtensions`.
 
-### `RayExtension`
-Ray-related utilities for spatial operations.
+## Math, bounds, physics, and scenes
 
-### `KVPairExtensions`
-Key-value pair utilities for data structures.
+| API | Operations |
+|---|---|
+| `MathematicsExtensions` | `AABB.Encapsulate`, `Expand`, `IsDefault`, matrix/quaternion direction vectors, matrix position and rotation |
+| `AabbExtensions` | In-place `Shrink`, `ShrinkSafe`, `ExpandX`, `ExpandY`, `ExpandZ` for `Aabb` |
+| `MinMaxAABBExtensions` | `Overlaps` |
+| `PhysicsExtensions` | `Plane.Raycast` and `Ray.GetPoint` |
+| `EntitySceneReferenceExtensions` | `SceneGUID` |
 
-## Container Management
+`RayExtension` is not a current type; the ray helpers live in `PhysicsExtensions`.
 
-### `ContainerClearJobs`
-Job-based container clearing operations.
+## Strings, objects, and enumerables
 
-### `NativeHashMapFactory`
-Factory methods for creating native hash maps.
+- `StringExtensions`: sentence/dot notation, casing, prefix/suffix trimming, bounded length, and no-error fixed-string conversion.
+- `GameObjectExtensions`: `IsPrefab` and `IsAsset` authoring checks.
+- `EnumerableExtensions`: value- and predicate-based `IndexOf`.
 
-### `NativeHashSetFactory`
-Factory methods for creating native hash sets.
+## Clearing jobs and factories
+
+The `ContainerClearJobs.cs` file defines concrete jobs such as `ClearListJob<T>`, `ClearNativeHashMapJob<TKey, TValue>`, `ClearNativeParallelHashMapJob<TKey, TValue>`, and `ClearNativeParallelMultiHashMapJob<TKey, TValue>`.
+
+For non-default hash-map growth, use the generic factories:
+
+```csharp
+var map = NativeHashMapFactory<int, Entity>.Create(
+    initialCapacity: 128,
+    minGrowth: 64,
+    allocator: allocator);
+
+var set = NativeHashSetFactory<Entity>.Create(
+    initialCapacity: 128,
+    minGrowth: 64,
+    allocator: allocator);
+```
+
+The caller owns and must dispose the returned container.
+
+## Unsafe checklist
+
+- Keep every pointer/ref alias within the source container's lifetime and before its next possible reallocation.
+- Register component dependencies before using `UnsafeEntityDataAccess` or dynamic `ComponentType` access in jobs.
+- Pre-size destinations before no-resize or direct bucket writes.
+- Do not assume batch hash-map helpers validate duplicates or preserve order.
+- Chain every scheduled clear, fill, or traversal handle before reusing or disposing the container.

@@ -12,30 +12,9 @@ namespace BovineLabs.Core.Extensions
     {
         private const int Align64BIT = 8;
 
-        public static UntypedDynamicBuffer AddUntypedBuffer(this EntityCommandBuffer ecb, Entity e, ComponentType componentType)
-        {
-            ecb.EnforceSingleThreadOwnership();
-            ecb.AssertDidNotPlayback();
-
-            // TODO try use the m_BufferSafety and m_ArrayInvalidationSafety but they are private
-            return ecb.m_Data->CreateUntypedBufferCommand(ECBCommand.AddBuffer, &ecb.m_Data->m_MainThreadChain, ecb.MainThreadSortKey, e, componentType);
-        }
-
         public static UntypedDynamicBuffer AddUntypedBuffer(this EntityCommandBuffer.ParallelWriter ecb, int sortKey, Entity e, ComponentType componentType)
         {
             return ecb.m_Data->CreateUntypedBufferCommand(ECBCommand.AddBuffer, &ecb.m_Data->m_MainThreadChain, sortKey, e, componentType);
-        }
-
-        public static void UnsafeAddComponent(this EntityCommandBuffer ecb, Entity e, TypeIndex typeIndex, int typeSize, void* componentDataPtr)
-        {
-            ecb.UnsafeAddComponent(e, typeIndex, typeSize, componentDataPtr);
-        }
-
-        public static void UnsafeAddComponent(
-            this EntityCommandBuffer.ParallelWriter ecb, int sortIndex, Entity e, ComponentType componentType, void* componentDataPtr)
-        {
-            ref readonly var type = ref TypeManager.GetTypeInfo(componentType.TypeIndex);
-            UnsafeAddComponent(ecb, sortIndex, e, componentType.TypeIndex, type.ElementSize, componentDataPtr);
         }
 
         public static void UnsafeAddComponent(
@@ -69,27 +48,16 @@ namespace BovineLabs.Core.Extensions
             ref readonly var type = ref TypeManager.GetTypeInfo(typeIndex);
             var sizeNeeded = EntityCommandBufferData.Align(sizeof(EntityBufferCommand) + type.SizeInChunk, Align64BIT);
 
-#if !UNITY_6000_6_OR_NEWER
-            ecbd.ResetCommandBatching(chain);
-#endif
             var cmd = (EntityBufferCommand*)ecbd.Reserve(chain, sortKey, sizeNeeded);
 
             cmd->Header.Header.CommandType = op;
             cmd->Header.Header.TotalSize = sizeNeeded;
             cmd->Header.Header.SortKey = chain->m_LastSortKey;
             cmd->Header.Entity = e;
-#if UNITY_6000_6_OR_NEWER
             cmd->Header.EntityCount = 0;
             cmd->Header.Entities = null;
-#else
-            cmd->Header.IdentityIndex = 0;
-            cmd->Header.BatchCount = 1;
-#endif
             cmd->ComponentTypeIndex = typeIndex;
             cmd->ComponentSize = (short)type.SizeInChunk;
-#if !UNITY_6000_6_OR_NEWER
-            cmd->ValueRequiresEntityFixup = 0;
-#endif
 
             var header = &cmd->BufferNode.TempBuffer;
             BufferHeader.Initialize(header, type.BufferCapacity);
@@ -106,14 +74,6 @@ namespace BovineLabs.Core.Extensions
             ecbd.m_ForceFullDispose = true;
 
             internalCapacity = type.BufferCapacity;
-
-#if !UNITY_6000_6_OR_NEWER
-            if (TypeManager.HasEntityReferences(typeIndex))
-            {
-                cmd->ValueRequiresEntityFixup = 1;
-                ecbd.m_BufferWithFixups.Add(1);
-            }
-#endif
 
             return header;
         }

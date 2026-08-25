@@ -18,7 +18,6 @@
     "Unity.Scenes.Editor",
     "Unity.Splines",
     "Unity.Physics",
-    "Unity.Serialization.Editor",
     "Unity.Transforms",
     "Unity.VisualEffectGraph.Editor"
   ],
@@ -48,18 +47,13 @@
       "define": "UNITY_UI_TOOLKIT"
     },
     {
-      "name": "com.unity.entities.graphics",
-      "expression": "",
-      "define": "UNITY_GRAPHICS"
-    },
-    {
       "name": "com.unity.physics",
-      "expression": "",
+      "expression": "6.7.0",
       "define": "UNITY_PHYSICS"
     },
     {
       "name": "com.unity.netcode",
-      "expression": "",
+      "expression": "6.7.0",
       "define": "UNITY_NETCODE"
     },
     {
@@ -71,6 +65,16 @@
       "name": "com.unity.splines",
       "expression": "",
       "define": "UNITY_SPLINES"
+    },
+    {
+      "name": "com.unity.inputsystem",
+      "expression": "1.20.0",
+      "define": "UNITY_INPUT_SYSTEM"
+    },
+    {
+      "name": "com.bovinelabs.nerve",
+      "expression": "",
+      "define": "UNITY_NERVE"
     }
   ],
   "noEngineReferences": false

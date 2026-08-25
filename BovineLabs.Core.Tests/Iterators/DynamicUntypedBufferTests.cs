@@ -15,13 +15,6 @@ namespace BovineLabs.Core.Tests.Iterators
 
     public class DynamicUntypedBufferTests : ECSTestsFixture
     {
-        [SetUp]
-        public override void Setup()
-        {
-            base.Setup();
-            TypeManagerEx.Initialize();
-        }
-
         [Test]
         public void InitializeAndReadMixedTypes()
         {

@@ -14,9 +14,9 @@ namespace BovineLabs.Core.Tests.Facet
         [FacetOptional] private readonly RefRO<ComponentC> compC;
         [FacetOptional] private readonly RefRW<ComponentD> compD;
         private readonly EnabledRefRO<EnabledA> enableA;
-        private readonly EnabledRefRW<EnabledB> enableB;
+        private readonly FacetEnabledRefRW<EnabledB> enableB;
         [FacetOptional] private readonly EnabledRefRO<EnabledC> enableC;
-        [FacetOptional] private readonly EnabledRefRW<EnabledD> enableD;
+        [FacetOptional] private readonly FacetEnabledRefRW<EnabledD> enableD;
         [ReadOnly] private readonly DynamicBuffer<BufferA> bufferA;
         private readonly DynamicBuffer<BufferB> bufferB;
         [FacetOptional] [ReadOnly] private readonly DynamicBuffer<BufferC> bufferC;

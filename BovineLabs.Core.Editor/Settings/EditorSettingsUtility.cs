@@ -13,6 +13,7 @@ namespace BovineLabs.Core.Editor.Settings
     using BovineLabs.Core.Editor.Helpers;
     using BovineLabs.Core.Settings;
     using Unity.Assertions;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEngine;
     using Object = UnityEngine.Object;
@@ -20,6 +21,7 @@ namespace BovineLabs.Core.Editor.Settings
     /// <summary> Utility for setting up and getting settings. </summary>
     public static class EditorSettingsUtility
     {
+        [NoAutoStaticsCleanup]
         private static readonly Dictionary<Type, ISettings> CachedSettings = new();
 
         /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
@@ -214,6 +216,7 @@ namespace BovineLabs.Core.Editor.Settings
             var assets = AssetDatabase.FindAssets($"t:{filter}");
 
             ScriptableObject instance;
+            var created = false;
 
             switch (assets.Length)
             {
@@ -244,6 +247,7 @@ namespace BovineLabs.Core.Editor.Settings
                         instance = ScriptableObject.CreateInstance(type);
                         AssetDatabase.CreateAsset(instance, path);
                         AssetDatabase.SaveAssets();
+                        created = true;
                     }
 
                     break;
@@ -268,6 +272,11 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             Assert.IsNotNull(instance, $"{type.Name} returned null from asset database. Might need to reimport something.");
+
+            if (created && instance is SettingsSingleton settingsSingleton)
+            {
+                settingsSingleton.InitializeCreatedAsset();
+            }
 
             TryAddToSettingsAuthoring(instance);
 

@@ -8,10 +8,11 @@ namespace BovineLabs.Core.Utility
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Mathematics;
+    using Unity.Scripting.LifecycleManagement;
     using Random = Unity.Mathematics.Random;
 
     /// <summary> Globally accessible random values even from bursted jobs. </summary>
-    public static class GlobalRandom
+    public static partial class GlobalRandom
     {
         private static readonly SharedStatic<ThreadRandom> ThreadRandoms = SharedStatic<ThreadRandom>.GetOrCreate<RandomType>();
 
@@ -360,17 +361,16 @@ namespace BovineLabs.Core.Utility
             return Thread.NextQuaternionRotation();
         }
 
-#if !UNITY_EDITOR
-        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
-#endif
-        internal static void Initialize()
+        [OnCodeLoaded]
+        private static void Initialize()
         {
-            if (ThreadRandoms.Data.IsCreated)
-            {
-                return;
-            }
+            ThreadRandoms.Data = new ThreadRandom((uint)UnityEngine.Random.Range(0, int.MaxValue), Allocator.Persistent);
+        }
 
-            ThreadRandoms.Data = new ThreadRandom((uint)UnityEngine.Random.Range(0, int.MaxValue), Allocator.Domain);
+        [OnCodeUnloading]
+        private static void Shutdown()
+        {
+            ThreadRandoms.Data.Dispose();
         }
 
         private struct RandomType

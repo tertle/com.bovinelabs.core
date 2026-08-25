@@ -45,8 +45,6 @@ namespace BovineLabs.Core.Editor
 
         private const string PrefabLoading = RootMenuTools + "Load Prefabs as Entities";
 
-        private static LogLevel defaultLevel;
-
         private static LogLevel BLLogLevel
         {
             get => (LogLevel)BLLogger.CurrentLogLevel.Data;
@@ -185,19 +183,6 @@ namespace BovineLabs.Core.Editor
             {
                 hierarchyWindow.dataModeController.TryChangeDataMode(dataMode);
             }
-        }
-
-        [MenuItem(PrefabLoading, false, priority = -45)]
-        private static void PrefabLoadingMenu()
-        {
-            LoadPrefabsAsEntities.Enabled = !LoadPrefabsAsEntities.Enabled;
-        }
-
-        [MenuItem(PrefabLoading, true)]
-        private static bool PrefabLoadingMenuValidate()
-        {
-            Menu.SetChecked(PrefabLoading, LoadPrefabsAsEntities.Enabled);
-            return true;
         }
     }
 }

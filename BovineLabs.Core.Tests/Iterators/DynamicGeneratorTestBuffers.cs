@@ -5,69 +5,51 @@
 namespace BovineLabs.Core.Tests.Iterators
 {
     using System;
+    using BovineLabs.Core;
     using BovineLabs.Core.Iterators;
     using BovineLabs.Core.Iterators.Columns;
     using Unity.Entities;
-#if UNITY_NETCODE
     using Unity.NetCode;
-#endif
 
-#if UNITY_NETCODE
-    [GhostDynamicHashMap(IsDefault = true, DisplayName = "DynamicHashMap Tests Generated Compact", SendDataForChildEntity = true)]
-#endif
+    [GhostDynamicHashMap(SendDataForChildEntity = true)]
     [InternalBufferCapacity(0)]
     internal struct DynamicHashMapTestsBuffer : IDynamicHashMap<int, byte>
     {
         byte IDynamicHashMap<int, byte>.Value { get; }
     }
 
-#if UNITY_NETCODE
     [GhostDynamicHashMap(
         CodecMode = GhostDynamicHashMapCodecMode.RawStable,
-        DisplayName = "DynamicHashMap Tests Raw Stable",
         SendDataForChildEntity = true)]
-#endif
     [InternalBufferCapacity(0)]
     internal struct DynamicHashMapRawStableModeTestsBuffer : IDynamicHashMap<int, byte>
     {
         byte IDynamicHashMap<int, byte>.Value { get; }
     }
 
-#if UNITY_NETCODE
-    [GhostDynamicHashMap(
-        IsDefault = true,
-        DisplayName = "DynamicHashMap Tests Root Only")]
-#endif
+    [GhostDynamicHashMap]
     [InternalBufferCapacity(0)]
     internal struct DynamicHashMapRootOnlyTestsBuffer : IDynamicHashMap<int, byte>
     {
         byte IDynamicHashMap<int, byte>.Value { get; }
     }
 
-#if UNITY_NETCODE
     [GhostDynamicHashMap(
-        IsDefault = true,
-        DisplayName = "DynamicHashMap Tests Predicted Owner",
         PrefabType = GhostPrefabType.PredictedClient,
         SendTypeOptimization = GhostSendType.OnlyPredictedClients,
         OwnerSendType = SendToOwnerType.SendToOwner,
         SendDataForChildEntity = true)]
-#endif
     [InternalBufferCapacity(0)]
     internal struct DynamicHashMapPredictedOwnerTestsBuffer : IDynamicHashMap<int, byte>
     {
         byte IDynamicHashMap<int, byte>.Value { get; }
     }
 
-#if UNITY_NETCODE
     [GhostDynamicHashMap(
-        IsDefault = true,
-        DisplayName = "DynamicHashMap Tests Interpolated Non Owner",
         PrefabType = GhostPrefabType.InterpolatedClient,
         SendTypeOptimization = GhostSendType.OnlyInterpolatedClients,
         OwnerSendType = SendToOwnerType.SendToNonOwner,
         SendDataForChildEntity = true)]
-#endif
     [InternalBufferCapacity(0)]
     internal struct DynamicHashMapInterpolatedNonOwnerTestsBuffer : IDynamicHashMap<int, byte>
     {
@@ -80,18 +62,14 @@ namespace BovineLabs.Core.Tests.Iterators
         byte IDynamicHashMap<int, long>.Value { get; }
     }
 
-#if UNITY_NETCODE
-    [GhostDynamicHashMap(IsDefault = true, DisplayName = "DynamicHashMap Tests Generated Struct")]
-#endif
+    [GhostDynamicHashMap]
     [InternalBufferCapacity(0)]
     internal struct DynamicHashMapGeneratedStructTestsBuffer : IDynamicHashMap<GeneratedPaddedKey, GeneratedMixedValue>
     {
         byte IDynamicHashMap<GeneratedPaddedKey, GeneratedMixedValue>.Value { get; }
     }
 
-#if UNITY_NETCODE
-    [GhostDynamicHashMap(IsDefault = true, DisplayName = "DynamicHashMap Tests Generated Padding")]
-#endif
+    [GhostDynamicHashMap]
     [InternalBufferCapacity(0)]
     internal struct DynamicHashMapGeneratedPaddingTestsBuffer : IDynamicHashMap<int, GeneratedPaddedValue>
     {
@@ -119,6 +97,22 @@ namespace BovineLabs.Core.Tests.Iterators
     {
         public byte A;
         public int B;
+    }
+
+    internal struct GeneratedStableKey : IEquatable<GeneratedStableKey>
+    {
+        public int Id;
+        public int Version;
+
+        public bool Equals(GeneratedStableKey other)
+        {
+            return this.Id == other.Id && this.Version == other.Version;
+        }
+
+        public override int GetHashCode()
+        {
+            return (this.Id * 397) ^ this.Version;
+        }
     }
 
     internal struct GeneratedNestedValue
@@ -192,30 +186,32 @@ namespace BovineLabs.Core.Tests.Iterators
         byte IDynamicUntypedHashMap<long>.Value { get; }
     }
 
-#if UNITY_NETCODE
-    [GhostDynamicHashMap(IsDefault = true, DisplayName = "DynamicMultiHashMap Tests Generated Compact", SendDataForChildEntity = true)]
-#endif
+    [GhostDynamicHashMap(SendDataForChildEntity = true)]
     [InternalBufferCapacity(0)]
     internal struct DynamicMultiHashMapTestsBuffer : IDynamicMultiHashMap<int, byte>
     {
         byte IDynamicMultiHashMap<int, byte>.Value { get; }
     }
 
-#if UNITY_NETCODE
     [GhostDynamicHashMap(
         CodecMode = GhostDynamicHashMapCodecMode.RawStable,
-        DisplayName = "DynamicMultiHashMap Tests Raw Stable",
         SendDataForChildEntity = true)]
-#endif
     [InternalBufferCapacity(0)]
     internal struct DynamicMultiHashMapRawStableModeTestsBuffer : IDynamicMultiHashMap<int, byte>
     {
         byte IDynamicMultiHashMap<int, byte>.Value { get; }
     }
 
-#if UNITY_NETCODE
-    [GhostDynamicHashMap(IsDefault = true, DisplayName = "DynamicMultiHashMap Tests Generated Struct", SendDataForChildEntity = true)]
-#endif
+    [GhostDynamicHashMap(
+        CodecMode = GhostDynamicHashMapCodecMode.RawStable,
+        SendDataForChildEntity = true)]
+    [InternalBufferCapacity(0)]
+    internal struct DynamicMultiHashMapRawStableObjectIdTestsBuffer : IDynamicMultiHashMap<GeneratedStableKey, BLId>
+    {
+        byte IDynamicMultiHashMap<GeneratedStableKey, BLId>.Value { get; }
+    }
+
+    [GhostDynamicHashMap(SendDataForChildEntity = true)]
     [InternalBufferCapacity(0)]
     internal struct DynamicMultiHashMapGeneratedStructTestsBuffer : IDynamicMultiHashMap<GeneratedPaddedKey, GeneratedMixedValue>
     {

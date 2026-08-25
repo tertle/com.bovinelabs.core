@@ -6,6 +6,7 @@
 namespace BovineLabs.Core.Editor.VFXGraphTemplateWindow
 {
     using BovineLabs.Core.Editor.UI;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEditor.VFX;
     using UnityEngine;
@@ -15,6 +16,7 @@ namespace BovineLabs.Core.Editor.VFXGraphTemplateWindow
     public class VFXGraphTemplateWindow : EditorWindow
     {
         private const string RootUIPath = "Packages/com.bovinelabs.core/Editor Default Resources/VFXGraphTemplateWindow/";
+        [NoAutoStaticsCleanup]
         private static readonly UITemplate Window = new(RootUIPath + "VFXGraphTemplateWindow");
 
         private TextField nameField;

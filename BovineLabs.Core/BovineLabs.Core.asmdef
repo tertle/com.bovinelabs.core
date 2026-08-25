@@ -5,7 +5,6 @@
         "Unity.Burst",
         "Unity.Collections",
         "Unity.Entities",
-        "Unity.Entities.Graphics",
         "Unity.Entities.Hybrid",
         "Unity.Entities.Hybrid.HybridComponents",
         "Unity.Localization",
@@ -32,12 +31,12 @@
         },
         {
             "name": "com.unity.netcode",
-            "expression": "",
+            "expression": "6.7.0",
             "define": "UNITY_NETCODE"
         },
         {
             "name": "com.unity.physics",
-            "expression": "",
+            "expression": "6.7.0",
             "define": "UNITY_PHYSICS"
         },
         {
@@ -51,11 +50,6 @@
             "define": "BL_SAVANNA"
         },
         {
-            "name": "com.unity.entities.graphics",
-            "expression": "",
-            "define": "UNITY_GRAPHICS"
-        },
-        {
             "name": "com.unity.modules.terrain",
             "expression": "",
             "define": "UNITY_TERRAIN"
@@ -64,11 +58,6 @@
             "name": "com.unity.splines",
             "expression": "",
             "define": "UNITY_SPLINES"
-        },
-        {
-          "name": "com.unity.entities",
-          "expression": "1.4.0-pre.3",
-          "define": "UNITY_ENTITIES_1_4_0_pre_3"
         }
     ],
     "noEngineReferences": false

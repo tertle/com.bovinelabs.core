@@ -1,4 +1,4 @@
-﻿// <copyright file="IUID.cs" company="BovineLabs">
+// <copyright file="IUID.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 

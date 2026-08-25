@@ -340,8 +340,6 @@ namespace BovineLabs.Core.Iterators
                     return this.Data->Column.GetValue(this.Index);
                 }
             }
-
-
         }
 
         /// <summary>

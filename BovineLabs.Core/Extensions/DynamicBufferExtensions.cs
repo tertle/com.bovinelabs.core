@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Extensions
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Assertions;
-    using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
@@ -47,40 +46,6 @@ namespace BovineLabs.Core.Extensions
             var basePtr = (byte*)buffer.GetUnsafePtr();
             UnsafeUtility.MemMove(basePtr + ((index + elementCount) * elemSize), basePtr + (index * elemSize), (long)elemSize * (length - index));
             return basePtr + (index * elemSize);
-        }
-
-        public static NativeArray<T>.ReadOnly AsNativeArrayRO<T>(this in DynamicBuffer<T> buffer)
-            where T : unmanaged
-        {
-            return buffer.AsNativeArray().AsReadOnly();
-        }
-
-        /// <summary> Gets a readonly reference to the element at the given index. </summary>
-        /// <param name="buffer"> The dynamic buffer to get the element from. </param>
-        /// <param name="index"> The zero-based index. </param>
-        /// <typeparam name="T"> The buffer type. </typeparam>
-        /// <returns> Returns the reference to the element at the index. </returns>
-        public static ref readonly T ElementAtRO<T>(this in DynamicBuffer<T> buffer, int index)
-            where T : unmanaged
-        {
-            CheckReadAccess(buffer);
-            CheckBounds(buffer, index);
-            return ref UnsafeUtility.ArrayElementAsRef<T>(buffer.GetUnsafeReadOnlyPtr(), index);
-        }
-
-
-        /// <summary> Gets a readonly reference to the element at the given index. </summary>
-        /// <param name="buffer"> The dynamic buffer to get the element from. </param>
-        /// <param name="index"> The zero-based index. </param>
-        /// <typeparam name="T"> The buffer type. </typeparam>
-        /// <returns> Returns the reference to the element at the index. </returns>
-        public static T* PtrOfRO<T>(this in DynamicBuffer<T> buffer, int index)
-            where T : unmanaged
-        {
-            CheckReadAccess(buffer);
-            CheckBounds(buffer, index);
-
-            return (T*)buffer.GetUnsafeReadOnlyPtr() + index;
         }
 
         /// <summary> Gets an <see langword="unsafe" /> read-only pointer to the contents of the buffer. </summary>

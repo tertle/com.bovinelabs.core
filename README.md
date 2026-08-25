@@ -1,57 +1,82 @@
 # BovineLabs Core
 
-BovineLabs Core provides extensions, containers, and tools for building games with Unity DOTS (Data-Oriented Technology Stack).
+BovineLabs Core is a Unity ECS/DOTS foundation package with Burst-friendly collections, source-generated entity helpers, reusable authoring and settings workflows, editor tooling, diagnostics, and shared test fixtures.
 
 For support and discussions, join [Discord](https://discord.gg/RTsw6Cxvw3).
 
-If you want to support my work or get access to a few private libraries, [Buy Me a Coffee](https://buymeacoffee.com/bovinelabs).
+## Requirements
+
+- Unity 6000.7 or newer.
+- Unity Entities 6.7.0 or newer.
+- NetCode and Unity Physics integrations require their matching Unity packages at 6.7.0 or newer. Input System 1.20.0 or newer enables Input Action asset inspectors. Localization, Splines, Terrain, and VFX integrations are compiled when their matching supported packages or Unity modules are available.
+
+Optional integrations are guarded by asmdef `versionDefines` and compile symbols such as `UNITY_NETCODE`, `UNITY_PHYSICS`, `UNITY_INPUT_SYSTEM`, and `UNITY_LOCALIZATION`. Install the matching package before using an API that depends on it.
 
 ## Installation
 
-The latest version of the library is available on [GitLab](https://gitlab.com/tertle/com.bovinelabs.core). The project is actively worked on daily in various branches.
+### BovineLabs Package Manager — recommended
 
-Once installed, the library provides utilities, custom containers, and high-performance extensions without disrupting your existing workflow.
+Install the standalone [BovineLabs Package Manager](https://gitlab.com/tertle/com.bovinelabs) once per project:
 
-## Core
+1. Open **Window > Package Management > Package Manager**.
+2. Select **Install package from git URL...** from the add menu and enter:
 
-| Feature                                                          | Description                                                                                                                           |
-|------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| [Change Filter Tracking](Documentation~/ChangeFilterTracking.md) | Allows you to track how frequently a component triggers a change filter and warns you if it is happening too frequently               |
-| [Collections](Documentation~/Collections.md)                     | Specialized collection types with performance optimizations, thread safety, and ECS-focused functionality                             |
-| [Debug](Documentation~/Debug.md)                                 | Comprehensive debugging and assertion utilities with Burst compatibility and ECS-specific debugging support                           |
-| [DynamicHashMap](Documentation~/DynamicHashMap.md)               | Adds HashMap support to entities                                                                                                      |
-| [EntityCommands](Documentation~/EntityCommands.md)               | Provides a shared interface between EntityManager, EntityCommandBuffer, EntityCommandBuffer.ParallelWriter and IBaker                 |
-| [Facets](Documentation~/Facets.md)                               | Source-generated `IFacet` helpers that provide aspect-like access via lookups and chunk iteration                                     |
-| [Extensions](Documentation~/Extensions.md)                       | Extension methods that enhance Unity's DOTS APIs with performance optimizations and convenience methods                               |
-| [Functions](Documentation~/Functions.md)                         | Extensible way to add support for extending jobs to other developers or modders                                                       |
-| [Inspectors](Documentation~/Inspectors.md)                       | UI Toolkit base classes for custom editors and property drawers with prefab-aware variants and fallback field rendering               |
-| [Iterators](Documentation~/Iterators.md)                         | High-performance iterator utilities for ECS applications with Burst-compatible enumeration capabilities                               |
-| [Jobs](Documentation~/Jobs.md)                                   | Custom jobs (IJobForThread, IJobParallelForDeferBatch, IJobHashMapDefer, IJobParallelHashMapDefer)                                    |
-| [K](Documentation~/K.md)                                         | K is a type-safe, Burst-compatible alternative to Enums and LayerMasks that allows you to define key-value pairs in settings files    |
-| [Settings](Documentation~/Settings.md)                           | Settings framework for managing and creating settings                                                                                 | 
-| [Singleton Buffers](Documentation~/SingletonBuffers.md)         | Merge dynamic buffers from many sources into a single runtime singleton buffer entity                                                |
-| [Singleton Collection](Documentation~/SingletonCollection.md)    | Easily set up a Many-To-One container singleton with minimal boilerplate and syncless job support                                     | 
-| [Spatial](Documentation~/Spatial.md)                             | Fast spatial hashmap generation                                                                                                       |
-| [States](Documentation~/States.md)                               | Provides states on entities by mapping a bit field to components automatically                                                        |
+```text
+https://gitlab.com/tertle/com.bovinelabs.git
+```
 
-| Utility                                                 | Description                                                                                         |
-|---------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
-| [BurstTrampoline](Documentation~/BurstTrampoline.md)    | Invoke managed delegates from Burst code with reusable trampolines and optional out parameters      |
-| [Global Random](Documentation~/GlobalRandom.md)         | A static random usable from everywhere, even parallel burst jobs                                    |
-| [PooledNativeList](Documentation~/PooledNativeList.md)  | High-performance, thread-safe pooling system for Unity's NativeList collections                     |
-| [Utility](Documentation~/Utility.md)                    | Comprehensive collection of utility classes and helpers for high-performance Unity DOTS development |
+3. Open **Window > Package Management > BovineLabs Package Manager**.
+4. Select **BovineLabs Core** and click **Install**.
 
-## Extensions
+The BovineLabs Package Manager installs this package and its required BovineLabs dependencies as embedded packages under `Packages/`. Commit the
+installed package directories to version control. The manager connects to the BovineLabs registry itself; do not add the registry to Unity's scoped
+registry settings.
 
-The Core library maintains the status quo in your project by default. However, there are powerful features that can be manually enabled, which may require changes to your workflow. To enable these features, navigate to the `BovineLabs -> Manager` menu.
+### Git URL
 
-| Feature                                                 | Description                                                                                           |
-|---------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
-| [Analyzers](Documentation~/Analyzers.md)                | Automatic Roslyn analyzer integration infrastructure for seamless code analysis and style enforcement |
-| [EntityBlob](Documentation~/EntityBlob.md)              | Memory-efficient storage of multiple BlobAssetReferences in a single blob using perfect hash maps     |
-| [Life Cycle](Documentation~/LifeCycle.md)               | Framework for managing entity initialization and destruction                                          |
-| [Object Management](Documentation~/ObjectManagement.md) | Automatic ID, category and group management                                                           |
-| [Pause](Documentation~/Pause.md)                        | World-level pause system with fine-grained control over system updates during pause states            |
-| [PhysicsStates](Documentation~/PhysicsStates.md)        | Stateful collision and trigger event tracking with Enter/Stay/Exit states for Unity Physics           |
-| [PhysicsUpdate](Documentation~/PhysicsUpdate.md)        | Ensures Unity Physics spatial data remains current at high frame rates above fixed timestep           |
-| [SubScenes](Documentation~/SubScenes.md)                | Enhanced SubScene loading with world targeting and editor tools                                       |
+To install Core directly from Git, open the Package Manager, select **Install package from git URL...**, and enter:
+
+```text
+https://gitlab.com/tertle/com.bovinelabs.core.git
+```
+
+The Git version may contain unpublished changes.
+
+Then follow [Getting started](Documentation~/getting-started.md).
+
+## Documentation
+
+| Guide | Covers |
+|---|---|
+| [Overview](Documentation~/index.md) | Requirements, assemblies, feature selection, optional integrations, and the recommended reading path |
+| [Getting started](Documentation~/getting-started.md) | Install Core, reference its assemblies, and verify a first ECS system |
+| [Collections](Documentation~/Collections.md) | Choosing fixed, native, unsafe, blob, pooled, and entity-owned containers |
+| [Dynamic buffer collections](Documentation~/DynamicCollections.md) | Entry-backed dictionaries, multi-dictionaries, and hash sets stored in ECS buffers |
+| [Generated dynamic hash maps](Documentation~/DynamicHashMap.md) | Byte-backed maps, source-generated accessors, specialized variants, and optional NetCode serialization |
+| [Entity commands](Documentation~/EntityCommands.md) | Reusing entity-shape builders across bakers, command buffers, jobs, and tests |
+| [Settings](Documentation~/Settings.md) | Settings assets, ECS baking, world routing, and startup singletons |
+| [ConfigVars](Documentation~/ConfigVars.md) | Burst-readable runtime variables, command-line overrides, EditorPrefs, and the ConfigVars window |
+| [Debugging and logging](Documentation~/Debug.md) | `Check`, `BLLogger`, `BLGlobalLogger`, build gates, and entity-selection state |
+| [Testing](Documentation~/Testing.md) | `BovineLabs.Testing`, `ECSTestsFixture`, leak checks, and math assertions |
+| [Inspectors](Documentation~/Inspectors.md) | UI Toolkit editor bases, Graph Toolkit drawers, prefab-aware editing, and built-in drawers |
+| [Troubleshooting](Documentation~/troubleshooting.md) | Assembly visibility, generators, settings, ConfigVars, collections, logging, and optional packages |
+
+The [documentation overview](Documentation~/index.md#guides) links every specialized guide, including facets, jobs, iterators, spatial maps, keys, Burst trampolines, and utilities.
+
+## Package layout
+
+| Assembly | Purpose |
+|---|---|
+| `BovineLabs.Core` | Runtime APIs, collections, generators, diagnostics, settings singletons, and non-baker entity-command wrappers |
+| `BovineLabs.Core.Authoring` | Bakers, `SettingsAuthoring`, `SettingsBase`, authoring utilities, and `BakerCommands` |
+| `BovineLabs.Core.Editor` | Settings and ConfigVars windows, asset tools, custom inspectors, drawers, and editor utilities |
+| `BovineLabs.Testing` | Editor-only ECS fixtures, leak detection, reflection helpers, and math assertions |
+
+These assemblies have `autoReferenced` disabled. Add every assembly a consuming `.asmdef` uses; installing the package alone does not make its types visible.
+
+If you want to support ongoing development or access private libraries, see [Buy Me a Coffee](https://buymeacoffee.com/bovinelabs).
+
+## License
+
+BovineLabs Core's original code is licensed under the [MIT License](LICENSE.md). Third-party portions retain their original licenses and copyright
+notices; see [Third Party Notices](Third%20Party%20Notices.md).

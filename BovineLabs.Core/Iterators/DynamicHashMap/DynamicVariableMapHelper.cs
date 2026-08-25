@@ -439,7 +439,6 @@ namespace BovineLabs.Core.Iterators
             {
                 throw new ArgumentException($"Index does not exist: {idx}");
             }
-
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

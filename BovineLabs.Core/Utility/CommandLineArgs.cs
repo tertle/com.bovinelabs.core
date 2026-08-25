@@ -6,10 +6,12 @@ namespace BovineLabs.Core.Utility
 {
     using System;
     using System.Collections.Generic;
+    using Unity.Scripting.LifecycleManagement;
 
     /// <summary> Utility for handling CommandLineArgs passed to the app. </summary>
     public static class CommandLineArgs
     {
+        [NoAutoStaticsCleanup]
         private static readonly List<string> Args = new(Environment.GetCommandLineArgs());
 
         /// <summary> Try get an argument and its value. </summary>

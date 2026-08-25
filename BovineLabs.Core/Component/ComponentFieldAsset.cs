@@ -13,13 +13,28 @@ namespace BovineLabs.Core
     public class ComponentFieldAsset : ScriptableObject
     {
         [SerializeField]
-        private ComponentAssetBase component;
+        private ComponentAsset component;
 
         [SerializeField]
         private string fieldName = string.Empty;
 
         // We use a non-serialized cache to stop multiple calls triggering reflection
         private Cache cache;
+
+        public ulong GetStableTypeHash()
+        {
+            return this.GetComponentAsset().GetStableTypeHash();
+        }
+
+        public Type GetComponentType()
+        {
+            return this.GetComponentAsset().ResolveType();
+        }
+
+        public Type GetFieldType()
+        {
+            return this.GetField().FieldType;
+        }
 
         public ushort GetOffset()
         {
@@ -28,27 +43,36 @@ namespace BovineLabs.Core
                 return cachedOffset;
             }
 
+            var field = this.GetField();
+            var offset = (ushort)UnsafeUtility.GetFieldOffset(field);
+            this.cache = new Cache(this, offset);
+            return offset;
+        }
+
+        private ComponentAsset GetComponentAsset()
+        {
             if (this.component == null)
             {
                 throw new NullReferenceException($"{nameof(this.component)} not set");
             }
 
+            return this.component;
+        }
+
+        private FieldInfo GetField()
+        {
             if (string.IsNullOrWhiteSpace(this.fieldName))
             {
                 throw new NullReferenceException($"{nameof(this.fieldName)} not set");
             }
 
-            var type = this.component.GetComponentType();
-
-            var field = type.GetField(this.fieldName, BindingFlags.Instance | BindingFlags.Public);
+            var field = this.GetComponentType().GetField(this.fieldName, BindingFlags.Instance | BindingFlags.Public);
             if (field == null)
             {
                 throw new InvalidOperationException($"FieldInfo not found for field {this.fieldName} on {this.name}");
             }
 
-            var offset = (ushort)UnsafeUtility.GetFieldOffset(field);
-            this.cache = new Cache(this, offset);
-            return offset;
+            return field;
         }
 
         private bool TryGetOffsetFromCache(out ushort offset)
@@ -65,7 +89,7 @@ namespace BovineLabs.Core
 
         private readonly struct Cache
         {
-            public readonly ComponentAssetBase Component;
+            public readonly ComponentAsset Component;
             public readonly string FieldName;
             public readonly ushort Offset;
 

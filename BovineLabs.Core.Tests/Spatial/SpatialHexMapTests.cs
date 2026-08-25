@@ -147,6 +147,86 @@ namespace BovineLabs.Core.Tests.Spatial
         }
 
         [Test]
+        public void Distance_AllSixNeighbours_AreOneAndSymmetric()
+        {
+            var center = new int2(7, -4);
+
+            for (var i = 0; i < 6; i++)
+            {
+                var neighbour = center + SpatialHexMap.Direction(i);
+                Assert.AreEqual(1, SpatialHexMap.Distance(center, neighbour));
+                Assert.AreEqual(1, SpatialHexMap.Distance(neighbour, center));
+            }
+        }
+
+        [Test]
+        public void Distance_RadiusContainsExpectedCellCount()
+        {
+            for (var radius = 0; radius <= 8; radius++)
+            {
+                var count = 0;
+                for (var q = -radius; q <= radius; q++)
+                {
+                    for (var r = -radius; r <= radius; r++)
+                    {
+                        if (SpatialHexMap.Distance(int2.zero, new int2(q, r)) <= radius)
+                        {
+                            count++;
+                        }
+                    }
+                }
+
+                Assert.AreEqual(1 + (3 * radius * (radius + 1)), count);
+            }
+        }
+
+        [Test]
+        public void CellWidthConversions_RoundTrip()
+        {
+            const float cellWidth = 64f;
+            var outerRadius = SpatialHexMap.OuterRadiusFromCellWidth(cellWidth);
+
+            Assert.AreEqual(cellWidth, SpatialHexMap.CellWidthFromOuterRadius(outerRadius), Tolerance);
+        }
+
+        [Test]
+        public void Quantized_CentresAcrossLargePositiveAndNegativeCoordinates_RoundTrip()
+        {
+            var outerRadius = SpatialHexMap.OuterRadiusFromCellWidth(QuantizeStep);
+            var cells = new[]
+            {
+                new int2(-10000, 7500),
+                new int2(-1, 0),
+                new int2(0, -1),
+                new int2(1, 0),
+                new int2(10000, -7500),
+            };
+
+            foreach (var cell in cells)
+            {
+                Assert.AreEqual(cell, SpatialHexMap.Quantized(SpatialHexMap.Center(cell, outerRadius), outerRadius));
+            }
+        }
+
+        [Test]
+        public void Quantized_EpsilonAcrossEveryEdge_SelectsOppositeCells()
+        {
+            var outerRadius = SpatialHexMap.OuterRadiusFromCellWidth(QuantizeStep);
+            const float epsilon = 0.001f;
+
+            for (var i = 0; i < 6; i++)
+            {
+                var neighbour = SpatialHexMap.Direction(i);
+                var neighbourCenter = SpatialHexMap.Center(neighbour, outerRadius);
+                var direction = math.normalize(neighbourCenter);
+                var edge = neighbourCenter * 0.5f;
+
+                Assert.AreEqual(int2.zero, SpatialHexMap.Quantized(edge - (direction * epsilon), outerRadius));
+                Assert.AreEqual(neighbour, SpatialHexMap.Quantized(edge + (direction * epsilon), outerRadius));
+            }
+        }
+
+        [Test]
         public void SearchRange_CoversAllCellsFromConservativeCenterOracle()
         {
             var outerRadius = QuantizeStep / math.sqrt(3f);

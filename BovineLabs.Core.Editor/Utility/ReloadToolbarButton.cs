@@ -6,22 +6,20 @@ namespace BovineLabs.Core.Editor.Utility
 {
     using BovineLabs.Core.Editor.Internal;
     using JetBrains.Annotations;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
+    using UnityEditor.Scripting.LifecycleManagement;
     using UnityEditor.Toolbars;
     using UnityEngine;
 
     [UsedImplicitly]
-    public static class ReloadToolbarButton
+    public static partial class ReloadToolbarButton
     {
         private const string ReloadPath = "BovineLabs/Reload";
+
+        [NoAutoStaticsCleanup]
         private static MainToolbarDropdown dropDown;
 
-        static ReloadToolbarButton()
-        {
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-        }
-
-        [MainToolbarPreset]
         [MainToolbarElement(ReloadPath, defaultDockPosition = MainToolbarDockPosition.Middle)]
         [UsedImplicitly]
         private static MainToolbarElement Reload()
@@ -32,17 +30,8 @@ namespace BovineLabs.Core.Editor.Utility
             return dropDown;
         }
 
-        private static void OnPlayModeStateChanged(PlayModeStateChange obj)
-        {
-            switch (obj)
-            {
-                case PlayModeStateChange.EnteredPlayMode:
-                case PlayModeStateChange.EnteredEditMode:
-                    RefreshReload();
-                    break;
-            }
-        }
-
+        [OnEnteringPlayMode]
+        [OnEnteringEditMode]
         private static void RefreshReload()
         {
             MainToolbar.Refresh(ReloadPath);

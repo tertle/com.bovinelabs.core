@@ -35,7 +35,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
             this.baseField.RegisterValueChangedCallback(evt =>
             {
                 this.Value = evt.newValue;
-                EditorPrefs.SetString(attribute.Name, evt.newValue.ToString());
+                EditorPrefs.SetString(ConfigVarManager.GetEditorPrefsKey(attribute.Name), evt.newValue.ToString());
             });
         }
 
@@ -113,12 +113,12 @@ namespace BovineLabs.Core.Editor.ConfigVars
             evt.menu.AppendAction(
                 "Reset To Default",
                 _ => this.ResetToDefault(),
-                _ => this.attribute.IsReadOnly ? DropdownMenuAction.Status.Disabled : DropdownMenuAction.Status.Normal);
+                _ => this.baseField.enabledSelf ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
         }
 
         private void ResetToDefault()
         {
-            EditorPrefs.DeleteKey(this.attribute.Name);
+            EditorPrefs.DeleteKey(ConfigVarManager.GetEditorPrefsKey(this.attribute.Name));
             this.container.StringValue = this.attribute.DefaultValue;
             this.baseField.SetValueWithoutNotify(this.Value);
         }

@@ -6,6 +6,7 @@
 
 namespace BovineLabs.Core
 {
+    using System;
     using System.Diagnostics;
     using BovineLabs.Core.ConfigVars;
     using Unity.Burst;
@@ -57,8 +58,7 @@ namespace BovineLabs.Core
             }
         }
 
-        [Conditional("UNITY_EDITOR")]
-        [Conditional("BL_DEBUG")]
+        [Conditional("UNITY_INCLUDE_INSTRUMENTATION")]
         [HideInCallstack]
         public readonly void LogDebug(in FixedString128Bytes msg)
         {
@@ -68,8 +68,7 @@ namespace BovineLabs.Core
             }
         }
 
-        [Conditional("UNITY_EDITOR")]
-        [Conditional("BL_DEBUG")]
+        [Conditional("UNITY_INCLUDE_INSTRUMENTATION")]
         [HideInCallstack]
         public readonly void LogDebug512(in FixedString512Bytes msg)
         {
@@ -79,8 +78,7 @@ namespace BovineLabs.Core
             }
         }
 
-        [Conditional("UNITY_EDITOR")]
-        [Conditional("BL_DEBUG")]
+        [Conditional("UNITY_INCLUDE_INSTRUMENTATION")]
         [HideInCallstack]
         public readonly void LogDebug4096(in FixedString4096Bytes msg)
         {
@@ -90,8 +88,7 @@ namespace BovineLabs.Core
             }
         }
 
-        [Conditional("UNITY_EDITOR")]
-        [Conditional("BL_DEBUG")]
+        [Conditional("UNITY_INCLUDE_INSTRUMENTATION")]
         [HideInCallstack]
         public readonly void LogDebugString(string msg)
         {
@@ -207,6 +204,50 @@ namespace BovineLabs.Core
             {
                 UnityEngine.Debug.LogError($"E | {this.Frame,-4} | {this.World,-7} | {msg}");
             }
+        }
+
+        [HideInCallstack]
+        public readonly void LogFatal(in FixedString128Bytes msg)
+        {
+            if (Level >= LogLevel.Fatal)
+            {
+                UnityEngine.Debug.LogError($"F | {this.Frame,-4} | Global  | {msg}");
+            }
+
+            throw new Exception("Fatal exception");
+        }
+
+        [HideInCallstack]
+        public readonly void LogFatal512(in FixedString512Bytes msg)
+        {
+            if (Level >= LogLevel.Fatal)
+            {
+                UnityEngine.Debug.LogError($"F | {this.Frame,-4} | Global  | {msg}");
+            }
+
+            throw new Exception("Fatal exception");
+        }
+
+        [HideInCallstack]
+        public readonly void LogFatal4096(in FixedString4096Bytes msg)
+        {
+            if (Level >= LogLevel.Fatal)
+            {
+                UnityEngine.Debug.LogError($"F | {this.Frame,-4} | Global  | {msg}");
+            }
+
+            throw new Exception("Fatal exception");
+        }
+
+        [HideInCallstack]
+        public readonly void LogFatalString(string msg)
+        {
+            if (Level >= LogLevel.Error)
+            {
+                UnityEngine.Debug.LogError($"F | {this.Frame,-4} | {this.World,-7} | {msg}");
+            }
+
+            throw new Exception("Fatal exception");
         }
     }
 }

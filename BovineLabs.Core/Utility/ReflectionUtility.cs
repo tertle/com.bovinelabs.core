@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Utility
     using System.Reflection;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
-    using Unity.Profiling;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEngine.Assemblies;
 #if UNITY_EDITOR
     using UnityEditor;
@@ -22,27 +22,37 @@ namespace BovineLabs.Core.Utility
     /// <summary> Common reflection helpers. </summary>
     public static class ReflectionUtility
     {
+        [NoAutoStaticsCleanup]
         private static readonly Dictionary<System.Reflection.Assembly, Type[]> AssemblyTypes = new();
+
+        [NoAutoStaticsCleanup]
         private static readonly Dictionary<System.Reflection.Assembly, Type[]> AssemblyNonGenericTypes = new();
+
+        [NoAutoStaticsCleanup]
         private static readonly Dictionary<System.Reflection.Assembly, MethodInfo[]> AssemblyMethods = new();
 
+        [NoAutoStaticsCleanup]
         private static IReadOnlyList<System.Reflection.Assembly> allAssemblies;
+
+        [NoAutoStaticsCleanup]
         private static Type[] allTypes;
+
+        [NoAutoStaticsCleanup]
         private static Type[] allUnmanagedTypes;
+
+        [NoAutoStaticsCleanup]
         private static Type[] allTypesWithImplementation;
+
+        [NoAutoStaticsCleanup]
         private static Type[] allTypesWithImplementationNoGeneric;
-        private static MethodInfo[] allMethods;
 
 #if UNITY_EDITOR
+        [NoAutoStaticsCleanup]
         private static Dictionary<string, Assembly> assembliesMap;
 #endif
 
         /// <summary> Gets all currently loaded assemblies in the AppDomain. </summary>
-#if UNITY_6000_4_OR_NEWER
         public static IReadOnlyList<System.Reflection.Assembly> AllAssemblies => allAssemblies ??= CurrentAssemblies.GetLoadedAssemblies();
-#else
-        public static IReadOnlyList<System.Reflection.Assembly> AllAssemblies => allAssemblies ??= AppDomain.CurrentDomain.GetAssemblies();
-#endif
 
         /// <summary> Gets all types across all loaded assemblies. </summary>
         public static Type[] AllTypes => allTypes ??= AllAssemblies.SelectMany(GetTypes).ToArray();

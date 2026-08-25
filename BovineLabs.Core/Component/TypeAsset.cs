@@ -15,14 +15,16 @@ namespace BovineLabs.Core
         [SerializeField]
         private string typeName;
 
-        public Type ResolveType()
+        public virtual Type ResolveType()
         {
-            if (string.IsNullOrEmpty(this.typeName))
+            if (string.IsNullOrWhiteSpace(this.typeName))
             {
-                return null;
+                throw new InvalidOperationException($"{this.GetType().Name} '{this.name}' does not have a type assigned.");
             }
 
-            return Type.GetType(this.typeName);
+            return Type.GetType(this.typeName) ?? throw new TypeLoadException(
+                $"{this.GetType().Name} '{this.name}' could not resolve type '{this.typeName}'. " +
+                "The type may have been renamed, moved to another assembly, or removed.");
         }
     }
 }

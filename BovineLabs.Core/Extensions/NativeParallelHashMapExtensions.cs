@@ -28,14 +28,6 @@ namespace BovineLabs.Core.Extensions
             return hashMap.m_Writer.m_Buffer->GetBucketData();
         }
 
-        [Obsolete("Use GetOrAddRefUnsafe")]
-        public static ref TValue GetOrAddRef<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> hashMap, TKey key, TValue defaultValue = default)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            return ref hashMap.GetOrAddRefUnsafe(key, defaultValue);
-        }
-
         /// <summary>
         /// Gets the value for a key or adds <paramref name="defaultValue" /> and returns it by reference.
         /// </summary>
@@ -61,7 +53,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         // This is only safe if the key is unique per thread
-        public static ref TValue GetOrAddRef<TKey, TValue>(
+        public static ref TValue GetOrAddRefUnsafe<TKey, TValue>(
             this NativeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, TKey key, TValue defaultValue = default)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -70,7 +62,7 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.m_Safety);
 #endif
 
-            return ref hashMap.m_Writer.GetOrAddRef(key, defaultValue);
+            return ref hashMap.m_Writer.GetOrAddRefUnsafe(key, defaultValue);
         }
 
         public static ref TValue GetRef<TKey, TValue>(this NativeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, TKey key)
@@ -343,15 +335,6 @@ namespace BovineLabs.Core.Extensions
             hashMap.m_HashMapData.m_Buffer->allocatedIndexLength = length;
         }
 
-        /// <summary>
-        /// Add a collection of keys and values to a hashmap in parallel.
-        /// All keys added this way must be UNIQUE as it is not checked. Hashmap must not have had any elements removed.
-        /// </summary>
-        /// <param name="hashMap"> </param>
-        /// <param name="keys"> </param>
-        /// <param name="values"> </param>
-        /// <typeparam name="TKey"> </typeparam>
-        /// <typeparam name="TValue"> </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, [NoAlias] NativeArray<TKey> keys, [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -393,32 +376,11 @@ namespace BovineLabs.Core.Extensions
             }
         }
 
-        public static void SetLengthUnsafe<TKey, TValue>([NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap, int length)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            hashMap.m_HashMapData.m_Buffer->allocatedIndexLength = length;
-        }
-
-        public static int GetLengthUnsafe<TKey, TValue>([NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            return hashMap.m_HashMapData.m_Buffer->allocatedIndexLength;
-        }
-
         public static ref TValue GetValueByRef<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> map, TKey key)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
             return ref map.m_HashMapData.m_Buffer->GetValueByRef<TKey, TValue>(key);
-        }
-
-        public static TKey FirstKey<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> map)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            return map.m_HashMapData.m_Buffer->FirstKey<TKey>();
         }
 
         public static bool TryGetFirstKeyValue<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> map, out TKey key, out TValue value)

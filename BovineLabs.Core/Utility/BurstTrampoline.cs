@@ -8,13 +8,17 @@ namespace BovineLabs.Core.Utility
     using System.Runtime.InteropServices;
     using AOT;
     using Unity.Collections.LowLevel.Unsafe;
+    using Unity.Scripting.LifecycleManagement;
 
     /// <summary>
     /// Packs managed callback arguments into a single pointer and size payload so the same unmanaged wrapper can dispatch any signature.
     /// </summary>
     public unsafe readonly struct BurstTrampoline
     {
+        [NoAutoStaticsCleanup]
         private static GCHandle cachedWrapperHandle;
+
+        [NoAutoStaticsCleanup]
         private static IntPtr cachedWrapperPtr;
 
         [NativeDisableUnsafePtrRestriction]

@@ -39,5 +39,17 @@ namespace BovineLabs.Core.Internal
         {
             return blobAssetReference.m_data.m_Align8Union;
         }
+
+        public static unsafe void GetPayloadRange<T>(this BlobAssetReference<T> blobAssetReference, out byte* start, out int length)
+            where T : unmanaged
+        {
+            if (!blobAssetReference.IsCreated)
+            {
+                throw new System.InvalidOperationException("The blob asset reference is not created.");
+            }
+
+            start = (byte*)blobAssetReference.GetUnsafePtr();
+            length = ((BlobAssetHeader*)start - 1)->Length;
+        }
     }
 }

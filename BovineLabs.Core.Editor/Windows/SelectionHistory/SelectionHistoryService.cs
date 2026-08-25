@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Editor.Windows.Base;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEngine;
     using Object = UnityEngine.Object;
@@ -19,6 +20,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
     {
         public const string PreferenceKey = "Selection History";
 
+        [NoAutoStaticsCleanup]
         private static SelectionHistoryService instance;
 
         private readonly List<SelectionHistoryItem> allItems = new();

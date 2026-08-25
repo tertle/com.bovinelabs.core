@@ -76,6 +76,7 @@ namespace BovineLabs.Core.Editor.Inspectors
     {
     }
 
+#if UNITY_INPUT_SYSTEM
     [UsedImplicitly]
     internal class InputActionAssetUnityObjectRefInspector : UnityObjectRefInspector<UnityEngine.InputSystem.InputActionAsset>
     {
@@ -85,6 +86,7 @@ namespace BovineLabs.Core.Editor.Inspectors
     internal class InputActionReferenceUnityObjectRefInspector : UnityObjectRefInspector<UnityEngine.InputSystem.InputActionReference>
     {
     }
+#endif
 
 #if UNITY_SPLINES
     [UsedImplicitly]

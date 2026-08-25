@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Iterators
     using System;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
-    using Unity.NetCode.LowLevel.Unsafe;
 
     internal static unsafe class DynamicHashCollectionNetCodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec, TCollectionPolicy>
         where TKey : unmanaged, IEquatable<TKey>

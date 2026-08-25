@@ -26,79 +26,8 @@ namespace BovineLabs.Core.Utility
             this.streamingStates = state.GetComponentLookup<SceneSectionStreamingSystem.StreamingState>(true);
         }
 
-        public enum StreamingStatus
-        {
-            None,
-            Loading,
-            Loaded,
-        }
-
-        /// <summary> Check if a subscene is loaded. </summary>
-        /// <param name="state"> The executing wrld. </param>
-        /// <param name="entity"> The entity with the loading component data.  This is the entity returned by LoadSceneAsync. </param>
-        /// <returns> True if the scene is loaded. </returns>
-        public static bool IsSceneLoaded(ref SystemState state, Entity entity)
-        {
-            if (!state.EntityManager.HasComponent<SceneReference>(entity))
-            {
-                return false;
-            }
-
-            if (!state.EntityManager.HasBuffer<ResolvedSectionEntity>(entity))
-            {
-                return false;
-            }
-
-            var resolvedSectionEntities = state.EntityManager.GetBuffer<ResolvedSectionEntity>(entity);
-            if (resolvedSectionEntities.Length == 0)
-            {
-                return false;
-            }
-
-            foreach (var s in resolvedSectionEntities)
-            {
-                if (!IsSectionLoaded(ref state, s.SectionEntity))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public static bool IsLoadingOrLoaded(ref SystemState state, Entity entity)
-        {
-            if (!state.EntityManager.HasComponent<SceneReference>(entity))
-            {
-                return false;
-            }
-
-            if (!state.EntityManager.HasComponent<ResolvedSectionEntity>(entity))
-            {
-                return false;
-            }
-
-            var resolvedSectionEntities = state.EntityManager.GetBuffer<ResolvedSectionEntity>(entity);
-
-            if (resolvedSectionEntities.Length == 0)
-            {
-                return false;
-            }
-
-            foreach (var s in resolvedSectionEntities)
-            {
-                if (!IsSectionLoadingOrLoaded(ref state, s.SectionEntity))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         public static bool IsSectionLoaded(ref SystemState state, Entity sectionEntity)
         {
-            // return true;
             if (!state.EntityManager.HasComponent<SceneSectionStreamingSystem.StreamingState>(sectionEntity))
             {
                 return false;
@@ -106,12 +35,6 @@ namespace BovineLabs.Core.Utility
 
             var streamingState = state.EntityManager.GetComponentData<SceneSectionStreamingSystem.StreamingState>(sectionEntity);
             return streamingState.Status == SceneSectionStreamingSystem.StreamingStatus.Loaded;
-        }
-
-        public static bool IsSectionLoadingOrLoaded(ref SystemState state, Entity sectionEntity)
-        {
-            return state.EntityManager.HasComponent<RequestSceneLoaded>(sectionEntity) ||
-                state.EntityManager.HasComponent<SceneSectionStreamingSystem.StreamingState>(sectionEntity);
         }
 
         public void Update(ref SystemState state)
@@ -154,74 +77,6 @@ namespace BovineLabs.Core.Utility
             return true;
         }
 
-        public bool IsSceneLoadingOrLoaded(Entity entity)
-        {
-            if (!this.sceneReferences.HasComponent(entity))
-            {
-                return false;
-            }
-
-            if (!this.resolvedSectionEntitys.HasBuffer(entity))
-            {
-                return false;
-            }
-
-            var resolvedSectionEntities = this.resolvedSectionEntitys[entity];
-
-            if (resolvedSectionEntities.Length == 0)
-            {
-                return false;
-            }
-
-            foreach (var s in resolvedSectionEntities)
-            {
-                if (!this.IsSectionLoadedOrLoading(s.SectionEntity))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary> Check if a subscene is loaded. </summary>
-        /// <param name="entity"> The entity with the loading component data. This is the entity returned by LoadSceneAsync. </param>
-        /// <returns> True if the scene is loaded. </returns>
-        public StreamingStatus GetStreamingStatus(Entity entity)
-        {
-            if (!this.sceneReferences.HasComponent(entity))
-            {
-                return StreamingStatus.None;
-            }
-
-            if (!this.resolvedSectionEntitys.HasBuffer(entity))
-            {
-                return StreamingStatus.None;
-            }
-
-            var resolvedSectionEntities = this.resolvedSectionEntitys[entity];
-
-            if (resolvedSectionEntities.Length == 0)
-            {
-                return StreamingStatus.None;
-            }
-
-            foreach (var s in resolvedSectionEntities)
-            {
-                if (!this.streamingStates.TryGetComponent(s.SectionEntity, out var status))
-                {
-                    return StreamingStatus.None;
-                }
-
-                if (status.Status != SceneSectionStreamingSystem.StreamingStatus.Loaded)
-                {
-                    return StreamingStatus.Loading;
-                }
-            }
-
-            return StreamingStatus.Loaded;
-        }
-
         /// <summary>
         /// Check if a section of a subscene is loaded.
         /// </summary>
@@ -232,18 +87,12 @@ namespace BovineLabs.Core.Utility
         /// <returns> True if the scene section is loaded. </returns>
         public bool IsSectionLoaded(Entity sectionEntity)
         {
-            // return true;
             if (!this.streamingStates.TryGetComponent(sectionEntity, out var status))
             {
                 return false;
             }
 
             return status.Status == SceneSectionStreamingSystem.StreamingStatus.Loaded;
-        }
-
-        public bool IsSectionLoadedOrLoading(Entity sectionEntity)
-        {
-            return this.streamingStates.HasComponent(sectionEntity);
         }
     }
 

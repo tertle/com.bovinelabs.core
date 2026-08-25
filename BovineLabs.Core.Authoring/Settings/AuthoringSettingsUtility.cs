@@ -8,6 +8,7 @@ namespace BovineLabs.Core.Authoring.Settings
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Settings;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEngine;
     using Object = UnityEngine.Object;
@@ -15,6 +16,7 @@ namespace BovineLabs.Core.Authoring.Settings
     /// <summary> Utility for setting up and getting settings. </summary>
     public static class AuthoringSettingsUtility
     {
+        [NoAutoStaticsCleanup]
         private static readonly Dictionary<Type, ISettings> CachedSettings = new();
 
         /// <summary> Gets a settings file. </summary>

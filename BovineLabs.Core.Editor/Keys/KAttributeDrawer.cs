@@ -11,12 +11,14 @@ namespace BovineLabs.Core.Editor.Keys
     using BovineLabs.Core.Editor.Settings;
     using BovineLabs.Core.Keys;
     using BovineLabs.Core.Utility;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEngine;
 
     [CustomPropertyDrawer(typeof(KAttribute), true)]
     public class KAttributeDrawer : BitFieldAttributeEditor<KAttribute>
     {
+        [NoAutoStaticsCleanup]
         private static Dictionary<string, Type> kTypes;
 
         /// <inheritdoc/>

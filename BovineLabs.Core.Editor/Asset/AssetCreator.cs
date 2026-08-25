@@ -1,4 +1,4 @@
-﻿// <copyright file="AssetCreator.cs" company="BovineLabs">
+// <copyright file="AssetCreator.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -9,6 +9,7 @@ namespace BovineLabs.Core.Editor.Asset
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using BovineLabs.Core;
     using BovineLabs.Core.Asset;
     using BovineLabs.Core.Editor.Inspectors;
     using BovineLabs.Core.Editor.SearchWindow;
@@ -30,11 +31,9 @@ namespace BovineLabs.Core.Editor.Asset
 
         private ListView listView;
 
-        private AutoRefAttribute attribute;
-
         public AssetCreator(SerializedObject serializedObject, SerializedProperty serializedProperty, Type type)
         {
-            this.attribute = TryGetAttribute(serializedObject, serializedProperty, type);
+            var attr = TryGetAttribute(serializedObject, serializedProperty, type);
 
             this.serializedObject = serializedObject;
             this.serializedProperty = serializedProperty;
@@ -53,16 +52,15 @@ namespace BovineLabs.Core.Editor.Asset
                         Data = i,
                     });
                 }
-
             }
 
             this.Element = PropertyUtil.CreateProperty(serializedProperty, this.serializedObject);
 
-            if (this.attribute != null)
+            if (attr != null)
             {
                 this.Element.RegisterCallback<GeometryChangedEvent>(this.Init);
                 this.Element.AddManipulator(new ContextualMenuManipulator(this.MenuBuilder));
-                this.path = this.isAbstract ? OMUtility.GetDefaultPathWithoutFileName(this.attribute) : OMUtility.GetDefaultPath(this.attribute);
+                this.path = this.isAbstract ? AssetUtility.GetDefaultPathWithoutFileName(attr) : AssetUtility.GetDefaultPath(attr);
             }
         }
 
@@ -141,7 +139,7 @@ namespace BovineLabs.Core.Editor.Asset
                 {
                     for (var i = 0; i < count; i++)
                     {
-                        OMUtility.CreateInstance(selectedType, path);
+                        AssetUtility.CreateInstance(selectedType, path);
                     }
                 }
             };

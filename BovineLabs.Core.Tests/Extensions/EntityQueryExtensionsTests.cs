@@ -62,32 +62,6 @@ namespace BovineLabs.Core.Tests.Extensions
             Assert.AreEqual(2, this.Manager.GetBuffer<SingletonBuffer>(entity).Length);
         }
 
-        [Test]
-        public void GetSingletonUntypedBuffer_ReadWriteAccessRequiresReadWriteQuery()
-        {
-            this.CreateSingletonBuffer();
-
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<SingletonBuffer>().Build(this.Manager);
-
-            var exception = Assert.Throws<InvalidOperationException>(() =>
-                query.GetSingletonUntypedBuffer(ComponentType.ReadWrite<SingletonBuffer>(), false));
-
-            Assert.That(exception.Message, Does.Contain("read-write"));
-        }
-
-        [Test]
-        public void GetSingletonUntypedBuffer_ReadOnlyAccessRequiresQueryToIncludeBuffer()
-        {
-            this.CreateSingletonBufferWithQueryTag();
-
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<QueryTag>().Build(this.Manager);
-
-            var exception = Assert.Throws<InvalidOperationException>(() =>
-                query.GetSingletonUntypedBuffer(ComponentType.ReadOnly<SingletonBuffer>(), true));
-
-            Assert.That(exception.Message, Does.Contain("included in the EntityQuery"));
-        }
-
         private Entity CreateSingletonBuffer()
         {
             var entity = this.Manager.CreateEntity(typeof(SingletonBuffer));

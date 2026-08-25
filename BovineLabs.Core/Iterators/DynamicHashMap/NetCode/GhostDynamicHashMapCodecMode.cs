@@ -2,7 +2,6 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
-#if UNITY_NETCODE
 namespace BovineLabs.Core.Iterators
 {
     public enum GhostDynamicHashMapCodecMode
@@ -11,4 +10,3 @@ namespace BovineLabs.Core.Iterators
         RawStable,
     }
 }
-#endif

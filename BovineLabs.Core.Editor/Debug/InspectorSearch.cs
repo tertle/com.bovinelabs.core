@@ -11,13 +11,15 @@ namespace BovineLabs.Core.Editor
     using BovineLabs.Core.Extensions;
     using Unity.Burst;
     using Unity.Entities.Editor;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEditor.UIElements;
+    using UnityEngine;
     using UnityEngine.UIElements;
     using Resources = UnityEngine.Resources;
 
     [Configurable]
-    internal static class InspectorSearch
+    internal static partial class InspectorSearch
     {
         public const string Key = "core.inspector-search.enabled";
 
@@ -25,9 +27,11 @@ namespace BovineLabs.Core.Editor
         [ConfigVar(Key, true, "Enable the search button in the inspector")]
         private static readonly SharedStatic<bool> IsEnabled = SharedStatic<bool>.GetOrCreate<IsEnabledType>();
 
+        [NoAutoStaticsCleanup]
         private static Type inspectorWindowType = null!;
 
-        internal static void Initialize()
+        [OnCodeInitializing]
+        private static void Initialize()
         {
             if (!IsEnabled.Data)
             {

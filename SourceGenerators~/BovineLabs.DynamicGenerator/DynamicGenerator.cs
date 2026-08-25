@@ -162,11 +162,17 @@ namespace BovineLabs.DynamicGenerator
                     case "IDynamicHashMap" when typeParamCount == 2:
                         matches.Add(new DynamicInterface(DynamicType.HashMap, interfaceSymbol));
                         break;
+                    case "IDynamicDictionaryEntry" when typeParamCount == 2:
+                        matches.Add(new DynamicInterface(DynamicType.Dictionary, interfaceSymbol));
+                        break;
                     case "IDynamicHashSet" when typeParamCount == 1:
                         matches.Add(new DynamicInterface(DynamicType.HashSet, interfaceSymbol));
                         break;
                     case "IDynamicMultiHashMap" when typeParamCount == 2:
                         matches.Add(new DynamicInterface(DynamicType.MultiHashMap, interfaceSymbol));
+                        break;
+                    case "IDynamicMultiDictionaryEntry" when typeParamCount == 2:
+                        matches.Add(new DynamicInterface(DynamicType.MultiDictionary, interfaceSymbol));
                         break;
                     case "IDynamicPerfectHashMap" when typeParamCount == 2:
                         matches.Add(new DynamicInterface(DynamicType.PerfectHashMap, interfaceSymbol));
@@ -196,8 +202,10 @@ namespace BovineLabs.DynamicGenerator
             return dynamicInterface.Type switch
             {
                 DynamicType.HashMap => new DynamicData(typeSymbol, dynamicInterface.Type, arguments[0], arguments[1]),
+                DynamicType.Dictionary => new DynamicData(typeSymbol, dynamicInterface.Type, arguments[0], arguments[1]),
                 DynamicType.HashSet => new DynamicData(typeSymbol, dynamicInterface.Type, arguments[0]),
                 DynamicType.MultiHashMap => new DynamicData(typeSymbol, dynamicInterface.Type, arguments[0], arguments[1]),
+                DynamicType.MultiDictionary => new DynamicData(typeSymbol, dynamicInterface.Type, arguments[0], arguments[1]),
                 DynamicType.PerfectHashMap => new DynamicData(typeSymbol, dynamicInterface.Type, arguments[0], arguments[1]),
                 DynamicType.UntypedHashMap => new DynamicData(typeSymbol, dynamicInterface.Type, arguments[0]),
                 DynamicType.UntypedBuffer => new DynamicData(typeSymbol, dynamicInterface.Type),
@@ -216,6 +224,7 @@ namespace BovineLabs.DynamicGenerator
                     .AddClass(data.TypeSymbol.Name + "Extensions")
                     .WithAccessModifier(data.TypeSymbol.DeclaredAccessibility)
                     .OfType(TypeKind.Class)
+                    .AddNamespaceImport("BovineLabs.Core.Collections")
                     .AddNamespaceImport("BovineLabs.Core.Iterators")
                     .AddNamespaceImport("Unity.Entities")
                     .AddNamespaceImport("System.Runtime.CompilerServices")
@@ -273,7 +282,9 @@ namespace BovineLabs.DynamicGenerator
 
         private static void InitializeMethod(ClassBuilder builder, DynamicData data)
         {
-            if (data.Type == DynamicType.PerfectHashMap)
+            if (data.Type == DynamicType.PerfectHashMap ||
+                data.Type == DynamicType.Dictionary ||
+                data.Type == DynamicType.MultiDictionary)
             {
                 return;
             }
@@ -313,8 +324,10 @@ namespace BovineLabs.DynamicGenerator
             var rt = data.Type switch
             {
                 DynamicType.HashMap => $"DynamicHashMap<{data.Type1}, {data.Type2}>",
+                DynamicType.Dictionary => $"DynamicDictionary<{data.Type1}, {data.Type2}, {data.TypeName}>",
                 DynamicType.HashSet => $"DynamicHashSet<{data.Type1}>",
                 DynamicType.MultiHashMap => $"DynamicMultiHashMap<{data.Type1}, {data.Type2}>",
+                DynamicType.MultiDictionary => $"DynamicMultiDictionary<{data.Type1}, {data.Type2}, {data.TypeName}>",
                 DynamicType.PerfectHashMap => $"DynamicPerfectHashMap<{data.Type1}, {data.Type2}>",
                 DynamicType.UntypedHashMap => $"DynamicUntypedHashMap<{data.Type1}>",
                 DynamicType.UntypedBuffer => "DynamicUntypedBuffer",
@@ -335,8 +348,10 @@ namespace BovineLabs.DynamicGenerator
                 var a = data.Type switch
                 {
                     DynamicType.HashMap => $"AsHashMap<{data.TypeName}, {data.Type1}, {data.Type2}>",
+                    DynamicType.Dictionary => $"AsDynamicDictionary<{data.Type1}, {data.Type2}, {data.TypeName}>",
                     DynamicType.HashSet => $"AsHashSet<{data.TypeName}, {data.Type1}>",
                     DynamicType.MultiHashMap => $"AsMultiHashMap<{data.TypeName}, {data.Type1}, {data.Type2}>",
+                    DynamicType.MultiDictionary => $"AsDynamicMultiDictionary<{data.Type1}, {data.Type2}, {data.TypeName}>",
                     DynamicType.PerfectHashMap => $"AsPerfectHashMap<{data.TypeName}, {data.Type1}, {data.Type2}>",
                     DynamicType.UntypedHashMap => $"AsUntypedHashMap<{data.TypeName}, {data.Type1}>",
                     DynamicType.UntypedBuffer => $"AsUntypedBuffer<{data.TypeName}>",
@@ -352,8 +367,10 @@ namespace BovineLabs.DynamicGenerator
         private enum DynamicType
         {
             HashMap,
+            Dictionary,
             HashSet,
             MultiHashMap,
+            MultiDictionary,
             PerfectHashMap,
             UntypedHashMap,
             UntypedBuffer,

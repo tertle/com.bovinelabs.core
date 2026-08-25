@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Editor.Inspectors
 {
     using System.Collections.Generic;
     using BovineLabs.Core.Editor.Helpers;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEditor.UIElements;
     using UnityEngine.UIElements;
@@ -16,6 +17,7 @@ namespace BovineLabs.Core.Editor.Inspectors
         private SerializedObject serializedObject;
         private VisualElement parent;
 
+        [NoAutoStaticsCleanup]
         private static readonly Dictionary<SerializedProperty, object> Caches = new();
 
         protected enum ParentTypes : byte

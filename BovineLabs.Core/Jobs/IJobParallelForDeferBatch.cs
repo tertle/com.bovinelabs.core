@@ -84,12 +84,7 @@ namespace BovineLabs.Core.Jobs
             void* atomicSafetyHandlePtr = null;
 #endif
 
-#if UNITY_6000_5_OR_NEWER
             return ScheduleParallelBatchInternal(ref jobData, innerloopBatchCount, list.GetUnsafeList(), atomicSafetyHandlePtr, dependsOn);
-#else
-            return ScheduleParallelBatchInternal(ref jobData, innerloopBatchCount, NativeListUnsafeUtility.GetInternalListDataPtrUnchecked(ref list),
-                atomicSafetyHandlePtr, dependsOn);
-#endif
         }
 
         /// <summary>
@@ -124,12 +119,7 @@ namespace BovineLabs.Core.Jobs
             var safety = NativeListUnsafeUtility.GetAtomicSafetyHandle(ref list);
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
-#if UNITY_6000_5_OR_NEWER
             return ScheduleBatchInternal(ref jobData, innerloopBatchCount, list.GetUnsafeList(), atomicSafetyHandlePtr, dependsOn);
-#else
-            return ScheduleBatchInternal(ref jobData, innerloopBatchCount, NativeListUnsafeUtility.GetInternalListDataPtrUnchecked(ref list),
-                atomicSafetyHandlePtr, dependsOn);
-#endif
         }
 
         /// <summary>
@@ -167,12 +157,7 @@ namespace BovineLabs.Core.Jobs
 #else
             void* atomicSafetyHandlePtr = null;
 #endif
-#if UNITY_6000_5_OR_NEWER
             return ScheduleParallelBatchInternal(ref jobData, innerloopBatchCount, list.GetUnsafeList(), atomicSafetyHandlePtr, dependsOn);
-#else
-            return ScheduleParallelBatchInternal(ref jobData, innerloopBatchCount, NativeListUnsafeUtility.GetInternalListDataPtrUnchecked(ref list),
-                atomicSafetyHandlePtr, dependsOn);
-#endif
         }
 
         /// <summary>

@@ -12,29 +12,34 @@ namespace BovineLabs.Core.Tests.Collections
     public class FixedBitMaskTests
     {
         [Test]
-        public void SetOutOfRange([Values(int.MinValue, -1, 32, int.MaxValue)] int pos)
+        public void SetOutOfRange()
         {
             var bitMask = default(FixedBitMask<Bytes4>);
-            Assert.Throws<ArgumentException>(() => bitMask.Set(pos, true));
+            Assert.Throws<ArgumentException>(() => bitMask.Set(-1, true));
+            Assert.Throws<ArgumentException>(() => bitMask.Set(32, true));
         }
 
         [Test]
-        public void IsSetOutOfRange([Values(int.MinValue, -1, 32, int.MaxValue)] int pos)
+        public void IsSetOutOfRange()
         {
             var bitMask = default(FixedBitMask<Bytes4>);
-            Assert.Throws<ArgumentException>(() => bitMask.IsSet(pos));
+            Assert.Throws<ArgumentException>(() => bitMask.IsSet(-1));
+            Assert.Throws<ArgumentException>(() => bitMask.IsSet(32));
         }
 
         [Test]
-        public void SetIsSetUnset([Values(0, 10, 31)] int pos)
+        public void SetIsSetUnset()
         {
-            var bitMask = default(FixedBitMask<Bytes4>);
+            foreach (var pos in new[] { 0, 31 })
+            {
+                var bitMask = default(FixedBitMask<Bytes4>);
 
-            bitMask.Set(pos, true);
-            Assert.IsTrue(bitMask.IsSet(pos));
+                bitMask.Set(pos, true);
+                Assert.IsTrue(bitMask.IsSet(pos));
 
-            bitMask.Set(pos, false);
-            Assert.IsFalse(bitMask.IsSet(pos));
+                bitMask.Set(pos, false);
+                Assert.IsFalse(bitMask.IsSet(pos));
+            }
         }
 
         [Test]

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Core Settings"
-  short_description: "Author and retrieve Core settings"
-  default_prompt: "Use $bl-core-settings to create, wire, or debug these Core settings."

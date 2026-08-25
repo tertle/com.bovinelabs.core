@@ -9,14 +9,6 @@ namespace BovineLabs.Core.Extensions
 
     public static unsafe class UnsafeHashMapExtensions
     {
-        [Obsolete("Use GetOrAddRefUnsafe")]
-        public static ref TValue GetOrAddRef<TKey, TValue>(ref this UnsafeHashMap<TKey, TValue> hashMap, TKey key, TValue defaultValue = default)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            return ref hashMap.GetOrAddRefUnsafe(key, defaultValue);
-        }
-
         /// <summary>
         /// Gets the value for a key or adds <paramref name="defaultValue" /> and returns it by reference.
         /// </summary>
@@ -43,14 +35,6 @@ namespace BovineLabs.Core.Extensions
             }
 
             return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data.Ptr, idx);
-        }
-
-        [Obsolete("Use GetOrAddRefUnsafe")]
-        public static ref TValue GetOrAddRef<TKey, TValue>(ref this UnsafeHashMap<TKey, TValue> hashMap, TKey key, TValue defaultValue, out bool added)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            return ref hashMap.GetOrAddRefUnsafe(key, defaultValue, out added);
         }
 
         /// <summary>

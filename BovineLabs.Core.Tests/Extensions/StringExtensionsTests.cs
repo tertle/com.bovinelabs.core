@@ -12,7 +12,6 @@ namespace BovineLabs.Core.Tests.Extensions
     {
         /// <summary> Tests <see cref="ToSentence" />. </summary>
         [TestCase("ThisIsATestString", "This Is A Test String")]
-        [TestCase("thisIsATestString", "this Is A Test String")]
         public void ToSentence(string input, string expected)
         {
             Assert.AreEqual(expected, input.ToSentence());

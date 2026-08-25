@@ -39,6 +39,7 @@ namespace BovineLabs.Core.Collections
         public void Clear()
         {
             this.HashMap.Clear();
+            this.Fallback.Clear();
         }
 
         public JobHandle Apply(JobHandle jobHandle, out NativeParallelHashMap<TKey, TValue>.ReadOnly reader, ApplyJob job = default)
@@ -52,13 +53,31 @@ namespace BovineLabs.Core.Collections
 
         public JobHandle Dispose(JobHandle jobHandle)
         {
-            return this.Fallback.Dispose(jobHandle);
+            var hashMapDispose = this.HashMap.Dispose(jobHandle);
+            var fallbackDispose = this.Fallback.Dispose(jobHandle);
+            return JobHandle.CombineDependencies(hashMapDispose, fallbackDispose);
         }
 
-        public JobHandle Clear(JobHandle dependency, ClearNativeParallelHashMapJob<TKey, TValue> job = default)
+        public JobHandle Clear(
+            JobHandle dependency,
+            ClearNativeParallelHashMapJob<TKey, TValue> job = default,
+            ClearFallbackJob fallbackJob = default)
         {
             job.HashMap = this.HashMap;
-            return job.Schedule(dependency);
+            dependency = job.Schedule(dependency);
+            fallbackJob.Fallback = this.Fallback;
+            return fallbackJob.Schedule(dependency);
+        }
+
+        [BurstCompile]
+        public struct ClearFallbackJob : IJob
+        {
+            internal NativeQueue<FallbackData> Fallback;
+
+            public void Execute()
+            {
+                this.Fallback.Clear();
+            }
         }
 
         public readonly struct ParallelWriter

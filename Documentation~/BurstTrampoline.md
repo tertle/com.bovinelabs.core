@@ -1,72 +1,86 @@
 # BurstTrampoline
 
-## Summary
+`BurstTrampoline` synchronously dispatches from Burst-compiled code to a managed callback through one unmanaged payload pointer and byte size.
 
-`BurstTrampoline` provides a lightweight bridge from Burst-compiled code to managed code through a single payload pointer and payload size.
+```csharp
+using BovineLabs.Core.Utility;
+```
 
-**Highlights:**
-- One `BurstTrampoline` type for every signature
-- Raw payload API for full control over argument layout
-- Extension helpers for zero to three inputs and common `out` patterns
-- `ArgumentsFromPtr<T>()` for safe payload unpacking on the managed side
-- No user-facing `MonoPInvokeCallback` or delegate boilerplate
-- Explicit lifecycle initialization instead of Burst-reachable static constructors
+Use it for a narrow managed boundary that cannot be expressed in Burst, such as forwarding main-thread ECS state to a managed Unity object. It is not a job scheduler, message queue, or thread hop: the managed callback runs immediately on the thread that calls `Invoke`.
 
 ## Core API
 
-`BurstTrampoline` is constructed from a managed callback with the signature:
+Construct a trampoline from a managed callback with this function-pointer signature:
 
 ```csharp
 delegate*<void*, int, void>
 ```
 
-The callback receives:
-- `argumentsPtr`: pointer to an unmanaged payload
-- `argumentsSize`: payload size in bytes
+The callback receives the payload pointer and its size. The public members are:
 
-Core members:
-- `new BurstTrampoline(&ManagedCallback)`
-- `Invoke(void* argumentsPtr, int argumentsSize)`
-- `Invoke<T>(ref T arguments)`
-- `ArgumentsFromPtr<T>(void* argumentsPtr, int size)`
+```csharp
+new BurstTrampoline(&ManagedCallback);
+bool IsCreated { get; }
+void Invoke(void* argumentsPtr, int argumentsSize);
+void Invoke<T>(ref T arguments) where T : unmanaged;
+static ref T ArgumentsFromPtr<T>(void* argumentsPtr, int size) where T : unmanaged;
+```
+
+`Invoke` throws when the trampoline is not initialized. Payload-size validation in `ArgumentsFromPtr<T>` is present only when collection checks are enabled, so the caller and callback must always agree on the exact type and layout.
 
 ## Initialization
 
-Store trampolines in `SharedStatic<BurstTrampoline>` fields and assign them from an explicit Unity lifecycle callback after Burst shared statics have been reset and before Burst execution can touch them.
-Do not construct `new BurstTrampoline(&ManagedCallback)` in a static constructor that can be reached from Burst-compiled code.
+Store reusable trampolines in `SharedStatic<BurstTrampoline>` and initialize them from explicit Unity lifecycle callbacks. Do not initialize a trampoline in a static constructor reachable from Burst code.
 
-Use `InitializeOnLoadMethod` in the editor and `RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)` in players.
-
-## Helper payload types
-
-For common cases, `BurstTrampolineExtensions` packs arguments for you:
-
-- `Invoke()` for no arguments
-- `Invoke<T>(in T value)` for one argument
-- `Invoke<TFirst, TSecond>(in TFirst first, in TSecond second)` for two arguments
-- `Invoke<TFirst, TSecond, TThird>(in TFirst first, in TSecond second, in TThird third)` for three arguments
-- `InvokeOut<TOut>(out TOut value)` and overloads for simple readback patterns
-
-The helpers use these payload structs:
-- `BurstManagedNoArgs`
-- `BurstManagedPair<TFirst, TSecond>`
-- `BurstManagedTriple<TFirst, TSecond, TThird>`
-
-If you need four or more values, or a custom layout, define your own unmanaged payload struct and call `Invoke(ref payload)` directly.
-
-## Example
-
-The following example matches the packed callback pattern used by Bridge `AudioSyncSystem`:
+Use `InitializeOnLoadMethod` in the editor and subsystem registration in players:
 
 ```csharp
-using BovineLabs.Core.Utility;
-using Unity.Burst;
-using Unity.Entities;
-using UnityEngine;
+public static readonly SharedStatic<BurstTrampoline> Callback =
+    SharedStatic<BurstTrampoline>.GetOrCreate<MyOwner, CallbackType>();
 
+#if UNITY_EDITOR
+[UnityEditor.InitializeOnLoadMethod]
+#else
+[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+#endif
+private static unsafe void InitializeTrampolines()
+{
+    Callback.Data = new BurstTrampoline(&ManagedCallback);
+}
+
+private struct CallbackType
+{
+}
+```
+
+This ensures the `SharedStatic` value is restored after subsystem resets before Burst execution can invoke it.
+
+## Packed helper overloads
+
+`BurstTrampolineExtensions` covers common payload layouts:
+
+| Call | Callback payload |
+|---|---|
+| `Invoke()` | `BurstManagedNoArgs` |
+| `Invoke(in value)` | `T` |
+| `Invoke(in first, in second)` | `BurstManagedPair<TFirst, TSecond>` |
+| `Invoke(in first, in second, in third)` | `BurstManagedTriple<TFirst, TSecond, TThird>` |
+| `InvokeRef(ref value)` | `TRef`; callback may mutate it |
+| `InvokeOut(out value)` | `TOut`; callback writes the payload itself |
+| `InvokeOut(in input, out value)` | Pair; callback writes `Second` |
+| `InvokeOut(in first, in second, out value)` | Triple; callback writes `Third` |
+
+For four or more fields or a domain-specific layout, define one unmanaged payload struct and call `Invoke(ref payload)` directly.
+
+## Main-thread managed-object example
+
+This example invokes the managed callback from a system's main-thread `OnUpdate`. It does not call Unity object APIs from a worker job.
+
+```csharp
 public struct AudioSourceData : IComponentData
 {
     public float Volume;
+    public float Pitch;
 }
 
 public struct AudioFacade : IComponentData
@@ -77,47 +91,116 @@ public struct AudioFacade : IComponentData
 [BurstCompile]
 public unsafe partial struct AudioSyncSystem : ISystem
 {
-    public static readonly SharedStatic<BurstTrampoline> AudioSource = SharedStatic<BurstTrampoline>.GetOrCreate<AudioSyncSystem>();
+    private static readonly SharedStatic<BurstTrampoline> AudioSourceChanged =
+        SharedStatic<BurstTrampoline>.GetOrCreate<AudioSyncSystem, AudioSourceChangedType>();
 
 #if UNITY_EDITOR
     [UnityEditor.InitializeOnLoadMethod]
 #else
-    [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 #endif
     private static void InitializeTrampolines()
     {
-        AudioSource.Data = new BurstTrampoline(&AudioSourceChangedPacked);
+        AudioSourceChanged.Data = new BurstTrampoline(&AudioSourceChangedPacked);
     }
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        foreach (var (facade, component) in SystemAPI.Query<RefRO<AudioFacade>, RefRO<AudioSourceData>>())
+        foreach (var (facade, data) in SystemAPI.Query<RefRO<AudioFacade>, RefRO<AudioSourceData>>())
         {
-            AudioSource.Data.Invoke(facade.ValueRO, component.ValueRO);
+            AudioSourceChanged.Data.Invoke(facade.ValueRO, data.ValueRO);
         }
     }
 
     private static void AudioSourceChangedPacked(void* argumentsPtr, int argumentsSize)
     {
-        ref var arguments = ref BurstTrampoline.ArgumentsFromPtr<BurstManagedPair<AudioFacade, AudioSourceData>>(argumentsPtr, argumentsSize);
-        ref var facade = ref arguments.First;
-        ref var component = ref arguments.Second;
-        var audioSource = facade.AudioSource.Value;
-        audioSource.volume = component.Volume;
-        audioSource.pitch = component.Pitch;
+        ref var arguments = ref BurstTrampoline.ArgumentsFromPtr<BurstManagedPair<AudioFacade, AudioSourceData>>(
+            argumentsPtr,
+            argumentsSize);
+
+        var audioSource = arguments.First.AudioSource.Value;
+        if (!audioSource)
+        {
+            return;
+        }
+
+        audioSource.volume = arguments.Second.Volume;
+        audioSource.pitch = arguments.Second.Pitch;
+    }
+
+    private struct AudioSourceChangedType
+    {
     }
 }
 ```
 
-`MonoPInvokeCallback` is only used inside `BurstTrampoline` itself for its internal wrapper delegate. User callbacks passed to `new BurstTrampoline(&MyPackedCallback)` do not need that attribute.
+The user callback does not need `MonoPInvokeCallback`; Core applies that attribute to its internal wrapper delegate.
 
-## Returning data to Burst callers
+## Returning data
 
-Use the `InvokeOut` helpers when the managed callback needs to write a result back into the payload:
+For one input and one output, unpack the same pair and assign `Second`:
 
 ```csharp
-Burst.Readback.Data.InvokeOut(in request, out result);
+public unsafe struct Readback
+{
+    private static readonly SharedStatic<BurstTrampoline> Callback =
+        SharedStatic<BurstTrampoline>.GetOrCreate<Readback, CallbackType>();
+
+    public struct Request
+    {
+        public int Value;
+    }
+
+    public struct Result
+    {
+        public bool IsPositive;
+    }
+
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoadMethod]
+#else
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+#endif
+    private static void InitializeTrampoline()
+    {
+        Callback.Data = new BurstTrampoline(&ReadbackPacked);
+    }
+
+    [BurstCompile]
+    public static Result Evaluate(in Request request)
+    {
+        Callback.Data.InvokeOut(in request, out Result result);
+        return result;
+    }
+
+    private static void ReadbackPacked(void* argumentsPtr, int argumentsSize)
+    {
+        ref var arguments = ref BurstTrampoline.ArgumentsFromPtr<BurstManagedPair<Request, Result>>(
+            argumentsPtr,
+            argumentsSize);
+
+        arguments.Second = new Result { IsPositive = arguments.First.Value > 0 };
+    }
+
+    private struct CallbackType
+    {
+    }
+}
 ```
 
-On the managed side, unpack the matching payload and write the output field before returning.
+Use `InvokeRef(ref value)` when the callback should mutate one existing unmanaged payload rather than produce a separately named output.
+
+## Safety and limitations
+
+- Every payload type must be unmanaged.
+- The callback is synchronous. Never retain `argumentsPtr` or a ref returned by `ArgumentsFromPtr<T>` after the callback returns.
+- A callback invoked by a worker job runs on that worker. Most `UnityEngine.Object` APIs are main-thread-only, so keep those callbacks on a main-thread Burst call site or marshal the work through an appropriate queue.
+- Do not allow exceptions to cross the unmanaged callback boundary.
+- Keep callbacks small. Repeated transitions to managed code can dominate otherwise inexpensive Burst work.
+- Initialize every trampoline before any possible call and use `IsCreated` only when absence is a valid state.
+
+## Related guides
+
+- [Utility](Utility.md) summarizes other Burst and runtime helpers.
+- [Jobs](Jobs.md) covers scheduled work; a trampoline itself does not schedule or synchronize jobs.

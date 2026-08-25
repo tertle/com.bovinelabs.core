@@ -17,6 +17,8 @@ namespace BovineLabs.Core.Editor.Component
     {
         private Button button;
 
+        protected virtual string SearchQuery => "unmanaged=true";
+
         /// <inheritdoc/>
         protected override VisualElement CreateElement(SerializedProperty property)
         {
@@ -33,7 +35,7 @@ namespace BovineLabs.Core.Editor.Component
 
         private void Search(SerializedProperty property)
         {
-            var context = SearchService.CreateContext(TypeAsset.SearchProviderType, "unmanaged=true");
+            var context = SearchService.CreateContext(TypeAsset.SearchProviderType, this.SearchQuery);
 
             var viewState =
                 new SearchViewState(context,

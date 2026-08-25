@@ -5,7 +5,7 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("BovineLabs.Core")]
-[assembly: InternalsVisibleTo("BovineLabs.Core.Extensions")]
-[assembly: InternalsVisibleTo("BovineLabs.Core.Extensions.Authoring")]
-[assembly: InternalsVisibleTo("BovineLabs.Core.Extensions.Editor")]
+[assembly: InternalsVisibleTo("BovineLabs.Nerve")]
+[assembly: InternalsVisibleTo("BovineLabs.Nerve.Authoring")]
+[assembly: InternalsVisibleTo("BovineLabs.Nerve.Editor")]
 [assembly: InternalsVisibleTo("BovineLabs.Core.Editor")]

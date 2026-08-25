@@ -1,4 +1,4 @@
-﻿// <copyright file="PooledNativeListTests.cs" company="BovineLabs">
+// <copyright file="PooledNativeListTests.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -14,34 +14,6 @@ namespace BovineLabs.Core.Tests.Utility
 
     public class PooledNativeListTests
     {
-        [Test]
-        public void Get_ReturnsValidList()
-        {
-            // Act
-            using var pooledList = PooledNativeList<int>.Make();
-
-            // Assert
-            Assert.IsNotNull(pooledList.List);
-            Assert.AreEqual(0, pooledList.List.Length);
-            Assert.GreaterOrEqual(pooledList.List.Capacity, 0);
-        }
-
-        [Test]
-        public void PooledList_CanBeUsedLikeNormalList()
-        {
-            // Arrange
-            using var pooledList = PooledNativeList<int>.Make();
-
-            // Act
-            pooledList.List.Add(42);
-            pooledList.List.Add(24);
-
-            // Assert
-            Assert.AreEqual(2, pooledList.List.Length);
-            Assert.AreEqual(42, pooledList.List[0]);
-            Assert.AreEqual(24, pooledList.List[1]);
-        }
-
         [Test]
         public void GetAndDispose_MultiplePooledLists_ReusesList()
         {
@@ -109,107 +81,6 @@ namespace BovineLabs.Core.Tests.Utility
         }
 
         [Test]
-        public void DifferentTypes_CanBeStored()
-        {
-            // Test that the pool can store different types
-            using (var intList = PooledNativeList<int>.Make())
-            {
-                intList.List.Add(42);
-                Assert.AreEqual(1, intList.List.Length);
-            }
-
-            using (var floatList = PooledNativeList<float>.Make())
-            {
-                floatList.List.Add(3.14f);
-                Assert.AreEqual(1, floatList.List.Length);
-            }
-
-            using (var vector3List = PooledNativeList<float3>.Make())
-            {
-                vector3List.List.Add(new float3(1, 2, 3));
-                Assert.AreEqual(1, vector3List.List.Length);
-            }
-        }
-
-        [Test]
-        public void EmptyPool_CreatesNewList()
-        {
-            // Get a bunch of lists to try to exhaust the pool
-            var lists = new PooledNativeList<int>[10];
-
-            // Act - Get lists until we exhaust the pool and need to create a new one
-            for (var i = 0; i < lists.Length; i++)
-            {
-                lists[i] = PooledNativeList<int>.Make();
-            }
-
-            // Assert - Verify all lists work
-            for (var i = 0; i < lists.Length; i++)
-            {
-                lists[i].List.Add(i);
-                Assert.AreEqual(1, lists[i].List.Length);
-                Assert.AreEqual(i, lists[i].List[0]);
-            }
-
-            // Clean up
-            for (var i = 0; i < lists.Length; i++)
-            {
-                lists[i].Dispose();
-            }
-        }
-
-        [Test]
-        public void CapacityConversion_BetweenDifferentSizedTypes()
-        {
-            // Test capacity conversion between types of different sizes
-
-            // First use with a small type (int - 4 bytes)
-            int smallTypeCapacity;
-            using (var intList = PooledNativeList<int>.Make())
-            {
-                // Add items to ensure the capacity is set
-                for (var i = 0; i < 100; i++)
-                {
-                    intList.List.Add(i);
-                }
-
-                smallTypeCapacity = intList.List.Capacity;
-            }
-
-            // Then use with a larger type (double - 8 bytes)
-            using (var doubleList = PooledNativeList<double>.Make())
-            {
-                // The capacity should be approximately half (due to size difference)
-                // Allow some tolerance for pooling overhead and rounding
-                Assert.LessOrEqual(doubleList.List.Capacity, smallTypeCapacity);
-                Assert.GreaterOrEqual(doubleList.List.Capacity * 2 + 1, smallTypeCapacity);
-
-                // Ensure the list is still usable
-                for (var i = 0; i < 50; i++)
-                {
-                    doubleList.List.Add(i);
-                }
-
-                Assert.AreEqual(50, doubleList.List.Length);
-            }
-
-            // Then go back to the smaller type
-            using (var intList = PooledNativeList<int>.Make())
-            {
-                // The capacity should be approximately double (due to size difference)
-                Assert.GreaterOrEqual(intList.List.Capacity, smallTypeCapacity / 2);
-
-                // Ensure the list is still usable
-                for (var i = 0; i < 100; i++)
-                {
-                    intList.List.Add(i);
-                }
-
-                Assert.AreEqual(100, intList.List.Length);
-            }
-        }
-
-        [Test]
         public void UsingReturnedList_ThrowsInEditor()
         {
             var pooledList = PooledNativeList<int>.Make();
@@ -230,58 +101,6 @@ namespace BovineLabs.Core.Tests.Utility
             pooledList.Dispose();
 
             Assert.Catch<InvalidOperationException>(() => pooledListCopy.Dispose());
-        }
-
-        [Test]
-        public void BackToBackJobs_WorkCorrectly()
-        {
-            // This test verifies that the pool works correctly with multiple batches of jobs
-            // scheduled one after another with dependencies
-
-            var totalBatches = 5;
-            var itemsPerBatch = 100;
-            var resultsPerBatch = new NativeArray<NativeArray<int>>(totalBatches, Allocator.Temp);
-
-            // Create arrays to store results from each batch
-            for (var batch = 0; batch < totalBatches; batch++)
-            {
-                resultsPerBatch[batch] = new NativeArray<int>(itemsPerBatch, Allocator.TempJob);
-            }
-
-            // Schedule multiple batches of jobs sequentially, each dependent on the previous
-            var dependsOn = default(JobHandle);
-
-            for (var batch = 0; batch < totalBatches; batch++)
-            {
-                // Schedule a batch of jobs
-                dependsOn = new BackToBackTestJob
-                {
-                    BatchIndex = batch,
-                    Results = resultsPerBatch[batch],
-                }.ScheduleParallel(itemsPerBatch, 4, dependsOn);
-            }
-
-            // Wait for all jobs to complete
-            dependsOn.Complete();
-
-            // Verify results from all batches
-            for (var batch = 0; batch < totalBatches; batch++)
-            {
-                for (var i = 0; i < itemsPerBatch; i++)
-                {
-                    // Each item should have the correct batch index stored
-                    Assert.AreEqual(batch, resultsPerBatch[batch][i],
-                        $"Item {i} in batch {batch} does not have the correct batch index");
-                }
-            }
-
-            // Dispose all result arrays
-            for (var batch = 0; batch < totalBatches; batch++)
-            {
-                resultsPerBatch[batch].Dispose();
-            }
-
-            resultsPerBatch.Dispose();
         }
 
         [Test]

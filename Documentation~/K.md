@@ -1,137 +1,187 @@
-# K
+# K keys
 
-## Summary
+K is a settings-backed, Burst-readable alternative to a closed enum or layer mask. It maps human-readable `FixedString32Bytes` names to unmanaged values without forcing every contributing package to edit one shared enum.
 
-K is a type-safe, Burst-compatible alternative to Enums and LayerMasks that allows you to define key-value pairs in settings files. It provides a streamlined way to convert human-readable strings into values (and vice versa) that works efficiently, even within Burst-compiled jobs.
+Use K when names and values are authored as project data but runtime jobs need fast static lookup. Use a normal C# enum when the value set is closed and compile-time ownership is desirable.
 
-**Key Features:**
-- Define extensible key-value mappings across multiple libraries and projects
-- Burst compatibility
-- Support any unmanaged value types
-- Inspector integration with custom property drawers
+## Core types
 
-Particularly useful when you need enum-like functionality but want to make the values extendable across multiple libraries and projects without requiring hard dependencies.
+| Type | Purpose |
+|---|---|
+| `KSettings<TSelf, TValue>` | Standard serialized `NameValue<TValue>[]` settings asset |
+| `KSettingsBase<TSelf, TValue>` | Custom settings schema that supplies its own `Keys` sequence |
+| `KAttribute` | Inspector dropdown or flags field for supported integer values |
 
-## Core Components
+K settings are `SettingsSingleton` assets stored under the `K` settings subdirectory. Create exactly one asset for each K type and keep it included in builds.
 
-**Classes:**
-- `KSettings<T, TV>`: Core implementation for automated Values implementation
-- `KSettingsBase<T, TV>`: Core implementation for custom authoring data
-- `KAttribute`: Property attribute for inspector display of K values
-
-## Setup
-
-### 1. Define Your Settings Class
+## Define a key set
 
 ```csharp
-// Automatically provides pairs of string, int in the inspector
-public class ClientStates : KSettings<ClientStates, int>
+namespace MyGame
 {
-}
+    using BovineLabs.Core.Keys;
+    using BovineLabs.Core.Settings;
 
-// Alternatively implement the base to add custom authoring data
-public class ClientStates : KSettingsBase<ClientStates, int>
-{
-    [SerializeField]
-    private KeyValues[] keys = Array.Empty<KeyValues>();
-    
-    public override IEnumerable<NameValue<int>> Keys => keys.Select(k => new NameValue<int>(k.Name, k.Value));
-
-    [Serializable]
-    public class KeyValues
+    [SettingsGroup("Game")]
+    public sealed class ClientStates : KSettings<ClientStates, int>
     {
-        public string Name = string.Empty;
-        [Min(0)] public int Value = -1;
     }
 }
 ```
 
-### 2. Create the Settings Asset
+Open **BovineLabs > Settings**, select `Client States`, and create entries in the `Keys` array.
 
-Open the Settings window via `BovineLabs → Settings`. Your K settings class will appear in the list. Select it to automatically create the associated asset.
+Names are stored as `FixedString32Bytes`, whose UTF-8 payload limit is 29 bytes. Names must be unique. Duplicate values are allowed; reverse lookup returns the first name registered for that value.
 
-### 3. Configure Key-Value Pairs
+## Provide reset defaults
 
-In the inspector for your settings asset:
-1. Add entries to the Keys array
-2. Assign a human-readable name for each entry
-3. Set the corresponding value (integer, byte, etc.)
-
-Maximum key length is a UTF8 string of length 29 (due to FixedString32Bytes).
-
-### 4. Optional: Default Values
+Override `SetReset()` when a newly created or reset asset should begin with known entries:
 
 ```csharp
-public class ClientStates : KSettings<ClientStates, int>
+namespace MyGame
 {
-    protected override IEnumerable<NameValue<int>> SetReset()
+    using System.Collections.Generic;
+    using BovineLabs.Core.Keys;
+    using BovineLabs.Core.Settings;
+
+    [SettingsGroup("Game")]
+    public sealed class ClientStates : KSettings<ClientStates, int>
     {
-        yield return new NameValue<int>("menu", 0);
-        yield return new NameValue<int>("loading", 1);
-        yield return new NameValue<int>("gameplay", 2);
-        yield return new NameValue<int>("paused", 3);
+        protected override IEnumerable<NameValue<int>> SetReset()
+        {
+            yield return new NameValue<int>("menu", 0);
+            yield return new NameValue<int>("loading", 1);
+            yield return new NameValue<int>("gameplay", 2);
+            yield return new NameValue<int>("paused", 3);
+        }
     }
 }
 ```
 
-## Usage
+`SetReset()` supplies editor reset data. The serialized asset remains the source used at runtime.
 
-### Converting Names to Keys
+## Use a custom authoring schema
+
+Derive from `KSettingsBase<TSelf, TValue>` when each entry needs additional editor-facing structure before it becomes a name/value pair:
 
 ```csharp
-// Get a value by name
-var state = ClientStates.NameToKey("menu");
-
-// Try to get a value with error handling
-if (ClientStates.TryNameToKey("menu", out var stateValue))
+namespace MyGame
 {
-    // Use stateValue
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using BovineLabs.Core.Keys;
+    using BovineLabs.Core.Settings;
+    using UnityEngine;
+
+    [SettingsGroup("Game")]
+    public sealed class GameLayers : KSettingsBase<GameLayers, uint>
+    {
+        [SerializeField]
+        private Entry[] entries = Array.Empty<Entry>();
+
+        public override IEnumerable<NameValue<uint>> Keys =>
+            this.entries.Select(e => new NameValue<uint>(e.Name, e.Value));
+
+        [Serializable]
+        private sealed class Entry
+        {
+            public string Name = string.Empty;
+            public uint Value;
+        }
+    }
 }
 ```
 
-### Converting Keys to Names
+Keep the resulting names unique and values valid for the fields that consume them.
+
+## Runtime lookup
 
 ```csharp
-// Get the name for a value
-FixedString32Bytes name = ClientStates.KeyToName(2); // Returns "gameplay"
+var gameplay = ClientStates.NameToKey("gameplay");
+
+if (ClientStates.TryNameToKey("paused", out var paused))
+{
+    // Use paused.
+}
+
+var name = ClientStates.KeyToName(gameplay);
 ```
 
-### Inspector Integration
-
-```csharp
-// Display as a dropdown with available values
-[K("ClientStates")]
-public int currentState;
-
-// Display as a flags field (for bitwise operations)
-[K("GameLayers", flags: true)]
-public int layerMask;
-```
-
-Supports int, uint, short, ushort, byte and sbyte types.
-
-### Burst Compatibility
+The static maps are backed by `SharedStatic` native collections and are available to Burst jobs after the settings singleton initializes:
 
 ```csharp
 [BurstCompile]
-private struct MyJob : IJob
+private struct ResolveStateJob : IJob
 {
+    public NativeReference<int> Result;
+
     public void Execute()
     {
-        // Works in Burst jobs
-        var value = ClientStates.NameToKey("gameplay");
+        this.Result.Value = ClientStates.NameToKey("gameplay");
     }
 }
 ```
 
-### Iterating All Key-Value Pairs
+`NameToKey` returns the default value when a name is absent and logs in checks/debug configurations. Use `TryNameToKey` when absence is valid.
+
+`KeyToName` also returns the default fixed string when no reverse mapping exists.
+
+## Inspector fields
+
+`KAttribute` supports `int`, `uint`, `short`, `ushort`, `byte`, and `sbyte` fields:
 
 ```csharp
-// Get an enumerator for all key-value pairs
+[K(nameof(ClientStates))]
+public int CurrentState;
+
+[K(nameof(GameLayers), flags: true)]
+public uint CollisionMask;
+```
+
+For flags, author values as individual bit values and store a compatible integer field. The drawer combines selected values; K does not validate that entries are powers of two.
+
+## Enumerate registered pairs
+
+`Enumerator()` exposes the initialized ordered native list:
+
+```csharp
 var enumerator = ClientStates.Enumerator();
 while (enumerator.MoveNext())
 {
     var pair = enumerator.Current;
-    Debug.Log($"Name: {pair.Name}, Value: {pair.Value}");
+    BLGlobalLogger.LogInfoString($"{pair.Name}: {pair.Value}");
 }
 ```
+
+Treat the enumerator as a view of singleton-owned storage. Do not dispose or retain it across reinitialization.
+
+## Initialization and builds
+
+K maps are populated when their settings singleton asset initializes. Merely calling `ClientStates.I` can create a transient ScriptableObject fallback, but it does not supply authored keys when the real asset was excluded.
+
+Ensure the asset exists, remains unique, and has `IncludeInBuild == true` through its `SettingsSingleton` base behavior. See [Settings](Settings.md#global-settingssingleton-assets) for build inclusion and duplicate-asset rules.
+
+## Troubleshooting
+
+**`K not setup` is thrown**
+
+The settings asset did not initialize. Create it through **BovineLabs > Settings**, keep it included in the build, and remove duplicate assets.
+
+**A name resolves to the default value**
+
+Use `TryNameToKey` to distinguish a missing name from a deliberately authored default value. Check UTF-8 length and exact case.
+
+**The inspector dropdown is empty**
+
+Confirm the `KAttribute` type-name string matches the settings type and that the editor assembly references `BovineLabs.Core.Editor`.
+
+**Flags combine incorrectly**
+
+Use unique single-bit values for flag entries and a supported integer field type.
+
+## Related guides
+
+- [Settings](Settings.md)
+- [ConfigVars](ConfigVars.md)
+- [Inspectors](Inspectors.md)

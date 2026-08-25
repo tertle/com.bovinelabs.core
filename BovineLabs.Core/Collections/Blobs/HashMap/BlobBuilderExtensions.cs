@@ -34,6 +34,13 @@ namespace BovineLabs.Core.Collections
             return (T*)bb.Allocate(ref ptr, size);
         }
 
+        public static ref T Allocate<T>(this ref BlobBuilder blobBuilder, ref BlobPtr<byte> ptr)
+            where T : unmanaged
+        {
+            ref var typedBlob = ref UnsafeUtility.As<BlobPtr<byte>, BlobPtr<T>>(ref ptr);
+            return ref blobBuilder.Allocate(ref typedBlob);
+        }
+
         /// <summary>
         /// Allocates a <see cref="BlobArray{T}"/> inside <paramref name="builder"/> and copies the full contents of <paramref name="src"/> into it.
         /// </summary>
@@ -195,6 +202,56 @@ namespace BovineLabs.Core.Collections
         {
             ref var bb = ref UnsafeUtility.As<BlobBuilder, BlobBuilderInternal>(ref builder);
             return new IntPtr(bb.Allocations.m_ListData);
+        }
+
+        public static bool ContainsAllocation(this ref BlobBuilder builder, void* address, int size)
+        {
+            if (address == null || size < 0)
+            {
+                return false;
+            }
+
+            ref var bb = ref UnsafeUtility.As<BlobBuilder, BlobBuilderInternal>(ref builder);
+            var start = (byte*)address;
+            var end = start + size;
+            foreach (var allocation in bb.Allocations)
+            {
+                if (start >= allocation.P && end <= allocation.P + allocation.Size)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static int GetFinalizedPayloadOffset(this ref BlobBuilder builder, void* address, int size)
+        {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            if (size <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
+
+            ref var bb = ref UnsafeUtility.As<BlobBuilder, BlobBuilderInternal>(ref builder);
+            var finalizedOffset = 0;
+            var start = (byte*)address;
+            var end = start + size;
+            foreach (var allocation in bb.Allocations)
+            {
+                if (start >= allocation.P && end <= allocation.P + allocation.Size)
+                {
+                    return checked(finalizedOffset + (int)(start - allocation.P));
+                }
+
+                finalizedOffset = checked(finalizedOffset + allocation.Size);
+            }
+
+            throw new ArgumentException("The address is outside the BlobBuilder allocation.", nameof(address));
         }
 
         private struct BlobBuilderInternal
@@ -438,7 +495,8 @@ namespace BovineLabs.Core.Collections
                 }
 
                 throw new InvalidOperationException(
-                    "The BlobArray passed to Allocate was not allocated by this BlobBuilder or the struct that embeds it was copied by value instead of by ref.");
+                    "The BlobArray passed to Allocate was not allocated by this ref BlobBuilder " +
+                    "or the struct that embeds it was copied by value instead of by ref.");
             }
 
             private struct SortedIndex : IComparable<SortedIndex>

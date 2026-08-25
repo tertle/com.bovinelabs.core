@@ -22,8 +22,6 @@ namespace BovineLabs.Core.Tests.Iterators
         private const int MinGrowth = 64;
         private const int SnapshotOffset = 16;
         private const int SnapshotStride = 64;
-        private const int MeasurementEntryCount = 1024;
-        private const int MeasurementIterations = 64;
 
         [Test]
         public unsafe void CopyToSnapshotAndCopyFromSnapshot_CoversPrespawnAndPredictedSpawnSnapshotSetup()
@@ -78,25 +76,17 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void SerializerState_CoversPredictedInterpolatedAndOwnerSendMasks()
         {
-            DynamicHashMapPredictedOwnerStateCaptureSystem.State = default;
-            using (var predictedWorld = new World("DynamicHashMap Predicted State Test", WorldFlags.GameServer))
-            {
-                predictedWorld.CreateSystem<DynamicHashMapPredictedOwnerStateCaptureSystem>();
-            }
+            using var world = new World("DynamicHashMap Serializer State Test", WorldFlags.GameServer);
+            CreateGeneratedSerializerCollection(world);
+            var states = CreateSerializerStates(world);
 
-            var predicted = DynamicHashMapPredictedOwnerStateCaptureSystem.State;
+            var predicted = FindSerializerState<DynamicHashMapPredictedOwnerTestsBuffer>(states);
             AssertStateBasics<DynamicHashMapPredictedOwnerTestsBuffer>(predicted);
             Assert.AreEqual(GhostPrefabType.PredictedClient, predicted.PrefabType);
             Assert.AreEqual(GhostSendType.OnlyPredictedClients, predicted.SendMask);
             Assert.AreEqual(SendToOwnerType.SendToOwner, predicted.SendToOwner);
 
-            DynamicHashMapInterpolatedNonOwnerStateCaptureSystem.State = default;
-            using (var interpolatedWorld = new World("DynamicHashMap Interpolated State Test", WorldFlags.GameServer))
-            {
-                interpolatedWorld.CreateSystem<DynamicHashMapInterpolatedNonOwnerStateCaptureSystem>();
-            }
-
-            var interpolated = DynamicHashMapInterpolatedNonOwnerStateCaptureSystem.State;
+            var interpolated = FindSerializerState<DynamicHashMapInterpolatedNonOwnerTestsBuffer>(states);
             AssertStateBasics<DynamicHashMapInterpolatedNonOwnerTestsBuffer>(interpolated);
             Assert.AreEqual(GhostPrefabType.InterpolatedClient, interpolated.PrefabType);
             Assert.AreEqual(GhostSendType.OnlyInterpolatedClients, interpolated.SendMask);
@@ -459,76 +449,44 @@ namespace BovineLabs.Core.Tests.Iterators
         }
 
         [Test]
-        public unsafe void StageA_Measurements_CompareWireSnapshotCpuAndAllocations()
+        public unsafe void SerializeBuffer_EmptyBufferMatchingBaseline_IsUnchanged()
         {
-            var sourceBuffer = this.CreateHashMapBuffer();
-            var source = sourceBuffer.AsHashMap<DynamicHashMapTestsBuffer, int, byte>();
-            FillMeasurementWorkload(ref source);
+            var baselineSnapshot = new NativeArray<byte>(SnapshotStride, Allocator.Temp);
+            var baselineDynamic = new NativeArray<byte>(1, Allocator.Temp);
+            var componentData = new NativeArray<IntPtr>(1, Allocator.Temp);
+            var componentLengths = new NativeArray<int>(1, Allocator.Temp);
+            var baselines = new NativeArray<IntPtr>(4, Allocator.Temp);
+            var entityStartBits = new NativeArray<int>(2, Allocator.Temp);
+            var dynamicSizePerEntity = new NativeArray<int>(1, Allocator.Temp);
+            var writerBuffer = new NativeArray<byte>(64, Allocator.Temp);
+            var compressionModel = StreamCompressionModel.Default;
+            var dynamicOffset = 0;
+            var writer = new DataStreamWriter(writerBuffer);
 
-            var sourceBytes = sourceBuffer.Reinterpret<byte>();
-            var physicalReplicationBytes = sourceBytes.Length;
-            var compactPayload = new NativeArray<byte>(physicalReplicationBytes, Allocator.Temp);
+            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
+                IntPtr.Zero, (IntPtr)baselineSnapshot.GetUnsafePtr(), SnapshotOffset, SnapshotStride, 0, 1,
+                (IntPtr)componentData.GetUnsafePtr(), (IntPtr)componentLengths.GetUnsafePtr(), 1, (IntPtr)baselines.GetUnsafePtr(), ref writer,
+                ref compressionModel, (IntPtr)entityStartBits.GetUnsafePtr(), (IntPtr)baselineDynamic.GetUnsafePtr(), ref dynamicOffset,
+                (IntPtr)dynamicSizePerEntity.GetUnsafePtr(), baselineDynamic.Length);
 
-            Assert.IsTrue(DynamicHashMapNetCodeRawCodec<int, byte>.TryPack(
-                source.Helper, (byte*)compactPayload.GetUnsafePtr(), compactPayload.Length, out var header));
+            Assert.AreEqual(3u, GhostComponentSerializer.CopyFromChangeMask((IntPtr)((byte*)baselineSnapshot.GetUnsafePtr() + sizeof(int)), 0, 2));
 
-            var compactWireBytes = (int)header.PayloadBytes;
-            var dynamicMaskBytes = DynamicHashMapNetCodeRawCodec<int, byte>.GetDynamicDataChangeMaskSize(1, physicalReplicationBytes);
-            var snapshotHistoryBytes = DynamicHashMapNetCodeRawCodec<int, byte>.GetDynamicSnapshotSize(1, physicalReplicationBytes);
-            var expectedSnapshotHistoryBytes = GhostComponentSerializer.SnapshotSizeAligned(dynamicMaskBytes + physicalReplicationBytes);
+            baselines[0] = (IntPtr)baselineSnapshot.GetUnsafePtr();
+            baselines[3] = (IntPtr)baselineDynamic.GetUnsafePtr();
 
-            Assert.Less(compactWireBytes, physicalReplicationBytes);
-            Assert.AreEqual(expectedSnapshotHistoryBytes, snapshotHistoryBytes);
-            Assert.Greater(snapshotHistoryBytes, compactWireBytes);
+            var unchangedSnapshot = new NativeArray<byte>(SnapshotStride, Allocator.Temp);
+            var unchangedDynamic = new NativeArray<byte>(1, Allocator.Temp);
+            dynamicOffset = 0;
+            writer = new DataStreamWriter(writerBuffer);
 
-            var targetBuffer = this.CreateHashMapBuffer();
-            var targetBytes = targetBuffer.Reinterpret<byte>();
-            targetBytes.ResizeUninitialized(physicalReplicationBytes);
+            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
+                IntPtr.Zero, (IntPtr)unchangedSnapshot.GetUnsafePtr(), SnapshotOffset, SnapshotStride, 0, 1,
+                (IntPtr)componentData.GetUnsafePtr(), (IntPtr)componentLengths.GetUnsafePtr(), 1, (IntPtr)baselines.GetUnsafePtr(), ref writer,
+                ref compressionModel, (IntPtr)entityStartBits.GetUnsafePtr(), (IntPtr)unchangedDynamic.GetUnsafePtr(), ref dynamicOffset,
+                (IntPtr)dynamicSizePerEntity.GetUnsafePtr(), unchangedDynamic.Length);
 
-            var deserialized = new NativeArray<byte>(physicalReplicationBytes, Allocator.Temp);
-            var writerBuffer = new NativeArray<byte>(compactWireBytes, Allocator.Temp);
-
-            MeasureStageATicks(
-                source.Helper,
-                compactPayload,
-                deserialized,
-                targetBytes,
-                writerBuffer,
-                MeasurementIterations,
-                out var packTicks,
-                out var deserializeTicks,
-                out var rebuildTicks);
-
-            Assert.Greater(packTicks, 0);
-            Assert.Greater(deserializeTicks, 0);
-            Assert.Greater(rebuildTicks, 0);
-
-            var allocatedBytes = MeasureStageAAllocatedBytes(
-                source.Helper,
-                compactPayload,
-                deserialized,
-                targetBytes,
-                writerBuffer,
-                MeasurementIterations);
-
-            Assert.AreEqual(0, allocatedBytes);
-
-            TestContext.WriteLine(
-                "DynamicHashMap Stage A compact payload: {0} bytes; physical bytes: {1}; saving: {2:P1}.",
-                compactWireBytes,
-                physicalReplicationBytes,
-                1.0 - ((double)compactWireBytes / physicalReplicationBytes));
-            TestContext.WriteLine(
-                "DynamicHashMap Stage A snapshot history: {0} bytes ({1} mask + {2} payload scratch, aligned).",
-                snapshotHistoryBytes,
-                dynamicMaskBytes,
-                physicalReplicationBytes);
-            TestContext.WriteLine(
-                "DynamicHashMap Stage A CPU per iteration: pack {0:F3} us; deserialize chunks {1:F3} us; rebuild {2:F3} us.",
-                TicksToMicroseconds(packTicks, MeasurementIterations),
-                TicksToMicroseconds(deserializeTicks, MeasurementIterations),
-                TicksToMicroseconds(rebuildTicks, MeasurementIterations));
-            TestContext.WriteLine("DynamicHashMap Stage A steady-state managed allocations: {0} bytes.", allocatedBytes);
+            Assert.AreEqual(0u, GhostComponentSerializer.CopyFromChangeMask((IntPtr)((byte*)unchangedSnapshot.GetUnsafePtr() + sizeof(int)), 0, 2));
+            Assert.AreEqual(0, writer.LengthInBits);
         }
 
         private DynamicBuffer<DynamicHashMapTestsBuffer> CreateHashMapBuffer()
@@ -558,6 +516,32 @@ namespace BovineLabs.Core.Tests.Iterators
             world.GetOrCreateSystemManaged<DefaultVariantSystemGroup>();
         }
 
+        private static DynamicBuffer<GhostComponentSerializer.State> CreateSerializerStates(World world)
+        {
+            world.CreateSystem<NetDebugSystem>();
+            var ghostCollectionSystem = world.CreateSystem<GhostCollectionSystem>();
+            ghostCollectionSystem.Update(world.Unmanaged);
+
+            using var query = world.EntityManager.CreateEntityQuery(ComponentType.ReadOnly<GhostComponentSerializer.State>());
+            return query.GetSingletonBuffer<GhostComponentSerializer.State>();
+        }
+
+        private static GhostComponentSerializer.State FindSerializerState<TBuffer>(DynamicBuffer<GhostComponentSerializer.State> states)
+            where TBuffer : unmanaged, IDynamicHashMap<int, byte>
+        {
+            var componentType = ComponentType.ReadWrite<TBuffer>();
+            for (var i = 0; i < states.Length; i++)
+            {
+                if (states[i].ComponentType == componentType)
+                {
+                    return states[i];
+                }
+            }
+
+            Assert.Fail($"No DynamicHashMap serializer state found for {typeof(TBuffer).Name}.");
+            return default;
+        }
+
         private static void AssertStateBasics<TBuffer>(GhostComponentSerializer.State state)
             where TBuffer : unmanaged, IDynamicHashMap<int, byte>
         {
@@ -569,6 +553,27 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.AreNotEqual(0, state.SerializerHash);
             Assert.AreNotEqual(0, state.GhostFieldsHash);
             Assert.AreNotEqual(0, state.VariantHash);
+            AssertFunctionPointersInitialized(state);
+        }
+
+        private static void AssertFunctionPointersInitialized(GhostComponentSerializer.State state)
+        {
+            AssertPointerInitialized(state.PostSerializeBuffer, nameof(state.PostSerializeBuffer));
+            AssertPointerInitialized(state.SerializeBuffer, nameof(state.SerializeBuffer));
+            AssertPointerInitialized(state.CopyFromSnapshot, nameof(state.CopyFromSnapshot));
+            AssertPointerInitialized(state.CopyToSnapshot, nameof(state.CopyToSnapshot));
+            AssertPointerInitialized(state.RestoreFromBackup, nameof(state.RestoreFromBackup));
+            AssertPointerInitialized(state.PredictDelta, nameof(state.PredictDelta));
+            AssertPointerInitialized(state.Deserialize, nameof(state.Deserialize));
+#if UNITY_EDITOR || NETCODE_DEBUG
+            AssertPointerInitialized(state.ReportPredictionErrors, nameof(state.ReportPredictionErrors));
+#endif
+        }
+
+        private static void AssertPointerInitialized<TDelegate>(PortableFunctionPointer<TDelegate> pointer, string name)
+            where TDelegate : Delegate
+        {
+            Assert.AreNotEqual(default(PortableFunctionPointer<TDelegate>), pointer, $"{name} was not initialized.");
         }
 
         private static void AssertSerializedStrategy<TBuffer>(
@@ -634,148 +639,6 @@ namespace BovineLabs.Core.Tests.Iterators
             {
                 Assert.IsTrue(map.Remove(i));
             }
-        }
-
-        private static void FillMeasurementWorkload(ref DynamicHashMap<int, byte> map)
-        {
-            for (var i = 0; i < MeasurementEntryCount; i++)
-            {
-                map.Add(i, (byte)(i % byte.MaxValue));
-            }
-
-            for (var i = 0; i < MeasurementEntryCount; i++)
-            {
-                if ((i & 3) != 0)
-                {
-                    Assert.IsTrue(map.Remove(i));
-                }
-            }
-        }
-
-        private static unsafe void MeasureStageATicks(
-            DynamicHashMapHelper<int>* source,
-            NativeArray<byte> compactPayload,
-            NativeArray<byte> deserialized,
-            DynamicBuffer<byte> targetBytes,
-            NativeArray<byte> writerBuffer,
-            int iterations,
-            out long packTicks,
-            out long deserializeTicks,
-            out long rebuildTicks)
-        {
-            Assert.IsTrue(RunStageASteadyState(source, compactPayload, deserialized, targetBytes, writerBuffer));
-
-            var compactPayloadPtr = (byte*)compactPayload.GetUnsafePtr();
-            var deserializedPtr = (byte*)deserialized.GetUnsafePtr();
-            var targetPtr = targetBytes.GetPtr();
-            Assert.IsTrue(DynamicHashMapNetCodeRawCodec<int, byte>.TryGetPayloadBytes(compactPayloadPtr, compactPayload.Length, out var payloadBytes));
-
-            var start = System.Diagnostics.Stopwatch.GetTimestamp();
-            for (var i = 0; i < iterations; i++)
-            {
-                if (!DynamicHashMapNetCodeRawCodec<int, byte>.TryPack(source, compactPayloadPtr, compactPayload.Length, out _))
-                {
-                    Assert.Fail("DynamicHashMap Stage A pack measurement failed.");
-                }
-            }
-
-            packTicks = System.Diagnostics.Stopwatch.GetTimestamp() - start;
-
-            var writer = new DataStreamWriter(writerBuffer);
-            DynamicHashMapNetCodeRawCodec<int, byte>.WritePayload(compactPayloadPtr, payloadBytes, ref writer);
-            var serialized = writer.AsNativeArray();
-            var compressionModel = StreamCompressionModel.Default;
-
-            start = System.Diagnostics.Stopwatch.GetTimestamp();
-            for (var iteration = 0; iteration < iterations; iteration++)
-            {
-                var reader = new DataStreamReader(serialized);
-                for (var offset = 0; offset < deserialized.Length; offset++)
-                {
-                    DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.Deserialize(
-                        (IntPtr)(deserializedPtr + offset), IntPtr.Zero, ref reader, ref compressionModel, IntPtr.Zero, offset);
-                }
-            }
-
-            deserializeTicks = System.Diagnostics.Stopwatch.GetTimestamp() - start;
-
-            start = System.Diagnostics.Stopwatch.GetTimestamp();
-            for (var i = 0; i < iterations; i++)
-            {
-                if (!DynamicHashMapNetCodeRawCodec<int, byte>.TryRebuild(targetPtr, targetBytes.Length, deserializedPtr, deserialized.Length))
-                {
-                    Assert.Fail("DynamicHashMap Stage A rebuild measurement failed.");
-                }
-            }
-
-            rebuildTicks = System.Diagnostics.Stopwatch.GetTimestamp() - start;
-        }
-
-        private static unsafe long MeasureStageAAllocatedBytes(
-            DynamicHashMapHelper<int>* source,
-            NativeArray<byte> compactPayload,
-            NativeArray<byte> deserialized,
-            DynamicBuffer<byte> targetBytes,
-            NativeArray<byte> writerBuffer,
-            int iterations)
-        {
-            Assert.IsTrue(RunStageASteadyState(source, compactPayload, deserialized, targetBytes, writerBuffer));
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-
-            var before = GC.GetAllocatedBytesForCurrentThread();
-            for (var i = 0; i < iterations; i++)
-            {
-                if (!RunStageASteadyState(source, compactPayload, deserialized, targetBytes, writerBuffer))
-                {
-                    Assert.Fail("DynamicHashMap Stage A steady-state measurement failed.");
-                }
-            }
-
-            return GC.GetAllocatedBytesForCurrentThread() - before;
-        }
-
-        private static unsafe bool RunStageASteadyState(
-            DynamicHashMapHelper<int>* source,
-            NativeArray<byte> compactPayload,
-            NativeArray<byte> deserialized,
-            DynamicBuffer<byte> targetBytes,
-            NativeArray<byte> writerBuffer)
-        {
-            var compactPayloadPtr = (byte*)compactPayload.GetUnsafePtr();
-            var deserializedPtr = (byte*)deserialized.GetUnsafePtr();
-
-            if (!DynamicHashMapNetCodeRawCodec<int, byte>.TryPack(source, compactPayloadPtr, compactPayload.Length, out var header))
-            {
-                return false;
-            }
-
-            var payloadBytes = (int)header.PayloadBytes;
-            var writer = new DataStreamWriter(writerBuffer);
-            DynamicHashMapNetCodeRawCodec<int, byte>.WritePayload(compactPayloadPtr, payloadBytes, ref writer);
-
-            var reader = new DataStreamReader(writer.AsNativeArray());
-            var compressionModel = StreamCompressionModel.Default;
-            for (var offset = 0; offset < deserialized.Length; offset++)
-            {
-                DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.Deserialize(
-                    (IntPtr)(deserializedPtr + offset), IntPtr.Zero, ref reader, ref compressionModel, IntPtr.Zero, offset);
-            }
-
-            if (reader.GetBitsRead() != payloadBytes * 8)
-            {
-                return false;
-            }
-
-            return DynamicHashMapNetCodeRawCodec<int, byte>.TryRebuild(
-                targetBytes.GetPtr(), targetBytes.Length, deserializedPtr, deserialized.Length);
-        }
-
-        private static double TicksToMicroseconds(long ticks, int iterations)
-        {
-            return ticks * 1000000.0 / System.Diagnostics.Stopwatch.Frequency / iterations;
         }
 
         private static unsafe void AssertCompactRoundTrip(DynamicHashMap<int, byte> source, DynamicHashMap<int, byte> rebuilt)
@@ -856,36 +719,6 @@ namespace BovineLabs.Core.Tests.Iterators
             }
         }
 
-        private partial struct DynamicHashMapPredictedOwnerStateCaptureSystem : ISystem
-        {
-            public static GhostComponentSerializer.State State;
-
-            public void OnCreate(ref SystemState state)
-            {
-                State = DynamicHashMapNetCodeSerializer<DynamicHashMapPredictedOwnerTestsBuffer, int, byte>.GetState(
-                    ref state, 0, null, GhostPrefabType.PredictedClient, GhostSendType.OnlyPredictedClients, SendToOwnerType.SendToOwner);
-            }
-
-            public void OnUpdate(ref SystemState state)
-            {
-            }
-        }
-
-        private partial struct DynamicHashMapInterpolatedNonOwnerStateCaptureSystem : ISystem
-        {
-            public static GhostComponentSerializer.State State;
-
-            public void OnCreate(ref SystemState state)
-            {
-                State = DynamicHashMapNetCodeSerializer<DynamicHashMapInterpolatedNonOwnerTestsBuffer, int, byte>.GetState(
-                    ref state, 0, null, GhostPrefabType.InterpolatedClient, GhostSendType.OnlyInterpolatedClients, SendToOwnerType.SendToNonOwner);
-            }
-
-            public void OnUpdate(ref SystemState state)
-            {
-            }
-        }
     }
-
 }
 #endif

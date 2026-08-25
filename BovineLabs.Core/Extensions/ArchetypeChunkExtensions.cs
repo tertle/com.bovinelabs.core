@@ -5,114 +5,16 @@
 namespace BovineLabs.Core.Extensions
 {
     using System;
-    using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Collections;
-    using BovineLabs.Core.Iterators;
     using Unity.Burst.CompilerServices;
     using Unity.Burst.Intrinsics;
-    using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using Unity.Mathematics;
 
-    public struct FakeDynamicComponentTypeHandle // TODO remove huge hack/workaround
-    {
-        public TypeIndex TypeIndex;
-        public short TypeLookupCache;
-
-        public static implicit operator FakeDynamicComponentTypeHandle(DynamicComponentTypeHandle typeHandle)
-        {
-            return new FakeDynamicComponentTypeHandle
-            {
-                TypeIndex = typeHandle.m_TypeIndex,
-                TypeLookupCache = typeHandle.m_TypeLookupCache,
-            };
-        }
-    }
-
     public static unsafe class ArchetypeChunkExtensions
     {
-        public static bool DidChange(this ArchetypeChunk chunk, TypeIndex typeIndex, ref short typeLookupCache, uint version)
-        {
-            ChunkDataUtility.GetIndexInTypeArray(chunk.m_EntityComponentStore->GetArchetype(chunk.m_Chunk), typeIndex, ref typeLookupCache);
-            int typeIndexInArchetype = typeLookupCache;
-
-            var changeVersion = Hint.Unlikely(typeIndexInArchetype == -1)
-                ? 0
-                : chunk.Archetype.Archetype->Chunks.GetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex);
-
-            return ChangeVersionUtility.DidChange(changeVersion, version);
-        }
-
-        /// <summary> Gets a read copy from the ComponentTypeHandle that doesn't trigger Change version. </summary>
-        /// <param name="archetypeChunk"> The ArchetypeChunk. </param>
-        /// <param name="typeHandle"> The components <see cref="ComponentTypeHandle{T}" />. THis can be read or write permission. </param>
-        /// <typeparam name="T"> The <see cref="IComponentData" /> type. </typeparam>
-        /// <returns> A readonly array of the component data in the chunk. </returns>
-        public static NativeArray<T>.ReadOnly GetNativeArrayReadOnly<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle)
-            where T : unmanaged, IComponentData
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
-#endif
-            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
-            var ptr = ChunkDataUtility.GetOptionalComponentDataWithTypeRO(archetypeChunk.m_Chunk, archetype, 0, typeHandle.m_TypeIndex,
-                ref typeHandle.m_LookupCache);
-
-            if (Hint.Unlikely(ptr == null))
-            {
-                var emptyResult = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(null, 0, 0);
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref emptyResult, typeHandle.m_Safety);
-#endif
-                return emptyResult.AsReadOnly();
-            }
-
-            var result = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(ptr, archetypeChunk.Count, Allocator.None);
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref result, typeHandle.m_Safety);
-#endif
-
-            return result.AsReadOnly();
-        }
-
-        public static BufferAccessor<T> GetBufferAccessorRO<T>(this ArchetypeChunk archetypeChunk, ref BufferTypeHandle<T> bufferTypeHandle)
-            where T : unmanaged, IBufferElementData
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(bufferTypeHandle.m_Safety0);
-#endif
-            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
-            var typeIndex = bufferTypeHandle.m_TypeIndex;
-            if (Hint.Unlikely(bufferTypeHandle.m_LookupCache.Archetype != archetype))
-            {
-                bufferTypeHandle.m_LookupCache.Update(archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk), typeIndex);
-            }
-
-            var ptr = ChunkDataUtility.GetOptionalComponentDataWithTypeRO(archetypeChunk.m_Chunk, archetype, 0, typeIndex, ref bufferTypeHandle.m_LookupCache);
-            if (Hint.Unlikely(ptr == null))
-            {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                return new BufferAccessor<T>(null, 0, 0, true, bufferTypeHandle.m_Safety0, bufferTypeHandle.m_Safety1, 0);
-#else
-                return new BufferAccessor<T>(null, 0, 0, 0);
-#endif
-            }
-
-            int typeIndexInArchetype = bufferTypeHandle.m_LookupCache.IndexInArchetype;
-            var internalCapacity = archetype->BufferCapacities[typeIndexInArchetype];
-            var length = archetypeChunk.Count;
-            int stride = bufferTypeHandle.m_LookupCache.ComponentSizeOf;
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            return new BufferAccessor<T>(ptr, length, stride, bufferTypeHandle.IsReadOnly, bufferTypeHandle.m_Safety0, bufferTypeHandle.m_Safety1,
-                internalCapacity);
-#else
-            return new BufferAccessor<T>(ptr, length, stride, internalCapacity);
-#endif
-        }
-
         public static DynamicBufferAccessor GetDynamicBufferAccessor(this ArchetypeChunk chunk, ref DynamicComponentTypeHandle chunkBufferTypeHandle)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -338,50 +240,6 @@ namespace BovineLabs.Core.Extensions
             mask1 = math.select(ulong.MaxValue >> (64 - i1), 0, i1 == 0); // >> 64 does nothing by c# specification
         }
 
-        /// <summary> Provides a ComponentEnabledMask to the component enabled bits in this chunk. </summary>
-        /// <typeparam name="T"> The component type </typeparam>
-        /// <param name="archetypeChunk"> The archetype chunk where to get the data from. </param>
-        /// <param name="typeHandle"> Type handle for the component type <typeparamref name="T" />. </param>
-        /// <returns> An <see cref="EnabledMask" /> instance for component <typeparamref name="T" /> in this chunk. </returns>
-        public static EnabledMask GetEnabledMaskNoCheck<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle)
-            where T : unmanaged, IComponentData
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(typeHandle.m_Safety);
-#endif
-            var archetype = archetypeChunk.m_EntityComponentStore->GetArchetype(archetypeChunk.m_Chunk);
-
-            if (Hint.Unlikely(typeHandle.m_LookupCache.Archetype != archetype))
-            {
-                typeHandle.m_LookupCache.Update(archetype, typeHandle.m_TypeIndex);
-            }
-
-            // In case the chunk does not contains the component type (or the internal TypeIndex lookup fails to find a
-            // match), the LookupCache.Update will invalidate the IndexInArchetype.
-            // In such a case, we return an empty EnabledMask.
-            if (Hint.Unlikely(typeHandle.m_LookupCache.IndexInArchetype == -1))
-            {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                return new EnabledMask(new SafeBitRef(null, 0, typeHandle.m_Safety), null);
-#else
-                return new EnabledMask(SafeBitRef.Null, null);
-#endif
-            }
-
-            int* ptrChunkDisabledCount = default;
-            var ptr = typeHandle.IsReadOnly
-                ? ChunkDataUtility.GetEnabledRefRO(archetypeChunk.m_Chunk, archetypeChunk.Archetype.Archetype, typeHandle.m_LookupCache.IndexInArchetype).Ptr
-                : ChunkDataUtility.GetEnabledRefRW(archetypeChunk.m_Chunk, archetypeChunk.Archetype.Archetype, typeHandle.m_LookupCache.IndexInArchetype,
-                        typeHandle.GlobalSystemVersion, out ptrChunkDisabledCount)
-                    .Ptr;
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var result = new EnabledMask(new SafeBitRef(ptr, 0, typeHandle.m_Safety), ptrChunkDisabledCount);
-#else
-            var result = new EnabledMask(new SafeBitRef(ptr, 0), ptrChunkDisabledCount);
-#endif
-            return result;
-        }
-
         /// <summary>
         /// Provides a ComponentEnabledMask to the component enabled bits in this chunk.
         /// </summary>
@@ -424,88 +282,9 @@ namespace BovineLabs.Core.Extensions
             return result;
         }
 
-        public static ref T GetChunkComponentDataRW<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle)
-            where T : unmanaged, IComponentData
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(typeHandle.m_Safety);
-#endif
-            // TODO(DOTS-5748): use type handle's LookupCache here
-            var metaChunkEntity = archetypeChunk.m_Chunk.MetaChunkEntity;
-            archetypeChunk.m_EntityComponentStore->AssertEntityHasComponent(metaChunkEntity, typeHandle.m_TypeIndex);
-            var ptr = archetypeChunk.m_EntityComponentStore->GetComponentDataWithTypeRW(metaChunkEntity, typeHandle.m_TypeIndex,
-                typeHandle.GlobalSystemVersion);
-
-            return ref UnsafeUtility.AsRef<T>(ptr);
-        }
-
-        public static T* GetChunkComponentDataPtrRW<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle)
-            where T : unmanaged, IComponentData
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(typeHandle.m_Safety);
-#endif
-            // TODO(DOTS-5748): use type handle's LookupCache here
-            var metaChunkEntity = archetypeChunk.m_Chunk.MetaChunkEntity;
-            archetypeChunk.m_EntityComponentStore->AssertEntityHasComponent(metaChunkEntity, typeHandle.m_TypeIndex);
-            var ptr = archetypeChunk.m_EntityComponentStore->GetComponentDataWithTypeRW(metaChunkEntity, typeHandle.m_TypeIndex,
-                typeHandle.GlobalSystemVersion);
-
-            return (T*)ptr;
-        }
-
-        public static DynamicBuffer<T> GetChunkBuffer<T>(this ArchetypeChunk chunk, ref BufferTypeHandle<T> bufferTypeHandle)
-            where T : unmanaged, IBufferElementData
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(bufferTypeHandle.m_Safety0);
-#endif
-            var metaChunkEntity = chunk.m_Chunk.MetaChunkEntity;
-
-            chunk.m_EntityComponentStore->AssertEntityHasComponent(metaChunkEntity, bufferTypeHandle.m_TypeIndex);
-
-            BufferHeader* header;
-            if (bufferTypeHandle.IsReadOnly)
-            {
-                header = (BufferHeader*)chunk.m_EntityComponentStore->GetComponentDataWithTypeRO(metaChunkEntity, bufferTypeHandle.m_TypeIndex);
-            }
-            else
-            {
-                header = (BufferHeader*)chunk.m_EntityComponentStore->GetComponentDataWithTypeRW(metaChunkEntity, bufferTypeHandle.m_TypeIndex,
-                    chunk.m_EntityComponentStore->GlobalSystemVersion);
-            }
-
-            var internalCapacity = TypeManager.GetTypeInfo(bufferTypeHandle.m_TypeIndex).BufferCapacity;
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var useMemoryInit = chunk.m_EntityComponentStore->useMemoryInitPattern != 0;
-            var memoryInitPattern = chunk.m_EntityComponentStore->memoryInitPattern;
-            return new DynamicBuffer<T>(header, bufferTypeHandle.m_Safety0, bufferTypeHandle.m_Safety1, bufferTypeHandle.IsReadOnly, useMemoryInit,
-                memoryInitPattern, internalCapacity);
-#else
-            return new DynamicBuffer<T>(header, internalCapacity);
-#endif
-        }
-
         public static int ChunkIndex(this ArchetypeChunk chunk)
         {
             return UnsafeUtility.As<ChunkIndex, int>(ref chunk.m_Chunk);
-        }
-
-        /// <summary> Checks a list of components to check if any enable components are enabled OR any other components exist. </summary>
-        /// <param name="archetypeChunk"> </param>
-        /// <param name="components"> </param>
-        /// <returns> </returns>
-        public static BitArray128 GetAny(this ArchetypeChunk archetypeChunk, NativeArray<ComponentType> components)
-        {
-            var enabled = BitArray128.None;
-            foreach (var componentType in components)
-            {
-                ref readonly var bits = ref UnsafeEntityDataAccess.GetRequiredEnabledBitsRO(archetypeChunk, componentType);
-                enabled |= new BitArray128(bits);
-            }
-
-            return enabled;
         }
 
         private static UnsafeBitArray GetEnabledRefRWNoChange(ChunkIndex chunk, Archetype* archetype, int indexInTypeArray, out int* ptrChunkDisabledCount)

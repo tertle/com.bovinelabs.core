@@ -1,112 +1,136 @@
 # Collections
 
-BovineLabs Core provides specialized collection types that extend Unity's native collections with performance optimizations, thread safety, and specialized functionality for ECS development.
+Core extends Unity Collections with fixed-storage values, keyed maps, fallback writers, thread-local containers, blob collections, entity-owned maps, and low-level unsafe views.
 
-## Fixed-Size Collections
+Most collection bugs are lifetime or concurrency bugs. Choose the smallest ownership model that fits the data before choosing by API shape.
 
-### `FixedArray<T, TS>`
-Stack-allocated array with compile-time size based on the storage type `TS`.
+```csharp
+using BovineLabs.Core.Collections;
+```
 
-### `FixedBitMask<T>`
-Fixed-size bit mask for efficient boolean operations on a set of values.
+## Choose by ownership
 
-### `FixedHashMap<TKey, TValue, TS>`
-Stack-allocated hash map with compile-time capacity.
+| Data lifetime | Prefer | Owner |
+|---|---|---|
+| A field-sized value with no allocation | `FixedArray`, `FixedBitMask`, `FixedHashMap`, or `BitArray*` | Containing value/component |
+| A normal allocator-backed native container | A `Native*` Core or Unity collection | Creating system or scope |
+| Read-only data shared through a blob asset | `BlobHashMap`, `BlobMultiHashMap`, `BlobPerfectHashMap`, curves, or splines | Blob asset reference/store |
+| A dictionary or set stored on one entity | [Entry-backed dynamic collections](DynamicCollections.md) | Entity's `DynamicBuffer<T>` |
+| A specialized byte-backed map on one entity | [Generated dynamic hash maps](DynamicHashMap.md) | Entity's `DynamicBuffer<byte>` |
+| A short-lived list reused on the current thread | [`PooledNativeList<T>`](PooledNativeList.md) | `using` scope, then thread-local pool |
+| Many producers and one frame consumer | [`SingletonCollectionUtil`](SingletonCollection.md) | Owning system and rewindable allocator |
+| Maximum control with safety disabled | `Unsafe*` collection or lookup | Expert caller |
 
-## Specialized Strings
+## Fixed-storage values
 
-### `MiniString`
-Compact 16-byte string optimized for small text storage in components.
+| Type | Use it for |
+|---|---|
+| `FixedArray<T, TStorage>` | Small inline arrays whose byte capacity is supplied by an unmanaged storage type |
+| `FixedBitMask<TStorage>` | A fixed number of bit flags stored in a caller-selected unmanaged value |
+| `FixedHashMap<TKey, TValue, TCapacity>` | A small inline hash map with compile-time storage |
+| `BitArray8`, `BitArray16`, `BitArray32`, `BitArray64`, `BitArray128`, `BitArray256` | Serializable fixed-capacity bit arrays with indexing and bitwise operations |
+| `MiniString` | Compact UTF-8 text whose storage must fit in a small unmanaged value |
 
-## Keyed Maps
+These values do not use an allocator. Capacity is fixed; check the type's behavior when full rather than assuming it can grow.
 
-### `NativeKeyedMap<TValue>`
-Hash map optimized for integer keys with known maximum value.
+## Keyed and perfect maps
 
-### `UnsafeKeyedMap<TValue>`
-Unsafe version of `NativeKeyedMap` for performance-critical scenarios.
+`NativeKeyedMap<TValue>` and `UnsafeKeyedMap<TValue>` optimize integer-key grouping when the maximum key is known. They allocate storage proportional to the key range, so they are a poor fit for sparse, very large IDs.
 
-### `NativePartialKeyedMap<TValue>`
-Keyed map that supports partial key matching.
+`NativePartialKeyedMap<TValue>` and `UnsafePartialKeyedMap<TValue>` build keyed lookup state over caller-supplied key/value memory. Use them only when the pointed-to arrays and the map share a proven lifetime.
 
-### `UnsafePartialKeyedMap<TValue>`
-Unsafe version of `NativePartialKeyedMap`.
+`NativePerfectHashMap<TKey, TValue>` and `UnsafePerfectHashMap<TKey, TValue>` target fixed key sets. Build them when lookup speed matters more than mutation; do not treat them as general growable dictionaries.
 
-### `NativePerfectHashMap<TKey, TValue>`
-Hash map with perfect hashing for scenarios with known key sets.
+## Hash maps and overflow fallback
 
-### `UnsafePerfectHashMap<TKey, TValue>`
-Unsafe version of `NativePerfectHashMap`.
+Core includes:
 
-## Thread-Safe Collections
+- `NativeMultiHashMap<TKey, TValue>` and `UnsafeMultiHashMap<TKey, TValue>`.
+- `NativeParallelHashMapFallback<TKey, TValue>`.
+- `NativeParallelMultiHashMapFallback<TKey, TValue>`.
+- `NativeUntypedHashMap` for data selected by runtime type.
 
-### `ThreadList`
-Thread-local list storage for parallel job execution.
+The fallback maps pair a fixed-capacity parallel map with a queue. Parallel writers enqueue entries that cannot reserve a slot; `Apply(...)` folds the fallback queue into a resized map before readers use it. Chain the writer dependency into `Apply` and use the returned read-only view only after that handle.
 
-### `ThreadRandom`
-Thread-local random number generation for parallel jobs.
+## Thread-local and work-processing containers
 
-## Unsafe Collections
+| Type | Behavior |
+|---|---|
+| `ThreadList` | One unsafe list per Unity worker-thread index |
+| `ThreadRandom` | One cache-line-aligned `Unity.Mathematics.Random` per thread; non-deterministic across schedules |
+| `NativeThreadStream` / `UnsafeThreadStream` | Parallel per-thread streams that can write mixed unmanaged values or typed sequences |
+| `NativeWorkQueue<T>` | Fixed-capacity concurrent work queue with explicit update/reset behavior |
+| `NativeLinearCongruentialGenerator` | Fast parallel-friendly generated values for workloads that do not require deterministic `Random` streams |
+| `NativeCounter` | Allocator-backed atomic counter |
 
-### `UnsafeArray<T>`
-Unsafe version of `NativeArray` with direct memory access.
+Unity thread-index containers are valid only on the main thread or Unity worker threads. Do not use them from arbitrary managed threads.
 
-### `UnsafeDynamicBuffer<T>`
-Unsafe version of `DynamicBuffer` for performance-critical operations.
+For a globally initialized convenience wrapper over `ThreadRandom`, see [Global random](GlobalRandom.md).
 
-### `UnsafeUntypedDynamicBuffer`
-Untyped dynamic buffer for generic data manipulation.
+## Entity buffer views
 
-### `UnsafeUntypedDynamicBufferAccessor`
-Accessor for untyped dynamic buffers.
+Core supplies typed and untyped access for advanced ECS code:
 
-## Specialized Hash Maps
+- `UnsafeDynamicBuffer<T>`.
+- `UntypedDynamicBuffer` and `UnsafeUntypedDynamicBuffer`.
+- `DynamicBufferAccessor` and `UnsafeUntypedDynamicBufferAccessor`.
+- `UnsafeHashMapBucketData<TKey, TValue>` for low-level bucket traversal.
 
-### `NativeParallelMultiHashMapFallback<TKey, TValue>`
-Multi-hash map with fallback mechanism for handling capacity overflows.
+These APIs expose memory owned by an ECS chunk or buffer. They do not extend that storage's lifetime. A structural change, buffer resize, or invalid dependency can invalidate a cached pointer or view.
 
-### `NativeMultiHashMap<TKey, TValue>`
-Enhanced multi-hash map with additional functionality.
+For normal entity-owned dictionaries and sets, prefer [dynamic buffer collections](DynamicCollections.md).
 
-### `UnsafeMultiHashMap<TKey, TValue>`
-Unsafe version of multi-hash map.
+## Blob collections
 
-## Work Processing
+Core adds immutable lookup structures built with `BlobBuilder`:
 
-### `NativeWorkQueue<T>`
-Thread-safe work queue for parallel job processing.
+- `BlobHashMap<TKey, TValue>`.
+- `BlobMultiHashMap<TKey, TValue>`.
+- `BlobPerfectHashMap<TKey, TValue>`.
+- `BlobCurve`, `BlobCurve2`, `BlobCurve3`, and `BlobCurve4` plus their samplers.
+- `BlobSpline` when the Splines integration is available.
 
-### `NativeLinearCongruentialGenerator`
-Fast random number generator optimized for parallel execution.
+Build blob storage during baking or managed setup, register/deduplicate it through the owning baker or `BlobAssetStore`, and retain the resulting `BlobAssetReference<T>` for as long as readers need it.
 
-## Pooling Systems
+## Pooling and arena references
 
-### `UnmanagedPool<T>`
-Memory pool for unmanaged types.
+`UnmanagedPool<T>` manages reusable unmanaged values from an allocator-backed pool.
 
-## Utility Collections
+`Reference<T>` is a pointer-backed value similar to a blob reference. It is not a managed object wrapper. `Reference<T>.Create(...)` allocates through Core's `MemoryAllocator`; that allocator owns and eventually frees the referenced memory.
 
-### `BitArray`
-Efficient bit manipulation and storage.
+`PooledNativeList<T>` reuses `NativeList` allocations in a per-thread pool. See its [lifetime rules](PooledNativeList.md) before using it in jobs.
 
-### `NativeCounter`
-Thread-safe counter for parallel operations.
+## Entity-owned lookup collections
 
-### `Reference<T>`
-Managed reference wrapper for ECS components.
+Core has two separate dynamic-buffer families:
 
-### `UntypedDynamicBuffer`
-Dynamic buffer that can store any unmanaged type.
+| Family | Storage | Best fit |
+|---|---|---|
+| `DynamicDictionary`, `DynamicMultiDictionary`, `DynamicHashSet` | Typed entry buffer | Normal component data, explicit entry layout, dictionary/set semantics |
+| `DynamicHashMap`, `DynamicMultiHashMap`, `DynamicHashSet` in `BovineLabs.Core.Iterators` | Generated byte buffer | Specialized variants, compact raw layout, optional generated NetCode transport |
 
-## Dynamic Buffer Extensions
+The similarly named hash-set wrappers live in different namespaces and use different marker interfaces. Read [Dynamic buffer collections](DynamicCollections.md) and [Generated dynamic hash maps](DynamicHashMap.md) before selecting one.
 
-### `DynamicBufferAccessor<T>`
-Enhanced accessor for dynamic buffers with additional functionality.
+## Common extension operations
 
-### `UnsafeHashMapBucketData<TKey, TValue>`
-Low-level hash map bucket data structure.
+`BovineLabs.Core.Extensions` adds operations for Unity and Core collections, including resizing initialized buffers, reserving ranges, copying keys, batch insertion, and unsafe ref access.
 
-## Event Processing
+Methods named `GetOrAddRefUnsafe` return a reference into container storage. Consume it immediately. Any later write to the same container can resize or rehash and invalidate the reference. See [Extensions](Extensions.md).
 
-### `EventStream<T>`
-Stream-based event processing system (see EventStream subfolder).
+## Lifetime checklist
+
+1. Record who owns the allocation before scheduling work.
+2. Pass every outstanding reader/writer as a dependency to the next operation.
+3. Dispose allocator-owned native/unsafe collections after the final dependency.
+4. Do not dispose ECS buffer wrappers or blob values whose owner manages the storage.
+5. Do not retain raw pointers, `NativeArray` views, iterators, or returned refs across a resize, rehash, structural change, or allocator rewind.
+6. Prefer checked native wrappers until profiling proves the unsafe variant is needed.
+
+## Related guides
+
+- [Dynamic buffer collections](DynamicCollections.md)
+- [Generated dynamic hash maps](DynamicHashMap.md)
+- [Singleton collections](SingletonCollection.md)
+- [PooledNativeList](PooledNativeList.md)
+- [Iterators](Iterators.md)
+- [Jobs](Jobs.md)

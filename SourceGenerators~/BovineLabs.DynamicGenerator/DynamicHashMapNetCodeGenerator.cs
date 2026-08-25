@@ -21,10 +21,6 @@ namespace BovineLabs.DynamicGenerator
         private const string AttributeMetadataName = "BovineLabs.Core.Iterators.GhostDynamicHashMapAttribute";
         private const string StructLayoutAttributeMetadataName = "System.Runtime.InteropServices.StructLayoutAttribute";
         private const string FieldOffsetAttributeMetadataName = "System.Runtime.InteropServices.FieldOffsetAttribute";
-        private const string DefaultHashMapGeneratedDisplayName = "DynamicHashMap Generated Compact";
-        private const string DefaultHashMapRawDisplayName = "DynamicHashMap Raw Compact";
-        private const string DefaultMultiHashMapGeneratedDisplayName = "DynamicMultiHashMap Generated Compact";
-        private const string DefaultMultiHashMapRawDisplayName = "DynamicMultiHashMap Raw Compact";
         private const int LayoutKindExplicit = 2;
 
         private static readonly SymbolDisplayFormat QualifiedFormat = new SymbolDisplayFormat(
@@ -178,29 +174,23 @@ namespace BovineLabs.DynamicGenerator
             DynamicHashMapValueCodecPlan keyCodec;
             DynamicHashMapValueCodecPlan valueCodec;
             string mapCodecTypeName;
-            string defaultDisplayName;
 
             if (codecMode == GhostDynamicHashMapCodecMode.RawStable)
             {
-                if (!TryGetRawSize(keyType, out var keyBytes))
+                if (!TryCreateRawCodecPlan(keyType, out keyCodec))
                 {
                     diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedType(keyType, location));
                     return new DynamicHashMapNetCodeResult(null, diagnostics);
                 }
 
-                if (!TryGetRawSize(valueType, out var valueBytes))
+                if (!TryCreateRawCodecPlan(valueType, out valueCodec))
                 {
                     diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedType(valueType, location));
                     return new DynamicHashMapNetCodeResult(null, diagnostics);
                 }
 
-                keyCodec = DynamicHashMapValueCodecPlan.Raw(keyType, keyBytes);
-                valueCodec = DynamicHashMapValueCodecPlan.Raw(valueType, valueBytes);
                 mapCodecTypeName = "global::BovineLabs.Core.Iterators." + serializerSuffix + "RawGhostCodec<" +
                     keyType.ToDisplayString(QualifiedFormat) + ", " + valueType.ToDisplayString(QualifiedFormat) + ">";
-                defaultDisplayName = collectionKind == DynamicHashMapCollectionKind.HashMap
-                    ? DefaultHashMapRawDisplayName
-                    : DefaultMultiHashMapRawDisplayName;
             }
             else if (codecMode == GhostDynamicHashMapCodecMode.Generated)
             {
@@ -217,9 +207,6 @@ namespace BovineLabs.DynamicGenerator
                     valueType.ToDisplayString(QualifiedFormat) + ", " +
                     keyCodec.CodecTypeName + ", " +
                     valueCodec.CodecTypeName + ">";
-                defaultDisplayName = collectionKind == DynamicHashMapCollectionKind.HashMap
-                    ? DefaultHashMapGeneratedDisplayName
-                    : DefaultMultiHashMapGeneratedDisplayName;
             }
             else
             {
@@ -237,8 +224,6 @@ namespace BovineLabs.DynamicGenerator
                 mapCodecTypeName,
                 codecPlans,
                 codecMode == GhostDynamicHashMapCodecMode.RawStable,
-                GetNamedBool(candidate.Attribute, "IsDefault", false),
-                GetNamedString(candidate.Attribute, "DisplayName", defaultDisplayName),
                 GetNamedBool(candidate.Attribute, "SendDataForChildEntity", false),
                 GetNamedEnumExpression(candidate.Attribute, "PrefabType", "Unity.NetCode.GhostPrefabType", "All"),
                 GetNamedEnumExpression(candidate.Attribute, "SendTypeOptimization", "Unity.NetCode.GhostSendType", "AllClients"),
@@ -252,12 +237,8 @@ namespace BovineLabs.DynamicGenerator
             var source = new StringBuilder();
             var serializerName = data.TypeSymbol.Name + data.SerializerSuffix + "GhostSerializer";
             var registrationSystemName = data.TypeSymbol.Name + data.SerializerSuffix + "GhostSerializerRegistrationSystem";
-            var variantTypeFullName = data.Namespace.Length == 0 ? serializerName + "Variant" : data.Namespace + "." + serializerName + "Variant";
             var sendChild = data.SendDataForChildEntity ? "1" : "0";
-            var isDefaultSerializer = data.IsDefault ? "1" : "0";
-            var variantHash = data.IsDefault
-                ? $"Unity.NetCode.GhostVariantsUtility.CalculateVariantHashForComponent(Unity.Entities.ComponentType.ReadWrite<{data.TypeName}>())"
-                : $"Unity.NetCode.GhostVariantsUtility.UncheckedVariantHashNBC(VariantTypeFullName, typeof({data.TypeName}).FullName)";
+            var variantHash = $"Unity.NetCode.GhostVariantsUtility.CalculateVariantHashForComponent(Unity.Entities.ComponentType.ReadWrite<{data.TypeName}>())";
             var serializerType = data.UseRawSerializerPath
                 ? "BovineLabs.Core.Iterators." + data.SerializerSuffix + "NetCodeSerializer<" +
                     data.TypeName + ", " + data.KeyTypeName + ", " + data.ValueTypeName + ">"
@@ -265,7 +246,6 @@ namespace BovineLabs.DynamicGenerator
                     data.TypeName + ", " + data.KeyTypeName + ", " + data.ValueTypeName + ", " + data.KeyCodec.CodecTypeName + ", " +
                     data.ValueCodec.CodecTypeName + ">";
 
-            source.AppendLine("#if UNITY_NETCODE");
             source.AppendLine("// <auto-generated/>");
 
             if (data.Namespace.Length != 0)
@@ -275,27 +255,26 @@ namespace BovineLabs.DynamicGenerator
                 source.AppendLine("{");
             }
 
+            source.AppendLine("#if UNITY_NETCODE");
             foreach (var codec in data.GeneratedCodecs)
             {
                 source.Append(codec.Source);
                 source.AppendLine();
             }
 
+            source.AppendLine("    [Unity.Burst.BurstCompile]");
             source.AppendLine("    [System.Runtime.CompilerServices.CompilerGenerated]");
             source.Append("    public static class ");
             source.AppendLine(serializerName);
             source.AppendLine("    {");
-            source.Append("        public const string VariantTypeFullName = \"");
-            source.Append(EscapeString(variantTypeFullName));
-            source.AppendLine("\";");
             source.Append("        public const string DisplayName = \"");
             source.Append(EscapeString(data.DisplayName));
             source.AppendLine("\";");
-            source.Append("        public const int EncodedKeySize = ");
-            source.Append(data.KeyCodec.EncodedSize);
+            source.Append("        public static readonly int EncodedKeySize = ");
+            source.Append(data.KeyCodec.EncodedSizeExpression);
             source.AppendLine(";");
-            source.Append("        public const int EncodedValueSize = ");
-            source.Append(data.ValueCodec.EncodedSize);
+            source.Append("        public static readonly int EncodedValueSize = ");
+            source.Append(data.ValueCodec.EncodedSizeExpression);
             source.AppendLine(";");
             source.AppendLine("        public const int ScratchStride = 1;");
             source.AppendLine();
@@ -305,6 +284,42 @@ namespace BovineLabs.DynamicGenerator
             source.Append("            var variantHash = ");
             source.Append(variantHash);
             source.AppendLine(";");
+            source.AppendLine("            var functionPointers = default(BovineLabs.Core.Iterators.DynamicHashCollectionNetCodeFunctionPointers);");
+            source.AppendLine("            var networkWorldFlags = Unity.Entities.WorldFlags.GameServer | Unity.Entities.WorldFlags.GameClient |");
+            source.AppendLine("                Unity.Entities.WorldFlags.GameThinClient;");
+            source.AppendLine("            if ((state.WorldUnmanaged.Flags & networkWorldFlags) != 0)");
+            source.AppendLine("            {");
+            source.AppendLine("                functionPointers.PostSerializeBuffer =");
+            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
+            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.PostSerializeBufferDelegate>(");
+            source.AppendLine("                        AOT_PostSerializeBuffer);");
+            source.AppendLine("                functionPointers.SerializeBuffer =");
+            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
+            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.SerializeBufferDelegate>(AOT_SerializeBuffer);");
+            source.AppendLine("                functionPointers.CopyFromSnapshot =");
+            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
+            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.CopyToFromSnapshotDelegate>(");
+            source.AppendLine("                        AOT_CopyFromSnapshot);");
+            source.AppendLine("                functionPointers.CopyToSnapshot =");
+            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
+            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.CopyToFromSnapshotDelegate>(AOT_CopyToSnapshot);");
+            source.AppendLine("                functionPointers.RestoreFromBackup =");
+            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
+            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.RestoreFromBackupDelegate>(");
+            source.AppendLine("                        AOT_RestoreFromBackup);");
+            source.AppendLine("                functionPointers.PredictDelta =");
+            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
+            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.PredictDeltaDelegate>(AOT_PredictDelta);");
+            source.AppendLine("                functionPointers.Deserialize =");
+            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
+            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.DeserializeDelegate>(AOT_Deserialize);");
+            source.AppendLine("#if UNITY_EDITOR || NETCODE_DEBUG");
+            source.AppendLine("                functionPointers.ReportPredictionErrors =");
+            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
+            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.ReportPredictionErrorsDelegate>(");
+            source.AppendLine("                        AOT_ReportPredictionErrors);");
+            source.AppendLine("#endif");
+            source.AppendLine("            }");
             source.Append("            ");
             source.Append(serializerType);
             source.AppendLine(".AddToCollection(");
@@ -327,9 +342,8 @@ namespace BovineLabs.DynamicGenerator
             source.Append("                ");
             source.Append(data.OwnerSendTypeExpression);
             source.AppendLine(",");
-            source.Append("                ");
-            source.Append(isDefaultSerializer);
-            source.AppendLine(");");
+            source.AppendLine("                1,");
+            source.AppendLine("                functionPointers);");
             source.AppendLine("        }");
             source.AppendLine();
             source.AppendLine("        internal static void CopyToSnapshot(");
@@ -349,18 +363,26 @@ namespace BovineLabs.DynamicGenerator
             source.Append(serializerType);
             source.AppendLine(".CopyFromSnapshot(stateData, snapshotData, snapshotOffset, snapshotStride, componentData, componentStride, count);");
             source.AppendLine("        }");
+            AppendAotCallbacks(source, serializerType);
             source.AppendLine("    }");
             source.AppendLine();
+            source.AppendLine("#endif");
+            source.AppendLine();
+            source.AppendLine("#if UNITY_NETCODE");
             source.AppendLine("    [Unity.Burst.BurstCompile]");
-            source.AppendLine("    [System.Runtime.CompilerServices.CompilerGenerated]");
             source.AppendLine("    [Unity.Entities.UpdateInGroup(typeof(Unity.NetCode.GhostComponentSerializerCollectionSystemGroup))]");
             source.AppendLine("    [Unity.Entities.CreateAfter(typeof(Unity.NetCode.GhostComponentSerializerCollectionSystemGroup))]");
             source.AppendLine("    [Unity.Entities.CreateBefore(typeof(Unity.NetCode.DefaultVariantSystemGroup))]");
             source.AppendLine("    [Unity.Entities.BakingVersion(true)]");
+            source.AppendLine("#endif");
+            source.AppendLine("    [System.Runtime.CompilerServices.CompilerGenerated]");
             source.Append("    public partial struct ");
-            source.Append(registrationSystemName);
-            source.AppendLine(" : Unity.Entities.ISystem, Unity.NetCode.IGhostComponentSerializerRegistration");
+            source.AppendLine(registrationSystemName);
+            source.AppendLine("#if UNITY_NETCODE");
+            source.AppendLine("        : Unity.Entities.ISystem, Unity.NetCode.IGhostComponentSerializerRegistration");
+            source.AppendLine("#endif");
             source.AppendLine("    {");
+            source.AppendLine("#if UNITY_NETCODE");
             source.AppendLine("        public void OnCreate(ref Unity.Entities.SystemState state)");
             source.AppendLine("        {");
             source.Append("            using var builder = new Unity.Entities.EntityQueryBuilder(Unity.Collections.Allocator.Temp)");
@@ -378,6 +400,7 @@ namespace BovineLabs.DynamicGenerator
             source.AppendLine("        {");
             source.AppendLine("            state.Enabled = false;");
             source.AppendLine("        }");
+            source.AppendLine("#endif");
             source.AppendLine("    }");
 
             if (data.Namespace.Length != 0)
@@ -385,8 +408,109 @@ namespace BovineLabs.DynamicGenerator
                 source.AppendLine("}");
             }
 
-            source.AppendLine("#endif");
             return SourceText.From(source.ToString(), Encoding.UTF8);
+        }
+
+        private static void AppendAotCallbacks(StringBuilder source, string serializerType)
+        {
+            source.AppendLine();
+            source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.CopyToFromSnapshotDelegate))]");
+            source.AppendLine("        private static void AOT_CopyToSnapshot(");
+            source.AppendLine("            System.IntPtr stateData, System.IntPtr snapshotData, int snapshotOffset, int snapshotStride,");
+            source.AppendLine("            System.IntPtr componentData, int componentStride, int count)");
+            source.AppendLine("        {");
+            source.Append("            ");
+            source.Append(serializerType);
+            source.AppendLine(".CopyToSnapshot(stateData, snapshotData, snapshotOffset, snapshotStride, componentData, componentStride, count);");
+            source.AppendLine("        }");
+            source.AppendLine();
+            source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.CopyToFromSnapshotDelegate))]");
+            source.AppendLine("        private static void AOT_CopyFromSnapshot(");
+            source.AppendLine("            System.IntPtr stateData, System.IntPtr snapshotData, int snapshotOffset, int snapshotStride,");
+            source.AppendLine("            System.IntPtr componentData, int componentStride, int count)");
+            source.AppendLine("        {");
+            source.Append("            ");
+            source.Append(serializerType);
+            source.AppendLine(".CopyFromSnapshot(stateData, snapshotData, snapshotOffset, snapshotStride, componentData, componentStride, count);");
+            source.AppendLine("        }");
+            source.AppendLine();
+            source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.DeserializeDelegate))]");
+            source.AppendLine("        private static void AOT_Deserialize(");
+            source.AppendLine("            System.IntPtr snapshotData, System.IntPtr baselineData, ref Unity.Collections.DataStreamReader reader,");
+            source.AppendLine("            ref Unity.Collections.StreamCompressionModel compressionModel, System.IntPtr changeMaskData, int startOffset)");
+            source.AppendLine("        {");
+            source.Append("            ");
+            source.Append(serializerType);
+            source.AppendLine(".Deserialize(snapshotData, baselineData, ref reader, ref compressionModel, changeMaskData, startOffset);");
+            source.AppendLine("        }");
+            source.AppendLine();
+            source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.SerializeBufferDelegate))]");
+            source.AppendLine("        private static void AOT_SerializeBuffer(");
+            source.AppendLine("            System.IntPtr stateData, System.IntPtr snapshotData, int snapshotOffset, int snapshotStride, int maskOffsetInBits,");
+            source.Append("            int changeMaskBits, System.IntPtr componentData, System.IntPtr componentDataLen, int count, ");
+            source.AppendLine("System.IntPtr baselines,");
+            source.AppendLine("            ref Unity.Collections.DataStreamWriter writer, ref Unity.Collections.StreamCompressionModel compressionModel,");
+            source.AppendLine("            System.IntPtr entityStartBit, System.IntPtr snapshotDynamicDataPtr, ref int snapshotDynamicDataOffset,");
+            source.AppendLine("            System.IntPtr dynamicSizePerEntity, int dynamicSnapshotMaxOffset)");
+            source.AppendLine("        {");
+            source.Append("            ");
+            source.Append(serializerType);
+            source.AppendLine(".SerializeBuffer(");
+            source.Append("                stateData, snapshotData, snapshotOffset, snapshotStride, maskOffsetInBits, changeMaskBits, ");
+            source.AppendLine("componentData, componentDataLen,");
+            source.AppendLine("                count, baselines, ref writer, ref compressionModel, entityStartBit, snapshotDynamicDataPtr,");
+            source.AppendLine("                ref snapshotDynamicDataOffset, dynamicSizePerEntity, dynamicSnapshotMaxOffset);");
+            source.AppendLine("        }");
+            source.AppendLine();
+            source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.PostSerializeBufferDelegate))]");
+            source.AppendLine("        private static void AOT_PostSerializeBuffer(");
+            source.Append("            System.IntPtr snapshotData, int snapshotOffset, int snapshotStride, int maskOffsetInBits, ");
+            source.AppendLine("int changeMaskBits, int count,");
+            source.AppendLine("            System.IntPtr baselines, ref Unity.Collections.DataStreamWriter writer,");
+            source.AppendLine("            ref Unity.Collections.StreamCompressionModel compressionModel, System.IntPtr entityStartBit,");
+            source.AppendLine("            System.IntPtr snapshotDynamicDataPtr, System.IntPtr dynamicSizePerEntity, int dynamicSnapshotMaxOffset)");
+            source.AppendLine("        {");
+            source.Append("            ");
+            source.Append(serializerType);
+            source.AppendLine(".PostSerializeBuffer(");
+            source.AppendLine("                snapshotData, snapshotOffset, snapshotStride, maskOffsetInBits, changeMaskBits, count, baselines, ref writer,");
+            source.AppendLine("                ref compressionModel, entityStartBit, snapshotDynamicDataPtr, dynamicSizePerEntity, dynamicSnapshotMaxOffset);");
+            source.AppendLine("        }");
+            source.AppendLine();
+            source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.RestoreFromBackupDelegate))]");
+            source.AppendLine("        private static void AOT_RestoreFromBackup(System.IntPtr componentData, System.IntPtr backupData)");
+            source.AppendLine("        {");
+            source.Append("            ");
+            source.Append(serializerType);
+            source.AppendLine(".RestoreFromBackup(componentData, backupData);");
+            source.AppendLine("        }");
+            source.AppendLine();
+            source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.PredictDeltaDelegate))]");
+            source.AppendLine("        private static void AOT_PredictDelta(");
+            source.AppendLine("            System.IntPtr snapshotData, System.IntPtr baseline1Data, System.IntPtr baseline2Data,");
+            source.AppendLine("            ref Unity.NetCode.GhostDeltaPredictor predictor)");
+            source.AppendLine("        {");
+            source.Append("            ");
+            source.Append(serializerType);
+            source.AppendLine(".PredictDelta(snapshotData, baseline1Data, baseline2Data, ref predictor);");
+            source.AppendLine("        }");
+            source.AppendLine();
+            source.AppendLine("#if UNITY_EDITOR || NETCODE_DEBUG");
+            source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
+            source.Append("        [AOT.MonoPInvokeCallback(typeof(");
+            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.ReportPredictionErrorsDelegate))]");
+            source.AppendLine("        private static void AOT_ReportPredictionErrors(");
+            source.AppendLine("            System.IntPtr componentData, System.IntPtr backupData, System.IntPtr errorsList, int errorsCount)");
+            source.AppendLine("        {");
+            source.AppendLine("        }");
+            source.AppendLine("#endif");
         }
 
         private static DynamicHashMapValueCodecPlan BuildGeneratedCodecPlan(
@@ -882,11 +1006,29 @@ namespace BovineLabs.DynamicGenerator
             return result;
         }
 
-        private static bool TryGetRawSize(ITypeSymbol typeSymbol, out int size)
+        private static bool TryCreateRawCodecPlan(ITypeSymbol typeSymbol, out DynamicHashMapValueCodecPlan plan)
+        {
+            if (TryGetKnownRawSize(typeSymbol, out var size))
+            {
+                plan = DynamicHashMapValueCodecPlan.Raw(typeSymbol, size);
+                return true;
+            }
+
+            if (typeSymbol.IsUnmanagedType)
+            {
+                plan = DynamicHashMapValueCodecPlan.Raw(typeSymbol);
+                return true;
+            }
+
+            plan = null;
+            return false;
+        }
+
+        private static bool TryGetKnownRawSize(ITypeSymbol typeSymbol, out int size)
         {
             if (typeSymbol is INamedTypeSymbol { TypeKind: TypeKind.Enum } enumType)
             {
-                return TryGetRawSize(enumType.EnumUnderlyingType, out size);
+                return TryGetKnownRawSize(enumType.EnumUnderlyingType, out size);
             }
 
             switch (typeSymbol.SpecialType)
@@ -930,19 +1072,6 @@ namespace BovineLabs.DynamicGenerator
             return defaultValue;
         }
 
-        private static string GetNamedString(AttributeData attribute, string name, string defaultValue)
-        {
-            foreach (var argument in attribute.NamedArguments)
-            {
-                if (argument.Key == name)
-                {
-                    return argument.Value.Value as string ?? defaultValue;
-                }
-            }
-
-            return defaultValue;
-        }
-
         private static string GetNamedEnumExpression(AttributeData attribute, string name, string typeName, string defaultName)
         {
             foreach (var argument in attribute.NamedArguments)
@@ -967,6 +1096,33 @@ namespace BovineLabs.DynamicGenerator
                 SyntaxFacts.GetContextualKeywordKind(identifier) != SyntaxKind.None
                     ? "@" + identifier
                     : identifier;
+        }
+
+        private static string ToSentenceDisplayName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return string.Empty;
+            }
+
+            var builder = new StringBuilder(name.Length + 8);
+            for (var i = 0; i < name.Length; i++)
+            {
+                var c = name[i];
+                if (i > 0 && char.IsUpper(c))
+                {
+                    var previous = name[i - 1];
+                    var nextIsLower = i + 1 < name.Length && char.IsLower(name[i + 1]);
+                    if (char.IsLower(previous) || char.IsDigit(previous) || (char.IsUpper(previous) && nextIsLower))
+                    {
+                        builder.Append(' ');
+                    }
+                }
+
+                builder.Append(c);
+            }
+
+            return builder.ToString();
         }
 
         private static string SanitizeTypeName(ITypeSymbol typeSymbol)
@@ -1055,11 +1211,13 @@ namespace BovineLabs.DynamicGenerator
 
         private sealed class DynamicHashMapValueCodecPlan
         {
-            private DynamicHashMapValueCodecPlan(ITypeSymbol typeSymbol, string codecTypeName, int encodedSize, ulong schemaHash, string source)
+            private DynamicHashMapValueCodecPlan(
+                ITypeSymbol typeSymbol, string codecTypeName, int encodedSize, string encodedSizeExpression, ulong schemaHash, string source)
             {
                 this.TypeSymbol = typeSymbol;
                 this.CodecTypeName = codecTypeName;
                 this.EncodedSize = encodedSize;
+                this.EncodedSizeExpression = encodedSizeExpression;
                 this.SchemaHash = schemaHash;
                 this.Source = source;
             }
@@ -1070,6 +1228,8 @@ namespace BovineLabs.DynamicGenerator
 
             public int EncodedSize { get; }
 
+            public string EncodedSizeExpression { get; }
+
             public ulong SchemaHash { get; }
 
             public string Source { get; }
@@ -1079,13 +1239,22 @@ namespace BovineLabs.DynamicGenerator
                 var typeName = typeSymbol.ToDisplayString(QualifiedFormat);
                 var codecTypeName = "global::BovineLabs.Core.Iterators.DynamicGhostRawValueCodec<" + typeName + ">";
                 var schemaHash = CombineFnv1A64(Fnv1A64("raw:" + typeName), (ulong)encodedSize);
-                return new DynamicHashMapValueCodecPlan(typeSymbol, codecTypeName, encodedSize, schemaHash, string.Empty);
+                return new DynamicHashMapValueCodecPlan(typeSymbol, codecTypeName, encodedSize, encodedSize.ToString(), schemaHash, string.Empty);
+            }
+
+            public static DynamicHashMapValueCodecPlan Raw(ITypeSymbol typeSymbol)
+            {
+                var typeName = typeSymbol.ToDisplayString(QualifiedFormat);
+                var codecTypeName = "global::BovineLabs.Core.Iterators.DynamicGhostRawValueCodec<" + typeName + ">";
+                var encodedSizeExpression = "global::Unity.Collections.LowLevel.Unsafe.UnsafeUtility.SizeOf<" + typeName + ">()";
+                var schemaHash = Fnv1A64("raw:" + typeName);
+                return new DynamicHashMapValueCodecPlan(typeSymbol, codecTypeName, 0, encodedSizeExpression, schemaHash, string.Empty);
             }
 
             public static DynamicHashMapValueCodecPlan Generated(
                 ITypeSymbol typeSymbol, string codecTypeName, int encodedSize, ulong schemaHash, string source)
             {
-                return new DynamicHashMapValueCodecPlan(typeSymbol, codecTypeName, encodedSize, schemaHash, source);
+                return new DynamicHashMapValueCodecPlan(typeSymbol, codecTypeName, encodedSize, encodedSize.ToString(), schemaHash, source);
             }
         }
 
@@ -1117,8 +1286,6 @@ namespace BovineLabs.DynamicGenerator
                 string mapCodecTypeName,
                 IReadOnlyList<DynamicHashMapValueCodecPlan> generatedCodecs,
                 bool useRawSerializerPath,
-                bool isDefault,
-                string displayName,
                 bool sendDataForChildEntity,
                 string prefabTypeExpression,
                 string sendTypeExpression,
@@ -1136,8 +1303,7 @@ namespace BovineLabs.DynamicGenerator
                 this.MapCodecTypeName = mapCodecTypeName;
                 this.GeneratedCodecs = generatedCodecs.Where(static codec => codec.Source.Length != 0).Distinct().ToArray();
                 this.UseRawSerializerPath = useRawSerializerPath;
-                this.IsDefault = isDefault;
-                this.DisplayName = displayName;
+                this.DisplayName = ToSentenceDisplayName(typeSymbol.Name);
                 this.SendDataForChildEntity = sendDataForChildEntity;
                 this.PrefabTypeExpression = prefabTypeExpression;
                 this.SendTypeExpression = sendTypeExpression;
@@ -1174,8 +1340,6 @@ namespace BovineLabs.DynamicGenerator
             public IReadOnlyList<DynamicHashMapValueCodecPlan> GeneratedCodecs { get; }
 
             public bool UseRawSerializerPath { get; }
-
-            public bool IsDefault { get; }
 
             public string DisplayName { get; }
 

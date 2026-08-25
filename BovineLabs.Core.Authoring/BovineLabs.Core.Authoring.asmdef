@@ -6,7 +6,7 @@
     "Unity.Burst",
     "Unity.Collections",
     "Unity.Entities",
-    "Unity.Entities.Graphics",
+    "Unity.Entities.Build",
     "Unity.Entities.Hybrid",
     "Unity.Mathematics",
     "Unity.Mathematics.Extensions",
@@ -27,18 +27,13 @@
   "versionDefines": [
     {
       "name": "com.unity.netcode",
-      "expression": "",
+      "expression": "6.7.0",
       "define": "UNITY_NETCODE"
     },
     {
       "name": "com.unity.physics",
-      "expression": "",
+      "expression": "6.7.0",
       "define": "UNITY_PHYSICS"
-    },
-    {
-      "name": "com.unity.entities.graphics",
-      "expression": "",
-      "define": "UNITY_GRAPHICS"
     }
   ],
   "noEngineReferences": false

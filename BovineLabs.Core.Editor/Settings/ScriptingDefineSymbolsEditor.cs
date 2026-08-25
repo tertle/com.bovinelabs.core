@@ -7,11 +7,12 @@ namespace BovineLabs.Core.Editor.Settings
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using BovineLabs.Core.Authoring.Settings;
+    using System.Threading.Tasks;
+    using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEditor.Build;
 
-    public static class ScriptingDefineSymbolsEditor
+    public static partial class ScriptingDefineSymbolsEditor
     {
         public static void ApplyDefinesToAll(IReadOnlyCollection<string> scriptingDefines, IReadOnlyCollection<string> removeDefines)
         {
@@ -21,7 +22,8 @@ namespace BovineLabs.Core.Editor.Settings
             }
         }
 
-        internal static void Initialize()
+        [OnCodeInitializing]
+        private static void Initialize()
         {
             if (!EditorSettingsUtility.TryGetSettings<EditorSettings>(out var settings))
             {

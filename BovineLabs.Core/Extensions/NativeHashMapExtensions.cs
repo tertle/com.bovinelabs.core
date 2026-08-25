@@ -15,14 +15,6 @@ namespace BovineLabs.Core.Extensions
 
     public static unsafe class NativeHashMapExtensions
     {
-        [Obsolete("Use GetOrAddRefUnsafe")]
-        public static ref TValue GetOrAddRef<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key, TValue defaultValue = default)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            return ref hashMap.GetOrAddRefUnsafe(key, defaultValue);
-        }
-
         /// <summary>
         /// Gets the value for a key or adds <paramref name="defaultValue" /> and returns it by reference.
         /// </summary>
@@ -50,26 +42,6 @@ namespace BovineLabs.Core.Extensions
                 UnsafeUtility.WriteArrayElement(hashMap.m_Data->Ptr, idx, defaultValue);
             }
 
-            return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data->Ptr, idx);
-        }
-
-        public static ref TValue GetRef<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            CheckWrite(hashMap);
-
-            var idx = hashMap.m_Data->Find(key);
-            Check.Assume(idx != -1);
-            return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data->Ptr, idx);
-        }
-
-        public static ref TValue GetRefNoSafety<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            var idx = hashMap.m_Data->Find(key);
-            Check.Assume(idx != -1);
             return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data->Ptr, idx);
         }
 
@@ -122,36 +94,6 @@ namespace BovineLabs.Core.Extensions
 
             value = default;
             return false;
-        }
-
-        public static bool TryGetIndex<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key, out int index)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            index = hashMap.m_Data->Find(key);
-            return index != -1;
-        }
-
-        public static TValue ReadIndexUnsafe<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, int index)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            return UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_Data->Ptr, index);
-        }
-
-        public static bool TryGetIndex<TKey, TValue>(this NativeHashMap<TKey, TValue>.ReadOnly hashMap, TKey key, out int index)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            index = hashMap.m_Data->Find(key);
-            return index != -1;
-        }
-
-        public static TValue ReadIndexUnsafe<TKey, TValue>(this NativeHashMap<TKey, TValue>.ReadOnly hashMap, int index)
-            where TKey : unmanaged, IEquatable<TKey>
-            where TValue : unmanaged
-        {
-            return UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_Data->Ptr, index);
         }
 
         internal static int AddNoFind<TKey>(this ref HashMapHelper<TKey> hashMapHelper, in TKey key)
@@ -315,18 +257,6 @@ namespace BovineLabs.Core.Extensions
             if ((uint)idx >= (uint)capacity)
             {
                 throw new InvalidOperationException($"Internal HashMap error. idx {idx}");
-            }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [Conditional("UNITY_DOTS_DEBUG")]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void CheckDoesNotExist<TKey>(this ref HashMapHelper<TKey> hashMapHelper, in TKey key)
-            where TKey : unmanaged, IEquatable<TKey>
-        {
-            if (hashMapHelper.Find(key) != -1)
-            {
-                throw new InvalidOperationException($"Key already exists {key}");
             }
         }
 

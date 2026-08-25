@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Collections
         where TValue : unmanaged
     {
         public NativeParallelMultiHashMap<TKey, TValue> HashMap;
-        public NativeQueue<FallbackData> Fallback;
+        internal NativeQueue<FallbackData> Fallback;
 
         public NativeParallelMultiHashMapFallback(int capacity, Allocator allocator)
         {
@@ -40,6 +40,7 @@ namespace BovineLabs.Core.Collections
         public void Clear()
         {
             this.HashMap.Clear();
+            this.Fallback.Clear();
         }
 
         public JobHandle Apply(JobHandle jobHandle, out NativeParallelMultiHashMap<TKey, TValue>.ReadOnly reader, ApplyJob job = default)
@@ -53,13 +54,31 @@ namespace BovineLabs.Core.Collections
 
         public JobHandle Dispose(JobHandle jobHandle)
         {
-            return this.Fallback.Dispose(jobHandle);
+            var hashMapDispose = this.HashMap.Dispose(jobHandle);
+            var fallbackDispose = this.Fallback.Dispose(jobHandle);
+            return JobHandle.CombineDependencies(hashMapDispose, fallbackDispose);
         }
 
-        public JobHandle Clear(JobHandle dependency, ClearNativeParallelMultiHashMapJob<TKey, TValue> job = default)
+        public JobHandle Clear(
+            JobHandle dependency,
+            ClearNativeParallelMultiHashMapJob<TKey, TValue> job = default,
+            ClearFallbackJob fallbackJob = default)
         {
             job.HashMap = this.HashMap;
-            return job.Schedule(dependency);
+            dependency = job.Schedule(dependency);
+            fallbackJob.Fallback = this.Fallback;
+            return fallbackJob.Schedule(dependency);
+        }
+
+        [BurstCompile]
+        public struct ClearFallbackJob : IJob
+        {
+            internal NativeQueue<FallbackData> Fallback;
+
+            public void Execute()
+            {
+                this.Fallback.Clear();
+            }
         }
 
         public readonly struct ParallelWriter
@@ -132,64 +151,6 @@ namespace BovineLabs.Core.Collections
                     }
                 }
             }
-
-            /// <summary> Adds a new key-value pair. </summary>
-            /// <remarks> If a key-value pair with this key is already present, an additional separate key-value pair is added. </remarks>
-            /// <param name="key"> The key to add. </param>
-            /// <param name="item"> The value to add. </param>
-            /// <param name="hash"> A custom hash value. </param>
-            public void Add(TKey key, TValue item, int hash)
-            {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(this.hashMap.m_Safety);
-#endif
-                if (Hint.Likely(this.hashMap.TryReserve(1, out var idx)))
-                {
-                    var data = this.hashMap.m_Writer.m_Buffer;
-                    UnsafeUtility.WriteArrayElement(data->keys, idx, key);
-                    UnsafeUtility.WriteArrayElement(data->values, idx, item);
-                    UnsafeUtility.WriteArrayElement(data->next, idx, hash);
-                }
-                else
-                {
-                    this.fallback.Enqueue(new FallbackData(key, item, hash));
-                }
-            }
-
-            public void AddBatch(NativeArray<TKey> keys, NativeArray<TValue> values, NativeArray<int> hashes)
-            {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(this.hashMap.m_Safety);
-                Check.Assume(keys.Length == values.Length);
-                Check.Assume(keys.Length == hashes.Length);
-#endif
-                this.AddBatch((TKey*)keys.GetUnsafeReadOnlyPtr(), (TValue*)values.GetUnsafeReadOnlyPtr(), (int*)hashes.GetUnsafeReadOnlyPtr(), keys.Length);
-            }
-
-            public void AddBatch(TKey* keys, TValue* values, int* hashes, int length)
-            {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(this.hashMap.m_Safety);
-#endif
-                if (Hint.Likely(this.hashMap.TryReserve(length, out var idx)))
-                {
-                    var data = this.hashMap.m_Writer.m_Buffer;
-                    var keyPtr = (TKey*)data->keys + idx;
-                    var valuePtr = (TValue*)data->values + idx;
-                    var nextPtr = (int*)data->next + idx;
-
-                    UnsafeUtility.MemCpy(keyPtr, keys, length * UnsafeUtility.SizeOf<TKey>());
-                    UnsafeUtility.MemCpy(valuePtr, values, length * UnsafeUtility.SizeOf<TValue>());
-                    UnsafeUtility.MemCpy(nextPtr, hashes, length * UnsafeUtility.SizeOf<int>());
-                }
-                else
-                {
-                    for (var i = 0; i < length; i++)
-                    {
-                        this.fallback.Enqueue(new FallbackData(keys[i], values[i], hashes[i]));
-                    }
-                }
-            }
         }
 
         [BurstCompile]
@@ -200,6 +161,12 @@ namespace BovineLabs.Core.Collections
 
             public void Execute()
             {
+                var requiredCapacity = this.HashMap.Count() + this.Fallback.Count;
+                if (requiredCapacity > this.HashMap.Capacity)
+                {
+                    this.HashMap.Capacity = requiredCapacity;
+                }
+
                 this.HashMap.RecalculateBucketsCached();
 
                 while (this.Fallback.TryDequeue(out var item))
@@ -209,13 +176,13 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        public readonly struct FallbackData
+        internal readonly struct FallbackData
         {
-            public readonly TKey Key;
-            public readonly TValue Value;
-            public readonly int Hash;
+            internal readonly TKey Key;
+            internal readonly TValue Value;
+            internal readonly int Hash;
 
-            public FallbackData(TKey key, TValue value, int hash)
+            internal FallbackData(TKey key, TValue value, int hash)
             {
                 this.Key = key;
                 this.Value = value;
