@@ -11,7 +11,6 @@ namespace BovineLabs.Core.Editor.Settings
     using Unity.Entities;
     using Unity.Scenes;
     using UnityEditor;
-    using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
     /// <summary> Keeps configured settings prefabs available when their normal SubScene instance is absent from the Editor world. </summary>
     [WorldSystemFilter(WorldSystemFilterFlags.Editor)]
@@ -44,12 +43,7 @@ namespace BovineLabs.Core.Editor.Settings
 
                 if (!settings.TryGetAuthoring(world, out var authoring) || !authoring)
                 {
-                    if (world.Equals("client", StringComparison.OrdinalIgnoreCase) && PackageInfo.FindForPackageName("com.unity.netcode") == null)
-                    {
-                        continue;
-                    }
-
-                    throw new InvalidOperationException($"Additional editor world settings key '{world}' has no configured SettingsAuthoring.");
+                    continue;
                 }
 
                 this.LoadFallback(authoring, loaded);

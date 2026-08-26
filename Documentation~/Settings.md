@@ -154,9 +154,9 @@ The selected authoring prefab still has to be present in content baked into the 
 
 Editor systems can require settings even when the SubScene that normally contains them is not open. Core always loads **Default Settings Authoring** as an
 Editor fallback. **Additional Editor World Settings** contains route keys resolved through the existing **Settings Authoring** mappings and includes
-`client` by default. A missing `client` route remains dormant while NetCode is not installed, allowing it to activate after NetCode and its settings route
-are added. Core loads each resolved prefab through `SceneSystem`, so normal baker dependencies continue to invalidate and rebake it when a referenced
-settings asset changes. Empty keys and other unresolved additional keys are invalid and throw when the Editor world is created.
+`client` by default. Unresolved additional routes remain dormant until their `SettingsAuthoring` is configured. Core loads each resolved prefab through
+`SceneSystem`, so normal baker dependencies continue to invalidate and rebake it when a referenced settings asset changes. Empty keys are invalid and
+throw when the Editor world is created.
 
 The fallback is active only while no normal instance of that same prefab exists in the Editor world. When a SubScene supplies the prefab, Core restores
 `Prefab` to the fallback's original linked entities; when that instance disappears, Core removes `Prefab` again. The fallback therefore remains loaded for
