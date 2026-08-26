@@ -133,7 +133,6 @@ namespace BovineLabs.Core.Editor.Settings
             authorings.Add(new KeyAuthoring { World = "menu", Authoring = GetOrCreateSettingsAuthoring(directory, "MenuSettings") });
 
             this.settingAuthoring = authorings.ToArray();
-            this.additionalEditorWorldSettings = hasNetCode ? new[] { "client" } : Array.Empty<string>();
 
             EditorUtility.SetDirty(this);
             AssetDatabase.SaveAssets();
