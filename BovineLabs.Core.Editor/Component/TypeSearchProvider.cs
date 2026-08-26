@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Editor.Component
     using System.Collections.Generic;
     using BovineLabs.Core.Utility;
     using Unity.Collections.LowLevel.Unsafe;
-    using Unity.Editor.Bridge;
     using Unity.Entities;
     using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
@@ -122,15 +121,20 @@ namespace BovineLabs.Core.Editor.Component
 
         private static IEnumerable<SearchProposition> FetchPropositions(SearchContext context, SearchPropositionOptions options)
         {
-            foreach (var p in SearchBridge.GetPropositions(QueryEngine))
-            {
-                yield return p;
-            }
-
-            // foreach (var l in SearchBridge.GetPropositionsFromListBlockType(typeof(InheritTypeBlock)))
-            // {
-            //     yield return l;
-            // }
+            yield return new SearchProposition(
+                category: null, label: "Is Unmanaged", replacement: "unmanaged=true", help: "Limit search to unmanaged types");
+            yield return new SearchProposition(
+                category: null, label: "Is Unity Object", replacement: "unityobject=true", help: "Limit search to Unity Objects");
+            yield return new SearchProposition(
+                category: null, label: "Is ECS Component", replacement: "component=true", help: "Limit search to component and buffer types");
+            yield return new SearchProposition(
+                category: null, label: "Is Component Data", replacement: "componentdata=true", help: "Limit search to component data types");
+            yield return new SearchProposition(
+                category: null, label: "Is Enableable", replacement: "enableable=true", help: "Limit search to enableable component types");
+            yield return new SearchProposition(
+                category: null, label: "Is Zero Sized", replacement: "zerosized=true", help: "Limit search to zero-sized component types");
+            yield return new SearchProposition(
+                category: null, label: "Is Editor Assembly", replacement: "editor=true", help: "Limit search to types in editor assemblies");
         }
 
         private static QueryEngine<TypeDescriptor> SetupQueryEngine()
@@ -138,35 +142,15 @@ namespace BovineLabs.Core.Editor.Component
             var query = new QueryEngine<TypeDescriptor>();
             query.SetSearchDataCallback(GetWords);
 
-            SearchBridge.SetFilter(query, "unmanaged", data => data.IsUnmanaged)
-                .AddOrUpdateProposition(category: null, label: "Is Unmanaged", replacement: "unmanaged=true", help: "Limit search to unmanaged types");
-
-            SearchBridge.SetFilter(query, "unityobject", data => data.IsUnityObject)
-                .AddOrUpdateProposition(category: null, label: "Is Unity Object", replacement: "unityobject=true", help: "Limit search to Unity Objects");
-
-            SearchBridge.SetFilter(query, "component", data => data.IsComponent)
-                .AddOrUpdateProposition(category: null, label: "Is ECS Component", replacement: "component=true",
-                    help: "Limit search to component and buffer types");
-
-            SearchBridge.SetFilter(query, "componentdata", data => data.IsComponentData)
-                .AddOrUpdateProposition(category: null, label: "Is Component Data", replacement: "componentdata=true",
-                    help: "Limit search to component data types");
-
-            SearchBridge.SetFilter(query, "enableable", data => data.IsEnableable)
-                .AddOrUpdateProposition(category: null, label: "Is Enableable", replacement: "enableable=true",
-                    help: "Limit search to enableable component types");
-
-            SearchBridge.SetFilter(query, "zerosized", data => data.IsZeroSized)
-                .AddOrUpdateProposition(category: null, label: "Is Zero Sized", replacement: "zerosized=true",
-                    help: "Limit search to zero-sized component types");
-
-            SearchBridge.SetFilter(query, "editor", data => data.IsEditorAssembly)
-                .AddOrUpdateProposition(category: null, label: "Is Editor Assembly", replacement: "editor=true",
-                    help: "Limit search to types in editor assemblies");
+            query.AddFilter("unmanaged", data => data.IsUnmanaged);
+            query.AddFilter("unityobject", data => data.IsUnityObject);
+            query.AddFilter("component", data => data.IsComponent);
+            query.AddFilter("componentdata", data => data.IsComponentData);
+            query.AddFilter("enableable", data => data.IsEnableable);
+            query.AddFilter("zerosized", data => data.IsZeroSized);
+            query.AddFilter("editor", data => data.IsEditorAssembly);
 
             query.AddFilter<string>("inherit", OnInheritFilter, /*Transformer,*/ new[] { "=", ":" });
-            // query.TryGetFilter("inherit", out var inherit);
-            // inherit.AddOrUpdateProposition(category: null, label: "Inherits", replacement: "inherit:", help: "Search Entry by Inheritance");
 
             return query;
         }
@@ -226,26 +210,5 @@ namespace BovineLabs.Core.Editor.Component
 
             public bool IsEditorAssembly => this.Type.Assembly.IsAssemblyEditorAssembly() || this.Type.Assembly.IsTestEditorAssembly();
         }
-        //
-        // [QueryListBlock("Inherit", "inherit", "inherit")]
-        // private class InheritTypeBlock : QueryListBlock
-        // {
-        //     public InheritTypeBlock(IQuerySource source, string id, string value, QueryListBlockAttribute attr)
-        //         : base(source, id, value, attr)
-        //     {
-        //     }
-        //
-        //     public override IEnumerable<SearchProposition> GetPropositions(SearchPropositionFlags flags = SearchPropositionFlags.None)
-        //     {
-        //         var c = flags.HasFlag(SearchPropositionFlags.NoCategory) ? null : this.category;
-        //
-        //         foreach (var type in ReflectionUtility.GetAllImplementations<UnityEngine.Object>())
-        //         {
-        //             var simplifiedName = $"{type.FullName}, {type.Assembly.GetName().Name}";
-        //
-        //             yield return new SearchProposition(c, simplifiedName, simplifiedName, type: this.GetType(), data: simplifiedName);
-        //         }
-        //     }
-        // }
     }
 }

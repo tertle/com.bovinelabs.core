@@ -7,10 +7,7 @@
 namespace BovineLabs.Core.Editor
 {
     using BovineLabs.Core.Editor.Utility;
-    using Unity.Editor.Bridge;
-    using Unity.Entities.Editor;
     using UnityEditor;
-    using Resources = UnityEngine.Resources;
 
     public static class EditorMenus
     {
@@ -28,20 +25,6 @@ namespace BovineLabs.Core.Editor
         private const string DebugLevelWarningBLMenuEnabled = LogLevelBLMenu + "3. Warning";
         private const string DebugLevelErrorBLMenuEnabled = LogLevelBLMenu + "2. Error";
         private const string DebugLevelFatalBLMenuEnabled = LogLevelBLMenu + "1. Fatal";
-
-        private const string DataModeSharedMenu = RootMenuTools + "DataMode/";
-
-        private const string DataModeMenu = DataModeSharedMenu + "Inspector/";
-        private const string DataModeDisabled = DataModeMenu + "Automatic";
-        private const string DataModeAuthoring = DataModeMenu + "Authoring";
-        private const string DataModeMixed = DataModeMenu + "Mixed";
-        private const string DataModeRuntime = DataModeMenu + "Runtime";
-
-        private const string DataModeHierarchyMenu = DataModeSharedMenu + "Hierarchy/";
-        private const string DataModeHierarchyDisabled = DataModeHierarchyMenu + "Automatic";
-        private const string DataModeHierarchyAuthoring = DataModeHierarchyMenu + "Authoring";
-        private const string DataModeHierarchyMixed = DataModeHierarchyMenu + "Mixed";
-        private const string DataModeHierarchyRuntime = DataModeHierarchyMenu + "Runtime";
 
         private const string PrefabLoading = RootMenuTools + "Load Prefabs as Entities";
 
@@ -129,60 +112,5 @@ namespace BovineLabs.Core.Editor
             return true;
         }
 
-        [MenuItem(DataModeDisabled, priority = 1)]
-        private static void DataModeDisabledMenu()
-        {
-            SelectionBridge.UpdateSelectionMetaData(Selection.activeContext, DataMode.Disabled);
-        }
-
-        [MenuItem(DataModeAuthoring, priority = 2)]
-        private static void DataModeAuthoringMenu()
-        {
-            SelectionBridge.UpdateSelectionMetaData(Selection.activeContext, DataMode.Authoring);
-        }
-
-        [MenuItem(DataModeMixed, priority = 3)]
-        private static void DataModeMixedMenu()
-        {
-            SelectionBridge.UpdateSelectionMetaData(Selection.activeContext, DataMode.Mixed);
-        }
-
-        [MenuItem(DataModeRuntime, priority = 4)]
-        private static void DataModeRuntimeMenu()
-        {
-            SelectionBridge.UpdateSelectionMetaData(Selection.activeContext, DataMode.Runtime);
-        }
-
-        [MenuItem(DataModeHierarchyDisabled, priority = 1)]
-        private static void DataModeHierarchyDisabledMenu()
-        {
-            DataModeHierarchySet(DataMode.Disabled);
-        }
-
-        [MenuItem(DataModeHierarchyAuthoring, priority = 2)]
-        private static void DataModeHierarchyAuthoringMenu()
-        {
-            DataModeHierarchySet(DataMode.Authoring);
-        }
-
-        [MenuItem(DataModeHierarchyMixed, priority = 3)]
-        private static void DataModeHierarchyMixedMenu()
-        {
-            DataModeHierarchySet(DataMode.Mixed);
-        }
-
-        [MenuItem(DataModeHierarchyRuntime, priority = 4)]
-        private static void DataModeHierarchyRuntimeMenu()
-        {
-            DataModeHierarchySet(DataMode.Runtime);
-        }
-
-        private static void DataModeHierarchySet(DataMode dataMode)
-        {
-            foreach (var hierarchyWindow in Resources.FindObjectsOfTypeAll<HierarchyWindow>())
-            {
-                hierarchyWindow.dataModeController.TryChangeDataMode(dataMode);
-            }
-        }
     }
 }

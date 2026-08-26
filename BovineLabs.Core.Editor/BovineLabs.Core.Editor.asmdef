@@ -12,7 +12,6 @@
     "Unity.Entities.UI",
     "Unity.Entities.UI.Editor",
     "Unity.InputSystem",
-    "Unity.InternalAPIEditorBridge.002",
     "Unity.Mathematics",
     "Unity.Scenes",
     "Unity.Scenes.Editor",

@@ -125,8 +125,8 @@ namespace BovineLabs.Core.Editor.Asset
 
                     var screenPosition = VisualElementUtil.GetScreenPosition(button);
                     var size = new Rect(screenPosition.x, screenPosition.y + button.worldBound.height, 400, 400);
-                    searchWindow.position = size;
-                    searchWindow.ShowPopup();
+                    searchWindow.Position = size;
+                    searchWindow.Show();
                 }
                 else
                 {
