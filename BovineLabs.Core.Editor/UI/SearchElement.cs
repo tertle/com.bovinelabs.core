@@ -70,8 +70,8 @@ namespace BovineLabs.Core.Editor.UI
                 }
 
                 var size = new Rect(rect.x + worldBounds.x, rect.y + worldBounds.y + worldBounds.height, worldBounds.width, this.Height);
-                searchWindow.position = size;
-                searchWindow.ShowPopup();
+                searchWindow.Position = size;
+                searchWindow.Show();
             };
 
             this.componentButton.text = defaultText;

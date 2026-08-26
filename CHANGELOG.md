@@ -5,6 +5,12 @@
 ### Added
 * Opt-in editor-world settings prefab fallbacks with automatic rebaking and deduplication against normal SubScene instances
 
+### Changed
+* Editor selection and type queries now use Unity Search's public picker and query APIs
+
+### Removed
+* Obsolete Inspector and Hierarchy DataMode menu hooks and the `Unity.InternalAPIEditorBridge.002` dependency
+
 ## [2.0.0-pre.1] - 2026-08-22
 
 ### Added

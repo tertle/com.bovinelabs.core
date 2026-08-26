@@ -1,4 +1,4 @@
-﻿// <copyright file="SearchWindow.cs" company="BovineLabs">
+// <copyright file="SearchWindow.cs" company="BovineLabs">
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
@@ -7,76 +7,84 @@ namespace BovineLabs.Core.Editor.SearchWindow
 {
     using System;
     using System.Collections.Generic;
-    using UnityEditor;
+    using UnityEditor.Search;
     using UnityEngine;
-    using UnityEngine.UIElements;
+    using UnityEngine.Search;
 
-    /// <summary> Copy of com.unity.platforms\Editor\Unity.Build.Editor\SearchWindow\SearchWindow.cs. </summary>
-    public class SearchWindow : EditorWindow
+    /// <summary> Adapts BovineLabs search items to Unity Search's picker. </summary>
+    public sealed class SearchWindow
     {
-        public const string RootUIPath = "Packages/com.bovinelabs.core/Editor Default Resources/SearchWindow/";
-
-        private SearchView searchView;
+        private const string ProviderId = "bovinelabs-picker";
 
         public event Action<SearchView.Item> OnSelection;
 
         public event Action OnClose;
 
-        public List<SearchView.Item> Items
-        {
-            get => this.searchView.Items;
-            set => this.searchView.Items = value;
-        }
+        public List<SearchView.Item> Items { get; set; } = new();
 
-        public string Title
-        {
-            get => this.searchView.Title;
-            set => this.searchView.Title = value;
-        }
+        public string Title { get; set; } = "Select";
+
+        public Rect Position { get; set; }
 
         public static SearchWindow Create()
         {
-            var window = CreateInstance<SearchWindow>();
-            return window;
+            return new SearchWindow();
         }
 
-        private void OnEnable()
+        public void Show()
         {
-            this.searchView = new SearchView();
-            this.rootVisualElement.Add(this.searchView);
-            this.rootVisualElement.style.color = Color.white;
-            this.searchView.OnSelection += e =>
+            var title = string.IsNullOrEmpty(this.Title) ? "Select" : this.Title;
+            var context = SearchService.CreateContext(this.CreateProvider(title));
+            var viewState = new SearchViewState(
+                context,
+                SearchViewFlags.ListView |
+                SearchViewFlags.CompactView |
+                SearchViewFlags.DisableInspectorPreview |
+                SearchViewFlags.DisableSavedSearchQuery)
             {
-                this.OnSelection?.Invoke(e);
-                this.Close(false);
+                title = title,
+                windowTitle = new GUIContent(title),
+                position = this.Position,
+                excludeClearItem = true,
+                selectHandler = this.Select,
+            };
+
+            SearchService.ShowPicker(viewState);
+        }
+
+        private SearchProvider CreateProvider(string title)
+        {
+            return new SearchProvider(ProviderId, title)
+            {
+                fetchItems = this.FetchItems,
             };
         }
 
-        private void OnFocus()
+        private IEnumerable<SearchItem> FetchItems(SearchContext context, List<SearchItem> searchItems, SearchProvider provider)
         {
-            if (this.searchView == null)
+            var score = 0;
+            for (var i = 0; i < this.Items.Count; i++)
             {
+                var item = this.Items[i];
+                if (!string.IsNullOrEmpty(context.searchQuery) &&
+                    item.Name.IndexOf(context.searchQuery, StringComparison.CurrentCultureIgnoreCase) < 0)
+                {
+                    continue;
+                }
+
+                yield return provider.CreateItem(context, i.ToString(), score++, item.Name, item.Path, item.Icon, item);
+            }
+        }
+
+        private void Select(SearchItem searchItem, bool canceled)
+        {
+            if (canceled || searchItem == null)
+            {
+                this.OnClose?.Invoke();
                 return;
             }
 
-            var searchField = this.searchView.Q<SearchView>();
-            var input = searchField.Q("unity-text-input");
-            input.Focus();
-        }
-
-        private void OnLostFocus()
-        {
-            this.Close(true);
-        }
-
-        private void Close(bool fireEvent)
-        {
-            this.Close();
-
-            if (fireEvent)
-            {
-                this.OnClose?.Invoke();
-            }
+            this.OnSelection?.Invoke((SearchView.Item)searchItem.data);
         }
     }
 }

@@ -1,6 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" ed="UnityEditor.UIElements" editor-extension-mode="False">
-    <ui:VisualElement picking-mode="Ignore" class="search-field__container">
-        <ui:VisualElement picking-mode="Ignore" class="search-field__icon" />
-        <ui:Label text="Filter..." picking-mode="Ignore" class="search-field__filter-label" />
-    </ui:VisualElement>
-</ui:UXML>
