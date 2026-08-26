@@ -4,6 +4,11 @@
 
 ### Added
 * Opt-in editor-world settings prefab fallbacks with automatic rebaking and deduplication against normal SubScene instances
+* New `EditorSettings` assets bootstrap `Assets/Settings/Prefabs` with `GameSettings`, `ServiceSettings`, and `MenuSettings`, plus
+  `ClientSettings` and `ServerSettings` when NetCode is installed, then immediately populate the derived settings
+
+### Changed
+* Editor-world fallback routing keeps `client` ready for future NetCode setup and silently skips unresolved non-empty routes
 
 ## [2.0.0-pre.1] - 2026-08-22
 
