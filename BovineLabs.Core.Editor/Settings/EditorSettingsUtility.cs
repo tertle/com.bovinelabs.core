@@ -205,6 +205,45 @@ namespace BovineLabs.Core.Editor.Settings
             }
         }
 
+        internal static void UpdateSettings(EditorSettings editorSettings)
+        {
+            if (!editorSettings.DefaultSettingsAuthoring)
+            {
+                return;
+            }
+
+            ClearSettings(editorSettings.DefaultSettingsAuthoring);
+            foreach (var authoring in editorSettings.SettingsAuthorings)
+            {
+                ClearSettings(authoring.Authoring);
+            }
+
+            foreach (var guid in AssetDatabase.FindAssets("t:SettingsBase"))
+            {
+                var settingsBase = AssetDatabase.LoadAssetAtPath<SettingsBase>(AssetDatabase.GUIDToAssetPath(guid));
+                if (settingsBase)
+                {
+                    AddSettingsToAuthoring(editorSettings, settingsBase);
+                }
+            }
+
+            return;
+
+            static void ClearSettings(SettingsAuthoring authoring)
+            {
+                if (!authoring)
+                {
+                    return;
+                }
+
+                var serializedObject = new SerializedObject(authoring);
+                var settingsProperty = serializedObject.FindProperty("settings");
+                settingsProperty.arraySize = 0;
+                serializedObject.ApplyModifiedProperties();
+                AssetDatabase.SaveAssetIfDirty(authoring);
+            }
+        }
+
         private static ISettings GetOrCreateSettings(Type type, bool allowCreate = true)
         {
             if (!typeof(ISettings).IsAssignableFrom(type))
@@ -272,6 +311,11 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             Assert.IsNotNull(instance, $"{type.Name} returned null from asset database. Might need to reimport something.");
+
+            if (created && instance is EditorSettings editorSettings)
+            {
+                editorSettings.InitializeCreatedAsset();
+            }
 
             if (created && instance is SettingsSingleton settingsSingleton)
             {

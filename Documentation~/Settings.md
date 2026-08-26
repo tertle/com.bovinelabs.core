@@ -114,9 +114,14 @@ It does not run on ordinary domain reloads, create settings declared by project 
 
 1. Open **BovineLabs > Settings** and select a settings panel.
 2. Configure the generated asset.
-3. Configure paths and ECS authoring assignments under **Core > Editor Settings**.
+3. Configure paths and, when needed, customize ECS authoring assignments under **Core > Editor Settings**.
 
 The default settings directory is `Assets/Settings/Settings`.
+
+When Core first creates `EditorSettings`, it also creates settings-authoring prefabs under `Assets/Settings/Prefabs`. `GameSettings` is the default route,
+while `ServiceSettings` and `MenuSettings` are additional routes. Projects with `com.unity.netcode` also receive `ServerSettings` and `ClientSettings`.
+Each new prefab contains a root `SettingsAuthoring`, and Core immediately rebuilds their settings assignments. Existing prefabs at those paths are reused
+when they already have `SettingsAuthoring` on the root; Core does not overwrite them.
 
 Use `[SettingSubDirectory("UI")]` to create a new settings asset under `Assets/Settings/Settings/UI`. The configured root path in **Core > Editor Settings** is applied when an asset is created. Existing assets are discovered anywhere in the project and are not moved when the root or attribute changes.
 
@@ -126,13 +131,12 @@ Only one asset of each settings type is valid. If duplicates exist, editor retri
 
 `SettingsWorldAttribute` is an editor-time routing key. It does not inspect or filter ECS worlds at runtime.
 
-Configure routing under **BovineLabs > Settings > Core > Editor Settings**:
+Core configures the standard routing when it creates `EditorSettings`. Configure custom routing under **BovineLabs > Settings > Core > Editor Settings**:
 
-1. Create a prefab containing `SettingsAuthoring` for the default route.
-2. Create any additional `SettingsAuthoring` prefabs used by client, server, menu, service, or other world-specific SubScenes.
-3. Assign the default prefab to **Default Settings Authoring**.
-4. Add world-key and prefab pairs to **Settings Authoring**.
-5. Click **Update Settings** to clear and rebuild every authoring assignment.
+1. Create any extra prefabs containing `SettingsAuthoring` for project-specific routes.
+2. Assign the default prefab to **Default Settings Authoring** when overriding `GameSettings`.
+3. Add or change world-key and prefab pairs under **Settings Authoring**.
+4. Click **Update Settings** to clear and rebuild every authoring assignment.
 
 Routing behavior:
 
@@ -150,7 +154,8 @@ The selected authoring prefab still has to be present in content baked into the 
 
 Editor systems can require settings even when the SubScene that normally contains them is not open. Core always loads **Default Settings Authoring** as an
 Editor fallback. **Additional Editor World Settings** contains route keys resolved through the existing **Settings Authoring** mappings and includes
-`client` by default. Core loads each resolved prefab through `SceneSystem`, so normal baker dependencies continue to invalidate and rebake it when a
+`client` by default when NetCode is installed; it starts empty otherwise. Core loads each resolved prefab through `SceneSystem`, so normal baker
+dependencies continue to invalidate and rebake it when a
 referenced settings asset changes. Empty or unresolved additional keys are invalid and throw when the Editor world is created.
 
 The fallback is active only while no normal instance of that same prefab exists in the Editor world. When a SubScene supplies the prefab, Core restores

@@ -8,15 +8,18 @@ namespace BovineLabs.Core.Editor.Settings
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Authoring.Settings;
+    using BovineLabs.Core.Editor.Helpers;
     using BovineLabs.Core.PropertyDrawers;
     using BovineLabs.Core.Settings;
     using UnityEditor;
     using UnityEngine;
+    using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
     public class EditorSettings : ScriptableObject, ISettings
     {
         public const string SettingsKey = "bl.settings";
         public const string DefaultSettingsDirectory = "Assets/Settings/Settings";
+        public const string DefaultSettingsPrefabDirectory = "Assets/Settings/Prefabs";
 
         [SerializeField]
         private List<string> scriptingDefineSymbols = new List<string>();
@@ -106,6 +109,69 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             ScriptingDefineSymbolsEditor.ApplyDefinesToAll(add, remove ?? Array.Empty<string>());
+        }
+
+        internal void InitializeCreatedAsset()
+        {
+            var directory = DefaultSettingsPrefabDirectory;
+            AssetDatabaseHelper.CreateDirectories(ref directory);
+
+            this.defaultSettingsAuthoring = GetOrCreateSettingsAuthoring(directory, "GameSettings");
+
+            var authorings = new List<KeyAuthoring>
+            {
+                new() { World = "service", Authoring = GetOrCreateSettingsAuthoring(directory, "ServiceSettings") },
+            };
+
+            var hasNetCode = PackageInfo.FindForPackageName("com.unity.netcode") != null;
+            if (hasNetCode)
+            {
+                authorings.Add(new KeyAuthoring { World = "server", Authoring = GetOrCreateSettingsAuthoring(directory, "ServerSettings") });
+                authorings.Add(new KeyAuthoring { World = "client", Authoring = GetOrCreateSettingsAuthoring(directory, "ClientSettings") });
+            }
+
+            authorings.Add(new KeyAuthoring { World = "menu", Authoring = GetOrCreateSettingsAuthoring(directory, "MenuSettings") });
+
+            this.settingAuthoring = authorings.ToArray();
+            this.additionalEditorWorldSettings = hasNetCode ? new[] { "client" } : Array.Empty<string>();
+
+            EditorUtility.SetDirty(this);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            EditorSettingsUtility.UpdateSettings(this);
+        }
+
+        private static SettingsAuthoring GetOrCreateSettingsAuthoring(string directory, string name)
+        {
+            var path = $"{directory}/{name}.prefab";
+            var existing = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (existing)
+            {
+                var existingAuthoring = existing.GetComponent<SettingsAuthoring>();
+                if (!existingAuthoring)
+                {
+                    throw new InvalidOperationException($"Settings prefab '{path}' must have {nameof(SettingsAuthoring)} on its root.");
+                }
+
+                return existingAuthoring;
+            }
+
+            var instance = new GameObject(name);
+            try
+            {
+                instance.AddComponent<SettingsAuthoring>();
+                var prefab = PrefabUtility.SaveAsPrefabAsset(instance, path);
+                if (!prefab)
+                {
+                    throw new InvalidOperationException($"Could not create settings prefab '{path}'.");
+                }
+
+                return prefab.GetComponent<SettingsAuthoring>();
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(instance);
+            }
         }
 
         [Serializable]
