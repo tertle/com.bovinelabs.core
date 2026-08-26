@@ -6,6 +6,7 @@ namespace BovineLabs.Core.Tests.Spatial
 {
     using BovineLabs.Core.Spatial;
     using NUnit.Framework;
+    using Unity.Collections;
     using Unity.Mathematics;
 
     public class SpatialMapTests
@@ -37,6 +38,34 @@ namespace BovineLabs.Core.Tests.Spatial
             Assert.AreEqual(0f, SpatialMap.CellMinDistanceSq(new float2(3f, 8f), cell, QuantizeStep, halfSize), Tolerance);
             Assert.AreEqual(4f, SpatialMap.CellMinDistanceSq(new float2(-2f, 4f), cell, QuantizeStep, halfSize), Tolerance);
             Assert.AreEqual(25f, SpatialMap.CellMinDistanceSq(new float2(-3f, 14f), cell, QuantizeStep, halfSize), Tolerance);
+        }
+
+        [Test]
+        public void Build_CanCopyCompactPositionsDuringQuantization()
+        {
+            var map = new SpatialMap<TestSpatialPosition>(QuantizeStep, WorldSize);
+            var positions = new NativeArray<TestSpatialPosition>(3, Allocator.TempJob);
+            var positionOutput = new NativeArray<float2>(positions.Length, Allocator.TempJob);
+
+            try
+            {
+                positions[0] = new TestSpatialPosition { Position = new float2(-12f, 4f) };
+                positions[1] = new TestSpatialPosition { Position = new float2(0.5f, 8f) };
+                positions[2] = new TestSpatialPosition { Position = new float2(17f, -21f) };
+
+                map.BuildWithPositionOutput(positions, positionOutput, default).Complete();
+
+                for (var i = 0; i < positions.Length; i++)
+                {
+                    Assert.AreEqual(positions[i].Position, positionOutput[i]);
+                }
+            }
+            finally
+            {
+                positionOutput.Dispose();
+                positions.Dispose();
+                map.Dispose();
+            }
         }
 
         [Test]
