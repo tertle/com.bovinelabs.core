@@ -32,7 +32,10 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             var loaded = new HashSet<Hash128>();
-            this.LoadFallback(settings.DefaultSettingsAuthoring, loaded);
+            if (settings.DefaultSettingsAuthoring)
+            {
+                this.LoadFallback(settings.DefaultSettingsAuthoring, loaded);
+            }
 
             foreach (var world in settings.AdditionalEditorWorldSettings)
             {
