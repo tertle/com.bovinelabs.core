@@ -54,28 +54,65 @@ namespace BovineLabs.Core.Spatial
             return this.Build(positions.AsDeferredJobArray(), dependency, resizeStub, quantizeStub);
         }
 
+        public JobHandle BuildWithPositionOutput(
+            NativeList<T> positions,
+            NativeArray<float2> positionOutput,
+            JobHandle dependency,
+            ResizeNativeParallelHashMapJob resizeStub = default,
+            QuantizePositionJob quantizeJob = default)
+        {
+            return this.BuildWithPositionOutput(positions.AsDeferredJobArray(), positionOutput, dependency, resizeStub, quantizeJob);
+        }
+
         [SuppressMessage("ReSharper", "UnusedParameter.Global", Justification = "Sneaky way to allow this to run in bursted ISystem")]
         public JobHandle Build(
-            NativeArray<T> positions, JobHandle dependency, ResizeNativeParallelHashMapJob resizeStub = default, QuantizeJob quantizeStub = default)
+            NativeArray<T> positions, JobHandle dependency, ResizeNativeParallelHashMapJob resizeJob = default, QuantizeJob quantizeJob = default)
         {
             // Deferred native arrays are supported so we must part it into the job to get the length
-            dependency = new ResizeNativeParallelHashMapJob
-            {
-                Length = positions,
-                Map = this.map,
-            }.Schedule(dependency);
+            resizeJob.Length = positions;
+            resizeJob.Map = this.map;
+            dependency = resizeJob.Schedule(dependency);
 
             var workers = math.max(1, JobsUtility.JobWorkerCount);
-            dependency = new QuantizeJob
+            quantizeJob.Positions = positions;
+            quantizeJob.Map = this.map;
+            quantizeJob.QuantizeStep = this.quantizeStep;
+            quantizeJob.QuantizeWidth = this.quantizeSize;
+            quantizeJob.QuantizeDepth = this.quantizeSize;
+            quantizeJob.HalfSize = this.halfSize;
+            quantizeJob.Workers = workers;
+            dependency = quantizeJob.ScheduleParallel(workers, 1, dependency);
+
+            dependency = new SpatialMap3.CalculateMap
             {
-                Positions = positions,
-                Map = this.map,
-                QuantizeStep = this.quantizeStep,
-                QuantizeWidth = this.quantizeSize,
-                QuantizeDepth = this.quantizeSize,
-                HalfSize = this.halfSize,
-                Workers = workers,
-            }.ScheduleParallel(workers, 1, dependency);
+                SpatialHashMap = this.map,
+            }.Schedule(dependency);
+
+            return dependency;
+        }
+
+        [SuppressMessage("ReSharper", "UnusedParameter.Global", Justification = "Sneaky way to allow this to run in bursted ISystem")]
+        public JobHandle BuildWithPositionOutput(
+            NativeArray<T> positions,
+            NativeArray<float2> positionOutput,
+            JobHandle dependency,
+            ResizeNativeParallelHashMapJob resizeJob = default,
+            QuantizePositionJob quantizeJob = default)
+        {
+            resizeJob.Length = positions;
+            resizeJob.Map = this.map;
+            dependency = resizeJob.Schedule(dependency);
+
+            var workers = math.max(1, JobsUtility.JobWorkerCount);
+            quantizeJob.Positions = positions;
+            quantizeJob.Map = this.map;
+            quantizeJob.PositionOutput = positionOutput;
+            quantizeJob.QuantizeStep = this.quantizeStep;
+            quantizeJob.QuantizeWidth = this.quantizeSize;
+            quantizeJob.QuantizeDepth = this.quantizeSize;
+            quantizeJob.HalfSize = this.halfSize;
+            quantizeJob.Workers = workers;
+            dependency = quantizeJob.ScheduleParallel(workers, 1, dependency);
 
             dependency = new SpatialMap3.CalculateMap
             {
@@ -161,14 +198,82 @@ namespace BovineLabs.Core.Spatial
             [Conditional("UNITY_DOTS_DEBUG")]
             private void ValidatePosition(float3 position, int3 quantized)
             {
-                if (math.any(quantized >= this.QuantizeWidth))
+                if (SpatialMap3.IsWithinBounds(quantized, this.QuantizeWidth))
                 {
-                    var min = new int3(-this.HalfSize);
-                    var max = new int3(this.HalfSize - 1);
-
-                    BLGlobalLogger.LogError512($"Position {position} is outside the size of the world, min={min} max={max}");
-                    throw new ArgumentException($"Position {position} is outside the size of the world, min={min} max={max}");
+                    return;
                 }
+
+                var min = new int3(-this.HalfSize);
+                var max = new int3(this.HalfSize - 1);
+
+                BLGlobalLogger.LogError512($"Position {position} is outside the size of the world, min={min} max={max}");
+                throw new ArgumentException($"Position {position} is outside the size of the world, min={min} max={max}");
+            }
+        }
+
+        [BurstCompile]
+        [NoAlias]
+        public unsafe struct QuantizePositionJob : IJobFor
+        {
+            [ReadOnly]
+            public NativeArray<T> Positions;
+
+            [NativeDisableParallelForRestriction]
+            public NativeParallelMultiHashMap<long, int> Map;
+
+            [NativeDisableParallelForRestriction]
+            [WriteOnly]
+            public NativeArray<float2> PositionOutput;
+
+            public float QuantizeStep;
+            public int QuantizeWidth;
+            public int QuantizeDepth;
+            public int3 HalfSize;
+
+            public int Workers;
+
+            public void Execute(int index)
+            {
+                var length = this.Positions.Length / this.Workers;
+                var start = index * length;
+                var end = start + length;
+                if (index == this.Workers - 1)
+                {
+                    // Last thread handles remainder
+                    end += this.Positions.Length % this.Workers;
+                }
+
+                var keys = (long*)this.Map.GetUnsafeBucketData().keys;
+                var values = (int*)this.Map.GetUnsafeBucketData().values;
+
+                for (var entityInQueryIndex = start; entityInQueryIndex < end; entityInQueryIndex++)
+                {
+                    var position = this.Positions[entityInQueryIndex].Position;
+                    var quantized = SpatialMap3.Quantized(position, this.QuantizeStep, this.HalfSize);
+
+                    this.ValidatePosition(position, quantized);
+
+                    var hashed = SpatialMap3.Hash(quantized, this.QuantizeWidth, this.QuantizeDepth);
+                    keys[entityInQueryIndex] = hashed;
+                    values[entityInQueryIndex] = entityInQueryIndex;
+                    this.PositionOutput[entityInQueryIndex] = position.xz;
+                }
+            }
+
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("UNITY_DOTS_DEBUG")]
+            private void ValidatePosition(float3 position, int3 quantized)
+            {
+                if (SpatialMap3.IsWithinBounds(quantized, this.QuantizeWidth))
+                {
+                    return;
+                }
+
+                var min = new int3(-this.HalfSize);
+                var max = new int3(this.HalfSize - 1);
+
+                BLGlobalLogger.LogError512($"Position {position} is outside the size of the world, min={min} max={max}");
+                throw new ArgumentException($"Position {position} is outside the size of the world, min={min} max={max}");
             }
         }
     }
@@ -185,6 +290,27 @@ namespace BovineLabs.Core.Spatial
         public static long Hash(int3 quantized, int width, int depth)
         {
             return quantized.x + (quantized.y * width) + (quantized.z * width * depth);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsWithinBounds(int3 quantized, int width)
+        {
+            return math.all(quantized >= int3.zero) && math.all(quantized < width);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int3 Clamp(int3 quantized, int width)
+        {
+            return math.clamp(quantized, int3.zero, new int3(width - 1));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float CellMinDistanceSqXZ(float2 position, int3 cell, float step, int3 halfSize)
+        {
+            var cellMin = (new float2(cell.x, cell.z) * step) - new float2(halfSize.x, halfSize.z);
+            var cellMax = cellMin + step;
+            var delta = math.max(math.max(cellMin - position, position - cellMax), 0f);
+            return math.lengthsq(delta);
         }
 
         /// <summary> Readonly copy for querying the map. </summary>
@@ -217,6 +343,24 @@ namespace BovineLabs.Core.Spatial
             public long Hash(int3 quantized)
             {
                 return SpatialMap3.Hash(quantized, this.quantizeWidth, this.quantizeDepth);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool IsWithinBounds(int3 quantized)
+            {
+                return SpatialMap3.IsWithinBounds(quantized, this.quantizeWidth);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int3 Clamp(int3 quantized)
+            {
+                return SpatialMap3.Clamp(quantized, this.quantizeWidth);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public float CellMinDistanceSqXZ(float2 position, int3 cell)
+            {
+                return SpatialMap3.CellMinDistanceSqXZ(position, cell, this.quantizeStep, this.halfSize);
             }
         }
 
