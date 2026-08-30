@@ -75,6 +75,14 @@ namespace BovineLabs.Core.Editor.Settings
             world = world.ToLower();
 
             authoring = this.settingAuthoring.FirstOrDefault(k => k.World.ToLower() == world)?.Authoring;
+
+#if !UNITY_NETCODE
+            if (!authoring && world is "client" or "server")
+            {
+                authoring = this.defaultSettingsAuthoring;
+            }
+#endif
+
             return authoring;
         }
 

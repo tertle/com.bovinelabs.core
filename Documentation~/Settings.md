@@ -143,6 +143,7 @@ Routing behavior:
 - A `SettingsBase` without `[SettingsWorld]` goes to the default authoring.
 - Keys are matched case-insensitively against the configured world-key entries.
 - A blank key routes to the default authoring.
+- Without `com.unity.netcode`, unconfigured `client` and `server` keys route to the default authoring; explicit mappings still win.
 - If none of the declared keys resolves to an assigned authoring, the setting falls back to default.
 - Repeating a resolved authoring in the attribute does not duplicate the asset in that authoring.
 

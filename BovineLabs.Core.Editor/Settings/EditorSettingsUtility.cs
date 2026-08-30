@@ -169,35 +169,40 @@ namespace BovineLabs.Core.Editor.Settings
                     settingsProperty.DeleteArrayElementAtIndex(index);
                 }
 
-                // Early out if it already exists
+                var containsSetting = false;
                 for (var index = 0; index < settingsProperty.arraySize; index++)
                 {
                     var element = settingsProperty.GetArrayElementAtIndex(index);
                     if (element.objectReferenceValue == settingsBase)
                     {
-                        return;
+                        containsSetting = true;
+                        break;
                     }
                 }
 
-                var insert = settingsProperty.arraySize;
-                settingsProperty.InsertArrayElementAtIndex(insert);
-                settingsProperty.GetArrayElementAtIndex(insert).objectReferenceValue = settingsBase;
-
-                var length = settingsProperty.arraySize;
-
-                // Insertion sort
-                for (var i = 1; i < length; i++)
+                if (!containsSetting)
                 {
-                    var key = settingsProperty.GetArrayElementAtIndex(i).objectReferenceValue;
-                    var j = i - 1;
+                    var insert = settingsProperty.arraySize;
+                    settingsProperty.InsertArrayElementAtIndex(insert);
+                    settingsProperty.GetArrayElementAtIndex(insert).objectReferenceValue = settingsBase;
 
-                    while (j >= 0 && Compare(settingsProperty.GetArrayElementAtIndex(j).objectReferenceValue, key))
+                    var length = settingsProperty.arraySize;
+
+                    // Insertion sort
+                    for (var i = 1; i < length; i++)
                     {
-                        settingsProperty.GetArrayElementAtIndex(j + 1).objectReferenceValue = settingsProperty.GetArrayElementAtIndex(j).objectReferenceValue;
-                        j -= 1;
-                    }
+                        var key = settingsProperty.GetArrayElementAtIndex(i).objectReferenceValue;
+                        var j = i - 1;
 
-                    settingsProperty.GetArrayElementAtIndex(j + 1).objectReferenceValue = key;
+                        while (j >= 0 && Compare(settingsProperty.GetArrayElementAtIndex(j).objectReferenceValue, key))
+                        {
+                            settingsProperty.GetArrayElementAtIndex(j + 1).objectReferenceValue =
+                                settingsProperty.GetArrayElementAtIndex(j).objectReferenceValue;
+                            j -= 1;
+                        }
+
+                        settingsProperty.GetArrayElementAtIndex(j + 1).objectReferenceValue = key;
+                    }
                 }
 
                 so.ApplyModifiedProperties();
