@@ -1,15 +1,20 @@
 # Changelog
 
-## [2.0.0-pre.2] - 2026-08-25
+## [2.0.0-pre.2] - Unreleased
 
 ### Added
 * Opt-in editor-world settings prefab fallbacks with automatic rebaking and deduplication against normal SubScene instances
 * New `EditorSettings` assets bootstrap `Assets/Settings/Prefabs` with `GameSettings`, `ServiceSettings`, and `MenuSettings`, plus
   `ClientSettings` and `ServerSettings` when NetCode is installed, then immediately populate the derived settings
+* `StableAssetId.Create` for stable project-scoped IDs derived from persisted asset GUIDs and local file IDs
 
 ### Changed
 * Editor-world fallback routing keeps `client` ready for future NetCode setup and silently skips unresolved non-empty routes
 * Editor selection and type queries now use Unity Search's public picker and query APIs
+
+### Fixed
+* Settings authoring now applies multi-world settings to every resolved prefab instead of stopping when one already contains the setting
+* Without NetCode, unconfigured `client` and `server` settings routes now fall back to the default authoring
 
 ### Removed
 * Obsolete Inspector and Hierarchy DataMode menu hooks and the `Unity.InternalAPIEditorBridge.002` dependency
