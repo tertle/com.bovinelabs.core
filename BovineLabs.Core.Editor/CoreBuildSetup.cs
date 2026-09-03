@@ -8,20 +8,32 @@ namespace BovineLabs.Core.Editor
     using BovineLabs.Core.Settings;
     using UnityEditor;
     using UnityEditor.Build;
-    using UnityEditor.Build.Reporting;
 
-    public class CoreBuildSetup : BuildPlayerProcessor, IPostprocessBuildWithReport
+    public class CoreBuildSetup : IPreprocessBuildWithContext, IPostprocessBuildWithContext
     {
         /// <inheritdoc/>
-        public override void PrepareForBuild(BuildPlayerContext buildPlayerContext)
+        public int callbackOrder => 0;
+
+        /// <inheritdoc/>
+        public void OnPreprocessBuild(BuildCallbackContext context)
         {
+            if (!context.IsPlayerBuild)
+            {
+                return;
+            }
+
             Revert();
             IncludeSettingsSingleton();
         }
 
         /// <inheritdoc/>
-        public void OnPostprocessBuild(BuildReport report)
+        public void OnPostprocessBuild(BuildCallbackContext context)
         {
+            if (!context.IsPlayerBuild)
+            {
+                return;
+            }
+
             Revert();
         }
 
