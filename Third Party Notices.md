@@ -31,6 +31,15 @@ which is copyright (c) 2023 Undream AI and licensed under the MIT License. That 
 which is copyright (c) 2023 Qais Ammari and licensed under the MIT License. Both complete license texts are retained in
 [`BovineLabs.Core/Utility/LibraryLoader.LICENSE.md`](BovineLabs.Core/Utility/LibraryLoader.LICENSE.md).
 
+## UnityMeshSimplifier / Fast Quadric Mesh Simplification
+
+`BovineLabs.Core/Utility/Mesh/MeshSimplifier.cs` is adapted from
+[`UnityMeshSimplifier`](https://github.com/Whinarn/UnityMeshSimplifier), copyright (c) 2017-2021 Mattias Edlund, which is licensed under the MIT
+License. UnityMeshSimplifier is itself based on
+[`Fast Quadric Mesh Simplification`](https://github.com/sp4cerat/Fast-Quadric-Mesh-Simplification), copyright (c) 2014 Sven Forstmann, which is
+also licensed under the MIT License. Both complete notices are retained at
+[`BovineLabs.Core/Utility/Mesh/MeshSimplifier.LICENSE.md`](BovineLabs.Core/Utility/Mesh/MeshSimplifier.LICENSE.md).
+
 ## Unity Technologies
 
 The following Core source includes code adapted from Unity packages:

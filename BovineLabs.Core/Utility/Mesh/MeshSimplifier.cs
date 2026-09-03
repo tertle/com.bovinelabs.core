@@ -2,6 +2,9 @@
 //     Copyright (c) BovineLabs. All rights reserved.
 // </copyright>
 
+// Adapted from UnityMeshSimplifier and Fast Quadric Mesh Simplification.
+// See MeshSimplifier.LICENSE.md for third-party notices.
+
 namespace BovineLabs.Core.Utility
 {
     using System;
@@ -20,97 +23,51 @@ namespace BovineLabs.Core.Utility
         private const int TriangleEdgeCount = 3;
         private const int TriangleVertexCount = 3;
 
-        public static Result Simplify(Mesh mesh, Options options, Allocator allocator = Allocator.Temp)
-        {
-            if (mesh.subMeshCount > 1)
-            {
-                BLGlobalLogger.LogWarningString("Only supports single sub mesh");
-            }
-
-            var vertices = mesh.vertices;
-            var tris = mesh.GetTriangles(0);
-
-            return Simplify(vertices, tris, options, allocator);
-        }
-
-        public static Result Simplify(Vector3[] verts, int[] tris, Options options, Allocator allocator = Allocator.Temp)
-        {
-            var trisCount = tris.Length / TriangleVertexCount;
-
-            var triangles = new NativeList<Triangle>(trisCount, allocator);
-            triangles.ResizeUninitialized(trisCount);
-            var trisArr = triangles.AsArray();
-
-            for (var j = 0; j < trisCount; j++)
-            {
-                var offset = j * 3;
-                var v0 = tris[offset];
-                var v1 = tris[offset + 1];
-                var v2 = tris[offset + 2];
-                var triangleIndex = j;
-                trisArr[triangleIndex] = new Triangle(triangleIndex, v0, v1, v2);
-            }
-
-            var vertices = new NativeList<Vertex>(verts.Length, allocator);
-            vertices.ResizeUninitialized(verts.Length);
-            for (var i = 0; i < verts.Length; i++)
-            {
-                vertices[i] = new Vertex(i, (float3)verts[i]);
-            }
-
-            var result = new Result
-            {
-                Vertices = vertices,
-                Triangles = triangles,
-            };
-
-            Simplify(ref result, ref options, allocator);
-
-            return result;
-        }
-
         public static Result Simplify(NativeArray<Vector3> verts, NativeArray<int> tris, Options options, Allocator allocator = Allocator.Temp)
         {
-            var triangles = new NativeList<Triangle>(tris.Length, allocator);
-            triangles.ResizeUninitialized(tris.Length);
-
-            var trisArr = triangles.AsArray();
-
-            var subMeshTriangleCount = tris.Length / TriangleVertexCount;
-            for (var j = 0; j < subMeshTriangleCount; j++)
-            {
-                var offset = j * 3;
-                var v0 = tris[offset];
-                var v1 = tris[offset + 1];
-                var v2 = tris[offset + 2];
-                var triangleIndex = j;
-                trisArr[triangleIndex] = new Triangle(triangleIndex, v0, v1, v2);
-            }
-
-            var vertices = new NativeList<Vertex>(verts.Length, allocator);
-            vertices.ResizeUninitialized(verts.Length);
-            for (var i = 0; i < verts.Length; i++)
-            {
-                vertices[i] = new Vertex(i, (float3)verts[i]);
-            }
-
-            var result = new Result
-            {
-                Vertices = vertices,
-                Triangles = triangles,
-            };
-
-            Simplify(ref result, ref options, allocator);
-
+            Simplify(in verts, in tris, in options, in allocator, out var result);
             return result;
         }
 
         [BurstCompile(CompileSynchronously = true)]
-        private static void Simplify(ref Result result, ref Options options, in Allocator allocator)
+        public static void Simplify(
+            in NativeArray<Vector3> verts, in NativeArray<int> tris, in Options options, in Allocator allocator, out Result result)
+        {
+            var triangleCount = tris.Length / TriangleVertexCount;
+            var triangles = new NativeList<Triangle>(triangleCount, allocator);
+            triangles.ResizeUninitialized(triangleCount);
+
+            var trisArr = triangles.AsArray();
+
+            for (var j = 0; j < triangleCount; j++)
+            {
+                var offset = j * 3;
+                var v0 = tris[offset];
+                var v1 = tris[offset + 1];
+                var v2 = tris[offset + 2];
+                var triangleIndex = j;
+                trisArr[triangleIndex] = new Triangle(triangleIndex, v0, v1, v2);
+            }
+
+            var vertices = new NativeList<Vertex>(verts.Length, allocator);
+            vertices.ResizeUninitialized(verts.Length);
+            for (var i = 0; i < verts.Length; i++)
+            {
+                vertices[i] = new Vertex(i, (float3)verts[i]);
+            }
+
+            result = new Result
+            {
+                Vertices = vertices,
+                Triangles = triangles,
+            };
+
+            SimplifyInPlace(ref result, in options, allocator);
+        }
+
+        private static void SimplifyInPlace(ref Result result, in Options options, in Allocator allocator)
         {
             var refs = new NativeList<Ref>(allocator);
-
-            options.Quality = math.clamp(options.Quality, 0, 1);
 
             var deletedTris = 0;
             var deleted0 = new NativeList<bool>(20, allocator);
@@ -118,7 +75,8 @@ namespace BovineLabs.Core.Utility
             var triangles = result.Triangles.AsArray();
             var triangleCount = result.Triangles.Length;
             var startTrisCount = triangleCount;
-            var targetTrisCount = (int)math.round(triangleCount * options.Quality);
+            var quality = math.clamp(options.Quality, 0, 1);
+            var targetTrisCount = (int)math.round(triangleCount * quality);
 
             for (var iteration = 0; iteration < options.MaxIterationCount; iteration++)
             {
@@ -924,8 +882,6 @@ namespace BovineLabs.Core.Utility
 
         internal struct Triangle : IEquatable<Triangle>
         {
-            private const double Quantize = 1000000.0;
-
             public int Index;
 
             public int3 V;
@@ -935,33 +891,33 @@ namespace BovineLabs.Core.Utility
             public bool Dirty;
             public float3 N;
 
-            private int err0;
-            private int err1;
-            private int err2;
-            private int err3;
+            private float err0;
+            private float err1;
+            private float err2;
+            private float err3;
 
             public double Err0
             {
-                get => this.err0 / Quantize;
-                set => this.err0 = (int)(value * Quantize);
+                get => this.err0;
+                set => this.err0 = (float)value;
             }
 
             public double Err1
             {
-                get => this.err1 / Quantize;
-                set => this.err1 = (int)(value * Quantize);
+                get => this.err1;
+                set => this.err1 = (float)value;
             }
 
             public double Err2
             {
-                get => this.err2 / Quantize;
-                set => this.err2 = (int)(value * Quantize);
+                get => this.err2;
+                set => this.err2 = (float)value;
             }
 
             public double Err3
             {
-                get => this.err3 / Quantize;
-                set => this.err3 = (int)(value * Quantize);
+                get => this.err3;
+                set => this.err3 = (float)value;
             }
 
 
