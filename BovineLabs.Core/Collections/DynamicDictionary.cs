@@ -945,5 +945,29 @@ namespace BovineLabs.Core.Collections
         {
             return new DynamicDictionary<TKey, TValue, TEntry>(buffer);
         }
+
+        /// <summary> Checks whether an entry accessed through its interface is occupied. </summary>
+        /// <param name="buffer"> The entry to inspect. </param>
+        /// <returns> <see langword="true" /> if the entry is occupied; otherwise, <see langword="false" />. </returns>
+        /// <remarks> This overload may box value-type entries and is not Burst-compatible. </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsOccupied<TKey, TValue>(this IDynamicDictionaryEntry<TKey, TValue> buffer)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+        {
+            return (buffer.Tag & 1u) != 0;
+        }
+
+        /// <summary> Checks whether a generic unmanaged entry is occupied without boxing it. </summary>
+        /// <param name="buffer"> The entry to inspect. </param>
+        /// <returns> <see langword="true" /> if the entry is occupied; otherwise, <see langword="false" />. </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsOccupied<TKey, TValue, TEntry>(this TEntry buffer)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
+            where TEntry : unmanaged, IDynamicDictionaryEntry<TKey, TValue>
+        {
+            return (buffer.Tag & 1u) != 0;
+        }
     }
 }
