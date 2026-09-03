@@ -100,11 +100,21 @@ namespace BovineLabs.Core.Collections
             ref BlobBuilder builder, ref BlobCurve4 blobCurve, AnimationCurve curveX, AnimationCurve curveY, AnimationCurve curveZ, AnimationCurve curveW)
         {
             InputCurveCheck(curveX, curveY, curveZ, curveW);
-            var xKeys = curveX.keys;
-            var yKeys = curveY.keys;
-            var zKeys = curveZ.keys;
-            var wKeys = curveW.keys;
-            var keyFrameCount = xKeys.Length;
+            var keyFrameCount = curveX.length;
+            using var xKeyBuffer = new NativeArray<Keyframe>(keyFrameCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            using var yKeyBuffer = new NativeArray<Keyframe>(curveY.length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            using var zKeyBuffer = new NativeArray<Keyframe>(curveZ.length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            using var wKeyBuffer = new NativeArray<Keyframe>(curveW.length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            var xKeys = xKeyBuffer.AsSpan();
+            var yKeys = yKeyBuffer.AsSpan();
+            var zKeys = zKeyBuffer.AsSpan();
+            var wKeys = wKeyBuffer.AsSpan();
+            curveX.GetKeys(xKeys);
+            curveY.GetKeys(yKeys);
+            curveZ.GetKeys(zKeys);
+            curveW.GetKeys(wKeys);
+            InputKeyCheck(xKeys, yKeys, zKeys, wKeys);
+
             var hasOnlyOneKeyframe = keyFrameCount == 1;
             var segmentCount = math.select(keyFrameCount - 1, 1, hasOnlyOneKeyframe);
             blobCurve.header.SegmentCount = segmentCount;
@@ -223,25 +233,27 @@ namespace BovineLabs.Core.Collections
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void InputCurveCheck(AnimationCurve curveX, AnimationCurve curveY, AnimationCurve curveZ, AnimationCurve curveW)
         {
-            if (curveX == null || curveY == null || curveZ == null)
+            if (curveX == null || curveY == null || curveZ == null || curveW == null)
             {
                 throw new NullReferenceException("Input curve is null");
             }
 
-            if (curveX.length != curveY.length || curveX.length != curveZ.length)
+            if (curveX.length != curveY.length || curveX.length != curveZ.length || curveX.length != curveW.length)
             {
-                throw new NullReferenceException($"Curve X[{curveX.length}]/Y[{curveY.length}]/Z[{curveZ.length}] length not sync");
+                throw new NullReferenceException(
+                    $"Curve X[{curveX.length}]/Y[{curveY.length}]/Z[{curveZ.length}]/W[{curveW.length}] length not sync");
             }
 
             if (curveX.length == 0)
             {
                 throw new ArgumentException("Input curve is empty (no keyframe)");
             }
+        }
 
-            var xKeys = curveX.keys;
-            var yKeys = curveY.keys;
-            var zKeys = curveZ.keys;
-            var wKeys = curveW.keys;
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void InputKeyCheck(
+            ReadOnlySpan<Keyframe> xKeys, ReadOnlySpan<Keyframe> yKeys, ReadOnlySpan<Keyframe> zKeys, ReadOnlySpan<Keyframe> wKeys)
+        {
             for (int i = 0, len = xKeys.Length; i < len; i++)
             {
                 var kx = xKeys[i];
@@ -274,7 +286,7 @@ namespace BovineLabs.Core.Collections
                 if (kw.weightedMode != WeightedMode.None)
                 {
                     BLGlobalLogger.LogWarningString(
-                        $"Weight Not Supported! Z Key[{i},Weight[{kw.weightedMode},In{kw.inWeight},Out{kw.outWeight}],Time{kw.time},Value{kw.value}]");
+                        $"Weight Not Supported! W Key[{i},Weight[{kw.weightedMode},In{kw.inWeight},Out{kw.outWeight}],Time{kw.time},Value{kw.value}]");
                 }
             }
         }

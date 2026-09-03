@@ -98,9 +98,15 @@ namespace BovineLabs.Core.Collections
         public static void Construct(ref BlobBuilder builder, ref BlobCurve2 blobCurve, AnimationCurve curveX, AnimationCurve curveY)
         {
             InputCurveCheck(curveX, curveY);
-            var xKeys = curveX.keys;
-            var yKeys = curveY.keys;
-            var keyFrameCount = xKeys.Length;
+            var keyFrameCount = curveX.length;
+            using var xKeyBuffer = new NativeArray<Keyframe>(keyFrameCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            using var yKeyBuffer = new NativeArray<Keyframe>(curveY.length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            var xKeys = xKeyBuffer.AsSpan();
+            var yKeys = yKeyBuffer.AsSpan();
+            curveX.GetKeys(xKeys);
+            curveY.GetKeys(yKeys);
+            InputKeyCheck(xKeys, yKeys);
+
             var hasOnlyOneKeyframe = keyFrameCount == 1;
             var segmentCount = math.select(keyFrameCount - 1, 1, hasOnlyOneKeyframe);
 
@@ -232,9 +238,11 @@ namespace BovineLabs.Core.Collections
             {
                 throw new ArgumentException("Input curve is empty (no keyframe)");
             }
+        }
 
-            var xKeys = curveX.keys;
-            var yKeys = curveY.keys;
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void InputKeyCheck(ReadOnlySpan<Keyframe> xKeys, ReadOnlySpan<Keyframe> yKeys)
+        {
             for (int i = 0, len = xKeys.Length; i < len; i++)
             {
                 var kx = xKeys[i];

@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Utility
 {
+    using Unity.Collections;
     using UnityEngine;
 
     /// <summary> Helper methods for remapping animation curves into clip-local space. </summary>
@@ -23,31 +24,32 @@ namespace BovineLabs.Core.Utility
                 return false;
             }
 
-            var sourceKeys = curve.keys;
-            if (sourceKeys.Length == 0)
+            var keyCount = curve.length;
+            if (keyCount == 0)
             {
                 return false;
             }
+
+            using var keyBuffer = new NativeArray<Keyframe>(keyCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            var sourceKeys = keyBuffer.AsSpan();
+            curve.GetKeys(sourceKeys);
 
             var firstTime = sourceKeys[0].time;
             var lastTime = sourceKeys[^1].time;
             var sourceDuration = lastTime - firstTime;
 
-            Keyframe[] remappedKeys;
             if (Mathf.Approximately(sourceDuration, 0f))
             {
-                remappedKeys = new Keyframe[sourceKeys.Length];
                 for (var i = 0; i < sourceKeys.Length; i++)
                 {
                     var key = sourceKeys[i];
                     key.time = clipIn;
-                    remappedKeys[i] = key;
+                    sourceKeys[i] = key;
                 }
             }
             else
             {
                 var timeScale = clipDuration / sourceDuration;
-                remappedKeys = new Keyframe[sourceKeys.Length];
                 for (var i = 0; i < sourceKeys.Length; i++)
                 {
                     var key = sourceKeys[i];
@@ -63,15 +65,16 @@ namespace BovineLabs.Core.Utility
                         key.outTangent /= timeScale;
                     }
 
-                    remappedKeys[i] = key;
+                    sourceKeys[i] = key;
                 }
             }
 
-            remappedCurve = new AnimationCurve(remappedKeys)
+            remappedCurve = new AnimationCurve
             {
                 preWrapMode = curve.preWrapMode,
                 postWrapMode = curve.postWrapMode,
             };
+            remappedCurve.SetKeys(sourceKeys);
 
             return true;
         }
