@@ -28,6 +28,10 @@ namespace BovineLabs.Core.Editor.Settings
 
             if (!EditorSettingsUtility.TryGetSettings<EditorSettings>(out var settings))
             {
+                this.World.GetExistingSystemManaged<InitializationSystemGroup>().Enabled = false;
+                this.World.GetExistingSystemManaged<SimulationSystemGroup>().Enabled = false;
+                this.World.GetExistingSystemManaged<PresentationSystemGroup>().Enabled = false;
+                BLGlobalLogger.LogErrorString("Could not load EditorSettings, disabling EditorWorld. This should work again after a domain reload");
                 return;
             }
 
