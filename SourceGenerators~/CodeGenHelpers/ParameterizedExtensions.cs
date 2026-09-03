@@ -50,7 +50,8 @@ namespace CodeGenHelpers
             return parameterized.AddParameter(typeSymbol.Name, parameterName, index);
         }
 
-        public static T AddParameterWithDefaultValue<T>(this IParameterized<T> parameterized, string typeName, string? parameterName = null, object? defaultValue = null, int index = -1)
+        public static T AddParameterWithDefaultValue<T>(
+            this IParameterized<T> parameterized, string typeName, string? parameterName = null, object? defaultValue = null, int index = -1)
             where T : BuilderBase<T>, IParameterized<T>
         {
             var parameter = GetParameter(parameterized.Parent, typeName, parameterName)
@@ -58,7 +59,8 @@ namespace CodeGenHelpers
             return parameterized.AddParameterInternal(parameter, index);
         }
 
-        public static T AddParameterWithDefaultValue<T>(this IParameterized<T> parameterized, ITypeSymbol typeSymbol, string? parameterName = null, object? defaultValue = null, int index = -1)
+        public static T AddParameterWithDefaultValue<T>(
+            this IParameterized<T> parameterized, ITypeSymbol typeSymbol, string? parameterName = null, object? defaultValue = null, int index = -1)
             where T : BuilderBase<T>, IParameterized<T>
         {
             parameterized.Parent.AddNamespaceImport(typeSymbol);
@@ -73,7 +75,8 @@ namespace CodeGenHelpers
             return parameterized.AddParameterInternal(parameter, index);
         }
 
-        public static T AddParameterWithDefaultValue<T>(this IParameterized<T> parameterized, ITypeSymbol typeSymbol, string? parameterName = null, int index = -1)
+        public static T AddParameterWithDefaultValue<T>(
+            this IParameterized<T> parameterized, ITypeSymbol typeSymbol, string? parameterName = null, int index = -1)
             where T : BuilderBase<T>, IParameterized<T>
         {
             parameterized.Parent.AddNamespaceImport(typeSymbol);

@@ -99,8 +99,8 @@ namespace BovineLabs.Core.Iterators
         }
 
         internal static int TryAdd(
-            DynamicBuffer<byte> buffer, ref DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* data,
-            in TKey key, in TValue value, in T1 column1, in T2 column2)
+            DynamicBuffer<byte> buffer, ref DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* data, in TKey key, in TValue value, in T1 column1,
+            in T2 column2)
         {
             if (data->Find(key) == -1)
             {
@@ -111,16 +111,15 @@ namespace BovineLabs.Core.Iterators
         }
 
         internal static int AddUnique(
-            DynamicBuffer<byte> buffer, ref DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* data,
-            in TKey key, in TValue value, in T1 column1, in T2 column2)
+            DynamicBuffer<byte> buffer, ref DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* data, in TKey key, in TValue value, in T1 column1,
+            in T2 column2)
         {
             data->CheckDoesNotExist(key);
             return AddInternal(buffer, ref data, key, value, column1, column2);
         }
 
         private static void ResizeExact(
-            DynamicBuffer<byte> buffer, ref DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* data,
-            int newCapacity, int newBucketCapacity)
+            DynamicBuffer<byte> buffer, ref DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* data, int newCapacity, int newBucketCapacity)
         {
             var index1Size = data->Column1.CalculateDataSize(newCapacity);
             var index2Size = data->Column2.CalculateDataSize(newCapacity);
@@ -203,8 +202,8 @@ namespace BovineLabs.Core.Iterators
         }
 
         private static int AddInternal(
-            DynamicBuffer<byte> buffer, ref DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* data,
-            TKey key, in TValue value, in T1 column1, in T2 column2)
+            DynamicBuffer<byte> buffer, ref DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* data, TKey key, in TValue value, in T1 column1,
+            in T2 column2)
         {
             // Allocate an entry from the free list
             if (data->AllocatedIndex >= data->Capacity && data->FirstFreeIdx < 0)
@@ -217,8 +216,7 @@ namespace BovineLabs.Core.Iterators
         }
 
         private static int AddNoCollideNoAlloc(
-            DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* data,
-            in TKey key, in TValue value, in T1 column1, in T2 column2)
+            DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* data, in TKey key, in TValue value, in T1 column1, in T2 column2)
         {
             Check.Assume(data->AllocatedIndex < data->Capacity || data->FirstFreeIdx >= 0);
 
@@ -413,9 +411,8 @@ namespace BovineLabs.Core.Iterators
         }
 
         private static int CalculateDataSize(
-            int capacity, int bucketCapacity, int index1Size, int index2Size,
-            out int outDataOffset, out int outKeyOffset, out int outNextOffset, out int outBucketOffset,
-            out int outIndex1Offset, out int outIndex2Offset)
+            int capacity, int bucketCapacity, int index1Size, int index2Size, out int outDataOffset, out int outKeyOffset, out int outNextOffset,
+            out int outBucketOffset, out int outIndex1Offset, out int outIndex2Offset)
         {
             var sizeOfTKey = sizeof(TKey);
             var sizeOfTValue = sizeof(TValue);

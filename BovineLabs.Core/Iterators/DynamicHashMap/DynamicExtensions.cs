@@ -263,7 +263,8 @@ namespace BovineLabs.Core.Iterators
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DynamicVariableMap<TKey, TValue, T1, TC1, T2, TC2> AsVariableMap<TBuffer, TKey, TValue, T1, TC1, T2, TC2>(this DynamicBuffer<TBuffer> buffer)
+        public static DynamicVariableMap<TKey, TValue, T1, TC1, T2, TC2> AsVariableMap<TBuffer, TKey, TValue, T1, TC1, T2, TC2>(
+            this DynamicBuffer<TBuffer> buffer)
             where TBuffer : unmanaged, IDynamicVariableMap<TKey, TValue, T1, TC1, T2, TC2>
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -322,7 +323,8 @@ namespace BovineLabs.Core.Iterators
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* AsVariableHelper<TKey, TValue, T1, TC1, T2, TC2>(this DynamicBuffer<byte> buffer)
+        internal static DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* AsVariableHelper<TKey, TValue, T1, TC1, T2, TC2>(
+            this DynamicBuffer<byte> buffer)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
             where T1 : unmanaged, IEquatable<T1>

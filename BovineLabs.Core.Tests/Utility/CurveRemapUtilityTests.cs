@@ -41,8 +41,7 @@ namespace BovineLabs.Core.Tests.Utility
             AssertKey(result[0], 10f, 3f, 4f, 5f, 0f, 0f);
         }
 
-        private static void AssertKey(
-            Keyframe key, float time, float value, float inTangent, float outTangent, float inWeight, float outWeight)
+        private static void AssertKey(Keyframe key, float time, float value, float inTangent, float outTangent, float inWeight, float outWeight)
         {
             AssertFloat(time, key.time);
             AssertFloat(value, key.value);

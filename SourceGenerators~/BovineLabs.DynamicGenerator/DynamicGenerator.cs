@@ -381,14 +381,8 @@ namespace BovineLabs.DynamicGenerator
         private class DynamicData
         {
             public DynamicData(
-                INamedTypeSymbol typeSymbol,
-                DynamicType type,
-                ITypeSymbol type1 = null,
-                ITypeSymbol type2 = null,
-                ITypeSymbol type3 = null,
-                ITypeSymbol type4 = null,
-                ITypeSymbol type5 = null,
-                ITypeSymbol type6 = null)
+                INamedTypeSymbol typeSymbol, DynamicType type, ITypeSymbol type1 = null, ITypeSymbol type2 = null, ITypeSymbol type3 = null,
+                ITypeSymbol type4 = null, ITypeSymbol type5 = null, ITypeSymbol type6 = null)
             {
                 this.TypeSymbol = typeSymbol;
                 this.TypeName = GetName(typeSymbol);

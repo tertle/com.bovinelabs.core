@@ -42,8 +42,7 @@ namespace BovineLabs.Core.Asset
         {
         }
 
-        public AutoRefAttribute(
-            string managerType, string fieldName, string directoryKey, string defaultDirectory, string defaultFileName)
+        public AutoRefAttribute(string managerType, string fieldName, string directoryKey, string defaultDirectory, string defaultFileName)
         {
             this.ManagerType = managerType;
             this.FieldName = fieldName;

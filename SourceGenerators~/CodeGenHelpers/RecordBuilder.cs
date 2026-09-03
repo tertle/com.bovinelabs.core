@@ -62,9 +62,7 @@ namespace CodeGenHelpers
             return this;
         }
 
-        public RecordPropertyBuilder AddProperty(string type,
-            string name,
-            Accessibility accessModifier = Accessibility.Public)
+        public RecordPropertyBuilder AddProperty(string type, string name, Accessibility accessModifier = Accessibility.Public)
         {
             var prop = new RecordPropertyBuilder(type, name, accessModifier, this);
             _properties.Add(prop);

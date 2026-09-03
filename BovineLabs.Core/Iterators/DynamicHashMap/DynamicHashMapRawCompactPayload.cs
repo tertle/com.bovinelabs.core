@@ -127,11 +127,7 @@ namespace BovineLabs.Core.Iterators
         }
 
         internal static void RebuildFromPayload(
-            void* targetBuffer,
-            int targetBufferLength,
-            byte* payload,
-            int availableBytes,
-            DynamicHashMapRebuildOrder rebuildOrder,
+            void* targetBuffer, int targetBufferLength, byte* payload, int availableBytes, DynamicHashMapRebuildOrder rebuildOrder,
             DynamicHashMapDuplicatePolicy duplicatePolicy)
         {
             Check.Assume(targetBuffer != null, "Target map buffer must not be null.");

@@ -369,8 +369,8 @@ namespace BovineLabs.Core.Iterators
         }
 
         private static int CalculateDataSize(
-            int capacity, int bucketCapacity, int indexSize,
-            out int outDataOffset, out int outKeyOffset, out int outNextOffset, out int outBucketOffset, out int outIndexOffset)
+            int capacity, int bucketCapacity, int indexSize, out int outDataOffset, out int outKeyOffset, out int outNextOffset, out int outBucketOffset,
+            out int outIndexOffset)
         {
             var sizeOfTKey = sizeof(TKey);
             var sizeOfTValue = sizeof(TValue);

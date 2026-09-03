@@ -55,10 +55,7 @@ namespace BovineLabs.Core.Spatial
         }
 
         public JobHandle BuildWithPositionOutput(
-            NativeList<T> positions,
-            NativeArray<float2> positionOutput,
-            JobHandle dependency,
-            ResizeNativeParallelHashMapJob resizeStub = default,
+            NativeList<T> positions, NativeArray<float2> positionOutput, JobHandle dependency, ResizeNativeParallelHashMapJob resizeStub = default,
             QuantizePositionJob quantizeJob = default)
         {
             return this.BuildWithPositionOutput(positions.AsDeferredJobArray(), positionOutput, dependency, resizeStub, quantizeJob);
@@ -93,10 +90,7 @@ namespace BovineLabs.Core.Spatial
 
         [SuppressMessage("ReSharper", "UnusedParameter.Global", Justification = "Sneaky way to allow this to run in bursted ISystem")]
         public JobHandle BuildWithPositionOutput(
-            NativeArray<T> positions,
-            NativeArray<float2> positionOutput,
-            JobHandle dependency,
-            ResizeNativeParallelHashMapJob resizeJob = default,
+            NativeArray<T> positions, NativeArray<float2> positionOutput, JobHandle dependency, ResizeNativeParallelHashMapJob resizeJob = default,
             QuantizePositionJob quantizeJob = default)
         {
             resizeJob.Length = positions;

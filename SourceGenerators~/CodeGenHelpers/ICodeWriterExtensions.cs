@@ -10,7 +10,8 @@ namespace CodeGenHelpers
             return new LogicalConditionBuilder(writer, condition);
         }
 
-        public static ExpressionBlockBuilder For(this ICodeWriter writer, string incrementerName = "i", int counterStart = 0, string condition = "i < 10", bool increment = true)
+        public static ExpressionBlockBuilder For(
+            this ICodeWriter writer, string incrementerName = "i", int counterStart = 0, string condition = "i < 10", bool increment = true)
         {
             var incrementerType = increment ? "++" : "--";
             return new ExpressionBlockBuilder(writer, $"for ({incrementerName} = {counterStart}; {condition}; {incrementerName}{incrementerType}");

@@ -30,8 +30,7 @@ namespace BovineLabs.Core.Utility
         }
 
         [BurstCompile(CompileSynchronously = true)]
-        public static void Simplify(
-            in NativeArray<Vector3> verts, in NativeArray<int> tris, in Options options, in Allocator allocator, out Result result)
+        public static void Simplify(in NativeArray<Vector3> verts, in NativeArray<int> tris, in Options options, in Allocator allocator, out Result result)
         {
             var triangleCount = tris.Length / TriangleVertexCount;
             var triangles = new NativeList<Triangle>(triangleCount, allocator);

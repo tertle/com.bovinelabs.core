@@ -24,8 +24,7 @@ namespace BovineLabs.Core.Extensions
         /// <param name="allocator"> The allocator used for the owned memory. </param>
         /// <param name="options"> Whether to clear the allocated memory. </param>
         /// <returns> An array that must be disposed by its owner. </returns>
-        public static NativeArray<T> CreateFromJob(
-            int length, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+        public static NativeArray<T> CreateFromJob(int length, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
             var size = UnsafeUtility.SizeOf<T>() * (long)length;
             CheckAllocateArguments(length, allocator);

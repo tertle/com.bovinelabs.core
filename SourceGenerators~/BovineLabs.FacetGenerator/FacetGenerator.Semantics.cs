@@ -170,12 +170,8 @@ namespace BovineLabs.FacetGenerator
         }
 
         private static IReadOnlyList<FacetSingletonDependency> CollectSingletonDependencies(
-            INamedTypeSymbol typeSymbol,
-            IReadOnlyList<FacetField> fields,
-            INamedTypeSymbol facetAttribute,
-            INamedTypeSymbol singletonAttribute,
-            INamedTypeSymbol readOnlyAttribute,
-            INamedTypeSymbol facetInterface,
+            INamedTypeSymbol typeSymbol, IReadOnlyList<FacetField> fields, INamedTypeSymbol facetAttribute, INamedTypeSymbol singletonAttribute,
+            INamedTypeSymbol readOnlyAttribute, INamedTypeSymbol facetInterface,
             IDictionary<FacetTraversalKey, IReadOnlyList<FacetSingletonDependency>> singletonCache)
         {
             var dependencies = new List<FacetSingletonDependency>();
@@ -213,13 +209,8 @@ namespace BovineLabs.FacetGenerator
         }
 
         private static IReadOnlyList<FacetSingletonDependency> CollectFacetSingletonDependencies(
-            INamedTypeSymbol facetType,
-            INamedTypeSymbol facetAttribute,
-            INamedTypeSymbol singletonAttribute,
-            INamedTypeSymbol readOnlyAttribute,
-            INamedTypeSymbol facetInterface,
-            IReadOnlyList<string> path,
-            IDictionary<FacetTraversalKey, IReadOnlyList<FacetSingletonDependency>> singletonCache,
+            INamedTypeSymbol facetType, INamedTypeSymbol facetAttribute, INamedTypeSymbol singletonAttribute, INamedTypeSymbol readOnlyAttribute,
+            INamedTypeSymbol facetInterface, IReadOnlyList<string> path, IDictionary<FacetTraversalKey, IReadOnlyList<FacetSingletonDependency>> singletonCache,
             ISet<INamedTypeSymbol> recursionStack)
         {
             var cacheKey = new FacetTraversalKey(facetType, CreatePathKey(path));
@@ -282,10 +273,7 @@ namespace BovineLabs.FacetGenerator
         }
 
         private static void ValidateFacetGraph(
-            INamedTypeSymbol typeSymbol,
-            INamedTypeSymbol facetAttribute,
-            INamedTypeSymbol facetInterface,
-            IList<Diagnostic> diagnostics)
+            INamedTypeSymbol typeSymbol, INamedTypeSymbol facetAttribute, INamedTypeSymbol facetInterface, IList<Diagnostic> diagnostics)
         {
             if (facetAttribute == null || facetInterface == null)
             {
@@ -345,20 +333,10 @@ namespace BovineLabs.FacetGenerator
         }
 
         private static IReadOnlyList<QueryBuilderInvocation> CollectQueryBuilderInvocations(
-            INamedTypeSymbol typeSymbol,
-            IReadOnlyList<FacetField> fields,
-            INamedTypeSymbol optionalAttribute,
-            INamedTypeSymbol facetAttribute,
-            INamedTypeSymbol readOnlyAttribute,
-            INamedTypeSymbol singletonAttribute,
-            INamedTypeSymbol entityType,
-            INamedTypeSymbol entityStorageInfoType,
-            INamedTypeSymbol entityStorageInfoLookupType,
-            INamedTypeSymbol componentLookupType,
-            INamedTypeSymbol bufferLookupType,
-            INamedTypeSymbol bufferElementDataType,
-            INamedTypeSymbol facetEnabledRefRWType,
-            INamedTypeSymbol facetInterface)
+            INamedTypeSymbol typeSymbol, IReadOnlyList<FacetField> fields, INamedTypeSymbol optionalAttribute, INamedTypeSymbol facetAttribute,
+            INamedTypeSymbol readOnlyAttribute, INamedTypeSymbol singletonAttribute, INamedTypeSymbol entityType, INamedTypeSymbol entityStorageInfoType,
+            INamedTypeSymbol entityStorageInfoLookupType, INamedTypeSymbol componentLookupType, INamedTypeSymbol bufferLookupType,
+            INamedTypeSymbol bufferElementDataType, INamedTypeSymbol facetEnabledRefRWType, INamedTypeSymbol facetInterface)
         {
             var invocations = new List<QueryBuilderInvocation>();
             var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -470,20 +448,10 @@ namespace BovineLabs.FacetGenerator
         }
 
         private static bool TryCreateFacetField(
-            IFieldSymbol fieldSymbol,
-            INamedTypeSymbol optionalAttribute,
-            INamedTypeSymbol facetAttribute,
-            INamedTypeSymbol readOnlyAttribute,
-            INamedTypeSymbol singletonAttribute,
-            INamedTypeSymbol entityType,
-            INamedTypeSymbol entityStorageInfoType,
-            INamedTypeSymbol entityStorageInfoLookupType,
-            INamedTypeSymbol componentLookupType,
-            INamedTypeSymbol bufferLookupType,
-            INamedTypeSymbol bufferElementDataType,
-            INamedTypeSymbol facetEnabledRefRWType,
-            INamedTypeSymbol facetInterface,
-            IList<Diagnostic> diagnostics,
+            IFieldSymbol fieldSymbol, INamedTypeSymbol optionalAttribute, INamedTypeSymbol facetAttribute, INamedTypeSymbol readOnlyAttribute,
+            INamedTypeSymbol singletonAttribute, INamedTypeSymbol entityType, INamedTypeSymbol entityStorageInfoType,
+            INamedTypeSymbol entityStorageInfoLookupType, INamedTypeSymbol componentLookupType, INamedTypeSymbol bufferLookupType,
+            INamedTypeSymbol bufferElementDataType, INamedTypeSymbol facetEnabledRefRWType, INamedTypeSymbol facetInterface, IList<Diagnostic> diagnostics,
             out FacetField field)
         {
             field = null;

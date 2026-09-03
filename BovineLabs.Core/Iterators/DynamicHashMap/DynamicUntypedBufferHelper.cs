@@ -354,8 +354,7 @@ namespace BovineLabs.Core.Iterators
         }
 
         private static int CalculateDataSize(
-            int capacity, int dataCapacity, out int offsetsOffset, out int sizesOffset, out int typesOffset, out int alignmentsOffset,
-            out int dataOffset)
+            int capacity, int dataCapacity, out int offsetsOffset, out int sizesOffset, out int typesOffset, out int alignmentsOffset, out int dataOffset)
         {
             var sizeOfInt = sizeof(int);
             var offsetsSize = sizeOfInt * capacity;

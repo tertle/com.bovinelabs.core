@@ -514,14 +514,8 @@ namespace BovineLabs.DynamicGenerator
         }
 
         private static DynamicHashMapValueCodecPlan BuildGeneratedCodecPlan(
-            ITypeSymbol typeSymbol,
-            string serializerName,
-            string role,
-            string codecNamespace,
-            Dictionary<ITypeSymbol, DynamicHashMapValueCodecPlan> cache,
-            List<DynamicHashMapValueCodecPlan> codecPlans,
-            List<Diagnostic> diagnostics,
-            Location location)
+            ITypeSymbol typeSymbol, string serializerName, string role, string codecNamespace, Dictionary<ITypeSymbol, DynamicHashMapValueCodecPlan> cache,
+            List<DynamicHashMapValueCodecPlan> codecPlans, List<Diagnostic> diagnostics, Location location)
         {
             if (cache.TryGetValue(typeSymbol, out var cached))
             {
@@ -554,15 +548,8 @@ namespace BovineLabs.DynamicGenerator
         }
 
         private static DynamicHashMapValueCodecPlan CreateGeneratedCodecPlan(
-            ITypeSymbol typeSymbol,
-            string codecName,
-            string codecTypeName,
-            string typeName,
-            string serializerName,
-            string codecNamespace,
-            Dictionary<ITypeSymbol, DynamicHashMapValueCodecPlan> cache,
-            List<DynamicHashMapValueCodecPlan> codecPlans,
-            List<Diagnostic> diagnostics,
+            ITypeSymbol typeSymbol, string codecName, string codecTypeName, string typeName, string serializerName, string codecNamespace,
+            Dictionary<ITypeSymbol, DynamicHashMapValueCodecPlan> cache, List<DynamicHashMapValueCodecPlan> codecPlans, List<Diagnostic> diagnostics,
             Location location)
         {
             if (TryGetPrimitiveCodec(typeSymbol, out var primitive))
@@ -709,8 +696,7 @@ namespace BovineLabs.DynamicGenerator
             return source.ToString();
         }
 
-        private static string GenerateEnumCodecSource(
-            string codecName, string typeName, string underlyingTypeName, PrimitiveCodec primitive, ulong schemaHash)
+        private static string GenerateEnumCodecSource(string codecName, string typeName, string underlyingTypeName, PrimitiveCodec primitive, ulong schemaHash)
         {
             var source = new StringBuilder();
             AppendCodecHeader(source, codecName, typeName, primitive.EncodedSize, schemaHash);
@@ -737,11 +723,7 @@ namespace BovineLabs.DynamicGenerator
         }
 
         private static string GenerateStructCodecSource(
-            string codecName,
-            string typeName,
-            int encodedSize,
-            ulong schemaHash,
-            IReadOnlyList<DynamicHashMapFieldCodecPlan> fieldPlans)
+            string codecName, string typeName, int encodedSize, ulong schemaHash, IReadOnlyList<DynamicHashMapFieldCodecPlan> fieldPlans)
         {
             var source = new StringBuilder();
             AppendCodecHeader(source, codecName, typeName, encodedSize, schemaHash);
@@ -1251,8 +1233,7 @@ namespace BovineLabs.DynamicGenerator
                 return new DynamicHashMapValueCodecPlan(typeSymbol, codecTypeName, 0, encodedSizeExpression, schemaHash, string.Empty);
             }
 
-            public static DynamicHashMapValueCodecPlan Generated(
-                ITypeSymbol typeSymbol, string codecTypeName, int encodedSize, ulong schemaHash, string source)
+            public static DynamicHashMapValueCodecPlan Generated(ITypeSymbol typeSymbol, string codecTypeName, int encodedSize, ulong schemaHash, string source)
             {
                 return new DynamicHashMapValueCodecPlan(typeSymbol, codecTypeName, encodedSize, encodedSize.ToString(), schemaHash, source);
             }
@@ -1277,19 +1258,10 @@ namespace BovineLabs.DynamicGenerator
         private sealed class DynamicHashMapNetCodeData
         {
             public DynamicHashMapNetCodeData(
-                DynamicHashMapCollectionKind collectionKind,
-                INamedTypeSymbol typeSymbol,
-                ITypeSymbol keyType,
-                ITypeSymbol valueType,
-                DynamicHashMapValueCodecPlan keyCodec,
-                DynamicHashMapValueCodecPlan valueCodec,
-                string mapCodecTypeName,
-                IReadOnlyList<DynamicHashMapValueCodecPlan> generatedCodecs,
-                bool useRawSerializerPath,
-                bool sendDataForChildEntity,
-                string prefabTypeExpression,
-                string sendTypeExpression,
-                string ownerSendTypeExpression)
+                DynamicHashMapCollectionKind collectionKind, INamedTypeSymbol typeSymbol, ITypeSymbol keyType, ITypeSymbol valueType,
+                DynamicHashMapValueCodecPlan keyCodec, DynamicHashMapValueCodecPlan valueCodec, string mapCodecTypeName,
+                IReadOnlyList<DynamicHashMapValueCodecPlan> generatedCodecs, bool useRawSerializerPath, bool sendDataForChildEntity,
+                string prefabTypeExpression, string sendTypeExpression, string ownerSendTypeExpression)
             {
                 this.CollectionKind = collectionKind;
                 this.SerializerSuffix = GetSerializerSuffix(collectionKind);

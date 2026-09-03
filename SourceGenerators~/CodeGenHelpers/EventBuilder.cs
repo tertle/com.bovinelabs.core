@@ -82,7 +82,8 @@ namespace CodeGenHelpers
             return this;
         }
 
-        public ClassBuilder WithDefaultExplicitImplementation(string @interfaceName, Accessibility backingFieldAccessibility = Accessibility.Private, string? backingFieldName = null)
+        public ClassBuilder WithDefaultExplicitImplementation(
+            string @interfaceName, Accessibility backingFieldAccessibility = Accessibility.Private, string? backingFieldName = null)
         {
             if (backingFieldName is null || string.IsNullOrEmpty(backingFieldName))
                 backingFieldName = $"_{char.ToLower(Name[0])}{Name.Substring(1)}";

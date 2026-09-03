@@ -58,10 +58,7 @@ namespace BovineLabs.Core.Collections
             return JobHandle.CombineDependencies(hashMapDispose, fallbackDispose);
         }
 
-        public JobHandle Clear(
-            JobHandle dependency,
-            ClearNativeParallelHashMapJob<TKey, TValue> job = default,
-            ClearFallbackJob fallbackJob = default)
+        public JobHandle Clear(JobHandle dependency, ClearNativeParallelHashMapJob<TKey, TValue> job = default, ClearFallbackJob fallbackJob = default)
         {
             job.HashMap = this.HashMap;
             dependency = job.Schedule(dependency);

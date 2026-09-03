@@ -167,8 +167,7 @@ namespace BovineLabs.Core.Editor.Asset
     public class AssetCreator<T> : AssetCreator
         where T : ScriptableObject
     {
-        public AssetCreator(
-            SerializedObject serializedObject, SerializedProperty serializedProperty)
+        public AssetCreator(SerializedObject serializedObject, SerializedProperty serializedProperty)
             : base(serializedObject, serializedProperty, typeof(T))
         {
         }

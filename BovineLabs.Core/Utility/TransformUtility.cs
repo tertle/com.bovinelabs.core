@@ -27,8 +27,9 @@ namespace BovineLabs.Core.Utility
         /// <see cref="LocalToWorld"/>.
         /// </exception>
         public static void SetupLocalToWorld(
-            DynamicBuffer<LinkedEntityGroup> linkedEntityGroup, ref ComponentLookup<LocalTransform> localTransformLookup, ref ComponentLookup<Parent> parentLookup,
-            ref ComponentLookup<PostTransformMatrix> postTransformMatrixLookup, ref ComponentLookup<LocalToWorld> localToWorldLookup)
+            DynamicBuffer<LinkedEntityGroup> linkedEntityGroup, ref ComponentLookup<LocalTransform> localTransformLookup,
+            ref ComponentLookup<Parent> parentLookup, ref ComponentLookup<PostTransformMatrix> postTransformMatrixLookup,
+            ref ComponentLookup<LocalToWorld> localToWorldLookup)
         {
             var leg = linkedEntityGroup.AsNativeArray();
             var localToWorldCache = new NativeHashMap<Entity, float4x4>(leg.Length, Allocator.Temp);
@@ -151,8 +152,8 @@ namespace BovineLabs.Core.Utility
             return worldMatrix;
         }
 
-        private static float4x4 ComputeWorldTransformMatrixCached(Entity entity, ref SystemState state,
-            ref NativeHashMap<Entity, float4x4> localToWorldCache, ref NativeList<Entity> scratch)
+        private static float4x4 ComputeWorldTransformMatrixCached(
+            Entity entity, ref SystemState state, ref NativeHashMap<Entity, float4x4> localToWorldCache, ref NativeList<Entity> scratch)
         {
             if (localToWorldCache.TryGetValue(entity, out var cached))
             {

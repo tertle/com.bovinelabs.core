@@ -38,9 +38,7 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
         /// <param name="count"> <see cref="WriteIntsJob" /> count. </param>
         /// <param name="batchSize"> <see cref="WriteIntsJob" /> batch size. </param>
         [Test]
-        public void ItemCount(
-            [Values(JobsUtility.MaxJobThreadCount + 1)]
-            int count)
+        public void ItemCount([Values(JobsUtility.MaxJobThreadCount + 1)] int count)
         {
             using var stream = new NativeThreadStream(Allocator.TempJob);
             var fillInts = new WriteIntsJob { Writer = stream.AsWriter() };
@@ -53,9 +51,7 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
         /// <param name="count"> <see cref="WriteIntsJob" /> count. </param>
         /// <param name="batchSize"> <see cref="WriteIntsJob" /> batch size. </param>
         [Test]
-        public void WriteRead(
-            [Values(JobsUtility.MaxJobThreadCount + 1)]
-            int count)
+        public void WriteRead([Values(JobsUtility.MaxJobThreadCount + 1)] int count)
         {
             using var stream = new NativeThreadStream(Allocator.TempJob);
             var fillInts = new WriteIntsJob { Writer = stream.AsWriter() };

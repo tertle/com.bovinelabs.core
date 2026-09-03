@@ -54,18 +54,10 @@ namespace BovineLabs.FacetGenerator
     internal sealed class FacetSymbols
     {
         private FacetSymbols(
-            INamedTypeSymbol facetInterface,
-            INamedTypeSymbol optionalAttribute,
-            INamedTypeSymbol facetAttribute,
-            INamedTypeSymbol readOnlyAttribute,
-            INamedTypeSymbol singletonAttribute,
-            INamedTypeSymbol entityType,
-            INamedTypeSymbol entityStorageInfoType,
-            INamedTypeSymbol entityStorageInfoLookupType,
-            INamedTypeSymbol componentLookupType,
-            INamedTypeSymbol bufferLookupType,
-            INamedTypeSymbol bufferElementDataType,
-            INamedTypeSymbol facetEnabledRefRWType)
+            INamedTypeSymbol facetInterface, INamedTypeSymbol optionalAttribute, INamedTypeSymbol facetAttribute, INamedTypeSymbol readOnlyAttribute,
+            INamedTypeSymbol singletonAttribute, INamedTypeSymbol entityType, INamedTypeSymbol entityStorageInfoType,
+            INamedTypeSymbol entityStorageInfoLookupType, INamedTypeSymbol componentLookupType, INamedTypeSymbol bufferLookupType,
+            INamedTypeSymbol bufferElementDataType, INamedTypeSymbol facetEnabledRefRWType)
         {
             this.FacetInterface = facetInterface;
             this.OptionalAttribute = optionalAttribute;
@@ -126,9 +118,7 @@ namespace BovineLabs.FacetGenerator
     internal sealed class FacetData
     {
         public FacetData(
-            INamedTypeSymbol typeSymbol,
-            IReadOnlyList<FacetField> fields,
-            IReadOnlyList<FacetSingletonDependency> singletonDependencies,
+            INamedTypeSymbol typeSymbol, IReadOnlyList<FacetField> fields, IReadOnlyList<FacetSingletonDependency> singletonDependencies,
             IReadOnlyList<QueryBuilderInvocation> queryBuilderInvocations)
         {
             this.TypeSymbol = typeSymbol;
@@ -178,12 +168,7 @@ namespace BovineLabs.FacetGenerator
     internal sealed class FacetField
     {
         public FacetField(
-            IFieldSymbol symbol,
-            ITypeSymbol componentType,
-            FacetFieldKind kind,
-            bool isOptional,
-            bool isReadOnly,
-            bool hasReadOnlyAttribute,
+            IFieldSymbol symbol, ITypeSymbol componentType, FacetFieldKind kind, bool isOptional, bool isReadOnly, bool hasReadOnlyAttribute,
             bool isBufferElement = false)
         {
             this.Symbol = symbol;

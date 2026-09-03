@@ -412,8 +412,7 @@ namespace BovineLabs.Core.Iterators
         }
 
         internal static void CompleteDenseRebuild(
-            ref DynamicHashMapDenseWriteView<TKey> view,
-            DynamicHashMapRebuildOrder rebuildOrder = DynamicHashMapRebuildOrder.Default,
+            ref DynamicHashMapDenseWriteView<TKey> view, DynamicHashMapRebuildOrder rebuildOrder = DynamicHashMapRebuildOrder.Default,
             DynamicHashMapDuplicatePolicy duplicatePolicy = DynamicHashMapDuplicatePolicy.RejectDuplicateKeys)
         {
             var data = view.Data;
@@ -968,21 +967,13 @@ namespace BovineLabs.Core.Iterators
             return TryCalculateDataSize(capacity, bucketCapacity, sizeOfTValue, out layout);
         }
 
-        private static int CalculateDataSize(
-            int capacity,
-            int bucketCapacity,
-            int sizeOfTValue,
-            out DynamicHashMapLayout layout)
+        private static int CalculateDataSize(int capacity, int bucketCapacity, int sizeOfTValue, out DynamicHashMapLayout layout)
         {
             Check.Assume(TryCalculateDataSize(capacity, bucketCapacity, sizeOfTValue, out layout), "Invalid DynamicHashMap layout.");
             return layout.TotalSize;
         }
 
-        private static bool TryCalculateDataSize(
-            int capacity,
-            int bucketCapacity,
-            int sizeOfTValue,
-            out DynamicHashMapLayout layout)
+        private static bool TryCalculateDataSize(int capacity, int bucketCapacity, int sizeOfTValue, out DynamicHashMapLayout layout)
         {
             layout = default;
 
