@@ -1,9 +1,10 @@
 {
   "name": "com.bovinelabs.core",
   "description": "Core library for building games with DOTS.",
-  "version": "2.0.0-pre.2",
+  "version": "2.0.0-pre.3",
   "unity": "6000.7",
   "displayName": "BovineLabs Core",
+  "license": "MIT",
   "documentationUrl": "https://gitlab.com/tertle/com.bovinelabs.core/-/blob/main/Documentation~/index.md",
   "changelogUrl": "https://gitlab.com/tertle/com.bovinelabs.core/-/blob/main/CHANGELOG.md",
   "licensesUrl": "https://gitlab.com/tertle/com.bovinelabs.core/-/blob/main/LICENSE.md",

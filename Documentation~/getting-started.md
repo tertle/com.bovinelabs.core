@@ -4,7 +4,7 @@ This guide installs Core, exposes its assemblies to project code, and verifies t
 
 ## Requirements
 
-Core 2.0.0-pre.2 requires Unity 6000.7 or newer and Unity Entities 6.7.0 or newer. Unity Input System 1.20.0 or newer is optional and enables the Core editor inspectors for Input Action assets.
+Core 2.0.0-pre.3 requires Unity 6000.7 or newer and Unity Entities 6.7.0 or newer. Unity Input System 1.20.0 or newer is optional and enables the Core editor inspectors for Input Action assets.
 
 Core's assemblies have `autoReferenced` disabled. Every consuming assembly definition must explicitly reference the Core assemblies it uses.
 
