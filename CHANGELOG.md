@@ -7,17 +7,23 @@
 * New `EditorSettings` assets bootstrap `Assets/Settings/Prefabs` with `GameSettings`, `ServiceSettings`, and `MenuSettings`, plus
   `ClientSettings` and `ServerSettings` when NetCode is installed, then immediately populate the derived settings
 * `StableAssetId.Create` for stable project-scoped IDs derived from persisted asset GUIDs and local file IDs
+* `IsOccupied` helpers for interface-backed and generic unmanaged dynamic-dictionary entries, including a non-boxing generic overload
 
 ### Changed
 * Editor-world fallback routing keeps `client` ready for future NetCode setup and silently skips unresolved non-empty routes
 * Editor selection and type queries now use Unity Search's public picker and query APIs
+* Animation-curve blob construction and remapping now read keyframes into native buffers without allocating managed key arrays
+* `MeshSimplifier` now uses native vertex and index arrays exclusively and provides a synchronously Burst-compiled out-result overload
 
 ### Fixed
 * Settings authoring now applies multi-world settings to every resolved prefab instead of stopping when one already contains the setting
 * Without NetCode, unconfigured `client` and `server` settings routes now fall back to the default authoring
+* `MeshSimplifier` now allocates one record per triangle and preserves large simplification errors without integer overflow
+* Failed player builds now remove temporary `SettingsSingleton` entries from Player Settings preloaded assets
 
 ### Removed
 * Obsolete Inspector and Hierarchy DataMode menu hooks and the `Unity.InternalAPIEditorBridge.002` dependency
+* `MeshSimplifier.Simplify` overloads taking a managed `Mesh`, `Vector3[]`, or `int[]`; use the native-array overloads instead
 
 ## [2.0.0-pre.1] - 2026-08-22
 
