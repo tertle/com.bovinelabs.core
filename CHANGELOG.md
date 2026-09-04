@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.0.0-pre.2] - Unreleased
+## [2.0.0-pre.2] - 2026-09-04
 
 ### Added
 * Opt-in editor-world settings prefab fallbacks with automatic rebaking and deduplication against normal SubScene instances
