@@ -24,6 +24,7 @@ namespace BovineLabs.Core.Editor.Asset
     using Object = UnityEngine.Object;
 
     /// <summary> An <see cref="AssetPostprocessor" /> that ensures <see cref="IUID" /> types always have a unique ID even if 2 branches merge. </summary>
+    /// <remarks>Assets marked DontSaveInBuild are excluded from runtime catalogues and automatic ID allocation.</remarks>
     public class AutoRefProcessor : AssetPostprocessor
     {
         [NoAutoStaticsCleanup]
@@ -183,6 +184,11 @@ namespace BovineLabs.Core.Editor.Asset
 
         private static void ProcessAsset(Object asset, bool updated)
         {
+            if ((asset.hideFlags & HideFlags.DontSaveInBuild) != 0)
+            {
+                return;
+            }
+
             CheckAutoRef(asset);
             updated |= CheckAutoID(asset);
 
@@ -580,7 +586,7 @@ namespace BovineLabs.Core.Editor.Asset
 
             var objects = paths
                 .SelectMany(AssetDatabase.LoadAllAssetsAtPath)
-                .Where(s => s && definingType.IsInstanceOfType(s));
+                .Where(s => s && (s.hideFlags & HideFlags.DontSaveInBuild) == 0 && definingType.IsInstanceOfType(s));
 
             if (orderByAssetPath)
             {
@@ -917,7 +923,7 @@ namespace BovineLabs.Core.Editor.Asset
 
                     foreach (var asset in assets)
                     {
-                        if (!asset)
+                        if (!asset || (asset.hideFlags & HideFlags.DontSaveInBuild) != 0)
                         {
                             continue;
                         }
@@ -986,7 +992,7 @@ namespace BovineLabs.Core.Editor.Asset
 
                     foreach (var asset in assets)
                     {
-                        if (!asset)
+                        if (!asset || (asset.hideFlags & HideFlags.DontSaveInBuild) != 0)
                         {
                             continue;
                         }
