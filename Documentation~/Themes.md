@@ -2,7 +2,7 @@
 
 Core provides **Bovine Works** and **The Curator** for BovineLabs samples and opt-in editor tools. Bovine Works is the default. Installing Core does not theme game UI, native Unity windows, or custom inspectors.
 
-In Unity, choose **Edit > Preferences > BovineLabs > Appearance**. Sample headers also include a theme selector. Changes apply immediately to attached, opted-in panels. The editor stores the choice in `EditorPrefs`; a built player stores its own choice in `PlayerPrefs`.
+In Unity, choose **Edit > Preferences > BovineLabs > Appearance**. Theme selection lives in Preferences; sample panels do not include their own selectors. Changes apply immediately to attached, opted-in panels. The editor stores the choice in `EditorPrefs`; a built player stores its own choice in `PlayerPrefs`.
 
 ## Use in a sample
 
@@ -11,7 +11,6 @@ Reference `BovineLabs.Core` in the sample assembly and use the reusable UXML ele
 ```xml
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:bl="BovineLabs.Core.UI">
     <bl:BovineThemeRoot class="my-sample">
-        <bl:BovineThemeSelector />
         <ui:Label text="Inventory sample" class="bl-title" />
         <ui:Button text="Craft sword" class="bl-button--primary" />
     </bl:BovineThemeRoot>
@@ -37,7 +36,7 @@ public void CreateGUI()
 }
 ```
 
-`bl-theme-window` opts into the opaque theme background. The plain theme root is transparent. Add a `BovineThemeSelector` if a local selector is useful; otherwise the shared editor preference is sufficient. Replace window-owned hardcoded decorative colours with theme tokens as that window adopts the theme.
+`bl-theme-window` opts into the opaque theme background. The plain theme root is transparent. Use the shared Appearance preference for theme selection. Replace window-owned hardcoded decorative colours with theme tokens as that window adopts the theme.
 
 For a `SettingsProvider`, add a new `BovineThemeRoot` child to the activation root and build the page inside that child. Unity reuses the activation root between preference pages, so applying the theme directly to it would also style other providers. Keep all theme classes and stylesheets on the child you own.
 
