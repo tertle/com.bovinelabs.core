@@ -2,6 +2,17 @@
 
 ## [2.0.0-pre.3] - Unreleased
 
+### Added
+* Unity Search lookups for exact decimal or hexadecimal ECS stable type hashes and full or masked type indices through the `at:` Types provider
+* Native ECS component inspection from Types search results
+* `eid:` Unity Search provider for selecting, pinging, and opening objects by their logged or packed `EntityId`
+
+### Fixed
+* Invalid Types search queries now report their errors instead of returning all types
+
+### Removed
+* Redundant `BovineLabs > Tools > Asset` GUID lookup window; use Unity Search with `p: <asset-guid>` instead
+
 ## [2.0.0-pre.2] - 2026-09-04
 
 ### Added

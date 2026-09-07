@@ -6,6 +6,9 @@ namespace BovineLabs.Core.Editor.Component
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using System.Text.RegularExpressions;
     using BovineLabs.Core.Utility;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -33,6 +36,52 @@ namespace BovineLabs.Core.Editor.Component
                 fetchItems = FetchItems,
                 fetchPropositions = FetchPropositions,
             };
+        }
+
+        [SearchActionsProvider]
+        private static IEnumerable<SearchAction> CreateActions()
+        {
+            yield return new SearchAction(TypeAsset.SearchProviderType, "inspect", null, "Inspect ECS component")
+            {
+                enabled = items => items.Count == 1 && TryGetTypeInfo(items.First(), out _),
+                execute = items => InspectComponent(items[0]),
+            };
+            yield return new SearchAction(TypeAsset.SearchProviderType, "copy", null, "Copy full type name")
+            {
+                execute = items => EditorGUIUtility.systemCopyBuffer = Type.GetType((string)items[0].data).FullName,
+            };
+        }
+
+        private static void InspectComponent(SearchItem item)
+        {
+            if (!TryGetTypeInfo(item, out var info))
+            {
+                return;
+            }
+
+            using var context = SearchService.CreateContext("component", $"index={info.TypeIndex.Value}", SearchFlags.Synchronous);
+            using var results = SearchService.Request(context);
+            foreach (var result in results)
+            {
+                result.provider.trackSelection(result, context);
+            }
+        }
+
+        private static bool TryGetTypeInfo(SearchItem item, out TypeManager.TypeInfo info)
+        {
+            TypeManager.Initialize();
+            var type = Type.GetType((string)item.data);
+            foreach (var candidate in TypeManager.AllTypes)
+            {
+                if (candidate.Type == type && candidate.Category != TypeManager.TypeCategory.UnityEngineObject)
+                {
+                    info = candidate;
+                    return true;
+                }
+            }
+
+            info = default;
+            return false;
         }
 
         [MenuItem("Window/Search/Types", priority = 1391)]
@@ -63,21 +112,22 @@ namespace BovineLabs.Core.Editor.Component
                 query = QueryEngine.ParseQuery(context.searchQuery);
                 if (!query.valid)
                 {
-                    query = null;
+                    context.AddSearchQueryErrors(query.errors.Select(error => new SearchQueryError(error, context, provider)));
+                    yield break;
                 }
             }
 
-            var toFilter = new TypeDescriptor[1];
-
+            var descriptors = GetTypeDescriptors(searchQuery);
             var score = 0;
-            foreach (var descriptor in GetTypeDescriptors(searchQuery))
+            foreach (var data in query?.Apply(descriptors) ?? descriptors)
             {
-                toFilter[0] = descriptor;
-
-                foreach (var data in query?.Apply(toFilter) ?? toFilter)
+                var description = data.SimplifiedQualifiedName;
+                if (data.TypeIndexValue != 0)
                 {
-                    yield return provider.CreateItem(context, data.FullName, score++, data.Name, data.SimplifiedQualifiedName, null, data.FullName);
+                    description += $" | TypeIndex: {data.TypeIndexValue} | StableTypeHash: {data.StableTypeHash} (0x{data.StableTypeHash:X16})";
                 }
+
+                yield return provider.CreateItem(context, data.FullName, score++, data.Name, description, null, data.FullName);
             }
         }
 
@@ -85,6 +135,7 @@ namespace BovineLabs.Core.Editor.Component
         {
             if (UsesEcsFilters(searchQuery))
             {
+                TypeManager.Initialize();
                 foreach (var typeInfo in TypeManager.AllTypes)
                 {
                     if (typeInfo.Type != null)
@@ -109,14 +160,8 @@ namespace BovineLabs.Core.Editor.Component
                 return false;
             }
 
-            return ContainsFilter(searchQuery, "component") || ContainsFilter(searchQuery, "componentdata") ||
-                ContainsFilter(searchQuery, "enableable") || ContainsFilter(searchQuery, "zerosized");
-        }
-
-        private static bool ContainsFilter(string searchQuery, string filter)
-        {
-            return searchQuery.IndexOf($"{filter}=", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                searchQuery.IndexOf($"{filter}:", StringComparison.OrdinalIgnoreCase) >= 0;
+            return Regex.IsMatch(searchQuery, @"\b(component|componentdata|enableable|zerosized|typeindex|stabletypehash)\s*[:=!]",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         }
 
         private static IEnumerable<SearchProposition> FetchPropositions(SearchContext context, SearchPropositionOptions options)
@@ -135,6 +180,10 @@ namespace BovineLabs.Core.Editor.Component
                 category: null, label: "Is Zero Sized", replacement: "zerosized=true", help: "Limit search to zero-sized component types");
             yield return new SearchProposition(
                 category: null, label: "Is Editor Assembly", replacement: "editor=true", help: "Limit search to types in editor assemblies");
+            yield return new SearchProposition(
+                category: null, label: "Type Index", replacement: "typeindex=123", help: "Find an ECS type by its full or masked TypeIndex in this session");
+            yield return new SearchProposition(
+                category: null, label: "Stable Type Hash", replacement: "stabletypehash=0x1234", help: "Find an ECS type by its exact decimal or hex hash");
         }
 
         private static QueryEngine<TypeDescriptor> SetupQueryEngine()
@@ -149,10 +198,37 @@ namespace BovineLabs.Core.Editor.Component
             query.AddFilter("enableable", data => data.IsEnableable);
             query.AddFilter("zerosized", data => data.IsZeroSized);
             query.AddFilter("editor", data => data.IsEditorAssembly);
+            query.AddFilter<int>("typeindex", (data, _, value) => data.TypeIndexValue == value || data.TypeIndexWithoutFlags == value, new[] { "=", ":" });
+            query.AddFilter<ulong>("stabletypehash", (data, _, value) => data.StableTypeHash == value, new[] { "=", ":" });
+            query.AddTypeParser<int>(ParseTypeIndex);
+            query.AddTypeParser<ulong>(ParseStableTypeHash);
 
             query.AddFilter<string>("inherit", OnInheritFilter, /*Transformer,*/ new[] { "=", ":" });
 
             return query;
+        }
+
+        private static ParseResult<int> ParseTypeIndex(string text)
+        {
+            if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            {
+                return uint.TryParse(text.Substring(2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var bits)
+                    ? new ParseResult<int>(true, unchecked((int)bits))
+                    : ParseResult<int>.none;
+            }
+
+            return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
+                ? new ParseResult<int>(true, value)
+                : ParseResult<int>.none;
+        }
+
+        private static ParseResult<ulong> ParseStableTypeHash(string text)
+        {
+            var hex = text.StartsWith("0x", StringComparison.OrdinalIgnoreCase);
+            return ulong.TryParse(hex ? text.Substring(2) : text, hex ? NumberStyles.AllowHexSpecifier : NumberStyles.None,
+                CultureInfo.InvariantCulture, out var value)
+                ? new ParseResult<ulong>(true, value)
+                : ParseResult<ulong>.none;
         }
 
         private static bool OnInheritFilter(TypeDescriptor descriptor, string operatorToken, string filterValue)
@@ -173,6 +249,7 @@ namespace BovineLabs.Core.Editor.Component
             private readonly TypeIndex typeIndex;
             private readonly TypeManager.TypeCategory category;
             private readonly bool isZeroSized;
+            private readonly ulong stableTypeHash;
 
             public TypeDescriptor(Type type)
             {
@@ -180,6 +257,7 @@ namespace BovineLabs.Core.Editor.Component
                 this.typeIndex = TypeIndex.Null;
                 this.category = TypeManager.TypeCategory.UnityEngineObject;
                 this.isZeroSized = false;
+                this.stableTypeHash = 0;
             }
 
             public TypeDescriptor(TypeManager.TypeInfo typeInfo)
@@ -188,6 +266,7 @@ namespace BovineLabs.Core.Editor.Component
                 this.typeIndex = typeInfo.TypeIndex;
                 this.category = typeInfo.Category;
                 this.isZeroSized = typeInfo.IsZeroSized;
+                this.stableTypeHash = typeInfo.StableTypeHash;
             }
 
             public string Name => this.Type.Name;
@@ -195,6 +274,12 @@ namespace BovineLabs.Core.Editor.Component
             public string SimplifiedQualifiedName => $"{this.Type.FullName}, {this.Type.Assembly.GetName().Name}";
 
             public string FullName => this.Type.AssemblyQualifiedName;
+
+            public int TypeIndexValue => this.typeIndex.Value;
+
+            public int TypeIndexWithoutFlags => this.typeIndex.Index;
+
+            public ulong StableTypeHash => this.stableTypeHash;
 
             public bool IsUnmanaged => UnsafeUtility.IsUnmanaged(this.Type);
 

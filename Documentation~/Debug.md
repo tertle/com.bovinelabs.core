@@ -2,6 +2,31 @@
 
 Core provides Burst-compatible invariant checks, world-aware logging, global logging, numeric debug helpers, and selected-entity state for development tooling.
 
+## Finding assets and ECS types
+
+Use Unity Search for identifier lookups. Core's former **BovineLabs > Tools > Asset** window only converted an asset GUID to a path and has been removed.
+
+| Identifier | Search query | Scope |
+|---|---|---|
+| Asset GUID | `p: <asset-guid>` | Project assets; paste the GUID after `p:` |
+| Type name | `at: LocalTransform` | Core's Types provider; use `component=true` to restrict results to component and buffer types |
+| Component type index | `at: typeindex=839002` | Accepts full `TypeIndex.Value` or masked `TypeIndex.Index`; decimal or `0x` hexadecimal |
+| Component stable type hash | `at: stabletypehash=0x1234` | Exact unsigned 64-bit hash; decimal or `0x` hexadecimal |
+| Asset or object `EntityId` | `eid: 123:1` | Paste the logged `EntityId`, packed unsigned decimal value, or `0x` hexadecimal value |
+| Gameplay entity index | `nh: w="ClientWorld" dm=Runtime ei=123` | Entity index in the named world; replace the example world and index |
+
+Asset GUID queries are documented in [Unity's Project search reference](https://docs.unity3d.com/6000.3/Documentation/Manual/search-assets.html).
+These identifier lookups are intended for debugging the current Editor session, including Play Mode logs. Replace the example numbers with values from your log or debugger.
+
+Types results retain the full type name and show the full type index plus decimal and hexadecimal stable hash when using ECS filters. Use **Inspect** on a registered ECS type to open Unity's component inspector,
+or **Copy** to copy the full type name. Hash matching preserves all 64 bits. Invalid queries report an error and return no results.
+
+The `eid:` provider resolves the exact UnityEngine object, including assets and sub-assets, and provides **Select**, **Ping**, and **Open** actions.
+It returns no result for an ID that no longer resolves. UnityEngine `EntityId` is distinct from an asset GUID and from a world-scoped ECS entity;
+use `nh:` with the correct world for gameplay entities.
+
+Core's `at:` filters avoid the `comp:` prefix shared by Components and Journaling in some Entities versions. Native component inspection targets the Components provider directly.
+
 ## Choose a logger
 
 | Context | Use | Why |
