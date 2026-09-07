@@ -55,6 +55,7 @@ Source generators are distributed with the runtime assembly. A consuming runtime
 | Reuse a temporary `NativeList<T>` allocation | [PooledNativeList](PooledNativeList.md) |
 | Create ScriptableObject references and stable IDs | [Asset](Asset.md) |
 | Build a UI Toolkit or Graph Toolkit inspector | [Inspectors](Inspectors.md) |
+| Share a selectable visual theme across samples and opt-in editor tools | [UI themes](Themes.md) |
 
 ## Optional integrations
 
@@ -106,6 +107,7 @@ An API behind one of these symbols is unavailable until the matching package is 
 - [K](K.md)
 - [Asset](Asset.md)
 - [Inspectors](Inspectors.md)
+- [UI themes](Themes.md)
 
 ### Focused utilities
 
