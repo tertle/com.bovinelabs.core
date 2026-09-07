@@ -1,0 +1,8 @@
+<Project>
+    <!-- Compile helpers into each analyzer so compiler hosts do not have to resolve a separate helper assembly. -->
+    <ItemGroup>
+        <Compile Include="$(MSBuildThisFileDirectory)**\*.cs"
+                 Exclude="$(MSBuildThisFileDirectory)bin\**;$(MSBuildThisFileDirectory)obj\**"
+                 Link="CodeGenHelpers\%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+</Project>

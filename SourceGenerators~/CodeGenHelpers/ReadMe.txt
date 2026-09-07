@@ -5,3 +5,5 @@ The CodeGenHelpers come in two flavors, set using `CodeGenHelpersMode`:
 - `Source`, where the helpers are linked as source files to eliminate issues with assembly references.
 
 Please consider becomming a sponsor at https://github.com/sponsors/dansiegel
+
+BovineLabs generators import CodeGenHelpers.props to compile the shared helpers directly into each generator DLL. This avoids compiler-server dependency resolution failures for a separate CodeGenHelpers.dll. The standalone project and shipped helper DLL remain available for older generators that still reference the assembly.
