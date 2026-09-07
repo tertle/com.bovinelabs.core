@@ -1,0 +1,22 @@
+.bl-theme.bl-theme--curator {
+    --bl-background: #202b35;
+    --bl-panel: #2c3e50;
+    --bl-surface: #34495e;
+    --bl-surface-hover: #40576c;
+    --bl-border: #777461;
+    --bl-text: #ecf0f1;
+    --bl-text-muted: #bdc7cb;
+    --bl-accent: #f39c12;
+    --bl-accent-hover: #ffb94f;
+    --bl-accent-text: #202b35;
+    --bl-selection: #553966;
+    --bl-progress: #70417e;
+    --bl-secondary-accent: #c18bda;
+    --bl-warning: #e8c274;
+    --bl-error: #efaaa0;
+    --bl-success: #adc59a;
+    --bl-radius: 3px;
+    --bl-radius-large: 3px;
+    --bl-title-size: 22px;
+    --bl-section-size: 16px;
+}

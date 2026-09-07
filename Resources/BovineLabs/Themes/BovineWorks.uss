@@ -1,0 +1,22 @@
+.bl-theme.bl-theme--bovine-works {
+    --bl-background: #1b1918;
+    --bl-panel: #302a28;
+    --bl-surface: #38312d;
+    --bl-surface-hover: #493e35;
+    --bl-border: #675b4f;
+    --bl-text: #ece0c8;
+    --bl-text-muted: #bbae9c;
+    --bl-accent: #ece0c8;
+    --bl-accent-hover: #d3bca1;
+    --bl-accent-text: #1b1918;
+    --bl-selection: #493328;
+    --bl-progress: #7d4839;
+    --bl-secondary-accent: #df765c;
+    --bl-warning: #d5ad65;
+    --bl-error: #e38d80;
+    --bl-success: #a9b783;
+    --bl-radius: 1px;
+    --bl-radius-large: 2px;
+    --bl-title-size: 22px;
+    --bl-section-size: 16px;
+}

@@ -1,0 +1,234 @@
+/* A theme scope supplies inherited colour, never layout or an opaque screen overlay. */
+.bl-theme {
+    color: var(--bl-text);
+    --unity-colors-default-text: var(--bl-text);
+    --unity-colors-label-text: var(--bl-text);
+    --unity-colors-window-background: var(--bl-background);
+    --unity-colors-inspector_titlebar-background: var(--bl-panel);
+    --unity-colors-inspector_titlebar-border: var(--bl-border);
+    --unity-colors-helpbox-background: var(--bl-panel);
+    --unity-colors-helpbox-text: var(--bl-text-muted);
+    --unity-colors-highlight-background: var(--bl-selection);
+    --unity-colors-highlight-background-hover: var(--bl-surface-hover);
+    --unity-colors-highlight-text: var(--bl-text);
+    --unity-colors-list_view-background: var(--bl-background);
+    --unity-colors-list_view_item-background-hover: var(--bl-surface-hover);
+    --unity-colors-list_view_item-background-selected: var(--bl-selection);
+    --unity-colors-list_view_item-background-selected-unfocused: var(--bl-panel);
+    --unity-colors-list_view_item-text-selected: var(--bl-text);
+    --unity-colors-toolbar-background: var(--bl-panel);
+    --unity-colors-toolbar-border: var(--bl-border);
+    --unity-colors-toolbar_button-text: var(--bl-text);
+}
+
+.bl-theme-window {
+    background-color: var(--bl-background);
+}
+
+.bl-theme .bl-panel {
+    background-color: var(--bl-panel);
+    border-color: var(--bl-border);
+    border-width: 1px;
+    border-radius: var(--bl-radius-large);
+}
+
+.bl-theme .bl-title {
+    color: var(--bl-text);
+    font-size: var(--bl-title-size);
+    -unity-font-style: bold;
+}
+
+.bl-theme .bl-muted {
+    color: var(--bl-text-muted);
+}
+
+.bl-theme .unity-button {
+    color: var(--bl-text);
+    background-color: var(--bl-surface);
+    border-color: var(--bl-border);
+    border-width: 1px;
+    border-radius: var(--bl-radius);
+}
+
+.bl-theme .unity-button:hover {
+    background-color: var(--bl-surface-hover);
+}
+
+.bl-theme .unity-button:active {
+    background-color: var(--bl-selection);
+}
+
+.bl-theme .unity-button:focus,
+.bl-theme .unity-base-field:focus > .unity-base-field__input,
+.bl-theme .unity-base-text-field:focus > .unity-base-text-field__input {
+    border-color: var(--bl-secondary-accent);
+}
+
+.bl-theme .unity-button:disabled {
+    color: var(--bl-text-muted);
+    background-color: var(--bl-panel);
+    border-color: var(--bl-border);
+    opacity: 0.55;
+}
+
+.bl-theme .bl-button--primary {
+    color: var(--bl-accent-text);
+    background-color: var(--bl-accent);
+    border-color: var(--bl-accent);
+}
+
+.bl-theme .bl-button--primary:hover {
+    background-color: var(--bl-accent-hover);
+    border-color: var(--bl-accent-hover);
+}
+
+.bl-theme .bl-button--primary:active {
+    color: var(--bl-accent-text);
+    background-color: var(--bl-accent-hover);
+    border-color: var(--bl-accent-hover);
+}
+
+.bl-theme .bl-button--primary:disabled {
+    color: var(--bl-text-muted);
+    background-color: var(--bl-panel);
+    border-color: var(--bl-border);
+}
+
+.bl-theme .unity-base-text-field__input,
+.bl-theme .unity-popup-field__input,
+.bl-theme .unity-object-field__input {
+    color: var(--bl-text);
+    background-color: var(--bl-background);
+    border-color: var(--bl-border);
+    border-radius: var(--bl-radius);
+}
+
+.bl-theme .unity-base-text-field__input {
+    --unity-cursor-color: var(--bl-text);
+    --unity-selection-color: var(--bl-selection);
+}
+
+.bl-theme .unity-popup-field__text,
+.bl-theme .unity-base-field__label {
+    color: var(--bl-text);
+}
+
+.bl-theme .unity-toggle__checkmark {
+    background-color: var(--bl-background);
+    border-color: var(--bl-border);
+    border-radius: var(--bl-radius);
+}
+
+.bl-theme .unity-toggle__input:checked > .unity-toggle__checkmark {
+    background-color: var(--bl-selection);
+    border-color: var(--bl-secondary-accent);
+    -unity-background-image-tint-color: var(--bl-text);
+}
+
+.bl-theme .unity-toggle:focus .unity-toggle__checkmark {
+    border-color: var(--bl-secondary-accent);
+}
+
+.bl-theme .unity-base-slider__tracker {
+    background-color: var(--bl-border);
+}
+
+.bl-theme .unity-base-slider__dragger {
+    background-color: var(--bl-accent);
+    border-color: var(--bl-accent);
+    border-radius: var(--bl-radius);
+}
+
+.bl-theme .unity-base-slider:focus .unity-base-slider__dragger {
+    border-color: var(--bl-secondary-accent);
+}
+
+.bl-theme .unity-progress-bar__background {
+    background-color: var(--bl-panel);
+    border-color: var(--bl-border);
+}
+
+.bl-theme .unity-progress-bar__progress {
+    background-color: var(--bl-progress);
+}
+
+.bl-theme .unity-progress-bar__title {
+    color: var(--bl-text);
+}
+
+.bl-theme .unity-toolbar {
+    background-color: var(--bl-panel);
+    border-color: var(--bl-border);
+}
+
+.bl-theme .unity-toolbar-button,
+.bl-theme .unity-toolbar-menu {
+    color: var(--bl-text);
+    background-color: var(--bl-panel);
+    border-color: var(--bl-border);
+}
+
+.bl-theme .unity-toolbar-button:hover,
+.bl-theme .unity-toolbar-menu:hover {
+    background-color: var(--bl-surface-hover);
+}
+
+.bl-theme .unity-collection-view__item:hover {
+    background-color: var(--bl-surface-hover);
+}
+
+.bl-theme .unity-collection-view__item--selected,
+.bl-theme .unity-collection-view__item--selected:hover {
+    background-color: var(--bl-selection);
+    color: var(--bl-text);
+}
+
+.bl-theme .unity-multi-column-header,
+.bl-theme .unity-multi-column-header__column {
+    background-color: var(--bl-panel);
+    color: var(--bl-text);
+    border-color: var(--bl-border);
+}
+
+.bl-theme .unity-help-box {
+    background-color: var(--bl-panel);
+    border-color: var(--bl-border);
+}
+
+.bl-theme .unity-help-box__text {
+    color: var(--bl-text);
+}
+
+.bl-theme-selector {
+    align-self: flex-start;
+    flex-shrink: 0;
+    min-width: 175px;
+}
+
+.bl-theme-selector > .unity-base-field {
+    margin: 0;
+}
+
+.bl-theme-selector .unity-base-field__label {
+    min-width: 0;
+    width: auto;
+    margin-right: 8px;
+}
+
+.bl-theme .bl-section-title {
+    font-size: var(--bl-section-size);
+    -unity-font-style: bold;
+    color: var(--bl-text);
+    margin-bottom: 8px;
+}
+
+.bl-theme .bl-description {
+    color: var(--bl-text-muted);
+    white-space: normal;
+    margin-top: 8px;
+}
+
+.bl-appearance-preferences {
+    flex-grow: 1;
+    padding: 16px;
+}
