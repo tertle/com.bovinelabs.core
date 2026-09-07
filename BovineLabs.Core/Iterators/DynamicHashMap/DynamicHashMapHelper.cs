@@ -115,6 +115,9 @@ namespace BovineLabs.Core.Iterators
             buffer.ResizeUninitialized(totalSize);
 
             var data = buffer.AsHelper<TKey>();
+            // Clear the header and its alignment gap before assigning fields.
+            UnsafeUtility.MemClear(data, layout.ValuesOffset);
+
 
             data->Log2MinGrowth = log2MinGrowth;
             data->Capacity = capacity;
@@ -179,6 +182,8 @@ namespace BovineLabs.Core.Iterators
             buffer.ResizeUninitialized(totalSize);
 
             data = buffer.AsHelper<TKey>();
+            // Clear the header and its alignment gap before assigning fields.
+            UnsafeUtility.MemClear(data, layout.ValuesOffset);
             data->Capacity = newCapacity;
             data->BucketCapacityMask = newBucketCapacity - 1;
             data->Log2MinGrowth = oldLog2MinGrowth;
@@ -391,6 +396,8 @@ namespace BovineLabs.Core.Iterators
             Check.Assume(bufferLength >= totalSize, "Buffer length is too small for the requested layout.");
 
             var data = (DynamicHashMapHelper<TKey>*)buffer;
+            // Clear the header and its alignment gap before assigning fields.
+            UnsafeUtility.MemClear(data, layout.ValuesOffset);
             data->ValuesOffset = layout.ValuesOffset;
             data->KeysOffset = layout.KeysOffset;
             data->NextOffset = layout.NextOffset;
