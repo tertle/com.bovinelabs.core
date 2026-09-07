@@ -133,6 +133,7 @@ namespace BovineLabs.Core.Iterators.Columns
 
         void IColumn<T>.Clear()
         {
+            UnsafeUtility.MemClear(this.Keys, (long)this.capacity * sizeof(T));
             UnsafeUtility.MemSet(this.Next, 0xff, this.capacity * sizeof(int));
             UnsafeUtility.MemSet(this.Buckets, 0xff, GetBucketCapacity(this.capacity) * sizeof(int));
         }
@@ -198,6 +199,7 @@ namespace BovineLabs.Core.Iterators.Columns
 
             // And free the index
             this.Next[entryIdx] = -1;
+            UnsafeUtility.MemClear(this.Keys + entryIdx, sizeof(T));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -256,7 +258,7 @@ namespace BovineLabs.Core.Iterators.Columns
                 var next = helper.Next;
                 var buckets = helper.Buckets;
 
-                UnsafeUtility.MemCpy(keys, this.oldKeys, this.oldCapacity * sizeof(T));
+                UnsafeUtility.MemClear(keys, (long)helper.capacity * sizeof(T));
 
                 // re-hash the buckets, first clear the new bucket list, then insert all values from the old list
                 UnsafeUtility.MemSet(next, 0xff, helper.capacity * sizeof(int));
@@ -266,6 +268,7 @@ namespace BovineLabs.Core.Iterators.Columns
                 {
                     for (var idx = this.oldBuckets[i]; idx != -1; idx = this.oldNext[idx])
                     {
+                        UnsafeUtility.MemCpy(keys + idx, this.oldKeys + idx, sizeof(T));
                         var bucket = GetBucket(this.oldKeys[idx], newBucketCapacityMask);
 
                         next[idx] = buckets[bucket];

@@ -115,9 +115,8 @@ namespace BovineLabs.Core.Iterators
             buffer.ResizeUninitialized(totalSize);
 
             var data = buffer.AsHelper<TKey>();
-            // Clear the header and its alignment gap before assigning fields.
+            // Clear the aligned header; Clear() below initializes the remaining layout.
             UnsafeUtility.MemClear(data, layout.ValuesOffset);
-
 
             data->Log2MinGrowth = log2MinGrowth;
             data->Capacity = capacity;
@@ -182,7 +181,7 @@ namespace BovineLabs.Core.Iterators
             buffer.ResizeUninitialized(totalSize);
 
             data = buffer.AsHelper<TKey>();
-            // Clear the header and its alignment gap before assigning fields.
+            // Old state is already backed up; never read the destination header here.
             UnsafeUtility.MemClear(data, layout.ValuesOffset);
             data->Capacity = newCapacity;
             data->BucketCapacityMask = newBucketCapacity - 1;
@@ -396,8 +395,8 @@ namespace BovineLabs.Core.Iterators
             Check.Assume(bufferLength >= totalSize, "Buffer length is too small for the requested layout.");
 
             var data = (DynamicHashMapHelper<TKey>*)buffer;
-            // Clear the header and its alignment gap before assigning fields.
-            UnsafeUtility.MemClear(data, layout.ValuesOffset);
+            // The caller fills the active keys/values; completion initializes hash chains.
+            UnsafeUtility.MemClear(data, layout.NextOffset);
             data->ValuesOffset = layout.ValuesOffset;
             data->KeysOffset = layout.KeysOffset;
             data->NextOffset = layout.NextOffset;
@@ -425,6 +424,11 @@ namespace BovineLabs.Core.Iterators
             var data = view.Data;
             Check.Assume(data != null, "Dense write view is invalid.");
             Check.Assume(view.Count >= 0 && view.Count <= data->Capacity, "Dense write view count is out of range.");
+
+            // Count is mutable while building. Discard any entries outside the final prefix.
+            UnsafeUtility.MemClear(data->Values + ((long)view.Count * data->SizeOfTValue),
+                (long)(data->Capacity - view.Count) * data->SizeOfTValue);
+            UnsafeUtility.MemClear(data->Keys + view.Count, (long)(data->Capacity - view.Count) * sizeof(TKey));
 
             UnsafeUtility.MemSet(data->Next, 0xff, data->Capacity * sizeof(int));
             UnsafeUtility.MemSet(data->Buckets, 0xff, data->BucketCapacity * sizeof(int));
@@ -461,6 +465,8 @@ namespace BovineLabs.Core.Iterators
 
         internal void Clear()
         {
+            // Values, keys and the gaps between them are part of DynamicBuffer.Length.
+            UnsafeUtility.MemClear(this.Values, this.NextOffset - this.ValuesOffset);
             UnsafeUtility.MemSet(this.Buckets, 0xff, this.BucketCapacity * sizeof(int));
             UnsafeUtility.MemSet(this.Next, 0xff, this.Capacity * sizeof(int));
 
@@ -485,6 +491,10 @@ namespace BovineLabs.Core.Iterators
             {
                 buckets[this.GetBucket(keys[i])] = -1;
             }
+
+            UnsafeUtility.MemClear(this.Values, (long)count * this.SizeOfTValue);
+            UnsafeUtility.MemClear(keys, (long)count * sizeof(TKey));
+            UnsafeUtility.MemSet(this.Next, 0xff, (long)count * sizeof(int));
 
             this.Count = 0;
             this.FirstFreeIdx = -1;
@@ -617,6 +627,7 @@ namespace BovineLabs.Core.Iterators
                         }
 
                         // And free the index
+                        this.ClearEntryData(entryIdx);
                         next[entryIdx] = this.FirstFreeIdx;
                         this.FirstFreeIdx = entryIdx;
                         break;
@@ -666,6 +677,7 @@ namespace BovineLabs.Core.Iterators
 
                     // And free the index
                     var nextIdx = this.Next[entryIdx];
+                    this.ClearEntryData(entryIdx);
                     this.Next[entryIdx] = this.FirstFreeIdx;
                     this.FirstFreeIdx = entryIdx;
                     entryIdx = nextIdx;
@@ -714,6 +726,7 @@ namespace BovineLabs.Core.Iterators
                 this.Next[entryIdx] = this.Next[it.EntryIndex];
             }
 
+            this.ClearEntryData(it.EntryIndex);
             this.Next[it.EntryIndex] = this.FirstFreeIdx;
             this.FirstFreeIdx = it.EntryIndex;
             this.Count--;
@@ -882,6 +895,9 @@ namespace BovineLabs.Core.Iterators
             this.AllocatedIndex -= length;
             this.Count -= length;
 
+            UnsafeUtility.MemClear(keys + this.Count, (long)length * sizeof(TKey));
+            UnsafeUtility.MemClear(values + ((long)this.Count * this.SizeOfTValue), (long)length * this.SizeOfTValue);
+
             var buckets = this.Buckets;
             var next = this.Next;
 
@@ -891,6 +907,14 @@ namespace BovineLabs.Core.Iterators
                 next[idx] = buckets[bucket];
                 buckets[bucket] = idx;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ClearEntryData(int index)
+        {
+            // Only this removed slot is dead. Other live slots can be above Count.
+            UnsafeUtility.MemClear(this.Keys + index, sizeof(TKey));
+            UnsafeUtility.MemClear(this.Values + ((long)index * this.SizeOfTValue), this.SizeOfTValue);
         }
 
         private int AddNoCollideNoAlloc(in TKey key)

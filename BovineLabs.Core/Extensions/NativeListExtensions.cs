@@ -42,14 +42,14 @@ namespace BovineLabs.Core.Extensions
             where T : unmanaged
         {
             list.ResizeUninitialized(length);
-            UnsafeUtility.MemSet(list.GetUnsafePtr(), value, UnsafeUtility.SizeOf<int>() * length);
+            UnsafeUtility.MemSet(list.GetUnsafePtr(), value, (long)UnsafeUtility.SizeOf<T>() * length);
         }
 
         public static void ResizeInitialized<T>(this NativeList<T> list, int length)
             where T : unmanaged
         {
             list.ResizeUninitialized(length);
-            UnsafeUtility.MemClear(list.GetUnsafePtr(), UnsafeUtility.SizeOf<int>() * length);
+            UnsafeUtility.MemClear(list.GetUnsafePtr(), (long)UnsafeUtility.SizeOf<T>() * length);
         }
 
         public static void AddRange<T>(this NativeList<T> list, T[] array)

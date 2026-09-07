@@ -122,6 +122,7 @@ namespace BovineLabs.Core.Iterators
             buffer.ResizeUninitialized(hashMapDataSize + totalSize);
 
             var data = buffer.AsUntypedHelper<TKey>();
+            UnsafeUtility.MemClear(data, hashMapDataSize + totalSize);
 
             data->Count = 0;
             data->Log2MinGrowth = log2MinGrowth;
@@ -187,6 +188,7 @@ namespace BovineLabs.Core.Iterators
             buffer.ResizeUninitialized(hashMapDataSize + totalSize);
 
             data = buffer.AsUntypedHelper<TKey>();
+            UnsafeUtility.MemClear(data, hashMapDataSize + totalSize);
             data->Capacity = newCapacity;
             data->DataCapacity = oldDataCapacity;
             data->BucketCapacityMask = newBucketCapacity - 1;
@@ -202,11 +204,24 @@ namespace BovineLabs.Core.Iterators
             data->Count = oldCount;
             data->DataAllocatedIndex = oldDataAllocatedIndex;
 
-            UnsafeUtility.MemCpy(data->Values, oldValue, oldCapacity * sizeof(int));
-            UnsafeUtility.MemCpy(data->Keys, oldKeys, oldCapacity * sizeof(TKey));
-
-            UnsafeUtility.MemCpy(data->Data, oldData, oldDataCapacity * sizeof(int));
-            UnsafeUtility.MemCpy(data->Sizes, oldSizes, oldCapacity * sizeof(ushort));
+            // Slots are dense, but the variable-data arena can have holes. Restore only
+            // live payload bytes; copying old capacity would reintroduce dirty reserve.
+            UnsafeUtility.MemCpy(data->Keys, oldKeys, (long)oldCount * sizeof(TKey));
+            UnsafeUtility.MemCpy(data->Sizes, oldSizes, (long)oldCount * sizeof(ushort));
+            for (var i = 0; i < oldCount; ++i)
+            {
+                var size = oldSizes[i];
+                if (size > sizeof(int))
+                {
+                    var offset = ((int*)oldValue)[i];
+                    ((int*)data->Values)[i] = offset;
+                    UnsafeUtility.MemCpy(data->Data + offset, oldData + offset, size);
+                }
+                else
+                {
+                    UnsafeUtility.MemCpy(data->Values + (i * sizeof(int)), oldValue + (i * sizeof(int)), size);
+                }
+            }
 
             UnsafeUtility.MemCpy(data->Next, oldNext, oldCapacity * sizeof(int));
             UnsafeUtility.MemSet(data->Next + oldCapacity, 0xff, (newCapacity - oldCapacity) * sizeof(int));
@@ -241,10 +256,12 @@ namespace BovineLabs.Core.Iterators
             var toAllocate = (newCapacity - data->DataCapacity) * sizeof(int);
 
             // As data is stored at end of buffer, we just need to increase buffer capacity size
-            var newBufferCapacity = buffer.Length + toAllocate;
+            var oldLength = buffer.Length;
+            var newBufferCapacity = oldLength + toAllocate;
 
             buffer.ResizeUninitialized(newBufferCapacity);
             data = buffer.AsUntypedHelper<TKey>();
+            UnsafeUtility.MemClear((byte*)data + oldLength, toAllocate);
 
             data->DataCapacity = newCapacity;
         }
@@ -296,7 +313,8 @@ namespace BovineLabs.Core.Iterators
                 {
                     Check.Assume(sizeof(TValue) % sizeof(int) == 0);
 
-                    data->DataAllocatedIndex = AlignDataAllocatedIndex<TValue>(data->DataAllocatedIndex);
+                    var previousDataAllocatedIndex = data->DataAllocatedIndex;
+                    data->DataAllocatedIndex = AlignDataAllocatedIndex<TValue>(previousDataAllocatedIndex);
 
                     var minNewCapacity = data->DataAllocatedIndex + (sizeof(TValue) / sizeof(int));
                     if (minNewCapacity > data->DataCapacity)
@@ -311,6 +329,8 @@ namespace BovineLabs.Core.Iterators
                         ResizeData(buffer, ref data, newCap);
                     }
 
+                    UnsafeUtility.MemClear(data->Data + previousDataAllocatedIndex,
+                        (long)(data->DataAllocatedIndex - previousDataAllocatedIndex) * sizeof(int));
                     dataAllocatedIndex = data->DataAllocatedIndex;
 
                     var dst = (int*)data->Values + idx;
@@ -331,6 +351,7 @@ namespace BovineLabs.Core.Iterators
             {
                 var dst = (TValue*)(data->Values + (idx * sizeof(int)));
                 *dst = value;
+                UnsafeUtility.MemClear((byte*)dst + sizeof(TValue), sizeof(int) - sizeof(TValue));
             }
         }
 
@@ -407,16 +428,13 @@ namespace BovineLabs.Core.Iterators
                     dataAllocatedIndex = *((int*)data->Values + idx);
                 }
 
-                if (length > 0)
-                {
-                    var ptr = (byte*)(data->Data + dataAllocatedIndex);
-                    UnsafeUtility.MemCpy(ptr, value, length);
-                }
+                var ptr = (byte*)(data->Data + dataAllocatedIndex);
+                WriteRawSlot(ptr, value, length, CollectionHelper.Align(length, sizeof(int)));
             }
-            else if (length > 0)
+            else
             {
                 var dst = data->Values + (idx * sizeof(int));
-                UnsafeUtility.MemCpy(dst, value, length);
+                WriteRawSlot(dst, value, length, sizeof(int));
             }
         }
 
@@ -483,7 +501,8 @@ namespace BovineLabs.Core.Iterators
             {
                 Check.Assume(sizeof(TValue) % sizeof(int) == 0);
 
-                data->DataAllocatedIndex = AlignDataAllocatedIndex<TValue>(data->DataAllocatedIndex);
+                var previousDataAllocatedIndex = data->DataAllocatedIndex;
+                data->DataAllocatedIndex = AlignDataAllocatedIndex<TValue>(previousDataAllocatedIndex);
 
                 var minNewCapacity = data->DataAllocatedIndex + (sizeof(TValue) / sizeof(int));
                 if (minNewCapacity > data->DataCapacity)
@@ -498,6 +517,8 @@ namespace BovineLabs.Core.Iterators
                     ResizeData(buffer, ref data, newCap);
                 }
 
+                UnsafeUtility.MemClear(data->Data + previousDataAllocatedIndex,
+                    (long)(data->DataAllocatedIndex - previousDataAllocatedIndex) * sizeof(int));
                 var ptr = data->Data + data->DataAllocatedIndex;
                 UnsafeUtility.MemCpy(ptr, &value, sizeof(TValue));
 
@@ -510,6 +531,7 @@ namespace BovineLabs.Core.Iterators
             {
                 var dst = (TValue*)(data->Values + (idx * sizeof(int)));
                 *dst = value;
+                UnsafeUtility.MemClear((byte*)dst + sizeof(TValue), sizeof(int) - sizeof(TValue));
             }
 
             return idx;
@@ -561,20 +583,17 @@ namespace BovineLabs.Core.Iterators
                 }
 
                 var ptr = (byte*)(data->Data + data->DataAllocatedIndex);
-                if (length > 0)
-                {
-                    UnsafeUtility.MemCpy(ptr, value, length);
-                }
+                WriteRawSlot(ptr, value, length, alignedSize);
 
                 var dst = (int*)data->Values + idx;
                 *dst = data->DataAllocatedIndex;
 
                 data->DataAllocatedIndex += intsRequired;
             }
-            else if (length > 0)
+            else
             {
                 var dst = data->Values + (idx * sizeof(int));
-                UnsafeUtility.MemCpy(dst, value, length);
+                WriteRawSlot(dst, value, length, sizeof(int));
             }
 
             return idx;
@@ -726,6 +745,17 @@ namespace BovineLabs.Core.Iterators
             return capacity * 2;
         }
 
+        private static void WriteRawSlot(byte* destination, void* source, int length, int storageSize)
+        {
+            // Copy before clearing the tail, so an in-place update retains its source.
+            if (length > 0)
+            {
+                UnsafeUtility.MemMove(destination, source, length);
+            }
+
+            UnsafeUtility.MemClear(destination + length, storageSize - length);
+        }
+
         private void RemoveAt(int bucket, int prevEntry, int entryIdx)
         {
             var next = this.Next;
@@ -739,6 +769,14 @@ namespace BovineLabs.Core.Iterators
             else
             {
                 next[prevEntry] = nextEntry;
+            }
+
+            // Release the removed payload before the last slot replaces its metadata.
+            var removedSize = this.Sizes[entryIdx];
+            if (removedSize > sizeof(int))
+            {
+                var removedOffset = ((int*)this.Values)[entryIdx];
+                UnsafeUtility.MemClear(this.Data + removedOffset, CollectionHelper.Align(removedSize, sizeof(int)));
             }
 
             var lastIndex = this.Count - 1;
@@ -770,11 +808,15 @@ namespace BovineLabs.Core.Iterators
                 next[entryIdx] = next[lastIndex];
             }
 
+            UnsafeUtility.MemClear(this.Keys + lastIndex, sizeof(TKey));
+            UnsafeUtility.MemClear(this.Values + (lastIndex * sizeof(int)), sizeof(int));
+            this.Sizes[lastIndex] = 0;
             next[lastIndex] = -1;
             this.Count--;
 
             if (this.Count == 0)
             {
+                UnsafeUtility.MemClear(this.Data, (long)this.DataCapacity * sizeof(int));
                 this.DataAllocatedIndex = 0;
             }
         }

@@ -112,6 +112,7 @@ namespace BovineLabs.Core.Iterators
             buffer.ResizeUninitialized(bufferDataSize + totalSize);
 
             var data = buffer.AsUntypedBufferHelper();
+            UnsafeUtility.MemClear(data, bufferDataSize + totalSize);
 
             data->Count = 0;
             data->Log2MinGrowth = log2MinGrowth;
@@ -173,6 +174,7 @@ namespace BovineLabs.Core.Iterators
             buffer.ResizeUninitialized(bufferDataSize + totalSize);
 
             data = buffer.AsUntypedBufferHelper();
+            UnsafeUtility.MemClear(data, bufferDataSize + totalSize);
             data->Count = oldCount;
             data->Capacity = newCapacity;
             data->DataCapacity = oldDataCapacity;
@@ -187,15 +189,16 @@ namespace BovineLabs.Core.Iterators
 
             if (oldCapacity > 0)
             {
-                UnsafeUtility.MemCpy(data->Offsets, oldOffsets, oldCapacity * sizeof(int));
-                UnsafeUtility.MemCpy(data->Sizes, oldSizes, oldCapacity * sizeof(int));
-                UnsafeUtility.MemCpy(data->Types, oldTypes, oldCapacity * sizeof(int));
-                UnsafeUtility.MemCpy(data->Alignments, oldAlignments, oldCapacity * sizeof(byte));
+                UnsafeUtility.MemCpy(data->Offsets, oldOffsets, (long)oldCount * sizeof(int));
+                UnsafeUtility.MemCpy(data->Sizes, oldSizes, (long)oldCount * sizeof(int));
+                UnsafeUtility.MemCpy(data->Types, oldTypes, (long)oldCount * sizeof(int));
+                UnsafeUtility.MemCpy(data->Alignments, oldAlignments, (long)oldCount * sizeof(byte));
             }
 
-            if (oldDataAllocatedIndex > 0)
+            // Do not copy alignment gaps or abandoned arena bytes back into the layout.
+            for (var i = 0; i < oldCount; ++i)
             {
-                UnsafeUtility.MemCpy(data->Data, oldData, oldDataAllocatedIndex);
+                UnsafeUtility.MemCpy(data->Data + oldOffsets[i], oldData + oldOffsets[i], oldSizes[i]);
             }
         }
 
@@ -207,16 +210,24 @@ namespace BovineLabs.Core.Iterators
             }
 
             var toAllocate = newCapacity - data->DataCapacity;
-            var newBufferCapacity = buffer.Length + toAllocate;
+            var oldLength = buffer.Length;
+            var newBufferCapacity = oldLength + toAllocate;
 
             buffer.ResizeUninitialized(newBufferCapacity);
             data = buffer.AsUntypedBufferHelper();
+            UnsafeUtility.MemClear((byte*)data + oldLength, toAllocate);
 
             data->DataCapacity = newCapacity;
         }
 
         internal void Clear()
         {
+            fixed (DynamicUntypedBufferHelper* data = &this)
+            {
+                var headerSize = sizeof(DynamicUntypedBufferHelper);
+                UnsafeUtility.MemClear((byte*)data + headerSize, (long)this.DataOffset + this.DataCapacity - headerSize);
+            }
+
             this.Count = 0;
             this.DataAllocatedIndex = 0;
         }
@@ -252,6 +263,7 @@ namespace BovineLabs.Core.Iterators
                 ResizeData(buffer, ref data, newCap);
             }
 
+            UnsafeUtility.MemClear(data->Data + data->DataAllocatedIndex, dataAllocatedIndex - data->DataAllocatedIndex);
             var dst = data->Data + dataAllocatedIndex;
             UnsafeUtility.MemCpy(dst, &value, size);
 
@@ -311,9 +323,14 @@ namespace BovineLabs.Core.Iterators
             data->Count = count - 1;
             if (data->Count == 0)
             {
-                data->DataAllocatedIndex = 0;
+                data->Clear();
                 return;
             }
+
+            offsets[data->Count] = 0;
+            sizes[data->Count] = 0;
+            types[data->Count] = 0;
+            alignments[data->Count] = 0;
 
             var dataIndex = 0;
             for (var i = 0; i < data->Count; ++i)
@@ -331,6 +348,15 @@ namespace BovineLabs.Core.Iterators
                 dataIndex += size;
             }
 
+            // All moves are complete. Clearing earlier could overwrite an unmoved source.
+            var end = 0;
+            for (var i = 0; i < data->Count; ++i)
+            {
+                UnsafeUtility.MemClear(data->Data + end, offsets[i] - end);
+                end = offsets[i] + sizes[i];
+            }
+
+            UnsafeUtility.MemClear(data->Data + end, data->DataCapacity - end);
             data->DataAllocatedIndex = dataIndex;
         }
 

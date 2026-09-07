@@ -38,6 +38,7 @@ namespace BovineLabs.Core.Iterators
 
         public void Clear(int capacity, int bucketCapacity)
         {
+            UnsafeUtility.MemClear(this.Keys, (long)capacity * sizeof(TKey));
             UnsafeUtility.MemSet(this.Next, 0xff, capacity * sizeof(int));
             UnsafeUtility.MemSet(this.Buckets, 0xff, bucketCapacity * sizeof(int));
         }
@@ -133,7 +134,7 @@ namespace BovineLabs.Core.Iterators
                 var next = helper.Next;
                 var buckets = helper.Buckets;
 
-                UnsafeUtility.MemCpy(helper.Keys, this.OldKeys, this.OldCapacity * sizeof(TKey));
+                UnsafeUtility.MemClear(helper.Keys, (long)newCapacity * sizeof(TKey));
 
                 UnsafeUtility.MemCpy(next, this.OldNext, this.OldCapacity * sizeof(int));
                 UnsafeUtility.MemSet(next + this.OldCapacity, 0xff, (newCapacity - this.OldCapacity) * sizeof(int));
@@ -146,6 +147,7 @@ namespace BovineLabs.Core.Iterators
                     while (this.OldBuckets[bucket] >= 0)
                     {
                         var curEntry = this.OldBuckets[bucket];
+                        UnsafeUtility.MemCpy(helper.Keys + curEntry, this.OldKeys + curEntry, sizeof(TKey));
                         this.OldBuckets[bucket] = next[curEntry];
                         var newBucket = GetBucket(this.OldKeys[curEntry], newBucketCapacityMask);
                         next[curEntry] = buckets[newBucket];

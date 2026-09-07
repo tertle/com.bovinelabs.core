@@ -179,6 +179,7 @@ namespace BovineLabs.Core.Iterators.Columns
 
         void IColumn<T>.Clear()
         {
+            UnsafeUtility.MemClear(this.Keys, (long)this.capacity * sizeof(T));
             UnsafeUtility.MemSet(this.Next, 0xff, this.capacity * sizeof(int));
             UnsafeUtility.MemSet(this.Prev, 0xff, this.capacity * sizeof(int));
             this.head = -1;
@@ -276,6 +277,10 @@ namespace BovineLabs.Core.Iterators.Columns
             {
                 prev[nextNode] = prevNode;
             }
+
+            UnsafeUtility.MemClear(this.Keys + idx, sizeof(T));
+            next[idx] = -1;
+            prev[idx] = -1;
         }
 
         private readonly struct Resize
@@ -314,7 +319,12 @@ namespace BovineLabs.Core.Iterators.Columns
                 var prev = helper.Prev;
                 helper.head = this.oldHead;
 
-                UnsafeUtility.MemCpy(keys, this.oldKeys, this.oldCapacity * sizeof(T));
+                UnsafeUtility.MemClear(keys, (long)helper.capacity * sizeof(T));
+                for (var idx = this.oldHead; idx != -1; idx = this.oldNext[idx])
+                {
+                    UnsafeUtility.MemCpy(keys + idx, this.oldKeys + idx, sizeof(T));
+                }
+
                 UnsafeUtility.MemCpy(next, this.oldNext, this.oldCapacity * sizeof(int));
                 UnsafeUtility.MemCpy(prev, this.oldPrev, this.oldCapacity * sizeof(int));
 

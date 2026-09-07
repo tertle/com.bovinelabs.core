@@ -54,6 +54,7 @@ namespace BovineLabs.Core.Iterators
             buffer.ResizeUninitialized(dataOffset + totalSize);
 
             var data = buffer.AsVariableHelper<TKey, TValue, T, TC>();
+            UnsafeUtility.MemClear(data, dataOffset + totalSize);
 
             data->Log2MinGrowth = log2MinGrowth;
             data->Capacity = capacity;
@@ -127,6 +128,8 @@ namespace BovineLabs.Core.Iterators
             buffer.ResizeUninitialized(dataOffset + totalSize);
 
             data = buffer.AsVariableHelper<TKey, TValue, T, TC>();
+            // All source state has been saved; initialize every layout gap and reserve slot.
+            UnsafeUtility.MemClear(data, dataOffset + totalSize);
             data->Capacity = newCapacity;
             data->BucketCapacityMask = newBucketCapacity - 1;
             data->Log2MinGrowth = oldLog2MinGrowth;
@@ -147,7 +150,15 @@ namespace BovineLabs.Core.Iterators
                 data->FirstFreeIdx = oldFirstFreeIdx;
                 data->AllocatedIndex = oldAllocatedIndex;
 
-                UnsafeUtility.MemCpy(data->Values, oldValue, oldCapacity * sizeof(TValue));
+                // Preserve live indices, including those above Count; never copy free slots.
+                // Do this before Increase(), which consumes the old bucket heads.
+                for (var i = 0; i < oldBucketCapacity; ++i)
+                {
+                    for (var idx = kHelper.OldBuckets[i]; idx != -1; idx = kHelper.OldNext[idx])
+                    {
+                        UnsafeUtility.MemCpy(data->Values + idx, oldValue + idx, sizeof(TValue));
+                    }
+                }
 
                 kHelper.Increase(ref data->KeyHash, newCapacity, newBucketCapacity);
                 data->Column.ApplyResize(cHelper);
@@ -220,6 +231,7 @@ namespace BovineLabs.Core.Iterators
 
         internal void Clear()
         {
+            UnsafeUtility.MemClear(this.Values, (long)this.Capacity * sizeof(TValue));
             this.KeyHash.Clear(this.Capacity, this.BucketCapacity);
             this.Column.Clear();
 
@@ -270,6 +282,8 @@ namespace BovineLabs.Core.Iterators
                     this.FirstFreeIdx = entryIdx;
 
                     this.Column.Remove(entryIdx);
+                    UnsafeUtility.MemClear(this.KeyHash.Keys + entryIdx, sizeof(TKey));
+                    UnsafeUtility.MemClear(this.Values + entryIdx, sizeof(TValue));
 
                     this.Count--;
                     return true;
@@ -317,6 +331,8 @@ namespace BovineLabs.Core.Iterators
                     this.FirstFreeIdx = entryIdx;
 
                     this.Column.Remove(entryIdx);
+                    UnsafeUtility.MemClear(this.KeyHash.Keys + entryIdx, sizeof(TKey));
+                    UnsafeUtility.MemClear(this.Values + entryIdx, sizeof(TValue));
                     this.Count--;
                     return;
                 }

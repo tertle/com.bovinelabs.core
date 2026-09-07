@@ -104,6 +104,8 @@ namespace BovineLabs.Core.Iterators
             buffer.ResizeUninitialized(totalSize);
 
             var data = buffer.AsHelper<TKey, TValue>();
+            // Empty key slots and alignment gaps must not inherit allocator contents.
+            UnsafeUtility.MemClear(data, totalSize);
 
             data->Size = size;
             data->KeysOffset = keysOffset;
