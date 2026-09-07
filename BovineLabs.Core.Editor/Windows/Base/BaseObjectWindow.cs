@@ -27,8 +27,14 @@ namespace BovineLabs.Core.Editor.Windows.Base
     {
         private double lastClickTime;
         private TItem lastClickedItem;
+
+        // These flags track services and UI references that do not survive a domain reload.
+        [NonSerialized]
         private bool servicesInitialized;
+
+        [NonSerialized]
         private bool guiInitialized;
+
         private UnityEngine.Object currentSelection;
         private GlobalObjectId currentSelectionId;
 
