@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Tests.Windows
     using System;
     using System.Collections.Generic;
     using BovineLabs.Core.Editor.Windows.Base;
+    using BovineLabs.Core.Editor.Windows.SelectionHistory;
     using NUnit.Framework;
     using UnityEditor;
     using UnityEngine;
@@ -14,6 +15,113 @@ namespace BovineLabs.Core.Tests.Windows
 
     public class ObjectWindowServiceTests
     {
+        [Test]
+        public void IsAlive_DestroyedUnityObjectWithManagedReference_ReturnsFalse()
+        {
+            var obj = ScriptableObject.CreateInstance<ObjectWindowTestAsset>();
+            var item = new TestObjectItem(obj, "Object", nameof(ObjectWindowTestAsset), string.Empty, default, DateTime.Now);
+
+            Assert.IsTrue(item.IsAlive);
+            Object.DestroyImmediate(obj);
+
+            Assert.IsFalse(item.IsAlive);
+            Assert.IsNull(item.GetObject());
+            GC.KeepAlive(obj);
+        }
+
+        [Test]
+        public void MatchesObject_UnsavedObjectsWithNoPersistentId_RemainDistinct()
+        {
+            var first = ScriptableObject.CreateInstance<ObjectWindowTestAsset>();
+            var second = ScriptableObject.CreateInstance<ObjectWindowTestAsset>();
+            try
+            {
+                var item = new TestObjectItem(first, "Object", nameof(ObjectWindowTestAsset), string.Empty, default, DateTime.Now);
+
+                Assert.IsTrue(item.MatchesObject(first, default));
+                Assert.IsFalse(item.MatchesObject(second, default));
+                Assert.IsFalse(item.MatchesObject(null, default));
+            }
+            finally
+            {
+                Object.DestroyImmediate(first);
+                Object.DestroyImmediate(second);
+            }
+        }
+
+        [Test]
+        public void RefreshMetadata_RenamedObject_UpdatesDisplayWithoutChangingTimestamp()
+        {
+            var obj = ScriptableObject.CreateInstance<ObjectWindowTestAsset>();
+            try
+            {
+                var timestamp = DateTime.Now;
+                var item = new TestObjectItem(obj, "Before", nameof(ObjectWindowTestAsset), string.Empty, default, timestamp);
+                obj.name = "After";
+
+                item.RefreshMetadata();
+
+                Assert.AreEqual("After", item.GetDisplayText(false, false, false));
+                Assert.AreEqual(timestamp, item.Timestamp);
+            }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
+        }
+
+        [Test]
+        public void GetObject_UnresolvedPersistentId_DoesNotSelectAnotherAssetAtCachedPath()
+        {
+            const string scriptPath = "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/Windows/SelectionHistory/SelectionHistoryItem.cs";
+            Assert.IsNotNull(AssetDatabase.LoadAssetAtPath<MonoScript>(scriptPath));
+            Assert.IsTrue(GlobalObjectId.TryParse("GlobalObjectId_V1-1-11111111111111111111111111111111-123456-0", out var missingId));
+            var item = new TestObjectItem(null, "Missing", nameof(MonoScript), scriptPath, missingId, DateTime.Now);
+
+            Assert.IsNull(item.GetObject());
+        }
+
+        [Test]
+        public void GetObject_ExactIdentityWithOutdatedTypeName_RefreshesResolvedMetadata()
+        {
+            const string scriptPath = "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/Windows/SelectionHistory/SelectionHistoryItem.cs";
+            var script = AssetDatabase.LoadAssetAtPath<MonoScript>(scriptPath);
+            Assert.IsNotNull(script);
+            var item = new TestObjectItem(null, "Old name", "OldType", "Assets/OldPath.cs", GlobalObjectId.GetGlobalObjectIdSlow(script), DateTime.Now);
+
+            Assert.AreSame(script, item.GetObject());
+            Assert.AreEqual(nameof(MonoScript), item.TypeName);
+            Assert.AreEqual(script.name, item.Name);
+            Assert.AreEqual(scriptPath, item.AssetPath);
+            Assert.IsTrue(item.IsAlive);
+        }
+
+        [Test]
+        public void CreateSerializableItems_DoesNotPersistUnsavedObjects()
+        {
+            var obj = ScriptableObject.CreateInstance<ObjectWindowTestAsset>();
+            try
+            {
+                var item = new TestObjectItem(obj, "Temporary", nameof(ObjectWindowTestAsset), string.Empty, default, DateTime.Now);
+
+                Assert.IsEmpty(TestObjectService.Serialize(new[] { item }, 0, 1));
+                Assert.AreSame(obj, item.GetObject());
+            }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(0, 1)]
+        public void MaxHistorySize_RespectsMinimumOfOne(int requested, int expected)
+        {
+            var preferences = new SelectionHistoryPreferences { MaxHistorySize = requested };
+
+            Assert.AreEqual(expected, preferences.MaxHistorySize);
+        }
+
         [Test]
         public void CreateSerializableItems_CopiesRequestedRowsWithoutIconLookup()
         {

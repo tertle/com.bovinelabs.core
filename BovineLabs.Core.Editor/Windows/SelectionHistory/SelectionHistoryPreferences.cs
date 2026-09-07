@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
     public class SelectionHistoryPreferences : BaseDisplayPreferences
     {
         [SerializeField]
-        [Tooltip("Maximum number of items to keep in selection history")]
+        [Tooltip("Maximum number of unlocked items to keep in selection history")]
         [Min(1)]
         private int maxHistorySize = 10;
 
@@ -39,7 +39,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
         /// </summary>
         public int MaxHistorySize
         {
-            get => Math.Max(10, this.maxHistorySize);
+            get => Math.Max(1, this.maxHistorySize);
             set => this.maxHistorySize = value;
         }
 

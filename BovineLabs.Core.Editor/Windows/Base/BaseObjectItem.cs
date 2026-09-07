@@ -22,21 +22,22 @@ namespace BovineLabs.Core.Editor.Windows.Base
         protected BaseObjectItem(
             UnityEngine.Object obj, string name, string typeName, string assetPath, GlobalObjectId globalObjectId, Texture2D icon, DateTime timestamp)
         {
-            this.Name = name;
-            this.TypeName = typeName;
-            this.AssetPath = assetPath;
+            this.Name = name ?? string.Empty;
+            this.TypeName = typeName ?? string.Empty;
+            this.AssetPath = assetPath ?? string.Empty;
             this.GlobalId = globalObjectId;
             this.Icon = icon;
             this.Timestamp = timestamp;
 
             this.ObjectRef = obj == null ? new WeakReference(null) : new WeakReference(obj);
+            this.RefreshMetadata();
         }
 
         /// <summary>Gets the display name of the object.</summary>
-        public string Name { get; }
+        public string Name { get; private set; }
 
         /// <summary>Gets the type name of the object.</summary>
-        public string TypeName { get; }
+        public string TypeName { get; private set; }
 
         /// <summary>Gets or sets the asset path if this is an asset, empty otherwise.</summary>
         public string AssetPath { get; set; }
@@ -51,13 +52,45 @@ namespace BovineLabs.Core.Editor.Windows.Base
         public Texture2D Icon { get; private set; }
 
         /// <summary>Gets the GlobalObjectId for persistent object identification.</summary>
-        public GlobalObjectId GlobalId { get; }
+        public GlobalObjectId GlobalId { get; private set; }
 
         /// <summary>Gets a value indicating whether the referenced object is still alive.</summary>
-        public bool IsAlive => this.ObjectRef is { IsAlive: true, Target: UnityEngine.Object } && this.ObjectRef.Target.GetType().Name == this.TypeName;
+        public bool IsAlive
+        {
+            get
+            {
+                var obj = this.ObjectRef.Target as UnityEngine.Object;
+                return obj != null && obj.GetType().Name == this.TypeName;
+            }
+        }
 
         /// <summary>Gets a value indicating whether this is an asset (vs scene object).</summary>
         public bool IsAsset => !string.IsNullOrEmpty(this.AssetPath);
+
+        /// <summary>Matches live objects by reference and persisted objects by their exact identity.</summary>
+        public bool MatchesObject(UnityEngine.Object obj, GlobalObjectId objectId)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            return this.ObjectRef.Target is UnityEngine.Object current && current != null && current == obj ||
+                HasValidObjectId(this.GlobalId) && HasValidObjectId(objectId) && this.GlobalId.Equals(objectId);
+        }
+
+        /// <summary>Refreshes display metadata without loading an unresolved object.</summary>
+        public void RefreshMetadata()
+        {
+            var obj = this.ObjectRef.Target as UnityEngine.Object;
+            if (obj == null || obj.GetType().Name != this.TypeName)
+            {
+                return;
+            }
+
+            this.Name = obj.name;
+            this.AssetPath = AssetDatabase.GetAssetPath(obj);
+        }
 
         /// <summary>Gets the referenced object if it's still alive.</summary>
         /// <returns>The object.</returns>
@@ -69,6 +102,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
             // Unity replaces assets with the importer (MonoImporter, AssetImporter) when unloading an asset so it appears loaded, but it's the wrong type
             if (obj != null && obj.GetType().Name == this.TypeName)
             {
+                this.RefreshMetadata();
                 return obj;
             }
 
@@ -76,11 +110,12 @@ namespace BovineLabs.Core.Editor.Windows.Base
             if (HasValidObjectId(this.GlobalId))
             {
                 obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(this.GlobalId);
-                if (obj != null)
+                if (obj != null && (obj is not AssetImporter || obj.GetType().Name == this.TypeName))
                 {
                     // Update the weak reference for future calls
                     this.ObjectRef.Target = obj;
-                    this.AssetPath = AssetDatabase.GetAssetPath(obj);
+                    this.TypeName = obj.GetType().Name;
+                    this.RefreshMetadata();
                     this.Icon = AssetPreview.GetMiniThumbnail(obj);
                     return obj;
                 }
@@ -93,6 +128,8 @@ namespace BovineLabs.Core.Editor.Windows.Base
                 if (obj != null && obj.GetType().Name == this.TypeName)
                 {
                     this.ObjectRef.Target = obj;
+                    this.GlobalId = GlobalObjectId.GetGlobalObjectIdSlow(obj);
+                    this.RefreshMetadata();
                     this.Icon = AssetPreview.GetMiniThumbnail(obj);
                     return obj;
                 }
@@ -103,7 +140,15 @@ namespace BovineLabs.Core.Editor.Windows.Base
 
         internal static bool HasValidObjectId(GlobalObjectId objectId)
         {
-            return !objectId.assetGUID.Empty() || objectId.identifierType != 0;
+            return !objectId.assetGUID.Empty() && objectId.identifierType != 0;
+        }
+
+        internal void RefreshIdentity()
+        {
+            if (this.IsAlive)
+            {
+                this.GlobalId = GlobalObjectId.GetGlobalObjectIdSlow((UnityEngine.Object)this.ObjectRef.Target);
+            }
         }
 
         /// <summary>Gets a display string for the item.</summary>

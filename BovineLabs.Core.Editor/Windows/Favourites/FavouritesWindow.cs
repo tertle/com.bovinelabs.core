@@ -4,7 +4,6 @@
 
 namespace BovineLabs.Core.Editor.Windows.Favourites
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Editor.Windows.Base;
@@ -21,6 +20,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
     {
         private FavouritesService favouritesService;
         private VisualElement dropLabel;
+        private Button addSelectionButton;
 
         /// <inheritdoc/>
         protected override FavouritesService Service => this.favouritesService ?? FavouritesService.Instance;
@@ -70,8 +70,23 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
         }
 
         /// <inheritdoc/>
+        protected override void UpdateItemsVisualState()
+        {
+            base.UpdateItemsVisualState();
+            this.UpdateAddSelectionButton();
+        }
+
+        /// <inheritdoc/>
         protected override void CreateCustomToolbarElements(Toolbar toolbar)
         {
+            this.addSelectionButton = new ToolbarButton(() => this.favouritesService.AddFavourites(Selection.objects))
+            {
+                text = "Add Selection",
+                tooltip = "Add selected assets to favourites",
+            };
+
+            toolbar.Add(this.addSelectionButton);
+            this.UpdateAddSelectionButton();
         }
 
         /// <inheritdoc/>
@@ -98,7 +113,8 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             var openButton = element.Q<Button>();
             if (openButton != null)
             {
-                this.BindButtonClickAction(openButton, () => AssetDatabase.OpenAsset(item.GetObject()), this.OnOpenButtonClick);
+                openButton.SetEnabled(item.IsAsset);
+                this.BindButtonClickAction(openButton, () => OpenItem(item), this.OnOpenButtonClick);
             }
         }
 
@@ -111,10 +127,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
         /// <inheritdoc/>
         protected override void OnListItemDoubleClicked(FavouritesItem item)
         {
-            if (item.IsAsset)
-            {
-                AssetDatabase.OpenAsset(item.GetObject());
-            }
+            OpenItem(item);
         }
 
         /// <inheritdoc/>
@@ -124,8 +137,15 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
 
             if (item.IsAsset)
             {
-                evt.menu.AppendAction("Open Object", _ => AssetDatabase.OpenAsset(item.GetObject()));
-                evt.menu.AppendAction("Show in Project", _ => EditorGUIUtility.PingObject(item.GetObject()));
+                evt.menu.AppendAction("Open Object", _ => OpenItem(item));
+                evt.menu.AppendAction("Show in Project", _ =>
+                {
+                    var obj = item.GetObject();
+                    if (obj != null)
+                    {
+                        EditorGUIUtility.PingObject(obj);
+                    }
+                });
             }
 
             evt.menu.AppendSeparator();
@@ -156,10 +176,11 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
         /// <inheritdoc/>
         protected override void CreateCustomSettingsMenuItems(DropdownMenu menu)
         {
-            var prefs = UserSettings<FavouritesPreferences>.GetOrCreate("Favourites");
+            var prefs = UserSettings<FavouritesPreferences>.GetOrCreate(FavouritesService.PreferenceKey);
             menu.AppendAction("Confirm Removal", _ =>
             {
                 prefs.ConfirmRemoval = !prefs.ConfirmRemoval;
+                prefs.OnPreferenceChanged(default);
             }, _ => prefs.ConfirmRemoval
                 ? DropdownMenuAction.Status.Checked
                 : DropdownMenuAction.Status.Normal);
@@ -190,6 +211,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
         /// <inheritdoc/>
         protected override void SetupListViewCallbacks()
         {
+            this.MainListView.reorderMode = ListViewReorderMode.Animated;
             this.MainListView.itemIndexChanged += this.OnFavouriteItemReordered;
         }
 
@@ -198,6 +220,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
         {
             // Update reorderable state
             this.MainListView!.reorderable = !this.IsFiltered();
+            this.UpdateAddSelectionButton();
         }
 
         /// <inheritdoc/>
@@ -221,23 +244,26 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             return !string.IsNullOrEmpty(this.CurrentSearchText) || this.CurrentTypeFilter != "All";
         }
 
+        private void UpdateAddSelectionButton()
+        {
+            this.addSelectionButton.SetEnabled(Selection.objects.Any(obj =>
+                FavouritesService.CanAddFavourite(obj) && !this.favouritesService.IsFavourite(obj)));
+        }
+
         private void SetupDragAndDrop(VisualElement root)
         {
-            this.dropLabel = new VisualElement();
+            this.dropLabel = new VisualElement { pickingMode = PickingMode.Ignore };
             this.dropLabel.AddToClassList("favourites-drop-overlay");
+            this.dropLabel.RegisterCallback<AttachToPanelEvent>(evt =>
+                evt.destinationPanel.visualTree.RegisterCallback<DragExitedEvent>(this.OnDragExited));
+            this.dropLabel.RegisterCallback<DetachFromPanelEvent>(evt =>
+                evt.originPanel.visualTree.UnregisterCallback<DragExitedEvent>(this.OnDragExited));
 
             root.Add(this.dropLabel);
 
             root.RegisterCallback<DragEnterEvent>(_ =>
             {
-                var hasValidAssets = DragAndDrop.objectReferences.Any(obj =>
-                    obj != null && !string.IsNullOrEmpty(AssetDatabase.GetAssetPath(obj)));
-
-                if (hasValidAssets)
-                {
-                    DragAndDrop.AcceptDrag();
-                    this.dropLabel.style.display = DisplayStyle.Flex;
-                }
+                this.UpdateDropOverlay();
             });
 
             root.RegisterCallback<DragLeaveEvent>(_ =>
@@ -245,31 +271,58 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
                 this.dropLabel.style.display = DisplayStyle.None;
             });
 
-            root.RegisterCallback<DragUpdatedEvent>(_ =>
+            root.RegisterCallback<DragUpdatedEvent>(evt =>
             {
-                var hasValidAssets = DragAndDrop.objectReferences.Any(obj =>
-                    obj != null && !string.IsNullOrEmpty(AssetDatabase.GetAssetPath(obj)));
+                if (DragAndDrop.objectReferences.Length == 0)
+                {
+                    return;
+                }
 
+                var hasValidAssets = this.UpdateDropOverlay();
                 DragAndDrop.visualMode = hasValidAssets ? DragAndDropVisualMode.Copy : DragAndDropVisualMode.Rejected;
+                evt.StopPropagation();
             });
 
-            root.RegisterCallback<DragPerformEvent>(_ =>
+            root.RegisterCallback<DragPerformEvent>(evt =>
             {
                 this.dropLabel.style.display = DisplayStyle.None;
 
-                var allObjects = DragAndDrop.objectReferences;
-                var assetObjects = allObjects.Where(obj =>
-                    obj != null && !string.IsNullOrEmpty(AssetDatabase.GetAssetPath(obj))).ToArray();
+                var assetObjects = DragAndDrop.objectReferences.Where(FavouritesService.CanAddFavourite).ToArray();
+                if (assetObjects.Length == 0)
+                {
+                    return;
+                }
 
-                if (assetObjects.Length > 0)
-                {
-                    this.favouritesService?.AddFavourites(assetObjects);
-                }
-                else if (allObjects.Length > 0)
-                {
-                    BLGlobalLogger.LogInfo("Only assets can be added to favourites, not scene objects");
-                }
+                DragAndDrop.AcceptDrag();
+                this.favouritesService.AddFavourites(assetObjects);
+                evt.StopPropagation();
             });
+        }
+
+        private static void OpenItem(FavouritesItem item)
+        {
+            if (!item.IsAsset)
+            {
+                return;
+            }
+
+            var obj = item.GetObject();
+            if (obj != null)
+            {
+                AssetDatabase.OpenAsset(obj);
+            }
+        }
+
+        private bool UpdateDropOverlay()
+        {
+            var hasValidAssets = DragAndDrop.objectReferences.Any(FavouritesService.CanAddFavourite);
+            this.dropLabel.style.display = hasValidAssets ? DisplayStyle.Flex : DisplayStyle.None;
+            return hasValidAssets;
+        }
+
+        private void OnDragExited(DragExitedEvent evt)
+        {
+            this.dropLabel.style.display = DisplayStyle.None;
         }
 
         private void OnOpenButtonClick(ClickEvent evt)

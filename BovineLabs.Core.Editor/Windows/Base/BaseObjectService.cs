@@ -73,7 +73,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
         /// <summary>Gets the preferences instance for this service.</summary>
         protected TPreferences Preferences { get; }
 
-        protected bool Disposed { get; private set;  }
+        protected bool Disposed { get; private set; }
 
         /// <summary>Cleans up resources.</summary>
         public virtual void Dispose()
@@ -89,17 +89,11 @@ namespace BovineLabs.Core.Editor.Windows.Base
 
         /// <summary>Selects an object from history.</summary>
         /// <param name="item"> The item to select. </param>
-        public void SelectItem(TItem item)
+        public virtual void SelectItem(TItem item)
         {
             var obj = item.GetObject();
             if (obj == null)
             {
-                // If the object no longer exists and it's not a scene object, remove it from history
-                if (item.IsAsset)
-                {
-                    this.RemoveItem(item);
-                }
-
                 return;
             }
 
@@ -117,7 +111,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
                     ProjectView.Internal.ShowFolderContents(projectBrowser, item.AssetPath);
                 }
 
-                this.SelectFolder(item.GetObject()!);
+                this.SelectFolder(obj);
             }
             else
             {
@@ -165,6 +159,18 @@ namespace BovineLabs.Core.Editor.Windows.Base
             for (var index = 0; index < count; index++)
             {
                 var item = items[startIndex + index];
+                item.RefreshMetadata();
+                if (!BaseObjectItem.HasValidObjectId(item.GlobalId))
+                {
+                    item.RefreshIdentity();
+                }
+
+                // Unsaved scene and temporary objects have no identity that can survive an Editor restart.
+                if (!BaseObjectItem.HasValidObjectId(item.GlobalId) && !item.IsAsset)
+                {
+                    continue;
+                }
+
                 var serializableItem = new TSerializable
                 {
                     Name = item.Name,
@@ -235,9 +241,25 @@ namespace BovineLabs.Core.Editor.Windows.Base
                 return null;
             }
 
-            public static DateTime GetTimestamp(SerializableObjectItem item)
+            public static bool TryGetTimestamp(SerializableObjectItem item, out DateTime timestamp)
             {
-                return DateTime.FromBinary(item.Timestamp);
+                timestamp = default;
+                if (item == null)
+                {
+                    BLGlobalLogger.LogWarningString("Ignoring an empty saved object window entry.");
+                    return false;
+                }
+
+                try
+                {
+                    timestamp = DateTime.FromBinary(item.Timestamp);
+                    return true;
+                }
+                catch (ArgumentException)
+                {
+                    BLGlobalLogger.LogWarningString($"Ignoring saved object window entry '{item.Name}' with an invalid timestamp.");
+                    return false;
+                }
             }
 
             public static Texture2D GetIcon(Object obj)
@@ -253,13 +275,14 @@ namespace BovineLabs.Core.Editor.Windows.Base
 
         protected virtual void SelectFolder(Object obj)
         {
+            Selection.activeObject = obj;
         }
 
         protected abstract void Save();
 
         protected abstract void Load();
 
-        private void OnPreferencesChanged()
+        protected virtual void OnPreferencesChanged()
         {
             // Notify that history has changed to trigger UI refresh
             this.NotifyItemsChanged();

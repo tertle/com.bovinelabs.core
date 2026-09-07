@@ -4,10 +4,10 @@
 
 namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Editor.Windows.Base;
+    using BovineLabs.Core.Editor.Windows.Favourites;
     using Unity.Entities.Editor.Serialization;
     using UnityEditor;
     using UnityEditor.UIElements;
@@ -128,18 +128,44 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
         }
 
         /// <inheritdoc/>
+        protected override void OnListItemDoubleClicked(SelectionHistoryItem item)
+        {
+            if (item.IsAsset)
+            {
+                OpenObject(item);
+            }
+        }
+
+        /// <inheritdoc/>
         protected override void CreateContextMenu(ContextualMenuPopulateEvent evt, SelectionHistoryItem item)
         {
             evt.menu.AppendAction("Select Object", _ => this.historyService?.SelectItem(item));
 
             if (item.IsAsset)
             {
-                evt.menu.AppendAction("Open Object", _ => AssetDatabase.OpenAsset(item.GetObject()));
-            }
+                evt.menu.AppendAction("Open Object", _ => OpenObject(item));
+                evt.menu.AppendAction("Show in Project", _ =>
+                {
+                    var obj = item.GetObject();
+                    if (obj != null)
+                    {
+                        EditorGUIUtility.PingObject(obj);
+                    }
+                });
 
-            if (item.IsAsset)
-            {
-                evt.menu.AppendAction("Show in Project", _ => EditorGUIUtility.PingObject(item.GetObject()));
+                var favouriteObject = item.GetObject();
+                var favourites = FavouritesService.Instance;
+                evt.menu.AppendAction("Add to Favourites", _ => favourites.AddFavourite(favouriteObject), _ =>
+                {
+                    if (!FavouritesService.CanAddFavourite(favouriteObject))
+                    {
+                        return DropdownMenuAction.Status.Disabled;
+                    }
+
+                    return favourites.IsFavourite(favouriteObject)
+                        ? DropdownMenuAction.Status.Checked | DropdownMenuAction.Status.Disabled
+                        : DropdownMenuAction.Status.Normal;
+                });
             }
 
             evt.menu.AppendSeparator();
@@ -150,6 +176,8 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
         protected override string GetStatusText(int totalCount, int filteredCount, int aliveCount)
         {
             var lockedCount = this.filteredLockedItems.Count;
+            filteredCount += lockedCount;
+            aliveCount += this.filteredLockedItems.Count(item => item.IsAlive);
             return filteredCount == totalCount
                 ? $"{totalCount} items ({aliveCount} alive, {lockedCount} locked)"
                 : $"{filteredCount} of {totalCount} items ({aliveCount} alive, {lockedCount} locked)";
@@ -161,11 +189,11 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             var service = this.historyService;
             if (service != null)
             {
-                var prefs = UserSettings<SelectionHistoryPreferences>.GetOrCreate("Selection History");
+                var prefs = UserSettings<SelectionHistoryPreferences>.GetOrCreate(SelectionHistoryService.PreferenceKey);
                 menu.AppendAction("Track Scene Objects", _ =>
                 {
                     prefs.TrackSceneObjects = !prefs.TrackSceneObjects;
-                    this.RefreshItemsList();
+                    prefs.OnPreferenceChanged(default);
                 }, _ => prefs.TrackSceneObjects ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
             }
         }
@@ -187,7 +215,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             {
                 foreach (var item in this.historyService.LockedItems)
                 {
-                    if (this.ShouldShowItemInternal(item))
+                    if (this.ShouldShowItem(item))
                     {
                         this.filteredLockedItems.Add(item);
                     }
@@ -195,7 +223,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 
                 foreach (var item in this.historyService.NormalItems.Reverse())
                 {
-                    if (this.ShouldShowItemInternal(item))
+                    if (this.ShouldShowItem(item))
                     {
                         this.filteredNormalItems.Add(item);
                     }
@@ -215,35 +243,13 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
         {
             base.RefreshPreferencesDependentUI();
 
-            this.lockedItemsListView!.fixedItemHeight = this.Service.ItemHeight;
-            this.lockedItemsListView.Rebuild();
-        }
-
-        private void OnLockedListItemDoubleClicked(SelectionHistoryItem item)
-        {
-            if (item.IsAsset)
+            if (this.lockedItemsListView!.fixedItemHeight != this.Service.ItemHeight)
             {
-                AssetDatabase.OpenAsset(item.GetObject());
-            }
-        }
-
-        private bool ShouldShowItemInternal(SelectionHistoryItem item)
-        {
-            if (!string.IsNullOrEmpty(this.CurrentSearchText))
-            {
-                var searchLower = this.CurrentSearchText.ToLowerInvariant();
-                if (!item.Name.ToLowerInvariant().Contains(searchLower) && !item.TypeName.ToLowerInvariant().Contains(searchLower))
-                {
-                    return false;
-                }
+                this.lockedItemsListView.fixedItemHeight = this.Service.ItemHeight;
+                this.lockedItemsListView.Rebuild();
             }
 
-            if (this.CurrentTypeFilter != "All" && item.TypeName != this.CurrentTypeFilter)
-            {
-                return false;
-            }
-
-            return true;
+            this.UpdateLockedSectionHeight();
         }
 
         private void CreateLockedItemsSection()
@@ -258,6 +264,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
                 bindItem = this.BindLockedListItem,
                 reorderMode = ListViewReorderMode.Animated,
             };
+            this.lockedItemsListView.style.flexShrink = 0;
 
             this.lockedItemsListView.RegisterCallback<ClickEvent>(this.OnLockedListClick);
             this.lockedItemsListView.AddManipulator(new ContextualMenuManipulator(this.OnLockedListContextMenu));
@@ -330,7 +337,12 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 
         private void OnLockedListClick(ClickEvent evt)
         {
-            var item = this.GetLockedItemAtPosition(evt.localPosition);
+            if (evt.button != 0 || evt.target is VisualElement target && (target is Button || target.GetFirstAncestorOfType<Button>() != null))
+            {
+                return;
+            }
+
+            var item = this.GetItemAtPosition(this.lockedItemsListView, evt.localPosition);
             if (item != null)
             {
                 var currentTime = EditorApplication.timeSinceStartup;
@@ -338,7 +350,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 
                 if (Equals(this.lastLockedClickedItem, item) && timeSinceLastClick < this.Service.DoubleClickThreshold)
                 {
-                    this.OnLockedListItemDoubleClicked(item);
+                    this.OnListItemDoubleClicked(item);
                     this.lastLockedClickedItem = null;
                 }
                 else
@@ -353,37 +365,11 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 
         private void OnLockedListContextMenu(ContextualMenuPopulateEvent evt)
         {
-            var item = this.GetLockedItemAtPosition(evt.localMousePosition);
+            var item = this.GetItemAtPosition(this.lockedItemsListView, evt.localMousePosition);
             if (item != null)
             {
                 this.CreateContextMenu(evt, item);
             }
-        }
-
-        private SelectionHistoryItem GetLockedItemAtPosition(Vector2 listLocalPosition)
-        {
-            var scrollView = this.lockedItemsListView?.Q<ScrollView>();
-            if (scrollView == null)
-            {
-                return null;
-            }
-
-            var world = this.lockedItemsListView.LocalToWorld(listLocalPosition);
-            if (!scrollView.contentViewport.worldBound.Contains(world))
-            {
-                return null;
-            }
-
-            var contentLocal = scrollView.contentContainer.WorldToLocal(world);
-            var itemHeight = this.Service.ItemHeight;
-            var index = Mathf.FloorToInt(contentLocal.y / itemHeight);
-
-            if (index >= 0 && index < this.filteredLockedItems.Count)
-            {
-                return this.filteredLockedItems[index];
-            }
-
-            return null;
         }
 
         private void RefreshLockedSection()
@@ -416,26 +402,20 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             var contentHeight = lockedItemCount * itemHeight;
 
             // Get total available height (subtract toolbar and status bar)
-            var rootHeight = this.rootVisualElement.resolvedStyle.height;
+            var rootHeight = this.MainListView.parent.resolvedStyle.height;
             var toolbarHeight = this.Toolbar.resolvedStyle.height;
-            var statusBarHeight = this.Service.ShowStatusBar ? 20f : 0f;
-            var availableHeight = rootHeight - toolbarHeight - statusBarHeight;
+            var statusBarHeight = this.Service.ShowStatusBar ? this.StatusBar.resolvedStyle.height : 0f;
+            var availableHeight = Mathf.Max(0, rootHeight - toolbarHeight - statusBarHeight);
+
+            if (float.IsNaN(availableHeight))
+            {
+                return;
+            }
 
             // Apply 80% max height limit, ensuring normal items get at least 20%
             var maxLockedHeight = availableHeight * 0.8f;
 
-            if (contentHeight <= maxLockedHeight)
-            {
-                // Content fits naturally - let it size to content (no scrollbar needed)
-                this.lockedItemsListView.style.height = contentHeight;
-                this.MainListView.style.height = availableHeight - contentHeight;
-            }
-            else
-            {
-                // Content exceeds 80% limit - apply fixed height (scrollbar will appear)
-                this.lockedItemsListView.style.height = maxLockedHeight;
-                this.MainListView.style.height = availableHeight - maxLockedHeight;
-            }
+            this.lockedItemsListView.style.height = Mathf.Min(contentHeight, maxLockedHeight);
         }
 
         private void OnPinButtonClick(ClickEvent evt)
@@ -456,6 +436,15 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
         private void OnWindowResize(GeometryChangedEvent evt)
         {
             this.UpdateLockedSectionHeight();
+        }
+
+        private static void OpenObject(SelectionHistoryItem item)
+        {
+            var obj = item.GetObject();
+            if (obj != null)
+            {
+                AssetDatabase.OpenAsset(obj);
+            }
         }
     }
 }
