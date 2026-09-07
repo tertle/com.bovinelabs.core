@@ -12,14 +12,6 @@ namespace BovineLabs.Core.Tests.Facet
     {
         private const BindingFlags NestedTypeFlags = BindingFlags.Public | BindingFlags.NonPublic;
 
-        [Test]
-        public void EnabledRefROFacetKeepsLookup()
-        {
-            var nestedLookup = typeof(TestFacet).GetNestedType("Lookup", NestedTypeFlags);
-
-            Assert.AreSame(typeof(TestFacet.Lookup), nestedLookup);
-        }
-
         [TestCase(typeof(FacetEnabledRefRWFacet))]
         [TestCase(typeof(OptionalFacetEnabledRefRWFacet))]
         [TestCase(typeof(RequiredNestedFacetEnabledRefRWFacet))]

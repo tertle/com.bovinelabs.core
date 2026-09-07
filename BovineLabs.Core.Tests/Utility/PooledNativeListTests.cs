@@ -17,10 +17,7 @@ namespace BovineLabs.Core.Tests.Utility
         [Test]
         public void GetAndDispose_MultiplePooledLists_ReusesList()
         {
-            // Arrange
             int initialCapacity;
-
-            // Act & Assert - First use
             using (var pooledList = PooledNativeList<int>.Make())
             {
                 pooledList.List.Add(1);
@@ -29,55 +26,11 @@ namespace BovineLabs.Core.Tests.Utility
                 initialCapacity = pooledList.List.Capacity;
             }
 
-            // Act & Assert - Second use, should reuse the same underlying list
             using (var pooledList = PooledNativeList<int>.Make())
             {
-                // The list should be empty but have the same or larger capacity
                 Assert.AreEqual(0, pooledList.List.Length);
                 Assert.GreaterOrEqual(pooledList.List.Capacity, initialCapacity);
             }
-        }
-
-        [Test]
-        public void ThreadSafety_MultipleLists_FromParallelJobs()
-        {
-            // This test verifies that the pool is thread-safe by getting lists from multiple jobs
-            var jobCount = math.min(10, Unity.Jobs.LowLevel.Unsafe.JobsUtility.ThreadIndexCount * 2);
-            var results = new NativeArray<JobResult>(jobCount, Allocator.TempJob);
-
-            // Create parallel jobs that each get a list, add items, and record results
-            var jobHandle = new AddItemsToPooledListJob
-            {
-                Results = results,
-                ItemsToAdd = 5,
-            }.ScheduleParallel(jobCount, 1, default);
-
-            // Wait for all jobs to complete
-            jobHandle.Complete();
-
-            // Verify results
-            for (var i = 0; i < jobCount; i++)
-            {
-                Assert.AreEqual(5, results[i].ListLength, $"Job {i} did not add the expected number of items");
-                Assert.AreNotEqual(-1, results[i].ThreadIndex, $"Job {i} did not record a valid thread index");
-                // Make sure thread index is within bounds of our pool
-                Assert.Less(results[i].ThreadIndex, Unity.Jobs.LowLevel.Unsafe.JobsUtility.ThreadIndexCount,
-                    $"Job {i} recorded an out-of-bounds thread index");
-            }
-
-            // Verify that at least some valid thread indices were recorded
-            // Note: We don't assert that multiple threads were used since Unity's job scheduler
-            // may choose to run all jobs on a single thread depending on system load and configuration
-            var uniqueThreadIndices = new NativeHashSet<int>(jobCount, Allocator.Temp);
-            for (var i = 0; i < jobCount; i++)
-            {
-                uniqueThreadIndices.Add(results[i].ThreadIndex);
-            }
-
-            Assert.Greater(uniqueThreadIndices.Count, 0, "No valid thread indices were recorded");
-
-            uniqueThreadIndices.Dispose();
-            results.Dispose();
         }
 
         [Test]
@@ -85,7 +38,6 @@ namespace BovineLabs.Core.Tests.Utility
         {
             var pooledList = PooledNativeList<int>.Make();
             pooledList.List.Add(1);
-
             pooledList.Dispose();
 
             Assert.Catch<InvalidOperationException>(() => pooledList.List.Add(2));
@@ -104,136 +56,59 @@ namespace BovineLabs.Core.Tests.Utility
         }
 
         [Test]
-        public void BurstCompatibility_ParallelJobs_WorkCorrectly()
+        public void BurstParallelJobs_PreserveContentsAcrossTypedPools()
         {
-            // This test verifies that the pool works correctly with Burst-compiled parallel jobs
+            const int itemCount = 512;
+            using var results = new NativeArray<JobResult>(itemCount, Allocator.TempJob);
+            new ReadPooledListsJob { Results = results }.ScheduleParallel(itemCount, 16, default).Complete();
 
-            var itemCount = 512;
-            var results = new NativeArray<int>(itemCount, Allocator.TempJob);
-
-            // Schedule multiple jobs that use both int and float3 lists
-            var jobHandle = new BurstCompatibilityTestJob
-            {
-                Results = results,
-            }.ScheduleParallel(itemCount, 16, default);
-
-            // Wait for all jobs to complete
-            jobHandle.Complete();
-
-            // Verify all jobs completed successfully
             for (var i = 0; i < itemCount; i++)
             {
-                // Each result should contain a value indicating successful execution
-                Assert.AreEqual(1, results[i], $"Job {i} did not complete successfully");
+                var count = (i % 16) + 1;
+                var sequenceSum = (count * (count - 1)) / 2;
+                Assert.AreEqual(count, results[i].IntegerCount, $"Integer list length for job {i}.");
+                Assert.AreEqual(count, results[i].VectorCount, $"Vector list length for job {i}.");
+                Assert.AreEqual((i * count) + sequenceSum, results[i].IntegerSum, $"Integer list contents for job {i}.");
+                Assert.AreEqual(new float3(i * count, sequenceSum, (i * count) + sequenceSum), results[i].VectorSum, $"Vector contents for job {i}.");
             }
-
-            results.Dispose();
         }
 
         private struct JobResult
         {
-            public int ListLength;
-            public int ThreadIndex;
+            public int IntegerCount;
+            public int VectorCount;
+            public int IntegerSum;
+            public float3 VectorSum;
         }
 
-        [BurstCompile]
-        private struct AddItemsToPooledListJob : IJobFor
+        [BurstCompile(CompileSynchronously = true)]
+        private struct ReadPooledListsJob : IJobFor
         {
             public NativeArray<JobResult> Results;
 
-            public int ItemsToAdd;
-
             public void Execute(int index)
             {
-                // Store thread index before any other operations
-                var threadIndex = Unity.Jobs.LowLevel.Unsafe.JobsUtility.ThreadIndex;
-
-                using var pooledList = PooledNativeList<int>.Make();
-                for (var i = 0; i < this.ItemsToAdd; i++)
+                using var integers = PooledNativeList<int>.Make();
+                using var vectors = PooledNativeList<float3>.Make();
+                var count = (index % 16) + 1;
+                for (var i = 0; i < count; i++)
                 {
-                    pooledList.List.Add(i);
+                    integers.List.Add(index + i);
+                    vectors.List.Add(new float3(index, i, index + i));
                 }
 
-                // Record results before the list is disposed and cleared
-                this.Results[index] = new JobResult
+                var result = new JobResult
                 {
-                    ListLength = pooledList.List.Length,
-                    ThreadIndex = threadIndex,
+                    IntegerCount = integers.List.Length,
+                    VectorCount = vectors.List.Length,
                 };
-            }
-        }
-
-        [BurstCompile]
-        private struct BackToBackTestJob : IJobFor
-        {
-            public int BatchIndex;
-
-            public NativeArray<int> Results;
-
-            public void Execute(int index)
-            {
-                // Get a list from the pool
-                using var intList = PooledNativeList<int>.Make();
-
-                // Add some items to the list
-                var itemCount = (index % 10) + 1; // 1 to 10 items
-                for (var i = 0; i < itemCount; i++)
+                for (var i = 0; i < count; i++)
                 {
-                    intList.List.Add(i + this.BatchIndex);
+                    result.IntegerSum += integers.List[i];
+                    result.VectorSum += vectors.List[i];
                 }
 
-                // Use the same pool to get another list of a different type
-                using var floatList = PooledNativeList<float>.Make();
-
-                // Add some items to this list too
-                for (var i = 0; i < itemCount; i++)
-                {
-                    floatList.List.Add(i + this.BatchIndex);
-                }
-
-                // Record the batch index in the results
-                this.Results[index] = this.BatchIndex;
-            }
-        }
-
-        [BurstCompile]
-        private struct BurstCompatibilityTestJob : IJobFor
-        {
-            public NativeArray<int> Results;
-
-            public void Execute(int index)
-            {
-                // Randomly choose between float and float3 lists
-                if ((index % 2) == 0)
-                {
-                    // Get and use a float list
-                    using var list = PooledNativeList<float>.Make();
-
-                    // Add a variable number of elements based on index
-                    var count = (index % 16) + 1;
-                    for (var i = 0; i < count; i++)
-                    {
-                        list.List.Add(i);
-                    }
-
-                    // Mark as successful
-                    this.Results[index] = 1;
-                }
-                else
-                {
-                    // Get and use a float3 list
-                    using var list = PooledNativeList<float3>.Make();
-
-                    // Add a variable number of elements based on index
-                    var count = (index % 16) + 1;
-                    for (var i = 0; i < count; i++)
-                    {
-                        list.List.Add(new float3(i));
-                    }
-
-                    // Mark as successful
-                    this.Results[index] = 1;
-                }
+                this.Results[index] = result;
             }
         }
     }

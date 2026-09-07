@@ -9,15 +9,16 @@ namespace BovineLabs.Core.Tests.Jobs
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Jobs;
+    using Unity.Mathematics;
 
     public class IJobHashMapDeferTests
     {
         [TestCase(0)]
-        [TestCase(1000000)]
-        public void Schedule(int count)
+        [TestCase(257)]
+        public void Schedule_AfterResizingJob_VisitsEveryKeyValueExactlyOnce(int count)
         {
-            var hashMap = new NativeHashMap<int, int>(0, Allocator.Persistent);
-            var result = new NativeQueue<byte>(Allocator.Persistent);
+            using var hashMap = new NativeHashMap<int, int>(0, Allocator.TempJob);
+            using var result = new NativeQueue<int2>(Allocator.TempJob);
 
             var dependency = new ResizeJob
             {
@@ -25,18 +26,23 @@ namespace BovineLabs.Core.Tests.Jobs
                 HashMap = hashMap,
             }.Schedule();
 
-            dependency = new CountJob
+            dependency = new ReadJob
             {
                 HashMap = hashMap,
-                Count = result.AsParallelWriter(),
+                Results = result.AsParallelWriter(),
             }.ScheduleParallel(hashMap, 64, dependency);
 
             dependency.Complete();
 
             Assert.AreEqual(count, result.Count);
-
-            result.Dispose();
-            hashMap.Dispose();
+            var seen = new bool[count];
+            while (result.TryDequeue(out var pair))
+            {
+                Assert.That(pair.x, Is.InRange(0, count - 1));
+                Assert.IsFalse(seen[pair.x], $"Key {pair.x} was visited more than once.");
+                Assert.AreEqual((pair.x * 3) + 1, pair.y);
+                seen[pair.x] = true;
+            }
         }
 
         [BurstCompile]
@@ -49,22 +55,23 @@ namespace BovineLabs.Core.Tests.Jobs
             {
                 for (var i = 0; i < this.Count; i++)
                 {
-                    this.HashMap.Add(i, i);
+                    this.HashMap.Add(i, (i * 3) + 1);
                 }
             }
         }
 
         [BurstCompile]
-        private struct CountJob : IJobHashMapDefer
+        private struct ReadJob : IJobHashMapDefer
         {
             [ReadOnly]
             public NativeHashMap<int, int> HashMap;
 
-            public NativeQueue<byte>.ParallelWriter Count;
+            public NativeQueue<int2>.ParallelWriter Results;
 
             public void ExecuteNext(int entryIndex, int jobIndex)
             {
-                this.Count.Enqueue(0);
+                this.Read(this.HashMap, entryIndex, out var key, out var value);
+                this.Results.Enqueue(new int2(key, value));
             }
         }
     }

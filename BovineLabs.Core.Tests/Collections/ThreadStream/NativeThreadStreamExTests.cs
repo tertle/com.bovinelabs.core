@@ -6,13 +6,12 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
 {
     using BovineLabs.Core.Collections;
     using BovineLabs.Core.Extensions;
-    using BovineLabs.Testing;
     using NUnit.Framework;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
     /// <summary> Tests for <see cref="NativeStreamExtensions" /> . </summary>
-    public class NativeThreadStreamExTests : ECSTestsFixture
+    public class NativeThreadStreamExTests
     {
         /// <summary> Tests the extensions AllocateLarge and ReadLarge. </summary>
         /// <param name="size"> The size of the allocation. </param>
@@ -20,35 +19,38 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
         [TestCase(8192)] // requires just more than 2 blocks
         public unsafe void WriteRead(int size)
         {
-            var stream = new NativeThreadStream(Allocator.Temp);
+            using var stream = new NativeThreadStream(Allocator.Temp);
 
             var sourceData = new NativeArray<byte>(size, Allocator.Temp);
-            for (var i = 0; i < size; i++)
+            using (sourceData)
             {
-                sourceData[i] = (byte)(i % 255);
-            }
+                for (var i = 0; i < size; i++)
+                {
+                    sourceData[i] = (byte)(i % 255);
+                }
 
-            var writer = stream.AsWriter();
-            writer.Write(size);
-            writer.WriteLarge((byte*)sourceData.GetUnsafeReadOnlyPtr(), size);
+                var writer = stream.AsWriter();
+                writer.Write(size);
+                writer.WriteLarge((byte*)sourceData.GetUnsafeReadOnlyPtr(), size);
 
-            var reader = stream.AsReader();
+                var reader = stream.AsReader();
 
-            reader.BeginForEachIndex(0);
+                reader.BeginForEachIndex(0);
 
-            var readSize = reader.Read<int>();
+                var readSize = reader.Read<int>();
 
-            Assert.AreEqual(size, readSize);
+                Assert.AreEqual(size, readSize);
 
-            var result = new NativeArray<byte>(readSize, Allocator.Temp);
+                using var result = new NativeArray<byte>(readSize, Allocator.Temp);
 
-            reader.ReadLarge((byte*)result.GetUnsafePtr(), readSize);
+                reader.ReadLarge((byte*)result.GetUnsafePtr(), readSize);
 
-            reader.EndForEachIndex();
+                reader.EndForEachIndex();
 
-            for (var i = 0; i < readSize; i++)
-            {
-                Assert.AreEqual(sourceData[i], result[i]);
+                for (var i = 0; i < readSize; i++)
+                {
+                    Assert.AreEqual(sourceData[i], result[i]);
+                }
             }
         }
     }

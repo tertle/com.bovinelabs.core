@@ -5,12 +5,11 @@
 namespace BovineLabs.Core.Tests.Collections.ThreadStream
 {
     using BovineLabs.Core.Collections;
-    using BovineLabs.Testing;
     using NUnit.Framework;
     using Unity.Collections;
 
     /// <summary> Tests for <see cref="NativeThreadStream" /> . </summary>
-    internal partial class NativeThreadStreamTests : ECSTestsFixture
+    internal partial class NativeThreadStreamTests
     {
         /// <summary> Tests that you can create and destroy. </summary>
         [Test]
