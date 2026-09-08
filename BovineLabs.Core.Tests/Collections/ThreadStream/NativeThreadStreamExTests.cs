@@ -22,35 +22,32 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
             using var stream = new NativeThreadStream(Allocator.Temp);
 
             var sourceData = new NativeArray<byte>(size, Allocator.Temp);
-            using (sourceData)
+            for (var i = 0; i < size; i++)
             {
-                for (var i = 0; i < size; i++)
-                {
-                    sourceData[i] = (byte)(i % 255);
-                }
+                sourceData[i] = (byte)(i % 255);
+            }
 
-                var writer = stream.AsWriter();
-                writer.Write(size);
-                writer.WriteLarge((byte*)sourceData.GetUnsafeReadOnlyPtr(), size);
+            var writer = stream.AsWriter();
+            writer.Write(size);
+            writer.WriteLarge((byte*)sourceData.GetUnsafeReadOnlyPtr(), size);
 
-                var reader = stream.AsReader();
+            var reader = stream.AsReader();
 
-                reader.BeginForEachIndex(0);
+            reader.BeginForEachIndex(0);
 
-                var readSize = reader.Read<int>();
+            var readSize = reader.Read<int>();
 
-                Assert.AreEqual(size, readSize);
+            Assert.AreEqual(size, readSize);
 
-                using var result = new NativeArray<byte>(readSize, Allocator.Temp);
+            using var result = new NativeArray<byte>(readSize, Allocator.Temp);
 
-                reader.ReadLarge((byte*)result.GetUnsafePtr(), readSize);
+            reader.ReadLarge((byte*)result.GetUnsafePtr(), readSize);
 
-                reader.EndForEachIndex();
+            reader.EndForEachIndex();
 
-                for (var i = 0; i < readSize; i++)
-                {
-                    Assert.AreEqual(sourceData[i], result[i]);
-                }
+            for (var i = 0; i < readSize; i++)
+            {
+                Assert.AreEqual(sourceData[i], result[i]);
             }
         }
     }
