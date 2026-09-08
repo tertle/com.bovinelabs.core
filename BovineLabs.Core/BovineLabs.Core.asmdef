@@ -45,11 +45,6 @@
             "define": "UNITY_LOCALIZATION"
         },
         {
-            "name": "com.bovinelabs.savanna",
-            "expression": "",
-            "define": "BL_SAVANNA"
-        },
-        {
             "name": "com.unity.modules.terrain",
             "expression": "",
             "define": "UNITY_TERRAIN"
