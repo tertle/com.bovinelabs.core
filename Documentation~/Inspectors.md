@@ -331,7 +331,7 @@ The editor assembly also exposes reusable UI for dynamic-buffer-backed container
 - `DynamicListElement`
 - `EntityInspector<T>`
 
-Use these when building custom Entities inspectors for containers described in [DynamicHashMap](DynamicHashMap.md). Existing examples include Essence stat/intrinsic inspectors and Perception shared-memory inspection.
+Use these when building custom Entities inspectors for containers described in [DynamicHashMap](DynamicHashMap.md). Existing examples include Essence stat/intrinsic inspectors and Vista shared-memory inspection.
 
 ## Utility Helpers
 
