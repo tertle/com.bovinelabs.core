@@ -31,7 +31,7 @@ namespace BovineLabs.Core.UI
         private static StyleSheet styleSheet;
 
         /// <summary>Raised after the shared theme changes. UI subscribers should unsubscribe when detached.</summary>
-        [field: NoAutoStaticsCleanup]
+        [NoAutoStaticsCleanup]
         public static event Action<BovineTheme> ThemeChanged;
 
         /// <summary>Gets or sets the user's theme. Editor persistence is owned by the Core editor preference provider.</summary>
