@@ -89,17 +89,6 @@ namespace Unity.NetCode
     }
 
     /// <summary>
-    /// Attribute denoting that an <see cref="Unity.Entities.IEnableableComponent"/> should have its enabled flag replicated.
-    /// And thus, this is only valid on enableable component types. You'll get compiler errors if it's not.
-    /// </summary>
-    /// <remarks>A type will not replicate its enableable flag unless it has this attribute attached to the class.
-    /// This can (and should) also be added to variants that serialize enable bits.</remarks>
-    [AttributeUsage(AttributeTargets.Struct | AttributeTargets.Class)]
-    public sealed class GhostEnabledBitAttribute : Attribute
-    {
-    }
-
-    /// <summary>
     /// Add the attribute to prevent a field ICommandData struct to be serialized.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field|AttributeTargets.Property, Inherited = true)]
