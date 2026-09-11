@@ -37,6 +37,29 @@ namespace BovineLabs.Core.Utility
             return streamingState.Status == SceneSectionStreamingSystem.StreamingStatus.Loaded;
         }
 
+        /// <summary> Checks whether a section or one of its containing sections has requested unload. </summary>
+        /// <param name="state"> The calling system state. </param>
+        /// <param name="sectionEntity"> The section metadata entity. </param>
+        /// <returns> True when the section or an ancestor no longer has RequestSceneLoaded. </returns>
+        public static bool IsSectionPendingUnload(ref SystemState state, Entity sectionEntity)
+        {
+            while (true)
+            {
+                if (!state.EntityManager.HasComponent<RequestSceneLoaded>(sectionEntity))
+                {
+                    return true;
+                }
+
+                if (!state.EntityManager.HasComponent<SceneTag>(sectionEntity))
+                {
+                    return false;
+                }
+
+                // Unity tags nested section metadata with the section that contains its scene.
+                sectionEntity = state.EntityManager.GetSharedComponent<SceneTag>(sectionEntity).SceneEntity;
+            }
+        }
+
         public void Update(ref SystemState state)
         {
             this.sceneReferences.Update(ref state);
