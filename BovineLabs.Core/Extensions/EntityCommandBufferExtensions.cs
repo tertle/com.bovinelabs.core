@@ -4,6 +4,7 @@
 
 namespace BovineLabs.Core.Extensions
 {
+    using System;
     using BovineLabs.Core.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -14,7 +15,17 @@ namespace BovineLabs.Core.Extensions
 
         public static UntypedDynamicBuffer AddUntypedBuffer(this EntityCommandBuffer.ParallelWriter ecb, int sortKey, Entity e, ComponentType componentType)
         {
-            return ecb.m_Data->CreateUntypedBufferCommand(ECBCommand.AddBuffer, &ecb.m_Data->m_MainThreadChain, sortKey, e, componentType);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+            if (ecb.m_Data == null)
+            {
+                throw new NullReferenceException("The EntityCommandBuffer has not been initialized.");
+            }
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(ecb.m_Safety0);
+#endif
+            var chain = ecb.m_ThreadIndex >= 0 ? &ecb.m_Data->m_ThreadedChains[ecb.m_ThreadIndex] : &ecb.m_Data->m_MainThreadChain;
+            return ecb.CreateUntypedBufferCommand(ECBCommand.AddBuffer, chain, sortKey, e, componentType);
         }
 
         public static void UnsafeAddComponent(
@@ -24,16 +35,17 @@ namespace BovineLabs.Core.Extensions
         }
 
         private static UntypedDynamicBuffer CreateUntypedBufferCommand(
-            ref this EntityCommandBufferData ecbd, ECBCommand commandType, EntityCommandBufferChain* chain, int sortKey, Entity e, ComponentType componentType)
+            ref this EntityCommandBuffer.ParallelWriter ecb, ECBCommand commandType, EntityCommandBufferChain* chain, int sortKey, Entity e,
+            ComponentType componentType)
         {
             int internalCapacity;
-            var header = ecbd.AddEntityBufferCommandUntyped(chain, sortKey, commandType, e, componentType, out internalCapacity);
+            var header = ecb.m_Data->AddEntityBufferCommandUntyped(chain, sortKey, commandType, e, componentType, out internalCapacity);
             ref readonly var type = ref TypeManager.GetTypeInfo(componentType.TypeIndex);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var safety = AtomicSafetyHandle.GetTempMemoryHandle();
+            var safety = ecb.m_BufferSafety;
             AtomicSafetyHandle.UseSecondaryVersion(ref safety);
-            var arraySafety = AtomicSafetyHandle.GetTempMemoryHandle();
+            var arraySafety = ecb.m_ArrayInvalidationSafety;
             return new UntypedDynamicBuffer(header, safety, arraySafety, false, false, 0, internalCapacity, type.ElementSize, UntypedDynamicBuffer.AlignOf);
 #else
             return new UntypedDynamicBuffer(header, internalCapacity, type.ElementSize, UntypedDynamicBuffer.AlignOf);
