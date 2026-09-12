@@ -6,21 +6,24 @@
 * Unity Search lookups for exact decimal or hexadecimal ECS stable type hashes and full or masked type indices through the `at:` Types provider
 * Native ECS component inspection from Types search results
 * `eid:` Unity Search provider for selecting, pinging, and opening objects by their logged or packed `EntityId`
-* Shared Bovine Works and The Curator UI themes with opt-in UXML roots, a theme selector, and editor appearance preferences
+* Shared Bovine Works and The Curator UI themes with opt-in UXML roots and theme selection through editor appearance preferences
 * Actions for adding selected assets and assets from Selection History to Favourites
 
 ### Changed
 * Facet and dynamic collection source generators now embed CodeGenHelpers source instead of depending on a separate helper assembly
 * Favourites now accepts only persistent assets and uses animated list reordering
+* `SaveAttribute`, `SaveIgnoreAttribute`, and `SaveFeature` are now defined by Core even when Savanna is installed, retaining the `BovineLabs.Savanna` namespace
 
 ### Fixed
 * Invalid Types search queries now report their errors instead of returning all types
-* Favourites and Selection History now distinguish subassets and unsaved scene objects correctly and refresh saved scene identities and asset metadata
+* Favourites and Selection History now distinguish subassets and unsaved scene objects correctly and refresh saved scene identities and asset metadata; object windows reinitialize correctly after domain reload
 * Selection History now persists the correct recent entries, applies updated history limits, and keeps rows in place when replaying selections
 * AutoRef processing now excludes assets marked `DontSaveInBuild` from runtime catalogues and automatic ID allocation
 * Packed dynamic collections now initialize padding and reserve storage and clear removed entries while preserving live entries during resizing
 * `NativeList.ResizeInitialized` now initializes the correct byte count for its element type
 * Native and unsafe hash-set copies to native lists now use the live element count after removals
+* `AddUntypedBuffer` parallel commands now use worker-local ECB chains and ECB-owned safety handles
+* SubScene unload detection now follows scene ancestry to recognize nested sections unloading with an ancestor
 
 ### Removed
 * Redundant `BovineLabs > Tools > Asset` GUID lookup window; use Unity Search with `p: <asset-guid>` instead
