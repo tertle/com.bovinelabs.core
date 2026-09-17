@@ -34,19 +34,19 @@
 ### Added
 * Opt-in editor-world settings prefab fallbacks with automatic rebaking and deduplication against normal SubScene instances
 * New `EditorSettings` assets bootstrap `Assets/Settings/Prefabs` with `GameSettings`, `ServiceSettings`, and `MenuSettings`, plus
-  `ClientSettings` and `ServerSettings` when NetCode is installed, then immediately populate the derived settings
+  `ClientSettings` and `ServerSettings` when Netcode is installed, then immediately populate the derived settings
 * `StableAssetId.Create` for stable project-scoped IDs derived from persisted asset GUIDs and local file IDs
 * `IsOccupied` helpers for interface-backed and generic unmanaged dynamic-dictionary entries, including a non-boxing generic overload
 
 ### Changed
-* Editor-world fallback routing keeps `client` ready for future NetCode setup and silently skips unresolved non-empty routes
+* Editor-world fallback routing keeps `client` ready for future Netcode setup and silently skips unresolved non-empty routes
 * Editor selection and type queries now use Unity Search's public picker and query APIs
 * Animation-curve blob construction and remapping now read keyframes into native buffers without allocating managed key arrays
 * `MeshSimplifier` now uses native vertex and index arrays exclusively and provides a synchronously Burst-compiled out-result overload
 
 ### Fixed
 * Settings authoring now applies multi-world settings to every resolved prefab instead of stopping when one already contains the setting
-* Without NetCode, unconfigured `client` and `server` settings routes now fall back to the default authoring
+* Without Netcode, unconfigured `client` and `server` settings routes now fall back to the default authoring
 * `MeshSimplifier` now allocates one record per triangle and preserves large simplification errors without integer overflow
 * Failed player builds now remove temporary `SettingsSingleton` entries from Player Settings preloaded assets
 
@@ -60,7 +60,7 @@
 * `BLId` inspector displays decoded read-only ID and mod values instead of the packed raw value
 * Core editor toolbar button helpers
 * `ProfilerRecorderGroup` for aggregating one or more profiler counters
-* NetCode input compatibility wrappers for optional command and event input types
+* Netcode input compatibility wrappers for optional command and event input types
 * `NativeQueueExtensions` helper validation for creating parallel writers from writable queues
 * `DynamicDictionary` and `DynamicMultiDictionary` entry-backed lookup maps with dictionary lookup authoring support
 * Generated `AsMap` extensions for `IDynamicDictionaryEntry` and `IDynamicMultiDictionaryEntry` buffer types
@@ -77,7 +77,7 @@
 * `AutoRefImportExtensionAttribute` was renamed to `AutoRefImportAttribute`
 * `BLId` moved into base Core and `ObjectId` exposes its payload for ghost serialization
 * `BLId` now reserves 8 bits for mod identifiers and 24 bits for local identifiers, with the bit counts exposed as public constants
-* `GhostDynamicHashMapAttribute` now uses simplified optional-NetCode defaults and supports raw stable unmanaged hash map ghosts
+* `GhostDynamicHashMapAttribute` now uses simplified optional-Netcode defaults and supports raw stable unmanaged hash map ghosts
 * Generated dynamic hash map ghost serializers are now marked for Burst compilation
 * ConfigVars editor window layout was modernized
 * The BovineLabs Package Manager moved out of Core into the standalone `com.bovinelabs` package
@@ -97,8 +97,8 @@
 * Settings singletons now initialize before the splash screen instead of during code initialization, avoiding build-time initialization errors
 * ConfigVar editor persistence is now scoped by project instead of sharing bare `EditorPrefs` keys across every Unity project
 * Rect ConfigVars now restore their height correctly when deserialized from their string representation
-* Dynamic hash collection NetCode serializers now use concrete generated Burst function pointers without generic AOT entry-point warnings
-* Empty dynamic hash collection buffers matching their NetCode baseline no longer resend an unchanged length every tick
+* Dynamic hash collection Netcode serializers now use concrete generated Burst function pointers without generic AOT entry-point warnings
+* Empty dynamic hash collection buffers matching their Netcode baseline no longer resend an unchanged length every tick
 * Fixed-string global fatal and error dispatch now uses error logging instead of the editor-only verbose path
 * Asynchronous fallback hash-map disposal now releases both owned native containers
 * Immediate and scheduled fallback hash-map clearing now discards queued overflow entries and registers downstream generic Burst specializations
@@ -117,7 +117,7 @@
 * `InitializeAllOnLoad`, `LoadPrefabsAsEntities`, and `FixHierarchySystem`
 * Obsolete Change Filter Tracking documentation for the removed editor feature
 * Package-distributed Codex skills and the `Plugins~/skills.json` catalog
-* Unsupported no-pointer `DynamicHashMap` and `DynamicMultiHashMap` NetCode registration and serializer-state overloads
+* Unsupported no-pointer `DynamicHashMap` and `DynamicMultiHashMap` Netcode registration and serializer-state overloads
 
 ## [1.6.4] - 2026-07-08
 
@@ -145,7 +145,7 @@
 * `DynamicMultiHashMap` iterator removal support for removing the current element
 * `DynamicMultiHashMap.TryAddUniquePair` and value removal support
 * `DynamicUntypedHashMap.Remove` and `GetKeyArray` for filtering untyped dynamic maps without knowing stored value types
-* `DynamicHashMap` and `DynamicMultiHashMap` NetCode optimized support through the unified `GhostDynamicHashMapAttribute`
+* `DynamicHashMap` and `DynamicMultiHashMap` Netcode optimized support through the unified `GhostDynamicHashMapAttribute`
 * `BlobStringRef` for blob-backed string references
 * `AosHashMap` and AoS lookup authoring support for object-management lookup maps
 
@@ -159,17 +159,17 @@
 * Core test coverage was pruned to remove low-value tests
 * SubScene loading on Unity 6.6+ now uses import entities for post-load setup instead of `SubSceneUtil` structural helpers
 * Core package skills were synced with current workflow guidance
-* Entities journaling and NetCode diagnostic hooks now use `UNITY_INCLUDE_INSTRUMENTATION` or `UNITY_ENABLE_CHECKS` instead of `DEVELOPMENT_BUILD`
-* Dynamic hash map NetCode serializers now share one transport core and use interface inference for map versus multimap serializer generation
+* Entities journaling and Netcode diagnostic hooks now use `UNITY_INCLUDE_INSTRUMENTATION` or `UNITY_ENABLE_CHECKS` instead of `DEVELOPMENT_BUILD`
+* Dynamic hash map Netcode serializers now share one transport core and use interface inference for map versus multimap serializer generation
 
 ### Fixed
 * Assembly Builder now keeps type registration enabled while building assemblies
-* `BakingWorldFlagsSystem` now assigns server and client baking world flags to the matching NetCode baking settings.
+* `BakingWorldFlagsSystem` now assigns server and client baking world flags to the matching Netcode baking settings.
 * Bit-field popup drawers now preserve unknown serialized values instead of falling back to the first configured option.
 * Object management now bakes `ObjectGroupRegistry` and `ObjectGroupMatcher` buffers even when no object groups are configured.
 * Object management lookup baking now precomputes lookup buffers for lookup authoring map types, including empty optional lookup maps.
 * SubScene asset baking now skips unassigned asset sets instead of throwing during bake.
-* SubScene load flag filtering now keeps shared NetCode bake targets while excluding client-only and server-only content from the opposite player bake.
+* SubScene load flag filtering now keeps shared Netcode bake targets while excluding client-only and server-only content from the opposite player bake.
 * Startup scene swapping now skips saving when the editor only has an unsaved empty scene open.
 * Singleton buffer query access now validates matching singleton buffer queries before access
 * Unity 6.6/Burst compatibility for atomic intrinsics, timer loops, SubScene import entity setup, and managed component editor filtering
@@ -183,7 +183,7 @@
 * `ObjectDefinitionRegistry.TryGetValue`
 * `ObjectId.RawValue` for raw packed ID access
 * `WorldExtensions.IsServerLocalWorld`
-* `NetUtility` helpers for NetCode-enabled runtime checks
+* `NetUtility` helpers for Netcode-enabled runtime checks
 * `DynamicUntypedHashMap.Add<TValue>` for add-only untyped map writes
 * `BurstTrampolineExtensions.InvokeRef<TRef>` for mutable payload callbacks
 * CodeGenHelpers switch builders now support default cases
@@ -683,7 +683,7 @@
 * String variations to BLDebug
 * GetEntity(Object) extension to IBaker 
 * Connection approval to bootstrap
-* Input now supports generating for NetCode IInputComponentData
+* Input now supports generating for Netcode IInputComponentData
 * IUpdateWhilePaused which allows a ComponentSystemGroup to continue to Update when the game is paused
 * StripLocalAttribute to strip network only components in Local Simulation world
 * Support for Unity 6.1
@@ -696,7 +696,7 @@
 * BovineLabsBootstrap.Netcode being more fleshed out
 * CameraMainAuthoring renamed to CameraAuthoring
 * BLDebug now implements a CustomLog to avoid having to use 4096 fixed string every time
-* InitializeSystemGroup moved to BeginSimulationGroup to support NetCode ghosts
+* InitializeSystemGroup moved to BeginSimulationGroup to support Netcode ghosts
 * Renamed InitializationRequireSubScenesSystemGroup to RequireSubScenesSystemGroup
 * Pause now uses the same RateManager on multiplayer worlds as well
 * CameraFrustumCorners and CameraFrustumPlanes are now IComponentData
@@ -1029,7 +1029,7 @@
 * GetInternalDependency extension for SystemState
 
 ### Fixed
-* Compile error on BovineLabsBoostrap when NetCode was installed
+* Compile error on BovineLabsBoostrap when Netcode was installed
 
 ## [1.2.2] - 2024-01-05
 
@@ -1244,7 +1244,7 @@
 * Added a workaround for unity disposing log handle before world shutdown
 * Fixed missing define in Core.Tests causing unit tests to incorrectly appear in runner
 * Fixed ObjectGroupMatcher not being initialized
-* NetCode breaking VirtualChunks if systems landed out of order
+* Netcode breaking VirtualChunks if systems landed out of order
 * ObjectCategories incorrectly bringing in baking GameObjects into the build
 * TypeMangerEx loading wrong file in builds
 

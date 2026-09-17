@@ -127,8 +127,8 @@ namespace BovineLabs.Core.Editor.Settings
                 new() { World = "service", Authoring = GetOrCreateSettingsAuthoring(directory, "ServiceSettings") },
             };
 
-            var hasNetCode = PackageInfo.FindForPackageName("com.unity.netcode") != null;
-            if (hasNetCode)
+            var hasNetcode = PackageInfo.FindForPackageName("com.unity.netcode") != null;
+            if (hasNetcode)
             {
                 authorings.Add(new KeyAuthoring { World = "server", Authoring = GetOrCreateSettingsAuthoring(directory, "ServerSettings") });
                 authorings.Add(new KeyAuthoring { World = "client", Authoring = GetOrCreateSettingsAuthoring(directory, "ClientSettings") });

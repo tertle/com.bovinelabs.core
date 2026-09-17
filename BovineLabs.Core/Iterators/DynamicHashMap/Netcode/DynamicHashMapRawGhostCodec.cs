@@ -8,7 +8,7 @@ namespace BovineLabs.Core.Iterators
         where TValue : unmanaged
     {
         public const int Version = 1;
-        public const int ScratchStride = DynamicHashMapNetCodeRawCodec<TKey, TValue>.SnapshotSize;
+        public const int ScratchStride = DynamicHashMapNetcodeRawCodec<TKey, TValue>.SnapshotSize;
     }
 }
 #endif

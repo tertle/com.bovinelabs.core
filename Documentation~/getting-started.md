@@ -112,7 +112,7 @@ Use `BLLogger` instead when an ECS system needs the current world and frame in e
 
 ## Optional packages
 
-Core contains integrations for packages such as NetCode, Physics, Localization, and Splines, but does not make every integration a package dependency. Install the matching package before using its APIs. Unity then enables the corresponding asmdef version define and recompiles Core.
+Core contains integrations for packages such as Netcode, Physics, Localization, and Splines, but does not make every integration a package dependency. Install the matching package before using its APIs. Unity then enables the corresponding asmdef version define and recompiles Core.
 
 ## Common setup problems
 

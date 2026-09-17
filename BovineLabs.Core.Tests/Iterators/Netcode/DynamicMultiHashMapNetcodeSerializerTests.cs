@@ -13,7 +13,7 @@ namespace BovineLabs.Core.Tests.Iterators
     using Unity.Netcode;
     using Unity.Netcode.LowLevel.Unsafe;
 
-    public partial class DynamicMultiHashMapNetCodeSerializerTests : ECSTestsFixture
+    public partial class DynamicMultiHashMapNetcodeSerializerTests : ECSTestsFixture
     {
         private const int MinGrowth = 64;
 
@@ -43,7 +43,7 @@ namespace BovineLabs.Core.Tests.Iterators
             var sourceBytes = sourceBuffer.Reinterpret<byte>();
             var snapshot = new NativeArray<byte>(sourceBytes.Length, Allocator.Temp);
 
-            DynamicMultiHashMapNetCodeSerializer<DynamicMultiHashMapRawStableModeTestsBuffer, int, byte>.CopyToSnapshot(
+            DynamicMultiHashMapNetcodeSerializer<DynamicMultiHashMapRawStableModeTestsBuffer, int, byte>.CopyToSnapshot(
                 IntPtr.Zero, (IntPtr)snapshot.GetUnsafePtr(), 0, 1, (IntPtr)sourceBytes.GetPtr(), 1, sourceBytes.Length);
 
             var targetBuffer = this.CreateRawMultiHashMapBuffer();
@@ -56,7 +56,7 @@ namespace BovineLabs.Core.Tests.Iterators
                 SnapshotAfter = (IntPtr)snapshot.GetUnsafeReadOnlyPtr(),
             };
 
-            DynamicMultiHashMapNetCodeSerializer<DynamicMultiHashMapRawStableModeTestsBuffer, int, byte>.CopyFromSnapshot(
+            DynamicMultiHashMapNetcodeSerializer<DynamicMultiHashMapRawStableModeTestsBuffer, int, byte>.CopyFromSnapshot(
                 IntPtr.Zero, (IntPtr)(&dataAtTick), 0, 1, (IntPtr)targetBytes.GetPtr(), 1, targetBytes.Length);
 
             var rebuilt = targetBuffer.AsMultiHashMap<DynamicMultiHashMapRawStableModeTestsBuffer, int, byte>();
@@ -147,7 +147,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void GeneratedRegistration_CoversRootAndChildBufferSelection()
         {
-            using var world = new World("DynamicMultiHashMap NetCode Collection Test", WorldFlags.GameServer);
+            using var world = new World("DynamicMultiHashMap Netcode Collection Test", WorldFlags.GameServer);
             CreateGeneratedSerializerCollection(world);
 
             using var query = world.EntityManager.CreateEntityQuery(ComponentType.ReadOnly<GhostComponentSerializerCollectionData>());
@@ -180,10 +180,10 @@ namespace BovineLabs.Core.Tests.Iterators
             AssertFunctionPointersInitialized(multiState);
 #if UNITY_EDITOR || NETCODE_DEBUG
             Assert.AreEqual(
-                DynamicGhostPrimitiveCodec.Hash64("BovineLabs.Core.Iterators.DynamicHashMapNetCodeGeneratedCompactVariant"),
+                DynamicGhostPrimitiveCodec.Hash64("BovineLabs.Core.Iterators.DynamicHashMapNetcodeGeneratedCompactVariant"),
                 mapState.VariantTypeFullNameHash);
             Assert.AreEqual(
-                DynamicGhostPrimitiveCodec.Hash64("BovineLabs.Core.Iterators.DynamicMultiHashMapNetCodeGeneratedCompactVariant"),
+                DynamicGhostPrimitiveCodec.Hash64("BovineLabs.Core.Iterators.DynamicMultiHashMapNetcodeGeneratedCompactVariant"),
                 multiState.VariantTypeFullNameHash);
 #endif
         }
@@ -276,7 +276,7 @@ namespace BovineLabs.Core.Tests.Iterators
         private static void CreateGeneratedSerializerCollection(World world)
         {
             world.GetOrCreateSystemManaged<GhostComponentSerializerCollectionSystemGroup>();
-            world.CreateSystem<DynamicMultiHashMapNetCodeGeneratedRegistrationSystem>();
+            world.CreateSystem<DynamicMultiHashMapNetcodeGeneratedRegistrationSystem>();
             world.GetOrCreateSystemManaged<DefaultVariantSystemGroup>();
         }
 
@@ -413,7 +413,7 @@ namespace BovineLabs.Core.Tests.Iterators
             };
         }
 
-        private partial struct DynamicMultiHashMapNetCodeGeneratedRegistrationSystem : ISystem
+        private partial struct DynamicMultiHashMapNetcodeGeneratedRegistrationSystem : ISystem
         {
             public void OnCreate(ref SystemState state)
             {

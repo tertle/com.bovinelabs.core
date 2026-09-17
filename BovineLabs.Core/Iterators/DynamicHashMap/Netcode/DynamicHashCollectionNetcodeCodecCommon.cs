@@ -5,7 +5,7 @@ namespace BovineLabs.Core.Iterators
     using Unity.Collections;
     using Unity.Netcode.LowLevel.Unsafe;
 
-    internal static unsafe class DynamicHashCollectionNetCodeCodecCommon
+    internal static unsafe class DynamicHashCollectionNetcodeCodecCommon
     {
         internal const int SnapshotSize = 1;
         internal const int ChangeMaskBits = 1;

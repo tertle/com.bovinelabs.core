@@ -12,7 +12,7 @@ namespace BovineLabs.DynamicGenerator
     using Microsoft.CodeAnalysis.Text;
 
     [Generator]
-    public sealed class DynamicHashMapNetCodeGenerator : IIncrementalGenerator
+    public sealed class DynamicHashMapNetcodeGenerator : IIncrementalGenerator
     {
         private const string AttributeMetadataName = "BovineLabs.Core.Iterators.GhostDynamicHashMapAttribute";
         private const string StructLayoutAttributeMetadataName = "System.Runtime.InteropServices.StructLayoutAttribute";
@@ -34,7 +34,7 @@ namespace BovineLabs.DynamicGenerator
             context.RegisterSourceOutput(candidates, static (productionContext, candidate) => Execute(productionContext, candidate));
         }
 
-        private static void Execute(SourceProductionContext context, DynamicHashMapNetCodeCandidate candidate)
+        private static void Execute(SourceProductionContext context, DynamicHashMapNetcodeCandidate candidate)
         {
             try
             {
@@ -90,7 +90,7 @@ namespace BovineLabs.DynamicGenerator
             return false;
         }
 
-        private static DynamicHashMapNetCodeCandidate GetCandidate(GeneratorSyntaxContext ctx, CancellationToken cancellationToken)
+        private static DynamicHashMapNetcodeCandidate GetCandidate(GeneratorSyntaxContext ctx, CancellationToken cancellationToken)
         {
             var typeDeclaration = (TypeDeclarationSyntax)ctx.Node;
             var typeSymbol = ctx.SemanticModel.GetDeclaredSymbol(typeDeclaration, cancellationToken);
@@ -105,14 +105,14 @@ namespace BovineLabs.DynamicGenerator
 
                 if (IsDynamicHashMapGhostSerializerAttribute(attribute))
                 {
-                    return new DynamicHashMapNetCodeCandidate(typeDeclaration, typeSymbol, attribute);
+                    return new DynamicHashMapNetcodeCandidate(typeDeclaration, typeSymbol, attribute);
                 }
             }
 
             return null;
         }
 
-        private static DynamicHashMapNetCodeResult GetSemanticTargetForGeneration(DynamicHashMapNetCodeCandidate candidate, CancellationToken cancellationToken)
+        private static DynamicHashMapNetcodeResult GetSemanticTargetForGeneration(DynamicHashMapNetcodeCandidate candidate, CancellationToken cancellationToken)
         {
             var typeSymbol = candidate.TypeSymbol;
             var typeSyntax = candidate.TypeSyntax;
@@ -122,40 +122,40 @@ namespace BovineLabs.DynamicGenerator
             if (typeSymbol.TypeKind != TypeKind.Struct)
             {
                 diagnostics.Add(DynamicDiagnostics.NonStruct(typeSymbol, location));
-                return new DynamicHashMapNetCodeResult(null, diagnostics);
+                return new DynamicHashMapNetcodeResult(null, diagnostics);
             }
 
             if (typeSymbol.ContainingType != null)
             {
                 diagnostics.Add(DynamicDiagnostics.NestedType(typeSymbol, location));
-                return new DynamicHashMapNetCodeResult(null, diagnostics);
+                return new DynamicHashMapNetcodeResult(null, diagnostics);
             }
 
             if (typeSymbol.TypeParameters.Length != 0)
             {
-                diagnostics.Add(DynamicHashMapNetCodeDiagnostics.GenericMarker(typeSymbol, location));
-                return new DynamicHashMapNetCodeResult(null, diagnostics);
+                diagnostics.Add(DynamicHashMapNetcodeDiagnostics.GenericMarker(typeSymbol, location));
+                return new DynamicHashMapNetcodeResult(null, diagnostics);
             }
 
             var mapInterfaces = GetDynamicHashMapInterfaces(typeSymbol, cancellationToken);
             if (mapInterfaces.Count == 0)
             {
-                diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedMarker(typeSymbol, location));
-                return new DynamicHashMapNetCodeResult(null, diagnostics);
+                diagnostics.Add(DynamicHashMapNetcodeDiagnostics.UnsupportedMarker(typeSymbol, location));
+                return new DynamicHashMapNetcodeResult(null, diagnostics);
             }
 
             if (mapInterfaces.Count != 1)
             {
-                diagnostics.Add(DynamicHashMapNetCodeDiagnostics.AmbiguousMarker(typeSymbol, location));
-                return new DynamicHashMapNetCodeResult(null, diagnostics);
+                diagnostics.Add(DynamicHashMapNetcodeDiagnostics.AmbiguousMarker(typeSymbol, location));
+                return new DynamicHashMapNetcodeResult(null, diagnostics);
             }
 
             var mapInterface = mapInterfaces[0];
             var collectionKind = GetCollectionKind(mapInterface);
             if (!HasValidMarkerStorage(typeSymbol, mapInterface))
             {
-                diagnostics.Add(DynamicHashMapNetCodeDiagnostics.MarkerFields(typeSymbol, location));
-                return new DynamicHashMapNetCodeResult(null, diagnostics);
+                diagnostics.Add(DynamicHashMapNetcodeDiagnostics.MarkerFields(typeSymbol, location));
+                return new DynamicHashMapNetcodeResult(null, diagnostics);
             }
 
             var keyType = mapInterface.TypeArguments[0];
@@ -175,14 +175,14 @@ namespace BovineLabs.DynamicGenerator
             {
                 if (!TryCreateRawCodecPlan(keyType, out keyCodec))
                 {
-                    diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedType(keyType, location));
-                    return new DynamicHashMapNetCodeResult(null, diagnostics);
+                    diagnostics.Add(DynamicHashMapNetcodeDiagnostics.UnsupportedType(keyType, location));
+                    return new DynamicHashMapNetcodeResult(null, diagnostics);
                 }
 
                 if (!TryCreateRawCodecPlan(valueType, out valueCodec))
                 {
-                    diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedType(valueType, location));
-                    return new DynamicHashMapNetCodeResult(null, diagnostics);
+                    diagnostics.Add(DynamicHashMapNetcodeDiagnostics.UnsupportedType(valueType, location));
+                    return new DynamicHashMapNetcodeResult(null, diagnostics);
                 }
 
                 mapCodecTypeName = "global::BovineLabs.Core.Iterators." + serializerSuffix + "RawGhostCodec<" +
@@ -195,7 +195,7 @@ namespace BovineLabs.DynamicGenerator
 
                 if (keyCodec == null || valueCodec == null)
                 {
-                    return new DynamicHashMapNetCodeResult(null, diagnostics);
+                    return new DynamicHashMapNetcodeResult(null, diagnostics);
                 }
 
                 mapCodecTypeName = "global::BovineLabs.Core.Iterators." + serializerSuffix + "GeneratedGhostCodec<" +
@@ -206,11 +206,11 @@ namespace BovineLabs.DynamicGenerator
             }
             else
             {
-                diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedCodec(typeSymbol, null, location));
-                return new DynamicHashMapNetCodeResult(null, diagnostics);
+                diagnostics.Add(DynamicHashMapNetcodeDiagnostics.UnsupportedCodec(typeSymbol, null, location));
+                return new DynamicHashMapNetcodeResult(null, diagnostics);
             }
 
-            var data = new DynamicHashMapNetCodeData(
+            var data = new DynamicHashMapNetcodeData(
                 collectionKind,
                 typeSymbol,
                 keyType,
@@ -225,10 +225,10 @@ namespace BovineLabs.DynamicGenerator
                 GetNamedEnumExpression(candidate.Attribute, "SendTypeOptimization", "Unity.Netcode.GhostSendType", "AllClients"),
                 GetNamedEnumExpression(candidate.Attribute, "OwnerSendType", "Unity.Netcode.SendToOwnerType", "All"));
 
-            return new DynamicHashMapNetCodeResult(data, diagnostics);
+            return new DynamicHashMapNetcodeResult(data, diagnostics);
         }
 
-        private static SourceText GenerateSource(DynamicHashMapNetCodeData data)
+        private static SourceText GenerateSource(DynamicHashMapNetcodeData data)
         {
             var source = new StringBuilder();
             var serializerName = data.TypeSymbol.Name + data.SerializerSuffix + "GhostSerializer";
@@ -236,9 +236,9 @@ namespace BovineLabs.DynamicGenerator
             var sendChild = data.SendDataForChildEntity ? "1" : "0";
             var variantHash = $"Unity.Netcode.GhostVariantsUtility.CalculateVariantHashForComponent(Unity.Entities.ComponentType.ReadWrite<{data.TypeName}>())";
             var serializerType = data.UseRawSerializerPath
-                ? "BovineLabs.Core.Iterators." + data.SerializerSuffix + "NetCodeSerializer<" +
+                ? "BovineLabs.Core.Iterators." + data.SerializerSuffix + "NetcodeSerializer<" +
                     data.TypeName + ", " + data.KeyTypeName + ", " + data.ValueTypeName + ">"
-                : "BovineLabs.Core.Iterators." + data.SerializerSuffix + "NetCodeSerializer<" +
+                : "BovineLabs.Core.Iterators." + data.SerializerSuffix + "NetcodeSerializer<" +
                     data.TypeName + ", " + data.KeyTypeName + ", " + data.ValueTypeName + ", " + data.KeyCodec.CodecTypeName + ", " +
                     data.ValueCodec.CodecTypeName + ">";
 
@@ -280,7 +280,7 @@ namespace BovineLabs.DynamicGenerator
             source.Append("            var variantHash = ");
             source.Append(variantHash);
             source.AppendLine(";");
-            source.AppendLine("            var functionPointers = default(BovineLabs.Core.Iterators.DynamicHashCollectionNetCodeFunctionPointers);");
+            source.AppendLine("            var functionPointers = default(BovineLabs.Core.Iterators.DynamicHashCollectionNetcodeFunctionPointers);");
             source.AppendLine("            var networkWorldFlags = Unity.Entities.WorldFlags.GameServer | Unity.Entities.WorldFlags.GameClient |");
             source.AppendLine("                Unity.Entities.WorldFlags.GameThinClient;");
             source.AppendLine("            if ((state.WorldUnmanaged.Flags & networkWorldFlags) != 0)");
@@ -520,7 +520,7 @@ namespace BovineLabs.DynamicGenerator
 
             if (!typeSymbol.IsUnmanagedType)
             {
-                diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedType(typeSymbol, location));
+                diagnostics.Add(DynamicHashMapNetcodeDiagnostics.UnsupportedType(typeSymbol, location));
                 return null;
             }
 
@@ -569,19 +569,19 @@ namespace BovineLabs.DynamicGenerator
 
             if (IsUnsupportedGeneratedType(typeSymbol) || typeSymbol.TypeKind != TypeKind.Struct)
             {
-                diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedType(typeSymbol, location));
+                diagnostics.Add(DynamicHashMapNetcodeDiagnostics.UnsupportedType(typeSymbol, location));
                 return null;
             }
 
             if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
             {
-                diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedType(typeSymbol, location));
+                diagnostics.Add(DynamicHashMapNetcodeDiagnostics.UnsupportedType(typeSymbol, location));
                 return null;
             }
 
             if (HasExplicitLayout(namedTypeSymbol))
             {
-                diagnostics.Add(DynamicHashMapNetCodeDiagnostics.ExplicitLayout(typeSymbol, typeSymbol.Locations.FirstOrDefault() ?? location));
+                diagnostics.Add(DynamicHashMapNetcodeDiagnostics.ExplicitLayout(typeSymbol, typeSymbol.Locations.FirstOrDefault() ?? location));
                 return null;
             }
 
@@ -592,7 +592,7 @@ namespace BovineLabs.DynamicGenerator
 
             if (instanceFields.Length == 0)
             {
-                diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedType(typeSymbol, location));
+                diagnostics.Add(DynamicHashMapNetcodeDiagnostics.UnsupportedType(typeSymbol, location));
                 return null;
             }
 
@@ -601,7 +601,7 @@ namespace BovineLabs.DynamicGenerator
                 if (field.IsImplicitlyDeclared)
                 {
                     var property = field.AssociatedSymbol as IPropertySymbol;
-                    diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedStorage(
+                    diagnostics.Add(DynamicHashMapNetcodeDiagnostics.UnsupportedStorage(
                         typeSymbol,
                         property?.Name ?? field.Name,
                         property?.Locations.FirstOrDefault() ?? field.Locations.FirstOrDefault() ?? location));
@@ -610,21 +610,21 @@ namespace BovineLabs.DynamicGenerator
 
                 if (HasFieldOffset(field))
                 {
-                    diagnostics.Add(DynamicHashMapNetCodeDiagnostics.ExplicitLayout(
+                    diagnostics.Add(DynamicHashMapNetcodeDiagnostics.ExplicitLayout(
                         typeSymbol, field.Locations.FirstOrDefault() ?? typeSymbol.Locations.FirstOrDefault() ?? location));
                     return null;
                 }
 
                 if (field.IsFixedSizeBuffer)
                 {
-                    diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedField(
+                    diagnostics.Add(DynamicHashMapNetcodeDiagnostics.UnsupportedField(
                         typeSymbol, field, field.Locations.FirstOrDefault() ?? location));
                     return null;
                 }
 
                 if (field.DeclaredAccessibility != Accessibility.Public || field.IsReadOnly)
                 {
-                    diagnostics.Add(DynamicHashMapNetCodeDiagnostics.UnsupportedField(typeSymbol, field, field.Locations.FirstOrDefault() ?? location));
+                    diagnostics.Add(DynamicHashMapNetcodeDiagnostics.UnsupportedField(typeSymbol, field, field.Locations.FirstOrDefault() ?? location));
                     return null;
                 }
             }
@@ -1171,9 +1171,9 @@ namespace BovineLabs.DynamicGenerator
             public ulong SchemaHash { get; }
         }
 
-        private sealed class DynamicHashMapNetCodeCandidate
+        private sealed class DynamicHashMapNetcodeCandidate
         {
-            public DynamicHashMapNetCodeCandidate(TypeDeclarationSyntax typeSyntax, INamedTypeSymbol typeSymbol, AttributeData attribute)
+            public DynamicHashMapNetcodeCandidate(TypeDeclarationSyntax typeSyntax, INamedTypeSymbol typeSymbol, AttributeData attribute)
             {
                 this.TypeSyntax = typeSyntax;
                 this.TypeSymbol = typeSymbol;
@@ -1251,9 +1251,9 @@ namespace BovineLabs.DynamicGenerator
             public int Offset { get; }
         }
 
-        private sealed class DynamicHashMapNetCodeData
+        private sealed class DynamicHashMapNetcodeData
         {
-            public DynamicHashMapNetCodeData(
+            public DynamicHashMapNetcodeData(
                 DynamicHashMapCollectionKind collectionKind, INamedTypeSymbol typeSymbol, ITypeSymbol keyType, ITypeSymbol valueType,
                 DynamicHashMapValueCodecPlan keyCodec, DynamicHashMapValueCodecPlan valueCodec, string mapCodecTypeName,
                 IReadOnlyList<DynamicHashMapValueCodecPlan> generatedCodecs, bool useRawSerializerPath, bool sendDataForChildEntity,
@@ -1322,15 +1322,15 @@ namespace BovineLabs.DynamicGenerator
             public string HintName { get; }
         }
 
-        private sealed class DynamicHashMapNetCodeResult
+        private sealed class DynamicHashMapNetcodeResult
         {
-            public DynamicHashMapNetCodeResult(DynamicHashMapNetCodeData data, IReadOnlyList<Diagnostic> diagnostics)
+            public DynamicHashMapNetcodeResult(DynamicHashMapNetcodeData data, IReadOnlyList<Diagnostic> diagnostics)
             {
                 this.Data = data;
                 this.Diagnostics = diagnostics;
             }
 
-            public DynamicHashMapNetCodeData Data { get; }
+            public DynamicHashMapNetcodeData Data { get; }
 
             public IReadOnlyList<Diagnostic> Diagnostics { get; }
         }

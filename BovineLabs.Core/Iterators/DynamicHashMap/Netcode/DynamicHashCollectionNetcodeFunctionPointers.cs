@@ -4,7 +4,7 @@ namespace BovineLabs.Core.Iterators
     using Unity.Netcode;
     using Unity.Netcode.LowLevel.Unsafe;
 
-    public struct DynamicHashCollectionNetCodeFunctionPointers
+    public struct DynamicHashCollectionNetcodeFunctionPointers
     {
         public PortableFunctionPointer<GhostComponentSerializer.PostSerializeBufferDelegate> PostSerializeBuffer;
         public PortableFunctionPointer<GhostComponentSerializer.SerializeBufferDelegate> SerializeBuffer;

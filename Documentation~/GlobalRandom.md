@@ -12,7 +12,7 @@ Use `GlobalRandom` for independent, non-deterministic effects such as visual var
 
 Do not use it when results must be deterministic across runs, machines, worker counts, or prediction rollbacks. In particular, avoid it for:
 
-- NetCode prediction and rollback
+- Netcode prediction and rollback
 - deterministic simulation or replays
 - save data that expects a reproducible sequence
 - tests that assert exact random values

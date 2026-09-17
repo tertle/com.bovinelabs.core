@@ -8,7 +8,7 @@ For support and discussions, join [Discord](https://discord.gg/RTsw6Cxvw3).
 
 - Unity 6000.7 or newer.
 - Unity Entities 6.7.0 or newer.
-- NetCode and Unity Physics integrations require their matching Unity packages at 6.7.0 or newer. Input System 1.20.0 or newer enables Input Action asset inspectors. Localization, Splines, Terrain, and VFX integrations are compiled when their matching supported packages or Unity modules are available.
+- Netcode and Unity Physics integrations require their matching Unity packages at 6.7.0 or newer. Input System 1.20.0 or newer enables Input Action asset inspectors. Localization, Splines, Terrain, and VFX integrations are compiled when their matching supported packages or Unity modules are available.
 
 Optional integrations are guarded by asmdef `versionDefines` and compile symbols such as `UNITY_NETCODE`, `UNITY_PHYSICS`, `UNITY_INPUT_SYSTEM`, and `UNITY_LOCALIZATION`. Install the matching package before using an API that depends on it.
 
@@ -52,7 +52,7 @@ Then follow [Getting started](Documentation~/getting-started.md).
 | [Getting started](Documentation~/getting-started.md) | Install Core, reference its assemblies, and verify a first ECS system |
 | [Collections](Documentation~/Collections.md) | Choosing fixed, native, unsafe, blob, pooled, and entity-owned containers |
 | [Dynamic buffer collections](Documentation~/DynamicCollections.md) | Entry-backed dictionaries, multi-dictionaries, and hash sets stored in ECS buffers |
-| [Generated dynamic hash maps](Documentation~/DynamicHashMap.md) | Byte-backed maps, source-generated accessors, specialized variants, and optional NetCode serialization |
+| [Generated dynamic hash maps](Documentation~/DynamicHashMap.md) | Byte-backed maps, source-generated accessors, specialized variants, and optional Netcode serialization |
 | [Entity commands](Documentation~/EntityCommands.md) | Reusing entity-shape builders across bakers, command buffers, jobs, and tests |
 | [Settings](Documentation~/Settings.md) | Settings assets, ECS baking, world routing, and startup singletons |
 | [ConfigVars](Documentation~/ConfigVars.md) | Burst-readable runtime variables, command-line overrides, EditorPrefs, and the ConfigVars window |

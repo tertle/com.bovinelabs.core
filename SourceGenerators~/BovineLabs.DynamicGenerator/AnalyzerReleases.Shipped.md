@@ -17,13 +17,13 @@ BLDYN0003 | BovineLabs.DynamicGenerator | Warning | DynamicDiagnostics
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-BLDYN0101 | BovineLabs.DynamicGenerator.NetCode | Error | DynamicHashMapNetCodeDiagnostics
-BLDYN0102 | BovineLabs.DynamicGenerator.NetCode | Error | DynamicHashMapNetCodeDiagnostics
-BLDYN0103 | BovineLabs.DynamicGenerator.NetCode | Error | DynamicHashMapNetCodeDiagnostics
-BLDYN0104 | BovineLabs.DynamicGenerator.NetCode | Error | DynamicHashMapNetCodeDiagnostics
-BLDYN0105 | BovineLabs.DynamicGenerator.NetCode | Error | DynamicHashMapNetCodeDiagnostics
-BLDYN0107 | BovineLabs.DynamicGenerator.NetCode | Error | DynamicHashMapNetCodeDiagnostics
-BLDYN0108 | BovineLabs.DynamicGenerator.NetCode | Error | DynamicHashMapNetCodeDiagnostics
-BLDYN0109 | BovineLabs.DynamicGenerator.NetCode | Error | DynamicHashMapNetCodeDiagnostics
-BLDYN0111 | BovineLabs.DynamicGenerator.NetCode | Error | DynamicHashMapNetCodeDiagnostics
+BLDYN0101 | BovineLabs.DynamicGenerator.Netcode | Error | DynamicHashMapNetcodeDiagnostics
+BLDYN0102 | BovineLabs.DynamicGenerator.Netcode | Error | DynamicHashMapNetcodeDiagnostics
+BLDYN0103 | BovineLabs.DynamicGenerator.Netcode | Error | DynamicHashMapNetcodeDiagnostics
+BLDYN0104 | BovineLabs.DynamicGenerator.Netcode | Error | DynamicHashMapNetcodeDiagnostics
+BLDYN0105 | BovineLabs.DynamicGenerator.Netcode | Error | DynamicHashMapNetcodeDiagnostics
+BLDYN0107 | BovineLabs.DynamicGenerator.Netcode | Error | DynamicHashMapNetcodeDiagnostics
+BLDYN0108 | BovineLabs.DynamicGenerator.Netcode | Error | DynamicHashMapNetcodeDiagnostics
+BLDYN0109 | BovineLabs.DynamicGenerator.Netcode | Error | DynamicHashMapNetcodeDiagnostics
+BLDYN0111 | BovineLabs.DynamicGenerator.Netcode | Error | DynamicHashMapNetcodeDiagnostics
 

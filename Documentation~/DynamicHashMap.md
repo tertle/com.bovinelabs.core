@@ -4,7 +4,7 @@
 
 The generated dynamic-hash-map family reinterprets a byte-oriented `DynamicBuffer<TBuffer>` as a hash map, multi-hash map, set, untyped map, variable-column map, or perfect hash map. Marker interfaces drive source generation for strongly typed `Initialize()` and `AsMap()` extensions.
 
-Use this family when its specialized layout or optional generated NetCode serialization is required. For normal typed entries stored directly in a buffer, prefer [dynamic buffer collections](DynamicCollections.md).
+Use this family when its specialized layout or optional generated Netcode serialization is required. For normal typed entries stored directly in a buffer, prefer [dynamic buffer collections](DynamicCollections.md).
 
 ```csharp
 using BovineLabs.Core.Iterators;
@@ -16,7 +16,7 @@ using BovineLabs.Core.Iterators;
 |---|---|
 | Typed dictionary/set entries that remain ordinary buffer elements | [`DynamicDictionary`, `DynamicMultiDictionary`, or entry-backed `DynamicHashSet`](DynamicCollections.md) |
 | Compact byte-backed storage and generated accessors | This guide's `IDynamicHashMap`, `IDynamicMultiHashMap`, and related interfaces |
-| Generated compact NetCode serialization | This guide's `IDynamicHashMap` or `IDynamicMultiHashMap` with `[GhostDynamicHashMap]` |
+| Generated compact Netcode serialization | This guide's `IDynamicHashMap` or `IDynamicMultiHashMap` with `[GhostDynamicHashMap]` |
 | Runtime-selected value types | `IDynamicUntypedHashMap<TKey>` |
 | Extra value columns | `IDynamicVariableMap` |
 | Fixed-size collision-free lookup | `IDynamicPerfectHashMap` |
@@ -106,10 +106,10 @@ Keep a writable wrapper in a mutable local. Operations that resize the byte buff
 
 If generation is missing, confirm the marker is top-level, implements the exact interface, and belongs to an assembly referencing `BovineLabs.Core`. Fix earlier compiler errors before diagnosing generator output.
 
-## NetCode Dynamic Hash Map Serialization
+## Netcode Dynamic Hash Map Serialization
 
 When `com.unity.netcode` is installed, `IDynamicHashMap<TKey, TValue>` and `IDynamicMultiHashMap<TKey, TValue>` marker buffers can opt into compact
-NetCode serialization with one attribute. The generator infers the collection kind from the implemented interface.
+Netcode serialization with one attribute. The generator infers the collection kind from the implemented interface.
 Generated serializers are registered as the default serializer for the marker buffer type, with display names derived from the marker type name.
 The attribute does not add the buffer to a ghost or replicate it by itself; the marker buffer must be present on the ghost prefab.
 
@@ -139,7 +139,7 @@ public struct RawInventory : IDynamicHashMap<int, byte>
 }
 ```
 
-NetCode metadata uses the same public names as `GhostComponentAttribute`:
+Netcode metadata uses the same public names as `GhostComponentAttribute`:
 
 ```csharp
 [GhostDynamicHashMap(
@@ -161,7 +161,7 @@ public struct OwnedInventory : IDynamicHashMap<int, byte>
 
 Set `SendDataForChildEntity` to `true` for marker buffers that should serialize on child entities.
 
-The serializer keeps NetCode's outer dynamic-buffer length equal to the physical byte buffer length, but the changed wire payload is:
+The serializer keeps Netcode's outer dynamic-buffer length equal to the physical byte buffer length, but the changed wire payload is:
 
 ```text
 16-byte compact header + active keys + active values
@@ -180,7 +180,7 @@ The compact payload byte count is deterministic:
 
 For `RawStable`, the encoded sizes are `sizeof(TKey)` and `sizeof(TValue)`. Generated mode uses the sum of its generated field-codec sizes, which can differ from the in-memory struct size because padding is omitted.
 
-Physical-byte replication sends the whole backing byte buffer. Snapshot history still uses the physical dynamic-buffer length so NetCode can resize
+Physical-byte replication sends the whole backing byte buffer. Snapshot history still uses the physical dynamic-buffer length so Netcode can resize
 the destination byte buffer safely before reconstruction:
 
 ```text
@@ -207,7 +207,7 @@ All use `DynamicHashMapCompactHeader.CurrentFormatVersion == 1`. The serializer'
 - collection semantics for multimap variants
 
 Any incompatible change to the compact header, payload layout, codec semantics, key/value encoding, or collection kind must use a new format identity
-and produce a different ghost-fields hash. Existing payloads are not migrated in place; rolling out a new format requires the usual NetCode
+and produce a different ghost-fields hash. Existing payloads are not migrated in place; rolling out a new format requires the usual Netcode
 protocol-version separation between old and new clients.
 
 ### Raw Codec Limitations
@@ -343,7 +343,7 @@ Make the marker a top-level type, implement the exact `IDynamic*` interface, ref
 
 The buffer was not initialized, or application code resized/modified the raw byte buffer. Recreate it through the generated initialization API and mutate only through its wrapper.
 
-**A NetCode serializer is not generated**
+**A Netcode serializer is not generated**
 
 Install `com.unity.netcode`, verify `UNITY_NETCODE` is active, and use `[GhostDynamicHashMap]` only on `IDynamicHashMap` or `IDynamicMultiHashMap` marker buffers.
 

@@ -15,7 +15,7 @@ Keep editor-only references out of player assemblies. See [Getting started](gett
 
 ## An optional integration is missing
 
-APIs for NetCode, Physics, Localization, Splines, Terrain, and VFX Graph are conditionally compiled. Verify that the matching package or Unity module is installed and that Unity enabled the expected version-define symbol.
+APIs for Netcode, Physics, Localization, Splines, Terrain, and VFX Graph are conditionally compiled. Verify that the matching package or Unity module is installed and that Unity enabled the expected version-define symbol.
 
 An asmdef reference listed by Core does not install the package that provides it.
 

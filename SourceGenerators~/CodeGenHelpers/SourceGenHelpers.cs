@@ -8,7 +8,7 @@
     public static class SourceGenHelpers
     {
         /// <summary>
-        /// Taken from NetCode source generators.
+        /// Taken from Netcode source generators.
         /// </summary>
         public static bool IsBuildTime()
         {

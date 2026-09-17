@@ -13,7 +13,7 @@ namespace BovineLabs.Core.Tests.Iterators
     using Unity.Netcode;
     using Unity.Netcode.LowLevel.Unsafe;
 
-    public partial class DynamicHashMapNetCodeSerializerTests : ECSTestsFixture
+    public partial class DynamicHashMapNetcodeSerializerTests : ECSTestsFixture
     {
         private const int MinGrowth = 64;
         private const int SnapshotOffset = 16;
@@ -29,7 +29,7 @@ namespace BovineLabs.Core.Tests.Iterators
             var sourceBytes = sourceBuffer.Reinterpret<byte>();
             var snapshot = new NativeArray<byte>(sourceBytes.Length, Allocator.Temp);
 
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.CopyToSnapshot(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.CopyToSnapshot(
                 IntPtr.Zero, (IntPtr)snapshot.GetUnsafePtr(), 0, 1, (IntPtr)sourceBytes.GetPtr(), 1, sourceBytes.Length);
 
             var targetBuffer = this.CreateHashMapBuffer();
@@ -42,7 +42,7 @@ namespace BovineLabs.Core.Tests.Iterators
                 SnapshotAfter = (IntPtr)snapshot.GetUnsafeReadOnlyPtr(),
             };
 
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.CopyFromSnapshot(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.CopyFromSnapshot(
                 IntPtr.Zero, (IntPtr)(&dataAtTick), 0, 1, (IntPtr)targetBytes.GetPtr(), 1, targetBytes.Length);
 
             var rebuilt = targetBuffer.AsHashMap<DynamicHashMapTestsBuffer, int, byte>();
@@ -52,7 +52,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void GeneratedRegistration_CoversRootAndChildBufferSelection()
         {
-            using var world = new World("DynamicHashMap NetCode Collection Test", WorldFlags.GameServer);
+            using var world = new World("DynamicHashMap Netcode Collection Test", WorldFlags.GameServer);
             CreateGeneratedSerializerCollection(world);
 
             using var query = world.EntityManager.CreateEntityQuery(ComponentType.ReadOnly<GhostComponentSerializerCollectionData>());
@@ -224,14 +224,14 @@ namespace BovineLabs.Core.Tests.Iterators
 
             var sourceBytes = sourceBuffer.Reinterpret<byte>();
             var snapshot = new NativeArray<byte>(sourceBytes.Length, Allocator.Temp);
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.CopyToSnapshot(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.CopyToSnapshot(
                 IntPtr.Zero, (IntPtr)snapshot.GetUnsafePtr(), 0, 1, (IntPtr)sourceBytes.GetPtr(), 1, sourceBytes.Length);
 
-            Assert.IsTrue(DynamicHashMapNetCodeRawCodec<int, byte>.TryGetPayloadBytes(
+            Assert.IsTrue(DynamicHashMapNetcodeRawCodec<int, byte>.TryGetPayloadBytes(
                 (byte*)snapshot.GetUnsafeReadOnlyPtr(), snapshot.Length, out var payloadBytes));
 
             var writer = new DataStreamWriter(payloadBytes, Allocator.Temp);
-            DynamicHashMapNetCodeRawCodec<int, byte>.WritePayload((byte*)snapshot.GetUnsafeReadOnlyPtr(), payloadBytes, ref writer);
+            DynamicHashMapNetcodeRawCodec<int, byte>.WritePayload((byte*)snapshot.GetUnsafeReadOnlyPtr(), payloadBytes, ref writer);
 
             var reader = new DataStreamReader(writer.AsNativeArray());
             var compressionModel = StreamCompressionModel.Default;
@@ -239,7 +239,7 @@ namespace BovineLabs.Core.Tests.Iterators
 
             for (var i = 0; i < sourceBytes.Length; i++)
             {
-                DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.Deserialize(
+                DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.Deserialize(
                     (IntPtr)((byte*)deserialized.GetUnsafePtr() + i), IntPtr.Zero, ref reader, ref compressionModel, IntPtr.Zero, i);
             }
 
@@ -255,7 +255,7 @@ namespace BovineLabs.Core.Tests.Iterators
                 SnapshotAfter = (IntPtr)deserialized.GetUnsafeReadOnlyPtr(),
             };
 
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.CopyFromSnapshot(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.CopyFromSnapshot(
                 IntPtr.Zero, (IntPtr)(&dataAtTick), 0, 1, (IntPtr)targetBytes.GetPtr(), 1, targetBytes.Length);
 
             var rebuilt = targetBuffer.AsHashMap<DynamicHashMapTestsBuffer, int, byte>();
@@ -270,8 +270,8 @@ namespace BovineLabs.Core.Tests.Iterators
             FillSparse(ref source);
 
             var sourceBytes = sourceBuffer.Reinterpret<byte>();
-            var dynamicSize = DynamicHashMapNetCodeRawCodec<int, byte>.GetDynamicSnapshotSize(1, sourceBytes.Length);
-            var maskSize = DynamicHashMapNetCodeRawCodec<int, byte>.GetDynamicDataChangeMaskSize(1, sourceBytes.Length);
+            var dynamicSize = DynamicHashMapNetcodeRawCodec<int, byte>.GetDynamicSnapshotSize(1, sourceBytes.Length);
+            var maskSize = DynamicHashMapNetcodeRawCodec<int, byte>.GetDynamicDataChangeMaskSize(1, sourceBytes.Length);
             var componentData = new NativeArray<IntPtr>(1, Allocator.Temp);
             var componentLengths = new NativeArray<int>(1, Allocator.Temp);
             var directSnapshot = new NativeArray<byte>(SnapshotStride, Allocator.Temp);
@@ -286,7 +286,7 @@ namespace BovineLabs.Core.Tests.Iterators
             componentLengths[0] = sourceBytes.Length;
 
             var directWriter = new DataStreamWriter(directWriterBuffer);
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
                 IntPtr.Zero, (IntPtr)directSnapshot.GetUnsafePtr(), SnapshotOffset, SnapshotStride, 0, 1,
                 (IntPtr)componentData.GetUnsafePtr(), (IntPtr)componentLengths.GetUnsafePtr(), 1, IntPtr.Zero, ref directWriter,
                 ref directCompressionModel, (IntPtr)directEntityStartBits.GetUnsafePtr(), (IntPtr)directDynamic.GetUnsafePtr(), ref directDynamicOffset,
@@ -301,11 +301,11 @@ namespace BovineLabs.Core.Tests.Iterators
 
             GhostComponentSerializer.TypeCast<uint>((IntPtr)preSerializedSnapshot.GetUnsafePtr(), SnapshotOffset) = (uint)sourceBytes.Length;
             GhostComponentSerializer.TypeCast<uint>((IntPtr)preSerializedSnapshot.GetUnsafePtr(), SnapshotOffset + sizeof(int)) = 0;
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.CopyToSnapshot(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.CopyToSnapshot(
                 IntPtr.Zero, (IntPtr)((byte*)preSerializedDynamic.GetUnsafePtr() + maskSize), 0, 1, (IntPtr)sourceBytes.GetPtr(), 1, sourceBytes.Length);
 
             var preSerializedWriter = new DataStreamWriter(preSerializedWriterBuffer);
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.PostSerializeBuffer(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.PostSerializeBuffer(
                 (IntPtr)preSerializedSnapshot.GetUnsafePtr(), SnapshotOffset, SnapshotStride, 0, 1, 1, IntPtr.Zero, ref preSerializedWriter,
                 ref preSerializedCompressionModel, (IntPtr)preSerializedEntityStartBits.GetUnsafePtr(), (IntPtr)preSerializedDynamic.GetUnsafePtr(),
                 (IntPtr)preSerializedDynamicSizePerEntity.GetUnsafePtr(), preSerializedDynamic.Length);
@@ -333,7 +333,7 @@ namespace BovineLabs.Core.Tests.Iterators
             var sourceBytes = sourceBuffer.Reinterpret<byte>();
             var snapshot = new NativeArray<byte>(SnapshotStride, Allocator.Temp);
             var dynamicData = new NativeArray<byte>(
-                DynamicHashMapNetCodeRawCodec<int, byte>.GetDynamicSnapshotSize(1, sourceBytes.Length), Allocator.Temp);
+                DynamicHashMapNetcodeRawCodec<int, byte>.GetDynamicSnapshotSize(1, sourceBytes.Length), Allocator.Temp);
             var componentData = new NativeArray<IntPtr>(1, Allocator.Temp);
             var componentLengths = new NativeArray<int>(1, Allocator.Temp);
             var entityStartBits = new NativeArray<int>(2, Allocator.Temp);
@@ -346,7 +346,7 @@ namespace BovineLabs.Core.Tests.Iterators
             componentLengths[0] = sourceBytes.Length;
 
             var writer = new DataStreamWriter(writerBuffer);
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
                 IntPtr.Zero, (IntPtr)snapshot.GetUnsafePtr(), SnapshotOffset, SnapshotStride, 0, 1,
                 (IntPtr)componentData.GetUnsafePtr(), (IntPtr)componentLengths.GetUnsafePtr(), 1, IntPtr.Zero, ref writer, ref compressionModel,
                 (IntPtr)entityStartBits.GetUnsafePtr(), (IntPtr)dynamicData.GetUnsafePtr(), ref dynamicOffset,
@@ -368,7 +368,7 @@ namespace BovineLabs.Core.Tests.Iterators
             backupData[1] = 91;
             backupData[2] = 92;
 
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.RestoreFromBackup(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.RestoreFromBackup(
                 (IntPtr)((byte*)componentData.GetUnsafePtr() + 1), (IntPtr)((byte*)backupData.GetUnsafePtr() + 1));
 
             Assert.AreEqual(10, componentData[0]);
@@ -376,7 +376,7 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.AreEqual(30, componentData[2]);
 
             var predictor = default(GhostDeltaPredictor);
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.PredictDelta(IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, ref predictor);
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.PredictDelta(IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, ref predictor);
         }
 
         [Test]
@@ -389,7 +389,7 @@ namespace BovineLabs.Core.Tests.Iterators
             var sourceBytes = sourceBuffer.Reinterpret<byte>();
             var baselineSnapshot = new NativeArray<byte>(SnapshotStride, Allocator.Temp);
             var baselineDynamic = new NativeArray<byte>(
-                DynamicHashMapNetCodeRawCodec<int, byte>.GetDynamicSnapshotSize(1, sourceBytes.Length), Allocator.Temp);
+                DynamicHashMapNetcodeRawCodec<int, byte>.GetDynamicSnapshotSize(1, sourceBytes.Length), Allocator.Temp);
             var componentData = new NativeArray<IntPtr>(1, Allocator.Temp);
             var componentLengths = new NativeArray<int>(1, Allocator.Temp);
             var baselines = new NativeArray<IntPtr>(4, Allocator.Temp);
@@ -403,7 +403,7 @@ namespace BovineLabs.Core.Tests.Iterators
             componentLengths[0] = sourceBytes.Length;
 
             var writer = new DataStreamWriter(writerBuffer);
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
                 IntPtr.Zero, (IntPtr)baselineSnapshot.GetUnsafePtr(), SnapshotOffset, SnapshotStride, 0, 1,
                 (IntPtr)componentData.GetUnsafePtr(), (IntPtr)componentLengths.GetUnsafePtr(), 1, (IntPtr)baselines.GetUnsafePtr(), ref writer,
                 ref compressionModel, (IntPtr)entityStartBits.GetUnsafePtr(), (IntPtr)baselineDynamic.GetUnsafePtr(), ref dynamicOffset,
@@ -420,7 +420,7 @@ namespace BovineLabs.Core.Tests.Iterators
             dynamicOffset = 0;
             writer = new DataStreamWriter(writerBuffer);
 
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
                 IntPtr.Zero, (IntPtr)unchangedSnapshot.GetUnsafePtr(), SnapshotOffset, SnapshotStride, 0, 1,
                 (IntPtr)componentData.GetUnsafePtr(), (IntPtr)componentLengths.GetUnsafePtr(), 1, (IntPtr)baselines.GetUnsafePtr(), ref writer,
                 ref compressionModel, (IntPtr)entityStartBits.GetUnsafePtr(), (IntPtr)unchangedDynamic.GetUnsafePtr(), ref dynamicOffset,
@@ -434,7 +434,7 @@ namespace BovineLabs.Core.Tests.Iterators
             dynamicOffset = 0;
             writer = new DataStreamWriter(writerBuffer);
 
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
                 IntPtr.Zero, (IntPtr)unchangedSnapshot.GetUnsafePtr(), SnapshotOffset, SnapshotStride, 0, 1,
                 (IntPtr)componentData.GetUnsafePtr(), (IntPtr)componentLengths.GetUnsafePtr(), 1, (IntPtr)baselines.GetUnsafePtr(), ref writer,
                 ref compressionModel, (IntPtr)entityStartBits.GetUnsafePtr(), (IntPtr)unchangedDynamic.GetUnsafePtr(), ref dynamicOffset,
@@ -459,7 +459,7 @@ namespace BovineLabs.Core.Tests.Iterators
             var dynamicOffset = 0;
             var writer = new DataStreamWriter(writerBuffer);
 
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
                 IntPtr.Zero, (IntPtr)baselineSnapshot.GetUnsafePtr(), SnapshotOffset, SnapshotStride, 0, 1,
                 (IntPtr)componentData.GetUnsafePtr(), (IntPtr)componentLengths.GetUnsafePtr(), 1, (IntPtr)baselines.GetUnsafePtr(), ref writer,
                 ref compressionModel, (IntPtr)entityStartBits.GetUnsafePtr(), (IntPtr)baselineDynamic.GetUnsafePtr(), ref dynamicOffset,
@@ -475,7 +475,7 @@ namespace BovineLabs.Core.Tests.Iterators
             dynamicOffset = 0;
             writer = new DataStreamWriter(writerBuffer);
 
-            DynamicHashMapNetCodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
+            DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.SerializeBuffer(
                 IntPtr.Zero, (IntPtr)unchangedSnapshot.GetUnsafePtr(), SnapshotOffset, SnapshotStride, 0, 1,
                 (IntPtr)componentData.GetUnsafePtr(), (IntPtr)componentLengths.GetUnsafePtr(), 1, (IntPtr)baselines.GetUnsafePtr(), ref writer,
                 ref compressionModel, (IntPtr)entityStartBits.GetUnsafePtr(), (IntPtr)unchangedDynamic.GetUnsafePtr(), ref dynamicOffset,
@@ -508,7 +508,7 @@ namespace BovineLabs.Core.Tests.Iterators
         private static void CreateGeneratedSerializerCollection(World world)
         {
             world.GetOrCreateSystemManaged<GhostComponentSerializerCollectionSystemGroup>();
-            world.CreateSystem<DynamicHashMapNetCodeGeneratedRegistrationSystem>();
+            world.CreateSystem<DynamicHashMapNetcodeGeneratedRegistrationSystem>();
             world.GetOrCreateSystemManaged<DefaultVariantSystemGroup>();
         }
 
@@ -693,7 +693,7 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.AreEqual(expected.@class, actual.@class);
         }
 
-        private partial struct DynamicHashMapNetCodeGeneratedRegistrationSystem : ISystem
+        private partial struct DynamicHashMapNetcodeGeneratedRegistrationSystem : ISystem
         {
             public void OnCreate(ref SystemState state)
             {

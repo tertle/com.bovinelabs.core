@@ -8,7 +8,7 @@ namespace BovineLabs.Core.Iterators
     using Unity.Netcode;
 
     [BurstCompile]
-    public static unsafe class DynamicHashMapNetCodeSerializer<TBuffer, TKey, TValue>
+    public static unsafe class DynamicHashMapNetcodeSerializer<TBuffer, TKey, TValue>
         where TBuffer : unmanaged, IDynamicHashMap<TKey, TValue>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
@@ -18,9 +18,9 @@ namespace BovineLabs.Core.Iterators
         public static void AddToCollection(
             ref GhostComponentSerializerCollectionData collectionData, ref SystemState systemState, FixedString64Bytes displayName, ulong variantHash,
             string codecTypeFullName, GhostPrefabType prefabType, GhostSendType sendTypeOptimization, byte sendForChildEntities, SendToOwnerType sendToOwner,
-            byte isDefaultSerializer, in DynamicHashCollectionNetCodeFunctionPointers functionPointers)
+            byte isDefaultSerializer, in DynamicHashCollectionNetcodeFunctionPointers functionPointers)
         {
-            DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.AddToCollection(
+            DynamicHashCollectionNetcodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.AddToCollection(
                 ref collectionData,
                 ref systemState,
                 GetDisplayName(displayName),
@@ -43,7 +43,7 @@ namespace BovineLabs.Core.Iterators
             FixedString64Bytes displayName, ulong variantHash, GhostPrefabType prefabType, GhostSendType sendTypeOptimization, byte sendForChildEntities,
             byte isDefaultSerializer)
         {
-            return DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>
+            return DynamicHashCollectionNetcodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>
                 .CreateSerializationStrategy(GetDisplayName(displayName), variantHash, prefabType, sendTypeOptimization, sendForChildEntities,
                     isDefaultSerializer);
         }
@@ -51,14 +51,14 @@ namespace BovineLabs.Core.Iterators
         public static void CopyToSnapshot(
             IntPtr stateData, IntPtr snapshotData, int snapshotOffset, int snapshotStride, IntPtr componentData, int componentStride, int count)
         {
-            DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.CopyToSnapshot(
+            DynamicHashCollectionNetcodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.CopyToSnapshot(
                 stateData, snapshotData, snapshotOffset, snapshotStride, componentData, componentStride, count);
         }
 
         public static void CopyFromSnapshot(
             IntPtr stateData, IntPtr snapshotData, int snapshotOffset, int snapshotStride, IntPtr componentData, int componentStride, int count)
         {
-            DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.CopyFromSnapshot(
+            DynamicHashCollectionNetcodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.CopyFromSnapshot(
                 stateData, snapshotData, snapshotOffset, snapshotStride, componentData, componentStride, count);
         }
 
@@ -66,19 +66,19 @@ namespace BovineLabs.Core.Iterators
             IntPtr snapshotData, IntPtr baselineData, ref DataStreamReader reader, ref StreamCompressionModel compressionModel, IntPtr changeMaskData,
             int startOffset)
         {
-            DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.Deserialize(
+            DynamicHashCollectionNetcodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.Deserialize(
                 snapshotData, baselineData, ref reader, ref compressionModel, changeMaskData, startOffset);
         }
 
         public static void RestoreFromBackup(IntPtr componentData, IntPtr backupData)
         {
-            DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>
+            DynamicHashCollectionNetcodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>
                 .RestoreFromBackup(componentData, backupData);
         }
 
         public static void PredictDelta(IntPtr snapshotData, IntPtr baseline1Data, IntPtr baseline2Data, ref GhostDeltaPredictor predictor)
         {
-            DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.PredictDelta(
+            DynamicHashCollectionNetcodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.PredictDelta(
                 snapshotData, baseline1Data, baseline2Data, ref predictor);
         }
 
@@ -88,7 +88,7 @@ namespace BovineLabs.Core.Iterators
             ref StreamCompressionModel compressionModel, IntPtr entityStartBit, IntPtr snapshotDynamicDataPtr,
             ref int snapshotDynamicDataOffset, IntPtr dynamicSizePerEntity, int dynamicSnapshotMaxOffset)
         {
-            DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.SerializeBuffer(
+            DynamicHashCollectionNetcodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>.SerializeBuffer(
                 stateData, snapshotData, snapshotOffset, snapshotStride, maskOffsetInBits, changeMaskBits, componentData, componentDataLen, count,
                 baselines, ref writer, ref compressionModel, entityStartBit, snapshotDynamicDataPtr, ref snapshotDynamicDataOffset,
                 dynamicSizePerEntity, dynamicSnapshotMaxOffset);
@@ -99,7 +99,7 @@ namespace BovineLabs.Core.Iterators
             ref DataStreamWriter writer, ref StreamCompressionModel compressionModel, IntPtr entityStartBit, IntPtr snapshotDynamicDataPtr,
             IntPtr dynamicSizePerEntity, int dynamicSnapshotMaxOffset)
         {
-            DynamicHashCollectionNetCodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>
+            DynamicHashCollectionNetcodeSerializerCore<TBuffer, TKey, TValue, DynamicHashMapRawSerializerCodec<TBuffer, TKey, TValue>>
                 .PostSerializeBuffer(
                     snapshotData, snapshotOffset, snapshotStride, maskOffsetInBits, changeMaskBits, count, baselines, ref writer,
                     ref compressionModel, entityStartBit, snapshotDynamicDataPtr, dynamicSizePerEntity, dynamicSnapshotMaxOffset);
@@ -112,7 +112,7 @@ namespace BovineLabs.Core.Iterators
     }
 
     [BurstCompile]
-    public static unsafe class DynamicHashMapNetCodeSerializer<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>
+    public static unsafe class DynamicHashMapNetcodeSerializer<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>
         where TBuffer : unmanaged, IDynamicHashMap<TKey, TValue>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
@@ -124,9 +124,9 @@ namespace BovineLabs.Core.Iterators
         public static void AddToCollection(
             ref GhostComponentSerializerCollectionData collectionData, ref SystemState systemState, FixedString64Bytes displayName, ulong variantHash,
             string codecTypeFullName, GhostPrefabType prefabType, GhostSendType sendTypeOptimization, byte sendForChildEntities, SendToOwnerType sendToOwner,
-            byte isDefaultSerializer, in DynamicHashCollectionNetCodeFunctionPointers functionPointers)
+            byte isDefaultSerializer, in DynamicHashCollectionNetcodeFunctionPointers functionPointers)
         {
-            DynamicHashCollectionNetCodeSerializerCore<
+            DynamicHashCollectionNetcodeSerializerCore<
                 TBuffer, TKey, TValue, DynamicHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>.AddToCollection(
                     ref collectionData,
                     ref systemState,
@@ -150,7 +150,7 @@ namespace BovineLabs.Core.Iterators
             FixedString64Bytes displayName, ulong variantHash, GhostPrefabType prefabType, GhostSendType sendTypeOptimization, byte sendForChildEntities,
             byte isDefaultSerializer)
         {
-            return DynamicHashCollectionNetCodeSerializerCore<
+            return DynamicHashCollectionNetcodeSerializerCore<
                     TBuffer, TKey, TValue, DynamicHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>
                 .CreateSerializationStrategy(GetDisplayName(displayName), variantHash, prefabType, sendTypeOptimization, sendForChildEntities,
                     isDefaultSerializer);
@@ -159,7 +159,7 @@ namespace BovineLabs.Core.Iterators
         public static void CopyToSnapshot(
             IntPtr stateData, IntPtr snapshotData, int snapshotOffset, int snapshotStride, IntPtr componentData, int componentStride, int count)
         {
-            DynamicHashCollectionNetCodeSerializerCore<
+            DynamicHashCollectionNetcodeSerializerCore<
                 TBuffer, TKey, TValue, DynamicHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>.CopyToSnapshot(
                     stateData, snapshotData, snapshotOffset, snapshotStride, componentData, componentStride, count);
         }
@@ -167,7 +167,7 @@ namespace BovineLabs.Core.Iterators
         public static void CopyFromSnapshot(
             IntPtr stateData, IntPtr snapshotData, int snapshotOffset, int snapshotStride, IntPtr componentData, int componentStride, int count)
         {
-            DynamicHashCollectionNetCodeSerializerCore<
+            DynamicHashCollectionNetcodeSerializerCore<
                 TBuffer, TKey, TValue, DynamicHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>.CopyFromSnapshot(
                     stateData, snapshotData, snapshotOffset, snapshotStride, componentData, componentStride, count);
         }
@@ -176,21 +176,21 @@ namespace BovineLabs.Core.Iterators
             IntPtr snapshotData, IntPtr baselineData, ref DataStreamReader reader, ref StreamCompressionModel compressionModel, IntPtr changeMaskData,
             int startOffset)
         {
-            DynamicHashCollectionNetCodeSerializerCore<
+            DynamicHashCollectionNetcodeSerializerCore<
                 TBuffer, TKey, TValue, DynamicHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>.Deserialize(
                     snapshotData, baselineData, ref reader, ref compressionModel, changeMaskData, startOffset);
         }
 
         public static void RestoreFromBackup(IntPtr componentData, IntPtr backupData)
         {
-            DynamicHashCollectionNetCodeSerializerCore<
+            DynamicHashCollectionNetcodeSerializerCore<
                     TBuffer, TKey, TValue, DynamicHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>
                 .RestoreFromBackup(componentData, backupData);
         }
 
         public static void PredictDelta(IntPtr snapshotData, IntPtr baseline1Data, IntPtr baseline2Data, ref GhostDeltaPredictor predictor)
         {
-            DynamicHashCollectionNetCodeSerializerCore<
+            DynamicHashCollectionNetcodeSerializerCore<
                 TBuffer, TKey, TValue, DynamicHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>.PredictDelta(
                     snapshotData, baseline1Data, baseline2Data, ref predictor);
         }
@@ -201,7 +201,7 @@ namespace BovineLabs.Core.Iterators
             ref StreamCompressionModel compressionModel, IntPtr entityStartBit, IntPtr snapshotDynamicDataPtr,
             ref int snapshotDynamicDataOffset, IntPtr dynamicSizePerEntity, int dynamicSnapshotMaxOffset)
         {
-            DynamicHashCollectionNetCodeSerializerCore<
+            DynamicHashCollectionNetcodeSerializerCore<
                 TBuffer, TKey, TValue, DynamicHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>.SerializeBuffer(
                     stateData, snapshotData, snapshotOffset, snapshotStride, maskOffsetInBits, changeMaskBits, componentData, componentDataLen, count,
                     baselines, ref writer, ref compressionModel, entityStartBit, snapshotDynamicDataPtr, ref snapshotDynamicDataOffset,
@@ -213,7 +213,7 @@ namespace BovineLabs.Core.Iterators
             ref DataStreamWriter writer, ref StreamCompressionModel compressionModel, IntPtr entityStartBit, IntPtr snapshotDynamicDataPtr,
             IntPtr dynamicSizePerEntity, int dynamicSnapshotMaxOffset)
         {
-            DynamicHashCollectionNetCodeSerializerCore<
+            DynamicHashCollectionNetcodeSerializerCore<
                     TBuffer, TKey, TValue, DynamicHashMapGeneratedSerializerCodec<TBuffer, TKey, TValue, TKeyCodec, TValueCodec>>
                 .PostSerializeBuffer(
                     snapshotData, snapshotOffset, snapshotStride, maskOffsetInBits, changeMaskBits, count, baselines, ref writer,
@@ -231,47 +231,47 @@ namespace BovineLabs.Core.Iterators
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-        private const string VariantTypeFullName = "BovineLabs.Core.Iterators.DynamicHashMapNetCodeRawCompactVariant";
-        private const string SerializerTypeFullName = "BovineLabs.Core.Iterators.DynamicHashMapNetCodeSerializer";
+        private const string VariantTypeFullName = "BovineLabs.Core.Iterators.DynamicHashMapNetcodeRawCompactVariant";
+        private const string SerializerTypeFullName = "BovineLabs.Core.Iterators.DynamicHashMapNetcodeSerializer";
         private const string GhostFieldsFormatName = "BovineLabs.Core.Iterators.DynamicHashMapRawCompactPayload.v1";
 
-        public int SnapshotSize => DynamicHashMapNetCodeRawCodec<TKey, TValue>.SnapshotSize;
+        public int SnapshotSize => DynamicHashMapNetcodeRawCodec<TKey, TValue>.SnapshotSize;
 
-        public int ChangeMaskBits => DynamicHashMapNetCodeRawCodec<TKey, TValue>.ChangeMaskBits;
+        public int ChangeMaskBits => DynamicHashMapNetcodeRawCodec<TKey, TValue>.ChangeMaskBits;
 
         public bool TryPack(DynamicHashMapHelper<TKey>* source, byte* destination, int destinationBytes, out DynamicHashMapCompactHeader header)
         {
-            return DynamicHashMapNetCodeRawCodec<TKey, TValue>.TryPack(source, destination, destinationBytes, out header);
+            return DynamicHashMapNetcodeRawCodec<TKey, TValue>.TryPack(source, destination, destinationBytes, out header);
         }
 
         public bool TryGetPayloadBytes(byte* payload, int availableBytes, out int payloadBytes)
         {
-            return DynamicHashMapNetCodeRawCodec<TKey, TValue>.TryGetPayloadBytes(payload, availableBytes, out payloadBytes);
+            return DynamicHashMapNetcodeRawCodec<TKey, TValue>.TryGetPayloadBytes(payload, availableBytes, out payloadBytes);
         }
 
         public bool TryRebuild(void* targetBuffer, int targetBufferLength, byte* payload, int availableBytes)
         {
-            return DynamicHashMapNetCodeRawCodec<TKey, TValue>.TryRebuild(targetBuffer, targetBufferLength, payload, availableBytes);
+            return DynamicHashMapNetcodeRawCodec<TKey, TValue>.TryRebuild(targetBuffer, targetBufferLength, payload, availableBytes);
         }
 
         public void WritePayload(byte* payload, int payloadBytes, ref DataStreamWriter writer)
         {
-            DynamicHashMapNetCodeRawCodec<TKey, TValue>.WritePayload(payload, payloadBytes, ref writer);
+            DynamicHashMapNetcodeRawCodec<TKey, TValue>.WritePayload(payload, payloadBytes, ref writer);
         }
 
         public void DeserializeChunk(IntPtr snapshotData, ref DataStreamReader reader, int startOffset)
         {
-            DynamicHashMapNetCodeRawCodec<TKey, TValue>.DeserializeChunk(snapshotData, ref reader, startOffset);
+            DynamicHashMapNetcodeRawCodec<TKey, TValue>.DeserializeChunk(snapshotData, ref reader, startOffset);
         }
 
         public int GetDynamicDataChangeMaskSize(int changeMaskBits, int length)
         {
-            return DynamicHashMapNetCodeRawCodec<TKey, TValue>.GetDynamicDataChangeMaskSize(changeMaskBits, length);
+            return DynamicHashMapNetcodeRawCodec<TKey, TValue>.GetDynamicDataChangeMaskSize(changeMaskBits, length);
         }
 
         public int GetDynamicSnapshotSize(int changeMaskBits, int length)
         {
-            return DynamicHashMapNetCodeRawCodec<TKey, TValue>.GetDynamicSnapshotSize(changeMaskBits, length);
+            return DynamicHashMapNetcodeRawCodec<TKey, TValue>.GetDynamicSnapshotSize(changeMaskBits, length);
         }
 
         public ulong GetVariantHash()
@@ -299,9 +299,9 @@ namespace BovineLabs.Core.Iterators
             hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicGhostPrimitiveCodec.Hash64(typeof(TKey).FullName));
             hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicGhostPrimitiveCodec.Hash64(typeof(TValue).FullName));
             hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicGhostPrimitiveCodec.Hash64(codecTypeFullName));
-            hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicHashMapNetCodeHash.Hash64(DynamicHashMapCompactHeader.CurrentFormatVersion));
-            hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicHashMapNetCodeHash.Hash64(sizeof(TKey)));
-            hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicHashMapNetCodeHash.Hash64(sizeof(TValue)));
+            hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicHashMapNetcodeHash.Hash64(DynamicHashMapCompactHeader.CurrentFormatVersion));
+            hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicHashMapNetcodeHash.Hash64(sizeof(TKey)));
+            hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicHashMapNetcodeHash.Hash64(sizeof(TValue)));
             return hash;
         }
     }
@@ -314,48 +314,48 @@ namespace BovineLabs.Core.Iterators
         where TKeyCodec : unmanaged, IDynamicGhostValueCodec<TKey>
         where TValueCodec : unmanaged, IDynamicGhostValueCodec<TValue>
     {
-        private const string VariantTypeFullName = "BovineLabs.Core.Iterators.DynamicHashMapNetCodeGeneratedCompactVariant";
-        private const string SerializerTypeFullName = "BovineLabs.Core.Iterators.DynamicHashMapNetCodeGeneratedSerializer.v2";
+        private const string VariantTypeFullName = "BovineLabs.Core.Iterators.DynamicHashMapNetcodeGeneratedCompactVariant";
+        private const string SerializerTypeFullName = "BovineLabs.Core.Iterators.DynamicHashMapNetcodeGeneratedSerializer.v2";
         private const string GhostFieldsFormatName = "BovineLabs.Core.Iterators.DynamicHashMapGeneratedCompactPayload.v2";
 
-        public int SnapshotSize => DynamicHashMapNetCodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.SnapshotSize;
+        public int SnapshotSize => DynamicHashMapNetcodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.SnapshotSize;
 
-        public int ChangeMaskBits => DynamicHashMapNetCodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.ChangeMaskBits;
+        public int ChangeMaskBits => DynamicHashMapNetcodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.ChangeMaskBits;
 
         public bool TryPack(DynamicHashMapHelper<TKey>* source, byte* destination, int destinationBytes, out DynamicHashMapCompactHeader header)
         {
-            return DynamicHashMapNetCodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.TryPack(source, destination, destinationBytes, out header);
+            return DynamicHashMapNetcodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.TryPack(source, destination, destinationBytes, out header);
         }
 
         public bool TryGetPayloadBytes(byte* payload, int availableBytes, out int payloadBytes)
         {
-            return DynamicHashMapNetCodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.TryGetPayloadBytes(payload, availableBytes, out payloadBytes);
+            return DynamicHashMapNetcodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.TryGetPayloadBytes(payload, availableBytes, out payloadBytes);
         }
 
         public bool TryRebuild(void* targetBuffer, int targetBufferLength, byte* payload, int availableBytes)
         {
-            return DynamicHashMapNetCodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.TryRebuild(
+            return DynamicHashMapNetcodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.TryRebuild(
                 targetBuffer, targetBufferLength, payload, availableBytes);
         }
 
         public void WritePayload(byte* payload, int payloadBytes, ref DataStreamWriter writer)
         {
-            DynamicHashMapNetCodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.WritePayload(payload, payloadBytes, ref writer);
+            DynamicHashMapNetcodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.WritePayload(payload, payloadBytes, ref writer);
         }
 
         public void DeserializeChunk(IntPtr snapshotData, ref DataStreamReader reader, int startOffset)
         {
-            DynamicHashMapNetCodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.DeserializeChunk(snapshotData, ref reader, startOffset);
+            DynamicHashMapNetcodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.DeserializeChunk(snapshotData, ref reader, startOffset);
         }
 
         public int GetDynamicDataChangeMaskSize(int changeMaskBits, int length)
         {
-            return DynamicHashMapNetCodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.GetDynamicDataChangeMaskSize(changeMaskBits, length);
+            return DynamicHashMapNetcodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.GetDynamicDataChangeMaskSize(changeMaskBits, length);
         }
 
         public int GetDynamicSnapshotSize(int changeMaskBits, int length)
         {
-            return DynamicHashMapNetCodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.GetDynamicSnapshotSize(changeMaskBits, length);
+            return DynamicHashMapNetcodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec>.GetDynamicSnapshotSize(changeMaskBits, length);
         }
 
         public ulong GetVariantHash()
@@ -383,16 +383,16 @@ namespace BovineLabs.Core.Iterators
             hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicGhostPrimitiveCodec.Hash64(typeof(TKey).FullName));
             hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicGhostPrimitiveCodec.Hash64(typeof(TValue).FullName));
             hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicGhostPrimitiveCodec.Hash64(codecTypeFullName ?? string.Empty));
-            hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicHashMapNetCodeHash.Hash64(DynamicHashMapCompactHeader.CurrentFormatVersion));
-            hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicHashMapNetCodeHash.Hash64(default(TKeyCodec).EncodedSize));
-            hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicHashMapNetCodeHash.Hash64(default(TValueCodec).EncodedSize));
+            hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicHashMapNetcodeHash.Hash64(DynamicHashMapCompactHeader.CurrentFormatVersion));
+            hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicHashMapNetcodeHash.Hash64(default(TKeyCodec).EncodedSize));
+            hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicHashMapNetcodeHash.Hash64(default(TValueCodec).EncodedSize));
             hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, default(TKeyCodec).SchemaHash);
             hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, default(TValueCodec).SchemaHash);
             return hash;
         }
     }
 
-    internal static class DynamicHashMapNetCodeHash
+    internal static class DynamicHashMapNetcodeHash
     {
         public static ulong Hash64(int value)
         {

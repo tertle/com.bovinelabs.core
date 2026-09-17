@@ -2,7 +2,7 @@
 
 Core's entry-backed dynamic collections store a dictionary, multi-dictionary, or set directly in an ECS `DynamicBuffer<TEntry>`. The buffer element remains a normal, typed component while the wrapper supplies hash-table lookup behavior.
 
-Use this family for most new entity-owned maps whose entries should remain explicit component data. Use [generated dynamic hash maps](DynamicHashMap.md) when a specialized byte-backed layout, variable-value map, perfect hash map, or generated NetCode serializer is required.
+Use this family for most new entity-owned maps whose entries should remain explicit component data. Use [generated dynamic hash maps](DynamicHashMap.md) when a specialized byte-backed layout, variable-value map, perfect hash map, or generated Netcode serializer is required.
 
 ## Choose a collection
 

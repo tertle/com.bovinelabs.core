@@ -4,9 +4,9 @@ namespace BovineLabs.DynamicGenerator
     using Microsoft.CodeAnalysis;
 
     [SuppressMessage("ReSharper", "ArrangeObjectCreationWhenTypeEvident")]
-    internal static class DynamicHashMapNetCodeDiagnostics
+    internal static class DynamicHashMapNetcodeDiagnostics
     {
-        private const string Category = "BovineLabs.DynamicGenerator.NetCode";
+        private const string Category = "BovineLabs.DynamicGenerator.Netcode";
 
         internal static readonly DiagnosticDescriptor UnsupportedMarkerDescriptor = new DiagnosticDescriptor(
             "BLDYN0101",

@@ -5,28 +5,26 @@ namespace BovineLabs.Core.Iterators
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    internal static unsafe class DynamicHashCollectionNetCodeGeneratedCodec<TKey, TValue, TKeyCodec, TValueCodec, TCollectionPolicy>
+    internal static unsafe class DynamicHashCollectionNetcodeRawCodec<TKey, TValue, TCollectionPolicy>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
-        where TKeyCodec : unmanaged, IDynamicGhostValueCodec<TKey>
-        where TValueCodec : unmanaged, IDynamicGhostValueCodec<TValue>
         where TCollectionPolicy : unmanaged, IDynamicHashCollectionPolicy
     {
-        internal const int SnapshotSize = DynamicHashCollectionNetCodeCodecCommon.SnapshotSize;
-        internal const int ChangeMaskBits = DynamicHashCollectionNetCodeCodecCommon.ChangeMaskBits;
+        internal const int SnapshotSize = DynamicHashCollectionNetcodeCodecCommon.SnapshotSize;
+        internal const int ChangeMaskBits = DynamicHashCollectionNetcodeCodecCommon.ChangeMaskBits;
 
         internal static bool TryPack(DynamicHashMapHelper<TKey>* source, byte* destination, int destinationBytes, out DynamicHashMapCompactHeader header)
         {
             header = default;
 
             if (source == null || destination == null || source->SizeOfTValue != sizeof(TValue) ||
-                !DynamicHashMapGeneratedCompactPayload<TKey, TValue, TKeyCodec, TValueCodec>.TryCalculatePayloadBytes(source->Count, out var payloadBytes) ||
+                !DynamicHashMapRawCompactPayload<TKey, TValue>.TryCalculatePayloadBytes(source->Count, out var payloadBytes) ||
                 destinationBytes < payloadBytes)
             {
                 return false;
             }
 
-            header = DynamicHashMapGeneratedCompactPayload<TKey, TValue, TKeyCodec, TValueCodec>.Pack(
+            header = DynamicHashMapRawCompactPayload<TKey, TValue>.Pack(
                 source, destination, destinationBytes, default(TCollectionPolicy).TraversalOrder);
             if (destinationBytes > header.PayloadBytes)
             {
@@ -40,8 +38,8 @@ namespace BovineLabs.Core.Iterators
         {
             payloadBytes = 0;
 
-            if (!DynamicHashMapGeneratedCompactPayload<TKey, TValue, TKeyCodec, TValueCodec>.TryReadHeader(payload, availableBytes, out var header) ||
-                !DynamicHashMapGeneratedCompactPayload<TKey, TValue, TKeyCodec, TValueCodec>.TryValidateHeader(header, availableBytes))
+            if (!DynamicHashMapRawCompactPayload<TKey, TValue>.TryReadHeader(payload, availableBytes, out var header) ||
+                !DynamicHashMapRawCompactPayload<TKey, TValue>.TryValidateHeader(header, availableBytes))
             {
                 return false;
             }
@@ -52,22 +50,21 @@ namespace BovineLabs.Core.Iterators
 
         internal static bool TryRebuild(void* targetBuffer, int targetBufferLength, byte* payload, int availableBytes)
         {
-            if (targetBuffer == null || !DynamicHashMapGeneratedCompactPayload<TKey, TValue, TKeyCodec, TValueCodec>.TryGetTargetDataSize(
-                    payload, availableBytes, out var targetSize) ||
+            if (targetBuffer == null || !DynamicHashMapRawCompactPayload<TKey, TValue>.TryGetTargetDataSize(payload, availableBytes, out var targetSize) ||
                 targetSize != targetBufferLength)
             {
                 return false;
             }
 
             var policy = default(TCollectionPolicy);
-            DynamicHashMapGeneratedCompactPayload<TKey, TValue, TKeyCodec, TValueCodec>.RebuildFromPayload(
+            DynamicHashMapRawCompactPayload<TKey, TValue>.RebuildFromPayload(
                 targetBuffer, targetBufferLength, payload, availableBytes, policy.RebuildOrder, policy.DuplicatePolicy);
             return true;
         }
 
         internal static void WritePayload(byte* payload, int payloadBytes, ref DataStreamWriter writer)
         {
-            DynamicHashCollectionNetCodeCodecCommon.WritePayload(payload, payloadBytes, ref writer);
+            DynamicHashCollectionNetcodeCodecCommon.WritePayload(payload, payloadBytes, ref writer);
         }
 
         internal static void DeserializeChunk(IntPtr snapshotData, ref DataStreamReader reader, int startOffset)
@@ -93,12 +90,12 @@ namespace BovineLabs.Core.Iterators
 
         internal static int GetDynamicDataChangeMaskSize(int changeMaskBits, int length)
         {
-            return DynamicHashCollectionNetCodeCodecCommon.GetDynamicDataChangeMaskSize(changeMaskBits, length);
+            return DynamicHashCollectionNetcodeCodecCommon.GetDynamicDataChangeMaskSize(changeMaskBits, length);
         }
 
         internal static int GetDynamicSnapshotSize(int changeMaskBits, int length)
         {
-            return DynamicHashCollectionNetCodeCodecCommon.GetDynamicSnapshotSize(changeMaskBits, length);
+            return DynamicHashCollectionNetcodeCodecCommon.GetDynamicSnapshotSize(changeMaskBits, length);
         }
 
         [System.Diagnostics.Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -110,9 +107,9 @@ namespace BovineLabs.Core.Iterators
                 return;
             }
 
-            if (!DynamicHashMapGeneratedCompactPayload<TKey, TValue, TKeyCodec, TValueCodec>.TryValidateHeader(header, (int)header.PayloadBytes))
+            if (!DynamicHashMapRawCompactPayload<TKey, TValue>.TryValidateHeader(header, (int)header.PayloadBytes))
             {
-                throw new InvalidOperationException("Invalid dynamic hash collection compact payload header while deserializing a NetCode chunk.");
+                throw new InvalidOperationException("Invalid dynamic hash collection compact payload header while deserializing a Netcode chunk.");
             }
         }
     }

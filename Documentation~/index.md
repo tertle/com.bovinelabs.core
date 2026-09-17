@@ -10,7 +10,7 @@ Core provides:
 - Settings assets that can remain editor-only, bake ECS data, or initialize before worlds are created.
 - Burst-readable ConfigVars with command-line and editor overrides.
 - Logging, assertions, editor inspectors, asset ID tooling, and test fixtures.
-- Optional integrations for NetCode, Physics, Input System, Localization, Splines, Terrain, and VFX Graph.
+- Optional integrations for Netcode, Physics, Input System, Localization, Splines, Terrain, and VFX Graph.
 
 ## Start here
 
@@ -41,7 +41,7 @@ Source generators are distributed with the runtime assembly. A consuming runtime
 | Need | Start with |
 |---|---|
 | Store a normal dictionary, multi-dictionary, or set directly on an entity | [Dynamic buffer collections](DynamicCollections.md) |
-| Store specialized byte-backed maps or replicate them with NetCode | [Generated dynamic hash maps](DynamicHashMap.md) |
+| Store specialized byte-backed maps or replicate them with Netcode | [Generated dynamic hash maps](DynamicHashMap.md) |
 | Share component/buffer setup across baking, runtime, jobs, and tests | [Entity commands](EntityCommands.md) |
 | Resolve a reusable group of entity fields | [Facets](Facets.md) |
 | Build transient many-writer data for one consuming system | [Singleton collections](SingletonCollection.md) |
@@ -63,7 +63,7 @@ Core's main asmdefs list optional Unity assemblies and enable matching code thro
 
 | Symbol | Integration |
 |---|---|
-| `UNITY_NETCODE` | NetCode-specific wrappers and generated ghost serializers |
+| `UNITY_NETCODE` | Netcode-specific wrappers and generated ghost serializers |
 | `UNITY_PHYSICS` | Physics helpers and authoring integrations |
 | `UNITY_LOCALIZATION` | Unmanaged localization references |
 | `UNITY_SPLINES` | Spline helpers |
