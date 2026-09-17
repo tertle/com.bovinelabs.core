@@ -12,22 +12,6 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
 
     internal partial class ThreadWriter : ECSTestsFixture
     {
-        // /// <summary> Tests that the dispose job works. </summary>
-        // /// <remarks> The stream will be marked as not created straight away. </remarks>
-        // [Test]
-        // public void DisposeJob()
-        // {
-        //     var stream = NativeThreadStream.Create(ref this.World.Unmanaged.UpdateAllocator);
-        //     Assert.IsTrue(stream.IsCreated);
-        //
-        //     var fillInts = new WriteIntsJob { Writer = stream.AsWriter() };
-        //     var writerJob = fillInts.ScheduleParallel(JobsUtility.MaxJobThreadCount, 16, default);
-        //
-        //     var disposeJob = stream.Dispose(writerJob);
-        //     Assert.IsFalse(stream.IsCreated);
-        //
-        //     disposeJob.Complete();
-        // }
 
         [Test]
         public void ItemCount([Values(JobsUtility.MaxJobThreadCount + 1)] int count)

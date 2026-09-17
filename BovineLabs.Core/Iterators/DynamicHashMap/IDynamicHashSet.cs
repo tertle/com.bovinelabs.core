@@ -12,20 +12,4 @@
         byte Value { get; }
     }
 
-    // public static class Extensions
-    // {
-    //     public static Stub AsMap<T>(this DynamicBuffer<T> map)
-    //         where T : unmanaged, IBufferElementData
-    //     {
-    //         return default;
-    //     }
-    //
-    //     public struct Stub
-    //     {
-    //         public bool Contains(object t)
-    //         {
-    //             return false;
-    //         }
-    //     }
-    // }
 }

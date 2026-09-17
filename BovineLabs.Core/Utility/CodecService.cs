@@ -73,30 +73,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /*/// <summary>
-        /// <summary>
-        /// Compression level ranges from 0 (store only) to 9 (best compression).
-        /// </summary>
-        public static int Zip(byte* src, int srcSize, int compressionLevel, out byte* dst)
-        {
-            using var memoryStream = new MemoryStream();
-
-            using (var outputStream = new ZipOutputStream(memoryStream))
-            {
-                outputStream.SetLevel(compressionLevel);
-
-                var entry = new ZipEntry("save")
-                {
-                    DateTime = DateTime.Now,
-                };
-                outputStream.PutNextEntry(entry);
-
-                outputStream.Write(new ReadOnlySpan<byte>(src, srcSize));
-            }
-
-            var buffer = memoryStream.GetBuffer();
-        }*/
-
         [DllImport(DllName, EntryPoint = "LZ4_compressBound")]
         private static extern int CompressBoundLZ4(int srcSize);
 
