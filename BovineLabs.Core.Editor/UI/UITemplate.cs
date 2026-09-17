@@ -1,8 +1,4 @@
-﻿// <copyright file="UITemplate.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.UI
+﻿namespace BovineLabs.Core.Editor.UI
 {
     using UnityEditor;
     using UnityEngine.UIElements;

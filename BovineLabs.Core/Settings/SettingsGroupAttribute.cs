@@ -1,8 +1,4 @@
-﻿// <copyright file="SettingsGroupAttribute.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Settings
+﻿namespace BovineLabs.Core.Settings
 {
     using System;
 

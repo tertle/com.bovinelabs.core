@@ -1,8 +1,4 @@
-﻿// <copyright file="SaveFeature.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Savanna
+﻿namespace BovineLabs.Savanna
 {
     using System;
 

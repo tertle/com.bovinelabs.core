@@ -1,8 +1,4 @@
-﻿// <copyright file="TypeSearchProvider.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.Component
+﻿namespace BovineLabs.Core.Editor.Component
 {
     using System;
     using System.Collections.Generic;

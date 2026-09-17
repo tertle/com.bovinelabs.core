@@ -1,7 +1,3 @@
-// <copyright file="FacetDiagnostics.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.FacetGenerator
 {
     using System.Diagnostics.CodeAnalysis;

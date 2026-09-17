@@ -1,8 +1,4 @@
-﻿// <copyright file="Check.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Assertions
+﻿namespace BovineLabs.Core.Assertions
 {
     using System;
     using System.Diagnostics;

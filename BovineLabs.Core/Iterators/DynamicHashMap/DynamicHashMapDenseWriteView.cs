@@ -1,7 +1,3 @@
-// <copyright file="DynamicHashMapDenseWriteView.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Iterators
 {
     using System;

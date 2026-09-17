@@ -1,8 +1,4 @@
-﻿// <copyright file="UnsafeEntityDataAccess.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Iterators
+﻿namespace BovineLabs.Core.Iterators
 {
     using System;
     using BovineLabs.Core.Collections;

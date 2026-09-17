@@ -1,7 +1,3 @@
-// <copyright file="ConfigVarPanel.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Editor.ConfigVars
 {
     using System;

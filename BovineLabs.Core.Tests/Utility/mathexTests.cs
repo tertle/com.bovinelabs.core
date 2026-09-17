@@ -1,8 +1,4 @@
-﻿// <copyright file="mathexTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Utility
+﻿namespace BovineLabs.Core.Tests.Utility
 {
     using System.Diagnostics.CodeAnalysis;
     using BovineLabs.Core.Utility;

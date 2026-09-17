@@ -1,7 +1,3 @@
-// <copyright file="AssemblyBuilderWindow.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Editor.AssemblyBuilder
 {
     using System.Collections.Generic;
@@ -17,10 +13,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
     /// <summary> An editor window that allows easy creation of new assembly definitions. </summary>
     public class AssemblyBuilderWindow : EditorWindow
     {
-        private const string AssemblyInfoTemplate =
-            "// <copyright file=\"AssemblyInfo.cs\" company=\"{0}\">\n" +
-            "// Copyright (c) {0}. All rights reserved.\n" +
-            "// </copyright>\n\nusing System.Runtime.CompilerServices;\n";
+        private const string AssemblyInfoTemplate = "using System.Runtime.CompilerServices;\n";
 
         private const string DisableAutoCreationTemplate = "using Unity.Entities;\n\n[assembly: DisableAutoCreation]";
         private const string InternalAccessTemplate = "\n[assembly: InternalsVisibleTo(\"{0}\")]";
@@ -45,7 +38,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private static string GetAssemblyInfoHeader()
         {
-            return string.Format(AssemblyInfoTemplate, PlayerSettings.companyName);
+            return AssemblyInfoTemplate;
         }
 
         private void Update()

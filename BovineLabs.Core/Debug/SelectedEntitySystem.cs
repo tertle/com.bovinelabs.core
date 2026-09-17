@@ -1,8 +1,4 @@
-﻿// <copyright file="SelectedEntitySystem.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-#if !UNITY_EDITOR && UNITY_INCLUDE_INSTRUMENTATION
+﻿#if !UNITY_EDITOR && UNITY_INCLUDE_INSTRUMENTATION
 namespace BovineLabs.Core
 {
     using Unity.Entities;

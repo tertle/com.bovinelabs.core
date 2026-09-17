@@ -1,8 +1,4 @@
-﻿// <copyright file="BitArray256Converter.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.UI
+﻿namespace BovineLabs.Core.Editor.UI
 {
     using BovineLabs.Core.Collections;
     using JetBrains.Annotations;

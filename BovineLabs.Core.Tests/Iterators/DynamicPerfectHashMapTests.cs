@@ -1,8 +1,4 @@
-﻿// <copyright file="DynamicPerfectHashMapTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Iterators
+﻿namespace BovineLabs.Core.Tests.Iterators
 {
     using System;
     using BovineLabs.Core.Iterators;

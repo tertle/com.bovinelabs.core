@@ -1,8 +1,4 @@
-﻿// <copyright file="DynamicDiagnostics.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.DynamicGenerator
+﻿namespace BovineLabs.DynamicGenerator
 {
     using System.Diagnostics.CodeAnalysis;
     using Microsoft.CodeAnalysis;

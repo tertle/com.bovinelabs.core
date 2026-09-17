@@ -1,8 +1,4 @@
-﻿// <copyright file="NativeKeyedMapTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Collections
+﻿namespace BovineLabs.Core.Tests.Collections
 {
     using BovineLabs.Core.Collections;
     using NUnit.Framework;

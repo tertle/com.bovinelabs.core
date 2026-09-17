@@ -1,8 +1,4 @@
-﻿// <copyright file="BakerExtensions.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Authoring
+﻿namespace BovineLabs.Core.Authoring
 {
     using System;
     using Unity.Entities;

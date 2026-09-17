@@ -1,8 +1,4 @@
-﻿// <copyright file="UntypedDynamicHashMapIterator.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Iterators
+﻿namespace BovineLabs.Core.Iterators
 {
     using System;
     using System.Collections;

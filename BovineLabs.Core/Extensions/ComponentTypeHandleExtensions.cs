@@ -1,8 +1,4 @@
-﻿// <copyright file="ComponentTypeHandleExtensions.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Extensions
+﻿namespace BovineLabs.Core.Extensions
 {
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;

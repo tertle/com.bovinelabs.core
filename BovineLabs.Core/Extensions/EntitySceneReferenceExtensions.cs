@@ -1,8 +1,4 @@
-﻿// <copyright file="EntitySceneReferenceExtensions.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Extensions
+﻿namespace BovineLabs.Core.Extensions
 {
     using Unity.Entities;
     using Unity.Entities.Serialization;

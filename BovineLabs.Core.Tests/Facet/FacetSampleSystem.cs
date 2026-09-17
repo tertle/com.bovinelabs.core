@@ -1,7 +1,3 @@
-// <copyright file="FacetSampleSystem.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Tests.Facet
 {
     using Unity.Burst;

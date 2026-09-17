@@ -1,8 +1,4 @@
-﻿// <copyright file="BitArray.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-#pragma warning disable SA1649 // Filename must match
+﻿#pragma warning disable SA1649 // Filename must match
 
 namespace BovineLabs.Core.Collections
 {

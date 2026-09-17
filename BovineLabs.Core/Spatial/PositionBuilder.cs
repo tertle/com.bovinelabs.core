@@ -1,8 +1,4 @@
-﻿// <copyright file="PositionBuilder.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Spatial
+﻿namespace BovineLabs.Core.Spatial
 {
     using Unity.Assertions;
     using Unity.Burst;

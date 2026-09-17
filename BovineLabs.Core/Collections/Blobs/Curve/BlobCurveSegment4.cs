@@ -1,8 +1,4 @@
-﻿// <copyright file="BlobCurveSegment4.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Collections
+﻿namespace BovineLabs.Core.Collections
 {
     using Unity.Assertions;
     using Unity.Mathematics;

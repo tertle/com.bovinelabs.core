@@ -1,8 +1,4 @@
-﻿// <copyright file="ConvexHullBuilder.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-// Based off https://github.com/OskarSigvardsson/unity-quickhull/blob/master/Scripts/ConvexHullCalculator.cs
+﻿// Based off https://github.com/OskarSigvardsson/unity-quickhull/blob/master/Scripts/ConvexHullCalculator.cs
 //
 // Copyright 2019 Oskar Sigvardsson
 //

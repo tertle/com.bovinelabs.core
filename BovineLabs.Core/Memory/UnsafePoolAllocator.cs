@@ -1,8 +1,4 @@
-﻿// <copyright file="UnsafePoolAllocator.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Memory
+﻿namespace BovineLabs.Core.Memory
 {
     using System;
     using Unity.Collections;

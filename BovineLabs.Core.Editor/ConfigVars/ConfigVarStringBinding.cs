@@ -1,8 +1,4 @@
-﻿// <copyright file="ConfigVarStringBinding.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.ConfigVars
+﻿namespace BovineLabs.Core.Editor.ConfigVars
 {
     using BovineLabs.Core.ConfigVars;
     using Unity.Burst;

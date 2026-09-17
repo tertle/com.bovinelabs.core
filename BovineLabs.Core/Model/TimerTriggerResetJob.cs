@@ -1,8 +1,4 @@
-﻿// <copyright file="TimerTriggerResetJob.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Model
+﻿namespace BovineLabs.Core.Model
 {
     using BovineLabs.Core.Internal;
     using Unity.Burst;

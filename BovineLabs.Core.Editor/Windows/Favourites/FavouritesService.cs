@@ -1,7 +1,3 @@
-// <copyright file="FavouritesService.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Editor.Windows.Favourites
 {
     using System.Collections.Generic;

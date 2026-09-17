@@ -1,8 +1,4 @@
-﻿// <copyright file="ElementProperty.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.Inspectors
+﻿namespace BovineLabs.Core.Editor.Inspectors
 {
     using System.Collections.Generic;
     using BovineLabs.Core.Editor.Helpers;

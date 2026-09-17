@@ -1,8 +1,4 @@
-﻿// <copyright file="UnsafeDynamicHashMapExtensions.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Iterators
+﻿namespace BovineLabs.Core.Iterators
 {
     using BovineLabs.Core.Collections;
     using Unity.Assertions;

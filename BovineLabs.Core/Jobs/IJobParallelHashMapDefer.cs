@@ -1,8 +1,4 @@
-﻿// <copyright file="IJobParallelHashMapDefer.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Jobs
+﻿namespace BovineLabs.Core.Jobs
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

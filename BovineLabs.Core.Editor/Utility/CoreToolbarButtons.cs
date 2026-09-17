@@ -1,7 +1,3 @@
-// <copyright file="CoreToolbarButtons.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Editor.Utility
 {
     using BovineLabs.Core.Editor.ConfigVars;

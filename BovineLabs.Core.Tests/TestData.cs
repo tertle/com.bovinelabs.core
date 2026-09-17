@@ -1,8 +1,4 @@
-﻿// <copyright file="TestData.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests
+﻿namespace BovineLabs.Core.Tests
 {
     /// <summary> Interface that tests no implementation. </summary>
     public interface ITestInterface0

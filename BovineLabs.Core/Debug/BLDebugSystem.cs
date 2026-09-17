@@ -1,8 +1,4 @@
-﻿// <copyright file="BLDebugSystem.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core
+﻿namespace BovineLabs.Core
 {
     using BovineLabs.Core.ConfigVars;
     using BovineLabs.Core.Extensions;

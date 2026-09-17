@@ -1,8 +1,4 @@
-﻿// <copyright file="MeshSimplifier.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-// Adapted from UnityMeshSimplifier and Fast Quadric Mesh Simplification.
+﻿// Adapted from UnityMeshSimplifier and Fast Quadric Mesh Simplification.
 // See MeshSimplifier.LICENSE.md for third-party notices.
 
 namespace BovineLabs.Core.Utility

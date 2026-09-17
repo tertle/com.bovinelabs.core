@@ -1,7 +1,3 @@
-// <copyright file="NativeThreadStream.Reader.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Collections
 {
     using System;

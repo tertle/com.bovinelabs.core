@@ -1,8 +1,4 @@
-﻿// <copyright file="FixedBitMaskTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Collections
+﻿namespace BovineLabs.Core.Tests.Collections
 {
     using System;
     using System.Runtime.InteropServices;

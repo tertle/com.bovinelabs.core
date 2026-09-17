@@ -1,7 +1,3 @@
-// <copyright file="BovineThemeSelector.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.UI
 {
     using System.Collections.Generic;

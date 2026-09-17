@@ -1,7 +1,3 @@
-// <copyright file="SearchView.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 #nullable disable
 namespace BovineLabs.Core.Editor.SearchWindow
 {

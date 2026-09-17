@@ -1,7 +1,3 @@
-// <copyright file="OrderedListColumn.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Iterators.Columns
 {
     using System;

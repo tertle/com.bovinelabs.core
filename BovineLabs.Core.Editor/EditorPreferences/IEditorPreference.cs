@@ -1,7 +1,3 @@
-// <copyright file="IEditorPreference.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Editor.EditorPreferences
 {
     using System.Collections.Generic;

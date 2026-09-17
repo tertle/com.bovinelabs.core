@@ -1,8 +1,4 @@
-﻿// <copyright file="NativeThreadStreamTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Collections.ThreadStream
+﻿namespace BovineLabs.Core.Tests.Collections.ThreadStream
 {
     using BovineLabs.Core.Collections;
     using NUnit.Framework;

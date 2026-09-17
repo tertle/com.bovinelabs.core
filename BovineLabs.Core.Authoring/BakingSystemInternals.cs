@@ -1,8 +1,4 @@
-﻿// <copyright file="BakingSettingsInternals.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Authoring
+﻿namespace BovineLabs.Core.Authoring
 {
     using Unity.Entities;
     using Unity.Entities.Build;

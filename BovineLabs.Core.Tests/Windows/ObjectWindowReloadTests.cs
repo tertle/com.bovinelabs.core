@@ -1,7 +1,3 @@
-// <copyright file="ObjectWindowReloadTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Tests.Windows
 {
     using System;

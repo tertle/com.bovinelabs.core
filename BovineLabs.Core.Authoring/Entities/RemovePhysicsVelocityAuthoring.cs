@@ -1,8 +1,4 @@
-﻿// <copyright file="RemovePhysicsVelocityAuthoring.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-#if UNITY_PHYSICS
+﻿#if UNITY_PHYSICS
 namespace BovineLabs.Core.Authoring.Entities
 {
     using Unity.Burst;

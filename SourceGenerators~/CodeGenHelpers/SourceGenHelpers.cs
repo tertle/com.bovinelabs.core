@@ -1,8 +1,4 @@
-﻿// <copyright file="SourceGenHelpers.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace CodeGenHelpers
+﻿namespace CodeGenHelpers
 {
     using System;
     using System.Globalization;

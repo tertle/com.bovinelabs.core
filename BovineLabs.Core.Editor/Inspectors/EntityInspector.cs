@@ -1,8 +1,4 @@
-﻿// <copyright file="EntityInspector.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.Inspectors
+﻿namespace BovineLabs.Core.Editor.Inspectors
 {
     using Unity.Entities.Editor;
     using UnityEngine.UIElements;

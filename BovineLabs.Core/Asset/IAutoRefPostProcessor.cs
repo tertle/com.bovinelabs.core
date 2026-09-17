@@ -1,7 +1,3 @@
-// <copyright file="IAutoRefPostProcessor.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Asset
 {
     /// <summary> Optional hook for managers that need to restore invariants after AutoRef updates a field. </summary>

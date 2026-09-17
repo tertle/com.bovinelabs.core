@@ -1,7 +1,3 @@
-// <copyright file="ObjectSelectionProxyEditor.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Editor.UI
 {
     using BovineLabs.Core.Editor.Internal;

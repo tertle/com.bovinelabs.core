@@ -1,7 +1,3 @@
-// <copyright file="NativeParallelHashMapFallbackTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Tests.Collections
 {
     using System.Collections.Generic;

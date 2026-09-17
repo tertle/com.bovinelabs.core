@@ -1,8 +1,4 @@
-﻿// <copyright file="GhostComponentAttribute.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-#if !UNITY_NETCODE
+﻿#if !UNITY_NETCODE
 namespace Unity.NetCode
 {
     using System;

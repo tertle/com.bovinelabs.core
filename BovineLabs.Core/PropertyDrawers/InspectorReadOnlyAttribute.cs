@@ -1,8 +1,4 @@
-﻿// <copyright file="InspectorReadOnlyAttribute.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.PropertyDrawers
+﻿namespace BovineLabs.Core.PropertyDrawers
 {
     using System;
     using UnityEngine;

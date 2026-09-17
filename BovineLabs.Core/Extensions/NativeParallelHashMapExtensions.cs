@@ -1,8 +1,4 @@
-﻿// <copyright file="NativeParallelHashMapExtensions.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Extensions
+﻿namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;

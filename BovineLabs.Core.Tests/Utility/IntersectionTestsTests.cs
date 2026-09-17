@@ -1,8 +1,4 @@
-﻿// <copyright file="IntersectionTestsTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Utility
+﻿namespace BovineLabs.Core.Tests.Utility
 {
     using BovineLabs.Core.Utility;
     using NUnit.Framework;

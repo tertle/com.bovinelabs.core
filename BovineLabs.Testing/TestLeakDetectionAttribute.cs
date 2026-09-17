@@ -1,8 +1,4 @@
-﻿// <copyright file="TestLeakDetectionAttribute.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Testing
+﻿namespace BovineLabs.Testing
 {
     using System;
     using NUnit.Framework;

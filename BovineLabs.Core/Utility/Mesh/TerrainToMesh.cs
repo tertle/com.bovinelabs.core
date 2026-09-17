@@ -1,8 +1,4 @@
-﻿// <copyright file="TerrainToMesh.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-#if UNITY_TERRAIN
+﻿#if UNITY_TERRAIN
 // Contains modified code from com.unity.render-pipelines.core/Runtime/UnifiedRayTracing/Common/TerrainToMesh.cs.
 // com.unity.render-pipelines.core copyright © 2020 Unity Technologies ApS.
 // Licensed under the Unity Companion License for Unity-dependent projects:

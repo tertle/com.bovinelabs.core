@@ -1,8 +1,4 @@
-﻿// <copyright file="CustomChunkIterator.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Iterators
+﻿namespace BovineLabs.Core.Iterators
 {
     using System.Runtime.CompilerServices;
     using Unity.Burst.Intrinsics;

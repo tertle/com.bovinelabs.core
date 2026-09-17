@@ -1,7 +1,3 @@
-// <copyright file="FacetComponents.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 #pragma warning disable SA1649
 
 namespace BovineLabs.Core.Tests.Facet

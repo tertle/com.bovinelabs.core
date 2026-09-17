@@ -1,7 +1,3 @@
-// <copyright file="AssemblyInfo.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 

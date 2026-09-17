@@ -1,8 +1,4 @@
-﻿// <copyright file="PhysicsLayerUtil.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-#if UNITY_PHYSICS
+﻿#if UNITY_PHYSICS
 namespace BovineLabs.Core.Utility
 {
     using Unity.Physics;

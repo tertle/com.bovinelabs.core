@@ -1,8 +1,4 @@
-﻿// <copyright file="BlobHashMap.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Collections
+﻿namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Collections.Generic;

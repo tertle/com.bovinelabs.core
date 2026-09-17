@@ -1,7 +1,3 @@
-// <copyright file="ReflectionTestHelper.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Testing
 {
     // Helper class for reflection access to private fields

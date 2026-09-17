@@ -1,8 +1,4 @@
-﻿// <copyright file="AssemblyDefinitionTemplate.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.AssemblyBuilder
+﻿namespace BovineLabs.Core.Editor.AssemblyBuilder
 {
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;

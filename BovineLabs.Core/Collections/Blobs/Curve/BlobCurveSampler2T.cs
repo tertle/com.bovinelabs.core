@@ -1,8 +1,4 @@
-﻿// <copyright file="BlobCurveSampler2T.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Collections
+﻿namespace BovineLabs.Core.Collections
 {
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Assertions;

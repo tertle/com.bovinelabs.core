@@ -1,8 +1,4 @@
-﻿// <copyright file="ISettingsPanel.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.Settings
+﻿namespace BovineLabs.Core.Editor.Settings
 {
     using UnityEngine.UIElements;
 

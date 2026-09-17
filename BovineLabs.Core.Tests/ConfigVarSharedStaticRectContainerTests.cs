@@ -1,7 +1,3 @@
-// <copyright file="ConfigVarSharedStaticRectContainerTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Tests.ConfigVars
 {
     using BovineLabs.Core.ConfigVars;

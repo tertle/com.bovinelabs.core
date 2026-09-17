@@ -1,8 +1,4 @@
-﻿// <copyright file="ArchetypeChunkInternal.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Internal
+﻿namespace BovineLabs.Core.Internal
 {
     using System;
     using System.Diagnostics;

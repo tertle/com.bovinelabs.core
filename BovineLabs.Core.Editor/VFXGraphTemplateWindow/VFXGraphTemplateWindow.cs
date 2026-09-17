@@ -1,8 +1,4 @@
-﻿// <copyright file="VFXGraphTemplateWindow.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-#if UNITY_VFX_GRAPH
+﻿#if UNITY_VFX_GRAPH
 namespace BovineLabs.Core.Editor.VFXGraphTemplateWindow
 {
     using BovineLabs.Core.Editor.UI;

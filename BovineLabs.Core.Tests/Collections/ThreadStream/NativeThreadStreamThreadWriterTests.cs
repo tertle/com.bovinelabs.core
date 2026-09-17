@@ -1,7 +1,3 @@
-// <copyright file="NativeThreadStreamThreadWriterTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Tests.Collections.ThreadStream
 {
     using BovineLabs.Core.Collections;

@@ -1,8 +1,4 @@
-﻿// <copyright file="SelectedEntityEditorSystem.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor
+﻿namespace BovineLabs.Core.Editor
 {
     using BovineLabs.Core.ConfigVars;
     using BovineLabs.Core.Editor.Internal;

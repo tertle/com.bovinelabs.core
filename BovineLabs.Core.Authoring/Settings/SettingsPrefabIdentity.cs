@@ -1,7 +1,3 @@
-// <copyright file="SettingsPrefabIdentity.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Authoring.Settings
 {
     using Unity.Entities;

@@ -1,8 +1,4 @@
-﻿// <copyright file="PhysicsExtensions.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-#if UNITY_PHYSICS
+﻿#if UNITY_PHYSICS
 namespace BovineLabs.Core.Extensions
 {
     using Unity.Mathematics;

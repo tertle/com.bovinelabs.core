@@ -1,8 +1,4 @@
-﻿// <copyright file="ConfigVarBinding.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.ConfigVars
+﻿namespace BovineLabs.Core.Editor.ConfigVars
 {
     using System;
     using BovineLabs.Core.ConfigVars;

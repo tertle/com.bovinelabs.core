@@ -1,8 +1,4 @@
-﻿// <copyright file="WeakObjectReferenceInspector.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.Inspectors
+﻿namespace BovineLabs.Core.Editor.Inspectors
 {
     using BovineLabs.Core.Editor.Extensions;
     using BovineLabs.Core.Editor.Internal;

@@ -1,8 +1,4 @@
-﻿// <copyright file="ContextGetter.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.Inspectors
+﻿namespace BovineLabs.Core.Editor.Inspectors
 {
     using System;
     using Unity.Collections.LowLevel.Unsafe;

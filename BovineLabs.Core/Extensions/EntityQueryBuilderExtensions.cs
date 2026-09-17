@@ -1,8 +1,4 @@
-﻿// <copyright file="EntityQueryBuilderExtensions.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Extensions
+﻿namespace BovineLabs.Core.Extensions
 {
     using BovineLabs.Core.Utility;
     using Unity.Collections;

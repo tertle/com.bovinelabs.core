@@ -1,8 +1,4 @@
-﻿// <copyright file="EnabledBitUtility.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Internal
+﻿namespace BovineLabs.Core.Internal
 {
     using System.Runtime.CompilerServices;
     using Unity.Burst.Intrinsics;

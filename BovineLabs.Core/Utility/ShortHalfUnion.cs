@@ -1,8 +1,4 @@
-﻿// <copyright file="ShortHalfUnion.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Utility
+﻿namespace BovineLabs.Core.Utility
 {
     using System.Runtime.InteropServices;
     using Unity.Mathematics;

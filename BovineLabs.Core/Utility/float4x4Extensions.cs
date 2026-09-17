@@ -1,8 +1,4 @@
-﻿// <copyright file="float4x4Extensions.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Utility
+﻿namespace BovineLabs.Core.Utility
 {
     using Unity.Mathematics;
 

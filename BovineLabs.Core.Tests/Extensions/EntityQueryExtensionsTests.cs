@@ -1,7 +1,3 @@
-// <copyright file="EntityQueryExtensionsTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Tests.Extensions
 {
     using System;

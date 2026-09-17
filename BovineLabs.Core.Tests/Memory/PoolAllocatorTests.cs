@@ -1,8 +1,4 @@
-﻿// <copyright file="PoolAllocatorTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Memory
+﻿namespace BovineLabs.Core.Tests.Memory
 {
     using System;
     using System.Collections.Generic;

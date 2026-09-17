@@ -1,8 +1,4 @@
-﻿// <copyright file="NativeMultiHashMap.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-// ReSharper disable once CheckNamespace
+﻿// ReSharper disable once CheckNamespace
 
 namespace Unity.Collections
 {

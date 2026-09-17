@@ -1,8 +1,4 @@
-﻿// <copyright file="TypeManagerUtil.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Utility
+﻿namespace BovineLabs.Core.Utility
 {
     using Unity.Collections;
     using Unity.Entities;

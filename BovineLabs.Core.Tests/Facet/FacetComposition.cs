@@ -1,8 +1,4 @@
-﻿// <copyright file="FacetComposition.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Facet
+﻿namespace BovineLabs.Core.Tests.Facet
 {
     using BovineLabs.Core;
 

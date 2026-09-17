@@ -1,8 +1,4 @@
-﻿// <copyright file="CreateEditorWorld.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-#if !BL_DISABLE_CREATE_EDITOR_WORLD
+﻿#if !BL_DISABLE_CREATE_EDITOR_WORLD
 namespace BovineLabs.Core.Editor
 {
     using System.Threading.Tasks;

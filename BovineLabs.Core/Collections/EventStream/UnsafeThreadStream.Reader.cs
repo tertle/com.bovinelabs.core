@@ -1,7 +1,3 @@
-// <copyright file="UnsafeThreadStream.Reader.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Collections
 {
     using Unity.Collections.LowLevel.Unsafe;

@@ -1,8 +1,4 @@
-﻿// <copyright file="BlobHashMapTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Collections.Blobs
+﻿namespace BovineLabs.Core.Tests.Collections.Blobs
 {
     using BovineLabs.Core.Collections;
     using NUnit.Framework;

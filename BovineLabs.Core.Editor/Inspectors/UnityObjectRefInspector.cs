@@ -1,8 +1,4 @@
-﻿// <copyright file="UnityObjectRefInspector.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-#pragma warning disable SA1402
+﻿#pragma warning disable SA1402
 
 namespace BovineLabs.Core.Editor.Inspectors
 {

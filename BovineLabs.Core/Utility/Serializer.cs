@@ -1,8 +1,4 @@
-﻿// <copyright file="Serializer.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Utility
+﻿namespace BovineLabs.Core.Utility
 {
     using System;
     using BovineLabs.Core.Extensions;

@@ -1,7 +1,3 @@
-// <copyright file="SelectionHistoryWindow.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 {
     using System.Collections.Generic;

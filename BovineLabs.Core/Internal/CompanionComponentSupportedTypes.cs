@@ -1,8 +1,4 @@
-﻿// <copyright file="CompanionComponentSupportedTypes.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Internal
+﻿namespace BovineLabs.Core.Internal
 {
     using Unity.Entities;
     using Unity.Scripting.LifecycleManagement;

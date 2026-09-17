@@ -1,8 +1,4 @@
-﻿// <copyright file="EntitySelection.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.Internal
+﻿namespace BovineLabs.Core.Editor.Internal
 {
     using System.Collections.Generic;
     using Unity.Collections;

@@ -1,7 +1,3 @@
-// <copyright file="HexSpatialMapTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Tests.Spatial
 {
     using System.Collections.Generic;

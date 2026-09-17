@@ -1,8 +1,4 @@
-﻿// <copyright file="NativeMultiHashMapExtensionsTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Extensions
+﻿namespace BovineLabs.Core.Tests.Extensions
 {
     using System.Collections.Generic;
     using BovineLabs.Core.Extensions;

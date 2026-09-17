@@ -1,8 +1,4 @@
-﻿// <copyright file="WeakObjectReferenceExtensions.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.Extensions
+﻿namespace BovineLabs.Core.Editor.Extensions
 {
     using Unity.Entities.Content;
     using Unity.Entities.Serialization;

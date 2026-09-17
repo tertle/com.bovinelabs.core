@@ -1,8 +1,4 @@
-﻿// <copyright file="StringExtensionsTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Extensions
+﻿namespace BovineLabs.Core.Tests.Extensions
 {
     using BovineLabs.Core.Extensions;
     using NUnit.Framework;

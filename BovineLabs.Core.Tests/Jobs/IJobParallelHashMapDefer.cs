@@ -1,8 +1,4 @@
-﻿// <copyright file="IJobParallelHashMapDefer.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Jobs
+﻿namespace BovineLabs.Core.Tests.Jobs
 {
     using BovineLabs.Core.Jobs;
     using NUnit.Framework;

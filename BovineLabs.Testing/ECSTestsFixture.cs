@@ -1,7 +1,3 @@
-// <copyright file="ECSTestsFixture.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Testing
 {
     using BovineLabs.Core;

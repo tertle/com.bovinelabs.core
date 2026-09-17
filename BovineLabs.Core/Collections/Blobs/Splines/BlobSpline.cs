@@ -1,7 +1,3 @@
-// <copyright file="BlobSpline.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 #if UNITY_SPLINES
 namespace BovineLabs.Core.Collections
 {

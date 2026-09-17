@@ -1,7 +1,3 @@
-// <copyright file="BlobCurveTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Tests.Collections.Blobs
 {
     using System;

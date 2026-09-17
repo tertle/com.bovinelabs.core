@@ -1,8 +1,4 @@
-﻿// <copyright file="BLLogger.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-#pragma warning disable CS0436
+﻿#pragma warning disable CS0436
 
 namespace BovineLabs.Core
 {

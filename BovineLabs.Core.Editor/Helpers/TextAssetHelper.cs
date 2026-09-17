@@ -1,8 +1,4 @@
-﻿// <copyright file="TextAssetHelper.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.Helpers
+﻿namespace BovineLabs.Core.Editor.Helpers
 {
     using System;
     using System.IO;

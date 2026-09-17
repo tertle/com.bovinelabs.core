@@ -1,8 +1,4 @@
-﻿// <copyright file="IConfigVarContainer.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.ConfigVars
+﻿namespace BovineLabs.Core.ConfigVars
 {
     using System;
 

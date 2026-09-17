@@ -1,7 +1,3 @@
-// <copyright file="ComponentAssetDrawer.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Editor.Component
 {
     using System;

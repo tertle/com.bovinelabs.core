@@ -1,8 +1,4 @@
-﻿// <copyright file="FixedHashMapTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Tests.Collections
+﻿namespace BovineLabs.Core.Tests.Collections
 {
     using System.Runtime.InteropServices;
     using BovineLabs.Core.Collections;

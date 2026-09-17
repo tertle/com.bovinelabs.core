@@ -1,8 +1,4 @@
-﻿// <copyright file="SingletonCollectionExtensions.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.SingletonCollection
+﻿namespace BovineLabs.Core.SingletonCollection
 {
     using System;
     using BovineLabs.Core.Collections;

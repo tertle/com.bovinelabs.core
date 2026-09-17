@@ -1,8 +1,4 @@
-﻿// <copyright file="IEntityCommands.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.EntityCommands
+﻿namespace BovineLabs.Core.EntityCommands
 {
     using Unity.Collections;
     using Unity.Entities;

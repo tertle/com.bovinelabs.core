@@ -1,8 +1,4 @@
-﻿// <copyright file="SpatialMap3.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Spatial
+﻿namespace BovineLabs.Core.Spatial
 {
     using System;
     using System.Diagnostics;

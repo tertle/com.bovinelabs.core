@@ -1,8 +1,4 @@
-﻿// <copyright file="SearchElement.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.UI
+﻿namespace BovineLabs.Core.Editor.UI
 {
     using System;
     using System.Collections.Generic;

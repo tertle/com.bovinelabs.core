@@ -1,8 +1,4 @@
-﻿// <copyright file="NameValue.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Keys
+﻿namespace BovineLabs.Core.Keys
 {
     using System;
     using UnityEngine;

@@ -1,8 +1,4 @@
-﻿// <copyright file="INativeStreamReader.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Collections
+﻿namespace BovineLabs.Core.Collections
 {
     public unsafe interface INativeStreamReader
     {

@@ -1,7 +1,3 @@
-// <copyright file="UnmanagedLocalizedReferenceTests.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 #if UNITY_LOCALIZATION
 namespace BovineLabs.Core.Tests.Utility
 {

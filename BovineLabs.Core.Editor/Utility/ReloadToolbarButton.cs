@@ -1,8 +1,4 @@
-﻿// <copyright file="ReloadToolbarButton.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.Utility
+﻿namespace BovineLabs.Core.Editor.Utility
 {
     using BovineLabs.Core.Editor.Internal;
     using JetBrains.Annotations;

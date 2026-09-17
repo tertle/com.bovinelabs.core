@@ -1,7 +1,3 @@
-// <copyright file="InitSystemBase.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Utility
 {
     using Unity.Entities;

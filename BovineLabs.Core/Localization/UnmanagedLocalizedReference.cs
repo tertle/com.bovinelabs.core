@@ -1,7 +1,3 @@
-// <copyright file="UnmanagedLocalizedReference.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 #if UNITY_LOCALIZATION
 namespace BovineLabs.Core.Localization
 {

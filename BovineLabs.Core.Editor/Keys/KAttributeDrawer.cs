@@ -1,8 +1,4 @@
-﻿// <copyright file="KAttributeDrawer.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
-namespace BovineLabs.Core.Editor.Keys
+﻿namespace BovineLabs.Core.Editor.Keys
 {
     using System;
     using System.Collections.Generic;

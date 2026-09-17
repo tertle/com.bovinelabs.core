@@ -1,7 +1,3 @@
-// <copyright file="FacetEnabledRefRWFacet.cs" company="BovineLabs">
-//     Copyright (c) BovineLabs. All rights reserved.
-// </copyright>
-
 namespace BovineLabs.Core.Tests.Facet
 {
     public readonly partial struct FacetEnabledRefRWFacet : IFacet
