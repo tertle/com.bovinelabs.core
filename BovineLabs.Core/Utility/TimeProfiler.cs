@@ -6,7 +6,6 @@ namespace BovineLabs.Core.Utility
     using Unity.Profiling.LowLevel.Unsafe;
     using UnityEngine;
 
-    /// <summary> A simple scoped timer restricted by <see cref="LogLevel"/> that is easily stripped outside the editor. </summary>
     public readonly struct TimeProfiler : IDisposable
     {
 #if UNITY_EDITOR

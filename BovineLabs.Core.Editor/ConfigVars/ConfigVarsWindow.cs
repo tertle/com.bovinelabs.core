@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Editor.ConfigVars
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    /// <summary> Window for config vars. </summary>
     public class ConfigVarsWindow : EditorWindow
     {
         private const string StyleSheetPath = "Packages/com.bovinelabs.core/Editor Default Resources/ConfigVarsWindow/ConfigVarsWindow.uss";

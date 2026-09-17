@@ -6,9 +6,6 @@ namespace BovineLabs.Core.Utility
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Scripting.LifecycleManagement;
 
-    /// <summary>
-    /// Packs managed callback arguments into a single pointer and size payload so the same unmanaged wrapper can dispatch any signature.
-    /// </summary>
     public unsafe readonly struct BurstTrampoline
     {
         [NoAutoStaticsCleanup]
@@ -23,12 +20,6 @@ namespace BovineLabs.Core.Utility
         [NativeDisableUnsafePtrRestriction]
         private readonly IntPtr wrapperPtr;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BurstTrampoline"/> struct.
-        /// </summary>
-        /// <param name="managedFunctionPtr">
-        /// Callback with a single payload pointer and payload size.
-        /// </param>
         public BurstTrampoline(delegate*<void*, int, void> managedFunctionPtr)
         {
             Initialize();

@@ -9,16 +9,11 @@
     using UnityEngine;
     using Object = UnityEngine.Object;
 
-    /// <summary> Utility for setting up and getting settings. </summary>
     public static class AuthoringSettingsUtility
     {
         [NoAutoStaticsCleanup]
         private static readonly Dictionary<Type, ISettings> CachedSettings = new();
 
-        /// <summary> Gets a settings file. </summary>
-        /// <typeparam name="T"> The type. </typeparam>
-        /// <returns> The settings instance. </returns>
-        /// <exception cref="Exception"> Thrown if more than 1 instance found in project. </exception>
         public static T GetSettings<T>()
             where T : ScriptableObject, ISettings
         {
@@ -39,11 +34,6 @@
             return settings!;
         }
 
-        /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
-        /// <param name="settings"> The settings if found. </param>
-        /// <typeparam name="T"> The settings type. </typeparam>
-        /// <returns> True if settings is created. </returns>
-        /// <exception cref="Exception"> Thrown if more than 1 instance found in project. </exception>
         public static bool TryGetSettings<T>(out T settings)
             where T : ScriptableObject, ISettings
         {

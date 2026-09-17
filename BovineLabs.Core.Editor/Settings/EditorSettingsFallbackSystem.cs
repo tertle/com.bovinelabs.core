@@ -8,7 +8,6 @@ namespace BovineLabs.Core.Editor.Settings
     using Unity.Scenes;
     using UnityEditor;
 
-    /// <summary> Keeps configured settings prefabs available when their normal SubScene instance is absent from the Editor world. </summary>
     [WorldSystemFilter(WorldSystemFilterFlags.Editor)]
     [UpdateAfter(typeof(SceneSystemGroup))]
     [UpdateInGroup(typeof(InitializationSystemGroup))]

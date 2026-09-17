@@ -9,15 +9,11 @@
         [NativeDisableUnsafePtrRestriction]
         public readonly T* Value;
 
-        /// <summary> Initializes a new instance of the <see cref="Ptr{T}" /> struct. </summary>
-        /// <param name="value"> The pointer to hold. </param>
         public Ptr(T* value)
         {
             this.Value = value;
         }
 
-        /// <summary> Initializes a new instance of the <see cref="Ptr{T}" /> struct. </summary>
-        /// <param name="value"> The pointer to hold. </param>
         public Ptr(ref T value)
         {
             this.Value = (T*)UnsafeUtility.AddressOf(ref value);

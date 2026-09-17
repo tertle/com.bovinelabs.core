@@ -55,8 +55,7 @@
         }
 
         /// <summary>
-        /// Gathers and caches reflection data for the internal job system's managed bindings.
-        /// Unity is responsible for calling this method - don't call it yourself.
+        /// Called by Unity for job reflection initialization; do not invoke directly.
         /// </summary>
         public static void EarlyJobInit<T>()
             where T : struct, IJobChunkWorkerBeginEnd
@@ -64,121 +63,36 @@
             JobChunkProducer<T>.Initialize();
         }
 
-        /// <summary>
-        /// Adds an <see cref="IJobChunkWorkerBeginEnd" /> instance to the job scheduler queue for sequential (non-parallel) execution.
-        /// </summary>
-        /// <param name="jobData"> An <see cref="IJobChunkWorkerBeginEnd" /> instance. </param>
-        /// <param name="query"> The query selecting chunks with the necessary components. </param>
-        /// <param name="dependsOn">
-        /// The handle identifying already scheduled jobs that must complete before this job is executed.
-        /// For example, a job that writes to a component cannot run in parallel with other jobs that read or write that component.
-        /// Jobs that only read the same components can run in parallel.
-        /// Most frequently, an appropriate value for this parameter is <see cref="SystemState.Dependency" /> to ensure
-        /// that jobs registered with the safety system are taken into account as input dependencies.
-        /// </param>
-        /// <typeparam name="T"> The specific <see cref="IJobChunkWorkerBeginEnd" /> implementation type. </typeparam>
-        /// <returns>
-        /// A handle that combines the current Job with previous dependencies identified by the <paramref name="dependsOn" />
-        /// parameter.
-        /// </returns>
         public static JobHandle Schedule<T>(this T jobData, EntityQuery query, JobHandle dependsOn)
             where T : struct, IJobChunkWorkerBeginEnd
         {
             return ScheduleInternal(ref jobData, query, dependsOn, ScheduleMode.Single, default);
         }
 
-        /// <summary>
-        /// Adds an <see cref="IJobChunkWorkerBeginEnd" /> instance to the job scheduler queue for sequential (non-parallel) execution.
-        /// </summary>
-        /// <param name="jobData">
-        /// An <see cref="IJobChunkWorkerBeginEnd" /> instance. In this variant, the jobData is passed by
-        /// reference, which may be necessary for unusually large job structs.
-        /// </param>
-        /// <param name="query"> The query selecting chunks with the necessary components. </param>
-        /// <param name="dependsOn">
-        /// The handle identifying already scheduled jobs that must complete before this job is executed.
-        /// For example, a job that writes to a component cannot run in parallel with other jobs that read or write that component.
-        /// Jobs that only read the same components can run in parallel.
-        /// Most frequently, an appropriate value for this parameter is <see cref="SystemState.Dependency" /> to ensure
-        /// that jobs registered with the safety system are taken into account as input dependencies.
-        /// </param>
-        /// <typeparam name="T"> The specific <see cref="IJobChunkWorkerBeginEnd" /> implementation type. </typeparam>
-        /// <returns>
-        /// A handle that combines the current Job with previous dependencies identified by the <paramref name="dependsOn" />
-        /// parameter.
-        /// </returns>
         public static JobHandle ScheduleByRef<T>(this ref T jobData, EntityQuery query, JobHandle dependsOn)
             where T : struct, IJobChunkWorkerBeginEnd
         {
             return ScheduleInternal(ref jobData, query, dependsOn, ScheduleMode.Single, default);
         }
 
-        /// <summary>
-        /// Adds an <see cref="IJobChunkWorkerBeginEnd" /> instance to the job scheduler queue for parallel execution.
-        /// </summary>
-        /// <param name="jobData"> An <see cref="IJobChunkWorkerBeginEnd" /> instance. </param>
-        /// <param name="query"> The query selecting chunks with the necessary components. </param>
-        /// <param name="dependsOn">
-        /// The handle identifying already scheduled jobs that must complete before this job is executed.
-        /// For example, a job that writes to a component cannot run in parallel with other jobs that read or write that component.
-        /// Jobs that only read the same components can run in parallel.
-        /// Most frequently, an appropriate value for this parameter is <see cref="SystemState.Dependency" /> to ensure
-        /// that jobs registered with the safety system are taken into account as input dependencies.
-        /// </param>
-        /// <typeparam name="T"> The specific <see cref="IJobChunkWorkerBeginEnd" /> implementation type. </typeparam>
-        /// <returns>
-        /// A handle that combines the current Job with previous dependencies identified by the <paramref name="dependsOn" />
-        /// parameter.
-        /// </returns>
         public static JobHandle ScheduleParallel<T>(this T jobData, EntityQuery query, JobHandle dependsOn)
             where T : struct, IJobChunkWorkerBeginEnd
         {
             return ScheduleInternal(ref jobData, query, dependsOn, ScheduleMode.Parallel, default);
         }
 
-        /// <summary>
-        /// Adds an <see cref="IJobChunkWorkerBeginEnd" /> instance to the job scheduler queue for parallel execution.
-        /// </summary>
-        /// <param name="jobData">
-        /// An <see cref="IJobChunkWorkerBeginEnd" /> instance. In this variant, the jobData is passed by
-        /// reference, which may be necessary for unusually large job structs.
-        /// </param>
-        /// <param name="query"> The query selecting chunks with the necessary components. </param>
-        /// <param name="dependsOn">
-        /// The handle identifying already scheduled jobs that must complete before this job is executed.
-        /// For example, a job that writes to a component cannot run in parallel with other jobs that read or write that component.
-        /// Jobs that only read the same components can run in parallel.
-        /// Most frequently, an appropriate value for this parameter is <see cref="SystemState.Dependency" /> to ensure
-        /// that jobs registered with the safety system are taken into account as input dependencies.
-        /// </param>
-        /// <typeparam name="T"> The specific <see cref="IJobChunkWorkerBeginEnd" /> implementation type. </typeparam>
-        /// <returns>
-        /// A handle that combines the current Job with previous dependencies identified by the <paramref name="dependsOn" />
-        /// parameter.
-        /// </returns>
         public static JobHandle ScheduleParallelByRef<T>(this ref T jobData, EntityQuery query, JobHandle dependsOn)
             where T : struct, IJobChunkWorkerBeginEnd
         {
             return ScheduleInternal(ref jobData, query, dependsOn, ScheduleMode.Parallel, default);
         }
 
-        /// <summary> Runs the job immediately on the current thread. </summary>
-        /// <param name="jobData"> An <see cref="IJobChunkWorkerBeginEnd" /> instance. </param>
-        /// <param name="query"> The query selecting chunks with the necessary components. </param>
-        /// <typeparam name="T"> The specific <see cref="IJobChunkWorkerBeginEnd" /> implementation type. </typeparam>
         public static void Run<T>(this T jobData, EntityQuery query)
             where T : struct, IJobChunkWorkerBeginEnd
         {
             ScheduleInternal(ref jobData, query, default, ScheduleMode.Run, default);
         }
 
-        /// <summary> Runs the job immediately on the current thread. </summary>
-        /// <param name="jobData">
-        /// An <see cref="IJobChunkWorkerBeginEnd" /> instance. In this variant, the jobData is passed by
-        /// reference, which may be necessary for unusually large job structs.
-        /// </param>
-        /// <param name="query"> The query selecting chunks with the necessary components. </param>
-        /// <typeparam name="T"> The specific <see cref="IJobChunkWorkerBeginEnd" /> implementation type. </typeparam>
         public static void RunByRef<T>(this ref T jobData, EntityQuery query)
             where T : struct, IJobChunkWorkerBeginEnd
         {

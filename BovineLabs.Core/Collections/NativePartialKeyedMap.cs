@@ -27,11 +27,6 @@
             this.map = null;
         }
 
-        /// <summary>
-        /// Creates and schedules a job that will dispose this hash map.
-        /// </summary>
-        /// <param name="inputDeps"> A job handle. The newly scheduled job will depend upon this handle. </param>
-        /// <returns> The handle of a new job that will dispose this hash map. </returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new NativePartialKeyedMapDisposeJob
@@ -52,22 +47,11 @@
             this.map->Update(newKeys, newValues, newLength);
         }
 
-        /// <summary>
-        /// Gets an iterator for a key.
-        /// </summary>
-        /// <param name="key"> The key. </param>
-        /// <param name="item"> Outputs the associated value represented by the iterator. </param>
-        /// <param name="it"> Outputs an iterator. </param>
-        /// <returns> True if the key was present. </returns>
         public bool TryGetFirstValue(int key, out TValue item, out UnsafeKeyedMapIterator it)
         {
             return this.map->TryGetFirstValue(key, out item, out it);
         }
 
-        /// <summary> Advances an iterator to the next value associated with its key. </summary>
-        /// <param name="item"> Outputs the next value. </param>
-        /// <param name="it"> A reference to the iterator to advance. </param>
-        /// <returns> True if the key was present and had another value. </returns>
         public bool TryGetNextValue(out TValue item, ref UnsafeKeyedMapIterator it)
         {
             return this.map->TryGetNextValue(out item, ref it);

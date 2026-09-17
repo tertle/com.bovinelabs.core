@@ -236,12 +236,6 @@
             mask1 = math.select(ulong.MaxValue >> (64 - i1), 0, i1 == 0); // >> 64 does nothing by c# specification
         }
 
-        /// <summary>
-        /// Provides a ComponentEnabledMask to the component enabled bits in this chunk.
-        /// </summary>
-        /// <typeparam name="T"> The component type </typeparam>
-        /// <param name="typeHandle"> Type handle for the component type <typeparamref name="T" />. </param>
-        /// <returns> An <see cref="EnabledMask" /> instance for component <typeparamref name="T" /> in this chunk. </returns>
         public static EnabledMask GetEnabledMaskRO<T>(this ArchetypeChunk archetypeChunk, ref ComponentTypeHandle<T> typeHandle)
             where T : unmanaged, IComponentData, IEnableableComponent
         {

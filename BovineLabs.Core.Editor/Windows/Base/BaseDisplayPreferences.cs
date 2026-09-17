@@ -5,9 +5,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
     using Unity.Properties;
     using UnityEngine;
 
-    /// <summary>
-    /// Base class for display preferences shared across object list windows.
-    /// </summary>
     [Serializable]
     public abstract class BaseDisplayPreferences : IEditorPreference
     {
@@ -53,86 +50,56 @@ namespace BovineLabs.Core.Editor.Windows.Base
         [Tooltip("Time threshold for double-click detection in seconds")]
         private float doubleClickThreshold = 0.3f;
 
-        /// <summary>
-        /// Event fired when any preference value changes.
-        /// </summary>
         public event Action PreferencesChanged;
 
-        /// <summary>
-        /// Gets or sets the item height.
-        /// </summary>
         public int ItemHeight
         {
             get => Math.Clamp(this.itemHeight, 16, 64);
             set => this.itemHeight = value;
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether to use a monospace font for the list.
-        /// </summary>
         public bool UseMonospaceFont
         {
             get => this.useMonospaceFont;
             set => this.useMonospaceFont = value;
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether to show icons.
-        /// </summary>
         public bool ShowIcons
         {
             get => this.showIcons;
             set => this.showIcons = value;
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether to show timestamps.
-        /// </summary>
         public bool ShowTimestamps
         {
             get => this.showTimestamps;
             set => this.showTimestamps = value;
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether to show asset paths.
-        /// </summary>
         public bool ShowAssetPaths
         {
             get => this.showAssetPaths;
             set => this.showAssetPaths = value;
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether to show type names in the list.
-        /// </summary>
         public bool ShowTypeNames
         {
             get => this.showTypeNames;
             set => this.showTypeNames = value;
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether to show the status bar.
-        /// </summary>
         public bool ShowStatusBar
         {
             get => this.showStatusBar;
             set => this.showStatusBar = value;
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether to grey out unloaded objects.
-        /// </summary>
         public bool GreyOutUnloadedObjects
         {
             get => this.greyOutUnloadedObjects;
             set => this.greyOutUnloadedObjects = value;
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether to highlight currently selected objects in the list.
-        /// </summary>
         public bool HighlightCurrentSelection
         {
             get => this.highlightCurrentSelection;
@@ -140,7 +107,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
         }
 
         /// <summary>
-        /// Gets or sets the double-click threshold in seconds.
+        /// Threshold in seconds.
         /// </summary>
         public float DoubleClickThreshold
         {

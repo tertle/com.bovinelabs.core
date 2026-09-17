@@ -6,22 +6,8 @@
     using Unity.Mathematics;
     using Unity.Transforms;
 
-    /// <summary> Transform hierarchy utilities for parent-child relationships. </summary>
     public static class TransformUtility
     {
-        /// <summary>
-        /// Computes and sets <see cref="LocalToWorld"/> for all entities in a <see cref="LinkedEntityGroup"/> using the current
-        /// <see cref="LocalTransform"/>, <see cref="Parent"/>, and optional <see cref="PostTransformMatrix"/> values.
-        /// </summary>
-        /// <param name="linkedEntityGroup">The linked entity group to process.</param>
-        /// <param name="localTransformLookup">Lookup for <see cref="LocalTransform"/>.</param>
-        /// <param name="parentLookup">Lookup for <see cref="Parent"/>.</param>
-        /// <param name="postTransformMatrixLookup">Lookup for <see cref="PostTransformMatrix"/>.</param>
-        /// <param name="localToWorldLookup">Lookup for <see cref="LocalToWorld"/> (must be writable).</param>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown if an entity (or one of its ancestors) is missing the required <see cref="LocalTransform"/> component, or is missing
-        /// <see cref="LocalToWorld"/>.
-        /// </exception>
         public static void SetupLocalToWorld(
             DynamicBuffer<LinkedEntityGroup> linkedEntityGroup, ref ComponentLookup<LocalTransform> localTransformLookup,
             ref ComponentLookup<Parent> parentLookup, ref ComponentLookup<PostTransformMatrix> postTransformMatrixLookup,
@@ -52,16 +38,6 @@
             }
         }
 
-        /// <summary>
-        /// Computes and sets <see cref="LocalToWorld"/> for all entities in a <see cref="LinkedEntityGroup"/> using the current
-        /// <see cref="LocalTransform"/>, <see cref="Parent"/>, and optional <see cref="PostTransformMatrix"/> values.
-        /// </summary>
-        /// <param name="linkedEntityGroup">The linked entity group to process.</param>
-        /// <param name="state">The system state.</param>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown if an entity (or one of its ancestors) is missing the required <see cref="LocalTransform"/> component, or is missing
-        /// <see cref="LocalToWorld"/>.
-        /// </exception>
         public static void SetupLocalToWorld(DynamicBuffer<LinkedEntityGroup> linkedEntityGroup, ref SystemState state)
         {
             var leg = linkedEntityGroup.AsNativeArray();

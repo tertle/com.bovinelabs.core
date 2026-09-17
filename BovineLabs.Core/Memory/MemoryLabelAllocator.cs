@@ -12,9 +12,6 @@
     using Unity.Mathematics;
     using UnityEngine.Assertions;
 
-    /// <summary>
-    /// Custom allocator that routes allocations to <see cref="Allocator.Persistent"/> while attaching a specific <see cref="MemoryLabel"/> for tracking.
-    /// </summary>
     [BurstCompile]
     public unsafe struct MemoryLabelAllocator : AllocatorManager.IAllocator
     {
@@ -39,11 +36,6 @@
 
         public bool IsAutoDispose => false;
 
-        /// <summary>
-        /// Initialize the allocator by constructing a label for <see cref="Allocator.Persistent"/>.
-        /// </summary>
-        /// <param name="category">Category associated with the label.</param>
-        /// <param name="name">Object name associated with the label.</param>
         public void Initialize(FixedString32Bytes category, FixedString64Bytes name)
         {
             var label = MemoryUtil.CreateLabel(category, name);

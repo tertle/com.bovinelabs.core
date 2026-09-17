@@ -25,18 +25,8 @@
         }
 
         /// <summary>
-        /// Gets the value for a key or adds <paramref name="defaultValue" /> and returns it by reference.
+        /// The returned reference aliases map storage. Consume immediately; any later map write or capacity change invalidates it.
         /// </summary>
-        /// <remarks>
-        /// Unsafe because the returned ref points directly into the hash map storage. Consume it immediately and do not keep or use it after any later
-        /// write to the same hash map, such as add, get-or-add, remove, clear, or capacity-changing operations.
-        /// </remarks>
-        /// <param name="hashMap"> The hash map to read or add into. </param>
-        /// <param name="key"> The key to look up. </param>
-        /// <param name="defaultValue"> Value to add if the key is not present. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
-        /// <returns> A reference to the value stored in the hash map. </returns>
         public static ref TValue GetOrAddRefUnsafe<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> hashMap, TKey key, TValue defaultValue = default)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -84,15 +74,8 @@
         }
 
         /// <summary>
-        /// Clear a <see cref="NativeParallelHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
-        /// This is much faster than iterating and using Add.
-        /// NOTE: this is not safe. It does not check for duplicates and must only be used when keys are gauranteed to be unique.
+        /// Keys must be unique; duplicates are not checked.
         /// </summary>
-        /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="keys"> Collection of keys, the length should match the length of values. </param>
-        /// <param name="values"> Collection of values, the length should match the length of keys. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public static void ClearAndAddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap, [NoAlias] NativeArray<TKey> keys, [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -119,16 +102,8 @@
         }
 
         /// <summary>
-        /// Clear a <see cref="NativeParallelHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
-        /// This is much faster than iterating and using Add.
-        /// NOTE: this is not safe. It does not check for duplicates and must only be used when keys are gauranteed to be unique.
+        /// Keys must be unique; duplicates are not checked.
         /// </summary>
-        /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="keys"> Collection of keys, the length should match the length of values. </param>
-        /// <param name="values"> Collection of values, the length should match the length of keys. </param>
-        /// <param name="length"> The length of the buffers. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public static void ClearAndAddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap, [NoAlias] TKey* keys, [NoAlias] TValue* values, int length)
             where TKey : unmanaged, IEquatable<TKey>
@@ -142,16 +117,8 @@
         }
 
         /// <summary>
-        /// Clear a <see cref="NativeParallelHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
-        /// This is much faster than iterating and using Add.
-        /// NOTE: this is not safe. It does not check for duplicates and must only be used when keys are gauranteed to be unique.
+        /// Keys must be unique; duplicates are not checked.
         /// </summary>
-        /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="keys"> Collection of keys, the length should match the length of values. </param>
-        /// <param name="values"> Collection of values, the length should match the length of keys. </param>
-        /// <param name="length"> The length of the buffers. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public static void ClearAndAddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap, [NoAlias] NativeSlice<TKey> keys, [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>

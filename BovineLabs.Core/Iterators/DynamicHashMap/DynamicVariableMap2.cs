@@ -45,12 +45,8 @@ namespace BovineLabs.Core.Iterators
             this.helper = buffer.AsVariableHelper<TKey, TValue, T1, TC1, T2, TC2>();
         }
 
-        /// <summary> Gets a value indicating whether this map has been allocated (and not yet deallocated). </summary>
-        /// <value> True if this map has been allocated (and not yet deallocated). </value>
         public readonly bool IsCreated => this.buffer.IsCreated;
 
-        /// <summary> Gets a value indicating whether this map is empty. </summary>
-        /// <value> True if this map is empty or if the map has not been constructed. </value>
         public readonly bool IsEmpty
         {
             get
@@ -61,8 +57,6 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-        /// <summary> Gets the current number of key-value pairs in this map. </summary>
-        /// <returns> The current number of key-value pairs in this map. </returns>
         public readonly int Count
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -74,9 +68,9 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-        /// <summary> Gets or sets the number of key-value pairs that fit in the current allocation. </summary>
-        /// <value> The number of key-value pairs that fit in the current allocation. </value>
-        /// <param name="value"> A new capacity. Must be larger than the current capacity. </param>
+        /// <summary>
+        /// Capacity cannot shrink.
+        /// </summary>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -95,16 +89,18 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-        /// <summary> Gets the first column. Must be used or stored as a Ref. </summary>
+        /// <summary>
+        /// Must be used and stored by ref.
+        /// </summary>
         public ref TC1 Column1 => ref this.helper->Column1;
 
-        /// <summary> Gets the second column. Must be used or stored as a Ref. </summary>
+        /// <summary>
+        /// Must be used and stored by ref.
+        /// </summary>
         public ref TC2 Column2 => ref this.helper->Column2;
 
         internal DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* Helper => this.helper;
 
-        /// <summary> Removes all key-value pairs. </summary>
-        /// <remarks> Does not change the capacity. </remarks>
         public readonly void Clear()
         {
             this.buffer.CheckWriteAccess();
@@ -112,13 +108,6 @@ namespace BovineLabs.Core.Iterators
             this.helper->Clear();
         }
 
-        /// <summary> Adds a new key-value-columns. </summary>
-        /// <remarks> If the key is already present, this method returns false without modifying the map. </remarks>
-        /// <param name="key"> The key to add. </param>
-        /// <param name="item"> The value to add. </param>
-        /// <param name="column1"> The first column to add. </param>
-        /// <param name="column2"> The second column to add. </param>
-        /// <returns> True if the key-value pair was added. </returns>
         public bool TryAdd(TKey key, TValue item, T1 column1, T2 column2)
         {
             this.buffer.CheckWriteAccess();
@@ -128,13 +117,6 @@ namespace BovineLabs.Core.Iterators
             return idx != -1;
         }
 
-        /// <summary> Adds a new key-value-columns. </summary>
-        /// <remarks> If the key is already present, this method throws without modifying the map. </remarks>
-        /// <param name="key"> The key to add. </param>
-        /// <param name="item"> The value to add. </param>
-        /// <param name="column1"> The first column to add. </param>
-        /// <param name="column2"> The second column to add. </param>
-        /// <exception cref="ArgumentException"> Thrown if the key was already present. </exception>
         public void Add(TKey key, TValue item, T1 column1, T2 column2)
         {
             this.buffer.CheckWriteAccess();
@@ -143,9 +125,6 @@ namespace BovineLabs.Core.Iterators
             DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.AddUnique(this.buffer, ref this.helper, key, item, column1, column2);
         }
 
-        /// <summary> Removes a key-value-index. /// </summary>
-        /// <param name="key"> The key to remove. </param>
-        /// <returns> True if an element was removed. </returns>
         public readonly bool Remove(TKey key)
         {
             this.buffer.CheckWriteAccess();
@@ -153,8 +132,6 @@ namespace BovineLabs.Core.Iterators
             return this.helper->Remove(key);
         }
 
-        /// <summary> Removes a key-value-index. /// </summary>
-        /// <param name="idx"> The index to remove, usually from a Column. </param>
         public readonly void RemoveAt(int idx)
         {
             this.buffer.CheckWriteAccess();
@@ -210,9 +187,6 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-        /// <summary> Returns true if a given key is present in this map. </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <returns> True if the key was present. </returns>
         public readonly bool ContainsKey(TKey key)
         {
             this.buffer.CheckReadAccess();
@@ -220,12 +194,6 @@ namespace BovineLabs.Core.Iterators
             return this.helper->Find(key) != -1;
         }
 
-        /// <summary> Returns the value associated with a key. </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <param name="item"> Outputs the value associated with the key. Outputs default if the key was not present. </param>
-        /// <param name="column1"> Outputs the first column associated with the key. Outputs default if the key was not present. </param>
-        /// <param name="column2"> Outputs the second column associated with the key. Outputs default if the key was not present. </param>
-        /// <returns> True if the key was present. </returns>
         public readonly bool TryGetValue(TKey key, out TValue item, out T1 column1, out T2 column2)
         {
             this.buffer.CheckReadAccess();
@@ -313,11 +281,11 @@ namespace BovineLabs.Core.Iterators
             internal DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* Data;
             internal int Index;
 
-            /// <summary> Gets an invalid KeyValue. </summary>
             public static KVC Null => new() { Index = -1 };
 
-            /// <summary> Gets the key. </summary>
-            /// <value> The key. If this KeyValue is Null, returns the default of TKey. </value>
+            /// <summary>
+            /// Returns default(TKey) for a null KeyValue.
+            /// </summary>
             public TKey Key
             {
                 get
@@ -331,7 +299,6 @@ namespace BovineLabs.Core.Iterators
                 }
             }
 
-            /// <summary> Gets the value. </summary>
             public ref TValue Value
             {
                 get
@@ -347,7 +314,6 @@ namespace BovineLabs.Core.Iterators
                 }
             }
 
-            /// <summary> Gets the first column. </summary>
             public T1 Column1
             {
                 get
@@ -363,7 +329,6 @@ namespace BovineLabs.Core.Iterators
                 }
             }
 
-            /// <summary> Gets the second column. </summary>
             public T2 Column2
             {
                 get
@@ -380,13 +345,6 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-        /// <summary>
-        /// An enumerator over the key-value pairs of a container.
-        /// </summary>
-        /// <remarks>
-        /// In an enumerator's initial state, <see cref="Current" /> is not valid to read.
-        /// From this state, the first <see cref="MoveNext" /> call advances the enumerator to the first key-value pair.
-        /// </remarks>
         [NativeContainer]
         [NativeContainerIsReadOnly]
         public struct Enumerator : IEnumerator<KVC>
@@ -399,40 +357,30 @@ namespace BovineLabs.Core.Iterators
                 this.enumerator = new DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.Enumerator(data);
             }
 
-            /// <summary> The current key-value pair. </summary>
             public KVC Current
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get => this.enumerator.GetCurrent();
             }
 
-            /// <summary> Gets the element at the current position of the enumerator in the container. </summary>
             object IEnumerator.Current => this.Current;
 
-            /// <summary> Advances the enumerator to the next key-value pair. </summary>
-            /// <returns> True if <see cref="Current" /> is valid to read after the call. </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 return this.enumerator.MoveNext();
             }
 
-            /// <summary> Resets the enumerator to its initial state. </summary>
             public void Reset()
             {
                 this.enumerator.Reset();
             }
 
-            /// <summary> Does nothing. </summary>
             public void Dispose()
             {
             }
         }
 
-        /// <summary>
-        /// Returns an enumerator over the key-value pairs of this hash map.
-        /// </summary>
-        /// <returns> An enumerator over the key-value pairs of this hash map. </returns>
         public readonly Enumerator GetEnumerator()
         {
             this.buffer.CheckReadAccess();
@@ -440,17 +388,17 @@ namespace BovineLabs.Core.Iterators
             return new Enumerator(this.helper);
         }
 
-        /// <summary> This method is not implemented. Use <see cref="GetEnumerator" /> instead. </summary>
-        /// <returns> Throws NotImplementedException. </returns>
-        /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
+        /// <summary>
+        /// Not implemented; use the concrete GetEnumerator instead.
+        /// </summary>
         IEnumerator<KVC> IEnumerable<KVC>.GetEnumerator()
         {
             throw new NotImplementedException();
         }
 
-        /// <summary> This method is not implemented. Use <see cref="GetEnumerator" /> instead. </summary>
-        /// <returns> Throws NotImplementedException. </returns>
-        /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
+        /// <summary>
+        /// Not implemented; use the concrete GetEnumerator instead.
+        /// </summary>
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();

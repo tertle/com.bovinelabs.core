@@ -61,10 +61,6 @@
         }
     }
 
-    /// <summary> A key-value pair. </summary>
-    /// <remarks> Used for enumerators. </remarks>
-    /// <typeparam name="TKey"> The type of the keys. </typeparam>
-    /// <typeparam name="TValue"> The type of the values. </typeparam>
     [DebuggerDisplay("Key = {Key}, Value = {Value}")]
     public readonly unsafe struct KVPair<TKey, TValue>
         where TKey : unmanaged, IEquatable<TKey>
@@ -80,9 +76,8 @@
         }
 
         /// <summary>
-        /// The key.
+        /// Returns default(TKey) for a null KeyValue.
         /// </summary>
-        /// <value> The key. If this KeyValue is Null, returns the default of TKey. </value>
         public ref TKey Key
         {
             get
@@ -98,9 +93,6 @@
             }
         }
 
-        /// <summary>
-        /// Value of key/value pair.
-        /// </summary>
         public ref TValue Value
         {
             get

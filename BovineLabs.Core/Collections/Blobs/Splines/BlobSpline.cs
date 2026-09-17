@@ -14,41 +14,29 @@ namespace BovineLabs.Core.Collections
         private const int SegmentResolution = 30;
         private const int NormalsPerCurve = 16;
 
-        /// <summary> A BlobArray of <see cref="BezierKnot"/> that form this Spline. </summary>
-        /// <value> Returns a reference to the knots array. </value>
         public BlobArray<BezierKnot> Knots;
 
-        /// <summary> A BlobArray of <see cref="BezierCurve"/> that form this Spline. </summary>
-        /// <value> Returns a reference to the curves array. </value>
         public BlobArray<BezierCurve> Curves;
 
         /// <summary>
-        /// Per-curve length lookup tables stored contiguously. Each curve's table has <see cref="SegmentResolution"/>
-        /// entries starting at <c>curveIndex * SegmentResolution</c>.
+        /// Each curve occupies SegmentResolution entries starting at curveIndex * SegmentResolution.
         /// </summary>
         public BlobArray<DistanceToInterpolation> SegmentLengthsLookupTable;
 
         /// <summary>
-        /// Per-curve up vectors stored contiguously. Each curve's table has <see cref="SegmentResolution"/>
-        /// entries starting at <c>curveIndex * SegmentResolution</c>.
+        /// Each curve occupies SegmentResolution entries starting at curveIndex * SegmentResolution.
         /// </summary>
         public BlobArray<float3> UpVectorsLookupTable;
 
-        /// <summary> Whether the spline is open (has a start and end point) or closed (forms an unbroken loop). </summary>
         public bool Closed;
 
         /// <summary>
-        /// Return the sum of all curve lengths, accounting for <see cref="Closed"/> state.
-        /// Note that this value is affected by the transform used to create this NativeSpline.
+        /// Length includes closure and the transform used to construct the spline.
         /// </summary>
-        /// <returns> Returns the sum length of all curves composing this spline, accounting for closed state. </returns>
         public float Length;
 
-        /// <summary> Gets the number of knots. </summary>
         public int Count => this.Knots.Length;
 
-        /// <summary> Get the knot at <paramref name="index"/>. </summary>
-        /// <param name="index">The zero-based index of the knot.</param>
         public BezierKnot this[int index] => this.Knots[index];
 
         public static BlobAssetReference<BlobSpline> Create(ISpline spline, float4x4 transform, Allocator allocator = Allocator.Persistent)
@@ -144,17 +132,11 @@ namespace BovineLabs.Core.Collections
             return spline;
         }
 
-        /// <summary> Get a <see cref="BezierCurve"/> from a knot index. </summary>
-        /// <param name="index">The knot index that serves as the first control point for this curve.</param>
-        /// <returns> A <see cref="BezierCurve"/> formed by the knot at index and the next knot. </returns>
         public BezierCurve GetCurve(int index) => this.Curves[index];
 
-        /// <summary>Compute interpolated position, tangent, and up vector for a normalized spline ratio.</summary>
-        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
-        /// <param name="position">The evaluated position.</param>
-        /// <param name="tangent">The evaluated tangent (not normalized).</param>
-        /// <param name="upVector">The evaluated up vector.</param>
-        /// <returns>True if the evaluation succeeded.</returns>
+        /// <summary>
+        /// The returned tangent is not normalized.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Evaluate(float t, out float3 position, out float3 tangent, out float3 upVector)
         {
@@ -176,11 +158,9 @@ namespace BovineLabs.Core.Collections
             return true;
         }
 
-        /// <summary>Compute interpolated position and tangent for a normalized spline ratio.</summary>
-        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
-        /// <param name="position">The evaluated position.</param>
-        /// <param name="tangent">The evaluated tangent (not normalized).</param>
-        /// <returns>True if the evaluation succeeded.</returns>
+        /// <summary>
+        /// The returned tangent is not normalized.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Evaluate(float t, out float3 position, out float3 tangent)
         {
@@ -188,10 +168,6 @@ namespace BovineLabs.Core.Collections
             return success;
         }
 
-        /// <summary>Compute an interpolated position for a normalized spline ratio.</summary>
-        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
-        /// <param name="position">The evaluated position.</param>
-        /// <returns>True if the evaluation succeeded.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Evaluate(float t, out float3 position)
         {
@@ -199,28 +175,21 @@ namespace BovineLabs.Core.Collections
             return success;
         }
 
-        /// <summary>Return an interpolated position at ratio <paramref name="t"/>.</summary>
-        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
-        /// <returns>A position on the spline.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3 EvaluatePosition(float t)
         {
             return this.Evaluate(t, out var position) ? position : float3.zero;
         }
 
-        /// <summary>Return an interpolated position for a specific curve.</summary>
-        /// <param name="curveIndex">The curve index.</param>
-        /// <param name="curveT">A value between 0 and 1 representing the ratio along the curve.</param>
-        /// <returns>A position on the curve.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3 EvaluatePosition(int curveIndex, float curveT)
         {
             return EvaluatePosition(this.GetCurve(curveIndex), curveT);
         }
 
-        /// <summary>Return an interpolated tangent at ratio <paramref name="t"/>.</summary>
-        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
-        /// <returns>A tangent (not normalized) on the spline.</returns>
+        /// <summary>
+        /// The returned tangent is not normalized.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3 EvaluateTangent(float t)
         {
@@ -233,9 +202,6 @@ namespace BovineLabs.Core.Collections
             return EvaluateTangent(this.GetCurve(curveIndex), curveT);
         }
 
-        /// <summary>Return an interpolated up vector at ratio <paramref name="t"/>.</summary>
-        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
-        /// <returns>An up vector on the spline.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3 EvaluateUpVector(float t)
         {
@@ -248,19 +214,12 @@ namespace BovineLabs.Core.Collections
             return this.GetCurveUpVector(curveIndex, curveT);
         }
 
-        /// <summary>Convert a normalized spline ratio to a curve index and ratio.</summary>
-        /// <param name="splineT">A value between 0 and 1 representing the ratio along the spline.</param>
-        /// <param name="curveT">The resulting ratio along the returned curve.</param>
-        /// <returns>The curve index for the provided spline ratio.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int SplineToCurveT(float splineT, out float curveT)
         {
             return this.SplineToCurveT(splineT, out curveT, true);
         }
 
-        /// <summary>Convert a curve index and ratio into a normalized spline ratio.</summary>
-        /// <param name="curve">Curve index with fractional component as the curve ratio.</param>
-        /// <returns>A normalized spline ratio.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float CurveToSplineT(float curve)
         {
@@ -288,22 +247,11 @@ namespace BovineLabs.Core.Collections
             return this.Length <= math.EPSILON ? 0f : accumulatedLength / this.Length;
         }
 
-        /// <summary> Get the length of a <see cref="BezierCurve"/>. </summary>
-        /// <param name="curveIndex">The 0 based index of the curve to find length for.</param>
-        /// <returns>The length of the bezier curve at index.</returns>
         public float GetCurveLength(int curveIndex)
         {
             return this.SegmentLengthsLookupTable[(curveIndex * SegmentResolution) + SegmentResolution - 1].Distance;
         }
 
-        /// <summary>
-        /// Return the up vector for a t ratio on the curve.
-        /// </summary>
-        /// <param name="index">The index of the curve for which the length needs to be retrieved.</param>
-        /// <param name="t">A value between 0 and 1 representing the ratio along the spline.</param>
-        /// <returns>
-        /// Returns the up vector at the t ratio of the curve of index 'index'.
-        /// </returns>
         public float3 GetCurveUpVector(int index, float t)
         {
             // Value  is not cached, compute the value directly on demand
@@ -579,8 +527,7 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary>
-        /// Mathf.Approximately is not working when using BurstCompile, causing NaN values in the EvaluateUpVector
-        /// method when tangents have a 0 length. Using this method instead fixes that.
+        /// Avoids Burst NaNs for zero-length tangents that occur with Mathf.Approximately in EvaluateUpVector.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool Approximately(float a, float b)
@@ -623,10 +570,6 @@ namespace BovineLabs.Core.Collections
             return nextRMFrame;
         }
 
-        /// <summary> Given a Bezier curve, return an interpolated position at ratio t. </summary>
-        /// <param name="curve">A cubic Bezier curve.</param>
-        /// <param name="t">A value between 0 and 1 representing the ratio along the curve.</param>
-        /// <returns>A position on the curve.</returns>
         private static float3 EvaluatePosition(BezierCurve curve, float t)
         {
             t = math.clamp(t, 0, 1);
@@ -638,10 +581,6 @@ namespace BovineLabs.Core.Collections
             return position;
         }
 
-        /// <summary> Given a Bezier curve, return an interpolated tangent at ratio t. </summary>
-        /// <param name="curve">A cubic Bezier curve.</param>
-        /// <param name="t">A value between 0 and 1 representing the ratio along the curve.</param>
-        /// <returns>A tangent on the curve.</returns>
         private static float3 EvaluateTangent(BezierCurve curve, float t)
         {
             t = math.clamp(t, 0, 1);

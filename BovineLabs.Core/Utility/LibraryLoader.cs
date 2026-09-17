@@ -19,11 +19,6 @@
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Platform specific")]
     public static class LibraryLoader
     {
-        /// <summary> Allows to retrieve a function delegate for the library. </summary>
-        /// <typeparam name="T">type to cast the function.</typeparam>
-        /// <param name="library">library handle.</param>
-        /// <param name="name">function name.</param>
-        /// <returns>function delegate.</returns>
         public static T GetSymbolDelegate<T>(IntPtr library, string name)
             where T : Delegate
         {
@@ -36,9 +31,6 @@
             return Marshal.GetDelegateForFunctionPointer<T>(symbol);
         }
 
-        /// <summary> Loads the provided library in a cross-platform manner. </summary>
-        /// <param name="libraryName">library path.</param>
-        /// <returns>library handle.</returns>
         public static IntPtr LoadLibrary(string libraryName)
         {
             if (string.IsNullOrEmpty(libraryName))
@@ -75,10 +67,6 @@
             return handle;
         }
 
-        /// <summary> Retrieve a function delegate for the library in a cross-platform manner. </summary>
-        /// <param name="library">library handle.</param>
-        /// <param name="symbolName">function name.</param>
-        /// <returns>function handle.</returns>
         public static IntPtr GetSymbol(IntPtr library, string symbolName)
         {
             if (string.IsNullOrEmpty(symbolName))
@@ -120,8 +108,6 @@
             return handle;
         }
 
-        /// <summary> Frees up the library. </summary>
-        /// <param name="library">library handle.</param>
         public static void FreeLibrary(IntPtr library)
         {
             if (library == IntPtr.Zero)

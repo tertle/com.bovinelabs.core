@@ -64,12 +64,6 @@
         }
 #endif
 
-        /// <summary>
-        /// The number of elements the buffer holds.
-        /// </summary>
-        /// <example>
-        ///     <code source="../../DocCodeSamples.Tests/DynamicBufferExamples.cs" language="csharp" region="dynamicbuffer.length" />
-        /// </example>
         public int Length
         {
             get
@@ -81,15 +75,8 @@
         }
 
         /// <summary>
-        /// The number of elements the buffer can hold.
+        /// Cannot be smaller than Length. Every capacity change may reallocate; small increments do not reserve extra growth space.
         /// </summary>
-        /// <remarks>
-        /// <paramref name="Capacity" /> can not be set lower than <see cref="Length" /> - this will raise an exception.
-        /// If <paramref name="Capacity" /> grows greater than the internal capacity of the DynamicBuffer, memory external to the DynamicBuffer will be allocated.
-        /// If <paramref name="Capacity" /> shrinks to the internal capacity of the DynamicBuffer or smaller, memory external to the DynamicBuffer will be freed.
-        /// No effort is made to avoid costly reallocations when <paramref name="Capacity" /> changes slightly;
-        /// if <paramref name="Capacity" /> is incremented by 1, an array 1 element bigger is allocated.
-        /// </remarks>
         public int Capacity
         {
             get
@@ -116,15 +103,8 @@
             }
         }
 
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value> True if this container empty. </value>
         public bool IsEmpty => !this.IsCreated || this.Length == 0;
 
-        /// <summary>
-        /// Whether the memory for this dynamic buffer has been allocated.
-        /// </summary>
         public bool IsCreated => this.buffer != null;
 
         public int ElementSize { get; }
@@ -166,13 +146,6 @@
 #endif
         }
 
-        /// <summary>
-        /// Array-like indexing operator.
-        /// </summary>
-        /// <example>
-        ///     <code source="../../DocCodeSamples.Tests/DynamicBufferExamples.cs" language="csharp" region="dynamicbuffer.indexoperator" />
-        /// </example>
-        /// <param name="index"> The zero-based index. </param>
         public void* this[int index]
         {
             get
@@ -191,34 +164,12 @@
             }
         }
 
-        /// <summary>
-        /// Sets the length of this buffer, increasing the capacity if necessary.
-        /// </summary>
-        /// <remarks>
-        /// If <paramref name="length" /> is less than the current
-        /// length of the buffer, the length of the buffer is reduced while the
-        /// capacity remains unchanged.
-        /// </remarks>
-        /// <example>
-        ///     <code source="../../DocCodeSamples.Tests/DynamicBufferExamples.cs" language="csharp" region="dynamicbuffer.resizeuninitialized" />
-        /// </example>
-        /// <param name="length"> The new length of the buffer. </param>
         public void ResizeUninitialized(int length)
         {
             this.EnsureCapacity(length);
             this.buffer->Length = length;
         }
 
-        /// <summary>
-        /// Sets the length of this buffer, increasing the capacity if necessary.
-        /// </summary>
-        /// <remarks>
-        /// If <paramref name="length" /> is less than the current
-        /// length of the buffer, the length of the buffer is reduced while the
-        /// capacity remains unchanged.
-        /// </remarks>
-        /// <param name="length"> The new length of this buffer. </param>
-        /// <param name="options"> Whether to clear any newly allocated bytes to all zeroes. </param>
         public void Resize(int length, NativeArrayOptions options)
         {
             this.EnsureCapacity(length);
@@ -233,20 +184,6 @@
             }
         }
 
-        /// <summary>
-        /// Ensures that the buffer has at least the specified capacity.
-        /// </summary>
-        /// <remarks>
-        /// If <paramref name="length" /> is greater than the current <see cref="Capacity" />
-        /// of this buffer and greater than the capacity reserved with
-        /// <see cref="InternalBufferCapacityAttribute" />, this function allocates a new memory block
-        /// and copies the current buffer to it. The number of elements in the buffer remains
-        /// unchanged.
-        /// </remarks>
-        /// <example>
-        ///     <code source="../../DocCodeSamples.Tests/DynamicBufferExamples.cs" language="csharp" region="dynamicbuffer.reserve" />
-        /// </example>
-        /// <param name="length"> The buffer capacity is ensured to be at least this big. </param>
         public void EnsureCapacity(int length)
         {
             this.CheckWriteAccessAndInvalidateArrayAliases();
@@ -259,15 +196,8 @@
         }
 
         /// <summary>
-        /// Sets the buffer length to zero.
+        /// Does not overwrite cleared memory or shrink capacity.
         /// </summary>
-        /// <remarks>
-        /// The capacity of the buffer remains unchanged. Buffer memory
-        /// is not overwritten.
-        /// </remarks>
-        /// <example>
-        ///     <code source="../../DocCodeSamples.Tests/DynamicBufferExamples.cs" language="csharp" region="dynamicbuffer.clear" />
-        /// </example>
         public void Clear()
         {
             this.CheckWriteAccessAndInvalidateArrayAliases();
@@ -275,15 +205,6 @@
             this.buffer->Length = 0;
         }
 
-        /// <summary>
-        /// Adds an element to the end of the buffer, resizing as necessary.
-        /// </summary>
-        /// <remarks> The buffer is resized if it has no additional capacity. </remarks>
-        /// <example>
-        ///     <code source="../../DocCodeSamples.Tests/DynamicBufferExamples.cs" language="csharp" region="dynamicbuffer.add" />
-        /// </example>
-        /// <param name="elem"> The element to add to the buffer. </param>
-        /// <returns> The index of the added element, which is equal to the new length of the buffer minus one. </returns>
         public int Add(void* elem)
         {
             this.CheckWriteAccess();
@@ -303,15 +224,6 @@
             UnsafeUtility.MemCpy(basePtr, elem, (long)this.ElementSize * count);
         }
 
-        /// <summary>
-        /// Removes the specified number of elements, starting with the element at the specified index.
-        /// </summary>
-        /// <remarks> The buffer capacity remains unchanged. </remarks>
-        /// <example>
-        ///     <code source="../../DocCodeSamples.Tests/DynamicBufferExamples.cs" language="csharp" region="dynamicbuffer.removerange" />
-        /// </example>
-        /// <param name="index"> The first element to remove. </param>
-        /// <param name="count"> How many elements tot remove. </param>
         public void RemoveRange(int index, int count)
         {
             this.CheckWriteAccess();
@@ -331,23 +243,11 @@
             this.buffer->Length -= count;
         }
 
-        /// <summary>
-        /// Removes the element at the specified index.
-        /// </summary>
-        /// <example>
-        ///     <code source="../../DocCodeSamples.Tests/DynamicBufferExamples.cs" language="csharp" region="dynamicbuffer.removeat" />
-        /// </example>
-        /// <param name="index"> The index of the element to remove. </param>
         public void RemoveAt(int index)
         {
             this.RemoveRange(index, 1);
         }
 
-        /// <summary>
-        /// Gets an <see langword="unsafe" /> read/write pointer to the contents of the buffer.
-        /// </summary>
-        /// <remarks> This function can only be called in unsafe code contexts. </remarks>
-        /// <returns> A typed, unsafe pointer to the first element in the buffer. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void* GetUnsafePtr()
         {
@@ -355,11 +255,6 @@
             return BufferHeader.GetElementPointer(this.buffer);
         }
 
-        /// <summary>
-        /// Gets an <see langword="unsafe" /> read-only pointer to the contents of the buffer.
-        /// </summary>
-        /// <remarks> This function can only be called in unsafe code contexts. </remarks>
-        /// <returns> A typed, unsafe pointer to the first element in the buffer. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void* GetUnsafeReadOnlyPtr()
         {

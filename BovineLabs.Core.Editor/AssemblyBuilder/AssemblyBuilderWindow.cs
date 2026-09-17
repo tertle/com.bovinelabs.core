@@ -10,7 +10,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    /// <summary> An editor window that allows easy creation of new assembly definitions. </summary>
     public class AssemblyBuilderWindow : EditorWindow
     {
         private const string AssemblyInfoTemplate = "using System.Runtime.CompilerServices;\n";

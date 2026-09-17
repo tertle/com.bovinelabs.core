@@ -24,9 +24,6 @@
         private EntityQuery query;
         private ComponentTypeHandle<LocalTransform> transformHandle;
 
-        /// <summary> Initializes a new instance of the <see cref="PositionBuilder" /> struct. </summary>
-        /// <param name="state"> The owning state. </param>
-        /// <param name="query"> Query of entities to use. </param>
         public PositionBuilder(ref SystemState state, EntityQuery query)
         {
             this.query = query;

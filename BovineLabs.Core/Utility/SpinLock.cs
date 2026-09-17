@@ -8,9 +8,6 @@
     {
         private int @lock;
 
-        /// <summary>
-        /// Continually spin until the lock can be acquired.
-        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Acquire()
         {
@@ -35,10 +32,6 @@
             }
         }
 
-        /// <summary>
-        /// Try to acquire the lock and immediately return without spinning.
-        /// </summary>
-        /// <returns> <see langword="true" /> if the lock was acquired, <see langword="false" /> otherwise. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryAcquire()
         {
@@ -46,9 +39,6 @@
             return Volatile.Read(ref this.@lock) == 0 && Interlocked.CompareExchange(ref this.@lock, 1, 0) == 0;
         }
 
-        /// <summary> Try to acquire the lock, and spin only if <paramref name="spin" /> is <see langword="true" />. </summary>
-        /// <param name="spin"> Set to true to spin the lock. </param>
-        /// <returns> <see langword="true" /> if the lock was acquired, <see langword="false" /> otherwise. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryAcquire(bool spin)
         {
@@ -61,7 +51,6 @@
             return this.TryAcquire();
         }
 
-        /// <summary> Release the lock. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Release()
         {

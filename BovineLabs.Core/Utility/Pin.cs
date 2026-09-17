@@ -7,11 +7,8 @@
     public static class Pin
     {
         /// <summary>
-        /// Use to obtain raw access to a managed object allowing pinning.
-        /// Usage:<code>fixed (byte* data = &amp;GetRawObjectData(managed)){  }</code>
+        /// Pin raw managed data with fixed (byte* data = &amp;GetRawObjectData(managed)).
         /// </summary>
-        /// <param name="o"> The object to get the raw value from. </param>
-        /// <returns> The ref of the object. </returns>
         public static ref byte GetRawObjectData(object o)
         {
             return ref new PinnableUnion(o).Pinnable.Data;

@@ -3,15 +3,10 @@
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Extensions for NativeThreadStream. </summary>
     public static unsafe class NativeStreamExtensions
     {
         private static readonly int MaxSize = UnsafeStreamBlockData.AllocationSize - sizeof(void*);
 
-        /// <summary> Allocate a chunk of memory that can be larger than the max allocation size. </summary>
-        /// <param name="writer"> The writer. </param>
-        /// <param name="array"> The array to write. </param>
-        /// <typeparam name="T"> The type of the array. </typeparam>
         public static void WriteLarge<T>(this ref NativeStream.Writer writer, NativeArray<T> array)
             where T : unmanaged
         {
@@ -19,10 +14,6 @@
             WriteLarge(ref writer, (byte*)byteArray.GetUnsafeReadOnlyPtr(), byteArray.Length);
         }
 
-        /// <summary> Allocate a chunk of memory that can be larger than the max allocation size. </summary>
-        /// <param name="writer"> The writer. </param>
-        /// <param name="data"> The data to write. </param>
-        /// <typeparam name="T"> The type of the slice. </typeparam>
         public static void WriteLarge<T>(this ref NativeStream.Writer writer, NativeSlice<T> data)
             where T : unmanaged
         {
@@ -52,10 +43,6 @@
             }
         }
 
-        /// <summary> Allocate a chunk of memory that can be larger than the max allocation size. </summary>
-        /// <param name="writer"> The writer. </param>
-        /// <param name="data"> The data to write. </param>
-        /// <param name="size"> The size of the data. For an array, this is UnsafeUtility.SizeOf{T} * length. </param>
         public static void WriteLarge(this ref NativeStream.Writer writer, byte* data, int size)
         {
             var allocationCount = size / MaxSize;
@@ -76,10 +63,6 @@
             }
         }
 
-        /// <summary> Read a chunk of memory that could have been larger than the max allocation size. </summary>
-        /// <param name="reader"> The reader. </param>
-        /// <param name="buffer"> A Buffer to write back to. </param>
-        /// <param name="size"> For an array, this is UnsafeUtility.SizeOf{T} * length. </param>
         public static void ReadLarge(this ref NativeStream.Reader reader, byte* buffer, int size)
         {
             var allocationCount = size / MaxSize;

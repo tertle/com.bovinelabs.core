@@ -9,11 +9,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
     using UnityEngine;
     using Object = UnityEngine.Object;
 
-    /// <summary>
-    /// Base class for services that manage object collections and provide preference access.
-    /// </summary>
-    /// <typeparam name="TItem">The type of object item.</typeparam>
-    /// <typeparam name="TPreferences">The type of preferences.</typeparam>
     public abstract class BaseObjectService<TItem, TPreferences> : IDisposable
         where TItem : BaseObjectItem
         where TPreferences : BaseDisplayPreferences, new()
@@ -30,48 +25,37 @@ namespace BovineLabs.Core.Editor.Windows.Base
             this.Load();
         }
 
-        /// <summary>Occurs when the collection changes.</summary>
         public event Action<IReadOnlyList<TItem>> ItemsChanged;
 
-        /// <summary>Gets the current items as a read-only list.</summary>
         public abstract IReadOnlyList<TItem> Items { get; }
 
-        /// <summary>Gets the item height.</summary>
         public int ItemHeight => this.Preferences.ItemHeight;
 
-        /// <summary>Gets a value indicating whether to use a monospace font for the list.</summary>
         public bool UseMonospaceFont => this.Preferences.UseMonospaceFont;
 
-        /// <summary>Gets a value indicating whether to show icons.</summary>
         public bool ShowIcons => this.Preferences.ShowIcons;
 
-        /// <summary>Gets a value indicating whether to show timestamps.</summary>
         public bool ShowTimestamps => this.Preferences.ShowTimestamps;
 
-        /// <summary>Gets a value indicating whether to show asset paths.</summary>
         public bool ShowAssetPaths => this.Preferences.ShowAssetPaths;
 
-        /// <summary>Gets a value indicating whether to show type names in the list.</summary>
         public bool ShowTypeNames => this.Preferences.ShowTypeNames;
 
-        /// <summary>Gets a value indicating whether to show the status bar.</summary>
         public bool ShowStatusBar => this.Preferences.ShowStatusBar;
 
-        /// <summary>Gets a value indicating whether to grey out missing objects.</summary>
         public bool GreyOutMissingObjects => this.Preferences.GreyOutUnloadedObjects;
 
-        /// <summary>Gets a value indicating whether to highlight currently selected objects.</summary>
         public bool HighlightCurrentSelection => this.Preferences.HighlightCurrentSelection;
 
-        /// <summary>Gets the double-click threshold in seconds.</summary>
+        /// <summary>
+        /// Threshold in seconds.
+        /// </summary>
         public float DoubleClickThreshold => this.Preferences.DoubleClickThreshold;
 
-        /// <summary>Gets the preferences instance for this service.</summary>
         protected TPreferences Preferences { get; }
 
         protected bool Disposed { get; private set; }
 
-        /// <summary>Cleans up resources.</summary>
         public virtual void Dispose()
         {
             if (this.Disposed)
@@ -83,8 +67,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
             this.Disposed = true;
         }
 
-        /// <summary>Selects an object from history.</summary>
-        /// <param name="item"> The item to select. </param>
         public virtual void SelectItem(TItem item)
         {
             var obj = item.GetObject();
@@ -125,7 +107,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
             }
         }
 
-        /// <summary>Cleanup service-specific resources.</summary>
         protected virtual void CleanupServices()
         {
             this.Preferences.PreferencesChanged -= this.OnPreferencesChanged;
@@ -133,7 +114,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
             this.Save();
         }
 
-        /// <summary>Notify that items have changed.</summary>
         protected virtual void NotifyItemsChanged()
         {
             this.ItemsChanged?.Invoke(this.Items);
@@ -264,9 +244,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
             }
         }
 
-        /// <summary>Removes a specific history item.</summary>
-        /// <param name="item"> The item to remove. </param>
-        /// <returns> True if an item was removed. </returns>
         protected abstract bool TryRemoveItem(TItem item);
 
         protected virtual void SelectFolder(Object obj)

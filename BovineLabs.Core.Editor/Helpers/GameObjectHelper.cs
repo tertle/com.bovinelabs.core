@@ -7,28 +7,19 @@
     using UnityEngine;
     using UnityEngine.Assertions;
 
-    /// <summary> Helpers for <see cref="GameObject" />. </summary>
     public static class GameObjectHelper
     {
         /// <summary>
-        /// Add a component to of GameObject.
-        /// This is intended for use on entity components generated via <see cref="GenerateAuthoringComponentAttribute" />.
+        /// Only supports component types declared in an asmdef.
         /// </summary>
-        /// <remarks> Note this only works on types in an asmdef. </remarks>
-        /// <param name="gameObject"> GameObject to add the component type to. </param>
-        /// <param name="type"> The component type to add. </param>
         public static void AddAuthoringComponent(GameObject gameObject, Type type)
         {
             AddAuthoringComponent(new[] { gameObject }, type);
         }
 
         /// <summary>
-        /// Add a component to a set of GameObjects.
-        /// This is intended for use on entity components generated via <see cref="GenerateAuthoringComponentAttribute" />.
+        /// Only supports component types declared in an asmdef.
         /// </summary>
-        /// <remarks> Note this only works on types in an asmdef. </remarks>
-        /// <param name="gameObjects"> GameObjects to add the component type to. </param>
-        /// <param name="type"> The component type to add. </param>
         public static void AddAuthoringComponent(GameObject[] gameObjects, Type type)
         {
             var executeMethod = typeof(EditorApplication).GetMethod("ExecuteMenuItemOnGameObjects", BindingFlags.Static | BindingFlags.NonPublic);

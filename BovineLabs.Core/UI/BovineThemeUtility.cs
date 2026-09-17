@@ -6,7 +6,6 @@ namespace BovineLabs.Core.UI
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    /// <summary>Applies the shared theme to an explicitly owned UI subtree.</summary>
     public static class BovineThemeUtility
     {
         public const string PreferenceKey = "BovineLabs.UI.Theme";
@@ -26,11 +25,12 @@ namespace BovineLabs.Core.UI
         [NoAutoStaticsCleanup]
         private static StyleSheet styleSheet;
 
-        /// <summary>Raised after the shared theme changes. UI subscribers should unsubscribe when detached.</summary>
+        /// <summary>
+        /// Unsubscribe UI listeners when detached.
+        /// </summary>
         [NoAutoStaticsCleanup]
         public static event Action<BovineTheme> ThemeChanged;
 
-        /// <summary>Gets or sets the user's theme. Editor persistence is owned by the Core editor preference provider.</summary>
         public static BovineTheme Theme
         {
             get => theme;
@@ -55,8 +55,6 @@ namespace BovineLabs.Core.UI
             }
         }
 
-        /// <summary>Applies the selected theme now and keeps the subtree up to date while it belongs to a panel.</summary>
-        /// <param name="root">The owned subtree. Its layout and background remain unchanged unless it opts into themed classes.</param>
         public static void Apply(VisualElement root)
         {
             if (root == null)

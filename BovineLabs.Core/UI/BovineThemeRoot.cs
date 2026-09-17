@@ -2,7 +2,6 @@ namespace BovineLabs.Core.UI
 {
     using UnityEngine.UIElements;
 
-    /// <summary>A declarative theme scope with ordinary VisualElement layout and picking behavior.</summary>
     [UxmlElement]
     public partial class BovineThemeRoot : VisualElement
     {

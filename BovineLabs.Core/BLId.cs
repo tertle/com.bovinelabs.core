@@ -3,7 +3,6 @@ namespace BovineLabs.Core
     using System;
     using Unity.Properties;
 
-    /// <summary> Packed mod/local id payload shared by type-safe id wrappers. </summary>
     [Serializable]
     public struct BLId : IEquatable<BLId>, IComparable<BLId>
     {

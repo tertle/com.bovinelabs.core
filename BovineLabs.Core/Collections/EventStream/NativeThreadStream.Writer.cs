@@ -29,9 +29,6 @@ namespace BovineLabs.Core.Collections
 #endif
             }
 
-            /// <summary> Write data to the stream. </summary>
-            /// <typeparam name="T"> The type of value. </typeparam>
-            /// <param name="value"> The value to write. </param>
             public void Write<T>(T value)
                 where T : unmanaged
             {
@@ -39,9 +36,6 @@ namespace BovineLabs.Core.Collections
                 dst = value;
             }
 
-            /// <summary> Allocate space for data. </summary>
-            /// <typeparam name="T"> The type of value. </typeparam>
-            /// <returns> Reference to the data. </returns>
             public ref T Allocate<T>()
                 where T : unmanaged
             {
@@ -49,18 +43,12 @@ namespace BovineLabs.Core.Collections
                 return ref UnsafeUtility.AsRef<T>(this.Allocate(size));
             }
 
-            /// <summary> Allocate space for data. </summary>
-            /// <param name="size"> Size in bytes. </param>
-            /// <returns> Pointer to the data. </returns>
             public byte* Allocate(int size)
             {
                 this.CheckAllocateSize(size);
                 return this.writer.Allocate(size);
             }
 
-            /// <summary> Allocate a chunk of memory that can be larger than the max allocation size. </summary>
-            /// <param name="array"> The array to write. </param>
-            /// <typeparam name="T"> The type of the array. </typeparam>
             public void WriteLarge<T>(NativeArray<T> array)
                 where T : unmanaged
             {
@@ -68,9 +56,6 @@ namespace BovineLabs.Core.Collections
                 this.WriteLarge((byte*)byteArray.GetUnsafeReadOnlyPtr(), byteArray.Length);
             }
 
-            /// <summary> Allocate a chunk of memory that can be larger than the max allocation size. </summary>
-            /// <param name="data"> The data to write. </param>
-            /// <typeparam name="T"> The type of the slice. </typeparam>
             public void WriteLarge<T>(NativeSlice<T> data)
                 where T : unmanaged
             {
@@ -100,9 +85,6 @@ namespace BovineLabs.Core.Collections
                 }
             }
 
-            /// <summary> Allocate a chunk of memory that can be larger than the max allocation size. </summary>
-            /// <param name="data"> The data to write. </param>
-            /// <param name="size"> The size of the data. For an array, this is UnsafeUtility.SizeOf{T} * length. </param>
             public void WriteLarge(byte* data, int size)
             {
                 var allocationCount = size / MaxLargeSize;
@@ -159,27 +141,18 @@ namespace BovineLabs.Core.Collections
 #endif
             }
 
-            /// <summary> Write data to the stream. </summary>
-            /// <typeparam name="T"> The type of value. </typeparam>
-            /// <param name="value"> The value to write. </param>
             public void Write(T value)
             {
                 ref var dst = ref this.Allocate();
                 dst = value;
             }
 
-            /// <summary> Allocate space for data. </summary>
-            /// <typeparam name="T"> The type of value. </typeparam>
-            /// <returns> Reference to the data. </returns>
             public ref T Allocate()
             {
                 var size = UnsafeUtility.SizeOf<T>();
                 return ref UnsafeUtility.AsRef<T>(this.Allocate(size));
             }
 
-            /// <summary> Allocate space for data. </summary>
-            /// <param name="size"> Size in bytes. </param>
-            /// <returns> Pointer to the data. </returns>
             private byte* Allocate(int size)
             {
                 this.CheckAllocateSize(size);

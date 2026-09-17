@@ -10,14 +10,11 @@
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    /// <summary> Base class for implementing the settings UI. </summary>
-    /// <typeparam name="T"> The settings type the panel draws. </typeparam>
     public abstract class SettingsBasePanel<T> : ISettingsPanel
         where T : ScriptableObject, ISettings
     {
         private readonly Dictionary<string, List<string>> keywordList = new();
 
-        /// <summary> Initializes a new instance of the <see cref="SettingsBasePanel{T}" /> class. </summary>
         protected SettingsBasePanel()
         {
             this.Settings = EditorSettingsUtility.GetSettings<T>();
@@ -42,18 +39,13 @@
 
         public bool IsEmpty { get; }
 
-        /// <summary> Gets the settings that the panel is drawing. </summary>
         protected T Settings { get; }
 
-        /// <summary> Gets the <see cref="SerializedObject" /> of the <see cref="Settings" />. </summary>
         protected SerializedObject SerializedObject { get; }
 
-        /// <summary> Executed when activate is called from the settings window. Can be used to draw using UIElements. </summary>
-        /// <remarks>
-        ///     <para> If UIElements is used then the OnGUI drawer will be disabled. </para>
-        /// </remarks>
-        /// <param name="searchContext"> The search context to provide filtering. </param>
-        /// <param name="rootElement"> The UI root element. </param>
+        /// <summary>
+        /// Supplying UIElements disables the OnGUI drawer.
+        /// </summary>
         public virtual void OnActivate(string searchContext, VisualElement rootElement)
         {
             var inspectorElement = new InspectorElement(this.SerializedObject);
@@ -80,7 +72,6 @@
             }
         }
 
-        /// <summary> Executed when deactivate is called from the settings window. </summary>
         public virtual void OnDeactivate()
         {
         }
@@ -100,10 +91,9 @@
             return this.keywordList.Any(s => MatchesSearchContext(s.Key, searchContext));
         }
 
-        /// <summary> Populates all the keywords associated with the settings. </summary>
-        /// <remarks> Do not populate this in constructor. </remarks>
-        /// <param name="keywords"> The list to populate. </param>
-        /// <returns> If there were any children. </returns>
+        /// <summary>
+        /// Populate keywords here, never in the constructor.
+        /// </summary>
         protected virtual bool GetKeyWords(Dictionary<string, List<string>> keywords)
         {
             foreach (var c in this.Settings.DisplayName().Split(' '))

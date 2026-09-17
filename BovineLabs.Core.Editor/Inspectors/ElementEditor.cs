@@ -5,7 +5,6 @@
     using UnityEditor.UIElements;
     using UnityEngine.UIElements;
 
-    /// <summary> Provides a custom editor ([CustomEditor(typeof(T))]) with custom element but will fall back to PropertyField if not overriden. </summary>
     public abstract class ElementEditor : Editor
     {
         private VisualElement parent;
@@ -70,10 +69,6 @@
         {
         }
 
-        /// <summary> Create a foldout without margins so it lines up with the inspector listviews. </summary>
-        /// <param name="text"> Text value of the foldout. </param>
-        /// <param name="value"> Default value of the foldout. </param>
-        /// <returns> A new foldout. </returns>
         protected static Foldout CreateFoldout(string text, bool value = false)
         {
             var foldout = new Foldout { text = text };

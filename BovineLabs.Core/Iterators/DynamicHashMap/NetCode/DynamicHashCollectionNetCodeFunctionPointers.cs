@@ -4,7 +4,6 @@ namespace BovineLabs.Core.Iterators
     using Unity.NetCode;
     using Unity.NetCode.LowLevel.Unsafe;
 
-    /// <summary>Concrete Burst function pointers generated for a dynamic hash collection serializer.</summary>
     public struct DynamicHashCollectionNetCodeFunctionPointers
     {
         public PortableFunctionPointer<GhostComponentSerializer.PostSerializeBufferDelegate> PostSerializeBuffer;

@@ -4,7 +4,6 @@
     using Unity.Entities;
     using UnityEngine;
 
-    /// <summary> A simple authoring script that lets you tag any entity. </summary>
     public class TagAuthoring : MonoBehaviour
     {
         public ComponentAsset[] Components = Array.Empty<ComponentAsset>();

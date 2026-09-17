@@ -7,12 +7,10 @@
     using Unity.Scripting.LifecycleManagement;
     using Random = Unity.Mathematics.Random;
 
-    /// <summary> Globally accessible random values even from bursted jobs. </summary>
     public static partial class GlobalRandom
     {
         private static readonly SharedStatic<ThreadRandom> ThreadRandoms = SharedStatic<ThreadRandom>.GetOrCreate<RandomType>();
 
-        /// <summary> Gets the random by ref for the executing thread. </summary>
         public static ref Random Thread => ref ThreadRandoms.Data.GetRandomRef();
 
         public static bool NextBool()

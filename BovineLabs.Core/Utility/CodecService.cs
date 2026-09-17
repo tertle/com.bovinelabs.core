@@ -13,10 +13,6 @@ namespace BovineLabs.Core.Utility
     {
         private const string DllName = "liblz4";
 
-        /// <summary> Return the maximum size that a codec may output in a "worst case" scenario when compressing data. </summary>
-        /// <param name="codec"> The codec to use. </param>
-        /// <param name="srcSize"> The source size. </param>
-        /// <returns> The maximum bound. </returns>
         public static int GetBoundedSize(Codec codec, int srcSize)
         {
             switch (codec)
@@ -28,13 +24,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <summary> Compresses the passed in `src` data into the existing `dst` buffer. </summary>
-        /// <param name="codec"> The codec to use. </param>
-        /// <param name="src"> The source buffer. </param>
-        /// <param name="srcSize"> The length of the source buffer. </param>
-        /// <param name="dst"> The destination buffer. </param>
-        /// <param name="boundedSize"> The destination buffer size. </param>
-        /// <returns> The compressed length. </returns>
         public static int Compress(Codec codec, byte* src, int srcSize, byte* dst, int boundedSize)
         {
             switch (codec)
@@ -52,14 +41,8 @@ namespace BovineLabs.Core.Utility
         }
 
         /// <summary>
-        /// Compresses the passed in `src` data into newly allocated `dst` buffer. Users must free dst manually after calling `Compress`.
+        /// Caller must free the newly allocated destination buffer.
         /// </summary>
-        /// <param name="codec"> The codec to use. </param>
-        /// <param name="src"> The source buffer. </param>
-        /// <param name="srcSize"> The length of the source buffer. </param>
-        /// <param name="dst"> The destination buffer. </param>
-        /// <param name="allocator"> The allocator to use. </param>
-        /// <returns> The compressed length. </returns>
         public static int Compress(Codec codec, byte* src, int srcSize, out byte* dst, AllocatorManager.AllocatorHandle allocator)
         {
             var boundedSize = GetBoundedSize(codec, srcSize);
@@ -77,16 +60,8 @@ namespace BovineLabs.Core.Utility
         }
 
         /// <summary>
-        /// Decompresses data in `src` buffer and returns true with the decompressed data stored in the passed in, previously allocated `decompressedData` buffer.
-        /// Users thus should know ahead of time how large a `decompressedData` buffer to use before calling this function. Not
-        /// passing a large enough buffer will result in this function failing and returning false.
+        /// Caller supplies the destination buffer. Returns true only when output is exactly decompressedSize bytes; insufficient capacity fails.
         /// </summary>
-        /// <param name="codec"> The codec to use. </param>
-        /// <param name="compressedData"> The compressed data. </param>
-        /// <param name="compressedSize"> The compressed data size. </param>
-        /// <param name="decompressedData"> The destination buffer to store the uncompressed data. </param>
-        /// <param name="decompressedSize"> The decompressed size. </param>
-        /// <returns> True if decompression produced exactly <paramref name="decompressedSize" /> bytes. </returns>
         public static bool Decompress(Codec codec, in byte* compressedData, int compressedSize, byte* decompressedData, int decompressedSize)
         {
             switch (codec)
@@ -99,11 +74,9 @@ namespace BovineLabs.Core.Utility
         }
 
         /*/// <summary>
-        ///
+        /// <summary>
+        /// Compression level ranges from 0 (store only) to 9 (best compression).
         /// </summary>
-        /// <param name="src"></param>
-        /// <param name="srcSize"></param>
-        /// <param name="compressionLevel"> Define the compression level. 0 - store only to 9 - means best compression. </param>
         public static int Zip(byte* src, int srcSize, int compressionLevel, out byte* dst)
         {
             using var memoryStream = new MemoryStream();

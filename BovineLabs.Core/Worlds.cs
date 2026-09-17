@@ -30,33 +30,21 @@
         public const WorldFlags ServiceWorld = (WorldFlags)(1 << 16) | WorldFlags.Live;
         public const WorldFlags MenuWorld = (WorldFlags)(1 << 17) | WorldFlags.Live;
 
-        /// <summary> Determines whether a world is a service world. </summary>
-        /// <param name="world">The world instance to check.</param>
-        /// <returns>True if the world has the <see cref="Worlds.ServiceWorld" /> flag.</returns>
         public static bool IsServiceWorld(this World world)
         {
             return world.Unmanaged.IsServiceWorld();
         }
 
-        /// <summary> Determines whether a world is a service world. </summary>
-        /// <param name="world">The world instance to check.</param>
-        /// <returns>True if the world has the <see cref="Worlds.ServiceWorld" /> flag.</returns>
         public static bool IsServiceWorld(this WorldUnmanaged world)
         {
             return (world.Flags & ServiceWorld) == ServiceWorld;
         }
 
-        /// <summary> Determines whether a world is a service world. </summary>
-        /// <param name="world">The world instance to check.</param>
-        /// <returns>True if the world has the <see cref="Worlds.ServiceWorld" /> flag.</returns>
         public static bool IsLocalWorld(this World world)
         {
             return world.Unmanaged.IsLocalWorld();
         }
 
-        /// <summary> Determines whether a world is a service world. </summary>
-        /// <param name="world">The world instance to check.</param>
-        /// <returns>True if the world has the <see cref="Worlds.ServiceWorld" /> flag.</returns>
         public static bool IsLocalWorld(this WorldUnmanaged world)
         {
             // Make sure it's a game world (eliminates service + anything else custom)

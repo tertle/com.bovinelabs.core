@@ -9,10 +9,6 @@
     using Unity.Jobs;
     using Unity.Jobs.LowLevel.Unsafe;
 
-    /// <summary>
-    /// A burst friendly low level hash map enumerating job.
-    /// You can use <see cref="JobHashMapDefer.Read{TJob, TKey, TValue}" /> to safely get the current key/value.
-    /// </summary>
     [JobProducerType(typeof(JobHashMapDefer.JobHashMapVisitKeyValueProducer<>))]
     public interface IJobHashMapDefer
     {
@@ -109,8 +105,7 @@
         }
 
         /// <summary>
-        /// Gathers and caches reflection data for the internal job system's managed bindings.
-        /// Unity is responsible for calling this method - don't call it yourself.
+        /// Called by Unity for job reflection initialization; do not invoke directly.
         /// </summary>
         [UsedImplicitly]
         public static void EarlyJobInit<T>()
@@ -182,12 +177,9 @@
             key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.m_Data->Keys, entryIndex);
         }
 
-        /// <summary> The job execution struct. </summary>
-        /// <typeparam name="T"> The type of the job. </typeparam>
         internal unsafe struct JobHashMapVisitKeyValueProducer<T>
             where T : struct, IJobHashMapDefer
         {
-            /// <summary> The <see cref="NativeParallelMultiHashMap{TKey,TValue}" />. </summary>
             [ReadOnly]
             [NativeDisableUnsafePtrRestriction]
             internal HashMapWrapper* HashMap;
@@ -195,7 +187,6 @@
             // ReSharper disable once StaticMemberInGenericType
             internal static readonly SharedStatic<IntPtr> ReflectionData = SharedStatic<IntPtr>.GetOrCreate<JobHashMapVisitKeyValueProducer<T>>();
 
-            /// <summary> The job. </summary>
             internal T JobData;
 
             private delegate void ExecuteJobFunction(
@@ -211,12 +202,6 @@
                 }
             }
 
-            /// <summary> Executes the job. </summary>
-            /// <param name="fullData"> The job data. </param>
-            /// <param name="additionalPtr"> AdditionalPtr. </param>
-            /// <param name="bufferRangePatchData"> BufferRangePatchData. </param>
-            /// <param name="ranges"> The job range. </param>
-            /// <param name="jobIndex"> The job index. </param>
             internal static void Execute(
                 ref JobHashMapVisitKeyValueProducer<T> fullData, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
             {

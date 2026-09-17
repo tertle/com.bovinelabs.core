@@ -10,7 +10,6 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
     using Unity.Jobs;
     using Unity.Jobs.LowLevel.Unsafe;
 
-    /// <summary> Tests for thread based implementation. </summary>
     internal partial class ThreadWriter : ECSTestsFixture
     {
         // /// <summary> Tests that the dispose job works. </summary>
@@ -30,9 +29,6 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
         //     disposeJob.Complete();
         // }
 
-        /// <summary> Tests that ComputeItemCount() works. </summary>
-        /// <param name="count"> <see cref="WriteIntsJob" /> count. </param>
-        /// <param name="batchSize"> <see cref="WriteIntsJob" /> batch size. </param>
         [Test]
         public void ItemCount([Values(JobsUtility.MaxJobThreadCount + 1)] int count)
         {
@@ -43,9 +39,6 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
             Assert.AreEqual((count * (count - 1)) / 2, stream.Count());
         }
 
-        /// <summary> Tests that writing from job then reading in multiple jobs works. </summary>
-        /// <param name="count"> <see cref="WriteIntsJob" /> count. </param>
-        /// <param name="batchSize"> <see cref="WriteIntsJob" /> batch size. </param>
         [Test]
         public void WriteRead([Values(JobsUtility.MaxJobThreadCount + 1)] int count)
         {
@@ -61,8 +54,6 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
             res1.Complete();
         }
 
-        /// <summary> Tests the container working in an Entities.ForEach in SystemBase. </summary>
-        /// <param name="count"> The number of entities to test. </param>
         [Test]
         public void SystemBaseEntitiesForeach([Values(JobsUtility.MaxJobThreadCount + 1)] int count)
         {

@@ -4,8 +4,7 @@
     using UnityEngine.UIElements;
 
     /// <summary>
-    /// Manages loading a pair of uxml/uss files in the same folder.
-    /// Roughly based off Unity.Entities.Editor.UITemplate but quite stripped down for own uses.
+    /// Adapted from Unity.Entities.Editor.UITemplate.
     /// </summary>
     public readonly struct UITemplate
     {
@@ -27,9 +26,6 @@
 
         private StyleSheet StyleSheet => AssetDatabase.LoadAssetAtPath<StyleSheet>(this.ussPath);
 
-        /// <summary> Clones the template into the given root element and applies the style sheets from the template. </summary>
-        /// <param name="root"> The element that will serve as the root for cloning the template. </param>
-        /// <returns> Returns the updated root for convenience. </returns>
         public VisualElement Clone(VisualElement root = null)
         {
             root = this.CloneTemplate(root);

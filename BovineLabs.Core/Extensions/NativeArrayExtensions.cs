@@ -87,19 +87,12 @@
         }
 
 
-        /// <summary> Efficiently sets all values in a NativeArray to a specific value. </summary>
-        /// <param name="array"> The array to fill. </param>
-        /// <param name="value"> The value that the array elements will be set to. </param>
-        /// <typeparam name="T"> The unmanaged type the array holds. </typeparam>
         public static void Fill<T>(this NativeArray<T> array, T value)
             where T : unmanaged
         {
             UnsafeUtility.MemCpyReplicate(array.GetUnsafePtr(), &value, UnsafeUtility.SizeOf<T>(), array.Length);
         }
 
-        /// <summary> Efficiently clears all values in a NativeArray. </summary>
-        /// <param name="array"> The array to clear. </param>
-        /// <typeparam name="T"> The unmanaged type the array holds. </typeparam>
         public static void Clear<T>(this NativeArray<T> array)
             where T : unmanaged
         {

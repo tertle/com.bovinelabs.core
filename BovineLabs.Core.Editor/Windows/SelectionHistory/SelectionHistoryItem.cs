@@ -5,9 +5,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
     using UnityEditor;
     using UnityEngine;
 
-    /// <summary>
-    /// Represents a single item in the selection history.
-    /// </summary>
     public sealed class SelectionHistoryItem : BaseObjectItem
     {
         public SelectionHistoryItem(UnityEngine.Object obj, GlobalObjectId objectId, bool isLocked)
@@ -24,7 +21,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             this.IsLocked = isLocked;
         }
 
-        /// <summary>Gets or sets a value indicating whether this item is locked to the top of the list.</summary>
         public bool IsLocked { get; set; }
     }
 }

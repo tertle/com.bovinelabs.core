@@ -8,8 +8,6 @@ namespace BovineLabs.Core.ConfigVars
     {
         private readonly SharedStatic<Color> field;
 
-        /// <summary> Initializes a new instance of the <see cref="ConfigVarSharedStaticColorContainer" /> class. </summary>
-        /// <param name="field"> The field associated with the config var. </param>
         public ConfigVarSharedStaticColorContainer(SharedStatic<Color> field)
         {
             this.field = field;

@@ -5,7 +5,6 @@ namespace BovineLabs.Core.Editor.SearchWindow
     using System.Text;
     using UnityEngine;
 
-    /// <summary> Data contract retained for existing BovineLabs search picker callers. </summary>
     public static class SearchView
     {
         public struct Item : IEquatable<Item>

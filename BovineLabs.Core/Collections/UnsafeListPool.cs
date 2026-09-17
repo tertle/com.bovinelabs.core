@@ -4,10 +4,6 @@ namespace BovineLabs.Core.Collections
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary>
-    /// Pool for <see cref="UnsafeList{T}" /> that wraps <see cref="UnmanagedPool{T}" /> and provides list lifecycle helpers.
-    /// </summary>
-    /// <typeparam name="T">The element type in the pooled list.</typeparam>
     public readonly struct UnsafeListPool<T> : IDisposable
         where T : unmanaged
     {

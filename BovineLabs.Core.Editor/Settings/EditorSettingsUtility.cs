@@ -14,16 +14,11 @@
     using UnityEngine;
     using Object = UnityEngine.Object;
 
-    /// <summary> Utility for setting up and getting settings. </summary>
     public static class EditorSettingsUtility
     {
         [NoAutoStaticsCleanup]
         private static readonly Dictionary<Type, ISettings> CachedSettings = new();
 
-        /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
-        /// <typeparam name="T"> The type. </typeparam>
-        /// <returns> The settings instance. </returns>
-        /// <exception cref="Exception"> Thrown if more than 1 instance found in project. </exception>
         public static T GetSettings<T>()
             where T : ScriptableObject, ISettings
         {
@@ -31,10 +26,6 @@
             return (T)GetSettings(type);
         }
 
-        /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
-        /// <param name="type"> The type. </param>
-        /// <returns> The settings instance. </returns>
-        /// <exception cref="Exception"> Thrown if more than 1 instance found in project. </exception>
         public static ISettings GetSettings(Type type)
         {
             if (CachedSettings.TryGetValue(type, out var cached) && cached as Object != null)
@@ -47,11 +38,6 @@
             return settings!;
         }
 
-        /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
-        /// <param name="settings"> The settings if found. </param>
-        /// <typeparam name="T"> The settings type. </typeparam>
-        /// <returns> True if settings is created. </returns>
-        /// <exception cref="Exception"> Thrown if more than 1 instance found in project. </exception>
         public static bool TryGetSettings<T>(out T settings)
         {
             var type = typeof(T);
@@ -60,11 +46,6 @@
             return result;
         }
 
-        /// <summary> Gets a settings file. Create if it doesn't exist and ensures it is setup properly. </summary>
-        /// <param name="type"> The type. </param>
-        /// <param name="settings"> The settings if found. </param>
-        /// <returns> True if settings is created. </returns>
-        /// <exception cref="Exception"> Thrown if more than 1 instance found in project. </exception>
         public static bool TryGetSettings(Type type, out ISettings settings)
         {
             if (CachedSettings.TryGetValue(type, out settings) && settings != null)

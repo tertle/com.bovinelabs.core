@@ -4,9 +4,6 @@
     using Unity.Mathematics;
     using UnityEngine;
 
-    /// <summary>
-    /// AnimationCurveSegment using Cubic Bezier spline
-    /// </summary>
     public struct BlobCurveSegment3
     {
         // public BlobCurveSegment X;
@@ -19,15 +16,11 @@
             return math.mul(timeSerial, this.Factors);
         }
 
-        /// <summary>
-        /// Create from scratch
-        /// </summary>
         public BlobCurveSegment3(float4 factorX, float4 factorY, float4 factorZ)
         {
             this.Factors = new float4x3(factorX, factorY, factorZ);
         }
 
-        /// <summary> Convert From Keyframe Pair </summary>
         public BlobCurveSegment3(Keyframe k0x, Keyframe k0y, Keyframe k0z, Keyframe k1x, Keyframe k1y, Keyframe k1z)
         {
             Assert.IsTrue(
@@ -42,9 +35,6 @@
                 BlobShared.UnityFactor(k0z.value, k0z.outTangent, k1z.inTangent, k1z.value, duration));
         }
 
-        /// <summary>
-        /// Convert From UnityEngine.AnimationCurve parameter
-        /// </summary>
         public static BlobCurveSegment3 Unity3(float3 value0, float3 tangent0, float3 tangent1, float3 value1, float duration)
         {
             return new BlobCurveSegment3(BlobShared.UnityFactor(value0.x, tangent0.x, tangent0.x, value1.x, duration),
@@ -52,18 +42,12 @@
                 BlobShared.UnityFactor(value0.z, tangent0.z, tangent0.z, value1.z, duration));
         }
 
-        /// <summary>
-        /// Convert From Cubic Bezier spline parameter
-        /// </summary>
         public static BlobCurveSegment3 Bezier3(float3 value0, float3 cv0, float3 cv1, float3 value1)
         {
             return new BlobCurveSegment3(BlobShared.BezierFactor(value0.x, cv0.x, cv1.x, value1.x), BlobShared.BezierFactor(value0.y, cv0.y, cv1.y, value1.y),
                 BlobShared.BezierFactor(value0.z, cv0.z, cv1.z, value1.z));
         }
 
-        /// <summary>
-        /// Convert Linear Curve
-        /// </summary>
         public static BlobCurveSegment3 Linear3(float3 value0, float3 value1)
         {
             return new BlobCurveSegment3(BlobShared.LinearFactor(value0.x, value1.x), BlobShared.LinearFactor(value0.y, value1.y),

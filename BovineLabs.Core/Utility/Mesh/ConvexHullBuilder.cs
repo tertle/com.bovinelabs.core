@@ -32,18 +32,8 @@ namespace BovineLabs.Core.Utility
     [BurstCompile]
     public static class ConvexHullBuilder
     {
-        /// <summary>
-        /// Constant representing a point that has yet to be assigned to a
-        /// face. It's only used immediately after constructing the seed hull.
-        /// </summary>
         private const int Unassigned = -2;
 
-        /// <summary>
-        /// Constant representing a point that is inside the convex hull, and
-        /// thus is behind all faces. In the openSet array, all points with
-        /// INSIDE are at the end of the array, with indexes larger
-        /// openSetTail.
-        /// </summary>
         private const int Inside = -1;
 
         [BurstCompile]
@@ -72,9 +62,6 @@ namespace BovineLabs.Core.Utility
             ExportMesh(ref data, points, outVerts, outTris);
         }
 
-        /// <summary>
-        /// Create initial seed hull.
-        /// </summary>
         private static void GenerateInitialHull(ref Data data, NativeArray<float3> points)
         {
             // Find points suitable for use as the seed hull. Some varieties of
@@ -202,7 +189,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <summary> Find four points in the point cloud that are not coplanar for the seed hull. </summary>
         private static void FindInitialHullIndices(NativeArray<float3> points, out int b0, out int b1, out int b2, out int b3)
         {
             var count = points.Length;
@@ -258,11 +244,6 @@ namespace BovineLabs.Core.Utility
 #endif
         }
 
-        /// <summary>
-        /// Grow the hull. This method takes the current hull, and expands it
-        /// to encompass the point in openSet with the point furthest away
-        /// from its face.
-        /// </summary>
         private static void GrowHull(ref Data data, NativeArray<float3> points)
         {
             Check.Assume(data.OpenSetTail >= 0);
@@ -297,20 +278,6 @@ namespace BovineLabs.Core.Utility
             ReassignPoints(ref data, points);
         }
 
-        /// <summary>
-        /// Start the search for the horizon.
-        /// The search is a DFS search that searches neighboring triangles in
-        /// a counter-clockwise fashion. When it find a neighbor which is not
-        /// lit, that edge will be a line on the horizon. If the search always
-        /// proceeds counter-clockwise, the edges of the horizon will be found
-        /// in counter-clockwise order.
-        /// The heart of the search can be found in the recursive
-        /// SearchHorizon() method, but the the first iteration of the search
-        /// is special, because it has to visit three neighbors (all the
-        /// neighbors of the initial triangle), while the rest of the search
-        /// only has to visit two (because one of them has already been
-        /// visited, the one you came from).
-        /// </summary>
         private static void FindHorizon(ref Data data, NativeArray<float3> points, float3 point, int fi, Face face)
         {
             // TODO should I use epsilon in the PointFaceDistance comparisons?
@@ -390,9 +357,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <summary>
-        /// Recursively search to find the horizon or lit set.
-        /// </summary>
         private static void SearchHorizon(ref Data data, NativeArray<float3> points, float3 point, int prevFaceIndex, int faceCount, Face face)
         {
             Check.Assume(prevFaceIndex >= 0);
@@ -486,15 +450,7 @@ namespace BovineLabs.Core.Utility
         }
 
         /// <summary>
-        /// Remove all lit faces and construct new faces from the horizon in a
-        /// "cone-like" fashion.
-        /// This is a relatively straight-forward procedure, given that the
-        /// horizon is handed to it in already sorted counter-clockwise. The
-        /// neighbors of the new faces are easy to find: they're the previous
-        /// and next faces to be constructed in the cone, as well as the face
-        /// on the other side of the horizon. We also have to update the face
-        /// on the other side of the horizon to reflect it's new neighbor from
-        /// the cone.
+        /// Requires horizon edges already ordered counter-clockwise.
         /// </summary>
         private static void ConstructCone(ref Data data, NativeArray<float3> points, int farthestPoint)
         {
@@ -548,20 +504,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <summary>
-        /// Reassign points based on the new faces added by ConstructCone().
-        /// Only points that were previous assigned to a removed face need to
-        /// be updated, so check litFaces while looping through the open set.
-        /// There is a potential optimization here: there's no reason to loop
-        /// through the entire openSet here. If each face had it's own
-        /// openSet, we could just loop through the openSets in the removed
-        /// faces. That would make the loop here shorter.
-        /// However, to do that, we would have to juggle A LOT more List's,
-        /// and we would need an object pool to manage them all without
-        /// generating a whole bunch of garbage. I don't think it's worth
-        /// doing that to make this loop shorter, a straight for-loop through
-        /// a list is pretty darn fast. Still, it might be worth trying.
-        /// </summary>
         private static void ReassignPoints(ref Data data, NativeArray<float3> points)
         {
             for (var i = 0; i <= data.OpenSetTail; i++)
@@ -613,7 +555,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <summary> Final step in algorithm, export the faces of the convex hull in a mesh-friendly format. </summary>
         private static void ExportMesh(ref Data data, NativeArray<float3> points, NativeList<float3> verts, NativeList<int> tris)
         {
             verts.Clear();
@@ -665,21 +606,18 @@ namespace BovineLabs.Core.Utility
             return math.dot(normal, point - pointOnFace);
         }
 
-        /// <summary> Check if two points are coincident. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool AreCoincident(float3 a, float3 b)
         {
             return math.distance(a, b) <= math.EPSILON;
         }
 
-        /// <summary> Check if three points are collinear. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool AreCollinear(float3 a, float3 b, float3 c)
         {
             return math.length(math.cross(c - a, c - b)) <= math.EPSILON;
         }
 
-        /// <summary> Check if four points are coplanar. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool AreCoplanar(float3 a, float3 b, float3 c, float3 d)
         {
@@ -697,61 +635,21 @@ namespace BovineLabs.Core.Utility
             public NativeHashMap<int, Face> Faces;
 
             /// <summary>
-            /// The set of points to be processed. "openSet" is a misleading name,
-            /// because it's both the open set (points which are still outside the
-            /// convex hull) and the closed set (points that are inside the convex
-            /// hull). The first part of the array (with indexes <= openSetTail)
-            /// is the openSet, the last part of the array (with indexes >
-            /// openSetTail) are the closed set, with Face set to INSIDE. The
-            /// closed set is largely irrelevant to the algorithm, the open set is
-            /// what matters.
-            /// Storing the entire open set in one big list has a downside: when
-            /// we're reassigning points after ConstructCone, we only need to
-            /// reassign points that belong to the faces that have been removed,
-            /// but storing it in one array, we have to loop through the entire
-            /// list, and checking litFaces to determine which we can skip and
-            /// which need to be reassigned.
-            /// The alternative here is to give each face in Face array it's own
-            /// openSet. I don't like that solution, because then you have to
-            /// juggle so many more heap-allocated List's, we'd have to use
-            /// object pools and such. It would do a lot more allocation, and it
-            /// would have worse locality. I should maybe test that solution, but
-            /// it probably wont be faster enough (if at all) to justify the extra
-            /// allocations.
+            /// Indices through openSetTail are outside the hull; later entries are inside and have Face set to INSIDE.
             /// </summary>
             public NativeList<PointFace> OpenSet;
 
-            /// <summary>
-            /// Set of faces which are "lit" by the current point in the set. This
-            /// is used in the FindHorizon() DFS search to keep track of which
-            /// faces we've already visited, and in the ReassignPoints() method to
-            /// know which points need to be reassigned.
-            /// </summary>
             public NativeHashSet<int> LitFaces;
 
             /// <summary>
-            /// The current horizon. Generated by the FindHorizon() DFS search,
-            /// and used in ConstructCone to construct new faces. The list of
-            /// edges are in CCW order.
+            /// Edges are stored in counter-clockwise order.
             /// </summary>
             public NativeList<HorizonEdge> Horizon;
 
-            /// <summary>
-            /// If SplitVerts is false, this Dictionary is used to keep track of
-            /// which points we've added to the final mesh.
-            /// </summary>
             public NativeHashMap<int, int> HullVerts;
 
-            /// <summary>
-            /// The "tail" of the openSet, the last index of a vertex that has
-            /// been assigned to a face.
-            /// </summary>
             public int OpenSetTail;
 
-            /// <summary>
-            /// When adding a new face to the faces Dictionary, use this for the
-            /// key and then increment it.
-            /// </summary>
             public int FaceCount;
 
             public Data(Allocator allocator)
@@ -768,14 +666,7 @@ namespace BovineLabs.Core.Utility
         }
 
         /// <summary>
-        /// Struct representing a single face.
-        /// Vertex0, Vertex1 and Vertex2 are the vertices in CCW order. They
-        /// acutal points are stored in the points array, these are just
-        /// indexes into that array.
-        /// Opposite0, Opposite1 and Opposite2 are the keys to the faces which
-        /// share an edge with this face. Opposite0 is the face opposite
-        /// Vertex0 (so it has an edge with Vertex2 and Vertex1), etc.
-        /// Normal is (unsurprisingly) the normal of the triangle.
+        /// Vertices are indexed counter-clockwise; OppositeN identifies the face across the edge opposite VertexN.
         /// </summary>
         private struct Face
         {
@@ -812,13 +703,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <summary>
-        /// Struct representing a mapping between a point and a face. These
-        /// are used in the openSet array.
-        /// Point is the index of the point in the points array, Face is the
-        /// key of the face in the Key dictionary, Distance is the distance
-        /// from the face to the point.
-        /// </summary>
         private struct PointFace
         {
             public readonly int Point;
@@ -833,13 +717,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <summary>
-        /// Struct representing a single edge in the horizon.
-        /// Edge0 and Edge1 are the vertexes of edge in CCW order, Face is the
-        /// face on the other side of the horizon.
-        /// TODO Edge1 isn't actually needed, you can just index the next item
-        /// in the horizon array.
-        /// </summary>
         private struct HorizonEdge
         {
             public int Face;

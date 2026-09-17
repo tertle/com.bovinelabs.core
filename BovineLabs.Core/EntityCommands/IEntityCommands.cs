@@ -7,8 +7,6 @@
     {
         Entity Entity { get; set; }
 
-        /// <summary> Creates a new entity and replaces any internal stored one so other commands will now affect this. </summary>
-        /// <returns> The new entity. </returns>
         Entity CreateEntity();
 
         Entity Instantiate(Entity prefab);

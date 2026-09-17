@@ -15,7 +15,6 @@
     using AssemblyFlags = UnityEditor.Compilation.AssemblyFlags;
 #endif
 
-    /// <summary> Common reflection helpers. </summary>
     public static class ReflectionUtility
     {
         [NoAutoStaticsCleanup]
@@ -47,13 +46,10 @@
         private static Dictionary<string, Assembly> assembliesMap;
 #endif
 
-        /// <summary> Gets all currently loaded assemblies in the AppDomain. </summary>
         public static IReadOnlyList<System.Reflection.Assembly> AllAssemblies => allAssemblies ??= CurrentAssemblies.GetLoadedAssemblies();
 
-        /// <summary> Gets all types across all loaded assemblies. </summary>
         public static Type[] AllTypes => allTypes ??= AllAssemblies.SelectMany(GetTypes).ToArray();
 
-        /// <summary> Gets all unmanaged types across all loaded assemblies. </summary>
         public static Type[] AllUnmanagedTypes => allUnmanagedTypes ??= AllTypes.Where(UnsafeUtility.IsUnmanaged).ToArray();
 
         private static Type[] AllTypesWithImplementation => allTypesWithImplementation ??= AllTypes.Where(t => !t.IsAbstract && !t.IsInterface).ToArray();
@@ -66,9 +62,6 @@
 
 #endif
 
-        /// <summary> Gets all types in an assembly with caching and safe error handling. </summary>
-        /// <param name="assembly"> The assembly to query. </param>
-        /// <returns> All types from the assembly, or an empty array if it fails to load types. </returns>
         public static Type[] GetTypes(System.Reflection.Assembly assembly)
         {
             if (!AssemblyTypes.TryGetValue(assembly, out var types))
@@ -89,9 +82,6 @@
             return types;
         }
 
-        /// <summary> Gets all non-generic types in an assembly. </summary>
-        /// <param name="assembly"> The assembly to query. </param>
-        /// <returns> Types that do not contain generic parameters. </returns>
         public static Type[] GetNonGenericTypes(System.Reflection.Assembly assembly)
         {
             if (!AssemblyNonGenericTypes.TryGetValue(assembly, out var types))
@@ -102,9 +92,6 @@
             return types;
         }
 
-        /// <summary> Gets all methods from every type in an assembly. </summary>
-        /// <param name="assembly"> The assembly to query. </param>
-        /// <returns> Methods discovered on every type in the assembly. </returns>
         public static MethodInfo[] GetMethods(System.Reflection.Assembly assembly)
         {
             if (!AssemblyMethods.TryGetValue(assembly, out var methods))
@@ -117,50 +104,23 @@
             return methods;
         }
 
-        /// <summary> Gets all assembly-level attributes of the requested attribute type. </summary>
-        /// <typeparam name="T"> The attribute type to query. </typeparam>
-        /// <returns> All attributes found across loaded assemblies. </returns>
         public static IEnumerable<T> GetAllAssemblyAttributes<T>()
             where T : Attribute
         {
             return AllAssemblies.SelectMany(s => s.GetCustomAttributes(typeof(T), true)).Cast<T>();
         }
 
-        /// <summary> Finds an implementation of an interface T in all assemblies, using TD as the default implementation. </summary>
-        /// <typeparam name="T"> The interface to fall back on. </typeparam>
-        /// <typeparam name="TD"> The type of the default implementation. </typeparam>
-        /// <returns> The implementation found. null if default is not set and none were found. </returns>
-        /// <exception cref="ArgumentException"> Type is invalid (T must be an interface). </exception>
-        /// <exception cref="InvalidOperationException"> Implementation not found. </exception>
         public static T GetCustomImplementation<T, TD>()
             where TD : T
         {
             return GetCustomImplementation<T>(typeof(TD));
         }
 
-        /// <summary> Finds a single implementation of an interface T in all assemblies. </summary>
-        /// <typeparam name="T"> The interface to fall back on. </typeparam>
-        /// <returns> The implementation found. null if default is not set and none were found. </returns>
-        /// <exception cref="ArgumentException"> Type is invalid (T must be an interface). </exception>
-        /// <exception cref="InvalidOperationException"> Implementation not found. </exception>
         public static T GetCustomImplementation<T>()
         {
             return GetCustomImplementation<T>(null);
         }
 
-        /// <summary>
-        /// Gets all types that inherit and have a generic definition of itself.
-        /// class SettingsBase{T} : where T : SettingsBase{T} for example.
-        /// </summary>
-        /// <param name="type"> The generic type definitions. </param>
-        /// <returns> An enumeration of the types. </returns>
-        /// <example>
-        /// <code>
-        /// // Input: type = typeof(SettingsBase&lt;&gt;)
-        /// var types = ReflectionUtility.GetAllWithGenericDefinition(typeof(SettingsBase&lt;&gt;));
-        /// // Output: [GameSettings, AudioSettings] where each derives from SettingsBase&lt;Self&gt;
-        /// </code>
-        /// </example>
         public static IEnumerable<Type> GetAllWithGenericDefinition(Type type)
         {
             var types = from t in AllTypesWithImplementation
@@ -171,10 +131,6 @@
             return types;
         }
 
-        /// <summary> Searches all assemblies to find all types that implement a type. </summary>
-        /// <param name="type"> The base type that is inherited from. </param>
-        /// <param name="includeGenerics"> When true, excludes types that contain generic parameters (open generics). </param>
-        /// <returns> All the types. </returns>
         public static IEnumerable<Type> GetAllImplementations(Type type, bool includeGenerics = false)
         {
             var coreAssembly = type.Assembly;
@@ -191,18 +147,11 @@
                 .SelectMany(asm => GetTypes(asm).Where(t => !t.IsAbstract && !t.IsInterface && type.IsAssignableFrom(t)));
         }
 
-        /// <summary> Searches all assemblies to find all types that implement a type. </summary>
-        /// <typeparam name="T"> The base type that is inherited from. </typeparam>
-        /// <param name="includeGenerics"> When true, excludes types that contain generic parameters (open generics). </param>
-        /// <returns> All the types. </returns>
         public static IEnumerable<Type> GetAllImplementations<T>(bool includeGenerics = false)
         {
             return GetAllImplementations(typeof(T), includeGenerics);
         }
 
-        /// <summary> Gets all types that implement an open generic base class or interface. </summary>
-        /// <param name="type"> The open generic base type or interface, such as typeof(IFoo&lt;&gt;). </param>
-        /// <returns> All concrete types that close the generic type. </returns>
         public static IEnumerable<Type> GetAllOpenGenericImplementations(Type type)
         {
             return AllTypesWithImplementation.Where(s =>
@@ -213,9 +162,6 @@
             });
         }
 
-        /// <summary> Searches all assemblies to find all types that have an attribute. </summary>
-        /// <typeparam name="T"> The attribute to search for. </typeparam>
-        /// <returns> All the types. </returns>
         public static IEnumerable<Type> GetAllWithAttribute<T>()
             where T : Attribute
         {
@@ -241,9 +187,6 @@
             }
         }
 
-        /// <summary> Gets all methods decorated with an attribute. </summary>
-        /// <typeparam name="T"> The attribute to search for. </typeparam>
-        /// <returns> Methods that have the attribute. </returns>
         public static IEnumerable<MethodInfo> GetMethodsWithAttribute<T>()
             where T : Attribute
         {
@@ -273,9 +216,6 @@
 #endif
         }
 
-        /// <summary> Gets all methods decorated with an attribute, including the attribute instance. </summary>
-        /// <typeparam name="T"> The attribute to search for. </typeparam>
-        /// <returns> Tuples of method and attribute instance. </returns>
         public static IEnumerable<(MethodInfo Method, T Attribute)> GetMethodsAndAttribute<T>()
             where T : Attribute
         {
@@ -303,10 +243,6 @@
             }
         }
 
-        /// <summary> Searches all assemblies to find all types that implement both 2 types. </summary>
-        /// <typeparam name="T1"> The first base type that is inherited from. </typeparam>
-        /// <typeparam name="T2"> The second base type that is inherited from. </typeparam>
-        /// <returns> All the types that inherit both types. </returns>
         public static IEnumerable<Type> GetAllImplementations<T1, T2>()
             where T1 : class
             where T2 : class
@@ -317,10 +253,6 @@
             return AllTypesWithImplementationNoGeneric.Where(t => t != type1 && t != type2).Where(t => type1.IsAssignableFrom(t) && type2.IsAssignableFrom(t));
         }
 
-        /// <summary> Searches all assemblies to find all types that implement both 2 types but only keep top level inheritance. </summary>
-        /// <typeparam name="T1"> The first base type that is inherited from. </typeparam>
-        /// <typeparam name="T2"> The second base type that is inherited from. </typeparam>
-        /// <returns> All the types that inherit both types. </returns>
         public static IEnumerable<Type> GetAllImplementationsRootOnly<T1, T2>()
             where T1 : class
             where T2 : class
@@ -346,10 +278,6 @@
             return all;
         }
 
-        /// <summary> Checks if an assembly references another assembly. </summary>
-        /// <param name="assembly"> The assembly to check. </param>
-        /// <param name="reference"> The reference to check if the assembly has. </param>
-        /// <returns> True if referencing. </returns>
         public static bool IsAssemblyReferencingAssembly(this System.Reflection.Assembly assembly, System.Reflection.Assembly reference)
         {
             if (assembly == reference)
@@ -361,18 +289,11 @@
             return assembly.GetReferencedAssemblies().Any(referenced => referenced.Name == referenceName);
         }
 
-        /// <summary> Gets all assemblies that reference the provided assembly. </summary>
-        /// <param name="reference"> The reference. </param>
-        /// <returns> All assemblies that reference the provided assembly. </returns>
         public static IEnumerable<System.Reflection.Assembly> GetAllAssemblyWithReference(System.Reflection.Assembly reference)
         {
             return AllAssemblies.Where(a => IsAssemblyReferencingAssembly(a, reference));
         }
 
-        /// <summary> Finds a field in a type or any of its base types. </summary>
-        /// <param name="type"> The type to search. </param>
-        /// <param name="name"> The field name. </param>
-        /// <returns> The first matching field, or null if not found. </returns>
         public static FieldInfo GetFieldInBase(this Type type, string name)
         {
             while (true)
@@ -397,9 +318,6 @@
 
 #if UNITY_EDITOR
 
-        /// <summary> Checks if an assembly is an editor only assembly. </summary>
-        /// <param name="asm"> The assembly to check. </param>
-        /// <returns> True if editor assembly. </returns>
         public static bool IsAssemblyEditorAssembly(this System.Reflection.Assembly asm)
         {
             if (!AssembliesMap.TryGetValue(asm.GetName().Name, out var uAssembly))
@@ -410,9 +328,6 @@
             return (uAssembly.flags & AssemblyFlags.EditorAssembly) != 0;
         }
 
-        /// <summary> Checks if an assembly is an editor only assembly. </summary>
-        /// <param name="asm"> The assembly to check. </param>
-        /// <returns> True if editor assembly. </returns>
         public static bool IsTestEditorAssembly(this System.Reflection.Assembly asm)
         {
             if (!AssembliesMap.TryGetValue(asm.GetName().Name, out var uAssembly))

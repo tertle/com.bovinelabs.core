@@ -12,7 +12,6 @@ namespace BovineLabs.Core.Editor.ConfigVars
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    /// <summary> Draws config vars in a grouped single-column list. </summary>
     public sealed class ConfigVarPanel
     {
         private const string GroupClassName = "config-var-group";
@@ -28,8 +27,6 @@ namespace BovineLabs.Core.Editor.ConfigVars
         private readonly List<ConfigVarEntry> configVars = new();
         private readonly List<FieldState> fields = new();
 
-        /// <summary> Replaces the visible config vars rendered by this panel. </summary>
-        /// <param name="configVars"> The config vars discovered by <see cref="ConfigVarManager" />. </param>
         internal void SetConfigVars(IEnumerable<(ConfigVarAttribute ConfigVar, FieldInfo Field)> configVars)
         {
             this.configVars.Clear();
@@ -48,9 +45,6 @@ namespace BovineLabs.Core.Editor.ConfigVars
             this.configVars.Sort(CompareEntries);
         }
 
-        /// <summary> Renders matching config vars into the provided root. </summary>
-        /// <param name="searchContext"> Search text used to filter names, groups, and descriptions. </param>
-        /// <param name="rootElement"> The root element to fill. </param>
         internal void Render(string searchContext, VisualElement rootElement)
         {
             rootElement.Clear();

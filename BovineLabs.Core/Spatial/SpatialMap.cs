@@ -36,8 +36,6 @@
             this.map.Dispose();
         }
 
-        /// <summary> Queue disposing after a dependency. </summary>
-        /// <param name="dependency"> The dependency. </param>
         public void Dispose(JobHandle dependency)
         {
             this.map.Dispose(dependency);
@@ -108,8 +106,6 @@
             return dependency;
         }
 
-        /// <summary> Gets a readonly copy of the struct that can be used to query the spatial hash map. Also includes methods to quantize and hash. </summary>
-        /// <returns> A readonly container. </returns>
         public SpatialMap.ReadOnly AsReadOnly()
         {
             return new SpatialMap.ReadOnly(this.quantizeStep, this.quantizeSize, this.halfSize, this.map);
@@ -297,7 +293,6 @@
             return math.lengthsq(delta);
         }
 
-        /// <summary> Readonly copy for querying the map. </summary>
         public readonly struct ReadOnly
         {
             private readonly float quantizeStep;

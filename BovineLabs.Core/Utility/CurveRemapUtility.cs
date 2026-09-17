@@ -3,7 +3,6 @@
     using Unity.Collections;
     using UnityEngine;
 
-    /// <summary> Helper methods for remapping animation curves into clip-local space. </summary>
     public static class CurveRemapUtility
     {
         public static bool TryRemapToClipLength(AnimationCurve curve, float clipIn, float clipDuration, out AnimationCurve remappedCurve)

@@ -4,10 +4,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
     using UnityEditor;
     using UnityEngine;
 
-    /// <summary>
-    /// Base class for object items that can be displayed in editor windows.
-    /// Provides common functionality for managing Unity object references.
-    /// </summary>
     public abstract class BaseObjectItem
     {
         protected BaseObjectItem(UnityEngine.Object obj, GlobalObjectId objectId)
@@ -29,28 +25,20 @@ namespace BovineLabs.Core.Editor.Windows.Base
             this.RefreshMetadata();
         }
 
-        /// <summary>Gets the display name of the object.</summary>
         public string Name { get; private set; }
 
-        /// <summary>Gets the type name of the object.</summary>
         public string TypeName { get; private set; }
 
-        /// <summary>Gets or sets the asset path if this is an asset, empty otherwise.</summary>
         public string AssetPath { get; set; }
 
-        /// <summary>Gets the timestamp when this object was added.</summary>
         public DateTime Timestamp { get; }
 
-        /// <summary>Gets the weak reference to the original object.</summary>
         public WeakReference ObjectRef { get; }
 
-        /// <summary>Gets the icon/thumbnail for the object.</summary>
         public Texture2D Icon { get; private set; }
 
-        /// <summary>Gets the GlobalObjectId for persistent object identification.</summary>
         public GlobalObjectId GlobalId { get; private set; }
 
-        /// <summary>Gets a value indicating whether the referenced object is still alive.</summary>
         public bool IsAlive
         {
             get
@@ -60,10 +48,8 @@ namespace BovineLabs.Core.Editor.Windows.Base
             }
         }
 
-        /// <summary>Gets a value indicating whether this is an asset (vs scene object).</summary>
         public bool IsAsset => !string.IsNullOrEmpty(this.AssetPath);
 
-        /// <summary>Matches live objects by reference and persisted objects by their exact identity.</summary>
         public bool MatchesObject(UnityEngine.Object obj, GlobalObjectId objectId)
         {
             if (obj == null)
@@ -75,7 +61,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
                 HasValidObjectId(this.GlobalId) && HasValidObjectId(objectId) && this.GlobalId.Equals(objectId);
         }
 
-        /// <summary>Refreshes display metadata without loading an unresolved object.</summary>
         public void RefreshMetadata()
         {
             var obj = this.ObjectRef.Target as UnityEngine.Object;
@@ -88,8 +73,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
             this.AssetPath = AssetDatabase.GetAssetPath(obj);
         }
 
-        /// <summary>Gets the referenced object if it's still alive.</summary>
-        /// <returns>The object.</returns>
         public UnityEngine.Object GetObject()
         {
             // First try to get from weak reference (fastest)
@@ -147,12 +130,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
             }
         }
 
-        /// <summary>Gets a display string for the item.</summary>
-        /// <param name="showTimestamps">Should timestamps be shown.</param>
-        /// <param name="showAssetPaths">Should the asset path be shown.</param>
-        /// <param name="showTypeNames">Should type names be shown.</param>
-        /// <param name="timestampFormat">Format string for timestamp display.</param>
-        /// <returns>The display text.</returns>
         public string GetDisplayText(bool showTimestamps = true, bool showAssetPaths = true, bool showTypeNames = true, string timestampFormat = "HH:mm:ss")
         {
             var result = this.Name;

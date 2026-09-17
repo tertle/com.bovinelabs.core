@@ -12,10 +12,6 @@ namespace BovineLabs.Core.Editor.EditorPreferences
     using UnityEngine.UIElements;
     using SettingsProvider = UnityEditor.SettingsProvider;
 
-    /// <summary>
-    /// Abstract base class for creating editor preferences using attributes.
-    /// </summary>
-    /// <typeparam name="T">The type of EditorPreferenceAttribute to look for.</typeparam>
     public abstract class EditorPreferences<T> : SettingsProvider
         where T : EditorPreferenceAttribute
     {
@@ -38,26 +34,14 @@ namespace BovineLabs.Core.Editor.EditorPreferences
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EditorPreferences{T}"/> class.
-        /// </summary>
-        /// <param name="path">The path for the preferences in the settings window.</param>
-        /// <param name="scope">The scope of the settings (User or Project).</param>
-        /// <param name="keywords">Additional keywords for searching.</param>
         protected EditorPreferences(string path, SettingsScope scope, IEnumerable<string> keywords = null)
             : base(PathForScope(scope) + path, scope, Keywords.Concat(keywords ?? Array.Empty<string>()))
         {
             this.Title = path.Replace("/", " ");
         }
 
-        /// <summary>
-        /// Gets a value indicating whether there are any preferences to display.
-        /// </summary>
         protected static bool HasAnyPreferences => Preferences.Count > 0;
 
-        /// <summary>
-        /// Gets the title to display for this preferences group.
-        /// </summary>
         protected virtual string Title { get; }
 
         public override void OnActivate(string searchContext, VisualElement rootElement)

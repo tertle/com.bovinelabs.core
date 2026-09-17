@@ -11,10 +11,6 @@
     using Unity.Jobs;
     using Unity.Jobs.LowLevel.Unsafe;
 
-    /// <summary>
-    /// A burst friendly low level hash map enumerating job.
-    /// You can use <see cref="JobParallelHashMapDefer.Read{TJob, TKey, TValue}" /> to safely get the current key/value.
-    /// </summary>
     [JobProducerType(typeof(JobParallelHashMapDefer.JobParallelHashMapVisitKeyValueProducer<>))]
     public interface IJobParallelHashMapDefer
     {
@@ -136,8 +132,7 @@
         }
 
         /// <summary>
-        /// Gathers and caches reflection data for the internal job system's managed bindings.
-        /// Unity is responsible for calling this method - don't call it yourself.
+        /// Called by Unity for job reflection initialization; do not invoke directly.
         /// </summary>
         [UsedImplicitly]
         public static void EarlyJobInit<T>()
@@ -208,12 +203,9 @@
             value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_MultiHashMapData.m_Buffer->values, entryIndex);
         }
 
-        /// <summary> The job execution struct. </summary>
-        /// <typeparam name="T"> The type of the job. </typeparam>
         internal unsafe struct JobParallelHashMapVisitKeyValueProducer<T>
             where T : struct, IJobParallelHashMapDefer
         {
-            /// <summary> The <see cref="NativeParallelMultiHashMap{TKey,TValue}" />. </summary>
             [ReadOnly]
             [NativeDisableUnsafePtrRestriction]
             internal UnsafeParallelHashMapData* HashMap;
@@ -221,7 +213,6 @@
             // ReSharper disable once StaticMemberInGenericType
             internal static readonly SharedStatic<IntPtr> ReflectionData = SharedStatic<IntPtr>.GetOrCreate<JobParallelHashMapVisitKeyValueProducer<T>>();
 
-            /// <summary> The job. </summary>
             internal T JobData;
 
             private delegate void ExecuteJobFunction(
@@ -237,12 +228,6 @@
                 }
             }
 
-            /// <summary> Executes the job. </summary>
-            /// <param name="jobWrapper"> The job data. </param>
-            /// <param name="additionalPtr"> AdditionalPtr. </param>
-            /// <param name="bufferRangePatchData"> BufferRangePatchData. </param>
-            /// <param name="ranges"> The job range. </param>
-            /// <param name="jobIndex"> The job index. </param>
             [SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Required by burst.")]
             internal static void Execute(
                 ref JobParallelHashMapVisitKeyValueProducer<T> jobWrapper, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges,

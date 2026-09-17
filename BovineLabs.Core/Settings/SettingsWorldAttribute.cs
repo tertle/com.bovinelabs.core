@@ -5,14 +5,14 @@
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class SettingsWorldAttribute : Attribute
     {
-        /// <summary> Initializes a new instance of the <see cref="SettingsWorldAttribute" /> class. </summary>
-        /// <param name="worlds"> The key matching EditorSettings. Not case-sensitive. </param>
         public SettingsWorldAttribute(params string[] worlds)
         {
             this.Worlds = worlds;
         }
 
-        /// <summary> Gets the key matching EditorSettings. Not case-sensitive. </summary>
+        /// <summary>
+        /// Case-insensitive match against EditorSettings.
+        /// </summary>
         public string[] Worlds { get; }
     }
 }

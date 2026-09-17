@@ -3,7 +3,6 @@ namespace BovineLabs.Core.UI
     using System.Collections.Generic;
     using UnityEngine.UIElements;
 
-    /// <summary>A reusable selector for the shared editor or player theme preference.</summary>
     [UxmlElement]
     public partial class BovineThemeSelector : VisualElement
     {

@@ -4,10 +4,8 @@
     using NUnit.Framework;
     using Unity.Collections;
 
-    /// <summary> Tests for <see cref="NativeThreadStream" /> . </summary>
     internal partial class NativeThreadStreamTests
     {
-        /// <summary> Tests that you can create and destroy. </summary>
         [Test]
         public void CreateAndDestroy()
         {

@@ -3,14 +3,11 @@
     using Unity.Core;
     using Unity.Entities;
 
-    /// <summary> Limits a component group to update on a timestep but not enforcing a fixed timestep and no catchup. </summary>
     public class LimitedRateNoCatchUpManager : IRateManager
     {
         private bool didPushTime;
         private double lastPushedTime;
 
-        /// <summary> Initializes a new instance of the <see cref="LimitedRateNoCatchUpManager" /> class. </summary>
-        /// <param name="defaultFixedTimestep"> The default timestep to try update to. </param>
         public LimitedRateNoCatchUpManager(float defaultFixedTimestep)
         {
             this.Timestep = defaultFixedTimestep;

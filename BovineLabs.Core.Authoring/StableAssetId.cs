@@ -7,12 +7,11 @@ namespace BovineLabs.Core.Authoring
     using UnityEditor;
     using Object = UnityEngine.Object;
 
-    /// <summary> Creates stable project-scoped identifiers for persisted authoring assets. </summary>
     public static class StableAssetId
     {
-        /// <summary> Creates a stable identifier from an asset GUID and local file ID. </summary>
-        /// <param name="asset"> The persisted asset or sub-asset. </param>
-        /// <returns> A stable nonzero identifier. </returns>
+        /// <summary>
+        /// Identity combines the asset GUID and local file ID and is nonzero.
+        /// </summary>
         public static unsafe ulong Create(Object asset)
         {
             if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out string assetGuid, out long localFileId) &&

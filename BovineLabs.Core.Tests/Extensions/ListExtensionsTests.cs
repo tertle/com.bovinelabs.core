@@ -5,10 +5,8 @@
     using NUnit.Framework;
     using Unity.Collections;
 
-    /// <summary> Tests for ListExtensions. </summary>
     public class ListExtensionsTests
     {
-        /// <summary> Tests <see cref="Core.Extensions.ListExtensions.AddRangeNative{T}(System.Collections.Generic.List{T},Unity.Collections.NativeArray{T})" />. </summary>
         [Test]
         public void AddRangeNative()
         {
@@ -31,7 +29,6 @@
             }
         }
 
-        /// <summary> Tests <see cref="Core.Extensions.ListExtensions.AddRangeNative{T}(System.Collections.Generic.List{T},Unity.Collections.NativeArray{T},int)" />. </summary>
         [Test]
         public void AddRangeNativeLength()
         {
@@ -54,7 +51,6 @@
             }
         }
 
-        /// <summary> Tests <see cref="Core.Extensions.ListExtensions.AddRangeNative{T}(System.Collections.Generic.List{T},Unity.Collections.NativeSlice{T})" />. </summary>
         [Test]
         public void AddRangeNativeSlice()
         {

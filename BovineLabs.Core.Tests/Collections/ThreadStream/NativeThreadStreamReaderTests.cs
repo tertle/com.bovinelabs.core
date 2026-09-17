@@ -11,7 +11,6 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
         internal class Reader
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            /// <summary> Ensures that reading with begin throws an exception. </summary>
             [Test]
             public void ReadWithoutBeginThrows()
             {
@@ -22,7 +21,6 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
                 Assert.Throws<ArgumentException>(() => reader.Read<int>());
             }
 
-            /// <summary> Ensures that begin reading out of range throws an exception. </summary>
             [Test]
             public void BeginOutOfRangeThrows()
             {
@@ -34,7 +32,6 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
                     reader.BeginForEachIndex(JobsUtility.ThreadIndexCount + 1));
             }
 
-            /// <summary> Ensures reading past the end throws an exception. </summary>
             [Test]
             public void TooManyReadsThrows()
             {

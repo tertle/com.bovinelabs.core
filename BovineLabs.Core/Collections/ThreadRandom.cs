@@ -6,7 +6,9 @@
     using Unity.Jobs.LowLevel.Unsafe;
     using Unity.Mathematics;
 
-    /// <summary> A thread safe random. As it's thread based it should not be used for anything requiring determinism. </summary>
+    /// <summary>
+    /// Thread-local randomness is not deterministic; do not use where determinism is required.
+    /// </summary>
     public unsafe struct ThreadRandom
     {
         private readonly AllocatorManager.AllocatorHandle allocator;

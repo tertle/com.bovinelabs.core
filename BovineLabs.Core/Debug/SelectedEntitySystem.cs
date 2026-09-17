@@ -3,10 +3,6 @@ namespace BovineLabs.Core
 {
     using Unity.Entities;
 
-    /// <summary>
-    /// This system does nothing except create the <see cref="SelectedEntity"/> in debug builds.
-    /// In editor this is handled by SelectedEntityEditorSystem.
-    /// </summary>
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     public partial class SelectedEntitySystem : SystemBase
     {

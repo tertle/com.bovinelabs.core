@@ -5,24 +5,8 @@ namespace BovineLabs.Core.Asset
     using BovineLabs.Core.Extensions;
 
     /// <summary>
-    /// When applied to a ScriptableObject, this attribute ensures that any instance of the object is
-    /// automatically assigned to the specified field (which is expected to be an array) of the given manager asset.
-    /// This is often used in combination with AssetCreator.
+    /// On a ScriptableObject, assigns its instances to the named array field of the manager asset.
     /// </summary>
-    /// <example>
-    ///     <code>
-    /// public class Manager : ScriptableObject
-    /// {
-    ///     [SerializeField]
-    ///     public DataSchema[] Data;
-    /// }
-    ///
-    /// [AutoRef(nameof(Manager), nameof(Manager.Data))]
-    /// public class DataSchema : ScriptableObject
-    /// {
-    /// }
-    /// </code>
-    /// </example>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class AutoRefAttribute : Attribute
     {

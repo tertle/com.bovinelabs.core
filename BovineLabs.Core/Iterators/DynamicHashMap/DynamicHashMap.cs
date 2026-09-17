@@ -29,12 +29,8 @@
             this.helper = buffer.AsHelper<TKey>();
         }
 
-        /// <summary> Gets a value indicating whether this hash map has been allocated (and not yet deallocated). </summary>
-        /// <value> True if this hash map has been allocated (and not yet deallocated). </value>
         public readonly bool IsCreated => this.buffer.IsCreated;
 
-        /// <summary> Gets a value indicating whether this hash map is empty. </summary>
-        /// <value> True if this hash map is empty or if the map has not been constructed. </value>
         public readonly bool IsEmpty
         {
             get
@@ -45,8 +41,6 @@
             }
         }
 
-        /// <summary> Gets the current number of key-value pairs in this hash map. </summary>
-        /// <returns> The current number of key-value pairs in this hash map. </returns>
         public readonly int Count
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -58,9 +52,9 @@
             }
         }
 
-        /// <summary> Gets or sets the number of key-value pairs that fit in the current allocation. </summary>
-        /// <value> The number of key-value pairs that fit in the current allocation. </value>
-        /// <param name="value"> A new capacity. Must be larger than the current capacity. </param>
+        /// <summary>
+        /// Capacity cannot shrink.
+        /// </summary>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -81,11 +75,6 @@
 
         internal DynamicHashMapHelper<TKey>* Helper => this.helper;
 
-        /// <summary> Gets and sets values by key. </summary>
-        /// <remarks> Getting a key that is not present will throw. Setting a key that is not already present will add the key. </remarks>
-        /// <param name="key"> The key to look up. </param>
-        /// <value> The value associated with the key. </value>
-        /// <exception cref="ArgumentException"> For getting, thrown if the key was not present. </exception>
         public TValue this[TKey key]
         {
             readonly get
@@ -119,8 +108,6 @@
             }
         }
 
-        /// <summary> Removes all key-value pairs. </summary>
-        /// <remarks> Does not change the capacity. </remarks>
         public readonly void Clear()
         {
             this.buffer.CheckWriteAccess();
@@ -128,8 +115,6 @@
             this.helper->Clear();
         }
 
-        /// <summary> Removes all key-value pairs by visiting only active entries when the map is dense. </summary>
-        /// <remarks> Falls back to <see cref="Clear" /> if the map contains holes. Does not change the capacity. </remarks>
         public readonly void ClearDense()
         {
             this.buffer.CheckWriteAccess();
@@ -137,13 +122,6 @@
             this.helper->ClearDense();
         }
 
-        /// <summary>
-        /// Adds a new key-value pair.
-        /// </summary>
-        /// <remarks> If the key is already present, this method returns false without modifying the hash map. </remarks>
-        /// <param name="key"> The key to add. </param>
-        /// <param name="item"> The value to add. </param>
-        /// <returns> True if the key-value pair was added. </returns>
         public bool TryAdd(TKey key, TValue item)
         {
             this.buffer.CheckWriteAccess();
@@ -159,13 +137,6 @@
             return false;
         }
 
-        /// <summary>
-        /// Adds a new key-value pair.
-        /// </summary>
-        /// <remarks> If the key is already present, this method throws without modifying the hash map. </remarks>
-        /// <param name="key"> The key to add. </param>
-        /// <param name="item"> The value to add. </param>
-        /// <exception cref="ArgumentException"> Thrown if the key was already present. </exception>
         public void Add(TKey key, TValue item)
         {
             this.buffer.CheckWriteAccess();
@@ -176,15 +147,8 @@
         }
 
         /// <summary>
-        /// Gets the value for a key or adds <paramref name="defaultValue" /> and returns it by reference.
+        /// The returned reference aliases map storage. Consume immediately; any later map write or capacity change invalidates it.
         /// </summary>
-        /// <remarks>
-        /// Unsafe because the returned ref points directly into the hash map storage. Consume it immediately and do not keep or use it after any later
-        /// write to the same hash map, such as add, get-or-add, remove, clear, flatten, shift-down, or capacity-changing operations.
-        /// </remarks>
-        /// <param name="key"> The key to look up. </param>
-        /// <param name="defaultValue"> Value to add if the key is not present. </param>
-        /// <returns> A reference to the value stored in the hash map. </returns>
         public ref TValue GetOrAddRefUnsafe(TKey key, TValue defaultValue = default)
         {
             this.buffer.CheckWriteAccess();
@@ -201,16 +165,8 @@
         }
 
         /// <summary>
-        /// Gets the value for a key or adds <paramref name="defaultValue" /> and returns it by reference.
+        /// The returned reference aliases map storage. Consume immediately; any later map write or capacity change invalidates it.
         /// </summary>
-        /// <remarks>
-        /// Unsafe because the returned ref points directly into the hash map storage. Consume it immediately and do not keep or use it after any later
-        /// write to the same hash map, such as add, get-or-add, remove, clear, flatten, shift-down, or capacity-changing operations.
-        /// </remarks>
-        /// <param name="key"> The key to look up. </param>
-        /// <param name="add"> Outputs whether a new entry was added. </param>
-        /// <param name="defaultValue"> Value to add if the key is not present. </param>
-        /// <returns> A reference to the value stored in the hash map. </returns>
         public ref TValue GetOrAddRefUnsafe(TKey key, out bool add, TValue defaultValue = default)
         {
             this.buffer.CheckWriteAccess();
@@ -259,11 +215,6 @@
             return UnsafeUtility.ReadArrayElement<TValue>(this.helper->Values, idx);
         }
 
-        /// <summary>
-        /// Removes a key-value pair.
-        /// </summary>
-        /// <param name="key"> The key to remove. </param>
-        /// <returns> True if a key-value pair was removed. </returns>
         public readonly bool Remove(TKey key)
         {
             this.buffer.CheckWriteAccess();
@@ -271,12 +222,6 @@
             return this.helper->TryRemove(key) != -1;
         }
 
-        /// <summary>
-        /// Returns the value associated with a key.
-        /// </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <param name="item"> Outputs the value associated with the key. Outputs default if the key was not present. </param>
-        /// <returns> True if the key was present. </returns>
         public readonly bool TryGetValue(TKey key, out TValue item)
         {
             this.buffer.CheckReadAccess();
@@ -284,11 +229,6 @@
             return this.helper->TryGetValue(key, out item);
         }
 
-        /// <summary>
-        /// Returns true if a given key is present in this hash map.
-        /// </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <returns> True if the key was present. </returns>
         public readonly bool ContainsKey(TKey key)
         {
             this.buffer.CheckReadAccess();
@@ -296,7 +236,6 @@
             return this.helper->Find(key) != -1;
         }
 
-        /// <summary> Removes holes. </summary>
         public void Flatten()
         {
             this.buffer.CheckWriteAccess();
@@ -342,9 +281,6 @@
             DynamicHashMapHelper<TKey>.AddBatchUnsafe(this.buffer, ref this.helper, keys, values);
         }
 
-        /// <summary> Returns an array with a copy of all this hash map's keys (in no particular order). </summary>
-        /// <param name="allocator"> The allocator to use. </param>
-        /// <returns> An array with a copy of all this hash map's keys (in no particular order). </returns>
         public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
@@ -352,9 +288,6 @@
             return this.helper->GetKeyArray(allocator);
         }
 
-        /// <summary> Returns an array with a copy of all this hash map's values (in no particular order). </summary>
-        /// <param name="allocator"> The allocator to use. </param>
-        /// <returns> An array with a copy of all this hash map's values (in no particular order). </returns>
         public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
@@ -362,10 +295,6 @@
             return this.helper->GetValueArray<TValue>(allocator);
         }
 
-        /// <summary> Returns a NativeKeyValueArrays with a copy of all this hash map's keys and values. </summary>
-        /// <remarks> The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`. </remarks>
-        /// <param name="allocator"> The allocator to use. </param>
-        /// <returns> A NativeKeyValueArrays with a copy of all this hash map's keys and values. </returns>
         public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
@@ -373,10 +302,6 @@
             return this.helper->GetKeyValueArrays<TValue>(allocator);
         }
 
-        /// <summary>
-        /// Returns an enumerator over the key-value pairs of this hash map.
-        /// </summary>
-        /// <returns> An enumerator over the key-value pairs of this hash map. </returns>
         public readonly DynamicHashMapEnumerator<TKey, TValue> GetEnumerator()
         {
             this.buffer.CheckReadAccess();
@@ -399,20 +324,16 @@
         }
 
         /// <summary>
-        /// This method is not implemented. Use <see cref="GetEnumerator" /> instead.
+        /// Not implemented; use the concrete GetEnumerator instead.
         /// </summary>
-        /// <returns> Throws NotImplementedException. </returns>
-        /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
         IEnumerator<KVPair<TKey, TValue>> IEnumerable<KVPair<TKey, TValue>>.GetEnumerator()
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// This method is not implemented. Use <see cref="GetEnumerator" /> instead.
+        /// Not implemented; use the concrete GetEnumerator instead.
         /// </summary>
-        /// <returns> Throws NotImplementedException. </returns>
-        /// <exception cref="NotImplementedException"> Method is not implemented. </exception>
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();

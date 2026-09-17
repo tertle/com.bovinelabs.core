@@ -8,8 +8,6 @@ namespace BovineLabs.Core.ConfigVars
     {
         private readonly SharedStatic<Rect> field;
 
-        /// <summary> Initializes a new instance of the <see cref="ConfigVarSharedStaticRectContainer" /> class. </summary>
-        /// <param name="field"> The field associated with the config var. </param>
         public ConfigVarSharedStaticRectContainer(SharedStatic<Rect> field)
         {
             this.field = field;

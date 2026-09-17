@@ -15,7 +15,6 @@ namespace BovineLabs.Core.ConfigVars
     using UnityEditor;
 #endif
 
-    /// <summary> The manager for the config vars. Is pretty automated. </summary>
     public static partial class ConfigVarManager
     {
         private static readonly Regex ValidateNameRegex = new("^[a-z_+-][a-z0-9_+.-]*$");
@@ -46,7 +45,6 @@ namespace BovineLabs.Core.ConfigVars
             }
         }
 
-        /// <summary> Initializes the <see cref="ConfigVarAttribute" />s throughout the project. </summary>
         [OnCodeLoaded]
         private static void Initialize()
         {

@@ -8,8 +8,7 @@
         None = 0,
 
         /// <summary>
-        /// Can this component be added at runtime?
-        /// Using this will cause deserialization to be a lot slower as it will need to be processed by an entity command buffer.
+        /// Allows runtime addition during load, requiring slower deferred ECB processing.
         /// </summary>
         AddComponent = 1,
     }

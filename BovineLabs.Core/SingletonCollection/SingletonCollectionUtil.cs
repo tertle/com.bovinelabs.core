@@ -43,7 +43,6 @@
 
         public UnsafeList<TC>.ReadOnly Containers => this.ContainersUnsafe->AsReadOnly();
 
-        /// <summary> Gets the underlying container. Don't use this unless you really know what you're doing. </summary>
         public UnsafeList<TC>* ContainersUnsafe { get; }
 
         public void ClearRewind(JobHandle handle)

@@ -13,11 +13,6 @@
         [SerializeField]
         private SettingsBase[] settings = Array.Empty<SettingsBase>();
 
-        /// <summary> Gets the asset GUID of the prefab rooted at <paramref name="authoring" />. </summary>
-        /// <param name="authoring"> The settings authoring on the prefab root. </param>
-        /// <returns> The prefab asset GUID. </returns>
-        /// <exception cref="ArgumentNullException"> The authoring is null. </exception>
-        /// <exception cref="InvalidOperationException"> The authoring is not on a valid prefab root. </exception>
         internal static Hash128 GetPrefabGuid(SettingsAuthoring authoring)
         {
             if (!authoring)

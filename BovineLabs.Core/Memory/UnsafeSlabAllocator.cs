@@ -32,8 +32,9 @@
 
         public bool IsCreated => this.count != null;
 
-        /// <summary> Returns a pointer. This memory is not cleared. </summary>
-        /// <returns> The pointer. </returns>
+        /// <summary>
+        /// Returned memory is not cleared.
+        /// </summary>
         public T* Alloc()
         {
             if (*this.count == this.countPerSlab)

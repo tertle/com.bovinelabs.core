@@ -22,13 +22,6 @@
         public const float Radians270 = (math.PI * 3f) / 2f;
         public const float Radians360 = math.PI * 2f;
 
-        /// <summary>
-        /// Returns the modulus of two numbers unlike % which returns the remainder.
-        /// For positive values this is exactly the same as % just slower.
-        /// </summary>
-        /// <param name="x"> The dividend. </param>
-        /// <param name="m"> The divisor. </param>
-        /// <returns> The modulus. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int mod(int x, int m)
         {
@@ -41,19 +34,18 @@
             return x % 2 != 0;
         }
 
-        /// <summary> Calculates the maximum value. </summary>
-        /// <param name="values"> The data. </param>
-        /// <returns> The maximum value. float.MinValue if 0 length array is passed. </returns>
+        /// <summary>
+        /// Returns float.MinValue for empty input.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe float max(NativeArray<float> values)
         {
             return max((float*)values.GetUnsafeReadOnlyPtr(), values.Length);
         }
 
-        /// <summary> Calculates the maximum value. </summary>
-        /// <param name="values"> The data. </param>
-        /// <param name="length"> The length of the data. </param>
-        /// <returns> The maximum value. float.MinValue if 0 length array is passed. </returns>
+        /// <summary>
+        /// Returns float.MinValue for empty input.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
         public static unsafe float max(float* values, [AssumeRange(0, int.MaxValue)] int length)
@@ -75,19 +67,18 @@
             return maxValue;
         }
 
-        /// <summary> Calculates the maximum value. </summary>
-        /// <param name="values"> The data. </param>
-        /// <returns> The maximum value. int.MinValue if 0 length array is passed. </returns>
+        /// <summary>
+        /// Returns int.MinValue for empty input.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe int max(NativeArray<int> values)
         {
             return max((int*)values.GetUnsafeReadOnlyPtr(), values.Length);
         }
 
-        /// <summary> Calculates the maximum value. </summary>
-        /// <param name="values"> The data. </param>
-        /// <param name="length"> The length of the data. </param>
-        /// <returns> The maximum value. int.MinValue if length 0 is passed. </returns>
+        /// <summary>
+        /// Returns int.MinValue for empty input.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
         public static unsafe int max(int* values, [AssumeRange(0, int.MaxValue)] int length)
@@ -109,19 +100,18 @@
             return maxValue;
         }
 
-        /// <summary> Calculates the minimum value. </summary>
-        /// <param name="values"> The data. </param>
-        /// <returns> The maximum value. float.MaxValue if 0 length array is passed. </returns>
+        /// <summary>
+        /// Returns float.MaxValue for empty input.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe float min(NativeArray<float> values)
         {
             return min((float*)values.GetUnsafeReadOnlyPtr(), values.Length);
         }
 
-        /// <summary> Calculates the minimum value. </summary>
-        /// <param name="values"> The data. </param>
-        /// <param name="length"> The length of the data. </param>
-        /// <returns> The maximum value. float.MaxValue if length 0 is passed. </returns>
+        /// <summary>
+        /// Returns float.MaxValue for empty input.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
         public static unsafe float min(float* values, [AssumeRange(0, int.MaxValue)] int length)
@@ -143,19 +133,18 @@
             return minValue;
         }
 
-        /// <summary> Calculates the minimum value. </summary>
-        /// <param name="values"> The data. </param>
-        /// <returns> The maximum value. int.MaxValue if 0 length array is passed. </returns>
+        /// <summary>
+        /// Returns int.MaxValue for empty input.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe int min(NativeArray<int> values)
         {
             return min((int*)values.GetUnsafeReadOnlyPtr(), values.Length);
         }
 
-        /// <summary> Calculates the minimum value. </summary>
-        /// <param name="values"> The data. </param>
-        /// <param name="length"> The length of the data. </param>
-        /// <returns> The maximum value. int.MaxValue if length 0 is passed. </returns>
+        /// <summary>
+        /// Returns int.MaxValue for empty input.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
         public static unsafe int min(int* values, [AssumeRange(0, int.MaxValue)] int length)
@@ -177,10 +166,6 @@
             return minValue;
         }
 
-        /// <summary> Calculates the minimum and maximum values of an array of float2. </summary>
-        /// <param name="values"> The data. </param>
-        /// <param name="length"> The length of the data. </param>
-        /// <param name="minMax"> The maximum value. int.MinValue if length 0 is passed. </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
         public static unsafe void minMax(float2* values, [AssumeRange(0, int.MaxValue)] int length, out Rect minMax)
@@ -209,10 +194,6 @@
             minMax = Rect.MinMaxRect(minValue.x, minValue.y, maxValue.x, maxValue.y);
         }
 
-        /// <summary> Calculates the maximum value. </summary>
-        /// <param name="values"> The data. </param>
-        /// <param name="length"> The length of the data. </param>
-        /// <param name="minMax"> The maximum value. int.MinValue if length 0 is passed. </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
         public static unsafe void minMax(float3* values, [AssumeRange(0, int.MaxValue)] int length, out MinMaxAABB minMax)
@@ -234,19 +215,12 @@
             };
         }
 
-        /// <summary> Calculates the sum of values. </summary>
-        /// <param name="values"> The data. </param>
-        /// <returns> The sum of values. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe float sum(NativeArray<float> values)
         {
             return sum((float*)values.GetUnsafeReadOnlyPtr(), values.Length);
         }
 
-        /// <summary> Calculates the sum of values. </summary>
-        /// <param name="values"> The data. </param>
-        /// <param name="length"> The length of the data. </param>
-        /// <returns> The sum of values. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
         public static unsafe float sum(float* values, [AssumeRange(0, int.MaxValue)] int length)
@@ -267,19 +241,12 @@
             return sumValue;
         }
 
-        /// <summary> Calculates the sum of values. </summary>
-        /// <param name="values"> The data. </param>
-        /// <returns> The sum of values. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe int sum(NativeArray<int> values)
         {
             return sum((int*)values.GetUnsafeReadOnlyPtr(), values.Length);
         }
 
-        /// <summary> Calculates the sum of values. </summary>
-        /// <param name="values"> The data. </param>
-        /// <param name="length"> The length of the data. </param>
-        /// <returns> The sum of values. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
         public static unsafe int sum(int* values, [AssumeRange(0, int.MaxValue)] int length)
@@ -367,11 +334,8 @@
         }
 
         /// <summary>
-        /// Radians
+        /// Radians.
         /// </summary>
-        /// <param name="current"> </param>
-        /// <param name="target"> </param>
-        /// <returns> </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float DeltaAngle(float current, float target)
         {
@@ -413,11 +377,9 @@
             return finalPos;
         }
 
-        /// <summary> Rotates a vector by angle in radians. </summary>
-        /// <remarks> From https://matthew-brett.github.io/teaching/rotation_2d.html. </remarks>
-        /// <param name="direction"> The original vector to rotate. </param>
-        /// <param name="angle"> The angle to rotate by in radians. </param>
-        /// <returns> The rotated vector. </returns>
+        /// <summary>
+        /// Angle is in radians. Source: https://matthew-brett.github.io/teaching/rotation_2d.html.
+        /// </summary>
         public static float2 Rotate(float2 direction, float angle)
         {
             var cos = math.cos(angle);
@@ -467,12 +429,8 @@
         }
 
         /// <summary>
-        /// Returns the 2D vector perpendicular to this 2D vector.
-        /// The result is always rotated 90-degrees in a counter-clockwise direction for a 2D coordinate system where the positive Y axis goes up.
+        /// Rotates 90 degrees counter-clockwise in a Y-up coordinate system; copied from Vector2.Perpendicular.
         /// </summary>
-        /// <remarks> This is a copy of Vector2.Perpendicular. </remarks>
-        /// <param name="inDirection"> The input direction. </param>
-        /// <returns> The perpendicular direction. </returns>
         public static float2 Perpendicular(float2 inDirection)
         {
             return new float2(-inDirection.y, inDirection.x);
@@ -486,7 +444,6 @@
             return lengthSq * invLength;
         }
 
-        /// <summary> Return two normals perpendicular to the input vector. </summary>
         public static void CalculatePerpendicularNormalized(float3 v, out float3 p, out float3 q)
         {
             var vSquared = v * v;
@@ -522,12 +479,9 @@
             return (a.x * b.y) - (a.y * b.x);
         }
 
-        /// <summary> Implementation of the Box-Muller transform to generate normal distribution. </summary>
-        /// <remarks> https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform </remarks>
-        /// <param name="random"> </param>
-        /// <param name="mu"> Mean of the distribution. </param>
-        /// <param name="sigma"> The standard deviation. </param>
-        /// <returns> Two independent random variable with a standard normal distribution. </returns>
+        /// <summary>
+        /// mu is the mean; sigma is the standard deviation. Source: https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform.
+        /// </summary>
         public static (float z0, float z1) GenerateGaussianNoise(ref Random random, float mu, float sigma)
         {
             float u1;
@@ -632,10 +586,9 @@
             return mean + (stddev * x);
         }
 
-        /// <summary> Returns a quaternion q with q * from = to. </summary>
-        /// <param name="from"> From rotation. </param>
-        /// <param name="to"> To rotation. </param>
-        /// <returns> A quaternion such that q * from = to. </returns>
+        /// <summary>
+        /// Returns q such that q * from = to.
+        /// </summary>
         public static quaternion FromToRotation(float3 from, float3 to)
         {
             // Handle degenerate or invalid inputs

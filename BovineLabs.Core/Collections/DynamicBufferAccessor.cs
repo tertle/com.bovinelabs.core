@@ -19,14 +19,8 @@
         private readonly bool isReadOnly;
 #endif
 
-        /// <summary>
-        /// The number of buffers in the chunk.
-        /// </summary>
         public int Length { get; }
 
-        /// <summary>
-        /// The size (in bytes) of a single buffer element.
-        /// </summary>
         public int ElementSize { get; }
 
         public int ElementAlign { get; }

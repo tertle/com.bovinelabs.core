@@ -6,9 +6,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
     using BovineLabs.Core.Editor.Windows.Base;
     using UnityEngine;
 
-    /// <summary>
-    /// Editor preferences for Selection History feature.
-    /// </summary>
     [CoreEditorPreference("Selection History")]
     [Serializable]
     public class SelectionHistoryPreferences : BaseDisplayPreferences
@@ -30,36 +27,24 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
         [HideInInspector] // Hide from preferences UI
         private List<SerializableHistoryItem> normalHistoryData = new();
 
-        /// <summary>
-        /// Gets or sets the maximum number of items to keep in selection history.
-        /// </summary>
         public int MaxHistorySize
         {
             get => Math.Max(1, this.maxHistorySize);
             set => this.maxHistorySize = value;
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether to track scene objects in selection history.
-        /// </summary>
         public bool TrackSceneObjects
         {
             get => this.trackSceneObjects;
             set => this.trackSceneObjects = value;
         }
 
-        /// <summary>
-        /// Gets or sets the locked history data. Hidden from preferences UI.
-        /// </summary>
         public List<SerializableHistoryItem> LockedHistoryData
         {
             get => this.lockedHistoryData;
             set => this.lockedHistoryData = value ?? new List<SerializableHistoryItem>();
         }
 
-        /// <summary>
-        /// Gets or sets the normal history data. Hidden from preferences UI.
-        /// </summary>
         public List<SerializableHistoryItem> NormalHistoryData
         {
             get => this.normalHistoryData;

@@ -13,7 +13,6 @@ namespace BovineLabs.Core.Collections
     using Unity.Jobs.LowLevel.Unsafe;
     using Unity.Mathematics;
 
-    /// <summary> An unordered, expandable untyped associative array. </summary>
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
     public unsafe struct NativeUntypedHashMap<TKey> : INativeDisposable
@@ -29,10 +28,6 @@ namespace BovineLabs.Core.Collections
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeUntypedHashMap<TKey>>();
 #endif
 
-        /// <summary> Initializes a new instance of the <see cref="NativeUntypedHashMap{TKey}" /> struct. </summary>
-        /// <param name="capacity"> The number of key-value pairs that should fit in the initial allocation. </param>
-        /// <param name="allocator"> The allocator to use. </param>
-        /// <param name="minGrowth"> The min growth of the hashmap. </param>
         public NativeUntypedHashMap(int capacity, AllocatorManager.AllocatorHandle allocator, int minGrowth = DefaultMinGrowth)
         {
             this.data = NativeUntypedHashMapHelper<TKey>.Alloc(capacity, capacity, minGrowth, allocator);
@@ -51,16 +46,12 @@ namespace BovineLabs.Core.Collections
 #endif
         }
 
-        /// <summary> Gets a value indicating whether this hash map has been allocated (and not yet deallocated). </summary>
-        /// <value> True if this hash map has been allocated (and not yet deallocated). </value>
         public readonly bool IsCreated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => this.data != null && this.data->IsCreated;
         }
 
-        /// <summary> Gets a value indicating whether this hash map is empty. </summary>
-        /// <value> True if this hash map is empty or if the map has not been constructed. </value>
         public readonly bool IsEmpty
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -76,8 +67,6 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        /// <summary> Gets the current number of key-value pairs in this hash map. </summary>
-        /// <returns> The current number of key-value pairs in this hash map. </returns>
         public readonly int Count
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -88,8 +77,9 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        /// <summary> Gets or sets the number of key-value pairs that fit in the current allocation. </summary>
-        /// <param name="value"> A new capacity. Must be larger than the current capacity. </param>
+        /// <summary>
+        /// Capacity cannot shrink.
+        /// </summary>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -106,7 +96,6 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        /// <summary> Releases all resources (memory). </summary>
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -128,9 +117,6 @@ namespace BovineLabs.Core.Collections
             this.data = null;
         }
 
-        /// <summary> Creates and schedules a job that will dispose this hash map. </summary>
-        /// <param name="inputDeps"> A job handle. The newly scheduled job will depend upon this handle. </param>
-        /// <returns> The handle of a new job that will dispose this hash map. </returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -170,18 +156,12 @@ namespace BovineLabs.Core.Collections
             return jobHandle;
         }
 
-        /// <summary> Removes all key-value pairs. </summary>
-        /// <remarks> Does not change the capacity. </remarks>
         public void Clear()
         {
             this.CheckWrite();
             this.data->Clear();
         }
 
-        /// <summary> Adds or sets a key-value pair. </summary>
-        /// <param name="key"> The key to add. </param>
-        /// <param name="item"> The value to add. </param>
-        /// <typeparam name="TValue"> The type of value. </typeparam>
         public void AddOrSet<TValue>(TKey key, TValue item)
             where TValue : unmanaged
         {
@@ -189,15 +169,9 @@ namespace BovineLabs.Core.Collections
             this.data->AddOrSet(key, item);
         }
 
-        /// <summary> Gets a value if it exists otherwise adds it then returns it by ref. </summary>
-        /// <remarks>
-        /// Unsafe because the returned ref points directly into the hash map storage. Consume it immediately and do not keep or use it after any later
-        /// write to the same hash map, such as add-or-set, get-or-add, clear, or capacity-changing operations.
-        /// </remarks>
-        /// <param name="key"> The key to add. </param>
-        /// <param name="defaultValue"> Value to use if the key doesn't exist. </param>
-        /// <typeparam name="TValue"> The type of value. </typeparam>
-        /// <returns> The value in the map. </returns>
+        /// <summary>
+        /// The returned reference aliases map storage. Consume immediately; any later write, clear, or capacity change invalidates it.
+        /// </summary>
         public ref TValue GetOrAddRefUnsafe<TValue>(TKey key, TValue defaultValue = default)
             where TValue : unmanaged
         {
@@ -212,11 +186,6 @@ namespace BovineLabs.Core.Collections
             return ref this.data->GetValue<TValue>(idx);
         }
 
-        /// <summary> Returns the value associated with a key. </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <param name="item"> Outputs the value associated with the key. Outputs default if the key was not present. </param>
-        /// <returns> True if the key was present. </returns>
-        /// <typeparam name="TValue"> The type of value. </typeparam>
         public readonly bool TryGetValue<TValue>(TKey key, out TValue item)
             where TValue : unmanaged
         {

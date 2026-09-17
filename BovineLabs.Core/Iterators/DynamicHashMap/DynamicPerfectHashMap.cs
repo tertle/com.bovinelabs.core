@@ -11,9 +11,6 @@
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
-    /// <summary> A fixed-size, collision-free hash map stored in a dynamic buffer. </summary>
-    /// <typeparam name="TKey"> The key type. </typeparam>
-    /// <typeparam name="TValue"> The value type. </typeparam>
     [DebuggerTypeProxy(typeof(DynamicPerfectHashMapDebuggerTypeProxy<,>))]
     public readonly unsafe struct DynamicPerfectHashMap<TKey, TValue> : IEnumerable<KVPair<TKey, TValue>>
         where TKey : unmanaged, IEquatable<TKey>
@@ -31,14 +28,9 @@
         [field: NativeDisableUnsafePtrRestriction]
         internal DynamicPerfectHashMapHelper<TKey, TValue>* Helper { get; }
 
-        /// <summary> Gets and sets values by key. </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <value> The value associated with the key. </value>
-        /// <remarks>
-        /// Getting a key that is not present will throw.
-        /// Setting a key that is not already present will add the key if the slot is empty; otherwise it will throw if the slot is occupied by a different key.
-        /// </remarks>
-        /// <exception cref="ArgumentException"> Thrown if the key is not present. </exception>
+        /// <summary>
+        /// Setting throws if a different key occupies the slot; the map cannot resolve hash collisions.
+        /// </summary>
         public TValue this[TKey key]
         {
             get
@@ -82,10 +74,6 @@
             }
         }
 
-        /// <summary> Returns the value associated with a key. </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <param name="item"> Outputs the value associated with the key. Outputs default if the key was not present. </param>
-        /// <returns> True if the key was present. </returns>
         public bool TryGetValue(TKey key, out TValue item)
         {
             this.buffer.CheckReadAccess();
@@ -106,9 +94,6 @@
             return true;
         }
 
-        /// <summary> Checks whether the map contains a key. </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <returns> True if the key is present. </returns>
         public bool ContainsKey(TKey key)
         {
             this.buffer.CheckReadAccess();
@@ -121,17 +106,17 @@
             return !value.Equals(this.Helper->NullValue) && this.Helper->Keys[index].Equals(key);
         }
 
-        /// <summary> This method is not implemented for this type. </summary>
-        /// <returns> An enumerator. </returns>
-        /// <exception cref="NotImplementedException"> Always thrown. </exception>
+        /// <summary>
+        /// Not implemented for this collection.
+        /// </summary>
         public IEnumerator<KVPair<TKey, TValue>> GetEnumerator()
         {
             throw new NotImplementedException();
         }
 
-        /// <summary> This method is not implemented for this type. </summary>
-        /// <returns> An enumerator. </returns>
-        /// <exception cref="NotImplementedException"> Always thrown. </exception>
+        /// <summary>
+        /// Not implemented for this collection.
+        /// </summary>
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();
@@ -179,15 +164,11 @@
     {
         private readonly DynamicPerfectHashMapHelper<TKey, TValue>* helper;
 
-        /// <summary> Initializes a new instance of the <see cref="DynamicPerfectHashMapDebuggerTypeProxy{TKey, TValue}" /> class. </summary>
-        /// <param name="target"> The target map. </param>
         public DynamicPerfectHashMapDebuggerTypeProxy(DynamicPerfectHashMap<TKey, TValue> target)
         {
             this.helper = target.Helper;
         }
 
-        /// <summary> Gets the key/value pairs present in the map. </summary>
-        /// <value> A list of pairs. </value>
         public List<Pair<TKey, TValue>> Items
         {
             get

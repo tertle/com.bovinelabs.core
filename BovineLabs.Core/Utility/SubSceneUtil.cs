@@ -33,10 +33,6 @@
             return streamingState.Status == SceneSectionStreamingSystem.StreamingStatus.Loaded;
         }
 
-        /// <summary> Checks whether a section or one of its containing sections has requested unload. </summary>
-        /// <param name="state"> The calling system state. </param>
-        /// <param name="sectionEntity"> The section metadata entity. </param>
-        /// <returns> True when the section or an ancestor no longer has RequestSceneLoaded. </returns>
         public static bool IsSectionPendingUnload(ref SystemState state, Entity sectionEntity)
         {
             while (true)
@@ -63,9 +59,6 @@
             this.streamingStates.Update(ref state);
         }
 
-        /// <summary> Check if a subscene is loaded. </summary>
-        /// <param name="entity"> The entity with the loading component data.  This is the entity returned by LoadSceneAsync. </param>
-        /// <returns> True if the scene is loaded. </returns>
         public bool IsSceneLoaded(Entity entity)
         {
             if (!this.sceneReferences.HasComponent(entity))
@@ -96,14 +89,6 @@
             return true;
         }
 
-        /// <summary>
-        /// Check if a section of a subscene is loaded.
-        /// </summary>
-        /// <param name="sectionEntity">
-        /// The section entity representing the scene section. The section entities can be found in the ResolvedSectionEntity Buffer on the
-        /// scene entity.
-        /// </param>
-        /// <returns> True if the scene section is loaded. </returns>
         public bool IsSectionLoaded(Entity sectionEntity)
         {
             if (!this.streamingStates.TryGetComponent(sectionEntity, out var status))

@@ -11,10 +11,8 @@
     }
 
     /// <summary>
-    /// The base KSettings file for defining custom enums, layers, keys. Do not implement this directly, implement <see cref="KSettings{T,TV}" />.
-    /// Instead implement <see cref="KSettings{T,TV}" /> or rarely <see cref="KSettingsBase{T,TV}" />.
+    /// Implement KSettings&lt;T, TV&gt; or KSettingsBase&lt;T, TV&gt; rather than this base directly.
     /// </summary>
-    /// <typeparam name="TV"> The value. </typeparam>
     [Serializable]
     [SettingSubDirectory("K")]
     public abstract class KSettingsBase<TV> : SettingsSingleton, IKsettings

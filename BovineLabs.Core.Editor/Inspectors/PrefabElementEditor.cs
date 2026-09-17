@@ -6,7 +6,6 @@
     using UnityEngine.Assertions;
     using UnityEngine.UIElements;
 
-    /// <summary> A custom editor that will cause you to edit the source prefab instead of instances. </summary>
     public abstract class PrefabElementEditor : ElementEditor
     {
         private SerializedObject prefabObject;

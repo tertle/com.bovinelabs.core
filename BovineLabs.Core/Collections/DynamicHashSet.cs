@@ -10,12 +10,8 @@ namespace BovineLabs.Core.Collections
     using Unity.Mathematics;
 
     /// <summary>
-    /// Describes an entry stored in a <see cref="DynamicHashSet{TKey,TEntry}" /> buffer.
+    /// Entries must be unmanaged. Tag zero means empty, odd tags contain hash fingerprints, and nonzero even tags are tombstones.
     /// </summary>
-    /// <remarks>
-    /// Implementations should keep the struct unmanaged and use 0 in <see cref="Tag" /> to represent empty slots.
-    /// Odd tag values store hash fingerprints used to accelerate key comparisons, while even non-zero tags represent tombstones.
-    /// </remarks>
     public interface IDynamicHashSetEntry<TKey> : IBufferElementData
         where TKey : unmanaged, IEquatable<TKey>
     {
@@ -25,12 +21,8 @@ namespace BovineLabs.Core.Collections
     }
 
     /// <summary>
-    /// Entry-backed hash set stored directly in a <see cref="DynamicBuffer{T}" /> with a reserved capacity-only header slot.
+    /// Buffer length is the power-of-two table capacity; an extra capacity-only slot stores the header.
     /// </summary>
-    /// <remarks>
-    /// The set stores entries directly in the dynamic buffer and reserves one extra capacity slot used as a header. Capacity equals the buffer
-    /// length and must be a power of two. Removal uses tombstones to keep probe chains intact.
-    /// </remarks>
     public unsafe struct DynamicHashSet<TKey, TEntry>
         where TKey : unmanaged, IEquatable<TKey>
         where TEntry : unmanaged, IDynamicHashSetEntry<TKey>
@@ -53,10 +45,6 @@ namespace BovineLabs.Core.Collections
             public int TombstonesPlusOne;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DynamicHashSet{TKey,TEntry}" /> struct.
-        /// </summary>
-        /// <param name="buffer"> The buffer whose length defines the table size. </param>
         public DynamicHashSet(DynamicBuffer<TEntry> buffer)
         {
             buffer.CheckReadAccess();
@@ -66,13 +54,10 @@ namespace BovineLabs.Core.Collections
             this.buffer = buffer;
         }
 
-        /// <summary> Gets a value indicating whether the underlying buffer is created. </summary>
         public readonly bool IsCreated => this.buffer.IsCreated;
 
-        /// <summary> Gets a value indicating whether the set has no entries. </summary>
         public readonly bool IsEmpty => this.Count == 0;
 
-        /// <summary> Gets the number of keys in the set. </summary>
         public readonly int Count
         {
             get
@@ -83,7 +68,6 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        /// <summary> Gets the fixed capacity for this set. </summary>
         public int Capacity
         {
             get
@@ -94,9 +78,6 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        /// <summary> Returns whether the set contains the specified key. </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <returns> True when the key exists in the set. </returns>
         public readonly bool Contains(TKey key)
         {
             this.buffer.CheckReadAccess();
@@ -134,8 +115,6 @@ namespace BovineLabs.Core.Collections
             return false;
         }
 
-        /// <summary> Ensures the set can hold at least the requested capacity. </summary>
-        /// <param name="capacity"> The minimum desired capacity, rounded up to a power of two. </param>
         public void EnsureCapacity(int capacity)
         {
             this.buffer.CheckWriteAccess();
@@ -167,9 +146,6 @@ namespace BovineLabs.Core.Collections
             this.Resize(newCapacity);
         }
 
-        /// <summary> Adds a key if it does not already exist. </summary>
-        /// <param name="key"> The key to add. </param>
-        /// <returns> True when the key is inserted, false if it already exists. </returns>
         public bool TryAdd(TKey key)
         {
             this.buffer.CheckWriteAccess();
@@ -271,9 +247,6 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        /// <summary> Adds a key. </summary>
-        /// <param name="key"> The key to add. </param>
-        /// <exception cref="ArgumentException"> Thrown if the key already exists. </exception>
         public void Add(TKey key)
         {
             if (!this.TryAdd(key))
@@ -282,9 +255,6 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        /// <summary> Returns an array with a copy of all keys in no particular order. </summary>
-        /// <param name="allocator"> The allocator to use. </param>
-        /// <returns> An array with a copy of all keys in the set. </returns>
         public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
@@ -295,9 +265,6 @@ namespace BovineLabs.Core.Collections
             return result;
         }
 
-        /// <summary> Removes a key if present. </summary>
-        /// <param name="key"> The key to remove. </param>
-        /// <returns> True when the key is removed. </returns>
         public bool TryRemove(TKey key)
         {
             this.buffer.CheckWriteAccess();
@@ -353,15 +320,11 @@ namespace BovineLabs.Core.Collections
             return false;
         }
 
-        /// <summary> Removes a key if present. </summary>
-        /// <param name="key"> The key to remove. </param>
-        /// <returns> True when the key is removed. </returns>
         public bool Remove(TKey key)
         {
             return this.TryRemove(key);
         }
 
-        /// <summary> Clears the set without resizing the buffer. </summary>
         public void Clear()
         {
             this.buffer.CheckWriteAccess();
@@ -380,7 +343,9 @@ namespace BovineLabs.Core.Collections
             InitializeHeader(entries, capacity, ref header, 0, 0);
         }
 
-        /// <summary> Rehashes the set after key values are remapped. </summary>
+        /// <summary>
+        /// Call after remapping keys such as Entity or BlobAssetReference to rebuild hash positions.
+        /// </summary>
         public void ReconstructAfterRemap()
         {
             this.buffer.CheckWriteAccess();
@@ -789,12 +754,8 @@ namespace BovineLabs.Core.Collections
         }
     }
 
-    /// <summary> Extension helpers for entry-backed dynamic hash-set buffers. </summary>
     public static class DynamicHashSetExtensions
     {
-        /// <summary> Creates a hash-set wrapper for an entry-backed buffer. </summary>
-        /// <param name="buffer"> The buffer to wrap. </param>
-        /// <returns> A hash-set wrapper for the buffer. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicHashSet<TKey, TEntry> AsDynamicHashSet<TKey, TEntry>(this DynamicBuffer<TEntry> buffer)
             where TKey : unmanaged, IEquatable<TKey>

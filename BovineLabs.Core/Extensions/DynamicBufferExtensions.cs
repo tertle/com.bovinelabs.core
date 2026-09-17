@@ -44,10 +44,6 @@
             return basePtr + (index * elemSize);
         }
 
-        /// <summary> Gets an <see langword="unsafe" /> read-only pointer to the contents of the buffer. </summary>
-        /// <param name="buffer"> The dynamic buffer to get the element from. </param>
-        /// <remarks> This function can only be called in unsafe code contexts. </remarks>
-        /// <returns> A typed, unsafe pointer to the first element in the buffer. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void* GetPtr<T>(this DynamicBuffer<T> buffer)
             where T : unmanaged

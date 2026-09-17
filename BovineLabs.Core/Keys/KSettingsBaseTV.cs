@@ -7,13 +7,6 @@
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Scripting.LifecycleManagement;
 
-    /// <summary>
-    /// K is an Enum or LayerMask alternative that allows your key value pairs to be defined in setting files.
-    /// It provides a way to convert human readable strings into values, even within burst jobs.
-    /// </summary>
-    /// <typeparam name="T"> The type of config. </typeparam>
-    /// <typeparam name="TV"> The value to store. </typeparam>
-    /// <summary> The base KSettings file for defining custom enums, layers, keys. </summary>
     public abstract class KSettingsBase<T, TV> : KSettingsBase<TV>
         where T : KSettingsBase<T, TV>
         where TV : unmanaged, IEquatable<TV>
@@ -37,9 +30,6 @@
             private set => settings = value;
         }
 
-        /// <summary> Given a name, returns the user defined value. </summary>
-        /// <param name="name"> The name. </param>
-        /// <returns> The value. </returns>
         public static TV NameToKey(FixedString32Bytes name)
         {
             if (!TryNameToKey(name, out var key))
@@ -64,9 +54,6 @@
             return Forward.Data.TryGetValue(name, out key);
         }
 
-        /// <summary> Given a key, returns the name that's associated with it. Mostly used for debugging. </summary>
-        /// <param name="key"> The key. </param>
-        /// <returns> The value. </returns>
         public static FixedString32Bytes KeyToName(TV key)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG

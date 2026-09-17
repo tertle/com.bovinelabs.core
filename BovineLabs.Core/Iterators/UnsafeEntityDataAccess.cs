@@ -91,20 +91,11 @@
             return this.access->EntityComponentStore->HasComponent(entity, typeIndex, out _);
         }
 
-        /// <summary> Reports whether the specified <see cref="Entity" /> instance still refers to a valid entity. </summary>
-        /// <param name="entity"> The entity. </param>
-        /// <returns>
-        /// True if the entity exists and is valid, and returns false if
-        /// the Entity instance refers to an entity that has been destroyed.
-        /// </returns>
         public readonly bool Exists(Entity entity)
         {
             return this.access->EntityComponentStore->Exists(entity);
         }
 
-        /// <summary> Gets an <see cref="EntityStorageInfo" /> for the specified entity. </summary>
-        /// <param name="entity"> The entity. </param>
-        /// <exception cref="System.ArgumentException"> Thrown if T is zero-size. </exception>
         public readonly EntityStorageInfo GetEntityStorageInfo(Entity entity)
         {
             this.access->EntityComponentStore->AssertEntitiesExist(&entity, 1);

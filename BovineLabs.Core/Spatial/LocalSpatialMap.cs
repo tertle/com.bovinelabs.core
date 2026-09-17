@@ -86,8 +86,6 @@
             return dependency;
         }
 
-        /// <summary> Gets a readonly copy of the struct that can be used to query the spatial hash map. Also includes methods to quantize and hash. </summary>
-        /// <returns> A readonly container. </returns>
         public ReadOnly AsReadOnly()
         {
             return new ReadOnly(this.quantizeStep, this.quantizeSize, this.halfSize, this.map);
@@ -177,7 +175,6 @@
             }
         }
 
-        /// <summary> Readonly copy for querying the map. </summary>
         public readonly struct ReadOnly
         {
             private readonly float quantizeStep;

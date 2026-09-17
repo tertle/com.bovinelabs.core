@@ -8,14 +8,8 @@
     public static class SourceGenHelpers
     {
         /// <summary>
-        /// Returns true if running as part of csc.exe, otherwise we are likely running in the IDE.
-        /// Skipping Source Generation in the IDE can be a considerable performance win as source
-        /// generators can be run multiple times per keystroke. If the user doesn't rely on generated types
-        /// consider skipping your Generator's Execute method when this returns false
+        /// Taken from NetCode source generators.
         /// </summary>
-        /// <remarks>
-        /// Taken from netcode source generators
-        /// </remarks>
         public static bool IsBuildTime()
         {
             // We want to be exclusive rather than inclusive here to avoid any issues with unknown processes, Unity changes, and testing

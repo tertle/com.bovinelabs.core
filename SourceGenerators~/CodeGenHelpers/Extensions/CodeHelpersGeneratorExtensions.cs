@@ -9,13 +9,6 @@ namespace Microsoft.CodeAnalysis
 #nullable enable
     public static class CodeHelpersGeneratorExtensions
     {
-        /// <summary>
-        /// This will add the source using the Fully Qualified Type name and will apply basic formatting based on the
-        /// environment. If the Specified Language Version is 10+ it will automatically enable Top Level Namespaces. It
-        /// will additionally attempt to normalize the white space based upon the user's preferences
-        /// </summary>
-        /// <param name="context">The <see cref="GeneratorExecutionContext"/></param>
-        /// <param name="builder">The <see cref="ClassBuilder"/></param>
         public static void AddSource(this GeneratorExecutionContext context, CodeBuilder builder)
         {
             if (string.IsNullOrEmpty(builder.Namespace) || builder.Namespace is null)
@@ -56,39 +49,18 @@ namespace Microsoft.CodeAnalysis
             }
         }
 
-        /// <summary>
-        /// This will add the source using the Fully Qualified Type name and will apply basic formatting based on the
-        /// environment. If the Specified Language Version is 10+ it will automatically enable Top Level Namespaces. It
-        /// will additionally attempt to normalize the white space based upon the user's preferences
-        /// </summary>
-        /// <param name="context">The <see cref="GeneratorExecutionContext"/></param>
-        /// <param name="builder">The <see cref="ClassBuilder"/></param>
         public static void AddSource(this GeneratorExecutionContext context, ClassBuilder builder)
         {
             var source = SourceText(builder.Builder, context.ParseOptions);
             context.AddSource($"{builder.FullyQualifiedName}.g.cs", source);
         }
 
-        /// <summary>
-        /// This will add the source using the Fully Qualified Type name and will apply basic formatting based on the
-        /// environment. If the Specified Language Version is 10+ it will automatically enable Top Level Namespaces. It
-        /// will additionally attempt to normalize the white space based upon the user's preferences
-        /// </summary>
-        /// <param name="context">The <see cref="GeneratorExecutionContext"/></param>
-        /// <param name="builder">The <see cref="EnumBuilder"/></param>
         public static void AddSource(this GeneratorExecutionContext context, EnumBuilder builder)
         {
             var source = SourceText(builder.Builder, context.ParseOptions);
             context.AddSource($"{builder.FullyQualifiedName}.g.cs", source);
         }
 
-        /// <summary>
-        /// This will add the source using the Fully Qualified Type name and will apply basic formatting based on the
-        /// environment. If the Specified Language Version is 10+ it will automatically enable Top Level Namespaces. It
-        /// will additionally attempt to normalize the white space based upon the user's preferences
-        /// </summary>
-        /// <param name="context">The <see cref="GeneratorExecutionContext"/></param>
-        /// <param name="builder">The <see cref="RecordBuilder"/></param>
         public static void AddSource(this GeneratorExecutionContext context, RecordBuilder builder)
         {
             var source = SourceText(builder.Builder, context.ParseOptions);

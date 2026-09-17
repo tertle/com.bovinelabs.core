@@ -8,7 +8,6 @@
     using UnityEditor;
     using UnityEngine;
 
-    /// <summary> The settings editor window. </summary>
     internal class SettingsWindow : SettingsBaseWindow<SettingsWindow>
     {
         private readonly Dictionary<Type, Type> settingsPanelMap = new();

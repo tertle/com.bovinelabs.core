@@ -10,7 +10,6 @@ namespace BovineLabs.Core.Editor.Settings
     using UnityEngine;
     using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
-    /// <summary> Creates settings assets introduced by newly registered or updated packages. </summary>
     internal static class PackageSettingsCreator
     {
         [NoAutoStaticsCleanup]

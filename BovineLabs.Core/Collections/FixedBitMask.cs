@@ -13,12 +13,8 @@
 
         private T data;
 
-        /// <summary> Gets the length in bits of this bitmask. </summary>
         public int Length => UnsafeUtility.SizeOf<T>() << 3;
 
-        /// <summary> Sets the value of a bit in the bitmask. </summary>
-        /// <param name="pos"> The bit to set. </param>
-        /// <param name="value"> The value to set it to. </param>
         public void Set(int pos, bool value)
         {
             this.CheckArgs(pos, 1);
@@ -36,9 +32,6 @@
             }
         }
 
-        /// <summary> Checks if a bit is set. </summary>
-        /// <param name="pos"> The bit to change. </param>
-        /// <returns> The value of the bit at pos. </returns>
         public bool IsSet(int pos)
         {
             this.CheckArgs(pos, 1);
@@ -54,7 +47,6 @@
             }
         }
 
-        /// <summary> Reset all bits in the bitmask. </summary>
         public void Reset()
         {
             fixed (T* t = &this.data)

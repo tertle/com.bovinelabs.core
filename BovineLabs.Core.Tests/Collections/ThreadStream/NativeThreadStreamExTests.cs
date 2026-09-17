@@ -6,11 +6,8 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Tests for <see cref="NativeStreamExtensions" /> . </summary>
     public class NativeThreadStreamExTests
     {
-        /// <summary> Tests the extensions AllocateLarge and ReadLarge. </summary>
-        /// <param name="size"> The size of the allocation. </param>
         [TestCase(4092)] // max size
         [TestCase(8192)] // requires just more than 2 blocks
         public unsafe void WriteRead(int size)

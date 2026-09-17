@@ -13,10 +13,8 @@
         private readonly int internalCapacity;
         private readonly int stride;
 
-        /// <summary> The number of buffers in the chunk. </summary>
         public int Length { get; }
 
-        /// <summary> The size (in bytes) of a single buffer element. </summary>
         public int ElementSize { get; }
 
         internal UnsafeUntypedDynamicBufferAccessor(byte* basePointer, int length, int stride, int elementSize, int internalCapacity)

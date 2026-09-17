@@ -105,9 +105,6 @@
             }.Schedule(handle);
         }
 
-        /// <summary> Try add some work to the queue. </summary>
-        /// <param name="ptr"> The work slot. </param>
-        /// <returns> 0 if the queue is full, otherwise a unique ID for the work. </returns>
         public int TryAdd(out T* ptr)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -287,9 +284,6 @@
 
             public int Capacity { get; }
 
-            /// <summary> Try add some work to the queue. </summary>
-            /// <param name="ptr"> The work slot. </param>
-            /// <returns> 0 if the queue is full, otherwise a unique ID for the work. </returns>
             public int TryAdd(out T* ptr)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

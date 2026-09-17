@@ -7,7 +7,6 @@
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
 
-    /// <summary> Extensions for <see cref="NativeParallelMultiHashMap{TKey,TValue}" />. </summary>
     public static unsafe class NativeParallelMultiHashMapExtensions
     {
         public static void GetUniqueKeyArray<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> container, NativeList<TKey> keys)
@@ -60,15 +59,6 @@
             data->allocatedIndexLength = 0;
         }
 
-        /// <summary>
-        /// Clear a <see cref="NativeParallelMultiHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
-        /// This is much faster than iterating and using Add.
-        /// </summary>
-        /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="keys"> Collection of keys, the length should match the length of values. </param>
-        /// <param name="values"> Collection of values, the length should match the length of keys. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public static void ClearAndAddBatch<TKey, TValue>(
             [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, [NoAlias] NativeArray<TKey> keys, [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -104,15 +94,6 @@
             hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength = keys.Length;
         }
 
-        /// <summary>
-        /// Clear a <see cref="NativeParallelMultiHashMap{TKey,TValue}" /> then efficiently add a collection of keys and values to it.
-        /// This is much faster than iterating and using Add.
-        /// </summary>
-        /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="keys"> Collection of keys, the length should match the length of values. </param>
-        /// <param name="values"> Collection of values, the length should match the length of keys. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public static void ClearAndAddBatch<TKey, TValue>(
             [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, [NoAlias] NativeSlice<TKey> keys, [NoAlias] NativeSlice<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -153,15 +134,8 @@
         }
 
         /// <summary>
-        /// Efficiently add a collection of keys and values to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
-        /// This is much faster than iterating and using Add.
+        /// Requires a map from which no elements have been removed.
         /// </summary>
-        /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
-        /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="keys"> Collection of keys, the length should match the length of values. </param>
-        /// <param name="values"> Collection of values, the length should match the length of keys. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, [NoAlias] NativeArray<TKey> keys, [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -209,15 +183,6 @@
             hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength += length;
         }
 
-        /// <summary>
-        /// Efficiently add a collection of keys and values to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
-        /// This is much faster than iterating and using Add.
-        /// </summary>
-        /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="keys"> Collection of keys, the length should match the length of values. </param>
-        /// <param name="values"> Collection of values, the length should match the length of keys. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, [NoAlias] NativeSlice<TKey> keys, [NoAlias] NativeSlice<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -259,15 +224,6 @@
             hashMap.m_MultiHashMapData.m_Buffer->allocatedIndexLength += length;
         }
 
-        /// <summary>
-        /// Efficiently add a collection of keys and values to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
-        /// This is much faster than iterating and using Add.
-        /// </summary>
-        /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="keys"> Collection of keys, the length should match the length of values. </param>
-        /// <param name="values"> Collection of values, the length should match the length of keys. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, [NoAlias] NativeSlice<TKey> keys, [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -310,16 +266,8 @@
         }
 
         /// <summary>
-        /// Efficiently adds a collection of values for a single key and values to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
-        /// This is much faster than iterating and using Add.
+        /// Requires a map from which no elements have been removed.
         /// </summary>
-        /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
-        /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="key"> The key to use. </param>
-        /// <param name="values"> Pointer to the values. </param>
-        /// <param name="length"> The length of the values. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, TKey key, [NoAlias] TValue* values, int length)
             where TKey : unmanaged, IEquatable<TKey>
@@ -360,15 +308,8 @@
         }
 
         /// <summary>
-        /// Efficiently adds a collection of values for keys and single value to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
-        /// This is much faster than iterating and using Add.
+        /// Requires a map from which no elements have been removed.
         /// </summary>
-        /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
-        /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="keys"> Collection of keys. </param>
-        /// <param name="value"> The single value. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, NativeArray<TKey> keys, TValue value)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -407,15 +348,8 @@
         }
 
         /// <summary>
-        /// Efficiently adds a collection of values for keys and single value to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
-        /// This is much faster than iterating and using Add.
+        /// Requires a map from which no elements have been removed.
         /// </summary>
-        /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
-        /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="keys"> Collection of keys. </param>
-        /// <param name="value"> The single value. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, NativeSlice<TKey> keys, TValue value)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
@@ -456,15 +390,8 @@
         }
 
         /// <summary>
-        /// Efficiently adds a collection of values for a single key and values to a <see cref="NativeParallelMultiHashMap{TKey,TValue}" />.
-        /// This is much faster than iterating and using Add.
+        /// Requires a map from which no elements have been removed.
         /// </summary>
-        /// <remarks> Should only be used on a hashmap that has not had an element removed. </remarks>
-        /// <param name="hashMap"> The hashmap to clear and add to. </param>
-        /// <param name="key"> The key to use. </param>
-        /// <param name="values"> Collection of values. </param>
-        /// <typeparam name="TKey"> The key type. </typeparam>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public static void AddBatchUnsafe<TKey, TValue>(
             [NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap, [NoAlias] TKey key, [NoAlias] NativeArray<TValue> values)
             where TKey : unmanaged, IEquatable<TKey>
@@ -647,8 +574,9 @@
             buckets[bucket] = idx;
         }
 
-        /// <summary> Rebuilds buckets using hashes temporarily cached in the entry next pointers. </summary>
-        /// <remarks> Call only before the cached hashes have been replaced with bucket-chain links. </remarks>
+        /// <summary>
+        /// Call only while entry next pointers still contain cached hashes, before replacing them with bucket-chain links.
+        /// </summary>
         public static void RecalculateBucketsCached<TKey, TValue>([NoAlias] this NativeParallelMultiHashMap<TKey, TValue> hashMap)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged

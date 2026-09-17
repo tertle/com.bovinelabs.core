@@ -25,11 +25,8 @@
         }
 
         /// <summary>
-        /// Get an <see cref="UnsafeEnableableLookup" />.
-        /// All components that use this must manually add a dependency to the system for safety.
+        /// Manually register system dependencies for every component accessed through this lookup.
         /// </summary>
-        /// <param name="system"> The system owner. </param>
-        /// <returns> An <see cref="UnsafeEnableableLookup" />. </returns>
         public static UnsafeEnableableLookup GetUnsafeEnableableLookup(ref this SystemState system)
         {
             return system.EntityManager.GetUnsafeEnableableLookup();

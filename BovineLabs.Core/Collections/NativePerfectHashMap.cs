@@ -43,11 +43,6 @@
             get => this.data != null;
         }
 
-        /// <summary> Gets and sets values by key. </summary>
-        /// <remarks> Getting a key that is not present will throw. Setting a key that is not already present will add the key. </remarks>
-        /// <param name="key"> The key to look up. </param>
-        /// <value> The value associated with the key. </value>
-        /// <exception cref="ArgumentException"> For getting, thrown if the key was not present. </exception>
         public TValue this[TKey key]
         {
             get
@@ -85,10 +80,6 @@
             this.data = null;
         }
 
-        /// <summary> Returns the value associated with a key. </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <param name="item"> Outputs the value associated with the key. Outputs default if the key was not present. </param>
-        /// <returns> True if the key was present. </returns>
         public bool TryGetValue(TKey key, out TValue item)
         {
             this.CheckRead();

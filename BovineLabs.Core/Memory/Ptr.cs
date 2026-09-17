@@ -2,7 +2,6 @@
 {
     using System;
 
-    /// <summary> This is used because in 2020.3 IntPtr isn't IEquatable and in 2021.3 Equality isn't burstable. </summary>
     public readonly unsafe struct Ptr : IEquatable<Ptr>
     {
         public readonly void* Value;

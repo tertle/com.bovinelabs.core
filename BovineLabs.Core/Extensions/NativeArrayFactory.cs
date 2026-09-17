@@ -6,8 +6,6 @@ namespace BovineLabs.Core.Extensions
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Creates owned native arrays from jobs without Unity's temporary-allocation-only safety check. </summary>
-    /// <typeparam name="T"> The unmanaged element type. </typeparam>
     public static unsafe class NativeArrayFactory<T>
         where T : unmanaged
     {
@@ -15,11 +13,9 @@ namespace BovineLabs.Core.Extensions
         private static readonly SharedStatic<int> StaticSafetyId = SharedStatic<int>.GetOrCreate<NativeArray<T>>();
 #endif
 
-        /// <summary> Creates an owned native array from a job. </summary>
-        /// <param name="length"> The number of elements. </param>
-        /// <param name="allocator"> The allocator used for the owned memory. </param>
-        /// <param name="options"> Whether to clear the allocated memory. </param>
-        /// <returns> An array that must be disposed by its owner. </returns>
+        /// <summary>
+        /// Caller owns and must dispose the returned array.
+        /// </summary>
         public static NativeArray<T> CreateFromJob(int length, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
             var size = UnsafeUtility.SizeOf<T>() * (long)length;

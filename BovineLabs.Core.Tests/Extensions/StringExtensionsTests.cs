@@ -3,17 +3,14 @@
     using BovineLabs.Core.Extensions;
     using NUnit.Framework;
 
-    /// <summary> Tests for <see cref="StringExtensions" />. </summary>
     public class StringExtensionsTests
     {
-        /// <summary> Tests <see cref="ToSentence" />. </summary>
         [TestCase("ThisIsATestString", "This Is A Test String")]
         public void ToSentence(string input, string expected)
         {
             Assert.AreEqual(expected, input.ToSentence());
         }
 
-        /// <summary> Tests <see cref="FirstCharToUpper" />. </summary>
         [Test]
         public void FirstCharToUpper()
         {

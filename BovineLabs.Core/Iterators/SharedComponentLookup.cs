@@ -81,23 +81,11 @@
             return true;
         }
 
-        /// <summary>
-        /// When a ComponentLookup is cached by a system across multiple system updates, calling this function
-        /// inside the system's Update() method performs the minimal incremental updates necessary to make the
-        /// type handle safe to use.
-        /// </summary>
-        /// <param name="system"> The system on which this type handle is cached. </param>
         public void Update(SystemBase system)
         {
             this.Update(ref *system.m_StatePtr);
         }
 
-        /// <summary>
-        /// When a ComponentLookup is cached by a system across multiple system updates, calling this function
-        /// inside the system's Update() method performs the minimal incremental updates necessary to make the
-        /// type handle safe to use.
-        /// </summary>
-        /// <param name="systemState"> The SystemState of the system on which this type handle is cached. </param>
         public void Update(ref SystemState systemState)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

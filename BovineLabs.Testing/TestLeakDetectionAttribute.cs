@@ -6,8 +6,9 @@
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Attribute to test leaks during a Unit Test. </summary>
-    /// <remarks> From Ribitta https://discord.com/channels/489222168727519232/1064581837055348857/1244548367623782452. </remarks>
+    /// <summary>
+    /// From Ribitta: https://discord.com/channels/489222168727519232/1064581837055348857/1244548367623782452.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class TestLeakDetectionAttribute : TestActionAttribute
     {

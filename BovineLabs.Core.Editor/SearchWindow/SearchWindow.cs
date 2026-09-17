@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Editor.SearchWindow
     using UnityEngine;
     using UnityEngine.Search;
 
-    /// <summary> Adapts BovineLabs search items to Unity Search's picker. </summary>
     public sealed class SearchWindow
     {
         private const string ProviderId = "bovinelabs-picker";

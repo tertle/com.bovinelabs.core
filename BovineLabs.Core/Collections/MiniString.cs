@@ -18,8 +18,6 @@
         [SerializeField]
         private FixedBytes16 bytes;
 
-        /// <summary> Initializes a new instance of the <see cref="MiniString" /> struct. </summary>
-        /// <param name="source"> The System.String object to construct this MiniString with. </param>
         public MiniString(string source)
         {
             this.bytes = default;
@@ -58,23 +56,12 @@
             }
         }
 
-        /// <summary>
-        /// The maximum available capacity of the UTF-8 encoded string, in bytes.
-        /// Due to the UTF-8 encoding, each Unicode code point requires between 1 and 4 bytes to encode.
-        /// The null terminating byte is not included in the capacity.  The FixedString always
-        /// has space for a null terminating byte.  For FixedString32, attempting to set this value
-        /// to anything lower than 29 will throw.  The Capacity will always be 29.
-        /// </summary>
         public int Capacity
         {
             get => UTF8MaxLengthInBytes;
             set => this.CheckCapacityInRange(value);
         }
 
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value> True if this container empty. </value>
         public bool IsEmpty => this.UTF8LengthInBytes == 0;
 
         private byte UTF8LengthInBytes
@@ -84,8 +71,7 @@
         }
 
         /// <summary>
-        /// Return the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length)
+        /// Indexes UTF-8 bytes, not characters.
         /// </summary>
         public byte this[int index]
         {
@@ -108,9 +94,6 @@
             }
         }
 
-        /// <summary> Enable implicit conversion of System.String to FixedString32. </summary>
-        /// <param name="s"> The System.String object to convert to a FixedString32. </param>
-        /// <returns> </returns>
         public static implicit operator MiniString(string s)
         {
             return new MiniString(s);
@@ -204,12 +187,8 @@
         }
 
         /// <summary>
-        /// Return a ref to the the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length).  The ref byte is a direct reference into
-        /// this FixedString, and is only valid while this FixedString is valid.
+        /// Returns a reference to a UTF-8 byte, not a character; valid only while the string is valid.
         /// </summary>
-        /// <param name="index"> The byte index to access </param>
-        /// <returns> A ref byte for the requested index </returns>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -219,46 +198,24 @@
             }
         }
 
-        /// <summary>
-        /// Clear this string by setting its Length to 0.
-        /// </summary>
         public void Clear()
         {
             this.Length = 0;
         }
 
         /// <summary>
-        /// Append the given byte value to this string. The string will remain null-terminated after the new
-        /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
-        /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
+        /// Does not validate appended UTF-8 bytes; invalid sequences corrupt conversion to UTF-16 or UCS-2.
         /// </summary>
-        /// <param name="value"> The byte to append. </param>
         public void Add(in byte value)
         {
             this[this.Length++] = value;
         }
 
-        /// <summary>
-        /// Compare this FixedString32 with a System.String in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
-        /// </summary>
-        /// <param name="other"> The System.String to compare with </param>
-        /// <returns>
-        /// -1 if this FixedString32 would appear first if sorted,
-        /// 0 if they are identical, or
-        /// 1 if the other System.String would appear first if sorted.
-        /// </returns>
         public int CompareTo(string other)
         {
             return this.ToString().CompareTo(other);
         }
 
-        /// <summary>
-        /// Compare this FixedString32 with a System.String,
-        /// and return whether they contain the same string or not.
-        /// </summary>
-        /// <param name="other"> The System.String to compare with </param>
-        /// <returns> true if they are equal, or false if they are not. </returns>
         public bool Equals(string other)
         {
             return this.ToString().Equals(other);
@@ -269,35 +226,16 @@
             return this == other;
         }
 
-        /// <summary>
-        /// Compare this FixedString32 with a FixedString32 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
-        /// </summary>
-        /// <param name="other"> The FixedString to compare with </param>
-        /// <returns>
-        /// -1 if this FixedString32 would appear first if sorted,
-        /// 0 if they are identical, or
-        /// 1 if the other FixedString32 would appear first if sorted.
-        /// </returns>
         public int CompareTo(MiniString other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
-        /// <summary>
-        /// Convert this FixedString32 to a System.String.
-        /// </summary>
-        /// <returns> A System.String with a copy of this FixedString32 </returns>
         public override string ToString()
         {
             return this.ConvertToString();
         }
 
-        /// <summary>
-        /// Compute a hash code of this FixedString32: an integer that is likely to be different for
-        /// two FixedString32, if their contents are different.
-        /// </summary>
-        /// <returns> A hash code of this FixedString32 </returns>
         public override int GetHashCode()
         {
             return this.ComputeHashCode();

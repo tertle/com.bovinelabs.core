@@ -7,25 +7,18 @@ namespace BovineLabs.Core.Editor.Inspectors
     using UnityEditor.UIElements;
     using UnityEngine.UIElements;
 
-    /// <summary> Element property base class for Unity Graph Toolkit inline value editors. </summary>
     public abstract class GraphToolkitElementProperty : ElementProperty
     {
-        /// <summary> Marker USS class for roots already configured by this property drawer base. </summary>
         public const string FieldUssClassName = "bl-core-graph-toolkit-element-property";
 
-        /// <summary> Graph Toolkit USS class for model property field roots. </summary>
         public const string GraphToolkitModelPropertyFieldUssClassName = "ge-model-property-field";
 
-        /// <summary> Graph Toolkit USS class for inspector field containers. </summary>
         public const string GraphToolkitInspectorFieldsUssClassName = "ge-inspector-fields";
 
-        /// <summary> Graph Toolkit USS class for node constant editor containers. </summary>
         public const string GraphToolkitNodeConstantEditorUssClassName = "ge-node__constant-editor";
 
-        /// <summary> Graph Toolkit USS class for model property labels. </summary>
         public const string GraphToolkitLabelUssClassName = "ge-model-property-field__label";
 
-        /// <summary> Graph Toolkit USS class for model property input elements. </summary>
         public const string GraphToolkitInputUssClassName = "ge-model-property-field__input";
 
         private const string UnityPropertyFieldLabelUssClassName = "unity-property-field__label";
@@ -35,7 +28,6 @@ namespace BovineLabs.Core.Editor.Inspectors
 
         protected override sealed ParentTypes ParentType => this.UseFoldout ? ParentTypes.Foldout : ParentTypes.None;
 
-        /// <summary> Gets a value indicating whether this drawer should use the default foldout parent for generic properties. </summary>
         protected virtual bool UseFoldout => true;
 
         protected override string GetDisplayName(SerializedProperty property)
@@ -64,18 +56,11 @@ namespace BovineLabs.Core.Editor.Inspectors
             return base.PreElementCreation(root);
         }
 
-        /// <summary> Creates a Graph Toolkit-aligned property field for the property. </summary>
-        /// <param name="property"> The serialized property to bind. </param>
-        /// <returns> The aligned property field. </returns>
         protected static new PropertyField CreatePropertyField(SerializedProperty property)
         {
             return AlignForGraphToolkit(ElementProperty.CreatePropertyField(property));
         }
 
-        /// <summary> Creates a Graph Toolkit-aligned property field for the property. </summary>
-        /// <param name="property"> The serialized property to bind. </param>
-        /// <param name="serializedObject"> The serialized object to bind against. </param>
-        /// <returns> The aligned property field. </returns>
         protected static new PropertyField CreatePropertyField(SerializedProperty property, SerializedObject serializedObject)
         {
             return AlignForGraphToolkit(ElementProperty.CreatePropertyField(property, serializedObject));
@@ -86,10 +71,6 @@ namespace BovineLabs.Core.Editor.Inspectors
             return AlignForGraphToolkit(base.CreateElement(property));
         }
 
-        /// <summary> Applies Graph Toolkit label and input alignment classes to a visual element tree. </summary>
-        /// <param name="element"> The visual element tree to align. </param>
-        /// <typeparam name="T"> The root visual element type. </typeparam>
-        /// <returns> The input element. </returns>
         protected static T AlignForGraphToolkit<T>(T element)
             where T : VisualElement
         {

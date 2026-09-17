@@ -4,8 +4,6 @@ namespace BovineLabs.Core.Collections
 
     public unsafe partial struct UnsafeThreadStream
     {
-        /// <summary>
-        /// </summary>
         public struct Reader : INativeStreamReader
         {
             [NativeDisableUnsafePtrRestriction]
@@ -33,10 +31,9 @@ namespace BovineLabs.Core.Collections
                 this.m_LastBlockSize = 0;
             }
 
-            /// <summary> Begin reading data at the iteration index. </summary>
-            /// <param name="foreachIndex"> </param>
-            /// <remarks> BeginForEachIndex must always be called balanced by a EndForEachIndex. </remarks>
-            /// <returns> The number of elements at this index. </returns>
+            /// <summary>
+            /// BeginForEachIndex and EndForEachIndex must be balanced; ending verifies that all iteration data was read.
+            /// </summary>
             public int BeginForEachIndex(int foreachIndex)
             {
                 this.m_RemainingItemCount = this.m_BlockStream->Ranges[foreachIndex].ElementCount;
@@ -50,28 +47,16 @@ namespace BovineLabs.Core.Collections
             }
 
             /// <summary>
-            /// Ensures that all data has been read for the active iteration index.
+            /// BeginForEachIndex and EndForEachIndex must be balanced; ending verifies that all iteration data was read.
             /// </summary>
-            /// <remarks> EndForEachIndex must always be called balanced by a BeginForEachIndex. </remarks>
             public void EndForEachIndex()
             {
             }
 
-            /// <summary>
-            /// Returns for each count.
-            /// </summary>
             public int ForEachCount => UnsafeThreadStream.ForEachCount;
 
-            /// <summary>
-            /// Returns remaining item count.
-            /// </summary>
             public int RemainingItemCount => this.m_RemainingItemCount;
 
-            /// <summary>
-            /// Returns pointer to data.
-            /// </summary>
-            /// <param name="size"> Size in bytes. </param>
-            /// <returns> Pointer to data. </returns>
             public byte* ReadUnsafePtr(int size)
             {
                 this.m_RemainingItemCount--;
@@ -93,11 +78,6 @@ namespace BovineLabs.Core.Collections
                 return ptr;
             }
 
-            /// <summary>
-            /// Read data.
-            /// </summary>
-            /// <typeparam name="T"> The type of value. </typeparam>
-            /// <returns> Reference to data. </returns>
             public ref T Read<T>()
                 where T : unmanaged
             {
@@ -105,11 +85,6 @@ namespace BovineLabs.Core.Collections
                 return ref UnsafeUtility.AsRef<T>(this.ReadUnsafePtr(size));
             }
 
-            /// <summary>
-            /// Peek into data.
-            /// </summary>
-            /// <typeparam name="T"> The type of value. </typeparam>
-            /// <returns> Reference to data. </returns>
             public ref T Peek<T>()
                 where T : struct
             {
@@ -124,10 +99,6 @@ namespace BovineLabs.Core.Collections
                 return ref UnsafeUtility.AsRef<T>(ptr);
             }
 
-            /// <summary>
-            /// The current number of items in the container.
-            /// </summary>
-            /// <returns> The item count. </returns>
             public int Count()
             {
                 var itemCount = 0;
@@ -139,9 +110,6 @@ namespace BovineLabs.Core.Collections
                 return itemCount;
             }
 
-            /// <summary> Read a chunk of memory that could have been larger than the max allocation size. </summary>
-            /// <param name="buffer"> A buffer to write back to. </param>
-            /// <param name="size"> For an array, this is UnsafeUtility.SizeOf{T} * length. </param>
             public void ReadLarge(byte* buffer, int size)
             {
                 var allocationCount = size / MaxLargeSize;
@@ -161,10 +129,6 @@ namespace BovineLabs.Core.Collections
                 }
             }
 
-            /// <summary> Read a chunk of memory that could have been larger than the max allocation size. </summary>
-            /// <param name="buffer"> A buffer to write back to. </param>
-            /// <param name="length"> The number of elements. </param>
-            /// <typeparam name="T"> The element type to read. </typeparam>
             public void ReadLarge<T>(byte* buffer, int length)
                 where T : unmanaged
             {

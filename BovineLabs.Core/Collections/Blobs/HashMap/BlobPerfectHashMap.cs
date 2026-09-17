@@ -29,10 +29,6 @@
             }
         }
 
-        /// <summary> Returns the value associated with a key. </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <param name="item"> Outputs the value associated with the key. Outputs default if the key was not present. </param>
-        /// <returns> True if the key was present. </returns>
         public bool TryGetValue(TKey key, out Ptr<TValue> item)
         {
             if (!this.TryGetIndex(key, out var index))

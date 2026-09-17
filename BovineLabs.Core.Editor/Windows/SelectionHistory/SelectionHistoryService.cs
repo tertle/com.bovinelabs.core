@@ -10,9 +10,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
     using UnityEngine.SceneManagement;
     using Object = UnityEngine.Object;
 
-    /// <summary>
-    /// Service that manages selection history tracking in Unity Editor.
-    /// </summary>
     public sealed class SelectionHistoryService : BaseObjectService<SelectionHistoryItem, SelectionHistoryPreferences>
     {
         public const string PreferenceKey = "Selection History";
@@ -32,16 +29,12 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             EditorSceneManager.sceneSaved += this.OnSceneSaved;
         }
 
-        /// <summary>Gets the current history as a read-only list.</summary>
         public override IReadOnlyList<SelectionHistoryItem> Items => this.allItems;
 
-        /// <summary>Gets the locked items as a read-only list.</summary>
         public IReadOnlyList<SelectionHistoryItem> LockedItems => this.lockedItems;
 
-        /// <summary>Gets the normal items as a read-only list.</summary>
         public IReadOnlyList<SelectionHistoryItem> NormalItems => this.normalItems;
 
-        /// <summary>Gets the singleton instance of the selection history service.</summary>
         public static SelectionHistoryService Instance
         {
             get
@@ -55,7 +48,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             }
         }
 
-        /// <summary>Gets the maximum number of items to keep in history.</summary>
         public int MaxHistorySize => this.Preferences.MaxHistorySize;
 
         public override void SelectItem(SelectionHistoryItem item)
@@ -66,7 +58,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             base.SelectItem(item);
         }
 
-        /// <summary>Clears all unlocked history items.</summary>
         public void ClearHistory()
         {
             this.normalItems.Clear();
@@ -75,8 +66,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             this.NotifyItemsChanged();
         }
 
-        /// <summary>Toggles the locked state of a history item.</summary>
-        /// <param name="item"> The item to lock. </param>
         public void ToggleLock(SelectionHistoryItem item)
         {
             item.IsLocked = !item.IsLocked;
@@ -102,9 +91,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             this.NotifyItemsChanged();
         }
 
-        /// <summary>Reorders a locked item to a new position.</summary>
-        /// <param name="fromIndex">The current index of the item.</param>
-        /// <param name="toIndex">The target index for the item.</param>
         public void ReorderLockedItem(int fromIndex, int toIndex)
         {
             if (fromIndex < 0 || fromIndex >= this.lockedItems.Count ||
@@ -123,7 +109,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             this.NotifyItemsChanged();
         }
 
-        /// <summary>Cleans up service-specific resources.</summary>
         protected override void CleanupServices()
         {
             base.CleanupServices();

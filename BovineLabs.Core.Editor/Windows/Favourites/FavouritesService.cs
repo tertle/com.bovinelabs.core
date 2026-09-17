@@ -7,9 +7,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
     using UnityEditor;
     using Object = UnityEngine.Object;
 
-    /// <summary>
-    /// Service that manages favourites collection in Unity Editor.
-    /// </summary>
     public sealed class FavouritesService : BaseObjectService<FavouritesItem, FavouritesPreferences>
     {
         public const string PreferenceKey = "Favourites";
@@ -24,10 +21,8 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
         {
         }
 
-        /// <summary>Gets the current favourites as a read-only list.</summary>
         public override IReadOnlyList<FavouritesItem> Items => this.favourites;
 
-        /// <summary>Gets the singleton instance of the favourites service.</summary>
         public static FavouritesService Instance
         {
             get
@@ -41,12 +36,8 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             }
         }
 
-        /// <summary>Gets a value indicating whether to confirm removal.</summary>
         public bool ConfirmRemoval => this.Preferences.ConfirmRemoval;
 
-        /// <summary>Adds an object to favourites.</summary>
-        /// <param name="obj"> The object to add. </param>
-        /// <returns> True if added, false if it is not an asset or already exists. </returns>
         public bool AddFavourite(Object obj)
         {
             if (!CanAddFavourite(obj))
@@ -72,9 +63,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             return true;
         }
 
-        /// <summary>Adds multiple objects to favourites.</summary>
-        /// <param name="objects"> The objects to add. </param>
-        /// <returns> Number of objects successfully added. </returns>
         public int AddFavourites(IEnumerable<Object> objects)
         {
             var addedCount = 0;
@@ -110,9 +98,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             return addedCount;
         }
 
-        /// <summary>Removes an object from favourites by object reference.</summary>
-        /// <param name="obj"> The object to remove. </param>
-        /// <returns> True if removed, false if not found. </returns>
         public bool RemoveFavourite(Object obj)
         {
             if (obj == null)
@@ -134,7 +119,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             return false;
         }
 
-        /// <summary>Clears all favourites.</summary>
         public void ClearFavourites()
         {
             if (this.favourites.Count > 0)
@@ -145,9 +129,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             }
         }
 
-        /// <summary>Checks if an object is already in favourites.</summary>
-        /// <param name="obj"> The object to check. </param>
-        /// <returns> True if in favourites, false otherwise. </returns>
         public bool IsFavourite(Object obj)
         {
             if (obj == null)
@@ -159,9 +140,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             return this.favourites.Any(f => f.MatchesObject(obj, objectId));
         }
 
-        /// <summary>Reorders a favourite item to a new position.</summary>
-        /// <param name="fromIndex">The current index of the item.</param>
-        /// <param name="toIndex">The target index for the item.</param>
         public void ReorderFavourite(int fromIndex, int toIndex)
         {
             if (fromIndex < 0 || fromIndex >= this.favourites.Count ||
@@ -179,8 +157,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             this.NotifyItemsChanged();
         }
 
-        /// <summary>Selects an object from favourites.</summary>
-        /// <param name="item"> The item to select. </param>
         public void SelectFromFavourites(FavouritesItem item)
         {
             this.SelectItem(item);

@@ -4,16 +4,14 @@
     using Unity.Burst;
     using Unity.Collections;
 
-    /// <summary> Container for setting config var static fields that use FixedString. </summary>
-    /// <remarks> This should only be used in debugging tools. </remarks>
-    /// <typeparam name="T"> The type of shared static. Must be one of the FixedString types. </typeparam>
+    /// <summary>
+    /// Debugging only; T must be a FixedString type.
+    /// </summary>
     internal class ConfigVarSharedStaticStringContainer<T> : IConfigVarContainer<T>
         where T : unmanaged
     {
         private readonly SharedStatic<T> field;
 
-        /// <summary> Initializes a new instance of the <see cref="ConfigVarSharedStaticStringContainer{T}" /> class. </summary>
-        /// <param name="field"> The field associated with the config var. </param>
         public ConfigVarSharedStaticStringContainer(SharedStatic<T> field)
         {
             this.field = field;

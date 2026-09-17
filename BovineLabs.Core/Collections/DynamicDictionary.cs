@@ -10,12 +10,8 @@ namespace BovineLabs.Core.Collections
     using Unity.Mathematics;
 
     /// <summary>
-    /// Describes an entry stored in a <see cref="DynamicDictionary{TKey, TValue, TEntry}" /> buffer.
+    /// Entries must be unmanaged. Tag zero means empty, odd tags contain hash fingerprints, and nonzero even tags are tombstones.
     /// </summary>
-    /// <remarks>
-    /// Implementations should keep the struct unmanaged and use 0 in <see cref="Tag" /> to represent empty slots.
-    /// Odd tag values store hash fingerprints used to accelerate key comparisons, while even non-zero tags represent tombstones.
-    /// </remarks>
     public interface IDynamicDictionaryEntry<TKey, TValue> : IBufferElementData
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
@@ -28,26 +24,8 @@ namespace BovineLabs.Core.Collections
     }
 
     /// <summary>
-    /// Entry-backed dictionary stored directly in a <see cref="DynamicBuffer{T}" /> with a reserved capacity-only header slot.
+    /// Buffer length is the power-of-two table capacity; an extra capacity-only slot stores the header.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// The dictionary stores entries directly in the dynamic buffer and reserves one extra capacity slot used as a header.
-    /// Each element's <see cref="IDynamicDictionaryEntry{TKey, TValue}.Tag" /> is 0 for empty slots and otherwise
-    /// stores a hash fingerprint (<c>hash << 1 | 1</c>) so that 0 is reserved; even, non-zero tags represent
-    /// tombstones.
-    /// </para>
-    /// <para>
-    /// Capacity equals the buffer length and must be a power of two; indices are computed with
-    /// <c>hash & (capacity - 1)</c> and collisions resolve via linear probing. <see cref="TryAdd" /> scans for
-    /// an empty slot or matching key, resizing or rehashing when load-factor thresholds are exceeded.
-    /// </para>
-    /// <para>
-    /// Removal marks tombstones to keep probe chains intact, while <see cref="Clear" /> resets tags and
-    /// header counters. <see cref="Resize" /> and <see cref="ReconstructAfterRemap" /> copy entries to
-    /// temporary storage, clear tags, and reinsert entries with either stored or recomputed tags.
-    /// </para>
-    /// </remarks>
     public unsafe struct DynamicDictionary<TKey, TValue, TEntry>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
@@ -71,10 +49,6 @@ namespace BovineLabs.Core.Collections
             public int TombstonesPlusOne;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DynamicDictionary{TKey, TValue, TEntry}"/> struct.
-        /// </summary>
-        /// <param name="buffer"> The buffer whose length defines the table size. </param>
         public DynamicDictionary(DynamicBuffer<TEntry> buffer)
         {
             buffer.CheckReadAccess();
@@ -84,19 +58,10 @@ namespace BovineLabs.Core.Collections
             this.buffer = buffer;
         }
 
-        /// <summary>
-        /// Gets a value indicating whether the underlying buffer is created.
-        /// </summary>
         public readonly bool IsCreated => this.buffer.IsCreated;
 
-        /// <summary>
-        /// Gets a value indicating whether the dictionary has no entries.
-        /// </summary>
         public readonly bool IsEmpty => this.Count == 0;
 
-        /// <summary>
-        /// Gets the number of key-value pairs in the dictionary.
-        /// </summary>
         public readonly int Count
         {
             get
@@ -107,13 +72,6 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        /// <summary>
-        /// Gets or sets the value for the specified key.
-        /// </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <value> The value associated with the key. </value>
-        /// <remarks> Setting the value updates an existing key or adds it when it is not present. </remarks>
-        /// <exception cref="ArgumentException"> Thrown by the getter if the key was not present. </exception>
         public TValue this[TKey key]
         {
             get
@@ -132,9 +90,6 @@ namespace BovineLabs.Core.Collections
             set => this.TryAddOrSet(key, value, true);
         }
 
-        /// <summary>
-        /// Gets the fixed capacity for this dictionary.
-        /// </summary>
         public int Capacity
         {
             get
@@ -145,21 +100,14 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        /// <summary>
-        /// Returns whether the dictionary contains the specified key.
-        /// </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <returns> True when the key exists in the map. </returns>
         public readonly bool ContainsKey(TKey key)
         {
             return this.TryGetValue(key, out _);
         }
 
         /// <summary>
-        /// Ensures the dictionary can hold at least the requested capacity.
+        /// Only grows; requests round up to a power of two.
         /// </summary>
-        /// <param name="capacity"> The minimum desired capacity (rounded up to power-of-two). </param>
-        /// <remarks> The map only grows; smaller values have no effect. </remarks>
         public void EnsureCapacity(int capacity)
         {
             this.buffer.CheckWriteAccess();
@@ -191,13 +139,6 @@ namespace BovineLabs.Core.Collections
             this.Resize(newCapacity);
         }
 
-        /// <summary>
-        /// Adds a key/value pair if the key does not already exist.
-        /// </summary>
-        /// <param name="key"> The key to add. </param>
-        /// <param name="value"> The value to associate with the key. </param>
-        /// <returns> True when the entry is inserted, false if the key exists. </returns>
-        /// <remarks> Automatically grows or rehashes when load-factor thresholds are exceeded. </remarks>
         public bool TryAdd(TKey key, TValue value)
         {
             return this.TryAddOrSet(key, value, false);
@@ -312,12 +253,6 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        /// <summary>
-        /// Adds a key/value pair.
-        /// </summary>
-        /// <param name="key"> The key to add. </param>
-        /// <param name="value"> The value to associate with the key. </param>
-        /// <exception cref="ArgumentException"> Thrown if the key already exists. </exception>
         public void Add(TKey key, TValue value)
         {
             if (!this.TryAdd(key, value))
@@ -326,12 +261,6 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        /// <summary>
-        /// Tries to retrieve a value for the given key.
-        /// </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <param name="value"> The value for the key when found. </param>
-        /// <returns> True when the key exists in the map. </returns>
         public readonly bool TryGetValue(TKey key, out TValue value)
         {
             this.buffer.CheckReadAccess();
@@ -372,9 +301,6 @@ namespace BovineLabs.Core.Collections
             return false;
         }
 
-        /// <summary> Returns an array with a copy of all keys in no particular order. </summary>
-        /// <param name="allocator"> The allocator to use. </param>
-        /// <returns> An array with a copy of all keys in the dictionary. </returns>
         public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
@@ -385,9 +311,6 @@ namespace BovineLabs.Core.Collections
             return result;
         }
 
-        /// <summary> Returns an array with a copy of all values in no particular order. </summary>
-        /// <param name="allocator"> The allocator to use. </param>
-        /// <returns> An array with a copy of all values in the dictionary. </returns>
         public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
@@ -398,10 +321,6 @@ namespace BovineLabs.Core.Collections
             return result;
         }
 
-        /// <summary> Returns arrays with a copy of all key-value pairs in no particular order. </summary>
-        /// <remarks> For all indices, <c>Values[i]</c> is the value associated with <c>Keys[i]</c>. </remarks>
-        /// <param name="allocator"> The allocator to use. </param>
-        /// <returns> A <see cref="NativeKeyValueArrays{TKey,TValue}" /> with a copy of all key-value pairs. </returns>
         public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
             this.buffer.CheckReadAccess();
@@ -412,12 +331,6 @@ namespace BovineLabs.Core.Collections
             return result;
         }
 
-        /// <summary>
-        /// Removes a key/value pair if present.
-        /// </summary>
-        /// <param name="key"> The key to remove. </param>
-        /// <returns> True when the entry is removed. </returns>
-        /// <remarks> Uses tombstones to keep probe chains intact. </remarks>
         public bool TryRemove(TKey key)
         {
             this.buffer.CheckWriteAccess();
@@ -473,20 +386,11 @@ namespace BovineLabs.Core.Collections
             return false;
         }
 
-        /// <summary>
-        /// Removes a key/value pair if present.
-        /// </summary>
-        /// <param name="key"> The key to remove. </param>
-        /// <returns> True when the entry is removed. </returns>
         public bool Remove(TKey key)
         {
             return this.TryRemove(key);
         }
 
-        /// <summary>
-        /// Clears the map by resetting all entry tags.
-        /// </summary>
-        /// <remarks> Does not resize the buffer. </remarks>
         public void Clear()
         {
             this.buffer.CheckWriteAccess();
@@ -506,11 +410,8 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary>
-        /// Rehashes the map after key values are remapped.
+        /// Call after remapping keys such as Entity or BlobAssetReference to rebuild hash positions.
         /// </summary>
-        /// <remarks>
-        /// Call this after remapping keys (such as Entity or BlobAssetReference values) to rebuild tags and table positions.
-        /// </remarks>
         public void ReconstructAfterRemap()
         {
             this.buffer.CheckWriteAccess();
@@ -923,16 +824,8 @@ namespace BovineLabs.Core.Collections
         }
     }
 
-    /// <summary>
-    /// Extension helpers for building and accessing entry-backed dynamic dictionary buffers.
-    /// </summary>
     public static class DynamicDictionaryExtensions
     {
-        /// <summary>
-        /// Creates a dictionary wrapper for an initialized entry-backed buffer.
-        /// </summary>
-        /// <param name="buffer"> The initialized buffer to wrap. </param>
-        /// <returns> A dictionary wrapper for the buffer. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicDictionary<TKey, TValue, TEntry> AsDynamicDictionary<TKey, TValue, TEntry>(this DynamicBuffer<TEntry> buffer)
             where TKey : unmanaged, IEquatable<TKey>
@@ -942,10 +835,9 @@ namespace BovineLabs.Core.Collections
             return new DynamicDictionary<TKey, TValue, TEntry>(buffer);
         }
 
-        /// <summary> Checks whether an entry accessed through its interface is occupied. </summary>
-        /// <param name="buffer"> The entry to inspect. </param>
-        /// <returns> <see langword="true" /> if the entry is occupied; otherwise, <see langword="false" />. </returns>
-        /// <remarks> This overload may box value-type entries and is not Burst-compatible. </remarks>
+        /// <summary>
+        /// May box entries; not Burst-compatible.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsOccupied<TKey, TValue>(this IDynamicDictionaryEntry<TKey, TValue> buffer)
             where TKey : unmanaged, IEquatable<TKey>
@@ -954,9 +846,6 @@ namespace BovineLabs.Core.Collections
             return (buffer.Tag & 1u) != 0;
         }
 
-        /// <summary> Checks whether a generic unmanaged entry is occupied without boxing it. </summary>
-        /// <param name="buffer"> The entry to inspect. </param>
-        /// <returns> <see langword="true" /> if the entry is occupied; otherwise, <see langword="false" />. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsOccupied<TKey, TValue, TEntry>(this TEntry buffer)
             where TKey : unmanaged, IEquatable<TKey>

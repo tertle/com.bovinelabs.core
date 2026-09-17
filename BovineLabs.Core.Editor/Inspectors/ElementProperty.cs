@@ -7,7 +7,6 @@
     using UnityEditor.UIElements;
     using UnityEngine.UIElements;
 
-    /// <summary> Provides an inspector ([CustomPropertyDrawer(typeof(T))]) with custom element but will fall back to PropertyField if not overriden. </summary>
     public abstract class ElementProperty : PropertyDrawer
     {
         private SerializedObject serializedObject;

@@ -22,12 +22,8 @@ namespace BovineLabs.Core.Iterators
             this.helper = buffer.AsUntypedBufferHelper();
         }
 
-        /// <summary> Gets a value indicating whether this buffer has been allocated (and not yet deallocated). </summary>
-        /// <value> True if this buffer has been allocated (and not yet deallocated). </value>
         public readonly bool IsCreated => this.buffer.IsCreated;
 
-        /// <summary> Gets a value indicating whether this buffer is empty. </summary>
-        /// <value> True if this buffer is empty or if the buffer has not been constructed. </value>
         public readonly bool IsEmpty
         {
             get
@@ -38,7 +34,6 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-        /// <summary> Gets the current number of elements in this buffer. </summary>
         public readonly int Length
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -50,9 +45,9 @@ namespace BovineLabs.Core.Iterators
             }
         }
 
-        /// <summary> Gets or sets the number of elements that fit in the current allocation. </summary>
-        /// <value> The number of elements that fit in the current allocation. </value>
-        /// <param name="value"> A new capacity. Must be larger than the current capacity. </param>
+        /// <summary>
+        /// Capacity cannot shrink.
+        /// </summary>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -73,8 +68,6 @@ namespace BovineLabs.Core.Iterators
 
         internal DynamicUntypedBufferHelper* Helper => this.helper;
 
-        /// <summary> Removes all elements. </summary>
-        /// <remarks> Does not change the capacity. </remarks>
         public void Clear()
         {
             this.buffer.CheckWriteAccess();
@@ -82,10 +75,6 @@ namespace BovineLabs.Core.Iterators
             this.helper->Clear();
         }
 
-        /// <summary> Adds an element to the end of the buffer. </summary>
-        /// <param name="value"> The value to add. </param>
-        /// <typeparam name="TValue"> The value type. </typeparam>
-        /// <returns> The index of the added element. </returns>
         public int Add<TValue>(TValue value)
             where TValue : unmanaged
         {
@@ -94,10 +83,6 @@ namespace BovineLabs.Core.Iterators
             return DynamicUntypedBufferHelper.Add(this.buffer, ref this.helper, value);
         }
 
-        /// <summary> Gets a writable reference to the element at the given index. </summary>
-        /// <param name="index"> The zero-based index. </param>
-        /// <typeparam name="TValue"> The value type. </typeparam>
-        /// <returns> A writable reference to the element. </returns>
         public ref TValue ElementAt<TValue>(int index)
             where TValue : unmanaged
         {
@@ -106,10 +91,6 @@ namespace BovineLabs.Core.Iterators
             return ref DynamicUntypedBufferHelper.GetValue<TValue>(this.helper, index);
         }
 
-        /// <summary> Gets a readonly reference to the element at the given index. </summary>
-        /// <param name="index"> The zero-based index. </param>
-        /// <typeparam name="TValue"> The value type. </typeparam>
-        /// <returns> A readonly reference to the element. </returns>
         public ref readonly TValue ElementAtRO<TValue>(int index)
             where TValue : unmanaged
         {
@@ -118,10 +99,6 @@ namespace BovineLabs.Core.Iterators
             return ref DynamicUntypedBufferHelper.GetValue<TValue>(this.helper, index);
         }
 
-        /// <summary> Sets the value for the element at the given index. </summary>
-        /// <param name="index"> The zero-based index. </param>
-        /// <param name="value"> The value to set. </param>
-        /// <typeparam name="TValue"> The value type. </typeparam>
         public void Set<TValue>(int index, TValue value)
             where TValue : unmanaged
         {
@@ -130,8 +107,6 @@ namespace BovineLabs.Core.Iterators
             DynamicUntypedBufferHelper.SetValue(this.helper, index, value);
         }
 
-        /// <summary> Removes the element at the specified index. </summary>
-        /// <param name="index"> The index of the element to remove. </param>
         public void RemoveAt(int index)
         {
             this.buffer.CheckWriteAccess();

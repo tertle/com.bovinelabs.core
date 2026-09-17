@@ -6,18 +6,10 @@ namespace BovineLabs.Core.Iterators.Columns
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Iterator for traversing elements in an OrderedListColumn in sorted order. </summary>
-    /// <remarks>
-    /// This struct is used with TryGetFirst() and TryGetNext() methods to iterate through
-    /// the ordered list. The EntryIndex field contains the current storage index being visited,
-    /// while NextEntryIndex is used internally to track the next element in the sorted chain.
-    /// </remarks>
     public struct OrderedListIterator
     {
-        /// <summary>The storage index of the current element being visited.</summary>
         public int EntryIndex;
 
-        /// <summary>Internal field used to track the next element in the iteration chain.</summary>
         internal int NextEntryIndex;
     }
 
@@ -34,44 +26,26 @@ namespace BovineLabs.Core.Iterators.Columns
         private int* Next => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + this.nextOffset);
         private int* Prev => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + this.prevOffset);
 
-        /// <summary> Gets the value stored at the specified index. </summary>
-        /// <param name="idx">The index of the element to retrieve. This is the storage index, not the sorted position.</param>
-        /// <returns>The value stored at the specified index.</returns>
-        /// <remarks>
-        /// This method retrieves values by their storage index, not by their position in the sorted order.
-        /// To iterate through values in sorted order, use GetFirst() and GetNext() methods.
-        /// The index must be valid (0 &lt;= idx &lt; capacity) and should correspond to an element that was previously added.
-        /// </remarks>
+        /// <summary>
+        /// Indexes storage, not sorted position. Use GetFirst/GetNext for sorted traversal.
+        /// </summary>
         public T GetValue(int idx)
         {
             return UnsafeUtility.ReadArrayElement<T>(this.Keys, idx);
         }
 
-        /// <summary> Gets the index of the first element in sorted order. </summary>
-        /// <returns>Index of first element, or -1 if list is empty.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetFirst()
         {
             return this.head;
         }
 
-        /// <summary> Gets the index of the next element after the given index in sorted order. </summary>
-        /// <param name="current">Current index in the iteration.</param>
-        /// <returns>Index of next element, or -1 if at end of list.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetNext(int current)
         {
             return this.Next[current];
         }
 
-        /// <summary> Gets the first element in sorted order using iterator pattern. </summary>
-        /// <param name="value"> The value of the first element, or default if the list is empty. </param>
-        /// <param name="it"> Iterator that will be initialized to point to the first element. </param>
-        /// <returns> True if there is a first element, false if the list is empty. </returns>
-        /// <remarks>
-        /// This method initializes the iterator and retrieves the first element in one operation.
-        /// Use with TryGetNext() to iterate through all elements in ascending sorted order.
-        /// </remarks>
         public bool TryGetFirst(out T value, out OrderedListIterator it)
         {
             it.EntryIndex = -1;
@@ -79,14 +53,6 @@ namespace BovineLabs.Core.Iterators.Columns
             return this.TryGetNext(out value, ref it);
         }
 
-        /// <summary> Gets the next element in sorted order using iterator pattern. </summary>
-        /// <param name="value"> The value of the next element, or default if at the end of the list. </param>
-        /// <param name="it"> Iterator that will be advanced to the next element. </param>
-        /// <returns> True if there is a next element, false if at the end of the list. </returns>
-        /// <remarks>
-        /// This method advances the iterator to the next element and retrieves its value.
-        /// The iterator must have been initialized by TryGetFirst() or a previous successful TryGetNext() call.
-        /// </remarks>
         public bool TryGetNext(out T value, ref OrderedListIterator it)
         {
             var entryIdx = it.NextEntryIndex;

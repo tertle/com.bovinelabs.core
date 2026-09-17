@@ -9,7 +9,6 @@ namespace BovineLabs.Core.Collections
 
     public unsafe partial struct NativeThreadStream
     {
-        /// <summary> The reader instance. </summary>
         [NativeContainer]
         [NativeContainerIsReadOnly]
         public struct Reader : INativeStreamReader
@@ -33,15 +32,10 @@ namespace BovineLabs.Core.Collections
 #endif
             }
 
-            /// <summary> Gets the for each count. </summary>
             public int ForEachCount => this.reader.ForEachCount;
 
-            /// <summary> Gets the remaining item count. </summary>
             public int RemainingItemCount => CollectionHelper.AssumePositive(this.reader.RemainingItemCount);
 
-            /// <summary> Begin reading data at the iteration index. </summary>
-            /// <param name="foreachIndex"> The index to start reading. </param>
-            /// <returns> The number of elements at this index. </returns>
             public int BeginForEachIndex(int foreachIndex)
             {
                 this.CheckBeginForEachIndex(foreachIndex);
@@ -60,17 +54,15 @@ namespace BovineLabs.Core.Collections
                 return remainingItemCount;
             }
 
-            /// <summary> Ensures that all data has been read for the active iteration index. </summary>
-            /// <remarks> EndForEachIndex must always be called balanced by a BeginForEachIndex. </remarks>
+            /// <summary>
+            /// BeginForEachIndex and EndForEachIndex must be balanced; ending verifies that all iteration data was read.
+            /// </summary>
             public void EndForEachIndex()
             {
                 this.reader.EndForEachIndex();
                 this.CheckEndForEachIndex();
             }
 
-            /// <summary> Returns pointer to data. </summary>
-            /// <param name="size"> The size of the data to read. </param>
-            /// <returns> The pointer to the data. </returns>
             public byte* ReadUnsafePtr(int size)
             {
                 this.CheckReadSize(size);
@@ -108,9 +100,6 @@ namespace BovineLabs.Core.Collections
                 return ptr;
             }
 
-            /// <summary> Read data. </summary>
-            /// <typeparam name="T"> The type of value. </typeparam>
-            /// <returns> The returned data. </returns>
             public ref T Read<T>()
                 where T : unmanaged
             {
@@ -118,19 +107,12 @@ namespace BovineLabs.Core.Collections
                 return ref UnsafeUtility.AsRef<T>(this.ReadUnsafePtr(size));
             }
 
-            /// <summary>
-            /// The current number of items in the container.
-            /// </summary>
-            /// <returns> The item count. </returns>
             public int Count()
             {
                 this.CheckRead();
                 return this.reader.Count();
             }
 
-            /// <summary> Read a chunk of memory that could have been larger than the max allocation size. </summary>
-            /// <param name="buffer"> A buffer to write back to. </param>
-            /// <param name="size"> For an array, this is UnsafeUtility.SizeOf{T} * length. </param>
             public void ReadLarge(byte* buffer, int size)
             {
                 var allocationCount = size / MaxLargeSize;
@@ -150,10 +132,6 @@ namespace BovineLabs.Core.Collections
                 }
             }
 
-            /// <summary> Read a chunk of memory that could have been larger than the max allocation size. </summary>
-            /// <param name="buffer"> A buffer to write back to. </param>
-            /// <param name="length"> The number of elements. </param>
-            /// <typeparam name="T"> The element type to read. </typeparam>
             public void ReadLarge<T>(byte* buffer, int length)
                 where T : unmanaged
             {

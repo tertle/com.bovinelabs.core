@@ -3,15 +3,11 @@ namespace BovineLabs.Core.Utility
     using System;
     using Unity.Profiling;
 
-    /// <summary>Owns one or more profiler recorders and exposes their latest values as a sum.</summary>
     public sealed class ProfilerRecorderGroup : IDisposable
     {
         private readonly ProfilerRecorder[] recorders;
         private bool disposed;
 
-        /// <summary>Initializes a new instance of the <see cref="ProfilerRecorderGroup"/> class.</summary>
-        /// <param name="category">Profiler category shared by the counters.</param>
-        /// <param name="counterNames">Names of the counters to aggregate.</param>
         public ProfilerRecorderGroup(ProfilerCategory category, params string[] counterNames)
         {
             if (counterNames == null)
@@ -40,7 +36,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <summary>Gets whether every configured profiler counter is available.</summary>
         public bool Valid
         {
             get
@@ -62,7 +57,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <summary>Gets the sum of the latest available counter samples.</summary>
         public long LastValue
         {
             get

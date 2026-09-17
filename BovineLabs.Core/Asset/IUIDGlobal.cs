@@ -1,7 +1,7 @@
 namespace BovineLabs.Core.Asset
 {
     /// <summary>
-    /// Marking a scriptable object with this interface will automatically generate a branch safe unique ID for all objects regardless of type.
+    /// Automatically assigns IDs unique across asset types, including across branch merges.
     /// </summary>
     public interface IUIDGlobal : IUID
     {

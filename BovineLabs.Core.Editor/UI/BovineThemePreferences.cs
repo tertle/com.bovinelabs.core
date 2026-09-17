@@ -4,7 +4,6 @@ namespace BovineLabs.Core.Editor.UI
     using UnityEditor;
     using UnityEngine.UIElements;
 
-    /// <summary>Persists the editor theme independently of each project's player preferences.</summary>
     [InitializeOnLoad]
     internal static class BovineThemePreferences
     {

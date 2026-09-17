@@ -23,7 +23,6 @@
             this.enumerator = new UntypedDynamicHashMapHelper.Enumerator(data);
         }
 
-        /// <summary> The current key-value pair. </summary>
         public (IntPtr Key, IntPtr Value) Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -39,24 +38,19 @@
             }
         }
 
-        /// <summary> Gets the element at the current position of the enumerator in the container. </summary>
         object IEnumerator.Current => this.Current;
 
-        /// <summary> Advances the enumerator to the next key-value pair. </summary>
-        /// <returns> True if <see cref="Current" /> is valid to read after the call. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
             return this.enumerator.MoveNext();
         }
 
-        /// <summary> Resets the enumerator to its initial state. </summary>
         public void Reset()
         {
             this.enumerator.Reset();
         }
 
-        /// <summary> Does nothing. </summary>
         public void Dispose()
         {
         }

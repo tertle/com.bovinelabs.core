@@ -6,12 +6,8 @@
     using Unity.Collections.LowLevel.Unsafe;
 
     /// <summary>
-    /// Linear Congruential Generator
+    /// Implements Turbo Pascal LCG: https://en.wikipedia.org/wiki/Linear_congruential_generator#c_%E2%89%A0_0
     /// </summary>
-    /// <remarks>
-    /// This implements Turbo Pascal lcg.
-    /// https://en.wikipedia.org/wiki/Linear_congruential_generator#c_%E2%89%A0_0
-    /// </remarks>
     [NativeContainer]
     public unsafe struct NativeLinearCongruentialGenerator : IDisposable
     {
@@ -51,9 +47,6 @@
 #endif
         }
 
-        /// <summary>
-        /// Releases all resources (memory and safety handles).
-        /// </summary>
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

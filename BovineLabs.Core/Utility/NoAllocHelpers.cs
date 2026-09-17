@@ -13,10 +13,6 @@ namespace BovineLabs.Core.Utility
             return UnsafeUtility.As<List<T>, ListPrivateFieldAccess<T>>(ref list).Items;
         }
 
-        /// <summary> Resize a list. </summary>
-        /// <typeparam name="T"> <see cref="List{T}" />. </typeparam>
-        /// <param name="list"> The <see cref="List{T}" /> to resize. </param>
-        /// <param name="count"> The new length of the <see cref="List{T}" />. </param>
         public static void ResizeList<T>(List<T> list, int count)
         {
             if (count < 0)

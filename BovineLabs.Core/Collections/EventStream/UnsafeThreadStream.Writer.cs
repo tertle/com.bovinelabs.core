@@ -6,7 +6,6 @@ namespace BovineLabs.Core.Collections
 
     public unsafe partial struct UnsafeThreadStream
     {
-        /// <summary> The writer instance. </summary>
         public readonly struct Writer
         {
             [NativeDisableUnsafePtrRestriction]
@@ -17,9 +16,6 @@ namespace BovineLabs.Core.Collections
                 this.blockStream = stream.blockData;
             }
 
-            /// <summary> Write data. </summary>
-            /// <typeparam name="T"> The type of value. </typeparam>
-            /// <param name="value"> Value to write. </param>
             public void Write<T>(T value)
                 where T : struct
             {
@@ -27,9 +23,6 @@ namespace BovineLabs.Core.Collections
                 dst = value;
             }
 
-            /// <summary> Allocate space for data. </summary>
-            /// <typeparam name="T"> The type of value. </typeparam>
-            /// <returns> Reference to allocated space for data. </returns>
             public ref T Allocate<T>()
                 where T : struct
             {
@@ -37,9 +30,6 @@ namespace BovineLabs.Core.Collections
                 return ref UnsafeUtility.AsRef<T>(this.Allocate(size));
             }
 
-            /// <summary> Allocate space for data. </summary>
-            /// <param name="size"> Size in bytes. </param>
-            /// <returns> Pointer to allocated space for data. </returns>
             public byte* Allocate(int size)
             {
                 var threadIndex = JobsUtility.ThreadIndex;
@@ -81,9 +71,6 @@ namespace BovineLabs.Core.Collections
                 return ptr;
             }
 
-            /// <summary> Allocate a chunk of memory that can be larger than the max allocation size. </summary>
-            /// <param name="array"> The array to write. </param>
-            /// <typeparam name="T"> The type of the array. </typeparam>
             public void WriteLarge<T>(NativeArray<T> array)
                 where T : unmanaged
             {
@@ -91,9 +78,6 @@ namespace BovineLabs.Core.Collections
                 this.WriteLarge((byte*)byteArray.GetUnsafeReadOnlyPtr(), byteArray.Length);
             }
 
-            /// <summary> Allocate a chunk of memory that can be larger than the max allocation size. </summary>
-            /// <param name="data"> The data to write. </param>
-            /// <typeparam name="T"> The type of the slice. </typeparam>
             public void WriteLarge<T>(NativeSlice<T> data)
                 where T : unmanaged
             {
@@ -123,9 +107,6 @@ namespace BovineLabs.Core.Collections
                 }
             }
 
-            /// <summary> Allocate a chunk of memory that can be larger than the max allocation size. </summary>
-            /// <param name="data"> The data to write. </param>
-            /// <param name="size"> The size of the data. For an array, this is UnsafeUtility.SizeOf{T} * length. </param>
             public void WriteLarge(byte* data, int size)
             {
                 var allocationCount = size / MaxLargeSize;

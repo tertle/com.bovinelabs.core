@@ -9,34 +9,14 @@ namespace BovineLabs.Core.Jobs
     using Unity.Jobs.LowLevel.Unsafe;
     using Unity.Mathematics;
 
-    /// <summary>
-    /// A lightweight job type that divides a fixed range of work across a known number of threads, similar to
-    /// <see cref="Unity.Jobs.IJobFor" />.
-    /// Each worker receives a contiguous chunk of indices defined by the thread count you pass to
-    /// <see cref="JobForThread.ScheduleParallel{T}" />.
-    /// </summary>
     [JobProducerType(typeof(JobForThread.JobThreadStruct<>))]
     public interface IJobForThread
     {
-        /// <summary> Performs work against a specific iteration index. </summary>
-        /// <param name="index">The index of the for loop to perform work from.</param>
         void Execute(int index);
     }
 
-    /// <summary>
-    /// Scheduling helpers for <see cref="IJobForThread" /> implementations.
-    /// </summary>
     public static unsafe class JobForThread
     {
-        /// <summary>
-        /// Schedules the job across a fixed number of worker threads where each thread processes a contiguous slice of the given length.
-        /// </summary>
-        /// <param name="jobData"> The job instance to schedule. </param>
-        /// <param name="arrayLength"> The total number of iterations to execute. </param>
-        /// <param name="threadCount"> The number of worker threads to divide the iterations across. </param>
-        /// <param name="dependency"> A handle identifying jobs that must complete before this job begins. </param>
-        /// <typeparam name="T"> The specific <see cref="IJobForThread" /> implementation type. </typeparam>
-        /// <returns> A handle representing the scheduled job. </returns>
         public static JobHandle ScheduleParallel<T>(this T jobData, int arrayLength, int threadCount, JobHandle dependency)
             where T : struct, IJobForThread
         {
@@ -74,8 +54,6 @@ namespace BovineLabs.Core.Jobs
             return reflectionData;
         }
 
-        /// <summary> The job execution struct. </summary>
-        /// <typeparam name="T"> The type of the job. </typeparam>
         internal struct JobThreadStruct<T>
             where T : struct, IJobForThread
         {

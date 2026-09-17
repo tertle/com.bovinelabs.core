@@ -5,8 +5,6 @@
     using System.Linq;
     using UnityEngine;
 
-    /// <typeparam name="T"> Itself. </typeparam>
-    /// <typeparam name="TV"> The value. </typeparam>
     public abstract class KSettings<T, TV> : KSettingsBase<T, TV>
         where T : KSettings<T, TV>
         where TV : unmanaged, IEquatable<TV>

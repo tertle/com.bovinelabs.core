@@ -6,9 +6,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
     using BovineLabs.Core.Editor.Windows.Base;
     using UnityEngine;
 
-    /// <summary>
-    /// Editor preferences for Favourites feature.
-    /// </summary>
     [CoreEditorPreference("Favourites")]
     [Serializable]
     public class FavouritesPreferences : BaseDisplayPreferences
@@ -27,18 +24,12 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             this.GreyOutUnloadedObjects = true;
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether to show confirmation dialog when removing favourites.
-        /// </summary>
         public bool ConfirmRemoval
         {
             get => this.confirmRemoval;
             set => this.confirmRemoval = value;
         }
 
-        /// <summary>
-        /// Gets or sets the favourites data. Hidden from preferences UI.
-        /// </summary>
         public List<SerializableFavouriteItem> FavouritesData
         {
             get => this.favouritesData;

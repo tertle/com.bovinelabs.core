@@ -19,8 +19,9 @@ namespace BovineLabs.Core.Editor.Asset
     using UnityEngine.Assertions;
     using Object = UnityEngine.Object;
 
-    /// <summary> An <see cref="AssetPostprocessor" /> that ensures <see cref="IUID" /> types always have a unique ID even if 2 branches merge. </summary>
-    /// <remarks>Assets marked DontSaveInBuild are excluded from runtime catalogues and automatic ID allocation.</remarks>
+    /// <summary>
+    /// DontSaveInBuild assets are excluded from runtime catalogues and automatic ID allocation.
+    /// </summary>
     public class AutoRefProcessor : AssetPostprocessor
     {
         [NoAutoStaticsCleanup]

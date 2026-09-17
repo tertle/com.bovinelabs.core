@@ -10,9 +10,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    /// <summary>
-    /// Editor window that displays the history of selected objects in Unity.
-    /// </summary>
     public sealed class SelectionHistoryWindow : BaseObjectWindow<SelectionHistoryItem, SelectionHistoryService, SelectionHistoryPreferences>
     {
         private readonly List<SelectionHistoryItem> filteredLockedItems = new();

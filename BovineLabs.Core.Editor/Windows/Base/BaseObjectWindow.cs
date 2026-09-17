@@ -10,12 +10,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    /// <summary>
-    /// Base class for editor windows that display lists of Unity objects.
-    /// </summary>
-    /// <typeparam name="TItem">The type of object item.</typeparam>
-    /// <typeparam name="TService">The type of service.</typeparam>
-    /// <typeparam name="TPreferences">The type of preferences.</typeparam>
     public abstract class BaseObjectWindow<TItem, TService, TPreferences> : EditorWindow, IDisposable
         where TItem : BaseObjectItem
         where TService : BaseObjectService<TItem, TPreferences>
@@ -56,19 +50,14 @@ namespace BovineLabs.Core.Editor.Windows.Base
 
         protected bool Disposed { get; private set; }
 
-        /// <summary>Gets the service instance for this window.</summary>
         protected abstract TService Service { get; }
 
-        /// <summary>Gets the stylesheet path for this window.</summary>
         protected abstract string StylesheetPath { get; }
 
-        /// <summary>Gets the CSS class name for the root element.</summary>
         protected abstract string RootClassName { get; }
 
-        /// <summary>Gets all items to display in the list.</summary>
         protected IReadOnlyList<TItem> AllItems => this.Service.Items;
 
-        /// <summary>Gets the window title content.</summary>
         protected abstract GUIContent WindowTitle { get; }
 
         public void CreateGUI()
@@ -373,10 +362,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
 
         protected virtual string GetTimestampFormat() => "HH:mm:ss";
 
-        /// <summary>
-        /// Creates the standard settings menu with common display options.
-        /// </summary>
-        /// <param name="preferencesName">The name used for UserSettings.</param>
         protected void CreateStandardSettingsMenu(string preferencesName)
         {
             if (this.SettingsMenu == null)

@@ -4,12 +4,6 @@
 
     public static class TypeUtility
     {
-        /// <summary>
-        /// Checks if a type matches an open generic.
-        /// </summary>
-        /// <param name="type">The type to check. </param>
-        /// <param name="openGeneric"> The open generic to check against, must be something like typeof(SomeType&lt;&gt;). </param>
-        /// <returns> True if it matches. </returns>
         public static bool MatchesOpenGeneric(Type type, Type openGeneric)
         {
             while (type != null && type != typeof(object))
@@ -26,11 +20,6 @@
             return false;
         }
 
-        /// <summary> Checks if a type matches an open generic and gets that generic argument. </summary>
-        /// <param name="type">The type to check. </param>
-        /// <param name="openGeneric"> The open generic to check against, must be something like typeof(SomeType&lt;&gt;). </param>
-        /// <param name="dataType"> The generic argument to return. </param>
-        /// <returns> True if it matches. </returns>
         public static bool GetOpenGenericArgumentType(Type type, Type openGeneric, out Type dataType)
         {
             dataType = null;

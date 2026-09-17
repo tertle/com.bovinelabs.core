@@ -11,8 +11,6 @@
     using Unity.Jobs;
     using UnityEngine.Internal;
 
-    /// <summary> An unsafe version of <see cref="NativeArray{T}" />. </summary>
-    /// <typeparam name="T"> The type that array holds. </typeparam>
     [DebuggerTypeProxy(typeof(UnsafeArray<>.UnsafeArrayDebugView))]
     [DebuggerDisplay("Length = {Length}")]
     public struct UnsafeArray<T> : IDisposable, IEnumerable<T>, IEquatable<UnsafeArray<T>>

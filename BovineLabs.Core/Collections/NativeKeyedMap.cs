@@ -21,12 +21,6 @@
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeKeyedMap<TValue>>();
 #endif
 
-        /// <summary>
-        /// Returns a newly allocated multi hash map.
-        /// </summary>
-        /// <param name="capacity"> The number of key-value pairs that should fit in the initial allocation. </param>
-        /// <param name="maxKey"> Max value stored in this map. </param>
-        /// <param name="allocator"> The allocator to use. </param>
         public NativeKeyedMap(int capacity, int maxKey, AllocatorManager.AllocatorHandle allocator)
         {
             this.keyedMapData = new UnsafeKeyedMap<TValue>(capacity, maxKey, allocator.Handle);
@@ -45,18 +39,11 @@
 #endif
         }
 
-        /// <summary>
-        /// Whether this hash map has been allocated (and not yet deallocated).
-        /// </summary>
-        /// <value> True if this hash map has been allocated (and not yet deallocated). </value>
         public bool IsCreated => this.keyedMapData.IsCreated;
 
         /// <summary>
-        /// Returns the number of key-value pairs that fit in the current allocation.
+        /// Capacity cannot shrink.
         /// </summary>
-        /// <value> The number of key-value pairs that fit in the current allocation. </value>
-        /// <param name="value"> A new capacity. Must be larger than the current capacity. </param>
-        /// <exception cref="Exception"> Thrown if `value` is less than the current capacity. </exception>
         public int Capacity
         {
             get
@@ -72,9 +59,6 @@
             }
         }
 
-        /// <summary>
-        /// Releases all resources (memory and safety handles).
-        /// </summary>
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -83,11 +67,6 @@
             this.keyedMapData.Dispose();
         }
 
-        /// <summary>
-        /// Creates and schedules a job that will dispose this hash map.
-        /// </summary>
-        /// <param name="inputDeps"> A job handle. The newly scheduled job will depend upon this handle. </param>
-        /// <returns> The handle of a new job that will dispose this hash map. </returns>
         public unsafe JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new UnsafeKeyedMapDataDisposeJob
@@ -110,49 +89,24 @@
             return jobHandle;
         }
 
-        /// <summary>
-        /// Removes all key-value pairs.
-        /// </summary>
-        /// <remarks> Does not change the capacity. </remarks>
         public void Clear()
         {
             this.CheckWrite();
             this.keyedMapData.Clear();
         }
 
-        /// <summary>
-        /// Adds a new key-value pair.
-        /// </summary>
-        /// <remarks>
-        /// If a key-value pair with this key is already present, an additional separate key-value pair is added.
-        /// </remarks>
-        /// <param name="key"> The key to add. </param>
-        /// <param name="item"> The value to add. </param>
         public void Add(int key, TValue item)
         {
             this.CheckWrite();
             this.keyedMapData.Add(key, item);
         }
 
-        /// <summary>
-        /// Gets an iterator for a key.
-        /// </summary>
-        /// <param name="key"> The key. </param>
-        /// <param name="item"> Outputs the associated value represented by the iterator. </param>
-        /// <param name="it"> Outputs an iterator. </param>
-        /// <returns> True if the key was present. </returns>
         public bool TryGetFirstValue(int key, out TValue item, out UnsafeKeyedMapIterator it)
         {
             this.CheckRead();
             return this.keyedMapData.TryGetFirstValue(key, out item, out it);
         }
 
-        /// <summary>
-        /// Advances an iterator to the next value associated with its key.
-        /// </summary>
-        /// <param name="item"> Outputs the next value. </param>
-        /// <param name="it"> A reference to the iterator to advance. </param>
-        /// <returns> True if the key was present and had another value. </returns>
         public bool TryGetNextValue(out TValue item, ref UnsafeKeyedMapIterator it)
         {
             this.CheckRead();

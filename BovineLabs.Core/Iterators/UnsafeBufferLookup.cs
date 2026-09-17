@@ -7,11 +7,6 @@
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
-    /// <summary>
-    /// A container that provides access to all instances of DynamicBuffer components with elements of type T,
-    /// indexed by <see cref="Entity" />.
-    /// </summary>
-    /// <typeparam name="T"> The type of <see cref="IBufferElementData" /> to access. </typeparam>
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct UnsafeBufferLookup<T>
         where T : unmanaged, IBufferElementData
@@ -37,22 +32,8 @@
         }
 
         /// <summary>
-        /// Gets the <see cref="DynamicBuffer{T}" /> instance of type <typeparamref name="T" /> for the specified entity.
+        /// Parallel writes require proving that threads cannot access the same buffer before disabling the parallel restriction.
         /// </summary>
-        /// <param name="entity"> The entity. </param>
-        /// <returns> A <see cref="DynamicBuffer{T}" /> type. </returns>
-        /// <remarks>
-        /// Normally, you cannot write to buffers accessed using a BufferLookup instance
-        /// in a parallel Job. This restriction is in place because multiple threads could write to the same buffer,
-        /// leading to a race condition and nondeterministic results. However, when you are certain that your algorithm
-        /// cannot write to the same buffer from different threads, you can manually disable this safety check
-        /// by putting the [NativeDisableParallelForRestriction] attribute on the BufferLookup field in the Job.
-        /// [NativeDisableParallelForRestrictionAttribute]: https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeDisableParallelForRestrictionAttribute.html.
-        /// </remarks>
-        /// <exception cref="System.ArgumentException">
-        /// Thrown if <paramref name="entity" /> does not have a buffer
-        /// component of type <typeparamref name="T" />.
-        /// </exception>
         public UnsafeDynamicBuffer<T> this[Entity entity]
         {
             get
@@ -70,13 +51,6 @@
             }
         }
 
-        /// <summary>
-        /// Retrieves the buffer components associated with the specified <see cref="Entity" />, if it exists. Then reports if the instance still refers to a
-        /// valid entity and that it has a buffer component of type T.
-        /// </summary>
-        /// <param name="entity"> The entity. </param>
-        /// <param name="bufferData"> The buffer component of type T for the given entity, if it exists. </param>
-        /// <returns> True if the entity has a buffer component of type T, and false if it does not. </returns>
         public bool TryGetBuffer(Entity entity, out UnsafeDynamicBuffer<T> bufferData)
         {
             var ecs = this.access->EntityComponentStore;
@@ -100,15 +74,6 @@
             return false;
         }
 
-        /// <summary>
-        /// Reports whether the specified <see cref="Entity" /> instance still refers to a valid entity and that it has a
-        /// buffer component of type T.
-        /// </summary>
-        /// <param name="entity"> The entity. </param>
-        /// <returns>
-        /// True if the entity has a buffer component of type T, and false if it does not. Also returns false if
-        /// the Entity instance refers to an entity that has been destroyed.
-        /// </returns>
         public bool HasBuffer(Entity entity)
         {
             var ecs = this.access->EntityComponentStore;
@@ -116,24 +81,8 @@
         }
 
         /// <summary>
-        /// Reports whether any of IBufferElementData components of the type T, in the chunk containing the
-        /// specified <see cref="Entity" />, could have changed.
+        /// Tracks possible writes to the whole chunk, including declared writes that leave values unchanged.
         /// </summary>
-        /// <remarks>
-        /// Note that for efficiency, the change version applies to whole chunks not individual entities. The change
-        /// version is incremented even when another job or system that has declared write access to a component does
-        /// not actually change the component value.
-        /// </remarks>
-        /// <param name="entity"> The entity. </param>
-        /// <param name="version">
-        /// The version to compare. In a system, this parameter should be set to the
-        /// current <see cref="Unity.Entities.ComponentSystemBase.LastSystemVersion" /> at the time the job is run or
-        /// scheduled.
-        /// </param>
-        /// <returns>
-        /// True, if the version number stored in the chunk for this component is more recent than the version
-        /// passed to the <paramref name="version" /> parameter.
-        /// </returns>
         public bool DidChange(Entity entity, uint version)
         {
             var ecs = this.access->EntityComponentStore;
@@ -155,52 +104,21 @@
             return ChangeVersionUtility.DidChange(chunkVersion, version);
         }
 
-        /// <summary>
-        /// Checks whether the <see cref="IBufferElementData" /> of type T is enabled on the specified <see cref="Entity" />.
-        /// For the purposes of EntityQuery matching, an entity with a disabled component will behave as if it does not
-        /// have that component. The type T must implement the <see cref="IEnableableComponent" /> interface.
-        /// </summary>
-        /// <exception cref="ArgumentException"> The <see cref="Entity" /> does not exist. </exception>
-        /// <param name="entity"> The entity whose component should be checked. </param>
-        /// <returns> True if the specified component is enabled, or false if it is disabled. </returns>
-        /// <seealso cref="SetBufferEnabled" />
         public bool IsBufferEnabled(Entity entity)
         {
             return this.access->IsComponentEnabled(entity, this.typeIndex, ref this.cache);
         }
 
-        /// <summary>
-        /// Enable or disable the <see cref="IBufferElementData" /> of type T on the specified <see cref="Entity" />. This operation
-        /// does not cause a structural change (even if it occurs on a worker thread), or affect the value of the component.
-        /// For the purposes of EntityQuery matching, an entity with a disabled component will behave as if it does not
-        /// have that component. The type T must implement the <see cref="IEnableableComponent" /> interface.
-        /// </summary>
-        /// <exception cref="ArgumentException"> The <see cref="Entity" /> does not exist. </exception>
-        /// <param name="entity"> The entity whose component should be enabled or disabled. </param>
-        /// <param name="value"> True if the specified component should be enabled, or false if it should be disabled. </param>
-        /// <seealso cref="IsBufferEnabled" />
         public void SetBufferEnabled(Entity entity, bool value)
         {
             this.access->SetComponentEnabled(entity, this.typeIndex, value, ref this.cache);
         }
 
-        /// <summary>
-        /// When a BufferLookup is cached by a system across multiple system updates, calling this function
-        /// inside the system's OnUpdate() method performs the minimal incremental updates necessary to make the
-        /// type handle safe to use.
-        /// </summary>
-        /// <param name="system"> The system on which this type handle is cached. </param>
         public void Update(SystemBase system)
         {
             this.Update(ref *system.m_StatePtr);
         }
 
-        /// <summary>
-        /// When a BufferLookup is cached by a system across multiple system updates, calling this function
-        /// inside the system's OnUpdate() method performs the minimal incremental updates necessary to make the
-        /// type handle safe to use.
-        /// </summary>
-        /// <param name="systemState"> The SystemState of the system on which this type handle is cached. </param>
         public void Update(ref SystemState systemState)
         {
             // NOTE: We could in theory fetch all this data from m_Access.EntityComponentStore and void the SystemState from being passed in.

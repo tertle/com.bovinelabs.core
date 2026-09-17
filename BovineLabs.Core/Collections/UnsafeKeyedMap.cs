@@ -11,9 +11,8 @@
     using Unity.Jobs.LowLevel.Unsafe;
 
     /// <summary>
-    /// An iterator over all values associated with an individual key in a multi hash map.
+    /// Value iteration order is unspecified.
     /// </summary>
-    /// <remarks> The iteration order over the values associated with a key is an implementation detail. Do not rely upon any particular ordering. </remarks>
     public struct UnsafeKeyedMapIterator
     {
         internal int NextEntryIndex;
@@ -185,11 +184,6 @@
         [NativeDisableUnsafePtrRestriction]
         internal KeyedMapData* buffer;
 
-        /// <summary>
-        /// Initializes and returns an instance of UnsafeMultiHashMap.
-        /// </summary>
-        /// <param name="capacity"> The number of key-value pairs that should fit in the initial allocation. </param>
-        /// <param name="allocator"> The allocator to use. </param>
         public UnsafeKeyedMap(int capacity, int maxKey, AllocatorManager.AllocatorHandle allocator)
         {
             Check.Assume(maxKey > 0);
@@ -199,18 +193,11 @@
             this.Clear();
         }
 
-        /// <summary>
-        /// Whether this hash map has been allocated (and not yet deallocated).
-        /// </summary>
-        /// <value> True if this hash map has been allocated (and not yet deallocated). </value>
         public bool IsCreated => this.buffer != null;
 
         /// <summary>
-        /// Returns the number of key-value pairs that fit in the current allocation.
+        /// Capacity cannot shrink.
         /// </summary>
-        /// <value> The number of key-value pairs that fit in the current allocation. </value>
-        /// <param name="value"> A new capacity. Must be larger than the current capacity. </param>
-        /// <exception cref="Exception"> Thrown if `value` is less than the current capacity. </exception>
         public int Capacity
         {
             get => this.buffer->KeyCapacity;
@@ -258,13 +245,6 @@
             buckets[key] = idx;
         }
 
-        /// <summary>
-        /// Gets an iterator for a key.
-        /// </summary>
-        /// <param name="key"> The key. </param>
-        /// <param name="item"> Outputs the associated value represented by the iterator. </param>
-        /// <param name="it"> Outputs an iterator. </param>
-        /// <returns> True if the key was present. </returns>
         public bool TryGetFirstValue(int key, out TValue item, out UnsafeKeyedMapIterator it)
         {
             CheckKeyOutOfBounds(this.buffer, key);
@@ -284,12 +264,6 @@
             return this.TryGetNextValue(out item, ref it);
         }
 
-        /// <summary>
-        /// Advances an iterator to the next value associated with its key.
-        /// </summary>
-        /// <param name="item"> Outputs the next value. </param>
-        /// <param name="it"> A reference to the iterator to advance. </param>
-        /// <returns> True if the key was present and had another value. </returns>
         public bool TryGetNextValue(out TValue item, ref UnsafeKeyedMapIterator it)
         {
             it.EntryIndex = it.NextEntryIndex;

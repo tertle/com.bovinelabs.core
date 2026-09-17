@@ -26,30 +26,24 @@
             this.nextIndex = -1;
         }
 
-        /// <summary> Gets the current key-value pair. </summary>
         public KVPair<TKey, TValue> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => new(this.data, this.index);
         }
 
-        /// <summary> Gets the element at the current position of the enumerator in the container. </summary>
         object IEnumerator.Current => this.Current;
 
-        /// <summary> Does nothing. </summary>
         public void Dispose()
         {
         }
 
-        /// <summary> Advances the enumerator to the next key-value pair. </summary>
-        /// <returns> True if <see cref="Current" /> is valid to read after the call. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
             return MoveNext(this.data, ref this.bucketIndex, ref this.nextIndex, out this.index);
         }
 
-        /// <summary> Resets the enumerator to its initial state. </summary>
         public void Reset()
         {
             this.index = -1;

@@ -10,12 +10,8 @@ namespace BovineLabs.Core.Collections
     using Unity.Mathematics;
 
     /// <summary>
-    /// Describes an entry stored in a <see cref="DynamicMultiDictionary{TKey, TValue, TEntry}" /> buffer.
+    /// Entries must be unmanaged. Tag zero means empty, odd tags contain hash fingerprints, and nonzero even tags are tombstones.
     /// </summary>
-    /// <remarks>
-    /// Implementations should keep the struct unmanaged and use 0 in <see cref="Tag" /> to represent empty slots.
-    /// Odd tag values store hash fingerprints used to accelerate key comparisons, while even non-zero tags represent tombstones.
-    /// </remarks>
     public interface IDynamicMultiDictionaryEntry<TKey, TValue> : IBufferElementData
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
@@ -27,13 +23,6 @@ namespace BovineLabs.Core.Collections
         TValue Value { get; set; }
     }
 
-    /// <summary>
-    /// Entry-backed multi dictionary stored directly in a <see cref="DynamicBuffer{T}" /> with a reserved capacity-only header slot.
-    /// </summary>
-    /// <remarks>
-    /// The multi dictionary stores entries directly in the dynamic buffer and allows multiple entries to share the same key. Empty slots use a tag of 0,
-    /// occupied slots use an odd hash fingerprint, and even non-zero tags represent tombstones.
-    /// </remarks>
     public unsafe struct DynamicMultiDictionary<TKey, TValue, TEntry>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
@@ -57,10 +46,6 @@ namespace BovineLabs.Core.Collections
             public int TombstonesPlusOne;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DynamicMultiDictionary{TKey, TValue, TEntry}"/> struct.
-        /// </summary>
-        /// <param name="buffer"> The buffer whose length defines the table size. </param>
         public DynamicMultiDictionary(DynamicBuffer<TEntry> buffer)
         {
             buffer.CheckReadAccess();
@@ -70,19 +55,10 @@ namespace BovineLabs.Core.Collections
             this.buffer = buffer;
         }
 
-        /// <summary>
-        /// Gets a value indicating whether the underlying buffer is created.
-        /// </summary>
         public readonly bool IsCreated => this.buffer.IsCreated;
 
-        /// <summary>
-        /// Gets a value indicating whether the multi dictionary has no entries.
-        /// </summary>
         public readonly bool IsEmpty => this.Count == 0;
 
-        /// <summary>
-        /// Gets the number of key-value pairs in the map.
-        /// </summary>
         public readonly int Count
         {
             get
@@ -93,9 +69,6 @@ namespace BovineLabs.Core.Collections
             }
         }
 
-        /// <summary>
-        /// Gets the fixed capacity for this multi dictionary.
-        /// </summary>
         public readonly int Capacity
         {
             get
@@ -107,10 +80,8 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary>
-        /// Ensures the multi dictionary table has at least the requested capacity.
+        /// Only grows; requests round up to a power of two.
         /// </summary>
-        /// <param name="capacity"> The minimum desired table capacity, rounded up to a power of two. </param>
-        /// <remarks> The map only grows; smaller values have no effect. </remarks>
         public void EnsureCapacity(int capacity)
         {
             this.buffer.CheckWriteAccess();
@@ -143,11 +114,8 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary>
-        /// Adds a key-value pair.
+        /// Allows duplicate keys and duplicate key-value pairs.
         /// </summary>
-        /// <param name="key"> The key to add. </param>
-        /// <param name="value"> The value to associate with the key. </param>
-        /// <remarks> Duplicate keys and duplicate key-value pairs are allowed. </remarks>
         public void Add(TKey key, TValue value)
         {
             this.buffer.CheckWriteAccess();
@@ -241,12 +209,8 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary>
-        /// Adds a key-value pair when that exact pair is not already present.
+        /// T must match TValue; the separate type parameter supplies the equality constraint.
         /// </summary>
-        /// <param name="key"> The key to add. </param>
-        /// <param name="value"> The value to add. The type should match <typeparamref name="TValue" />. </param>
-        /// <typeparam name="T"> The value type used for equality. This should match <typeparamref name="TValue" />. </typeparam>
-        /// <returns> True when the pair was added; false when the exact pair already exists. </returns>
         public bool TryAddUniquePair<T>(TKey key, T value)
             where T : unmanaged, IEquatable<TValue>
         {
@@ -263,13 +227,6 @@ namespace BovineLabs.Core.Collections
             return true;
         }
 
-        /// <summary>
-        /// Returns the first value associated with a key.
-        /// </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <param name="value"> The first value for the key when found. </param>
-        /// <param name="it"> The iterator to use with <see cref="TryGetNextValue" />. </param>
-        /// <returns> True when at least one value exists for the key. </returns>
         public readonly bool TryGetFirstValue(TKey key, out TValue value, out HashMapIterator<TKey> it)
         {
             this.buffer.CheckReadAccess();
@@ -317,12 +274,6 @@ namespace BovineLabs.Core.Collections
             return false;
         }
 
-        /// <summary>
-        /// Advances an iterator to the next value associated with its key.
-        /// </summary>
-        /// <param name="value"> The next value when found. </param>
-        /// <param name="it"> The iterator returned by <see cref="TryGetFirstValue" />. </param>
-        /// <returns> True when another value exists for the iterator key. </returns>
         public readonly bool TryGetNextValue(out TValue value, ref HashMapIterator<TKey> it)
         {
             this.buffer.CheckReadAccess();
@@ -367,11 +318,6 @@ namespace BovineLabs.Core.Collections
             return false;
         }
 
-        /// <summary>
-        /// Returns true if a given key is present in this map.
-        /// </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <returns> True when at least one value exists for the key. </returns>
         public readonly bool ContainsKey(TKey key)
         {
             this.buffer.CheckReadAccess();
@@ -380,12 +326,8 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary>
-        /// Returns true if a given key-value pair is present in this map.
+        /// T must match TValue; the separate type parameter supplies the equality constraint.
         /// </summary>
-        /// <param name="key"> The key to look up. </param>
-        /// <param name="value"> The value to look up. The type should match <typeparamref name="TValue" />. </param>
-        /// <typeparam name="T"> The value type used for equality. This should match <typeparamref name="TValue" />. </typeparam>
-        /// <returns> True when the key-value pair exists. </returns>
         public readonly bool Contains<T>(TKey key, T value)
             where T : unmanaged, IEquatable<TValue>
         {
@@ -410,11 +352,6 @@ namespace BovineLabs.Core.Collections
             return false;
         }
 
-        /// <summary>
-        /// Counts values associated with a key.
-        /// </summary>
-        /// <param name="key"> The key to count values for. </param>
-        /// <returns> The number of values associated with the key. </returns>
         public readonly int CountValuesForKey(TKey key)
         {
             this.buffer.CheckReadAccess();
@@ -435,11 +372,6 @@ namespace BovineLabs.Core.Collections
             return count;
         }
 
-        /// <summary>
-        /// Removes all values associated with a key.
-        /// </summary>
-        /// <param name="key"> The key to remove. </param>
-        /// <returns> The number of removed key-value pairs. </returns>
         public int Remove(TKey key)
         {
             this.buffer.CheckWriteAccess();
@@ -501,12 +433,8 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary>
-        /// Removes one exact key-value pair.
+        /// T must match TValue. Removes only one occurrence of the exact key-value pair.
         /// </summary>
-        /// <param name="key"> The key to remove. </param>
-        /// <param name="value"> The value to remove. The type should match <typeparamref name="TValue" />. </param>
-        /// <typeparam name="T"> The value type used for equality. This should match <typeparamref name="TValue" />. </typeparam>
-        /// <returns> True when a matching pair was removed. </returns>
         public bool Remove<T>(TKey key, T value)
             where T : unmanaged, IEquatable<TValue>
         {
@@ -534,11 +462,6 @@ namespace BovineLabs.Core.Collections
             return false;
         }
 
-        /// <summary>
-        /// Removes a single key-value pair represented by an iterator.
-        /// </summary>
-        /// <param name="it"> The iterator representing the key-value pair to remove. </param>
-        /// <exception cref="ArgumentException"> Thrown if the iterator is invalid. </exception>
         public void Remove(HashMapIterator<TKey> it)
         {
             this.buffer.CheckWriteAccess();
@@ -573,10 +496,6 @@ namespace BovineLabs.Core.Collections
             SetHeader(ref header, GetCount(ref header) - 1, GetTombstones(ref header) + 1);
         }
 
-        /// <summary>
-        /// Clears the map by resetting all entry tags.
-        /// </summary>
-        /// <remarks> Does not resize the buffer. </remarks>
         public void Clear()
         {
             this.buffer.CheckWriteAccess();
@@ -596,11 +515,8 @@ namespace BovineLabs.Core.Collections
         }
 
         /// <summary>
-        /// Rehashes the map after key values are remapped.
+        /// Call after remapping keys such as Entity or BlobAssetReference to rebuild hash positions.
         /// </summary>
-        /// <remarks>
-        /// Call this after remapping keys (such as Entity or BlobAssetReference values) to rebuild tags and table positions.
-        /// </remarks>
         public void ReconstructAfterRemap()
         {
             this.buffer.CheckWriteAccess();
@@ -1006,16 +922,8 @@ namespace BovineLabs.Core.Collections
         }
     }
 
-    /// <summary>
-    /// Extension helpers for building and accessing entry-backed dynamic dictionary buffers.
-    /// </summary>
     public static class DynamicMultiDictionaryExtensions
     {
-        /// <summary>
-        /// Creates a multi-dictionary wrapper for an initialized entry-backed buffer.
-        /// </summary>
-        /// <param name="buffer"> The initialized buffer to wrap. </param>
-        /// <returns> A multi-dictionary wrapper for the buffer. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DynamicMultiDictionary<TKey, TValue, TEntry> AsDynamicMultiDictionary<TKey, TValue, TEntry>(this DynamicBuffer<TEntry> buffer)
             where TKey : unmanaged, IEquatable<TKey>

@@ -5,7 +5,6 @@
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary> Serializer that convert usable data into a byte array. </summary>
     public unsafe struct Serializer : IDisposable
     {
         public Serializer(int capacity, Allocator allocator)
@@ -18,8 +17,9 @@
 
         public int Length => this.Data->Length;
 
-        /// <summary> Ensures you can add this much extra capacity. The final capacity will be current capacity + capacity. </summary>
-        /// <param name="capacity"> The additional capacity to add. </param>
+        /// <summary>
+        /// The argument is additional capacity, not the target total capacity.
+        /// </summary>
         public void EnsureExtraCapacity(int capacity)
         {
             if (this.Data->Length + capacity > this.Data->Capacity)

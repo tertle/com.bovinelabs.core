@@ -9,8 +9,6 @@
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    /// <summary> The base settings window that can be used to implement custom drawers. </summary>
-    /// <typeparam name="T"> The settings window type. </typeparam>
     public abstract class SettingsBaseWindow<T> : EditorWindow
         where T : SettingsBaseWindow<T>
     {
@@ -42,15 +40,12 @@
             bool MatchesFilter(string searchContext, bool showEmpty);
         }
 
-        /// <summary> Gets the title text for the unity window tab. </summary>
         protected abstract string TitleText { get; }
 
         protected virtual bool HideToggleShowEmpty => false;
 
         private string SplitterKey => $"bl-{this.TitleText}-splitter";
 
-        /// <summary> Call this to create and/or open a new settings window. </summary>
-        /// <returns> The window instance. </returns>
         public static T Open()
         {
             var window = FindWindowByScope() ?? Create();
@@ -89,29 +84,27 @@
             EditorApplication.playModeStateChanged -= this.EditorApplicationOnplayModeStateChanged;
         }
 
-        /// <summary> Called after the window is setup. Use this instead of Unity's OnEnabled. </summary>
+        /// <summary>
+        /// Use this hook instead of Unity's OnEnable.
+        /// </summary>
         protected virtual void AfterEnabled()
         {
         }
 
-        /// <summary> Called before the window is disposed. Use this instead of Unity's OnDisabled. </summary>
+        /// <summary>
+        /// Use this hook instead of Unity's OnDisable.
+        /// </summary>
         protected virtual void BeforeDisabled()
         {
         }
 
-        /// <summary> Gets the panels for the window. </summary>
-        /// <param name="settingPanels"> The panel list to write to. </param>
         protected abstract void GetPanels(List<ISettingsPanel> settingPanels);
 
-        /// <summary> Gets the title texture that'll appear in the Unity window tab. </summary>
-        /// <returns> The texture icon. </returns>
         protected virtual Texture GetTitleTexture()
         {
             return EditorGUIUtility.IconContent("Settings").image;
         }
 
-        /// <summary> Implement this to add custom elements to the toolbar. </summary>
-        /// <param name="rootElement"> The toolbar root element. </param>
         protected virtual void InitializeToolbar(VisualElement rootElement)
         {
         }

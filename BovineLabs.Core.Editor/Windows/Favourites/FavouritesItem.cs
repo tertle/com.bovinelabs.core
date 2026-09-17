@@ -5,9 +5,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
     using UnityEditor;
     using UnityEngine;
 
-    /// <summary>
-    /// Represents a single item in the favourites collection.
-    /// </summary>
     public sealed class FavouritesItem : BaseObjectItem
     {
         public FavouritesItem(UnityEngine.Object obj)

@@ -7,8 +7,6 @@
 
     public class NativeStreamExtensionsTests
     {
-        /// <summary> Tests the extensions AllocateLarge and ReadLarge. </summary>
-        /// <param name="size"> The size of the allocation. </param>
         [TestCase(4092)] // max size
         [TestCase(8192)] // requires just more than 2 blocks
         public unsafe void WriteLarge(int size)
@@ -46,8 +44,6 @@
             }
         }
 
-        /// <summary> Tests the extensions AllocateLarge and ReadLarge. </summary>
-        /// <param name="size"> The size of the allocation. </param>
         [TestCase(1023)] // max size
         [TestCase(2048)] // requires just more than 2 blocks
         public unsafe void WriteLargeSlice(int size)
@@ -90,8 +86,6 @@
             }
         }
 
-        /// <summary> Tests the extensions AllocateLarge and ReadLarge. </summary>
-        /// <param name="size"> The size of the allocation. </param>
         [TestCase(1023)] // max size
         [TestCase(2048)] // requires just more than 2 blocks
         public unsafe void WriteLargeArray(int size)

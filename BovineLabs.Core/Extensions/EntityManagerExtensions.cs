@@ -6,7 +6,6 @@ namespace BovineLabs.Core.Extensions
     using Unity.Collections;
     using Unity.Entities;
 
-    /// <summary> Extensions for <see cref="EntityManager" />. </summary>
     public static unsafe class EntityManagerExtensions
     {
         private const EntityQueryOptions QueryOptions = EntityQueryOptions.IncludeSystems;

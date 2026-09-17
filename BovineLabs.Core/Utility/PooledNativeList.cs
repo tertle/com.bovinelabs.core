@@ -8,11 +8,6 @@
     using Unity.Jobs.LowLevel.Unsafe;
     using Unity.Scripting.LifecycleManagement;
 
-    /// <summary>
-    /// A pooled wrapper around NativeList that reuses allocated memory across instances to reduce allocation pressure.
-    /// Uses thread-local pools to avoid contention in multi-threaded scenarios.
-    /// </summary>
-    /// <typeparam name="T">The unmanaged element type.</typeparam>
     public unsafe struct PooledNativeList<T> : IDisposable
         where T : unmanaged
     {
@@ -22,10 +17,6 @@
         private AtomicSafetyHandle oldHandle;
 #endif
 
-        /// <summary>
-        /// Gets the underlying NativeList instance.
-        /// </summary>
-        /// <value>The wrapped NativeList that can be used for all list operations.</value>
         public NativeList<T> List => this.list;
 
         private PooledNativeList<T> Create()
@@ -65,25 +56,13 @@
         }
 
         /// <summary>
-        /// Creates a new PooledNativeList instance, either from the thread-local pool or by allocating a new one.
+        /// Dispose the returned instance to return its storage to the thread-local pool.
         /// </summary>
-        /// <returns>A PooledNativeList instance ready for use.</returns>
-        /// <remarks>
-        /// This method is thread-safe and will reuse previously disposed instances when available.
-        /// The returned instance must be disposed to return it to the pool.
-        /// </remarks>
         public static PooledNativeList<T> Make()
         {
             return default(PooledNativeList<T>).Create();
         }
 
-        /// <summary>
-        /// Disposes the PooledNativeList and returns the underlying memory to the thread-local pool for reuse.
-        /// </summary>
-        /// <remarks>
-        /// This method clears the list contents and converts it back to a byte list for storage in the pool.
-        /// The instance should not be used after disposal.
-        /// </remarks>
         public void Dispose()
         {
             if (!this.list.IsCreated)

@@ -111,10 +111,6 @@ namespace BovineLabs.Core.Utility
             deleted1.Dispose();
         }
 
-        /// <summary>
-        /// Compact triangles, compute edge error and build reference list.
-        /// </summary>
-        /// <param name="iteration"> The iteration index. </param>
         private static void UpdateMesh(ref Result result, ref NativeList<Ref> refs, int iteration)
         {
             var triangles = result.Triangles.AsArray();
@@ -719,18 +715,9 @@ namespace BovineLabs.Core.Utility
         {
             public double Quality { get; set; }
 
-            /// <summary>
-            /// The maximum iteration count. Higher number is more expensive but can bring you closer to your target quality.
-            /// Sometimes a lower maximum count might be desired in order to lower the performance cost.
-            /// Default value: 100
-            /// </summary>
             [Tooltip("The maximum iteration count. Higher number is more expensive but can bring you closer to your target quality.")]
             public int MaxIterationCount { get; set; }
 
-            /// <summary>
-            /// The agressiveness of the mesh simplification. Higher number equals higher quality, but more expensive to run.
-            /// Default value: 7.0
-            /// </summary>
             [Tooltip("The agressiveness of the mesh simplification. Higher number equals higher quality, but more expensive to run.")]
             public double Agressiveness { get; set; }
 
@@ -979,42 +966,28 @@ namespace BovineLabs.Core.Utility
         }
     }
 
-    /// <summary> A symmetric matrix. </summary>
     public readonly struct SymmetricMatrix
     {
-        /// <summary> The m11 component. </summary>
         public readonly double M0;
 
-        /// <summary> The m12 component. </summary>
         public readonly double M1;
 
-        /// <summary> The m13 component. </summary>
         public readonly double M2;
 
-        /// <summary> The m14 component. </summary>
         public readonly double M3;
 
-        /// <summary> The m22 component. </summary>
         public readonly double M4;
 
-        /// <summary> The m23 component. </summary>
         public readonly double M5;
 
-        /// <summary> The m24 component. </summary>
         public readonly double M6;
 
-        /// <summary> The m33 component. </summary>
         public readonly double M7;
 
-        /// <summary> The m34 component. </summary>
         public readonly double M8;
 
-        /// <summary> The m44 component. </summary>
         public readonly double M9;
 
-        /// <summary> Gets the component value with a specific index. </summary>
-        /// <param name="index"> The component index. </param>
-        /// <returns> The value. </returns>
         public double this[int index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1037,17 +1010,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <summary> Creates a symmetric matrix. </summary>
-        /// <param name="m0"> The m11 component. </param>
-        /// <param name="m1"> The m12 component. </param>
-        /// <param name="m2"> The m13 component. </param>
-        /// <param name="m3"> The m14 component. </param>
-        /// <param name="m4"> The m22 component. </param>
-        /// <param name="m5"> The m23 component. </param>
-        /// <param name="m6"> The m24 component. </param>
-        /// <param name="m7"> The m33 component. </param>
-        /// <param name="m8"> The m34 component. </param>
-        /// <param name="m9"> The m44 component. </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SymmetricMatrix(double m0, double m1, double m2, double m3, double m4, double m5, double m6, double m7, double m8, double m9)
         {
@@ -1063,11 +1025,6 @@ namespace BovineLabs.Core.Utility
             this.M9 = m9;
         }
 
-        /// <summary> Creates a symmetric matrix from a plane. </summary>
-        /// <param name="a"> The plane x-component. </param>
-        /// <param name="b"> The plane y-component </param>
-        /// <param name="c"> The plane z-component </param>
-        /// <param name="d"> The plane w-component </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SymmetricMatrix(double a, double b, double c, double d)
         {
@@ -1086,10 +1043,6 @@ namespace BovineLabs.Core.Utility
             this.M9 = d * d;
         }
 
-        /// <summary> Adds two matrixes together. </summary>
-        /// <param name="a"> The left hand side. </param>
-        /// <param name="b"> The right hand side. </param>
-        /// <returns> The resulting matrix. </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static SymmetricMatrix operator +(SymmetricMatrix a, SymmetricMatrix b)
         {
@@ -1097,8 +1050,9 @@ namespace BovineLabs.Core.Utility
                 a.M0 + b.M0, a.M1 + b.M1, a.M2 + b.M2, a.M3 + b.M3, a.M4 + b.M4, a.M5 + b.M5, a.M6 + b.M6, a.M7 + b.M7, a.M8 + b.M8, a.M9 + b.M9);
         }
 
-        /// <summary> Determinant(0, 1, 2, 1, 4, 5, 2, 5, 7) </summary>
-        /// <returns> </returns>
+        /// <summary>
+        /// Determinant(0, 1, 2, 1, 4, 5, 2, 5, 7).
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal double Determinant1()
         {
@@ -1110,8 +1064,9 @@ namespace BovineLabs.Core.Utility
             return det;
         }
 
-        /// <summary> Determinant(1, 2, 3, 4, 5, 6, 5, 7, 8) </summary>
-        /// <returns> </returns>
+        /// <summary>
+        /// Determinant(1, 2, 3, 4, 5, 6, 5, 7, 8).
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal double Determinant2()
         {
@@ -1123,8 +1078,9 @@ namespace BovineLabs.Core.Utility
             return det;
         }
 
-        /// <summary> Determinant(0, 2, 3, 1, 5, 6, 2, 7, 8) </summary>
-        /// <returns> </returns>
+        /// <summary>
+        /// Determinant(0, 2, 3, 1, 5, 6, 2, 7, 8).
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal double Determinant3()
         {
@@ -1136,8 +1092,9 @@ namespace BovineLabs.Core.Utility
             return det;
         }
 
-        /// <summary> Determinant(0, 1, 3, 1, 4, 6, 2, 5, 8) </summary>
-        /// <returns> </returns>
+        /// <summary>
+        /// Determinant(0, 1, 3, 1, 4, 6, 2, 5, 8).
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal double Determinant4()
         {

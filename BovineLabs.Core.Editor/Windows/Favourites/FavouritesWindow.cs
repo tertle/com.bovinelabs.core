@@ -9,9 +9,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
     using UnityEngine;
     using UnityEngine.UIElements;
 
-    /// <summary>
-    /// Editor window that displays and manages a collection of favourite objects in Unity.
-    /// </summary>
     public sealed class FavouritesWindow : BaseObjectWindow<FavouritesItem, FavouritesService, FavouritesPreferences>
     {
         private FavouritesService favouritesService;

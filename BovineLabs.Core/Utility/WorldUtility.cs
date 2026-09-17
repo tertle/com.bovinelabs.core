@@ -3,7 +3,6 @@
     using System.Collections.Generic;
     using Unity.Entities;
 
-    /// <summary> Utility for worlds. </summary>
     public static class WorldUtility
     {
         public static IEnumerable<World> AllExcludingAdvanced()

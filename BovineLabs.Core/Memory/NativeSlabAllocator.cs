@@ -49,8 +49,9 @@
 
         public bool IsCreated => this.slabAllocator.IsCreated;
 
-        /// <summary> Returns a pointer. This memory is not cleared. </summary>
-        /// <returns> The pointer. </returns>
+        /// <summary>
+        /// Returned memory is not cleared.
+        /// </summary>
         public T* Alloc()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
