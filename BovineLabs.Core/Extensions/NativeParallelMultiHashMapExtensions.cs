@@ -155,7 +155,8 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
 
-            var oldLength = hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength;
+            var buffer = hashMap.GetMultiHashMapStorage().GetBuffer();
+            var oldLength = buffer->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -181,7 +182,7 @@ namespace BovineLabs.Core.Extensions
                 buckets[bucket] = oldLength + idx;
             }
 
-            hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength += length;
+            buffer->allocatedIndexLength += length;
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
@@ -195,7 +196,8 @@ namespace BovineLabs.Core.Extensions
             CheckLengthsMatch(keys.Length, values.Length);
 
             var length = keys.Length;
-            var oldLength = hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength;
+            var buffer = hashMap.GetMultiHashMapStorage().GetBuffer();
+            var oldLength = buffer->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -222,7 +224,7 @@ namespace BovineLabs.Core.Extensions
                 buckets[bucket] = oldLength + idx;
             }
 
-            hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength += length;
+            buffer->allocatedIndexLength += length;
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
@@ -237,7 +239,8 @@ namespace BovineLabs.Core.Extensions
 #endif
 
             var length = keys.Length;
-            var oldLength = hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength;
+            var buffer = hashMap.GetMultiHashMapStorage().GetBuffer();
+            var oldLength = buffer->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -263,7 +266,7 @@ namespace BovineLabs.Core.Extensions
                 buckets[bucket] = oldLength + idx;
             }
 
-            hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength += length;
+            buffer->allocatedIndexLength += length;
         }
 
         /// <summary>
@@ -278,7 +281,8 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
 
-            var oldLength = hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength;
+            var buffer = hashMap.GetMultiHashMapStorage().GetBuffer();
+            var oldLength = buffer->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -305,7 +309,7 @@ namespace BovineLabs.Core.Extensions
                 buckets[bucket] = oldLength + idx;
             }
 
-            hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength += length;
+            buffer->allocatedIndexLength += length;
         }
 
         /// <summary>
@@ -319,7 +323,8 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
 
-            var oldLength = hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength;
+            var buffer = hashMap.GetMultiHashMapStorage().GetBuffer();
+            var oldLength = buffer->allocatedIndexLength;
             var newLength = oldLength + keys.Length;
 
             if (hashMap.Capacity < newLength)
@@ -345,7 +350,7 @@ namespace BovineLabs.Core.Extensions
                 buckets[bucket] = oldLength + idx;
             }
 
-            hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength += keys.Length;
+            buffer->allocatedIndexLength += keys.Length;
         }
 
         /// <summary>
@@ -359,7 +364,8 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
 
-            var oldLength = hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength;
+            var buffer = hashMap.GetMultiHashMapStorage().GetBuffer();
+            var oldLength = buffer->allocatedIndexLength;
             var newLength = oldLength + keys.Length;
 
             if (hashMap.Capacity < newLength)
@@ -387,7 +393,7 @@ namespace BovineLabs.Core.Extensions
                 buckets[bucket] = oldLength + idx;
             }
 
-            hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength += keys.Length;
+            buffer->allocatedIndexLength += keys.Length;
         }
 
         /// <summary>
@@ -402,7 +408,8 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
 
-            var oldLength = hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength;
+            var buffer = hashMap.GetMultiHashMapStorage().GetBuffer();
+            var oldLength = buffer->allocatedIndexLength;
             var newLength = oldLength + values.Length;
 
             if (hashMap.Capacity < newLength)
@@ -429,7 +436,7 @@ namespace BovineLabs.Core.Extensions
                 buckets[bucket] = oldLength + idx;
             }
 
-            hashMap.GetMultiHashMapStorage().GetBuffer()->allocatedIndexLength += values.Length;
+            buffer->allocatedIndexLength += values.Length;
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
@@ -520,7 +527,8 @@ namespace BovineLabs.Core.Extensions
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
-            var data = hashMap.GetMultiHashMapStorage().GetBuffer();
+            ref var storage = ref hashMap.GetMultiHashMapStorage();
+            var data = storage.GetBuffer();
 
             // Allocate an entry from the free list
             int idx;
@@ -546,7 +554,7 @@ namespace BovineLabs.Core.Extensions
                 {
                     var newCap = UnsafeParallelHashMapData.GrowCapacity(data->keyCapacity);
                     UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, newCap, UnsafeParallelHashMapData.GetBucketSize(newCap),
-                        hashMap.GetMultiHashMapStorage().GetAllocator());
+                        storage.GetAllocator());
                 }
             }
 

@@ -149,7 +149,8 @@ namespace BovineLabs.Core.Extensions
             AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
 
-            var oldLength = hashMap.GetHashMapStorage().GetBuffer()->allocatedIndexLength;
+            var buffer = hashMap.GetHashMapStorage().GetBuffer();
+            var oldLength = buffer->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -175,7 +176,7 @@ namespace BovineLabs.Core.Extensions
                 buckets[bucket] = oldLength + idx;
             }
 
-            hashMap.GetHashMapStorage().GetBuffer()->allocatedIndexLength += length;
+            buffer->allocatedIndexLength += length;
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
@@ -190,7 +191,8 @@ namespace BovineLabs.Core.Extensions
 #endif
 
             var length = keys.Length;
-            var oldLength = hashMap.GetHashMapStorage().GetBuffer()->allocatedIndexLength;
+            var buffer = hashMap.GetHashMapStorage().GetBuffer();
+            var oldLength = buffer->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -216,7 +218,7 @@ namespace BovineLabs.Core.Extensions
                 buckets[bucket] = oldLength + idx;
             }
 
-            hashMap.GetHashMapStorage().GetBuffer()->allocatedIndexLength += length;
+            buffer->allocatedIndexLength += length;
         }
 
         public static void AddBatchUnsafe<TKey, TValue>([NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap, [NoAlias] NativeArray<TKey> keys)

@@ -171,13 +171,14 @@ namespace BovineLabs.Core.Extensions
                 hashMap.Capacity = length;
             }
 
-            UnsafeUtility.MemCpy(hashMap.GetBuffer()->keys, keys, length * UnsafeUtility.SizeOf<TKey>());
-            UnsafeUtility.MemCpy(hashMap.GetBuffer()->values, values, length * UnsafeUtility.SizeOf<TValue>());
+            var data = hashMap.GetBuffer();
+            UnsafeUtility.MemCpy(data->keys, keys, length * UnsafeUtility.SizeOf<TKey>());
+            UnsafeUtility.MemCpy(data->values, values, length * UnsafeUtility.SizeOf<TValue>());
 
-            var buckets = (int*)hashMap.GetBuffer()->buckets;
-            var nextPtrs = (int*)hashMap.GetBuffer()->next;
+            var buckets = (int*)data->buckets;
+            var nextPtrs = (int*)data->next;
 
-            var bucketCapacityMask = hashMap.GetBuffer()->bucketCapacityMask;
+            var bucketCapacityMask = data->bucketCapacityMask;
 
             for (var idx = 0; idx < length; idx++)
             {
@@ -186,7 +187,7 @@ namespace BovineLabs.Core.Extensions
                 buckets[bucket] = idx;
             }
 
-            hashMap.GetBuffer()->allocatedIndexLength = length;
+            data->allocatedIndexLength = length;
         }
 
         /// <summary>
@@ -208,14 +209,15 @@ namespace BovineLabs.Core.Extensions
                 hashMap.Capacity = length;
             }
 
-            UnsafeUtility.MemCpyStride(hashMap.GetBuffer()->keys, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride,
+            var data = hashMap.GetBuffer();
+            UnsafeUtility.MemCpyStride(data->keys, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride,
                 UnsafeUtility.SizeOf<TKey>(), length);
 
-            UnsafeUtility.MemCpy(hashMap.GetBuffer()->values, values.GetUnsafeReadOnlyPtr(), length * UnsafeUtility.SizeOf<TValue>());
+            UnsafeUtility.MemCpy(data->values, values.GetUnsafeReadOnlyPtr(), length * UnsafeUtility.SizeOf<TValue>());
 
-            var buckets = (int*)hashMap.GetBuffer()->buckets;
-            var nextPtrs = (int*)hashMap.GetBuffer()->next;
-            var bucketCapacityMask = hashMap.GetBuffer()->bucketCapacityMask;
+            var buckets = (int*)data->buckets;
+            var nextPtrs = (int*)data->next;
+            var bucketCapacityMask = data->bucketCapacityMask;
 
             for (var idx = 0; idx < length; idx++)
             {
@@ -224,7 +226,7 @@ namespace BovineLabs.Core.Extensions
                 buckets[bucket] = idx;
             }
 
-            hashMap.GetBuffer()->allocatedIndexLength = length;
+            data->allocatedIndexLength = length;
         }
 
         public static bool TryGetFirstKeyValue<TKey, TValue>(ref this UnsafeParallelHashMap<TKey, TValue> map, out TKey key, out TValue value, ref int index)

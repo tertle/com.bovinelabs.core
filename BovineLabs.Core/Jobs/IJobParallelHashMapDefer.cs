@@ -157,8 +157,9 @@ namespace BovineLabs.Core.Jobs
             AtomicSafetyHandle.CheckReadAndThrow(hashMap.GetSafety());
 #endif
 
-            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.GetHashMapStorage().GetBuffer()->keys, entryIndex);
-            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetHashMapStorage().GetBuffer()->values, entryIndex);
+            var data = hashMap.GetHashMapStorage().GetBuffer();
+            key = UnsafeUtility.ReadArrayElement<TKey>(data->keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(data->values, entryIndex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -173,8 +174,9 @@ namespace BovineLabs.Core.Jobs
             AtomicSafetyHandle.CheckReadAndThrow(re.Safety);
 #endif
 
-            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.GetHashMapStorage().GetBuffer()->keys, entryIndex);
-            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetHashMapStorage().GetBuffer()->values, entryIndex);
+            var data = hashMap.GetHashMapStorage().GetBuffer();
+            key = UnsafeUtility.ReadArrayElement<TKey>(data->keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(data->values, entryIndex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -188,8 +190,9 @@ namespace BovineLabs.Core.Jobs
             AtomicSafetyHandle.CheckReadAndThrow(hashMap.GetSafety());
 #endif
 
-            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.GetMultiHashMapStorage().GetBuffer()->keys, entryIndex);
-            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetMultiHashMapStorage().GetBuffer()->values, entryIndex);
+            var data = hashMap.GetMultiHashMapStorage().GetBuffer();
+            key = UnsafeUtility.ReadArrayElement<TKey>(data->keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(data->values, entryIndex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -204,8 +207,9 @@ namespace BovineLabs.Core.Jobs
             AtomicSafetyHandle.CheckReadAndThrow(re.Safety);
 #endif
 
-            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.GetMultiHashMapStorage().GetBuffer()->keys, entryIndex);
-            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetMultiHashMapStorage().GetBuffer()->values, entryIndex);
+            var data = hashMap.GetMultiHashMapStorage().GetBuffer();
+            key = UnsafeUtility.ReadArrayElement<TKey>(data->keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(data->values, entryIndex);
         }
 
         internal unsafe struct JobParallelHashMapVisitKeyValueProducer<T>

@@ -152,8 +152,9 @@ namespace BovineLabs.Core.Jobs
             AtomicSafetyHandle.CheckReadAndThrow(hashMap.GetSafety());
 #endif
 
-            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.GetData()->Keys, entryIndex);
-            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetData()->Ptr, entryIndex);
+            var data = hashMap.GetData();
+            key = UnsafeUtility.ReadArrayElement<TKey>(data->Keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(data->Ptr, entryIndex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

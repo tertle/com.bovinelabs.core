@@ -21,15 +21,16 @@ namespace BovineLabs.Core.Extensions
         {
             CheckWrite(hashMap);
 
-            var idx = hashMap.GetData()->Find(key);
+            var data = hashMap.GetData();
+            var idx = data->Find(key);
 
             if (idx == -1)
             {
-                idx = hashMap.GetData()->AddNoFind(key);
-                UnsafeUtility.WriteArrayElement(hashMap.GetData()->Ptr, idx, defaultValue);
+                idx = data->AddNoFind(key);
+                UnsafeUtility.WriteArrayElement(data->Ptr, idx, defaultValue);
             }
 
-            return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.GetData()->Ptr, idx);
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->Ptr, idx);
         }
 
         public static bool Remove<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key, out TValue value)
@@ -65,7 +66,7 @@ namespace BovineLabs.Core.Extensions
                         data->Next[prevEntry] = data->Next[entryIdx];
                     }
 
-                    value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetData()->Ptr, entryIdx);
+                    value = UnsafeUtility.ReadArrayElement<TValue>(data->Ptr, entryIdx);
 
                     // And free the index
                     data->Next[entryIdx] = data->FirstFreeIdx;

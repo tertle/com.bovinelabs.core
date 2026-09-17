@@ -49,8 +49,9 @@ namespace BovineLabs.Core.Utility
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             // Replace our safety as it's not valid within the job as we've stored these inside another container so can't be injected
-            this.oldHandle = this.list.GetSafety();
-            this.list.GetSafety() = AtomicSafetyHandle.Create();
+            ref var safety = ref this.list.GetSafety();
+            this.oldHandle = safety;
+            safety = AtomicSafetyHandle.Create();
 #endif
 
             return this;
@@ -81,9 +82,10 @@ namespace BovineLabs.Core.Utility
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             // Release the Temp handle
-            AtomicSafetyHandle.CheckDeallocateAndThrow(byteList.GetSafety());
-            AtomicSafetyHandle.Release(byteList.GetSafety());
-            byteList.GetSafety() = this.oldHandle;
+            ref var safety = ref byteList.GetSafety();
+            AtomicSafetyHandle.CheckDeallocateAndThrow(safety);
+            AtomicSafetyHandle.Release(safety);
+            safety = this.oldHandle;
 #endif
 
             // Only add back to pool if we haven't exceeded the max size
