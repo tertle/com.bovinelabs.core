@@ -32,7 +32,6 @@
 
         public bool IsCreated => this.pools != null;
 
-        /// <inheritdoc />
         public void Dispose()
         {
             for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)

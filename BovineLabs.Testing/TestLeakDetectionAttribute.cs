@@ -13,7 +13,6 @@
     {
         public override ActionTargets Targets => ActionTargets.Test;
 
-        /// <inheritdoc />
         public override void BeforeTest(ITest test)
         {
             if (test.IsSuite)
@@ -29,7 +28,6 @@
             }
         }
 
-        /// <inheritdoc />
         public override void AfterTest(ITest test)
         {
             if (test.IsSuite)

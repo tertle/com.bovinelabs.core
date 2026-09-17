@@ -45,7 +45,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             set => this.favouritesData = value ?? new List<SerializableFavouriteItem>();
         }
 
-        /// <inheritdoc />
         public override string[] GetSearchKeywords()
         {
             return IEditorPreference.GetSearchKeywordsFromType(typeof(FavouritesPreferences));

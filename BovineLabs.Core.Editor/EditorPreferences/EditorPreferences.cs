@@ -60,7 +60,6 @@ namespace BovineLabs.Core.Editor.EditorPreferences
         /// </summary>
         protected virtual string Title { get; }
 
-        /// <inheritdoc/>
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
             // Create the main container

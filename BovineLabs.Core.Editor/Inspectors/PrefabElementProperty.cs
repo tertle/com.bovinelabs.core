@@ -14,7 +14,6 @@
 
         private bool IsPrefab => ((Component)this.SerializedObject.targetObject).IsPrefab();
 
-        /// <inheritdoc/>
         protected override bool PreElementCreation(VisualElement root)
         {
             if (this.IsPrefab)
@@ -45,7 +44,6 @@
             return true;
         }
 
-        /// <inheritdoc/>
         protected override VisualElement CreateElement(SerializedProperty property)
         {
             if (this.IsPrefab || this.prefabObject == null)

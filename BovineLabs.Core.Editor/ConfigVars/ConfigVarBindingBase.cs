@@ -35,12 +35,10 @@ namespace BovineLabs.Core.Editor.ConfigVars
             });
         }
 
-        /// <inheritdoc/>
         public void PreUpdate()
         {
         }
 
-        /// <inheritdoc/>
         public void Update()
         {
             if (!this.hasFocus)
@@ -53,14 +51,12 @@ namespace BovineLabs.Core.Editor.ConfigVars
             }
         }
 
-        /// <inheritdoc/>
         public T Value
         {
             get => this.container.Value;
             set => this.container.Value = value;
         }
 
-        /// <inheritdoc/>
         public void Release()
         {
             this.baseField.UnregisterCallback<FocusInEvent>(this.GainFocus);

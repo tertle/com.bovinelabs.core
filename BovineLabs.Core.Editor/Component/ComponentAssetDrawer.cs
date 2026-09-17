@@ -11,7 +11,6 @@ namespace BovineLabs.Core.Editor.Component
     [CustomPropertyDrawer(typeof(ComponentAsset), true)]
     public class ComponentAssetDrawer : PropertyDrawer
     {
-        /// <inheritdoc/>
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             var container = new VisualElement

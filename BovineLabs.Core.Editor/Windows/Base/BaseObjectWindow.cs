@@ -110,7 +110,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
             this.Dispose();
         }
 
-        /// <inheritdoc/>
         public void Dispose()
         {
             if (this.Disposed)

@@ -8,7 +8,6 @@
     [CustomPropertyDrawer(typeof(MinMaxAttribute))]
     public class MinMaxAttributeDrawer : PropertyDrawer
     {
-        /// <inheritdoc />
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             var attr = (MinMaxAttribute)this.attribute;

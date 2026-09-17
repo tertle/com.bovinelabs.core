@@ -17,7 +17,6 @@ namespace BovineLabs.Core.Editor.Settings
         private readonly List<Fallback> fallbacks = new();
         private EntityQuery settingsQuery;
 
-        /// <inheritdoc />
         protected override void OnCreate()
         {
             this.settingsQuery = this.GetEntityQuery(ComponentType.ReadOnly<SettingsPrefabIdentity>());
@@ -53,7 +52,6 @@ namespace BovineLabs.Core.Editor.Settings
             }
         }
 
-        /// <inheritdoc />
         protected override void OnDestroy()
         {
             foreach (var fallback in this.fallbacks)
@@ -62,7 +60,6 @@ namespace BovineLabs.Core.Editor.Settings
             }
         }
 
-        /// <inheritdoc />
         protected override void OnUpdate()
         {
             foreach (var fallback in this.fallbacks)

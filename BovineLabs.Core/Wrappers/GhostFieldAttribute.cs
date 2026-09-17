@@ -59,11 +59,9 @@ namespace Unity.NetCode
         /// <summary>
         /// Default is <see cref="SmoothingAction.Clamp"/>.
         /// </summary>
-        /// <inheritdoc cref="SmoothingAction"/>
         public SmoothingAction Smoothing { get; set; } = SmoothingAction.Clamp;
 
         /// <summary>Allows you to specify a custom serializer for this GhostField using the <see cref="GhostFieldSubType"/> API.</summary>
-        /// <inheritdoc cref="GhostFieldSubType"/>
         public int SubType { get; set; } = 0;
         /// <summary>
         /// Default true. If unset (false), instructs code-generation to not include this field in the serialization data.

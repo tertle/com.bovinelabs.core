@@ -80,7 +80,6 @@ namespace BovineLabs.Core.Utility
             }
         }
 
-        /// <inheritdoc />
         public void Dispose()
         {
             if (this.disposed)

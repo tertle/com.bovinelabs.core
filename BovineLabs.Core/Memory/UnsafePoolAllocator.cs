@@ -21,7 +21,6 @@
 
         public bool IsCreated => this.slabAllocator.IsCreated;
 
-        /// <inheritdoc />
         public void Dispose()
         {
             this.slabAllocator.Dispose();

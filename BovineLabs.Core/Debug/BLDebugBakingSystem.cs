@@ -6,13 +6,11 @@ namespace BovineLabs.Core
     [UpdateInGroup(typeof(TransformBakingSystemGroup), OrderFirst = true)]
     internal partial struct BLDebugBakingSystem : ISystem
     {
-        /// <inheritdoc />
         public void OnCreate(ref SystemState state)
         {
             this.EnsureLogger(ref state);
         }
 
-        /// <inheritdoc />
         public void OnUpdate(ref SystemState state)
         {
             this.EnsureLogger(ref state);

@@ -18,16 +18,12 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
         private VisualElement dropLabel;
         private Button addSelectionButton;
 
-        /// <inheritdoc/>
         protected override FavouritesService Service => this.favouritesService ?? FavouritesService.Instance;
 
-        /// <inheritdoc/>
         protected override string StylesheetPath => "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/Windows/Favourites/FavouritesWindow.uss";
 
-        /// <inheritdoc/>
         protected override string RootClassName => "favourites-window";
 
-        /// <inheritdoc/>
         protected override GUIContent WindowTitle => new("Favourites", EditorGUIUtility.IconContent("Favorite Icon").image);
 
         [MenuItem(EditorMenus.RootMenuTools + "Favourites Window", priority = 1021)]
@@ -38,14 +34,12 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             window.Show();
         }
 
-        /// <inheritdoc/>
         protected override void InitializeServices()
         {
             this.favouritesService = FavouritesService.Instance;
             this.favouritesService.ItemsChanged += this.OnItemsChangedInternal;
         }
 
-        /// <inheritdoc/>
         protected override void CleanupServices()
         {
             if (this.favouritesService != null)
@@ -54,25 +48,21 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             }
         }
 
-        /// <inheritdoc/>
         protected override void SetupAdditionalFeatures(VisualElement root)
         {
             this.SetupDragAndDrop(root);
         }
 
-        /// <inheritdoc/>
         protected override void OnItemsChanged(IReadOnlyList<FavouritesItem> items)
         {
         }
 
-        /// <inheritdoc/>
         protected override void UpdateItemsVisualState()
         {
             base.UpdateItemsVisualState();
             this.UpdateAddSelectionButton();
         }
 
-        /// <inheritdoc/>
         protected override void CreateCustomToolbarElements(Toolbar toolbar)
         {
             this.addSelectionButton = new ToolbarButton(() => this.favouritesService.AddFavourites(Selection.objects))
@@ -85,7 +75,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             this.UpdateAddSelectionButton();
         }
 
-        /// <inheritdoc/>
         protected override Button CreateListItemActionButton()
         {
             var openButton = new Button();
@@ -94,7 +83,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             return openButton;
         }
 
-        /// <inheritdoc/>
         protected override void BindListItem(VisualElement element, int index)
         {
             if (index >= this.FilteredItems.Count)
@@ -114,19 +102,16 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             }
         }
 
-        /// <inheritdoc/>
         protected override void OnListItemClicked(FavouritesItem item)
         {
             this.favouritesService?.SelectFromFavourites(item);
         }
 
-        /// <inheritdoc/>
         protected override void OnListItemDoubleClicked(FavouritesItem item)
         {
             OpenItem(item);
         }
 
-        /// <inheritdoc/>
         protected override void CreateContextMenu(ContextualMenuPopulateEvent evt, FavouritesItem item)
         {
             evt.menu.AppendAction("Select Object", _ => this.favouritesService?.SelectFromFavourites(item));
@@ -161,7 +146,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
                 });
         }
 
-        /// <inheritdoc/>
         protected override string GetStatusText(int totalCount, int filteredCount, int aliveCount)
         {
             return filteredCount == totalCount
@@ -169,7 +153,6 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
                 : $"{filteredCount} of {totalCount} favourites ({aliveCount} alive)";
         }
 
-        /// <inheritdoc/>
         protected override void CreateCustomSettingsMenuItems(DropdownMenu menu)
         {
             var prefs = UserSettings<FavouritesPreferences>.GetOrCreate(FavouritesService.PreferenceKey);
@@ -195,23 +178,19 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             });
         }
 
-        /// <inheritdoc/>
         protected override void CreateSettingsMenu()
         {
             this.CreateStandardSettingsMenu(FavouritesService.PreferenceKey);
         }
 
-        /// <inheritdoc/>
         protected override bool IsReorderable() => !this.IsFiltered();
 
-        /// <inheritdoc/>
         protected override void SetupListViewCallbacks()
         {
             this.MainListView.reorderMode = ListViewReorderMode.Animated;
             this.MainListView.itemIndexChanged += this.OnFavouriteItemReordered;
         }
 
-        /// <inheritdoc/>
         protected override void PostProcessFilteredItems()
         {
             // Update reorderable state
@@ -219,10 +198,8 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             this.UpdateAddSelectionButton();
         }
 
-        /// <inheritdoc/>
         protected override string GetTimestampFormat() => "yyyy-MM-dd HH:mm";
 
-        /// <inheritdoc/>
         protected override VisualElement MakeNoneElement()
         {
             var container = new VisualElement();

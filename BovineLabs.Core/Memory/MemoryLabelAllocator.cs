@@ -25,23 +25,18 @@
         private MemoryLabel memoryLabel;
         private int allocationCount;
 
-        /// <inheritdoc />
         public AllocatorManager.TryFunction Function => Try;
 
-        /// <inheritdoc />
         public AllocatorManager.AllocatorHandle Handle
         {
             get => this.handle;
             set => this.handle = value;
         }
 
-        /// <inheritdoc />
         public Allocator ToAllocator => this.handle.ToAllocator;
 
-        /// <inheritdoc />
         public bool IsCustomAllocator => this.handle.IsCustomAllocator;
 
-        /// <inheritdoc />
         public bool IsAutoDispose => false;
 
         /// <summary>
@@ -55,7 +50,6 @@
             this.memoryLabel = label;
         }
 
-        /// <inheritdoc />
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -68,7 +62,6 @@
             this.handle.Dispose();
         }
 
-        /// <inheritdoc />
         public int Try(ref AllocatorManager.Block block)
         {
             Check.Assume(this.memoryLabel.IsCreated);

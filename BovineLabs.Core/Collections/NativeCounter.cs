@@ -67,7 +67,6 @@
 
         public bool IsCreated => this.count != null;
 
-        /// <inheritdoc />
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

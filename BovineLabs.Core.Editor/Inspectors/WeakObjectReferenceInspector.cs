@@ -16,7 +16,6 @@
         private Foldout field;
         private ObjectField objectField;
 
-        /// <inheritdoc/>
         public override VisualElement Build()
         {
             this.field = new Foldout { value = false };
@@ -36,7 +35,6 @@
             return this.field;
         }
 
-        /// <inheritdoc/>
         public override void Update()
         {
             var target = this.Target;

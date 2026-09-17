@@ -25,16 +25,12 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
         private ListView lockedItemsListView;
         private Button clearButton;
 
-        /// <inheritdoc/>
         protected override SelectionHistoryService Service => this.historyService ?? SelectionHistoryService.Instance;
 
-        /// <inheritdoc/>
         protected override string StylesheetPath => "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/Windows/SelectionHistory/SelectionHistoryWindow.uss";
 
-        /// <inheritdoc/>
         protected override string RootClassName => "selection-history-window";
 
-        /// <inheritdoc/>
         protected override GUIContent WindowTitle => new("Selection", EditorGUIUtility.IconContent("UnityEditor.ConsoleWindow").image);
 
         [MenuItem(EditorMenus.RootMenuTools + "Selection Window", priority = 1020)]
@@ -45,7 +41,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             window.Show();
         }
 
-        /// <inheritdoc/>
         protected override void UpdateItemsVisualState()
         {
             base.UpdateItemsVisualState();
@@ -53,14 +48,12 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             this.lockedItemsListView?.RefreshItems();
         }
 
-        /// <inheritdoc/>
         protected override void InitializeServices()
         {
             this.historyService = SelectionHistoryService.Instance;
             this.historyService.ItemsChanged += this.OnItemsChangedInternal;
         }
 
-        /// <inheritdoc/>
         protected override void CleanupServices()
         {
             if (this.historyService != null)
@@ -69,7 +62,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             }
         }
 
-        /// <inheritdoc/>
         protected override void SetupAdditionalFeatures(VisualElement root)
         {
             // Create locked items section
@@ -79,13 +71,11 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             root.RegisterCallback<GeometryChangedEvent>(this.OnWindowResize);
         }
 
-        /// <inheritdoc/>
         protected override void OnItemsChanged(IReadOnlyList<SelectionHistoryItem> items)
         {
             this.RefreshLockedSection();
         }
 
-        /// <inheritdoc/>
         protected override void CreateCustomToolbarElements(Toolbar toolbar)
         {
             this.clearButton = new ToolbarButton(() => this.historyService?.ClearHistory())
@@ -97,7 +87,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             toolbar.Add(this.clearButton);
         }
 
-        /// <inheritdoc/>
         protected override Button CreateListItemActionButton()
         {
             var pinButton = new Button();
@@ -105,7 +94,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             return pinButton;
         }
 
-        /// <inheritdoc/>
         protected override void BindListItem(VisualElement element, int index)
         {
             if (index >= this.FilteredItems.Count)
@@ -117,13 +105,11 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             this.BindHistoryItem(element, item);
         }
 
-        /// <inheritdoc/>
         protected override void OnListItemClicked(SelectionHistoryItem item)
         {
             this.historyService?.SelectItem(item);
         }
 
-        /// <inheritdoc/>
         protected override void OnListItemDoubleClicked(SelectionHistoryItem item)
         {
             if (item.IsAsset)
@@ -132,7 +118,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             }
         }
 
-        /// <inheritdoc/>
         protected override void CreateContextMenu(ContextualMenuPopulateEvent evt, SelectionHistoryItem item)
         {
             evt.menu.AppendAction("Select Object", _ => this.historyService?.SelectItem(item));
@@ -168,7 +153,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             evt.menu.AppendAction("Remove from History", _ => this.historyService?.RemoveItem(item));
         }
 
-        /// <inheritdoc/>
         protected override string GetStatusText(int totalCount, int filteredCount, int aliveCount)
         {
             var lockedCount = this.filteredLockedItems.Count;
@@ -179,7 +163,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
                 : $"{filteredCount} of {totalCount} items ({aliveCount} alive, {lockedCount} locked)";
         }
 
-        /// <inheritdoc/>
         protected override void CreateCustomSettingsMenuItems(DropdownMenu menu)
         {
             var service = this.historyService;
@@ -194,13 +177,11 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             }
         }
 
-        /// <inheritdoc/>
         protected override void CreateSettingsMenu()
         {
             this.CreateStandardSettingsMenu(SelectionHistoryService.PreferenceKey);
         }
 
-        /// <inheritdoc/>
         protected override void PostProcessFilteredItems()
         {
             // Split items into locked and normal for selection history
@@ -234,7 +215,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             this.RefreshLockedSection();
         }
 
-        /// <inheritdoc/>
         protected override void RefreshPreferencesDependentUI()
         {
             base.RefreshPreferencesDependentUI();

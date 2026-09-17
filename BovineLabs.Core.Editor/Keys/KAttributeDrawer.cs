@@ -17,7 +17,6 @@
         [NoAutoStaticsCleanup]
         private static Dictionary<string, Type> kTypes;
 
-        /// <inheritdoc/>
         protected override IEnumerable<(string Name, int Value)> GetKeyValues(KAttribute attr)
         {
             var type = TryGetType(attr.Settings);

@@ -16,10 +16,8 @@
             this.Timestep = defaultFixedTimestep;
         }
 
-        /// <inheritdoc />
         public float Timestep { get; set; }
 
-        /// <inheritdoc />
         public bool ShouldGroupUpdate(ComponentSystemGroup group)
         {
             // Already pushed this frame

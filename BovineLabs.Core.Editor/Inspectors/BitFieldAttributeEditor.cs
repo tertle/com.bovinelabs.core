@@ -12,7 +12,6 @@
     public abstract class BitFieldAttributeEditor<T> : PropertyDrawer
         where T : PropertyAttribute, IBitFieldAttribute
     {
-        /// <inheritdoc/>
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             if (property.propertyType != SerializedPropertyType.Integer)

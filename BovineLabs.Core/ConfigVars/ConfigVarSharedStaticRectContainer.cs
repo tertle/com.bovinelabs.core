@@ -15,21 +15,18 @@ namespace BovineLabs.Core.ConfigVars
             this.field = field;
         }
 
-        /// <inheritdoc />
         Rect IConfigVarContainer<Rect>.Value
         {
             get => this.field.Data;
             set => this.field.Data = value;
         }
 
-        /// <inheritdoc />
         string IConfigVarContainer.StringValue
         {
             get => ConfigVarAttribute.RectToVector4(RectToVector4(this.field.Data));
             set => this.field.Data = Vector4ToRect(ConfigVarAttribute.StringToVector4(value));
         }
 
-        /// <inheritdoc/>
         public Type Type => typeof(Vector4);
 
         private static Vector4 RectToVector4(Rect v4)

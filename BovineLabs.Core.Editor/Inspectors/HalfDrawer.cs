@@ -7,7 +7,6 @@
     [CustomPropertyDrawer(typeof(half))]
     public class HalfDrawer : PropertyDrawer
     {
-        /// <inheritdoc/>
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             var valueProperty = property.FindPropertyRelative("value");
@@ -29,7 +28,6 @@
     [CustomPropertyDrawer(typeof(half2))]
     public class Half2Drawer : PropertyDrawer
     {
-        /// <inheritdoc/>
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             var xProperty = property.FindPropertyRelative("x.value");
@@ -64,7 +62,6 @@
     [CustomPropertyDrawer(typeof(half3))]
     public class Half3Drawer : PropertyDrawer
     {
-        /// <inheritdoc/>
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             var xProperty = property.FindPropertyRelative("x.value");
@@ -102,7 +99,6 @@
     [CustomPropertyDrawer(typeof(half4))]
     public class Half4Drawer : PropertyDrawer
     {
-        /// <inheritdoc/>
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             var xProperty = property.FindPropertyRelative("x.value");

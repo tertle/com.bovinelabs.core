@@ -48,10 +48,8 @@
             return prefabGuid;
         }
 
-        /// <inheritdoc />
         private class Baker : Baker<SettingsAuthoring>
         {
-            /// <inheritdoc />
             public override void Bake(SettingsAuthoring authoring)
             {
                 var entity = this.GetEntity(TransformUsageFlags.None);

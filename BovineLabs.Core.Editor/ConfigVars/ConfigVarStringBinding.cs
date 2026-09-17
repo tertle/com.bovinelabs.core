@@ -34,19 +34,16 @@
             });
         }
 
-        /// <inheritdoc/>
         public string Value
         {
             get => this.container.StringValue;
             set => this.container.StringValue = value;
         }
 
-        /// <inheritdoc/>
         public void PreUpdate()
         {
         }
 
-        /// <inheritdoc/>
         public void Update()
         {
             if (!this.hasFocus)
@@ -59,7 +56,6 @@
             }
         }
 
-        /// <inheritdoc/>
         public void Release()
         {
             this.baseField.UnregisterCallback<FocusInEvent>(this.GainFocus);

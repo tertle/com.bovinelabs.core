@@ -127,7 +127,6 @@ namespace BovineLabs.Core.Collections
             this.Deallocate();
         }
 
-        /// <inheritdoc />
         public bool Equals(UnsafeThreadStream other)
         {
             return this.blockData == other.blockData;

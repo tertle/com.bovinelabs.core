@@ -64,19 +64,14 @@
             this.context = propertyInspector.GetContext<EntityInspectorContext>();
         }
 
-        /// <inheritdoc/>
         public InspectionContext Context => this.context;
 
-        /// <inheritdoc/>
         public Entity Entity => this.context.Entity;
 
-        /// <inheritdoc/>
         public World World => this.context.World;
 
-        /// <inheritdoc/>
         public EntityManager EntityManager => this.context.EntityManager;
 
-        /// <inheritdoc/>
         public bool IsReadOnly => this.context.EntityContainer.IsReadOnly;
     }
 }

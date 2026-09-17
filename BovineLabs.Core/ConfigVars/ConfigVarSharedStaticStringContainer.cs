@@ -25,7 +25,6 @@
             set => this.field.Data = value;
         }
 
-        /// <inheritdoc />
         string IConfigVarContainer.StringValue
         {
             get => this.field switch

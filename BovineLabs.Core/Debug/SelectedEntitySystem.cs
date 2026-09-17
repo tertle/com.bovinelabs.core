@@ -10,7 +10,6 @@ namespace BovineLabs.Core
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     public partial class SelectedEntitySystem : SystemBase
     {
-        /// <inheritdoc/>
         protected override void OnCreate()
         {
             this.EntityManager.CreateEntity(typeof(SelectedEntity), typeof(SelectedEntities));

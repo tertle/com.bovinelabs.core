@@ -115,26 +115,20 @@ namespace BovineLabs.Core.Collections
             set => this.data = value;
         }
 
-        /// <inheritdoc />
         public readonly uint Capacity => 8u;
 
-        /// <inheritdoc />
         public readonly bool AllFalse => this.data == 0u;
 
-        /// <inheritdoc />
         public readonly bool AllTrue => this.data == byte.MaxValue;
 
-        /// <inheritdoc />
         public readonly string HumanizedData => $"{Convert.ToString(this.data, 2),8}".Replace(' ', '0');
 
-        /// <inheritdoc />
         public bool this[uint index]
         {
             readonly get => BitArrayUtilities.Get8(index, this.data);
             set => BitArrayUtilities.Set8(index, ref this.data, value);
         }
 
-        /// <inheritdoc />
         public bool this[int index]
         {
             readonly get => this[(uint)index];
@@ -190,28 +184,24 @@ namespace BovineLabs.Core.Collections
             return a.data != b.data;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray8 BitAnd(BitArray8 other)
         {
             return this & other;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray8 BitOr(BitArray8 other)
         {
             return this | other;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray8 BitNot()
         {
             return ~this;
         }
 
-        /// <inheritdoc />
         public readonly int CountBits()
         {
             return math.countbits((uint)this.data);
@@ -283,16 +273,12 @@ namespace BovineLabs.Core.Collections
             set => this.data = value;
         }
 
-        /// <inheritdoc />
         public readonly uint Capacity => 16u;
 
-        /// <inheritdoc />
         public readonly bool AllFalse => this.data == 0u;
 
-        /// <inheritdoc />
         public readonly bool AllTrue => this.data == ushort.MaxValue;
 
-        /// <inheritdoc />
         public readonly string HumanizedData => Regex.Replace($"{Convert.ToString(this.data, 2),16}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         /// <summary>
@@ -366,28 +352,24 @@ namespace BovineLabs.Core.Collections
             return a.data != b.data;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray16 BitAnd(BitArray16 other)
         {
             return this & other;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray16 BitOr(BitArray16 other)
         {
             return this | other;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray16 BitNot()
         {
             return ~this;
         }
 
-        /// <inheritdoc />
         public readonly int CountBits()
         {
             return math.countbits((uint)this.data);
@@ -455,16 +437,12 @@ namespace BovineLabs.Core.Collections
             set => this.data = value;
         }
 
-        /// <inheritdoc />
         public readonly uint Capacity => 32u;
 
-        /// <inheritdoc />
         public readonly bool AllFalse => this.data == 0u;
 
-        /// <inheritdoc />
         public readonly bool AllTrue => this.data == uint.MaxValue;
 
-        /// <inheritdoc />
         public readonly string HumanizedData => Regex.Replace($"{Convert.ToString(this.data, 2),32}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         /// <summary>
@@ -538,28 +516,24 @@ namespace BovineLabs.Core.Collections
             return a.data != b.data;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray32 BitAnd(BitArray32 other)
         {
             return this & other;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray32 BitOr(BitArray32 other)
         {
             return this | other;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray32 BitNot()
         {
             return ~this;
         }
 
-        /// <inheritdoc />
         public readonly int CountBits()
         {
             return math.countbits(this.data);
@@ -636,16 +610,12 @@ namespace BovineLabs.Core.Collections
             set => this.data = value;
         }
 
-        /// <inheritdoc />
         public readonly uint Capacity => 64u;
 
-        /// <inheritdoc />
         public readonly bool AllFalse => this.data == 0uL;
 
-        /// <inheritdoc />
         public readonly bool AllTrue => this.data == ulong.MaxValue;
 
-        /// <inheritdoc />
         public readonly string HumanizedData => Regex.Replace($"{Convert.ToString((long)this.data, 2),64}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         /// <summary>
@@ -719,28 +689,24 @@ namespace BovineLabs.Core.Collections
             return a.data != b.data;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray64 BitAnd(BitArray64 other)
         {
             return this & other;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray64 BitOr(BitArray64 other)
         {
             return this | other;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray64 BitNot()
         {
             return ~this;
         }
 
-        /// <inheritdoc />
         public readonly int CountBits()
         {
             return math.countbits(this.data);
@@ -831,16 +797,12 @@ namespace BovineLabs.Core.Collections
 
         public readonly ulong Data2 => this.data2;
 
-        /// <inheritdoc />
         public readonly uint Capacity => 128u;
 
-        /// <inheritdoc />
         public readonly bool AllFalse => this.data1 == 0uL && this.data2 == 0uL;
 
-        /// <inheritdoc />
         public readonly bool AllTrue => this.data1 == ulong.MaxValue && this.data2 == ulong.MaxValue;
 
-        /// <inheritdoc />
         public readonly string HumanizedData => Regex.Replace($"{Convert.ToString((long)this.data2, 2),64}".Replace(' ', '0'), ".{8}", "$0.") +
             Regex.Replace($"{Convert.ToString((long)this.data1, 2),64}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
@@ -915,28 +877,24 @@ namespace BovineLabs.Core.Collections
             return a.data1 != b.data1 || a.data2 != b.data2;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray128 BitAnd(BitArray128 other)
         {
             return this & other;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray128 BitOr(BitArray128 other)
         {
             return this | other;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray128 BitNot()
         {
             return ~this;
         }
 
-        /// <inheritdoc />
         public readonly int CountBits()
         {
             return math.countbits(this.data1) + math.countbits(this.data2);
@@ -1055,17 +1013,13 @@ namespace BovineLabs.Core.Collections
         [CreateProperty]
         public readonly ulong Data4 => this.data4;
 
-        /// <inheritdoc />
         public readonly uint Capacity => 256u;
 
-        /// <inheritdoc />
         public readonly bool AllFalse => this.data1 == 0uL && this.data2 == 0uL && this.data3 == 0uL && this.data4 == 0uL;
 
-        /// <inheritdoc />
         public readonly bool AllTrue =>
             this.data1 == ulong.MaxValue && this.data2 == ulong.MaxValue && this.data3 == ulong.MaxValue && this.data4 == ulong.MaxValue;
 
-        /// <inheritdoc />
         public readonly string HumanizedData => Regex.Replace($"{Convert.ToString((long)this.data4, 2),64}".Replace(' ', '0'), ".{8}", "$0.") +
             Regex.Replace($"{Convert.ToString((long)this.data3, 2),64}".Replace(' ', '0'), ".{8}", "$0.") +
             Regex.Replace($"{Convert.ToString((long)this.data2, 2),64}".Replace(' ', '0'), ".{8}", "$0.") +
@@ -1146,28 +1100,24 @@ namespace BovineLabs.Core.Collections
             return math.countbits(this.data1) + math.countbits(this.data2) + math.countbits(this.data3) + math.countbits(this.data4) == 1;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray256 BitAnd(BitArray256 other)
         {
             return this & other;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray256 BitOr(BitArray256 other)
         {
             return this | other;
         }
 
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly BitArray256 BitNot()
         {
             return ~this;
         }
 
-        /// <inheritdoc />
         public readonly int CountBits()
         {
             return math.countbits(this.data1) + math.countbits(this.data2) + math.countbits(this.data3) + math.countbits(this.data4);

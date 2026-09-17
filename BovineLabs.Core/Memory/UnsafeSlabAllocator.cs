@@ -58,7 +58,6 @@
             *this.count = this.countPerSlab;
         }
 
-        /// <inheritdoc />
         public void Dispose()
         {
             this.Clear();

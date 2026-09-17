@@ -140,13 +140,11 @@
             return jobHandle;
         }
 
-        /// <inheritdoc />
         public bool Equals(NativeThreadStream other)
         {
             return this.stream.Equals(other.stream);
         }
 
-        /// <inheritdoc />
         [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode", Justification = "Only changes in dispose.")]
         public override int GetHashCode()
         {

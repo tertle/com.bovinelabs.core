@@ -191,19 +191,16 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             return obj != null && AssetDatabase.Contains(obj) && !string.IsNullOrEmpty(AssetDatabase.GetAssetPath(obj));
         }
 
-        /// <inheritdoc/>
         protected override bool TryRemoveItem(FavouritesItem item)
         {
             return this.favourites.Remove(item);
         }
 
-        /// <inheritdoc/>
         protected override void Save()
         {
             this.Preferences.FavouritesData = CreateSerializableItems<FavouritesItem, SerializableFavouriteItem>(this.favourites);
         }
 
-        /// <inheritdoc/>
         protected override void Load()
         {
             if (this.Preferences.FavouritesData.Count == 0)

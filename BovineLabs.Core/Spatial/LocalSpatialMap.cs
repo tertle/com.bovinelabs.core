@@ -35,7 +35,6 @@
 
         public bool IsCreated => this.map != null;
 
-        /// <inheritdoc />
         public void Dispose()
         {
             if (!this.IsCreated)

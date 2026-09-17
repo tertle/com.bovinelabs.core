@@ -18,7 +18,6 @@
         private PropertyField componentField;
         private DropdownField fieldNameField;
 
-        /// <inheritdoc/>
         protected override VisualElement CreateElement(SerializedProperty property)
         {
             switch (property.name)
@@ -40,7 +39,6 @@
             return base.CreateElement(property);
         }
 
-        /// <inheritdoc/>
         protected override void PostElementCreation(VisualElement root, bool createdElements)
         {
             this.SetupDropDown();

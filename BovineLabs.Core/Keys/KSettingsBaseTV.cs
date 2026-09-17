@@ -92,7 +92,6 @@
             return Ordered.Data.IsCreated ? Ordered.Data.GetEnumerator() : default;
         }
 
-        /// <inheritdoc />
         protected sealed override void Initialize()
         {
             I = (T)this;

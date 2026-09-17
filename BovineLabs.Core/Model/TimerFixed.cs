@@ -80,7 +80,6 @@
             [NativeDisableContainerSafetyRestriction] // Only initialized in the job
             private NativeList<bool> onBuffer;
 
-            /// <inheritdoc />
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 var activeChanged = chunk.DidChange(ref this.ActiveHandle, this.SystemVersion);

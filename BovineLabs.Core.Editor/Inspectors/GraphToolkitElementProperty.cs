@@ -33,13 +33,11 @@ namespace BovineLabs.Core.Editor.Inspectors
         private const float GraphToolkitLabelFontSize = 12;
         private const float GraphToolkitLabelWidthBuffer = 4;
 
-        /// <inheritdoc/>
         protected override sealed ParentTypes ParentType => this.UseFoldout ? ParentTypes.Foldout : ParentTypes.None;
 
         /// <summary> Gets a value indicating whether this drawer should use the default foldout parent for generic properties. </summary>
         protected virtual bool UseFoldout => true;
 
-        /// <inheritdoc/>
         protected override string GetDisplayName(SerializedProperty property)
         {
             if (TryGetGraphToolkitOwnerString(property.serializedObject.targetObject, out var name, "Title", "DisplayName"))
@@ -50,7 +48,6 @@ namespace BovineLabs.Core.Editor.Inspectors
             return base.GetDisplayName(property);
         }
 
-        /// <inheritdoc/>
         protected override string GetTooltip(SerializedProperty property)
         {
             if (TryGetGraphToolkitOwnerString(property.serializedObject.targetObject, out var tooltip, "Tooltip"))
@@ -61,7 +58,6 @@ namespace BovineLabs.Core.Editor.Inspectors
             return base.GetTooltip(property);
         }
 
-        /// <inheritdoc/>
         protected override bool PreElementCreation(VisualElement root)
         {
             AlignForGraphToolkit(root);
@@ -85,7 +81,6 @@ namespace BovineLabs.Core.Editor.Inspectors
             return AlignForGraphToolkit(ElementProperty.CreatePropertyField(property, serializedObject));
         }
 
-        /// <inheritdoc/>
         protected override VisualElement CreateElement(SerializedProperty property)
         {
             return AlignForGraphToolkit(base.CreateElement(property));

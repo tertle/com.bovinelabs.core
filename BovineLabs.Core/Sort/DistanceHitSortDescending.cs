@@ -6,7 +6,6 @@ namespace BovineLabs.Core.Sort
 
     public struct DistanceHitSortDescending : IComparer<DistanceHit>
     {
-        /// <inheritdoc />
         public int Compare(DistanceHit x, DistanceHit y)
         {
             return y.Distance.CompareTo(x.Distance);

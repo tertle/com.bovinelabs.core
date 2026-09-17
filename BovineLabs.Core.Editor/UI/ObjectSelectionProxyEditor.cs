@@ -7,7 +7,6 @@ namespace BovineLabs.Core.Editor.UI
     [CustomEditor(typeof(ObjectSelectionProxy))]
     public class ObjectSelectionProxyEditor : Editor
     {
-        /// <inheritdoc/>
         public sealed override VisualElement CreateInspectorGUI()
         {
             var obj = (ObjectSelectionProxy)this.target;
@@ -20,7 +19,6 @@ namespace BovineLabs.Core.Editor.UI
             return PropertyInspector.Make(obj.Obj);
         }
 
-        /// <inheritdoc/>
         protected override void OnHeaderGUI()
         {
         }

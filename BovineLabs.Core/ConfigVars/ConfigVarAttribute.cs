@@ -91,7 +91,6 @@
             return new ConfigVarAttribute(s, 0, string.Empty);
         }
 
-        /// <inheritdoc />
         public bool Equals(ConfigVarAttribute other)
         {
             if (ReferenceEquals(null, other))
@@ -107,7 +106,6 @@
             return base.Equals(other) && this.Name == other.Name;
         }
 
-        /// <inheritdoc />
         public override int GetHashCode()
         {
             unchecked

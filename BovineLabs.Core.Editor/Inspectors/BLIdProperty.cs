@@ -8,10 +8,8 @@ namespace BovineLabs.Core.Editor.Inspectors
     [CustomPropertyDrawer(typeof(BLId))]
     public sealed class BLIdProperty : ElementProperty
     {
-        /// <inheritdoc/>
         protected override bool IterateChildren => false;
 
-        /// <inheritdoc/>
         protected override VisualElement CreateElement(SerializedProperty property)
         {
             var idField = new IntegerField(nameof(BLId.ID)) { isReadOnly = true };

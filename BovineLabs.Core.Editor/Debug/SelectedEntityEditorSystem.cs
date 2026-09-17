@@ -25,7 +25,6 @@
 
         private JobHandle lastFrame;
 
-        /// <inheritdoc />
         protected override void OnCreate()
         {
             this.entities = new NativeList<Entity>(512, Allocator.Persistent);
@@ -36,7 +35,6 @@
             this.EntityManager.CreateEntity<SelectedEntity, SelectedEntities>("Selected Entity");
         }
 
-        /// <inheritdoc/>
         protected override void OnDestroy()
         {
             this.instanceIds.Dispose();
@@ -44,7 +42,6 @@
             this.entityLookup.Dispose();
         }
 
-        /// <inheritdoc />
         protected override void OnUpdate()
         {
             if (!IsEnabled.Data)

@@ -36,13 +36,10 @@
             }
         }
 
-        /// <inheritdoc />
         public string DisplayName => this.Settings.DisplayName();
 
-        /// <inheritdoc/>
         public string GroupName { get; }
 
-        /// <inheritdoc/>
         public bool IsEmpty { get; }
 
         /// <summary> Gets the settings that the panel is drawing. </summary>
@@ -88,7 +85,6 @@
         {
         }
 
-        /// <inheritdoc />
         public bool MatchesFilter(string searchContext, bool allowEmpty)
         {
             if (!allowEmpty && this.IsEmpty)

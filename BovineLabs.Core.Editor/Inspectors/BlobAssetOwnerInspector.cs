@@ -9,7 +9,6 @@
 
     internal unsafe class BlobAssetOwnerInspector : PropertyInspector<BlobAssetOwner>
     {
-        /// <inheritdoc/>
         public override VisualElement Build()
         {
             var parent = new VisualElement();

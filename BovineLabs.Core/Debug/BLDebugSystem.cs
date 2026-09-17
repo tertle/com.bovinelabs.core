@@ -39,13 +39,11 @@
             world.EntityManager.SetComponentData(entity, new BLLogger { World = worldName });
         }
 
-        /// <inheritdoc />
         protected override void OnCreate()
         {
             Create(this.World);
         }
 
-        /// <inheritdoc/>
         protected override void OnUpdate()
         {
             var frameCount = UnityEngine.Time.frameCount;

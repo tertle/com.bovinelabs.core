@@ -7,10 +7,8 @@ namespace BovineLabs.Core.Editor
 
     public class CoreBuildSetup : IPreprocessBuildWithContext, IPostprocessBuildWithContext
     {
-        /// <inheritdoc/>
         public int callbackOrder => 0;
 
-        /// <inheritdoc/>
         public void OnPreprocessBuild(BuildCallbackContext context)
         {
             if (!context.IsPlayerBuild)
@@ -22,7 +20,6 @@ namespace BovineLabs.Core.Editor
             IncludeSettingsSingleton();
         }
 
-        /// <inheritdoc/>
         public void OnPostprocessBuild(BuildCallbackContext context)
         {
             if (!context.IsPlayerBuild)

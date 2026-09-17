@@ -18,21 +18,18 @@
             this.field = field;
         }
 
-        /// <inheritdoc />
         T IConfigVarContainer<T>.Value
         {
             get => this.field.Data;
             set => this.field.Data = value;
         }
 
-        /// <inheritdoc />
         string IConfigVarContainer.StringValue
         {
             get => this.field.Data.ToString();
             set => this.field.Data = (T)Convert.ChangeType(value, typeof(T));
         }
 
-        /// <inheritdoc/>
         public Type Type => typeof(T);
     }
 }

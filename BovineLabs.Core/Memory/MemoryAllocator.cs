@@ -61,7 +61,6 @@
             this.allocated.Clear();
         }
 
-        /// <inheritdoc />
         public void Dispose()
         {
             this.FreeAll();

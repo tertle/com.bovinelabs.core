@@ -14,7 +14,6 @@
         private readonly List<string> removed = new();
 
 
-        /// <inheritdoc/>
         protected override VisualElement CreateElement(SerializedProperty property)
         {
             return property.name switch
@@ -121,7 +120,6 @@
             }
         }
 
-        /// <inheritdoc/>
         protected override void PostElementCreation(VisualElement root, bool createdElements)
         {
             var editorSettings = (EditorSettings)this.target;

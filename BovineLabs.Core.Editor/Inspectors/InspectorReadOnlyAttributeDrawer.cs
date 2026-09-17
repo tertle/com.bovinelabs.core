@@ -8,7 +8,6 @@
     [CustomPropertyDrawer(typeof(InspectorReadOnlyAttribute))]
     public class InspectorReadOnlyAttributeDrawer : PropertyDrawer
     {
-        /// <inheritdoc />
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             var propertyField = PropertyUtil.CreateProperty(property, property.serializedObject);

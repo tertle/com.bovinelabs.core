@@ -7,7 +7,6 @@
 
     internal class ArchetypeChunkInspector : PropertyInspector<ArchetypeChunk>
     {
-        /// <inheritdoc/>
         public override VisualElement Build()
         {
             var chunk = new TextField

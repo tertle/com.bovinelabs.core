@@ -16,7 +16,6 @@ namespace BovineLabs.Core.Editor.Inspectors
     {
         private ObjectField objectField;
 
-        /// <inheritdoc/>
         public override VisualElement Build()
         {
             this.objectField = new ObjectField { enabledSelf = !this.IsReadOnly };
@@ -32,7 +31,6 @@ namespace BovineLabs.Core.Editor.Inspectors
             return this.objectField;
         }
 
-        /// <inheritdoc/>
         public override void Update()
         {
             var target = this.Target;

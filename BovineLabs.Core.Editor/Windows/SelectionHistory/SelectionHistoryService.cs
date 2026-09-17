@@ -58,7 +58,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
         /// <summary>Gets the maximum number of items to keep in history.</summary>
         public int MaxHistorySize => this.Preferences.MaxHistorySize;
 
-        /// <inheritdoc/>
         public override void SelectItem(SelectionHistoryItem item)
         {
             // Selection notifications can be deferred, so retain the object until the next change is received.
@@ -133,7 +132,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             EditorSceneManager.sceneSaved -= this.OnSceneSaved;
         }
 
-        /// <inheritdoc/>
         protected override bool TryRemoveItem(SelectionHistoryItem item)
         {
             var changed = this.lockedItems.Remove(item);
@@ -146,7 +144,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             return changed;
         }
 
-        /// <inheritdoc/>
         protected override void OnPreferencesChanged()
         {
             this.RebuildItems();
@@ -154,7 +151,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             base.OnPreferencesChanged();
         }
 
-        /// <inheritdoc/>
         protected override void Save()
         {
             this.Preferences.LockedHistoryData = CreateSerializableItems<SelectionHistoryItem, SerializableHistoryItem>(
@@ -163,7 +159,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
                 this.normalItems, 0, this.normalItems.Count, SetLocked);
         }
 
-        /// <inheritdoc/>
         protected override void Load()
         {
             if (this.Preferences.LockedHistoryData.Count == 0 && this.Preferences.NormalHistoryData.Count == 0)

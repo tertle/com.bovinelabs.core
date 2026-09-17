@@ -67,7 +67,6 @@
             this.slabAllocator.Clear();
         }
 
-        /// <inheritdoc />
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

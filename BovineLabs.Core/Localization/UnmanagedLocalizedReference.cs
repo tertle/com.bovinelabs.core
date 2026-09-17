@@ -140,19 +140,16 @@ namespace BovineLabs.Core.Localization
             return !left.Equals(right);
         }
 
-        /// <inheritdoc />
         public readonly bool Equals(UnmanagedLocalizedReference other)
         {
             return this.TableReference.Equals(other.TableReference) && this.EntryReference == other.EntryReference;
         }
 
-        /// <inheritdoc />
         public override readonly bool Equals(object obj)
         {
             return obj is UnmanagedLocalizedReference other && this.Equals(other);
         }
 
-        /// <inheritdoc />
         public override readonly int GetHashCode()
         {
             unchecked

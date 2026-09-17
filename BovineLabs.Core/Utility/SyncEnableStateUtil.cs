@@ -47,7 +47,6 @@ namespace BovineLabs.Core.Utility
             [ReadOnly]
             public ComponentTypeHandle<T> ActiveHandle;
 
-            /// <inheritdoc />
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 chunk.CopyEnableMaskFrom(ref this.ActivePreviousHandle, ref this.ActiveHandle);

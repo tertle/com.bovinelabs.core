@@ -17,13 +17,11 @@
 
         private DynamicHashSet<T> GetSet => this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity, true).AsHashSet<TBuffer, T>();
 
-        /// <inheritdoc/>
         public override bool IsValid()
         {
             return base.IsValid() && this.Context.EntityManager.HasBuffer<TBuffer>(this.Context.Entity);
         }
 
-        /// <inheritdoc/>
         protected override void PopulateList(List<KVP> list)
         {
             var set = this.GetSet;
@@ -35,7 +33,6 @@
             }
         }
 
-        /// <inheritdoc/>
         protected override void OnValueChanged(NativeArray<KVP> newValues)
         {
             var set = this.GetSet;

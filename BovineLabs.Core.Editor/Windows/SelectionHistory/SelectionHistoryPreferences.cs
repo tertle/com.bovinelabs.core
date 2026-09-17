@@ -66,7 +66,6 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             set => this.normalHistoryData = value ?? new List<SerializableHistoryItem>();
         }
 
-        /// <inheritdoc />
         public override string[] GetSearchKeywords()
         {
             return IEditorPreference.GetSearchKeywordsFromType(typeof(SelectionHistoryPreferences));

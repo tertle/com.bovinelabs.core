@@ -15,7 +15,6 @@
 
         protected virtual string SearchQuery => "unmanaged=true";
 
-        /// <inheritdoc/>
         protected override VisualElement CreateElement(SerializedProperty property)
         {
             return property.name switch

@@ -61,32 +61,27 @@ namespace BovineLabs.Core
             return new BLId(this.ID, mod);
         }
 
-        /// <inheritdoc/>
         public readonly int CompareTo(BLId other)
         {
             var modCompare = this.Mod.CompareTo(other.Mod);
             return modCompare != 0 ? modCompare : this.ID.CompareTo(other.ID);
         }
 
-        /// <inheritdoc/>
         public override readonly bool Equals(object obj)
         {
             return obj is BLId other && this.Equals(other);
         }
 
-        /// <inheritdoc/>
         public readonly bool Equals(BLId other)
         {
             return this.RawValue == other.RawValue;
         }
 
-        /// <inheritdoc/>
         public override readonly int GetHashCode()
         {
             return this.RawValue;
         }
 
-        /// <inheritdoc/>
         public override readonly string ToString()
         {
             return this.Mod == 0 ? $"ID:{this.ID}" : $"Mod:{this.Mod} ID:{this.ID}";

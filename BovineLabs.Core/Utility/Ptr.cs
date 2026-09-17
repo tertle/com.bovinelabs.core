@@ -47,7 +47,6 @@
             return !left.Equals(right);
         }
 
-        /// <inheritdoc />
         public bool Equals(Ptr<T> other)
         {
             return this.Value == other.Value;
@@ -58,7 +57,6 @@
             return obj is Ptr<T> other && this.Equals(other);
         }
 
-        /// <inheritdoc />
         public override int GetHashCode()
         {
             return unchecked((int)(long)this.Value);

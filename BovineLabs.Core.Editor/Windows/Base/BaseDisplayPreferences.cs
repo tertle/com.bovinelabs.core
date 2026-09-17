@@ -148,7 +148,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
             set => this.doubleClickThreshold = value;
         }
 
-        /// <inheritdoc />
         public void OnPreferenceChanged(PropertyPath path)
         {
             // Preferences are automatically saved by UserSettings system
@@ -156,7 +155,6 @@ namespace BovineLabs.Core.Editor.Windows.Base
             this.PreferencesChanged?.Invoke();
         }
 
-        /// <inheritdoc />
         public abstract string[] GetSearchKeywords();
     }
 }

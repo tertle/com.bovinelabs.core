@@ -13,7 +13,6 @@
     {
         private readonly Dictionary<Type, Type> settingsPanelMap = new();
 
-        /// <inheritdoc />
         protected override string TitleText => "Settings";
 
         [MenuItem(EditorMenus.RootMenu + "Settings", priority = -30)]
@@ -22,7 +21,6 @@
             Open();
         }
 
-        /// <inheritdoc/>
         protected override void GetPanels(List<ISettingsPanel> settingPanels)
         {
             this.settingsPanelMap.Clear();
