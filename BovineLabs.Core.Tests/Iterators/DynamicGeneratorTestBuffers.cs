@@ -5,7 +5,7 @@ namespace BovineLabs.Core.Tests.Iterators
     using BovineLabs.Core.Iterators;
     using BovineLabs.Core.Iterators.Columns;
     using Unity.Entities;
-    using Unity.NetCode;
+    using Unity.Netcode;
 
     [GhostDynamicHashMap(SendDataForChildEntity = true)]
     [InternalBufferCapacity(0)]

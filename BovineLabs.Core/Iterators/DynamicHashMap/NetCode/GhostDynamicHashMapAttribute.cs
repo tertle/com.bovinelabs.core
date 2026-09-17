@@ -1,7 +1,7 @@
 namespace BovineLabs.Core.Iterators
 {
     using System;
-    using Unity.NetCode;
+    using Unity.Netcode;
 
     /// <summary>
     /// The attribute generates serializers but does not enable replication; include the buffer on a ghost prefab.

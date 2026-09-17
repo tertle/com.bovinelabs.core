@@ -2,7 +2,7 @@
 namespace BovineLabs.Core.Utility
 {
     using Unity.Entities;
-    using Unity.NetCode;
+    using Unity.Netcode;
 
     public static class NetUtility
     {

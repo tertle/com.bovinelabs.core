@@ -1,5 +1,5 @@
 #if !UNITY_NETCODE
-namespace Unity.NetCode
+namespace Unity.Netcode
 {
     using Unity.Collections;
 

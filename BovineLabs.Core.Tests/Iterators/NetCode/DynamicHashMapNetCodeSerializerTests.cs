@@ -10,8 +10,8 @@ namespace BovineLabs.Core.Tests.Iterators
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-    using Unity.NetCode;
-    using Unity.NetCode.LowLevel.Unsafe;
+    using Unity.Netcode;
+    using Unity.Netcode.LowLevel.Unsafe;
 
     public partial class DynamicHashMapNetCodeSerializerTests : ECSTestsFixture
     {

@@ -7,8 +7,8 @@ namespace BovineLabs.Core.Iterators
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-    using Unity.NetCode;
-    using Unity.NetCode.LowLevel.Unsafe;
+    using Unity.Netcode;
+    using Unity.Netcode.LowLevel.Unsafe;
     using Unity.Scripting.LifecycleManagement;
 
     [BurstCompile]

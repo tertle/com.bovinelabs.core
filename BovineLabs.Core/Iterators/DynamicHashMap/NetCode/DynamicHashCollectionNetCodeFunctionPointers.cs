@@ -1,8 +1,8 @@
 #if UNITY_NETCODE
 namespace BovineLabs.Core.Iterators
 {
-    using Unity.NetCode;
-    using Unity.NetCode.LowLevel.Unsafe;
+    using Unity.Netcode;
+    using Unity.Netcode.LowLevel.Unsafe;
 
     public struct DynamicHashCollectionNetCodeFunctionPointers
     {

@@ -221,9 +221,9 @@ namespace BovineLabs.DynamicGenerator
                 codecPlans,
                 codecMode == GhostDynamicHashMapCodecMode.RawStable,
                 GetNamedBool(candidate.Attribute, "SendDataForChildEntity", false),
-                GetNamedEnumExpression(candidate.Attribute, "PrefabType", "Unity.NetCode.GhostPrefabType", "All"),
-                GetNamedEnumExpression(candidate.Attribute, "SendTypeOptimization", "Unity.NetCode.GhostSendType", "AllClients"),
-                GetNamedEnumExpression(candidate.Attribute, "OwnerSendType", "Unity.NetCode.SendToOwnerType", "All"));
+                GetNamedEnumExpression(candidate.Attribute, "PrefabType", "Unity.Netcode.GhostPrefabType", "All"),
+                GetNamedEnumExpression(candidate.Attribute, "SendTypeOptimization", "Unity.Netcode.GhostSendType", "AllClients"),
+                GetNamedEnumExpression(candidate.Attribute, "OwnerSendType", "Unity.Netcode.SendToOwnerType", "All"));
 
             return new DynamicHashMapNetCodeResult(data, diagnostics);
         }
@@ -234,7 +234,7 @@ namespace BovineLabs.DynamicGenerator
             var serializerName = data.TypeSymbol.Name + data.SerializerSuffix + "GhostSerializer";
             var registrationSystemName = data.TypeSymbol.Name + data.SerializerSuffix + "GhostSerializerRegistrationSystem";
             var sendChild = data.SendDataForChildEntity ? "1" : "0";
-            var variantHash = $"Unity.NetCode.GhostVariantsUtility.CalculateVariantHashForComponent(Unity.Entities.ComponentType.ReadWrite<{data.TypeName}>())";
+            var variantHash = $"Unity.Netcode.GhostVariantsUtility.CalculateVariantHashForComponent(Unity.Entities.ComponentType.ReadWrite<{data.TypeName}>())";
             var serializerType = data.UseRawSerializerPath
                 ? "BovineLabs.Core.Iterators." + data.SerializerSuffix + "NetCodeSerializer<" +
                     data.TypeName + ", " + data.KeyTypeName + ", " + data.ValueTypeName + ">"
@@ -274,7 +274,7 @@ namespace BovineLabs.DynamicGenerator
             source.AppendLine(";");
             source.AppendLine("        public const int ScratchStride = 1;");
             source.AppendLine();
-            source.Append("        public static void AddToCollection(ref Unity.NetCode.GhostComponentSerializerCollectionData collectionData, ");
+            source.Append("        public static void AddToCollection(ref Unity.Netcode.GhostComponentSerializerCollectionData collectionData, ");
             source.AppendLine("ref Unity.Entities.SystemState state)");
             source.AppendLine("        {");
             source.Append("            var variantHash = ");
@@ -286,33 +286,33 @@ namespace BovineLabs.DynamicGenerator
             source.AppendLine("            if ((state.WorldUnmanaged.Flags & networkWorldFlags) != 0)");
             source.AppendLine("            {");
             source.AppendLine("                functionPointers.PostSerializeBuffer =");
-            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
-            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.PostSerializeBufferDelegate>(");
+            source.Append("                    new Unity.Netcode.PortableFunctionPointer<");
+            source.AppendLine("Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.PostSerializeBufferDelegate>(");
             source.AppendLine("                        AOT_PostSerializeBuffer);");
             source.AppendLine("                functionPointers.SerializeBuffer =");
-            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
-            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.SerializeBufferDelegate>(AOT_SerializeBuffer);");
+            source.Append("                    new Unity.Netcode.PortableFunctionPointer<");
+            source.AppendLine("Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.SerializeBufferDelegate>(AOT_SerializeBuffer);");
             source.AppendLine("                functionPointers.CopyFromSnapshot =");
-            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
-            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.CopyToFromSnapshotDelegate>(");
+            source.Append("                    new Unity.Netcode.PortableFunctionPointer<");
+            source.AppendLine("Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.CopyToFromSnapshotDelegate>(");
             source.AppendLine("                        AOT_CopyFromSnapshot);");
             source.AppendLine("                functionPointers.CopyToSnapshot =");
-            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
-            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.CopyToFromSnapshotDelegate>(AOT_CopyToSnapshot);");
+            source.Append("                    new Unity.Netcode.PortableFunctionPointer<");
+            source.AppendLine("Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.CopyToFromSnapshotDelegate>(AOT_CopyToSnapshot);");
             source.AppendLine("                functionPointers.RestoreFromBackup =");
-            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
-            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.RestoreFromBackupDelegate>(");
+            source.Append("                    new Unity.Netcode.PortableFunctionPointer<");
+            source.AppendLine("Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.RestoreFromBackupDelegate>(");
             source.AppendLine("                        AOT_RestoreFromBackup);");
             source.AppendLine("                functionPointers.PredictDelta =");
-            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
-            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.PredictDeltaDelegate>(AOT_PredictDelta);");
+            source.Append("                    new Unity.Netcode.PortableFunctionPointer<");
+            source.AppendLine("Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.PredictDeltaDelegate>(AOT_PredictDelta);");
             source.AppendLine("                functionPointers.Deserialize =");
-            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
-            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.DeserializeDelegate>(AOT_Deserialize);");
+            source.Append("                    new Unity.Netcode.PortableFunctionPointer<");
+            source.AppendLine("Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.DeserializeDelegate>(AOT_Deserialize);");
             source.AppendLine("#if UNITY_EDITOR || NETCODE_DEBUG");
             source.AppendLine("                functionPointers.ReportPredictionErrors =");
-            source.Append("                    new Unity.NetCode.PortableFunctionPointer<");
-            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.ReportPredictionErrorsDelegate>(");
+            source.Append("                    new Unity.Netcode.PortableFunctionPointer<");
+            source.AppendLine("Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.ReportPredictionErrorsDelegate>(");
             source.AppendLine("                        AOT_ReportPredictionErrors);");
             source.AppendLine("#endif");
             source.AppendLine("            }");
@@ -366,25 +366,25 @@ namespace BovineLabs.DynamicGenerator
             source.AppendLine();
             source.AppendLine("#if UNITY_NETCODE");
             source.AppendLine("    [Unity.Burst.BurstCompile]");
-            source.AppendLine("    [Unity.Entities.UpdateInGroup(typeof(Unity.NetCode.GhostComponentSerializerCollectionSystemGroup))]");
-            source.AppendLine("    [Unity.Entities.CreateAfter(typeof(Unity.NetCode.GhostComponentSerializerCollectionSystemGroup))]");
-            source.AppendLine("    [Unity.Entities.CreateBefore(typeof(Unity.NetCode.DefaultVariantSystemGroup))]");
+            source.AppendLine("    [Unity.Entities.UpdateInGroup(typeof(Unity.Netcode.GhostComponentSerializerCollectionSystemGroup))]");
+            source.AppendLine("    [Unity.Entities.CreateAfter(typeof(Unity.Netcode.GhostComponentSerializerCollectionSystemGroup))]");
+            source.AppendLine("    [Unity.Entities.CreateBefore(typeof(Unity.Netcode.DefaultVariantSystemGroup))]");
             source.AppendLine("    [Unity.Entities.BakingVersion(true)]");
             source.AppendLine("#endif");
             source.AppendLine("    [System.Runtime.CompilerServices.CompilerGenerated]");
             source.Append("    public partial struct ");
             source.AppendLine(registrationSystemName);
             source.AppendLine("#if UNITY_NETCODE");
-            source.AppendLine("        : Unity.Entities.ISystem, Unity.NetCode.IGhostComponentSerializerRegistration");
+            source.AppendLine("        : Unity.Entities.ISystem, Unity.Netcode.IGhostComponentSerializerRegistration");
             source.AppendLine("#endif");
             source.AppendLine("    {");
             source.AppendLine("#if UNITY_NETCODE");
             source.AppendLine("        public void OnCreate(ref Unity.Entities.SystemState state)");
             source.AppendLine("        {");
             source.Append("            using var builder = new Unity.Entities.EntityQueryBuilder(Unity.Collections.Allocator.Temp)");
-            source.AppendLine(".WithAllRW<Unity.NetCode.GhostComponentSerializerCollectionData>();");
+            source.AppendLine(".WithAllRW<Unity.Netcode.GhostComponentSerializerCollectionData>();");
             source.AppendLine("            using var query = state.EntityManager.CreateEntityQuery(builder);");
-            source.AppendLine("            ref var data = ref query.GetSingletonRW<Unity.NetCode.GhostComponentSerializerCollectionData>().ValueRW;");
+            source.AppendLine("            ref var data = ref query.GetSingletonRW<Unity.Netcode.GhostComponentSerializerCollectionData>().ValueRW;");
             source.AppendLine();
             source.Append("            ");
             source.Append(serializerName);
@@ -411,7 +411,7 @@ namespace BovineLabs.DynamicGenerator
         {
             source.AppendLine();
             source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
-            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.CopyToFromSnapshotDelegate))]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.CopyToFromSnapshotDelegate))]");
             source.AppendLine("        private static void AOT_CopyToSnapshot(");
             source.AppendLine("            System.IntPtr stateData, System.IntPtr snapshotData, int snapshotOffset, int snapshotStride,");
             source.AppendLine("            System.IntPtr componentData, int componentStride, int count)");
@@ -422,7 +422,7 @@ namespace BovineLabs.DynamicGenerator
             source.AppendLine("        }");
             source.AppendLine();
             source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
-            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.CopyToFromSnapshotDelegate))]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.CopyToFromSnapshotDelegate))]");
             source.AppendLine("        private static void AOT_CopyFromSnapshot(");
             source.AppendLine("            System.IntPtr stateData, System.IntPtr snapshotData, int snapshotOffset, int snapshotStride,");
             source.AppendLine("            System.IntPtr componentData, int componentStride, int count)");
@@ -433,7 +433,7 @@ namespace BovineLabs.DynamicGenerator
             source.AppendLine("        }");
             source.AppendLine();
             source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
-            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.DeserializeDelegate))]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.DeserializeDelegate))]");
             source.AppendLine("        private static void AOT_Deserialize(");
             source.AppendLine("            System.IntPtr snapshotData, System.IntPtr baselineData, ref Unity.Collections.DataStreamReader reader,");
             source.AppendLine("            ref Unity.Collections.StreamCompressionModel compressionModel, System.IntPtr changeMaskData, int startOffset)");
@@ -444,7 +444,7 @@ namespace BovineLabs.DynamicGenerator
             source.AppendLine("        }");
             source.AppendLine();
             source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
-            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.SerializeBufferDelegate))]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.SerializeBufferDelegate))]");
             source.AppendLine("        private static void AOT_SerializeBuffer(");
             source.AppendLine("            System.IntPtr stateData, System.IntPtr snapshotData, int snapshotOffset, int snapshotStride, int maskOffsetInBits,");
             source.Append("            int changeMaskBits, System.IntPtr componentData, System.IntPtr componentDataLen, int count, ");
@@ -463,7 +463,7 @@ namespace BovineLabs.DynamicGenerator
             source.AppendLine("        }");
             source.AppendLine();
             source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
-            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.PostSerializeBufferDelegate))]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.PostSerializeBufferDelegate))]");
             source.AppendLine("        private static void AOT_PostSerializeBuffer(");
             source.Append("            System.IntPtr snapshotData, int snapshotOffset, int snapshotStride, int maskOffsetInBits, ");
             source.AppendLine("int changeMaskBits, int count,");
@@ -479,7 +479,7 @@ namespace BovineLabs.DynamicGenerator
             source.AppendLine("        }");
             source.AppendLine();
             source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
-            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.RestoreFromBackupDelegate))]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.RestoreFromBackupDelegate))]");
             source.AppendLine("        private static void AOT_RestoreFromBackup(System.IntPtr componentData, System.IntPtr backupData)");
             source.AppendLine("        {");
             source.Append("            ");
@@ -488,10 +488,10 @@ namespace BovineLabs.DynamicGenerator
             source.AppendLine("        }");
             source.AppendLine();
             source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
-            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.PredictDeltaDelegate))]");
+            source.AppendLine("        [AOT.MonoPInvokeCallback(typeof(Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.PredictDeltaDelegate))]");
             source.AppendLine("        private static void AOT_PredictDelta(");
             source.AppendLine("            System.IntPtr snapshotData, System.IntPtr baseline1Data, System.IntPtr baseline2Data,");
-            source.AppendLine("            ref Unity.NetCode.GhostDeltaPredictor predictor)");
+            source.AppendLine("            ref Unity.Netcode.GhostDeltaPredictor predictor)");
             source.AppendLine("        {");
             source.Append("            ");
             source.Append(serializerType);
@@ -501,7 +501,7 @@ namespace BovineLabs.DynamicGenerator
             source.AppendLine("#if UNITY_EDITOR || NETCODE_DEBUG");
             source.AppendLine("        [Unity.Burst.BurstCompile(DisableDirectCall = true)]");
             source.Append("        [AOT.MonoPInvokeCallback(typeof(");
-            source.AppendLine("Unity.NetCode.LowLevel.Unsafe.GhostComponentSerializer.ReportPredictionErrorsDelegate))]");
+            source.AppendLine("Unity.Netcode.LowLevel.Unsafe.GhostComponentSerializer.ReportPredictionErrorsDelegate))]");
             source.AppendLine("        private static void AOT_ReportPredictionErrors(");
             source.AppendLine("            System.IntPtr componentData, System.IntPtr backupData, System.IntPtr errorsList, int errorsCount)");
             source.AppendLine("        {");

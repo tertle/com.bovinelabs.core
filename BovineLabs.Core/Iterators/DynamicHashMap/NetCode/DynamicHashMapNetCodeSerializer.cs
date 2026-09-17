@@ -5,8 +5,7 @@ namespace BovineLabs.Core.Iterators
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Entities;
-    using Unity.NetCode;
-    using Unity.NetCode.LowLevel.Unsafe;
+    using Unity.Netcode;
 
     [BurstCompile]
     public static unsafe class DynamicHashMapNetCodeSerializer<TBuffer, TKey, TValue>

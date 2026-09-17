@@ -3,7 +3,7 @@ namespace BovineLabs.Core.Iterators
 {
     using System.Runtime.CompilerServices;
     using Unity.Collections;
-    using Unity.NetCode.LowLevel.Unsafe;
+    using Unity.Netcode.LowLevel.Unsafe;
 
     internal static unsafe class DynamicHashCollectionNetCodeCodecCommon
     {

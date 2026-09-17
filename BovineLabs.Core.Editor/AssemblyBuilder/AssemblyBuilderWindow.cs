@@ -59,7 +59,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 #if !UNITY_NETCODE
             foreach (var toggle in this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().ToList())
             {
-                if (toggle.label is "Unity.NetCode" or "Unity.Networking.Transport")
+                if (toggle.label is "Unity.Netcode" or "Unity.Networking.Transport")
                 {
                     toggle.RemoveFromHierarchy();
                 }
