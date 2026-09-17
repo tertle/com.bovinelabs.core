@@ -16,6 +16,7 @@
     "revision": "main"
   },
   "dependencies": {
+    "com.unity.collections": "6.7.0",
     "com.unity.entities": "6.7.0"
   },
   "keywords": [
