@@ -1,6 +1,7 @@
 namespace BovineLabs.Core.Collections
 {
     using System.Diagnostics.CodeAnalysis;
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
     using UnityEngine;
 
@@ -39,7 +40,7 @@ namespace BovineLabs.Core.Collections
         {
             Debug.Assert(threadIndex < UnsafeThreadStream.ForEachCount && threadIndex >= 0);
 
-            var block = (UnsafeThreadStreamBlock*)Memory.Unmanaged.Allocate(AllocationSize, 16, this.Allocator);
+            var block = (UnsafeThreadStreamBlock*)CollectionMemory.Allocate(AllocationSize, 16, this.Allocator);
             block->Next = null;
 
             if (oldBlock == null)

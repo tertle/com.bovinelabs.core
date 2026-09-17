@@ -1,5 +1,6 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
 
     public static class UnsafeQueueExtension
@@ -8,7 +9,7 @@
             where T : unmanaged
         {
             var parallelWriter = queue.AsParallelWriter();
-            parallelWriter.m_ThreadIndex = threadIndex;
+            parallelWriter.GetThreadIndex() = threadIndex;
             return parallelWriter;
         }
     }

@@ -2,6 +2,7 @@ namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Diagnostics;
+    using BovineLabs.Core.Internal;
     using Unity.Assertions;
     using Unity.Burst;
     using Unity.Collections;
@@ -34,14 +35,14 @@ namespace BovineLabs.Core.Collections
 
             public int ForEachCount => this.reader.ForEachCount;
 
-            public int RemainingItemCount => CollectionHelper.AssumePositive(this.reader.RemainingItemCount);
+            public int RemainingItemCount => CollectionChecks.AssumePositive(this.reader.RemainingItemCount);
 
             public int BeginForEachIndex(int foreachIndex)
             {
                 this.CheckBeginForEachIndex(foreachIndex);
 
                 var remainingItemCount = this.reader.BeginForEachIndex(foreachIndex);
-                remainingItemCount = CollectionHelper.AssumePositive(remainingItemCount);
+                remainingItemCount = CollectionChecks.AssumePositive(remainingItemCount);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 this.remainingBlocks = this.reader.m_BlockStream->Ranges[foreachIndex].NumberOfBlocks;

@@ -1,5 +1,6 @@
 namespace BovineLabs.Core.Extensions
 {
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
 
     public static unsafe class NativeQueueExtensions
@@ -7,7 +8,7 @@ namespace BovineLabs.Core.Extensions
         public static bool IsCreated<T>(this NativeQueue<T>.ParallelWriter queue)
             where T : unmanaged
         {
-            return queue.unsafeWriter.m_Buffer != null;
+            return queue.GetWriter().GetBuffer() != null;
         }
     }
 }

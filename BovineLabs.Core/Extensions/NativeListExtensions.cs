@@ -1,10 +1,11 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Runtime.InteropServices;
     using System.Threading;
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
@@ -15,7 +16,7 @@
         {
             idx = nativeList.Length;
             nativeList.Length += length;
-            ptr = (T*)((byte*)nativeList.m_ListData->Ptr + (idx * UnsafeUtility.SizeOf<T>()));
+            ptr = (T*)((byte*)nativeList.GetListData()->Ptr + (idx * UnsafeUtility.SizeOf<T>()));
         }
 
         public static void ReserveNoResize<T>(this NativeList<T>.ParallelWriter nativeList, int length, out T* ptr, out int idx)

@@ -1,7 +1,8 @@
-﻿namespace BovineLabs.Core.Memory
+namespace BovineLabs.Core.Memory
 {
     using System;
     using System.Diagnostics;
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
@@ -22,7 +23,7 @@
             this.allocator = allocator;
             this.freeIndex = new UnsafeParallelHashSet<Ptr>(maxItems, allocator);
 
-            this.buffer = Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<T>() * maxItems, UnsafeUtility.AlignOf<T>(), allocator);
+            this.buffer = CollectionMemory.Allocate(UnsafeUtility.SizeOf<T>() * maxItems, UnsafeUtility.AlignOf<T>(), allocator);
 
             for (var i = 0; i < maxItems; i++)
             {
@@ -59,7 +60,7 @@
 
         public void Dispose()
         {
-            Memory.Unmanaged.Free(this.buffer, this.allocator);
+            CollectionMemory.Free(this.buffer, this.allocator);
             this.freeIndex.Dispose();
             this.buffer = Ptr.Zero;
             this.freeIndex = default;

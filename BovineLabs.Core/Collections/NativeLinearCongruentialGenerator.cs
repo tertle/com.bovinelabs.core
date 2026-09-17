@@ -1,6 +1,7 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -33,10 +34,10 @@
 
         private static void Allocate(AllocatorManager.AllocatorHandle allocator, out NativeLinearCongruentialGenerator reference)
         {
-            CollectionHelper.CheckAllocator(allocator);
+            CollectionChecks.CheckAllocator(allocator);
 
             reference = default;
-            reference.current = (int*)Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator);
+            reference.current = (int*)CollectionMemory.Allocate(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator);
             reference.allocatorLabel = allocator;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -52,7 +53,7 @@
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
 #endif
-            Memory.Unmanaged.Free(this.current, this.allocatorLabel);
+            CollectionMemory.Free(this.current, this.allocatorLabel);
 
             this.current = null;
         }

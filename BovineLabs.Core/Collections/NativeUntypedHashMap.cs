@@ -5,6 +5,7 @@ namespace BovineLabs.Core.Collections
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using BovineLabs.Core.Assertions;
+    using BovineLabs.Core.Internal;
     using Unity.Assertions;
     using Unity.Burst;
     using Unity.Collections;
@@ -33,7 +34,7 @@ namespace BovineLabs.Core.Collections
             this.data = NativeUntypedHashMapHelper<TKey>.Alloc(capacity, capacity, minGrowth, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.CheckAllocator(allocator);
+            CollectionChecks.CheckAllocator(allocator);
             this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
 
             if (UnsafeUtility.IsNativeContainerType<TKey>())
@@ -267,7 +268,7 @@ namespace BovineLabs.Core.Collections
 
         internal static NativeUntypedHashMapHelper<TKey>* Alloc(int capacity, int dataCapacity, int minGrowth, AllocatorManager.AllocatorHandle allocator)
         {
-            var data = (NativeUntypedHashMapHelper<TKey>*)Memory.Unmanaged.Allocate(
+            var data = (NativeUntypedHashMapHelper<TKey>*)CollectionMemory.Allocate(
                 sizeof(NativeUntypedHashMapHelper<TKey>), UnsafeUtility.AlignOf<NativeUntypedHashMapHelper<TKey>>(), allocator);
             data->Init(capacity, dataCapacity, minGrowth, allocator);
 
@@ -282,7 +283,7 @@ namespace BovineLabs.Core.Collections
             }
 
             data->Dispose();
-            Memory.Unmanaged.Free(data, data->Allocator);
+            CollectionMemory.Free(data, data->Allocator);
         }
 
         internal void Init(int capacity, int dataCapacity, int minGrowth, AllocatorManager.AllocatorHandle allocator)
@@ -297,7 +298,7 @@ namespace BovineLabs.Core.Collections
             var totalSize = CalculateDataSize(capacity, bucketCapacity, dataCapacity, out var keyOffset, out var nextOffset, out var bucketOffset,
                 out var typeOffset, out var dataOffset);
 
-            this.Buffer = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, allocator);
+            this.Buffer = (byte*)CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, allocator);
             this.Values = this.Buffer;
             this.Keys = (TKey*)(this.Buffer + keyOffset);
             this.Next = (int*)(this.Buffer + nextOffset);
@@ -317,7 +318,7 @@ namespace BovineLabs.Core.Collections
 
         internal void Dispose()
         {
-            Memory.Unmanaged.Free(this.Buffer, this.Allocator);
+            CollectionMemory.Free(this.Buffer, this.Allocator);
 
             this.Buffer = null;
             this.Values = null;
@@ -361,7 +362,7 @@ namespace BovineLabs.Core.Collections
             var totalSize = CalculateDataSize(newCapacity, newBucketCapacity, this.DataCapacity, out var keyOffset, out var nextOffset, out var bucketOffset,
                 out var typeOffset, out var dataOffset);
 
-            var newBuffer = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, this.Allocator);
+            var newBuffer = (byte*)CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, this.Allocator);
             var newValues = newBuffer;
             var newKeys = (TKey*)(newBuffer + keyOffset);
             var newNext = (int*)(newBuffer + nextOffset);
@@ -400,7 +401,7 @@ namespace BovineLabs.Core.Collections
                 }
             }
 
-            Memory.Unmanaged.Free(this.Buffer, this.Allocator);
+            CollectionMemory.Free(this.Buffer, this.Allocator);
 
             this.Buffer = newBuffer;
             this.Values = newValues;
@@ -425,7 +426,7 @@ namespace BovineLabs.Core.Collections
             var totalSize = CalculateDataSize(this.Capacity, bucketCapacity, newCapacity, out var keyOffset, out var nextOffset, out var bucketOffset,
                 out var typeOffset, out var dataOffset);
 
-            var newBuffer = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, this.Allocator);
+            var newBuffer = (byte*)CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, this.Allocator);
             var newValues = newBuffer;
             var newKeys = (TKey*)(newBuffer + keyOffset);
             var newNext = (int*)(newBuffer + nextOffset);
@@ -443,7 +444,7 @@ namespace BovineLabs.Core.Collections
             UnsafeUtility.MemCpy(newTypes, this.Types, oldCapacity * sizeof(int));
             UnsafeUtility.MemCpy(newData, this.Data, oldDataCapacity * sizeof(int));
 
-            Memory.Unmanaged.Free(this.Buffer, this.Allocator);
+            CollectionMemory.Free(this.Buffer, this.Allocator);
 
             this.Buffer = newBuffer;
             this.Values = newValues;

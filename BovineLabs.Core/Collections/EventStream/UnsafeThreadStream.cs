@@ -1,6 +1,7 @@
 namespace BovineLabs.Core.Collections
 {
     using System;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -112,7 +113,7 @@ namespace BovineLabs.Core.Collections
         internal static void AllocateBlock(out UnsafeThreadStream stream, AllocatorManager.AllocatorHandle allocator)
         {
             var allocationSize = sizeof(UnsafeThreadStreamBlockData) + (sizeof(UnsafeThreadStreamBlock*) * ForEachCount);
-            var buffer = (byte*)Memory.Unmanaged.Allocate(allocationSize, 16, allocator);
+            var buffer = (byte*)CollectionMemory.Allocate(allocationSize, 16, allocator);
             UnsafeUtility.MemClear(buffer, allocationSize);
 
             var block = (UnsafeThreadStreamBlockData*)buffer;
@@ -129,7 +130,7 @@ namespace BovineLabs.Core.Collections
         internal void AllocateForEach()
         {
             long allocationSize = sizeof(UnsafeThreadStreamRange) * ForEachCount;
-            this.blockData->Ranges = (UnsafeThreadStreamRange*)Memory.Unmanaged.Allocate(allocationSize, 16, this.allocator);
+            this.blockData->Ranges = (UnsafeThreadStreamRange*)CollectionMemory.Allocate(allocationSize, 16, this.allocator);
             UnsafeUtility.MemClear(this.blockData->Ranges, allocationSize);
         }
 
@@ -146,13 +147,13 @@ namespace BovineLabs.Core.Collections
                 while (block != null)
                 {
                     var next = block->Next;
-                    Memory.Unmanaged.Free(block, this.allocator);
+                    CollectionMemory.Free(block, this.allocator);
                     block = next;
                 }
             }
 
-            Memory.Unmanaged.Free(this.blockData->Ranges, this.allocator);
-            Memory.Unmanaged.Free(this.blockData, this.allocator);
+            CollectionMemory.Free(this.blockData->Ranges, this.allocator);
+            CollectionMemory.Free(this.blockData, this.allocator);
             this.blockData = null;
             this.allocator = Allocator.None;
         }

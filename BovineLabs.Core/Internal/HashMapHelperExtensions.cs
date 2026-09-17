@@ -1,8 +1,9 @@
-﻿namespace BovineLabs.Core.Internal
+namespace BovineLabs.Core.Internal
 {
     using System;
     using System.Runtime.CompilerServices;
     using System.Threading;
+    using BovineLabs.Core.Internal;
     using Unity.Collections.LowLevel.Unsafe;
 
     internal static unsafe class HashMapHelperInternals

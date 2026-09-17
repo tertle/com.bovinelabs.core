@@ -17,14 +17,8 @@
         {
             var unsafeText = TypeManager.GetSystemNameInternal(systemIndex);
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var ro = new NativeText.ReadOnly(unsafeText, AtomicSafetyHandle.GetTempMemoryHandle());
-#else
-            var ro = new NativeText.ReadOnly(unsafeText);
-#endif
-
             var fs = new FixedString128Bytes();
-            fs.Append(ro);
+            fs.Append(unsafeText->GetUnsafePtr(), unsafeText->Length);
             return fs;
         }
     }

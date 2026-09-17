@@ -5,7 +5,7 @@
 
     public static unsafe class NativeStreamExtensions
     {
-        private static readonly int MaxSize = UnsafeStreamBlockData.AllocationSize - sizeof(void*);
+        private static readonly int MaxSize = 4096 - sizeof(void*);
 
         public static void WriteLarge<T>(this ref NativeStream.Writer writer, NativeArray<T> array)
             where T : unmanaged

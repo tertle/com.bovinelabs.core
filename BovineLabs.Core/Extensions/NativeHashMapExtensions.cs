@@ -1,9 +1,10 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Assertions;
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
@@ -20,15 +21,15 @@
         {
             CheckWrite(hashMap);
 
-            var idx = hashMap.m_Data->Find(key);
+            var idx = hashMap.GetData()->Find(key);
 
             if (idx == -1)
             {
-                idx = hashMap.m_Data->AddNoFind(key);
-                UnsafeUtility.WriteArrayElement(hashMap.m_Data->Ptr, idx, defaultValue);
+                idx = hashMap.GetData()->AddNoFind(key);
+                UnsafeUtility.WriteArrayElement(hashMap.GetData()->Ptr, idx, defaultValue);
             }
 
-            return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data->Ptr, idx);
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.GetData()->Ptr, idx);
         }
 
         public static bool Remove<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap, TKey key, out TValue value)
@@ -36,7 +37,7 @@
             where TValue : unmanaged
         {
             CheckWrite(hashMap);
-            var data = hashMap.m_Data;
+            var data = hashMap.GetData();
 
             if (hashMap.Capacity == 0)
             {
@@ -64,7 +65,7 @@
                         data->Next[prevEntry] = data->Next[entryIdx];
                     }
 
-                    value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_Data->Ptr, entryIdx);
+                    value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetData()->Ptr, entryIdx);
 
                     // And free the index
                     data->Next[entryIdx] = data->FirstFreeIdx;
@@ -202,7 +203,7 @@
             var oldBuckets = hashMapHelper.Buckets;
             var oldBucketCapacity = hashMapHelper.BucketCapacity;
 
-            hashMapHelper.Ptr = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, hashMapHelper.Allocator);
+            hashMapHelper.Ptr = (byte*)CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, hashMapHelper.Allocator);
             hashMapHelper.Keys = (TKey*)(hashMapHelper.Ptr + keyOffset);
             hashMapHelper.Next = (int*)(hashMapHelper.Ptr + nextOffset);
             hashMapHelper.Buckets = (int*)(hashMapHelper.Ptr + bucketOffset);
@@ -221,7 +222,7 @@
                 }
             }
 
-            Memory.Unmanaged.Free(oldPtr, hashMapHelper.Allocator);
+            CollectionMemory.Free(oldPtr, hashMapHelper.Allocator);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -231,7 +232,7 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
 #endif
         }
 

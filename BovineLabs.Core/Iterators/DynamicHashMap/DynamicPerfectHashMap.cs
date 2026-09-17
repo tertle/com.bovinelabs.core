@@ -1,4 +1,4 @@
-﻿namespace BovineLabs.Core.Iterators
+namespace BovineLabs.Core.Iterators
 {
     using System;
     using System.Collections;
@@ -6,6 +6,7 @@
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Extensions;
+    using BovineLabs.Core.Internal;
     using Unity.Burst.CompilerServices;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;

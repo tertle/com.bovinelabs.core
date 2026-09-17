@@ -1,4 +1,4 @@
-﻿namespace BovineLabs.Core.Internal
+namespace BovineLabs.Core.Internal
 {
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -10,7 +10,7 @@
         public static unsafe BlobAssetReference<T> Create<T>(void* headerPtr, int headerLength, void* dataPtr, int dataLength)
             where T : unmanaged
         {
-            var buffer = (byte*)Memory.Unmanaged.Allocate(sizeof(BlobAssetHeader) + headerLength + dataLength, 16, Allocator.Persistent);
+            var buffer = (byte*)CollectionMemory.Allocate(sizeof(BlobAssetHeader) + headerLength + dataLength, 16, Allocator.Persistent);
             UnsafeUtility.MemCpy(buffer + sizeof(BlobAssetHeader), headerPtr, headerLength);
             UnsafeUtility.MemCpy(buffer + sizeof(BlobAssetHeader) + headerLength, dataPtr, dataLength);
 

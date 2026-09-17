@@ -1,4 +1,4 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
     using System;
     using Unity.Collections;
@@ -10,7 +10,7 @@
         public static NativeHashSet<T> Create(int initialCapacity, int minGrowth, AllocatorManager.AllocatorHandle allocator)
         {
             var hashSet = default(NativeHashSet<T>);
-            hashSet.m_Data = HashMapHelper<T>.Alloc(initialCapacity, 0, minGrowth, allocator);
+            hashSet.m_Data = Unity.Collections.LowLevel.Unsafe.HashMapHelper<T>.Alloc(initialCapacity, 0, minGrowth, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             hashSet.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);

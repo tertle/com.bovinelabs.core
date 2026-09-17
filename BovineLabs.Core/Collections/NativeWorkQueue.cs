@@ -1,8 +1,9 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Diagnostics;
     using System.Threading;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Burst.CompilerServices;
     using Unity.Collections;
@@ -49,10 +50,10 @@
             *this.currentRef = 0;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.CheckAllocator(allocator.Handle);
+            CollectionChecks.CheckAllocator(allocator.Handle);
 
             this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
-            CollectionHelper.InitNativeContainer<T>(this.m_Safety);
+            CollectionChecks.InitNativeContainer<T>(this.m_Safety);
             CollectionHelper.SetStaticSafetyId<NativeWorkQueue<T>>(ref this.m_Safety, ref s_staticSafetyId.Data);
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(this.m_Safety, true);
 #endif

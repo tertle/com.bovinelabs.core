@@ -86,7 +86,7 @@
 
                     for (var i = 0; i < chunk.Count; i++)
                     {
-                        if (Bitwise.IsSet(triggers, i) && !Bitwise.IsSet(durationOns, i))
+                        if (BovineLabs.Core.Internal.Bitwise.IsSet(triggers, i) && !BovineLabs.Core.Internal.Bitwise.IsSet(durationOns, i))
                         {
                             remainings[i] = durations[i];
                         }

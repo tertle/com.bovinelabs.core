@@ -1,6 +1,7 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System.Runtime.InteropServices;
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
@@ -19,7 +20,7 @@
         public ThreadRandom(uint seed, AllocatorManager.AllocatorHandle allocator)
         {
             this.allocator = allocator;
-            this.buffer = (Randoms*)Memory.Unmanaged.Allocate(sizeof(Randoms) * JobsUtility.ThreadIndexCount, UnsafeUtility.AlignOf<Randoms>(), allocator);
+            this.buffer = (Randoms*)CollectionMemory.Allocate(sizeof(Randoms) * JobsUtility.ThreadIndexCount, UnsafeUtility.AlignOf<Randoms>(), allocator);
 
             // uint.MaxValue is invalid for Random.CreateFromIndex
             seed = (uint)math.min(seed, uint.MaxValue - JobsUtility.ThreadIndexCount - 1);
@@ -49,7 +50,7 @@
                 return;
             }
 
-            Memory.Unmanaged.Free(this.buffer, this.allocator);
+            CollectionMemory.Free(this.buffer, this.allocator);
             this.buffer = null;
         }
 

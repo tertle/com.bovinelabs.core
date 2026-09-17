@@ -1,4 +1,4 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
@@ -14,7 +14,7 @@
             where TKey : unmanaged, IEquatable<TKey>
         {
             hashMap.CheckWrite();
-            hashMap.m_Data->ClearLengthBuckets();
+            hashMap.GetData()->ClearLengthBuckets();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -22,28 +22,29 @@
             where TKey : unmanaged, IEquatable<TKey>
         {
             hashMap.CheckWrite();
-            hashMap.m_Data->RecalculateBuckets();
+            hashMap.GetData()->RecalculateBuckets();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ReserveAtomicNoResize<TKey>(this ref NativeHashSet<TKey> hashMap, int length)
             where TKey : unmanaged, IEquatable<TKey>
         {
-            return hashMap.m_Data->ReserveAtomicNoResize(length);
+            return hashMap.GetData()->ReserveAtomicNoResize(length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetCount<TKey>(this ref NativeHashSet<TKey> hashMap, int count)
             where TKey : unmanaged, IEquatable<TKey>
         {
-            hashMap.m_Data->SetCount(count);
+            hashMap.GetData()->SetCount(count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TKey* GetKeys<TKey>(this in NativeHashSet<TKey> hashMap)
             where TKey : unmanaged, IEquatable<TKey>
         {
-            return hashMap.m_Data->Keys;
+            var copy = hashMap;
+            return copy.GetData()->Keys;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -52,7 +53,7 @@
             where TKey : unmanaged, IEquatable<TKey>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
 #endif
         }
     }

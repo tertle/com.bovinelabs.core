@@ -1,8 +1,9 @@
-﻿namespace BovineLabs.Core.Jobs
+namespace BovineLabs.Core.Jobs
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
+    using BovineLabs.Core.Internal;
     using JetBrains.Annotations;
     using Unity.Burst;
     using Unity.Burst.CompilerServices;
@@ -41,13 +42,14 @@
             // DOTS Runtime can validate the deferred list statically similar to the reflection based
             // validation in Big Unity.
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var safety = hashMap.m_Safety;
+            var safety = hashMap.GetSafety();
             var atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #else
             void* atomicSafetyHandlePtr = null;
 #endif
 
-            return ScheduleParallelInternal(jobData, hashMap.m_MultiHashMapData.m_Buffer, atomicSafetyHandlePtr, minIndicesPerJobCount, dependsOn);
+            return ScheduleParallelInternal(jobData, hashMap.GetMultiHashMapStorage().GetBuffer(), atomicSafetyHandlePtr,
+                minIndicesPerJobCount, dependsOn);
         }
 
         public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
@@ -68,7 +70,8 @@
             void* atomicSafetyHandlePtr = null;
 #endif
 
-            return ScheduleParallelInternal(jobData, hashMap.m_MultiHashMapData.m_Buffer, atomicSafetyHandlePtr, minIndicesPerJobCount, dependsOn);
+            return ScheduleParallelInternal(jobData, hashMap.GetMultiHashMapStorage().GetBuffer(), atomicSafetyHandlePtr,
+                minIndicesPerJobCount, dependsOn);
         }
 
         public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
@@ -81,13 +84,14 @@
             // DOTS Runtime can validate the deferred list statically similar to the reflection based
             // validation in Big Unity.
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var safety = hashMap.m_Safety;
+            var safety = hashMap.GetSafety();
             var atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #else
             void* atomicSafetyHandlePtr = null;
 #endif
 
-            return ScheduleParallelInternal(jobData, hashMap.m_HashMapData.m_Buffer, atomicSafetyHandlePtr, minIndicesPerJobCount, dependsOn);
+            return ScheduleParallelInternal(jobData, hashMap.GetHashMapStorage().GetBuffer(), atomicSafetyHandlePtr,
+                minIndicesPerJobCount, dependsOn);
         }
 
         public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
@@ -106,7 +110,8 @@
             void* atomicSafetyHandlePtr = null;
 #endif
 
-            return ScheduleParallelInternal(jobData, hashMap.m_HashMapData.m_Buffer, atomicSafetyHandlePtr, minIndicesPerJobCount, dependsOn);
+            return ScheduleParallelInternal(jobData, hashMap.GetHashMapStorage().GetBuffer(), atomicSafetyHandlePtr,
+                minIndicesPerJobCount, dependsOn);
         }
 
         private static unsafe JobHandle ScheduleParallelInternal<TJob>(
@@ -149,11 +154,11 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(hashMap.GetSafety());
 #endif
 
-            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.m_HashMapData.m_Buffer->keys, entryIndex);
-            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_HashMapData.m_Buffer->values, entryIndex);
+            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.GetHashMapStorage().GetBuffer()->keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetHashMapStorage().GetBuffer()->values, entryIndex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -168,8 +173,8 @@
             AtomicSafetyHandle.CheckReadAndThrow(re.Safety);
 #endif
 
-            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.m_HashMapData.m_Buffer->keys, entryIndex);
-            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_HashMapData.m_Buffer->values, entryIndex);
+            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.GetHashMapStorage().GetBuffer()->keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetHashMapStorage().GetBuffer()->values, entryIndex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -180,11 +185,11 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(hashMap.GetSafety());
 #endif
 
-            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.m_MultiHashMapData.m_Buffer->keys, entryIndex);
-            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_MultiHashMapData.m_Buffer->values, entryIndex);
+            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.GetMultiHashMapStorage().GetBuffer()->keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetMultiHashMapStorage().GetBuffer()->values, entryIndex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -199,8 +204,8 @@
             AtomicSafetyHandle.CheckReadAndThrow(re.Safety);
 #endif
 
-            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.m_MultiHashMapData.m_Buffer->keys, entryIndex);
-            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_MultiHashMapData.m_Buffer->values, entryIndex);
+            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.GetMultiHashMapStorage().GetBuffer()->keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetMultiHashMapStorage().GetBuffer()->values, entryIndex);
         }
 
         internal unsafe struct JobParallelHashMapVisitKeyValueProducer<T>

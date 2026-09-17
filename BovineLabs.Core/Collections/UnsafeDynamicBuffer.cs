@@ -1,4 +1,4 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Collections;
@@ -6,6 +6,7 @@
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -140,7 +141,7 @@
             }
             else
             {
-                newPtr = (byte*)Memory.Unmanaged.Allocate((long)elemSize * length, elemAlign, Allocator.Persistent);
+                newPtr = (byte*)CollectionMemory.Allocate((long)elemSize * length, elemAlign, Allocator.Persistent);
                 isInternal = false;
             }
 
@@ -149,7 +150,7 @@
             this.buffer->Capacity = Math.Max(length, this.internalCapacity);
             this.buffer->Pointer = isInternal ? null : newPtr;
 
-            Memory.Unmanaged.Free(oldPtr, Allocator.Persistent);
+            CollectionMemory.Free(oldPtr, Allocator.Persistent);
         }
 
         public int Add(T elem)

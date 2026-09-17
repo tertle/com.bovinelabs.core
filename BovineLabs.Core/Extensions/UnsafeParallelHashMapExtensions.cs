@@ -1,8 +1,9 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
     using System.Threading;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -15,9 +16,8 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            UnsafeParallelHashMap<TKey, TValue>.ParallelWriter writer;
-            writer.m_ThreadIndex = threadIndex;
-            writer.m_Buffer = hashMap.m_Buffer;
+            var writer = hashMap.AsParallelWriter();
+            writer.GetThreadIndex() = threadIndex;
 
             return writer;
         }
@@ -29,11 +29,11 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var data = hashMap.m_Buffer;
+            var data = hashMap.GetBuffer();
 
             if (UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(data, key, out _, out var tempIt))
             {
-                return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, tempIt.EntryIndex);
+                return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, tempIt.GetEntryIndex());
             }
 
             // Allocate an entry from the free list
@@ -61,7 +61,7 @@
                 {
                     var newCap = UnsafeParallelHashMapData.GrowCapacity(data->keyCapacity);
                     UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, newCap, UnsafeParallelHashMapData.GetBucketSize(newCap),
-                        hashMap.m_AllocatorLabel);
+                        hashMap.GetAllocator());
                 }
             }
 
@@ -98,11 +98,11 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var data = hashMap.m_Buffer;
+            var data = hashMap.GetBuffer();
 
             if (UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(data, key, out _, out var tempIt))
             {
-                return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, tempIt.EntryIndex);
+                return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, tempIt.GetEntryIndex());
             }
 
             // Allocate an entry from the free list
@@ -136,7 +136,7 @@
                     {
                         // Put back the entry in the free list if someone else added it while trying to add
                         UnsafeParallelHashMapBase<TKey, TValue>.FreeEntry(data, idx, hashMap.ThreadIndex);
-                        return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, tempIt.EntryIndex);
+                        return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, tempIt.GetEntryIndex());
                     }
                 }
                 while (Interlocked.CompareExchange(ref buckets[bucket], idx, next) != next);
@@ -149,11 +149,11 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var data = hashMap.m_Buffer;
+            var data = hashMap.GetBuffer();
 
             if (UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(data, key, out _, out var tempIt))
             {
-                return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, tempIt.EntryIndex);
+                return ref UnsafeUtility.ArrayElementAsRef<TValue>(data->values, tempIt.GetEntryIndex());
             }
 
             throw new NullReferenceException();
@@ -171,13 +171,13 @@
                 hashMap.Capacity = length;
             }
 
-            UnsafeUtility.MemCpy(hashMap.m_Buffer->keys, keys, length * UnsafeUtility.SizeOf<TKey>());
-            UnsafeUtility.MemCpy(hashMap.m_Buffer->values, values, length * UnsafeUtility.SizeOf<TValue>());
+            UnsafeUtility.MemCpy(hashMap.GetBuffer()->keys, keys, length * UnsafeUtility.SizeOf<TKey>());
+            UnsafeUtility.MemCpy(hashMap.GetBuffer()->values, values, length * UnsafeUtility.SizeOf<TValue>());
 
-            var buckets = (int*)hashMap.m_Buffer->buckets;
-            var nextPtrs = (int*)hashMap.m_Buffer->next;
+            var buckets = (int*)hashMap.GetBuffer()->buckets;
+            var nextPtrs = (int*)hashMap.GetBuffer()->next;
 
-            var bucketCapacityMask = hashMap.m_Buffer->bucketCapacityMask;
+            var bucketCapacityMask = hashMap.GetBuffer()->bucketCapacityMask;
 
             for (var idx = 0; idx < length; idx++)
             {
@@ -186,7 +186,7 @@
                 buckets[bucket] = idx;
             }
 
-            hashMap.m_Buffer->allocatedIndexLength = length;
+            hashMap.GetBuffer()->allocatedIndexLength = length;
         }
 
         /// <summary>
@@ -208,14 +208,14 @@
                 hashMap.Capacity = length;
             }
 
-            UnsafeUtility.MemCpyStride(hashMap.m_Buffer->keys, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride,
+            UnsafeUtility.MemCpyStride(hashMap.GetBuffer()->keys, UnsafeUtility.SizeOf<TKey>(), keys.GetUnsafeReadOnlyPtr(), keys.Stride,
                 UnsafeUtility.SizeOf<TKey>(), length);
 
-            UnsafeUtility.MemCpy(hashMap.m_Buffer->values, values.GetUnsafeReadOnlyPtr(), length * UnsafeUtility.SizeOf<TValue>());
+            UnsafeUtility.MemCpy(hashMap.GetBuffer()->values, values.GetUnsafeReadOnlyPtr(), length * UnsafeUtility.SizeOf<TValue>());
 
-            var buckets = (int*)hashMap.m_Buffer->buckets;
-            var nextPtrs = (int*)hashMap.m_Buffer->next;
-            var bucketCapacityMask = hashMap.m_Buffer->bucketCapacityMask;
+            var buckets = (int*)hashMap.GetBuffer()->buckets;
+            var nextPtrs = (int*)hashMap.GetBuffer()->next;
+            var bucketCapacityMask = hashMap.GetBuffer()->bucketCapacityMask;
 
             for (var idx = 0; idx < length; idx++)
             {
@@ -224,14 +224,14 @@
                 buckets[bucket] = idx;
             }
 
-            hashMap.m_Buffer->allocatedIndexLength = length;
+            hashMap.GetBuffer()->allocatedIndexLength = length;
         }
 
         public static bool TryGetFirstKeyValue<TKey, TValue>(ref this UnsafeParallelHashMap<TKey, TValue> map, out TKey key, out TValue value, ref int index)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            return map.m_Buffer->TryGetFirstKeyValue<TKey, TValue>(out key, out value, ref index);
+            return map.GetBuffer()->TryGetFirstKeyValue<TKey, TValue>(out key, out value, ref index);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

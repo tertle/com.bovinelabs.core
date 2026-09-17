@@ -40,7 +40,10 @@ namespace BovineLabs.Core.Internal
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            return new NativeParallelHashMap<TKey, TValue> { m_HashMapData = hashMapData };
+            return new NativeParallelHashMap<TKey, TValue>
+            {
+                m_HashMapData = hashMapData,
+            };
         }
 
         // NativeParallelMultiHashMap
@@ -81,14 +84,17 @@ namespace BovineLabs.Core.Internal
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
 #endif
-            return hashMap.m_Data;
+            return (HashMapHelper<TKey>*)hashMap.m_Data;
         }
 
         public static NativeParallelMultiHashMap<TKey, TValue> AsNative<TKey, TValue>(this UnsafeParallelMultiHashMap<TKey, TValue> hashMapData)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            return new NativeParallelMultiHashMap<TKey, TValue> { m_MultiHashMapData = hashMapData };
+            return new NativeParallelMultiHashMap<TKey, TValue>
+            {
+                m_MultiHashMapData = hashMapData,
+            };
         }
 
         public static unsafe byte* Buffer<T>(this FixedList32Bytes<T> list)

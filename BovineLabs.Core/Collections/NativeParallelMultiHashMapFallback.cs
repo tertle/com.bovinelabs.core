@@ -1,8 +1,9 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System;
     using BovineLabs.Core.Assertions;
     using BovineLabs.Core.Extensions;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Burst.CompilerServices;
     using Unity.Collections;
@@ -87,12 +88,13 @@
 
             public void Add(TKey key, TValue item)
             {
+                var hashMap = this.hashMap;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(this.hashMap.m_Safety);
+                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
 #endif
                 if (Hint.Likely(this.hashMap.TryReserve(1, out var idx)))
                 {
-                    var data = this.hashMap.m_Writer.m_Buffer;
+                    var data = hashMap.GetWriter().GetBuffer();
                     UnsafeUtility.WriteArrayElement(data->keys, idx, key);
                     UnsafeUtility.WriteArrayElement(data->values, idx, item);
                     UnsafeUtility.WriteArrayElement(data->next, idx, key.GetHashCode());
@@ -105,8 +107,9 @@
 
             public void AddBatch(NativeArray<TKey> keys, NativeArray<TValue> values)
             {
+                var hashMap = this.hashMap;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(this.hashMap.m_Safety);
+                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
                 Check.Assume(keys.Length == values.Length);
 #endif
                 this.AddBatch((TKey*)keys.GetUnsafeReadOnlyPtr(), (TValue*)values.GetUnsafeReadOnlyPtr(), keys.Length);
@@ -114,12 +117,13 @@
 
             public void AddBatch(TKey* keys, TValue* values, int length)
             {
+                var hashMap = this.hashMap;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(this.hashMap.m_Safety);
+                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
 #endif
                 if (Hint.Likely(this.hashMap.TryReserve(length, out var idx)))
                 {
-                    var data = this.hashMap.m_Writer.m_Buffer;
+                    var data = hashMap.GetWriter().GetBuffer();
                     var keyPtr = (TKey*)data->keys + idx;
                     var valuePtr = (TValue*)data->values + idx;
                     var nextPtr = (int*)data->next + idx;

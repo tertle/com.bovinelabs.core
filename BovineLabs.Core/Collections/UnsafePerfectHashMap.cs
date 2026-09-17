@@ -1,8 +1,9 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
+    using BovineLabs.Core.Internal;
     using Unity.Burst.CompilerServices;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -30,7 +31,7 @@
             var size = FindSize(keys, uniqueSet);
             var totalSize = CalculateDataSize(size, out var valueOffset);
 
-            var ptr = Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, allocator);
+            var ptr = CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, allocator);
             this.allocator = allocator;
             this.Size = size;
             this.NullValue = nullValue;
@@ -50,7 +51,7 @@
         public static UnsafePerfectHashMap<TKey, TValue>* Alloc(
             NativeArray<TKey> keys, NativeArray<TValue> values, TValue nullValue, AllocatorManager.AllocatorHandle allocator)
         {
-            var data = (UnsafePerfectHashMap<TKey, TValue>*)Memory.Unmanaged.Allocate(sizeof(UnsafePerfectHashMap<TKey, TValue>),
+            var data = (UnsafePerfectHashMap<TKey, TValue>*)CollectionMemory.Allocate(sizeof(UnsafePerfectHashMap<TKey, TValue>),
                 UnsafeUtility.AlignOf<UnsafePerfectHashMap<TKey, TValue>>(), allocator);
 
             *data = new UnsafePerfectHashMap<TKey, TValue>(keys, values, nullValue, allocator);
@@ -66,7 +67,7 @@
 
             var allocator = data->allocator;
             data->Dispose();
-            Memory.Unmanaged.Free(data, allocator);
+            CollectionMemory.Free(data, allocator);
         }
 
         public readonly bool IsCreated
@@ -106,7 +107,7 @@
                 return;
             }
 
-            Memory.Unmanaged.Free(this.Keys, this.allocator);
+            CollectionMemory.Free(this.Keys, this.allocator);
             this = default;
         }
 

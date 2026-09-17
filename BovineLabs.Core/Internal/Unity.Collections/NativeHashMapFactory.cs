@@ -1,4 +1,4 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
     using System;
     using Unity.Burst;
@@ -16,7 +16,7 @@
         public static NativeHashMap<TKey, TValue> Create(int initialCapacity, int minGrowth, AllocatorManager.AllocatorHandle allocator)
         {
             var hashMap = default(NativeHashMap<TKey, TValue>);
-            hashMap.m_Data = HashMapHelper<TKey>.Alloc(initialCapacity, sizeof(TValue), minGrowth, allocator);
+            hashMap.m_Data = Unity.Collections.LowLevel.Unsafe.HashMapHelper<TKey>.Alloc(initialCapacity, sizeof(TValue), minGrowth, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             hashMap.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);

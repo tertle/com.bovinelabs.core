@@ -1,6 +1,7 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System.Runtime.InteropServices;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -74,9 +75,9 @@
 
         public void Execute()
         {
-            Memory.Unmanaged.Free(this.Buckets, this.Allocator);
-            Memory.Unmanaged.Free(this.Next, this.Allocator);
-            Memory.Unmanaged.Free(this.Map, this.Allocator);
+            CollectionMemory.Free(this.Buckets, this.Allocator);
+            CollectionMemory.Free(this.Next, this.Allocator);
+            CollectionMemory.Free(this.Map, this.Allocator);
         }
     }
 }

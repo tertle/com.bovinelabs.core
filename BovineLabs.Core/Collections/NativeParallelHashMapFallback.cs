@@ -3,6 +3,7 @@ namespace BovineLabs.Core.Collections
     using System;
     using System.Threading;
     using BovineLabs.Core.Extensions;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -86,10 +87,11 @@ namespace BovineLabs.Core.Collections
 
             public bool TryAdd(TKey key, TValue item)
             {
+                var hashMap = this.hashMap;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(this.hashMap.m_Safety);
+                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
 #endif
-                var data = this.hashMap.m_Writer.m_Buffer;
+                var data = hashMap.GetWriter().GetBuffer();
 
                 if (ContainsKey(data, key))
                 {
@@ -133,6 +135,7 @@ namespace BovineLabs.Core.Collections
 
             public void Add(TKey key, TValue item)
             {
+                var hashMap = this.hashMap;
                 this.TryAdd(key, item);
             }
 

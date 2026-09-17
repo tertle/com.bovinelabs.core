@@ -1,8 +1,9 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -157,7 +158,7 @@
         public static IntPtr GetListPtr(this BlobBuilder builder)
         {
             ref var bb = ref UnsafeUtility.As<BlobBuilder, BlobBuilderInternal>(ref builder);
-            return new IntPtr(bb.Allocations.m_ListData);
+            return new IntPtr(bb.Allocations.GetListData());
         }
 
         public static bool ContainsAllocation(this ref BlobBuilder builder, void* address, int size)
@@ -243,7 +244,7 @@
                 {
                     size = CollectionHelper.Align(size, 16);
                     var allocIndex = this.Allocations.Length;
-                    var mem = (byte*)Memory.Unmanaged.Allocate(size, alignment, this.Allocator);
+                    var mem = (byte*)CollectionMemory.Allocate(size, alignment, this.Allocator);
                     UnsafeUtility.MemClear(mem, size);
                     this.Allocations.Add(new BlobAllocation
                     {
@@ -418,7 +419,7 @@
                 this.CurrentChunkIndex = this.Allocations.Length;
                 var alloc = new BlobAllocation
                 {
-                    P = (byte*)Memory.Unmanaged.Allocate(this.ChunkSize, 16, this.Allocator),
+                    P = (byte*)CollectionMemory.Allocate(this.ChunkSize, 16, this.Allocator),
                     Size = 0,
                 };
 

@@ -1,7 +1,8 @@
-﻿namespace BovineLabs.Core.Jobs
+namespace BovineLabs.Core.Jobs
 {
     using System;
     using System.Runtime.CompilerServices;
+    using BovineLabs.Core.Internal;
     using JetBrains.Annotations;
     using Unity.Burst;
     using Unity.Collections;
@@ -25,10 +26,11 @@
         {
             void* atomicSafetyHandlePtr = null;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var safety = hashMap.m_Safety;
+            var safety = hashMap.GetSafety();
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
-            return ScheduleInternal(jobData, (HashMapWrapper*)hashMap.m_Data, minIndicesPerJobCount, dependsOn, ScheduleMode.Parallel, atomicSafetyHandlePtr);
+            return ScheduleInternal(jobData, (HashMapHelper<byte>*)hashMap.GetData(), minIndicesPerJobCount, dependsOn, ScheduleMode.Parallel,
+                atomicSafetyHandlePtr);
         }
 
         public static unsafe JobHandle Schedule<TJob, TKey, TValue>(
@@ -39,11 +41,12 @@
         {
             void* atomicSafetyHandlePtr = null;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var safety = hashMap.m_Safety;
+            var safety = hashMap.GetSafety();
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
 
-            return ScheduleInternal(jobData, (HashMapWrapper*)hashMap.m_Data, minIndicesPerJobCount, dependsOn, ScheduleMode.Single, atomicSafetyHandlePtr);
+            return ScheduleInternal(jobData, (HashMapHelper<byte>*)hashMap.GetData(), minIndicesPerJobCount, dependsOn, ScheduleMode.Single,
+                atomicSafetyHandlePtr);
         }
 
         public static unsafe JobHandle ScheduleParallel<TJob, TKey, TValue>(
@@ -58,7 +61,8 @@
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
 
-            return ScheduleInternal(jobData, (HashMapWrapper*)hashMap.data, minIndicesPerJobCount, dependsOn, ScheduleMode.Parallel, atomicSafetyHandlePtr);
+            return ScheduleInternal(jobData, (HashMapHelper<byte>*)hashMap.data, minIndicesPerJobCount, dependsOn, ScheduleMode.Parallel,
+                atomicSafetyHandlePtr);
         }
 
         public static unsafe JobHandle Schedule<TJob, TKey, TValue>(
@@ -73,7 +77,7 @@
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
 
-            return ScheduleInternal(jobData, (HashMapWrapper*)hashMap.data, minIndicesPerJobCount, dependsOn, ScheduleMode.Single, atomicSafetyHandlePtr);
+            return ScheduleInternal(jobData, (HashMapHelper<byte>*)hashMap.data, minIndicesPerJobCount, dependsOn, ScheduleMode.Single, atomicSafetyHandlePtr);
         }
 
         public static unsafe JobHandle ScheduleParallel<TJob, TKey>(
@@ -83,11 +87,12 @@
         {
             void* atomicSafetyHandlePtr = null;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var safety = hashMap.m_Safety;
+            var safety = hashMap.GetSafety();
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
 
-            return ScheduleInternal(jobData, (HashMapWrapper*)hashMap.m_Data, minIndicesPerJobCount, dependsOn, ScheduleMode.Parallel, atomicSafetyHandlePtr);
+            return ScheduleInternal(jobData, (HashMapHelper<byte>*)hashMap.GetData(), minIndicesPerJobCount, dependsOn, ScheduleMode.Parallel,
+                atomicSafetyHandlePtr);
         }
 
         public static unsafe JobHandle Schedule<TJob, TKey>(
@@ -97,11 +102,12 @@
         {
             void* atomicSafetyHandlePtr = null;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var safety = hashMap.m_Safety;
+            var safety = hashMap.GetSafety();
             atomicSafetyHandlePtr = UnsafeUtility.AddressOf(ref safety);
 #endif
 
-            return ScheduleInternal(jobData, (HashMapWrapper*)hashMap.m_Data, minIndicesPerJobCount, dependsOn, ScheduleMode.Single, atomicSafetyHandlePtr);
+            return ScheduleInternal(jobData, (HashMapHelper<byte>*)hashMap.GetData(), minIndicesPerJobCount, dependsOn, ScheduleMode.Single,
+                atomicSafetyHandlePtr);
         }
 
         /// <summary>
@@ -115,7 +121,7 @@
         }
 
         private static unsafe JobHandle ScheduleInternal<TJob>(
-            TJob jobData, HashMapWrapper* hashMap, int minIndicesPerJobCount, JobHandle dependsOn, ScheduleMode scheduleMode, void* atomicSafetyHandlePtr)
+            TJob jobData, HashMapHelper<byte>* hashMap, int minIndicesPerJobCount, JobHandle dependsOn, ScheduleMode scheduleMode, void* atomicSafetyHandlePtr)
             where TJob : unmanaged, IJobHashMapDefer
         {
             var jobProducer = new JobHashMapVisitKeyValueProducer<TJob>
@@ -143,11 +149,11 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(hashMap.GetSafety());
 #endif
 
-            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.m_Data->Keys, entryIndex);
-            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_Data->Ptr, entryIndex);
+            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.GetData()->Keys, entryIndex);
+            value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetData()->Ptr, entryIndex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -171,10 +177,10 @@
             where TKey : unmanaged, IEquatable<TKey>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(hashMap.GetSafety());
 #endif
 
-            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.m_Data->Keys, entryIndex);
+            key = UnsafeUtility.ReadArrayElement<TKey>(hashMap.GetData()->Keys, entryIndex);
         }
 
         internal unsafe struct JobHashMapVisitKeyValueProducer<T>
@@ -182,7 +188,7 @@
         {
             [ReadOnly]
             [NativeDisableUnsafePtrRestriction]
-            internal HashMapWrapper* HashMap;
+            internal HashMapHelper<byte>* HashMap;
 
             // ReSharper disable once StaticMemberInGenericType
             internal static readonly SharedStatic<IntPtr> ReflectionData = SharedStatic<IntPtr>.GetOrCreate<JobHashMapVisitKeyValueProducer<T>>();
@@ -229,28 +235,5 @@
             }
         }
 
-        internal unsafe struct HashMapWrapper
-        {
-            [NativeDisableUnsafePtrRestriction]
-            internal byte* Ptr;
-
-            [NativeDisableUnsafePtrRestriction]
-            internal byte* Keys;
-
-            [NativeDisableUnsafePtrRestriction]
-            internal int* Next;
-
-            [NativeDisableUnsafePtrRestriction]
-            internal int* Buckets;
-
-            internal int Count;
-            internal int Capacity;
-            internal int Log2MinGrowth;
-            internal int BucketCapacity;
-            internal int AllocatedIndex;
-            internal int FirstFreeIdx;
-            internal int SizeOfTValue;
-            internal AllocatorManager.AllocatorHandle Allocator;
-        }
     }
 }

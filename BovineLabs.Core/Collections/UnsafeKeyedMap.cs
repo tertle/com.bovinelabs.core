@@ -1,9 +1,10 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Diagnostics;
     using System.Runtime.InteropServices;
     using BovineLabs.Core.Assertions;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -51,7 +52,7 @@
         internal static void AllocateHashMap<TValue>(int length, int bucketLength, AllocatorManager.AllocatorHandle label, out KeyedMapData* data)
             where TValue : unmanaged
         {
-            data = (KeyedMapData*)Memory.Unmanaged.Allocate(sizeof(KeyedMapData), UnsafeUtility.AlignOf<KeyedMapData>(), label);
+            data = (KeyedMapData*)CollectionMemory.Allocate(sizeof(KeyedMapData), UnsafeUtility.AlignOf<KeyedMapData>(), label);
 
             data->Length = 0;
             data->KeyCapacity = length;
@@ -59,7 +60,7 @@
 
             var totalSize = CalculateDataSize<TValue>(length, bucketLength, out var keyOffset, out var nextOffset, out var bucketOffset);
 
-            data->Values = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, label);
+            data->Values = (byte*)CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, label);
             data->Keys = data->Values + keyOffset;
             data->Next = data->Values + nextOffset;
             data->Buckets = data->Values + bucketOffset;
@@ -77,7 +78,7 @@
 
             var totalSize = CalculateDataSize<TValue>(newCapacity, data->BucketCapacity, out var keyOffset, out var nextOffset, out var bucketOffset);
 
-            var newData = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, label);
+            var newData = (byte*)CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, label);
             var newKeys = newData + keyOffset;
             var newNext = newData + nextOffset;
             var newBuckets = newData + bucketOffset;
@@ -93,7 +94,7 @@
                 ((int*)newNext)[emptyNext] = -1;
             }
 
-            Memory.Unmanaged.Free(data->Values, label);
+            CollectionMemory.Free(data->Values, label);
 
             data->Values = newData;
             data->Keys = newKeys;
@@ -114,8 +115,8 @@
 
         internal static void DeallocateHashMap(KeyedMapData* data, AllocatorManager.AllocatorHandle allocator)
         {
-            Memory.Unmanaged.Free(data->Values, allocator);
-            Memory.Unmanaged.Free(data, allocator);
+            CollectionMemory.Free(data->Values, allocator);
+            CollectionMemory.Free(data, allocator);
         }
 
         private static int CalculateDataSize<TValue>(int length, int bucketLength, out int keyOffset, out int nextOffset, out int bucketOffset)

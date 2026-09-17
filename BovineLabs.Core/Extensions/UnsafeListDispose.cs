@@ -1,4 +1,4 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
     using Unity.Burst;
     using Unity.Collections.LowLevel.Unsafe;
@@ -8,12 +8,12 @@
     public unsafe struct UnsafeListDispose : IJob
     {
         [NativeDisableUnsafePtrRestriction]
-        private UntypedUnsafeList* ListData;
+        private void* ListData;
 
         public static JobHandle Dispose<T>(UnsafeList<T>* list, JobHandle handle)
             where T : unmanaged
         {
-            return new UnsafeListDispose { ListData = (UntypedUnsafeList*)list }.Schedule(handle);
+            return new UnsafeListDispose { ListData = (void*)list }.Schedule(handle);
         }
 
         public void Execute()

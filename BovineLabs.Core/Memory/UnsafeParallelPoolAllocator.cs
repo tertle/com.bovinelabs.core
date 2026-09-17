@@ -1,6 +1,7 @@
-﻿namespace BovineLabs.Core.Memory
+namespace BovineLabs.Core.Memory
 {
     using System;
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
@@ -19,7 +20,7 @@
         public UnsafeParallelPoolAllocator(int countPerChunk, Allocator allocator)
         {
             this.allocator = allocator;
-            this.pools = (UnsafePoolAllocator<T>*)Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<UnsafePoolAllocator<T>>() * JobsUtility.ThreadIndexCount,
+            this.pools = (UnsafePoolAllocator<T>*)CollectionMemory.Allocate(UnsafeUtility.SizeOf<UnsafePoolAllocator<T>>() * JobsUtility.ThreadIndexCount,
                 UnsafeUtility.AlignOf<UnsafePoolAllocator<T>>(), allocator);
 
             for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
@@ -39,7 +40,7 @@
                 this.pools[i].Dispose();
             }
 
-            Memory.Unmanaged.Free(this.pools, this.allocator);
+            CollectionMemory.Free(this.pools, this.allocator);
             this.pools = null;
         }
 

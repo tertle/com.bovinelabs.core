@@ -135,20 +135,13 @@ namespace Unity.Collections
                 return inputDeps;
             }
 
+            var jobHandle = CollectionAccess.ScheduleHashMapDispose(this.data, inputDeps
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var jobHandle = new NativeHashMapDisposeJob
-            {
-                Data = new NativeHashMapDispose
-                {
-                    m_HashMapData = (UnsafeHashMap<int, int>*)this.data,
-                    m_Safety = this.m_Safety,
-                },
-            }.Schedule(inputDeps);
-
+                , this.m_Safety
+#endif
+            );
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.Release(this.m_Safety);
-#else
-            var jobHandle =
-                new NativeHashMapDisposeJob { Data = new NativeHashMapDispose { m_HashMapData = (UnsafeHashMap<int, int>*)this.data } }.Schedule(inputDeps);
 #endif
             this.data = null;
 
@@ -230,13 +223,11 @@ namespace Unity.Collections
             var ash = this.m_Safety;
             AtomicSafetyHandle.UseSecondaryVersion(ref ash);
 #endif
-            return new NativeHashMap<TKey, TValue>.Enumerator
-            {
+            return CollectionAccess.CreateNativeEnumerator<TKey, TValue>(this.data
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                m_Safety = ash,
+                , ash
 #endif
-                m_Enumerator = new HashMapHelper<TKey>.Enumerator(this.data),
-            };
+            );
         }
 
         /// <summary>
@@ -409,13 +400,11 @@ namespace Unity.Collections
                 var ash = this.m_Safety;
                 AtomicSafetyHandle.UseSecondaryVersion(ref ash);
 #endif
-                return new NativeHashMap<TKey, TValue>.Enumerator
-                {
+                return CollectionAccess.CreateNativeEnumerator<TKey, TValue>(this.data
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                    m_Safety = ash,
+                    , ash
 #endif
-                    m_Enumerator = new HashMapHelper<TKey>.Enumerator(this.data),
-                };
+                );
             }
 
             /// <summary>

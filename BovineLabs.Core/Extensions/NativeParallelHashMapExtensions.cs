@@ -1,8 +1,9 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
     using System.Runtime.InteropServices;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -13,7 +14,7 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            return hashMap.m_Writer.m_Buffer->ReserveParallel(length);
+            return hashMap.GetWriter().GetBuffer()->ReserveParallel(length);
         }
 
         public static UnsafeParallelHashMapBucketData GetUnsafeBucketData<TKey, TValue>(
@@ -21,7 +22,7 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            return hashMap.m_Writer.m_Buffer->GetBucketData();
+            return hashMap.GetWriter().GetBuffer()->GetBucketData();
         }
 
         /// <summary>
@@ -32,10 +33,10 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
 #endif
 
-            return ref hashMap.m_HashMapData.GetOrAddRefUnsafe(key, defaultValue);
+            return ref hashMap.GetHashMapStorage().GetOrAddRefUnsafe(key, defaultValue);
         }
 
         // This is only safe if the key is unique per thread
@@ -45,10 +46,10 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
 #endif
 
-            return ref hashMap.m_Writer.GetOrAddRefUnsafe(key, defaultValue);
+            return ref hashMap.GetWriter().GetOrAddRefUnsafe(key, defaultValue);
         }
 
         public static ref TValue GetRef<TKey, TValue>(this NativeParallelHashMap<TKey, TValue>.ParallelWriter hashMap, TKey key)
@@ -56,17 +57,17 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
 #endif
 
-            return ref hashMap.m_Writer.GetRef(key);
+            return ref hashMap.GetWriter().GetRef(key);
         }
 
         public static void ClearLengthBuckets<TKey, TValue>([NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var data = hashMap.m_HashMapData.m_Buffer;
+            var data = hashMap.GetHashMapStorage().GetBuffer();
 
             UnsafeUtility.MemSet(data->buckets, 0xff, (data->bucketCapacityMask + 1) * 4);
             // UnsafeUtility.MemSet(data->next, 0xff, data->keyCapacity * 4);
@@ -110,10 +111,10 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
 
-            hashMap.m_HashMapData.ClearAndAddBatchUnsafe(keys, values, length);
+            hashMap.GetHashMapStorage().ClearAndAddBatchUnsafe(keys, values, length);
         }
 
         /// <summary>
@@ -125,9 +126,9 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
-            hashMap.m_HashMapData.ClearAndAddBatchUnsafe(keys, values);
+            hashMap.GetHashMapStorage().ClearAndAddBatchUnsafe(keys, values);
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
@@ -145,10 +146,10 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
 
-            var oldLength = hashMap.m_HashMapData.m_Buffer->allocatedIndexLength;
+            var oldLength = hashMap.GetHashMapStorage().GetBuffer()->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -174,7 +175,7 @@
                 buckets[bucket] = oldLength + idx;
             }
 
-            hashMap.m_HashMapData.m_Buffer->allocatedIndexLength += length;
+            hashMap.GetHashMapStorage().GetBuffer()->allocatedIndexLength += length;
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
@@ -185,11 +186,11 @@
             CheckLengthsMatch(keys.Length, values.Length);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
 
             var length = keys.Length;
-            var oldLength = hashMap.m_HashMapData.m_Buffer->allocatedIndexLength;
+            var oldLength = hashMap.GetHashMapStorage().GetBuffer()->allocatedIndexLength;
             var newLength = oldLength + length;
 
             if (hashMap.Capacity < newLength)
@@ -215,7 +216,7 @@
                 buckets[bucket] = oldLength + idx;
             }
 
-            hashMap.m_HashMapData.m_Buffer->allocatedIndexLength += length;
+            hashMap.GetHashMapStorage().GetBuffer()->allocatedIndexLength += length;
         }
 
         public static void AddBatchUnsafe<TKey, TValue>([NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap, [NoAlias] NativeArray<TKey> keys)
@@ -230,7 +231,7 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
 
             var oldLength = hashMap.Count();
@@ -257,7 +258,7 @@
                 buckets[bucket] = oldLength + idx;
             }
 
-            hashMap.m_HashMapData.m_Buffer->allocatedIndexLength += length;
+            hashMap.GetHashMapStorage().GetBuffer()->allocatedIndexLength += length;
         }
 
         public static void ClearAndAddKeyBatchUnsafe<TKey, TValue>([NoAlias] this NativeParallelHashMap<TKey, TValue> hashMap, [NoAlias] NativeArray<TKey> keys)
@@ -272,7 +273,7 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
 
             hashMap.Clear();
@@ -295,7 +296,7 @@
                 buckets[bucket] = idx;
             }
 
-            hashMap.m_HashMapData.m_Buffer->allocatedIndexLength = length;
+            hashMap.GetHashMapStorage().GetBuffer()->allocatedIndexLength = length;
         }
 
         public static void AddBatchUnsafe<TKey, TValue>(
@@ -312,7 +313,7 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            hashMap.m_Writer.m_Buffer->AddBatchUnsafeParallel(keys, values, length);
+            hashMap.GetWriter().GetBuffer()->AddBatchUnsafeParallel(keys, values, length);
         }
 
         public static void RecalculateBuckets<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> hashMap)
@@ -320,10 +321,10 @@
             where TValue : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(hashMap.GetSafety());
 #endif
 
-            var length = hashMap.m_HashMapData.m_Buffer->allocatedIndexLength;
+            var length = hashMap.GetHashMapStorage().GetBuffer()->allocatedIndexLength;
 
             var data = hashMap.GetUnsafeBucketData();
 
@@ -343,7 +344,7 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            return ref map.m_HashMapData.m_Buffer->GetValueByRef<TKey, TValue>(key);
+            return ref map.GetHashMapStorage().GetBuffer()->GetValueByRef<TKey, TValue>(key);
         }
 
         public static bool TryGetFirstKeyValue<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> map, out TKey key, out TValue value)
@@ -351,14 +352,14 @@
             where TValue : unmanaged
         {
             var startIndex = 0;
-            return map.m_HashMapData.m_Buffer->TryGetFirstKeyValue<TKey, TValue>(out key, out value, ref startIndex);
+            return map.GetHashMapStorage().GetBuffer()->TryGetFirstKeyValue<TKey, TValue>(out key, out value, ref startIndex);
         }
 
         public static bool TryGetFirstKeyValue<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> map, out TKey key, out TValue value, ref int index)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            return map.m_HashMapData.TryGetFirstKeyValue(out key, out value, ref index);
+            return map.GetHashMapStorage().TryGetFirstKeyValue(out key, out value, ref index);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

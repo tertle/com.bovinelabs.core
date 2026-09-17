@@ -1,6 +1,7 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System.Runtime.InteropServices;
+    using BovineLabs.Core.Internal;
     using Unity.Assertions;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -16,7 +17,7 @@
         public ThreadList(AllocatorManager.AllocatorHandle allocator)
         {
             this.allocator = allocator;
-            this.buffer = (Lists*)Memory.Unmanaged.Allocate(sizeof(Lists) * JobsUtility.ThreadIndexCount, UnsafeUtility.AlignOf<Lists>(), allocator);
+            this.buffer = (Lists*)CollectionMemory.Allocate(sizeof(Lists) * JobsUtility.ThreadIndexCount, UnsafeUtility.AlignOf<Lists>(), allocator);
 
             for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
             {
@@ -48,7 +49,7 @@
                 return;
             }
 
-            Memory.Unmanaged.Free(this.buffer, this.allocator);
+            CollectionMemory.Free(this.buffer, this.allocator);
             this.buffer = null;
         }
 

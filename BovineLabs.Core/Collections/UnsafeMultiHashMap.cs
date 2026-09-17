@@ -82,11 +82,7 @@ namespace Unity.Collections
                 return inputDeps;
             }
 
-            var jobHandle = new UnsafeDisposeJob
-            {
-                Ptr = this.data.Ptr,
-                Allocator = this.data.Allocator,
-            }.Schedule(inputDeps);
+            var jobHandle = CollectionAccess.ScheduleDispose(this.data.Ptr, this.data.Allocator, inputDeps);
 
             this.data = default;
 
@@ -160,7 +156,7 @@ namespace Unity.Collections
         {
             fixed (HashMapHelper<TKey>* data = &this.data)
             {
-                return new UnsafeHashMap<TKey, TValue>.Enumerator { m_Enumerator = new HashMapHelper<TKey>.Enumerator(data) };
+                return CollectionAccess.CreateUnsafeEnumerator<TKey, TValue>(data);
             }
         }
 

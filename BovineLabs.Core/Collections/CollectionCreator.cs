@@ -1,6 +1,7 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System;
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
@@ -21,7 +22,7 @@
         {
             var hashMap = AllocatorManager.Allocate<UnsafeHashMap<TKey, TValue>>(allocator);
             *hashMap = default;
-            hashMap->m_Data.Init(initialCapacity, sizeof(TValue), minGrowth, allocator);
+            hashMap->GetData().Init(initialCapacity, sizeof(TValue), minGrowth, allocator);
             return hashMap;
         }
 
@@ -29,7 +30,7 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var allocator = hashMap->m_Data.Allocator;
+            var allocator = hashMap->GetData().Allocator;
             hashMap->Dispose();
             AllocatorManager.Free(allocator, hashMap);
         }
@@ -65,14 +66,14 @@
         {
             var hashSet = AllocatorManager.Allocate<UnsafeHashSet<T>>(allocator);
             *hashSet = default;
-            hashSet->m_Data.Init(initialCapacity, 0, minGrowth, allocator);
+            hashSet->GetData().Init(initialCapacity, 0, minGrowth, allocator);
             return hashSet;
         }
 
         public static void Destroy<T>(UnsafeHashSet<T>* hashMap)
             where T : unmanaged, IEquatable<T>
         {
-            var allocator = hashMap->m_Data.Allocator;
+            var allocator = hashMap->GetData().Allocator;
             hashMap->Dispose();
             AllocatorManager.Free(allocator, hashMap);
         }
@@ -90,7 +91,7 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var allocator = hashMap->m_AllocatorLabel;
+            var allocator = hashMap->GetAllocator();
             hashMap->Dispose();
             AllocatorManager.Free(allocator, hashMap);
         }
@@ -109,7 +110,7 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var allocator = hashMap->m_AllocatorLabel;
+            var allocator = hashMap->GetAllocator();
             hashMap->Dispose();
             AllocatorManager.Free(allocator, hashMap);
         }
@@ -117,7 +118,7 @@
         public static UnsafeQueue<T>* CreateQueue<T>(AllocatorManager.AllocatorHandle allocator)
             where T : unmanaged
         {
-            var queue = UnsafeQueue<T>.Alloc(allocator);
+            var queue = (UnsafeQueue<T>*)CollectionMemory.Allocate(sizeof(UnsafeQueue<T>), UnsafeUtility.AlignOf<UnsafeQueue<T>>(), allocator);
             *queue = new UnsafeQueue<T>(allocator);
             return queue;
         }
@@ -125,7 +126,9 @@
         public static void Destroy<T>(UnsafeQueue<T>* queue)
             where T : unmanaged
         {
-            UnsafeQueue<T>.Free(queue);
+            var allocator = queue->GetAllocator();
+            queue->Dispose();
+            CollectionMemory.Free(queue, allocator);
         }
     }
 }

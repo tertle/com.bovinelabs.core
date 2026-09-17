@@ -1,7 +1,8 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Threading;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -23,7 +24,7 @@
         {
             this.allocator = allocator;
 
-            this.count = Memory.Unmanaged.Allocate<int>(allocator);
+            this.count = CollectionMemory.Allocate<int>(allocator);
             UnsafeUtility.MemClear(this.count, UnsafeUtility.SizeOf<int>());
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -73,7 +74,7 @@
             CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
 #endif
 
-            Memory.Unmanaged.Free(this.count, this.allocator);
+            CollectionMemory.Free(this.count, this.allocator);
             this.count = null;
         }
 

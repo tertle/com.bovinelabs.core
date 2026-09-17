@@ -1,7 +1,8 @@
-﻿namespace BovineLabs.Core.Utility
+namespace BovineLabs.Core.Utility
 {
     using System;
     using System.Runtime.InteropServices;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -43,13 +44,13 @@
                 lp.RemoveAt(lp.Length - 1);
 
                 this.list = UnsafeUtility.As<NativeList<byte>, NativeList<T>>(ref byteList);
-                this.list.m_ListData->m_capacity = byteList.Capacity / UnsafeUtility.SizeOf<T>();
+                this.list.GetListData()->m_capacity = byteList.Capacity / UnsafeUtility.SizeOf<T>();
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             // Replace our safety as it's not valid within the job as we've stored these inside another container so can't be injected
-            this.oldHandle = this.list.m_Safety;
-            this.list.m_Safety = AtomicSafetyHandle.Create();
+            this.oldHandle = this.list.GetSafety();
+            this.list.GetSafety() = AtomicSafetyHandle.Create();
 #endif
 
             return this;
@@ -76,13 +77,13 @@
 
             // Convert back to a byte list
             ref var byteList = ref UnsafeUtility.As<NativeList<T>, NativeList<byte>>(ref this.list);
-            byteList.m_ListData->m_capacity = this.list.Capacity * UnsafeUtility.SizeOf<T>();
+            byteList.GetListData()->m_capacity = this.list.Capacity * UnsafeUtility.SizeOf<T>();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             // Release the Temp handle
-            AtomicSafetyHandle.CheckDeallocateAndThrow(byteList.m_Safety);
-            AtomicSafetyHandle.Release(byteList.m_Safety);
-            byteList.m_Safety = this.oldHandle;
+            AtomicSafetyHandle.CheckDeallocateAndThrow(byteList.GetSafety());
+            AtomicSafetyHandle.Release(byteList.GetSafety());
+            byteList.GetSafety() = this.oldHandle;
 #endif
 
             // Only add back to pool if we haven't exceeded the max size
@@ -131,7 +132,7 @@
             public Data(AllocatorManager.AllocatorHandle allocator)
             {
                 this.Allocator = allocator;
-                this.buffer = (ThreadData*)Memory.Unmanaged.Allocate(sizeof(ThreadData) * JobsUtility.ThreadIndexCount, UnsafeUtility.AlignOf<ThreadData>(),
+                this.buffer = (ThreadData*)CollectionMemory.Allocate(sizeof(ThreadData) * JobsUtility.ThreadIndexCount, UnsafeUtility.AlignOf<ThreadData>(),
                     allocator);
 
                 for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
@@ -170,7 +171,7 @@
                     this.buffer[i].ThreadList.Dispose();
                 }
 
-                Memory.Unmanaged.Free(this.buffer, this.Allocator);
+                CollectionMemory.Free(this.buffer, this.Allocator);
                 this.buffer = null;
             }
         }

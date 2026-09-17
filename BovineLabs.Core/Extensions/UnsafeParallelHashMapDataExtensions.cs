@@ -1,8 +1,9 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Collections.Generic;
     using System.Threading;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Burst.CompilerServices;
     using Unity.Collections;

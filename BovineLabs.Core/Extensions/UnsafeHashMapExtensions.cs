@@ -1,6 +1,7 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
     using System;
+    using BovineLabs.Core.Internal;
     using Unity.Collections.LowLevel.Unsafe;
 
     public static unsafe class UnsafeHashMapExtensions
@@ -12,15 +13,15 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var idx = hashMap.m_Data.Find(key);
+            var idx = hashMap.GetData().Find(key);
 
             if (idx == -1)
             {
-                idx = hashMap.m_Data.AddNoFind(key);
-                UnsafeUtility.WriteArrayElement(hashMap.m_Data.Ptr, idx, defaultValue);
+                idx = hashMap.GetData().AddNoFind(key);
+                UnsafeUtility.WriteArrayElement(hashMap.GetData().Ptr, idx, defaultValue);
             }
 
-            return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data.Ptr, idx);
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.GetData().Ptr, idx);
         }
 
         /// <summary>
@@ -30,12 +31,12 @@
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var idx = hashMap.m_Data.Find(key);
+            var idx = hashMap.GetData().Find(key);
 
             if (idx == -1)
             {
-                idx = hashMap.m_Data.AddNoFind(key);
-                UnsafeUtility.WriteArrayElement(hashMap.m_Data.Ptr, idx, defaultValue);
+                idx = hashMap.GetData().AddNoFind(key);
+                UnsafeUtility.WriteArrayElement(hashMap.GetData().Ptr, idx, defaultValue);
                 added = true;
             }
             else
@@ -43,14 +44,14 @@
                 added = false;
             }
 
-            return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.m_Data.Ptr, idx);
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(hashMap.GetData().Ptr, idx);
         }
 
         public static bool Remove<TKey, TValue>(ref this UnsafeHashMap<TKey, TValue> hashMap, TKey key, out TValue value)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
         {
-            var data = hashMap.m_Data;
+            ref var data = ref hashMap.GetData();
 
             if (hashMap.Capacity == 0)
             {
@@ -78,7 +79,7 @@
                         data.Next[prevEntry] = data.Next[entryIdx];
                     }
 
-                    value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.m_Data.Ptr, entryIdx);
+                    value = UnsafeUtility.ReadArrayElement<TValue>(hashMap.GetData().Ptr, entryIdx);
 
                     // And free the index
                     data.Next[entryIdx] = data.FirstFreeIdx;

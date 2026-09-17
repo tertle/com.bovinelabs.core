@@ -2,6 +2,7 @@ namespace BovineLabs.Core.Utility
 {
     using System;
     using System.Runtime.InteropServices;
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
 
     public enum Codec : byte
@@ -46,13 +47,13 @@ namespace BovineLabs.Core.Utility
         public static int Compress(Codec codec, byte* src, int srcSize, out byte* dst, AllocatorManager.AllocatorHandle allocator)
         {
             var boundedSize = GetBoundedSize(codec, srcSize);
-            dst = (byte*)Memory.Unmanaged.Allocate(boundedSize, 16, allocator);
+            dst = (byte*)CollectionMemory.Allocate(boundedSize, 16, allocator);
 
             var compressedSize = Compress(codec, src, srcSize, dst, boundedSize);
 
             if (compressedSize < 0)
             {
-                Memory.Unmanaged.Free(dst, allocator);
+                CollectionMemory.Free(dst, allocator);
                 dst = null;
             }
 

@@ -1,6 +1,7 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System.Runtime.CompilerServices;
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
 
@@ -29,23 +30,23 @@
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
-                CollectionHelper.CheckIndexInRange(index, this.Length);
-                return UnsafeUtility.ReadArrayElement<T>(this.Buffer, CollectionHelper.AssumePositive(index));
+                CollectionChecks.CheckIndexInRange(index, this.Length);
+                return UnsafeUtility.ReadArrayElement<T>(this.Buffer, CollectionChecks.AssumePositive(index));
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
-                CollectionHelper.CheckIndexInRange(index, this.Length);
-                UnsafeUtility.WriteArrayElement(this.Buffer, CollectionHelper.AssumePositive(index), value);
+                CollectionChecks.CheckIndexInRange(index, this.Length);
+                UnsafeUtility.WriteArrayElement(this.Buffer, CollectionChecks.AssumePositive(index), value);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref T ElementAt(int index)
         {
-            CollectionHelper.CheckIndexInRange(index, this.Length);
-            return ref UnsafeUtility.ArrayElementAsRef<T>(this.Buffer, CollectionHelper.AssumePositive(index));
+            CollectionChecks.CheckIndexInRange(index, this.Length);
+            return ref UnsafeUtility.ArrayElementAsRef<T>(this.Buffer, CollectionChecks.AssumePositive(index));
         }
     }
 }

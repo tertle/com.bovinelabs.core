@@ -1,6 +1,7 @@
-﻿namespace BovineLabs.Core.Memory
+namespace BovineLabs.Core.Memory
 {
     using System;
+    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -26,10 +27,10 @@
             this.slabAllocator = new UnsafeSlabAllocator<T>(countPerSlab, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.CheckAllocator(allocator.Handle);
+            CollectionChecks.CheckAllocator(allocator.Handle);
 
             this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
-            CollectionHelper.InitNativeContainer<T>(this.m_Safety);
+            CollectionChecks.InitNativeContainer<T>(this.m_Safety);
 
             CollectionHelper.SetStaticSafetyId<NativeSlabAllocator<T>>(ref this.m_Safety, ref s_staticSafetyId.Data);
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(this.m_Safety, true);

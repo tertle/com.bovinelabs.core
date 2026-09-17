@@ -1,6 +1,7 @@
-﻿namespace BovineLabs.Core.Memory
+namespace BovineLabs.Core.Memory
 {
     using System;
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using UnityEngine;
@@ -24,7 +25,7 @@
             this.allocator = allocator;
             this.countPerSlab = countPerSlab;
 
-            this.count = (int*)Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator);
+            this.count = (int*)CollectionMemory.Allocate(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator);
             *this.count = countPerSlab;
         }
 
@@ -40,7 +41,7 @@
             if (*this.count == this.countPerSlab)
             {
                 *this.count = 0;
-                var ptr = (Ptr)Memory.Unmanaged.Allocate(this.countPerSlab * UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), this.allocator);
+                var ptr = (Ptr)CollectionMemory.Allocate(this.countPerSlab * UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), this.allocator);
                 this.slabs->Add(ptr);
             }
 
@@ -52,7 +53,7 @@
         {
             for (var i = 0; i < this.slabs->Length; i++)
             {
-                Memory.Unmanaged.Free((*this.slabs)[i], this.allocator);
+                CollectionMemory.Free((*this.slabs)[i], this.allocator);
             }
 
             this.slabs->Clear();
@@ -64,7 +65,7 @@
             this.Clear();
             UnsafeList<Ptr>.Destroy(this.slabs);
 
-            Memory.Unmanaged.Free(this.count, this.allocator);
+            CollectionMemory.Free(this.count, this.allocator);
 
             this.count = default;
             this.slabs = default;
