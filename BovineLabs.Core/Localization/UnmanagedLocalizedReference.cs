@@ -3,10 +3,11 @@ namespace BovineLabs.Core.Localization
 {
     using System;
     using Unity.Entities;
-    using UnityEngine.Localization;
-    using UnityEngine.Localization.Tables;
-    using LocalizationTableEntryReference = UnityEngine.Localization.Tables.TableEntryReference;
-    using LocalizationTableReference = UnityEngine.Localization.Tables.TableReference;
+    using UnityEngine;
+    using Hash128 = Unity.Entities.Hash128;
+    using Unity.Localization;
+    using LocalizationTableEntryReference = Unity.Localization.TableEntryReference;
+    using LocalizationTableReference = Unity.Localization.TableReference;
 
     public struct UnmanagedLocalizedReference : IEquatable<UnmanagedLocalizedReference>
     {
@@ -20,14 +21,15 @@ namespace BovineLabs.Core.Localization
             this.EntryReference = entryReference;
         }
 
-        public UnmanagedLocalizedReference(Guid tableReference, long entryReference)
-            : this(ToHash128(tableReference), entryReference)
+        public UnmanagedLocalizedReference(GUID tableReference, long entryReference)
+            : this(new Hash128(tableReference.ToString()), entryReference)
         {
         }
 
-        public readonly bool IsValid => this.TableReference.IsValid && this.EntryReference != SharedTableData.EmptyId;
+        public readonly bool IsValid => this.TableReference.IsValid && this.EntryReference != 0;
 
-        public static bool TryCreate(LocalizedReference reference, out UnmanagedLocalizedReference localizedReference)
+        public static bool TryCreate<TEntry>(LocalizedEntry<TEntry> reference, out UnmanagedLocalizedReference localizedReference)
+            where TEntry : class, IResourceEntry
         {
             localizedReference = default;
             if (reference == null || reference.IsEmpty)
@@ -37,12 +39,12 @@ namespace BovineLabs.Core.Localization
 
             var table = reference.TableReference;
             var entry = reference.TableEntryReference;
-            if (table.ReferenceType != LocalizationTableReference.Type.Guid || table.TableCollectionNameGuid == Guid.Empty)
+            if (table.ReferenceType != LocalizationTableReference.Type.Guid || table.TableCollectionNameGuid.Empty())
             {
                 return false;
             }
 
-            if (entry.ReferenceType != LocalizationTableEntryReference.Type.Id || entry.KeyId == SharedTableData.EmptyId)
+            if (entry.ReferenceType != LocalizationTableEntryReference.Type.Id || entry.KeyId == 0)
             {
                 return false;
             }
@@ -54,7 +56,8 @@ namespace BovineLabs.Core.Localization
         /// <summary>
         /// Returns default if the reference cannot be represented using stable IDs.
         /// </summary>
-        public static UnmanagedLocalizedReference From(LocalizedReference reference)
+        public static UnmanagedLocalizedReference From<TEntry>(LocalizedEntry<TEntry> reference)
+            where TEntry : class, IResourceEntry
         {
             return TryCreate(reference, out var localizedReference) ? localizedReference : default;
         }
@@ -62,32 +65,21 @@ namespace BovineLabs.Core.Localization
         /// <summary>
         /// Returns default if the reference cannot be represented using stable IDs.
         /// </summary>
-        public static implicit operator UnmanagedLocalizedReference(LocalizedReference reference)
+        public static implicit operator UnmanagedLocalizedReference(LocalizedString reference)
         {
             return From(reference);
         }
 
         public readonly LocalizedString AsLocalizedString()
         {
-            return this.As(new LocalizedString());
-        }
-
-        public readonly T As<T>()
-            where T : LocalizedReference, new()
-        {
-            return this.As(new T());
-        }
-
-        public readonly T As<T>(T reference)
-            where T : LocalizedReference
-        {
+            var reference = new LocalizedString();
             reference.SetReference(this.ToTableReference(), this.EntryReference);
             return reference;
         }
 
         public readonly LocalizationTableReference ToTableReference()
         {
-            return this.TableReference.IsValid ? this.ToGuid() : default;
+            return this.TableReference.IsValid ? LocalizationTableReference.FromGuid(this.TableReference.ToString()) : default;
         }
 
         public readonly LocalizationTableEntryReference ToTableEntryReference()
@@ -123,15 +115,6 @@ namespace BovineLabs.Core.Localization
             }
         }
 
-        private static Hash128 ToHash128(Guid guid)
-        {
-            return guid == Guid.Empty ? default : new Hash128(guid.ToString("N"));
-        }
-
-        private readonly Guid ToGuid()
-        {
-            return Guid.ParseExact(this.TableReference.ToString(), "N");
-        }
     }
 }
 #endif

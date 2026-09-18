@@ -35,6 +35,11 @@
   "autoReferenced": false,
   "defineConstraints": [],
   "versionDefines": [
+        {
+            "name": "com.unity.modules.localizationruntime",
+            "expression": "",
+            "define": "UNITY_LOCALIZATION"
+        },
     {
       "name": "com.bovinelabs.game",
       "expression": "0",

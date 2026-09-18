@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.0-pre.4] - Unreleased
+
+### Changed
+* Optional localization integration now targets the built-in Localization Runtime module, including stable unmanaged references and shared resource-table editor utilities.
+
 ## [2.0.0-pre.3] - 2026-09-18
 
 ### Added

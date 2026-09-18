@@ -1,25 +1,28 @@
 #if UNITY_LOCALIZATION
 namespace BovineLabs.Core.Tests.Utility
 {
-    using System;
+    using UnityEngine;
+    using Hash128 = Unity.Entities.Hash128;
     using BovineLabs.Core.Localization;
     using NUnit.Framework;
-    using Unity.Entities;
-    using UnityEngine.Localization;
-    using UnityEngine.Localization.Tables;
+        using Unity.Localization;
 
     public class UnmanagedLocalizedReferenceTests
     {
         [Test]
         public void StableLocalizedString_RoundTripsThroughUnmanagedReference()
         {
-            var tableGuid = new Guid("01234567-89ab-cdef-0123-456789abcdef");
+            var tableGuid = new GUID("0123456789abcdef0123456789abcdef");
             const long EntryId = 42;
-            var localizedString = new LocalizedString(tableGuid, EntryId);
+            var localizedString = new LocalizedString
+            {
+                TableReference = TableReference.FromGuid(tableGuid),
+                TableEntryReference = EntryId,
+            };
 
             Assert.IsTrue(UnmanagedLocalizedReference.TryCreate(localizedString, out var reference));
             Assert.IsTrue(reference.IsValid);
-            Assert.AreEqual(new Hash128(tableGuid.ToString("N")), reference.TableReference);
+            Assert.AreEqual(new Hash128(tableGuid.ToString()), reference.TableReference);
             Assert.AreEqual(EntryId, reference.EntryReference);
 
             var roundTrip = reference.AsLocalizedString();
@@ -32,7 +35,11 @@ namespace BovineLabs.Core.Tests.Utility
         [Test]
         public void NameBasedLocalizedString_CannotBecomeStableUnmanagedReference()
         {
-            var localizedString = new LocalizedString("Dialogue", "line.intro");
+            var localizedString = new LocalizedString
+            {
+                TableReference = "Dialogue",
+                TableEntryReference = "line.intro",
+            };
 
             Assert.IsFalse(UnmanagedLocalizedReference.TryCreate(localizedString, out var reference));
             Assert.IsFalse(reference.IsValid);
@@ -41,7 +48,7 @@ namespace BovineLabs.Core.Tests.Utility
         [Test]
         public void DefaultAndZeroEntryReferences_AreInvalid()
         {
-            var tableGuid = new Guid("01234567-89ab-cdef-0123-456789abcdef");
+            var tableGuid = new GUID("0123456789abcdef0123456789abcdef");
 
             Assert.IsFalse(default(UnmanagedLocalizedReference).IsValid);
             Assert.IsFalse(new UnmanagedLocalizedReference(tableGuid, 0).IsValid);

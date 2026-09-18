@@ -7,7 +7,6 @@
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Entities.Hybrid.HybridComponents",
-        "Unity.Localization",
         "Unity.Mathematics",
         "Unity.Mathematics.Extensions",
         "Unity.NetCode",
@@ -40,7 +39,7 @@
             "define": "UNITY_PHYSICS"
         },
         {
-            "name": "com.unity.localization",
+            "name": "com.unity.modules.localizationruntime",
             "expression": "",
             "define": "UNITY_LOCALIZATION"
         },
