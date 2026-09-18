@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.0.0-pre.3] - Unreleased
+## [2.0.0-pre.3] - 2026-09-18
 
 ### Added
 * Unity Search lookups for exact decimal or hexadecimal ECS stable type hashes and full or masked type indices through the `at:` Types provider
