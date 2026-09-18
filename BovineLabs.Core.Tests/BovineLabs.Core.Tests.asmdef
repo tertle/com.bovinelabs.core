@@ -35,7 +35,7 @@
   "versionDefines": [
     {
       "name": "com.unity.netcode",
-      "expression": "6.7.0",
+      "expression": "7.0.0",
       "define": "UNITY_NETCODE"
     },
     {
