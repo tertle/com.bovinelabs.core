@@ -13,6 +13,9 @@
 * Facet and dynamic collection source generators now embed CodeGenHelpers source instead of depending on a separate helper assembly
 * Favourites now accepts only persistent assets and uses animated list reordering
 * `SaveAttribute`, `SaveIgnoreAttribute`, and `SaveFeature` are now defined by Core even when Savanna is installed, retaining the `BovineLabs.Savanna` namespace
+* Unity 6000.7.0b1 or newer is required
+* Unity Collections 6.7.0 is now an explicit dependency
+* Optional networking wrappers and dynamic collection serializers now target Unity Netcode 7.0; public serializer types and namespaces use `Netcode` instead of `NetCode`
 
 ### Fixed
 * Invalid Types search queries now report their errors instead of returning all types
