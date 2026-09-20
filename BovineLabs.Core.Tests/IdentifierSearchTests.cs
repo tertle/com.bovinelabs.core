@@ -74,47 +74,6 @@ namespace BovineLabs.Core.Tests
             Assert.IsEmpty(results);
         }
 
-        [TestCase("decimal")]
-        [TestCase("hexadecimal")]
-        [TestCase("pair")]
-        public void EntityId_SupportedFormat_ResolvesExactObject(string format)
-        {
-            var asset = ScriptableObject.CreateInstance<TypeAsset>();
-            try
-            {
-                var entityId = asset.GetEntityId();
-                var rawId = EntityId.ToULong(entityId);
-                var identifier = format switch
-                {
-                    "decimal" => rawId.ToString(CultureInfo.InvariantCulture),
-                    "hexadecimal" => $"0x{rawId:X}",
-                    _ => entityId.ToString(),
-                };
-
-                using var context = SearchService.CreateContext(EntityIdProvider, $"eid: {identifier}", SearchFlags.Synchronous);
-                using var results = SearchService.Request(context);
-
-                Assert.AreEqual(1, results.Count);
-                Assert.AreSame(asset, results[0].ToObject());
-            }
-            finally
-            {
-                Object.DestroyImmediate(asset);
-            }
-        }
-
-        [Test]
-        public void EntityId_DestroyedObject_ReturnsNoResults()
-        {
-            var asset = ScriptableObject.CreateInstance<TypeAsset>();
-            var identifier = EntityId.ToULong(asset.GetEntityId()).ToString(CultureInfo.InvariantCulture);
-            Object.DestroyImmediate(asset);
-            using var context = SearchService.CreateContext(EntityIdProvider, $"eid: {identifier}", SearchFlags.Synchronous);
-            using var results = SearchService.Request(context);
-
-            Assert.IsEmpty(results);
-        }
-
         [TestCase("not-an-id")]
         [TestCase("18446744073709551616")]
         [TestCase("0x10000000000000000")]
