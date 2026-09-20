@@ -1,3 +1,5 @@
+#pragma warning disable CS9084 // Struct member returns 'this' or other instance members by reference
+
 // Layout matches Unity 6000.7.0b1; operations delegate to the engine implementation.
 namespace BovineLabs.Core.Internal
 {
