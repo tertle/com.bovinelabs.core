@@ -9,7 +9,6 @@ namespace BovineLabs.Core.UI
     public static class BovineThemeUtility
     {
         public const string PreferenceKey = "BovineLabs.UI.Theme";
-        public const string StyleSheetResource = "BovineLabs/Themes/BovineLabs";
         public const string RootClass = "bl-theme";
         public const string WindowClass = "bl-theme-window";
 
@@ -96,10 +95,10 @@ namespace BovineLabs.Core.UI
             {
                 if (styleSheet == null)
                 {
-                    styleSheet = Resources.Load<StyleSheet>(StyleSheetResource);
+                    styleSheet = CoreSettings.I.ThemeStyleSheet;
                     if (styleSheet == null)
                     {
-                        throw new InvalidOperationException($"The required BovineLabs theme stylesheet '{StyleSheetResource}' is missing.");
+                        throw new InvalidOperationException("The required theme stylesheet is missing from CoreSettings.");
                     }
                 }
 

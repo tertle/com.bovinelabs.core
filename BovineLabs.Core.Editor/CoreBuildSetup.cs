@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Editor
             }
 
             Revert();
-            IncludeSettingsSingleton();
+            IncludeSettingsSingleton((context.Report.summary.options & BuildOptions.Development) != 0);
         }
 
         public void OnPostprocessBuild(BuildCallbackContext context)
@@ -30,7 +30,7 @@ namespace BovineLabs.Core.Editor
             Revert();
         }
 
-        private static void IncludeSettingsSingleton()
+        private static void IncludeSettingsSingleton(bool developmentBuild)
         {
             var preloadedAssets = PlayerSettings.GetPreloadedAssets().ToList();
 
@@ -39,6 +39,11 @@ namespace BovineLabs.Core.Editor
             foreach (var guid in kSettings)
             {
                 var asset = AssetDatabase.LoadAssetAtPath<SettingsSingleton>(AssetDatabase.GUIDToAssetPath(guid));
+                if (asset is CoreSettings coreSettings && !developmentBuild && !coreSettings.IncludeInReleaseBuild)
+                {
+                    continue;
+                }
+
                 if (asset != null && asset.IncludeInBuild)
                 {
                     preloadedAssets.Add(asset);

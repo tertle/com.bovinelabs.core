@@ -17,7 +17,11 @@ Reference `BovineLabs.Core` in the sample assembly and use the reusable UXML ele
 </ui:UXML>
 ```
 
-The root loads the shared stylesheet through Core's Resources folder. It preserves normal `VisualElement` layout and picking behavior; declare sample placement, sizing, and pointer routing in the sample's UXML/USS. Keep the existing Unity runtime theme in `PanelSettings` so native controls retain their standard structure and resources.
+The root loads the shared stylesheet from `CoreSettings`. It preserves normal `VisualElement` layout and picking behavior; declare sample placement, sizing, and pointer routing in the sample's UXML/USS. Keep the existing Unity runtime theme in `PanelSettings` so native controls retain their standard structure and resources.
+
+Create `CoreSettings` through the Core settings panel if it does not already exist. Reset populates the shared stylesheet reference. Core settings and their referenced assets are preloaded in development builds; enable **Include In Release Build** on the settings asset when building a themed sample as a release player.
+
+Migration: the shared stylesheets moved out of `Resources`, preserving their GUIDs. Replace uses of the removed `BovineThemeUtility.StyleSheetResource` path with `CoreSettings.I.ThemeStyleSheet`, and update any path-based USS imports to the location below.
 
 An existing C#-owned root can opt in with `BovineThemeUtility.Apply(root)`. Repeated calls are safe. Theme bindings subscribe while the root belongs to a panel, unsubscribe when it detaches, and refresh to the latest selection when it reattaches. `BovineThemeUtility.Theme` selects the shared theme programmatically.
 
@@ -44,7 +48,7 @@ A standalone installer such as the BovineLabs package manager must remain usable
 
 ## Edit the design in one place
 
-The shared files live under `Packages/com.bovinelabs.core/Resources/BovineLabs/Themes/`:
+The shared files live under `Packages/com.bovinelabs.core/BovineLabs.Core/UI/Themes/`:
 
 | File | Responsibility |
 | --- | --- |
