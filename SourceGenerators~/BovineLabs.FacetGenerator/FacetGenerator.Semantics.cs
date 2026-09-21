@@ -423,7 +423,7 @@ namespace BovineLabs.FacetGenerator
                 return Camelize(fieldName);
             }
 
-            var name = path[0];
+            var name = Camelize(path[0]);
 
             for (var i = 1; i < path.Count; i++)
             {

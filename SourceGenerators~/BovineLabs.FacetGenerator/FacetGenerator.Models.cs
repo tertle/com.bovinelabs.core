@@ -219,6 +219,8 @@ namespace BovineLabs.FacetGenerator
 
         public string FieldName => this.Symbol.Name;
 
+        public string ParameterName => FieldName.Length > 1 && FieldName[0] == '_' ? FieldName.Substring(1) : FieldName;
+
         public string ArgumentName { get; }
 
         public string FieldTypeName { get; }
@@ -377,6 +379,7 @@ namespace BovineLabs.FacetGenerator
 
         private string resolvedFieldNameOverride;
 
-        private string PascalFieldName => $"{char.ToUpper(this.FieldName[0], System.Globalization.CultureInfo.InvariantCulture)}{this.FieldName.Substring(1)}";
+        private string PascalFieldName =>
+            $"{char.ToUpper(ParameterName[0], System.Globalization.CultureInfo.InvariantCulture)}{ParameterName.Substring(1)}";
     }
 }

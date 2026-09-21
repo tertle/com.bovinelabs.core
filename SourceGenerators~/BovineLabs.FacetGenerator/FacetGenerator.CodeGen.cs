@@ -181,14 +181,14 @@ namespace BovineLabs.FacetGenerator
                 .WithSummary($"Initializes a new instance of {data.TypeName}.");
             foreach (var field in data.Fields)
             {
-                ctor.AddParameter(field.FieldTypeName, field.FieldName);
+                ctor.AddParameter(field.FieldTypeName, field.ParameterName);
             }
 
             ctor.WithBody(body =>
             {
                 foreach (var field in data.Fields)
                 {
-                    body.AppendLine($"this.{field.FieldName} = {field.FieldName};");
+                    body.AppendLine($"this.{field.FieldName} = {field.ParameterName};");
                 }
             });
         }
@@ -1205,6 +1205,11 @@ namespace BovineLabs.FacetGenerator
 
         private static string Pascalize(string value)
         {
+            if (value?.Length > 1 && value[0] == '_')
+            {
+                value = value.Substring(1);
+            }
+
             if (string.IsNullOrEmpty(value))
             {
                 return value;
@@ -1215,6 +1220,11 @@ namespace BovineLabs.FacetGenerator
 
         private static string Camelize(string value)
         {
+            if (value?.Length > 1 && value[0] == '_')
+            {
+                value = value.Substring(1);
+            }
+
             if (string.IsNullOrEmpty(value))
             {
                 return value;
