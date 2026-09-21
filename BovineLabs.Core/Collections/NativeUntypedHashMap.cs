@@ -2,6 +2,7 @@ namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using BovineLabs.Core.Assertions;
@@ -25,32 +26,36 @@ namespace BovineLabs.Core.Collections
         internal NativeUntypedHashMapHelper<TKey>* data;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         internal AtomicSafetyHandle m_Safety;
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeUntypedHashMap<TKey>>();
 #endif
 
         public NativeUntypedHashMap(int capacity, AllocatorManager.AllocatorHandle allocator, int minGrowth = DefaultMinGrowth)
         {
-            this.data = NativeUntypedHashMapHelper<TKey>.Alloc(capacity, capacity, minGrowth, allocator);
+            data = NativeUntypedHashMapHelper<TKey>.Alloc(capacity, capacity, minGrowth, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionChecks.CheckAllocator(allocator);
-            this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
 
             if (UnsafeUtility.IsNativeContainerType<TKey>())
             {
-                AtomicSafetyHandle.SetNestedContainer(this.m_Safety, true);
+                AtomicSafetyHandle.SetNestedContainer(m_Safety, true);
             }
 
-            CollectionHelper.SetStaticSafetyId<NativeUntypedHashMap<TKey>>(ref this.m_Safety, ref s_staticSafetyId.Data);
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(this.m_Safety, true);
+            CollectionHelper.SetStaticSafetyId<NativeUntypedHashMap<TKey>>(ref m_Safety, ref s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
 
         public readonly bool IsCreated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.data != null && this.data->IsCreated;
+            get => data != null && data->IsCreated;
         }
 
         public readonly bool IsEmpty
@@ -58,13 +63,13 @@ namespace BovineLabs.Core.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (!this.IsCreated)
+                if (!IsCreated)
                 {
                     return true;
                 }
 
-                this.CheckRead();
-                return this.data->IsEmpty;
+                CheckRead();
+                return data->IsEmpty;
             }
         }
 
@@ -73,8 +78,8 @@ namespace BovineLabs.Core.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                this.CheckRead();
-                return this.data->Count;
+                CheckRead();
+                return data->Count;
             }
         }
 
@@ -86,47 +91,47 @@ namespace BovineLabs.Core.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
-                this.CheckRead();
-                return this.data->Capacity;
+                CheckRead();
+                return data->Capacity;
             }
 
             set
             {
-                this.CheckWrite();
-                this.data->Resize(value);
+                CheckWrite();
+                data->Resize(value);
             }
         }
 
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (!AtomicSafetyHandle.IsDefaultValue(this.m_Safety))
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
             {
-                AtomicSafetyHandle.CheckExistsAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
             }
 #endif
-            if (!this.IsCreated)
+            if (!IsCreated)
             {
                 return;
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
 
-            NativeUntypedHashMapHelper<TKey>.Free(this.data);
-            this.data = null;
+            NativeUntypedHashMapHelper<TKey>.Free(data);
+            data = null;
         }
 
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (!AtomicSafetyHandle.IsDefaultValue(this.m_Safety))
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
             {
-                AtomicSafetyHandle.CheckExistsAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
             }
 #endif
-            if (!this.IsCreated)
+            if (!IsCreated)
             {
                 return inputDeps;
             }
@@ -136,12 +141,12 @@ namespace BovineLabs.Core.Collections
             {
                 Data = new NativeUntypedHashMapDispose<TKey>
                 {
-                    Buffer = this.data,
-                    m_Safety = this.m_Safety,
+                    Buffer = data,
+                    m_Safety = m_Safety,
                 },
             }.Schedule(inputDeps);
 
-            AtomicSafetyHandle.Release(this.m_Safety);
+            AtomicSafetyHandle.Release(m_Safety);
 #else
             var jobHandle = new NativeUntypedHashMapDisposeJob<TKey>
             {
@@ -152,22 +157,22 @@ namespace BovineLabs.Core.Collections
             }.Schedule(inputDeps);
 #endif
 
-            this.data = null;
+            data = null;
 
             return jobHandle;
         }
 
         public void Clear()
         {
-            this.CheckWrite();
-            this.data->Clear();
+            CheckWrite();
+            data->Clear();
         }
 
         public void AddOrSet<TValue>(TKey key, TValue item)
             where TValue : unmanaged
         {
-            this.CheckWrite();
-            this.data->AddOrSet(key, item);
+            CheckWrite();
+            data->AddOrSet(key, item);
         }
 
         /// <summary>
@@ -176,28 +181,28 @@ namespace BovineLabs.Core.Collections
         public ref TValue GetOrAddRefUnsafe<TValue>(TKey key, TValue defaultValue = default)
             where TValue : unmanaged
         {
-            this.CheckWrite();
+            CheckWrite();
 
-            var idx = this.data->Find(key);
+            var idx = data->Find(key);
             if (idx == -1)
             {
-                idx = this.data->AddUnique(key, defaultValue);
+                idx = data->AddUnique(key, defaultValue);
             }
 
-            return ref this.data->GetValue<TValue>(idx);
+            return ref data->GetValue<TValue>(idx);
         }
 
         public readonly bool TryGetValue<TValue>(TKey key, out TValue item)
             where TValue : unmanaged
         {
-            this.CheckRead();
-            return this.data->TryGetValue(key, out item);
+            CheckRead();
+            return data->TryGetValue(key, out item);
         }
 
         public readonly bool ContainsKey(TKey key)
         {
-            this.CheckRead();
-            return this.data->Find(key) != -1;
+            CheckRead();
+            return data->Find(key) != -1;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -205,7 +210,7 @@ namespace BovineLabs.Core.Collections
         private readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
         }
 
@@ -214,7 +219,7 @@ namespace BovineLabs.Core.Collections
         private readonly void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(this.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
         }
     }
@@ -252,18 +257,18 @@ namespace BovineLabs.Core.Collections
         internal int DataAllocatedIndex;
         internal AllocatorManager.AllocatorHandle Allocator;
 
-        internal int BucketCapacity => this.BucketCapacityMask + 1;
+        internal int BucketCapacity => BucketCapacityMask + 1;
 
         internal bool IsCreated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.Buffer != null;
+            get => Buffer != null;
         }
 
         internal bool IsEmpty
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.Count == 0;
+            get => Count == 0;
         }
 
         internal static NativeUntypedHashMapHelper<TKey>* Alloc(int capacity, int dataCapacity, int minGrowth, AllocatorManager.AllocatorHandle allocator)
@@ -288,81 +293,81 @@ namespace BovineLabs.Core.Collections
 
         internal void Init(int capacity, int dataCapacity, int minGrowth, AllocatorManager.AllocatorHandle allocator)
         {
-            this.Count = 0;
-            this.Log2MinGrowth = (byte)(32 - math.lzcnt(math.max(1, minGrowth) - 1));
+            Count = 0;
+            Log2MinGrowth = (byte)(32 - math.lzcnt(math.max(1, minGrowth) - 1));
 
-            capacity = CalcCapacityCeilPow2(0, capacity, this.Log2MinGrowth);
-            dataCapacity = CalcCapacityCeilPow2(0, dataCapacity, this.Log2MinGrowth);
+            capacity = CalcCapacityCeilPow2(0, capacity, Log2MinGrowth);
+            dataCapacity = CalcCapacityCeilPow2(0, dataCapacity, Log2MinGrowth);
 
             var bucketCapacity = GetBucketSize(capacity);
             var totalSize = CalculateDataSize(capacity, bucketCapacity, dataCapacity, out var keyOffset, out var nextOffset, out var bucketOffset,
                 out var typeOffset, out var dataOffset);
 
-            this.Buffer = (byte*)CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, allocator);
-            this.Values = this.Buffer;
-            this.Keys = (TKey*)(this.Buffer + keyOffset);
-            this.Next = (int*)(this.Buffer + nextOffset);
-            this.Buckets = (int*)(this.Buffer + bucketOffset);
-            this.Types = (int*)(this.Buffer + typeOffset);
-            this.Data = (int*)(this.Buffer + dataOffset);
+            Buffer = (byte*)CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, allocator);
+            Values = Buffer;
+            Keys = (TKey*)(Buffer + keyOffset);
+            Next = (int*)(Buffer + nextOffset);
+            Buckets = (int*)(Buffer + bucketOffset);
+            Types = (int*)(Buffer + typeOffset);
+            Data = (int*)(Buffer + dataOffset);
 
-            this.Capacity = capacity;
-            this.DataCapacity = dataCapacity;
-            this.BucketCapacityMask = bucketCapacity - 1;
-            this.DataAllocatedIndex = 0;
-            this.Allocator = allocator;
+            Capacity = capacity;
+            DataCapacity = dataCapacity;
+            BucketCapacityMask = bucketCapacity - 1;
+            DataAllocatedIndex = 0;
+            Allocator = allocator;
 
-            UnsafeUtility.MemSet(this.Buckets, 0xff, this.BucketCapacity * sizeof(int));
-            UnsafeUtility.MemSet(this.Next, 0xff, this.Capacity * sizeof(int));
+            UnsafeUtility.MemSet(Buckets, 0xff, BucketCapacity * sizeof(int));
+            UnsafeUtility.MemSet(Next, 0xff, Capacity * sizeof(int));
         }
 
         internal void Dispose()
         {
-            CollectionMemory.Free(this.Buffer, this.Allocator);
+            CollectionMemory.Free(Buffer, Allocator);
 
-            this.Buffer = null;
-            this.Values = null;
-            this.Keys = null;
-            this.Next = null;
-            this.Buckets = null;
-            this.Types = null;
-            this.Data = null;
-            this.Count = 0;
-            this.Capacity = 0;
-            this.DataCapacity = 0;
-            this.BucketCapacityMask = 0;
-            this.DataAllocatedIndex = 0;
+            Buffer = null;
+            Values = null;
+            Keys = null;
+            Next = null;
+            Buckets = null;
+            Types = null;
+            Data = null;
+            Count = 0;
+            Capacity = 0;
+            DataCapacity = 0;
+            BucketCapacityMask = 0;
+            DataAllocatedIndex = 0;
         }
 
         internal void Clear()
         {
-            UnsafeUtility.MemSet(this.Buckets, 0xff, this.BucketCapacity * sizeof(int));
-            UnsafeUtility.MemSet(this.Next, 0xff, this.Capacity * sizeof(int));
+            UnsafeUtility.MemSet(Buckets, 0xff, BucketCapacity * sizeof(int));
+            UnsafeUtility.MemSet(Next, 0xff, Capacity * sizeof(int));
 
-            this.Count = 0;
-            this.DataAllocatedIndex = 0;
+            Count = 0;
+            DataAllocatedIndex = 0;
         }
 
         internal void Resize(int newCapacity)
         {
             // This hashmap doesn't allow shrinking
-            if (newCapacity <= this.Capacity)
+            if (newCapacity <= Capacity)
             {
                 return;
             }
 
             var newBucketCapacity = math.ceilpow2(GetBucketSize(newCapacity));
-            this.Resize(newCapacity, newBucketCapacity);
+            Resize(newCapacity, newBucketCapacity);
         }
 
         internal void Resize(int newCapacity, int newBucketCapacity)
         {
-            Assert.IsTrue(newCapacity > this.Capacity);
+            Assert.IsTrue(newCapacity > Capacity);
 
-            var totalSize = CalculateDataSize(newCapacity, newBucketCapacity, this.DataCapacity, out var keyOffset, out var nextOffset, out var bucketOffset,
+            var totalSize = CalculateDataSize(newCapacity, newBucketCapacity, DataCapacity, out var keyOffset, out var nextOffset, out var bucketOffset,
                 out var typeOffset, out var dataOffset);
 
-            var newBuffer = (byte*)CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, this.Allocator);
+            var newBuffer = (byte*)CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, Allocator);
             var newValues = newBuffer;
             var newKeys = (TKey*)(newBuffer + keyOffset);
             var newNext = (int*)(newBuffer + nextOffset);
@@ -370,18 +375,18 @@ namespace BovineLabs.Core.Collections
             var newTypes = (int*)(newBuffer + typeOffset);
             var newData = (int*)(newBuffer + dataOffset);
 
-            var oldCapacity = this.Capacity;
-            var oldBucketCapacity = this.BucketCapacity;
-            var oldDataCapacity = this.DataCapacity;
+            var oldCapacity = Capacity;
+            var oldBucketCapacity = BucketCapacity;
+            var oldDataCapacity = DataCapacity;
 
-            var oldKeys = this.Keys;
-            var oldNext = this.Next;
-            var oldBuckets = this.Buckets;
+            var oldKeys = Keys;
+            var oldNext = Next;
+            var oldBuckets = Buckets;
 
-            UnsafeUtility.MemCpy(newValues, this.Values, oldCapacity * sizeof(int));
+            UnsafeUtility.MemCpy(newValues, Values, oldCapacity * sizeof(int));
             UnsafeUtility.MemCpy(newKeys, oldKeys, oldCapacity * sizeof(TKey));
-            UnsafeUtility.MemCpy(newTypes, this.Types, oldCapacity * sizeof(int));
-            UnsafeUtility.MemCpy(newData, this.Data, oldDataCapacity * sizeof(int));
+            UnsafeUtility.MemCpy(newTypes, Types, oldCapacity * sizeof(int));
+            UnsafeUtility.MemCpy(newData, Data, oldDataCapacity * sizeof(int));
 
             UnsafeUtility.MemCpy(newNext, oldNext, oldCapacity * sizeof(int));
             UnsafeUtility.MemSet(newNext + oldCapacity, 0xff, (newCapacity - oldCapacity) * sizeof(int));
@@ -401,32 +406,32 @@ namespace BovineLabs.Core.Collections
                 }
             }
 
-            CollectionMemory.Free(this.Buffer, this.Allocator);
+            CollectionMemory.Free(Buffer, Allocator);
 
-            this.Buffer = newBuffer;
-            this.Values = newValues;
-            this.Keys = newKeys;
-            this.Next = newNext;
-            this.Buckets = newBuckets;
-            this.Types = newTypes;
-            this.Data = newData;
-            this.Capacity = newCapacity;
-            this.BucketCapacityMask = newBucketCapacity - 1;
+            Buffer = newBuffer;
+            Values = newValues;
+            Keys = newKeys;
+            Next = newNext;
+            Buckets = newBuckets;
+            Types = newTypes;
+            Data = newData;
+            Capacity = newCapacity;
+            BucketCapacityMask = newBucketCapacity - 1;
         }
 
         internal void ResizeData(int newCapacity)
         {
             // This hashmap doesn't allow shrinking
-            if (newCapacity <= this.DataCapacity)
+            if (newCapacity <= DataCapacity)
             {
                 return;
             }
 
-            var bucketCapacity = this.BucketCapacity;
-            var totalSize = CalculateDataSize(this.Capacity, bucketCapacity, newCapacity, out var keyOffset, out var nextOffset, out var bucketOffset,
+            var bucketCapacity = BucketCapacity;
+            var totalSize = CalculateDataSize(Capacity, bucketCapacity, newCapacity, out var keyOffset, out var nextOffset, out var bucketOffset,
                 out var typeOffset, out var dataOffset);
 
-            var newBuffer = (byte*)CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, this.Allocator);
+            var newBuffer = (byte*)CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, Allocator);
             var newValues = newBuffer;
             var newKeys = (TKey*)(newBuffer + keyOffset);
             var newNext = (int*)(newBuffer + nextOffset);
@@ -434,60 +439,60 @@ namespace BovineLabs.Core.Collections
             var newTypes = (int*)(newBuffer + typeOffset);
             var newData = (int*)(newBuffer + dataOffset);
 
-            var oldCapacity = this.Capacity;
-            var oldDataCapacity = this.DataCapacity;
+            var oldCapacity = Capacity;
+            var oldDataCapacity = DataCapacity;
 
-            UnsafeUtility.MemCpy(newValues, this.Values, oldCapacity * sizeof(int));
-            UnsafeUtility.MemCpy(newKeys, this.Keys, oldCapacity * sizeof(TKey));
-            UnsafeUtility.MemCpy(newNext, this.Next, oldCapacity * sizeof(int));
-            UnsafeUtility.MemCpy(newBuckets, this.Buckets, bucketCapacity * sizeof(int));
-            UnsafeUtility.MemCpy(newTypes, this.Types, oldCapacity * sizeof(int));
-            UnsafeUtility.MemCpy(newData, this.Data, oldDataCapacity * sizeof(int));
+            UnsafeUtility.MemCpy(newValues, Values, oldCapacity * sizeof(int));
+            UnsafeUtility.MemCpy(newKeys, Keys, oldCapacity * sizeof(TKey));
+            UnsafeUtility.MemCpy(newNext, Next, oldCapacity * sizeof(int));
+            UnsafeUtility.MemCpy(newBuckets, Buckets, bucketCapacity * sizeof(int));
+            UnsafeUtility.MemCpy(newTypes, Types, oldCapacity * sizeof(int));
+            UnsafeUtility.MemCpy(newData, Data, oldDataCapacity * sizeof(int));
 
-            CollectionMemory.Free(this.Buffer, this.Allocator);
+            CollectionMemory.Free(Buffer, Allocator);
 
-            this.Buffer = newBuffer;
-            this.Values = newValues;
-            this.Keys = newKeys;
-            this.Next = newNext;
-            this.Buckets = newBuckets;
-            this.Types = newTypes;
-            this.Data = newData;
-            this.DataCapacity = newCapacity;
+            Buffer = newBuffer;
+            Values = newValues;
+            Keys = newKeys;
+            Next = newNext;
+            Buckets = newBuckets;
+            Types = newTypes;
+            Data = newData;
+            DataCapacity = newCapacity;
         }
 
         internal void AddOrSet<TValue>(in TKey key, TValue value)
             where TValue : unmanaged
         {
-            var idx = this.Find(key);
+            var idx = Find(key);
             var isLarge = sizeof(TValue) > sizeof(int);
             var add = idx == -1;
 
             if (add)
             {
-                if (this.Count == this.Capacity)
+                if (Count == Capacity)
                 {
-                    var newCap = CalcCapacityCeilPow2(this.Count, this.Capacity + (1 << this.Log2MinGrowth), this.Log2MinGrowth);
-                    this.Resize(newCap);
+                    var newCap = CalcCapacityCeilPow2(Count, Capacity + (1 << Log2MinGrowth), Log2MinGrowth);
+                    Resize(newCap);
                 }
 
-                idx = this.Count++;
+                idx = Count++;
 
-                this.CheckIndexOutOfBounds(idx);
+                CheckIndexOutOfBounds(idx);
 
-                UnsafeUtility.WriteArrayElement(this.Keys, idx, key);
-                UnsafeUtility.WriteArrayElement(this.Types, idx, BurstRuntime.GetHashCode32<TValue>());
+                UnsafeUtility.WriteArrayElement(Keys, idx, key);
+                UnsafeUtility.WriteArrayElement(Types, idx, BurstRuntime.GetHashCode32<TValue>());
 
-                var bucket = this.GetBucket(key);
+                var bucket = GetBucket(key);
 
                 // Add the index to the hash-map
-                var next = this.Next;
-                next[idx] = this.Buckets[bucket];
-                this.Buckets[bucket] = idx;
+                var next = Next;
+                next[idx] = Buckets[bucket];
+                Buckets[bucket] = idx;
             }
             else
             {
-                this.CheckType<TValue>(idx);
+                CheckType<TValue>(idx);
             }
 
             if (isLarge)
@@ -499,40 +504,40 @@ namespace BovineLabs.Core.Collections
                 {
                     Check.Assume(sizeof(TValue) % sizeof(int) == 0);
 
-                    this.DataAllocatedIndex = AlignDataAllocatedIndex<TValue>(this.DataAllocatedIndex);
+                    DataAllocatedIndex = AlignDataAllocatedIndex<TValue>(DataAllocatedIndex);
 
-                    var minNewCapacity = this.DataAllocatedIndex + (sizeof(TValue) / sizeof(int));
-                    if (minNewCapacity > this.DataCapacity)
+                    var minNewCapacity = DataAllocatedIndex + (sizeof(TValue) / sizeof(int));
+                    if (minNewCapacity > DataCapacity)
                     {
-                        var newCap = this.DataCapacity;
+                        var newCap = DataCapacity;
                         do
                         {
-                            newCap = CalcCapacityCeilPow2(newCap + (1 << this.Log2MinGrowth), this.Log2MinGrowth);
+                            newCap = CalcCapacityCeilPow2(newCap + (1 << Log2MinGrowth), Log2MinGrowth);
                         }
                         while (newCap < minNewCapacity);
 
-                        this.ResizeData(newCap);
+                        ResizeData(newCap);
                     }
 
-                    dataAllocatedIndex = this.DataAllocatedIndex;
+                    dataAllocatedIndex = DataAllocatedIndex;
 
-                    var dst = (int*)this.Values + idx;
-                    *dst = this.DataAllocatedIndex;
+                    var dst = (int*)Values + idx;
+                    *dst = DataAllocatedIndex;
 
-                    this.DataAllocatedIndex += sizeof(TValue) / sizeof(int);
+                    DataAllocatedIndex += sizeof(TValue) / sizeof(int);
                 }
                 else
                 {
                     // Set, just read the stored address
-                    dataAllocatedIndex = *((int*)this.Values + idx);
+                    dataAllocatedIndex = *((int*)Values + idx);
                 }
 
-                var ptr = this.Data + dataAllocatedIndex;
+                var ptr = Data + dataAllocatedIndex;
                 UnsafeUtility.MemCpy(ptr, &value, sizeof(TValue));
             }
             else
             {
-                var dst = (TValue*)(this.Values + (idx * sizeof(int)));
+                var dst = (TValue*)(Values + (idx * sizeof(int)));
                 *dst = value;
             }
         }
@@ -540,77 +545,77 @@ namespace BovineLabs.Core.Collections
         internal ref TValue GetValue<TValue>(int idx)
             where TValue : unmanaged
         {
-            this.CheckType<TValue>(idx);
+            CheckType<TValue>(idx);
 
             var isLarge = sizeof(TValue) > sizeof(int);
             if (isLarge)
             {
-                var dst = (int*)this.Values + idx;
+                var dst = (int*)Values + idx;
                 var dataAllocatedIndex = *dst;
 
-                return ref UnsafeUtility.AsRef<TValue>(this.Data + dataAllocatedIndex);
+                return ref UnsafeUtility.AsRef<TValue>(Data + dataAllocatedIndex);
             }
 
-            return ref UnsafeUtility.AsRef<TValue>(this.Values + (idx * sizeof(int)));
+            return ref UnsafeUtility.AsRef<TValue>(Values + (idx * sizeof(int)));
         }
 
         internal int AddUnique<TValue>(in TKey key, TValue value)
             where TValue : unmanaged
         {
-            this.CheckDoesNotExist(key);
+            CheckDoesNotExist(key);
 
             // Allocate an entry from the free list
-            if (this.Count == this.Capacity)
+            if (Count == Capacity)
             {
-                var newCap = CalcCapacityCeilPow2(this.Count, this.Capacity + (1 << this.Log2MinGrowth), this.Log2MinGrowth);
-                this.Resize(newCap);
+                var newCap = CalcCapacityCeilPow2(Count, Capacity + (1 << Log2MinGrowth), Log2MinGrowth);
+                Resize(newCap);
             }
 
-            var idx = this.Count++;
+            var idx = Count++;
 
-            this.CheckIndexOutOfBounds(idx);
+            CheckIndexOutOfBounds(idx);
 
-            UnsafeUtility.WriteArrayElement(this.Keys, idx, key);
-            UnsafeUtility.WriteArrayElement(this.Types, idx, BurstRuntime.GetHashCode32<TValue>());
+            UnsafeUtility.WriteArrayElement(Keys, idx, key);
+            UnsafeUtility.WriteArrayElement(Types, idx, BurstRuntime.GetHashCode32<TValue>());
 
-            var bucket = this.GetBucket(key);
+            var bucket = GetBucket(key);
 
             // Add the index to the hash-map
-            var next = this.Next;
-            next[idx] = this.Buckets[bucket];
-            this.Buckets[bucket] = idx;
+            var next = Next;
+            next[idx] = Buckets[bucket];
+            Buckets[bucket] = idx;
 
             var isLarge = sizeof(TValue) > sizeof(int);
             if (isLarge)
             {
                 Check.Assume(sizeof(TValue) % sizeof(int) == 0);
 
-                this.DataAllocatedIndex = AlignDataAllocatedIndex<TValue>(this.DataAllocatedIndex);
+                DataAllocatedIndex = AlignDataAllocatedIndex<TValue>(DataAllocatedIndex);
 
-                var minNewCapacity = this.DataAllocatedIndex + (sizeof(TValue) / sizeof(int));
-                if (minNewCapacity > this.DataCapacity)
+                var minNewCapacity = DataAllocatedIndex + (sizeof(TValue) / sizeof(int));
+                if (minNewCapacity > DataCapacity)
                 {
-                    var newCap = this.DataCapacity;
+                    var newCap = DataCapacity;
                     do
                     {
-                        newCap = CalcCapacityCeilPow2(newCap + (1 << this.Log2MinGrowth), this.Log2MinGrowth);
+                        newCap = CalcCapacityCeilPow2(newCap + (1 << Log2MinGrowth), Log2MinGrowth);
                     }
                     while (newCap < minNewCapacity);
 
-                    this.ResizeData(newCap);
+                    ResizeData(newCap);
                 }
 
-                var ptr = this.Data + this.DataAllocatedIndex;
+                var ptr = Data + DataAllocatedIndex;
                 UnsafeUtility.MemCpy(ptr, &value, sizeof(TValue));
 
-                var dst = (int*)this.Values + idx;
-                *dst = this.DataAllocatedIndex;
+                var dst = (int*)Values + idx;
+                *dst = DataAllocatedIndex;
 
-                this.DataAllocatedIndex += sizeof(TValue) / sizeof(int);
+                DataAllocatedIndex += sizeof(TValue) / sizeof(int);
             }
             else
             {
-                var dst = (TValue*)(this.Values + (idx * sizeof(int)));
+                var dst = (TValue*)(Values + (idx * sizeof(int)));
                 *dst = value;
             }
 
@@ -620,26 +625,26 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal int GetBucket(in TKey key)
         {
-            return (int)((uint)key.GetHashCode() & this.BucketCapacityMask);
+            return (int)((uint)key.GetHashCode() & BucketCapacityMask);
         }
 
         internal int Find(TKey key)
         {
-            if (this.Count > 0)
+            if (Count > 0)
             {
                 // First find the slot based on the hash
-                var bucket = this.GetBucket(key);
-                var entryIdx = this.Buckets[bucket];
+                var bucket = GetBucket(key);
+                var entryIdx = Buckets[bucket];
 
-                if ((uint)entryIdx < (uint)this.Capacity)
+                if ((uint)entryIdx < (uint)Capacity)
                 {
-                    var keys = this.Keys;
-                    var next = this.Next;
+                    var keys = Keys;
+                    var next = Next;
 
                     while (!UnsafeUtility.ReadArrayElement<TKey>(keys, entryIdx).Equals(key))
                     {
                         entryIdx = next[entryIdx];
-                        if ((uint)entryIdx >= (uint)this.Capacity)
+                        if ((uint)entryIdx >= (uint)Capacity)
                         {
                             return -1;
                         }
@@ -655,11 +660,11 @@ namespace BovineLabs.Core.Collections
         internal bool TryGetValue<TValue>(TKey key, out TValue item)
             where TValue : unmanaged
         {
-            var idx = this.Find(key);
+            var idx = Find(key);
 
             if (idx != -1)
             {
-                item = this.GetValue<TValue>(idx);
+                item = GetValue<TValue>(idx);
                 return true;
             }
 
@@ -726,7 +731,7 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckDoesNotExist(TKey key)
         {
-            if (this.Find(key) != -1)
+            if (Find(key) != -1)
             {
                 throw new ArgumentException($"An item with the same key has already been added: {key}");
             }
@@ -737,7 +742,7 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckIndexOutOfBounds(int idx)
         {
-            if ((uint)idx >= (uint)this.Capacity)
+            if ((uint)idx >= (uint)Capacity)
             {
                 throw new InvalidOperationException($"Internal HashMap error. idx {idx}");
             }
@@ -750,7 +755,7 @@ namespace BovineLabs.Core.Collections
             where TValue : unmanaged
         {
             var expected = BurstRuntime.GetHashCode32<TValue>();
-            var actual = UnsafeUtility.ReadArrayElement<int>(this.Types, idx);
+            var actual = UnsafeUtility.ReadArrayElement<int>(Types, idx);
             if (!expected.Equals(actual))
             {
                 throw new InvalidOperationException($"Type {actual} does not match stored {expected}");
@@ -783,7 +788,7 @@ namespace BovineLabs.Core.Collections
 
         public void Execute()
         {
-            this.Data.Dispose();
+            Data.Dispose();
         }
     }
 
@@ -795,12 +800,14 @@ namespace BovineLabs.Core.Collections
         internal NativeUntypedHashMapHelper<TKey>* Buffer;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         internal AtomicSafetyHandle m_Safety;
 #endif
 
         internal void Dispose()
         {
-            NativeUntypedHashMapHelper<TKey>.Free(this.Buffer);
+            NativeUntypedHashMapHelper<TKey>.Free(Buffer);
         }
     }
 }

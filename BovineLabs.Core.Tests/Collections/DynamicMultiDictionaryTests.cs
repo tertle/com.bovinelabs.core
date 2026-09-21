@@ -13,8 +13,8 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void ReconstructAfterRemapUpdatesTags()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestEntry));
-            var buffer = this.Manager.GetBuffer<TestEntry>(entity);
+            var entity = Manager.CreateEntity(typeof(TestEntry));
+            var buffer = Manager.GetBuffer<TestEntry>(entity);
 
             var map = buffer.AsDynamicMultiDictionary<int, int, TestEntry>();
 

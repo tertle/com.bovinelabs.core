@@ -11,10 +11,10 @@ namespace BovineLabs.Core.Editor.ConfigVars
     {
         private const string StyleSheetPath = "Packages/com.bovinelabs.core/Editor Default Resources/ConfigVarsWindow/ConfigVarsWindow.uss";
 
-        private readonly ConfigVarPanel panel = new();
+        private readonly ConfigVarPanel _panel = new();
 
-        private ToolbarSearchField searchField;
-        private VisualElement contentRoot;
+        private ToolbarSearchField _searchField;
+        private VisualElement _contentRoot;
 
         [MenuItem(EditorMenus.RootMenu + "ConfigVars", priority = -31)]
         internal static void OpenSettings()
@@ -33,29 +33,29 @@ namespace BovineLabs.Core.Editor.ConfigVars
 
         private void OnEnable()
         {
-            this.titleContent = new GUIContent("ConfigVars", EditorGUIUtility.IconContent("VerticalLayoutGroup Icon").image);
-            this.minSize = new Vector2(450, 240);
+            titleContent = new GUIContent("ConfigVars", EditorGUIUtility.IconContent("VerticalLayoutGroup Icon").image);
+            minSize = new Vector2(450, 240);
 
-            this.SetupUI();
-            this.RefreshConfigVars();
+            SetupUI();
+            RefreshConfigVars();
 
-            EditorApplication.playModeStateChanged += this.OnPlayModeStateChanged;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
         private void OnDisable()
         {
-            if (this.searchField != null)
+            if (_searchField != null)
             {
-                this.searchField.UnregisterValueChangedCallback(this.OnSearchChanged);
+                _searchField.UnregisterValueChangedCallback(OnSearchChanged);
             }
 
-            this.panel.OnDeactivate();
-            EditorApplication.playModeStateChanged -= this.OnPlayModeStateChanged;
+            _panel.OnDeactivate();
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
         }
 
         private void SetupUI()
         {
-            var root = this.rootVisualElement;
+            var root = rootVisualElement;
             root.Clear();
             root.AddToClassList("config-vars-window");
 
@@ -67,47 +67,47 @@ namespace BovineLabs.Core.Editor.ConfigVars
             var toolbar = new Toolbar();
             toolbar.AddToClassList("config-vars-window__toolbar");
 
-            var resetButton = new ToolbarButton(this.ResetToDefault) { text = "Reset To Default" };
+            var resetButton = new ToolbarButton(ResetToDefault) { text = "Reset To Default" };
             toolbar.Add(resetButton);
 
             var spacer = new ToolbarSpacer();
             spacer.style.flexGrow = 1;
             toolbar.Add(spacer);
 
-            this.searchField = new ToolbarSearchField();
-            this.searchField.AddToClassList("config-vars-window__search");
-            if (this.searchField.Q<TextField>() is { } textField)
+            _searchField = new ToolbarSearchField();
+            _searchField.AddToClassList("config-vars-window__search");
+            if (_searchField.Q<TextField>() is { } textField)
             {
                 textField.isDelayed = true;
             }
 
-            this.searchField.RegisterValueChangedCallback(this.OnSearchChanged);
-            toolbar.Add(this.searchField);
+            _searchField.RegisterValueChangedCallback(OnSearchChanged);
+            toolbar.Add(_searchField);
             root.Add(toolbar);
 
             var scrollView = new ScrollView();
             scrollView.AddToClassList("config-vars-window__scroll");
             root.Add(scrollView);
 
-            this.contentRoot = new VisualElement();
-            this.contentRoot.AddToClassList("config-vars-window__content");
-            scrollView.Add(this.contentRoot);
+            _contentRoot = new VisualElement();
+            _contentRoot.AddToClassList("config-vars-window__content");
+            scrollView.Add(_contentRoot);
         }
 
         private void RefreshConfigVars()
         {
-            this.panel.SetConfigVars(ConfigVarManager.FindAllConfigVars());
-            this.RefreshContent();
+            _panel.SetConfigVars(ConfigVarManager.FindAllConfigVars());
+            RefreshContent();
         }
 
         private void RefreshContent()
         {
-            this.panel.Render(this.searchField?.value, this.contentRoot);
+            _panel.Render(_searchField?.value, _contentRoot);
         }
 
         private void OnSearchChanged(ChangeEvent<string> evt)
         {
-            this.RefreshContent();
+            RefreshContent();
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange state)
@@ -117,7 +117,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
                 return;
             }
 
-            this.panel.UpdatePlayModeState();
+            _panel.UpdatePlayModeState();
         }
 
         private void ResetToDefault()
@@ -133,7 +133,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
                 c.Value.StringValue = c.Key.DefaultValue;
             }
 
-            this.RefreshContent();
+            RefreshContent();
         }
     }
 }

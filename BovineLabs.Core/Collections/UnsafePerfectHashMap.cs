@@ -21,7 +21,7 @@ namespace BovineLabs.Core.Collections
         internal int Size;
         internal TValue NullValue;
 
-        private readonly AllocatorManager.AllocatorHandle allocator;
+        private readonly AllocatorManager.AllocatorHandle _allocator;
 
         public UnsafePerfectHashMap(NativeArray<TKey> keys, NativeArray<TValue> values, TValue nullValue, AllocatorManager.AllocatorHandle allocator)
         {
@@ -32,19 +32,19 @@ namespace BovineLabs.Core.Collections
             var totalSize = CalculateDataSize(size, out var valueOffset);
 
             var ptr = CollectionMemory.Allocate(totalSize, JobsUtility.CacheLineSize, allocator);
-            this.allocator = allocator;
-            this.Size = size;
-            this.NullValue = nullValue;
-            this.Keys = (TKey*)ptr;
-            this.Values = (TValue*)((byte*)ptr + valueOffset);
+            _allocator = allocator;
+            Size = size;
+            NullValue = nullValue;
+            Keys = (TKey*)ptr;
+            Values = (TValue*)((byte*)ptr + valueOffset);
 
-            UnsafeUtility.MemCpyReplicate(this.Values, &nullValue, sizeof(TValue), size);
+            UnsafeUtility.MemCpyReplicate(Values, &nullValue, sizeof(TValue), size);
 
             for (var i = 0; i < keys.Length; i++)
             {
                 var index = IndexFor(keys[i], size);
-                this.Keys[index] = keys[i];
-                this.Values[index] = values[i];
+                Keys[index] = keys[i];
+                Values[index] = values[i];
             }
         }
 
@@ -65,7 +65,7 @@ namespace BovineLabs.Core.Collections
                 throw new InvalidOperationException("Hash based container has yet to be created or has been destroyed!");
             }
 
-            var allocator = data->allocator;
+            var allocator = data->_allocator;
             data->Dispose();
             CollectionMemory.Free(data, allocator);
         }
@@ -73,16 +73,16 @@ namespace BovineLabs.Core.Collections
         public readonly bool IsCreated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.Keys != null;
+            get => Keys != null;
         }
 
         public TValue this[TKey key]
         {
             get
             {
-                if (Hint.Unlikely(!this.TryGetValue(key, out var value)))
+                if (Hint.Unlikely(!TryGetValue(key, out var value)))
                 {
-                    this.ThrowKeyNotPresent(key);
+                    ThrowKeyNotPresent(key);
                     return default;
                 }
 
@@ -91,36 +91,36 @@ namespace BovineLabs.Core.Collections
 
             set
             {
-                if (!this.TryGetIndex(key, out var index))
+                if (!TryGetIndex(key, out var index))
                 {
-                    this.ThrowKeyNotPresent(key);
+                    ThrowKeyNotPresent(key);
                 }
 
-                this.Values[index] = value;
+                Values[index] = value;
             }
         }
 
         public void Dispose()
         {
-            if (!this.IsCreated)
+            if (!IsCreated)
             {
                 return;
             }
 
-            CollectionMemory.Free(this.Keys, this.allocator);
+            CollectionMemory.Free(Keys, _allocator);
             this = default;
         }
 
         public bool TryGetValue(TKey key, out TValue item)
         {
-            if (!this.TryGetIndex(key, out var index))
+            if (!TryGetIndex(key, out var index))
             {
                 item = default;
                 return false;
             }
 
-            item = this.Values[index];
-            return !item.Equals(this.NullValue);
+            item = Values[index];
+            return !item.Equals(NullValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -176,14 +176,14 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryGetIndex(TKey key, out int index)
         {
-            index = this.IndexFor(key);
-            return index >= 0 && index < this.Size;
+            index = IndexFor(key);
+            return index >= 0 && index < Size;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int IndexFor(TKey key)
         {
-            return IndexFor(key, this.Size);
+            return IndexFor(key, Size);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

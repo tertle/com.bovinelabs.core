@@ -15,34 +15,34 @@ namespace BovineLabs.Core.Collections
         where TValue : unmanaged
     {
         [NativeDisableUnsafePtrRestriction]
-        private TValue* values;
+        private TValue* _values;
 
         [NativeDisableUnsafePtrRestriction]
-        private int* keys;
+        private int* _keys;
 
-        private int count;
-        private int nextCapacity;
-        private int bucketCapacity;
+        private int _count;
+        private int _nextCapacity;
+        private int _bucketCapacity;
 
         public UnsafePartialKeyedMap(int* keys, TValue* values, int length, int bucketCapacity, AllocatorManager.AllocatorHandle allocator)
         {
             CheckAllKeysOutOfBounds(keys, length, bucketCapacity);
 
-            this.keys = keys;
-            this.values = values;
-            this.count = length;
-            this.nextCapacity = length;
-            this.bucketCapacity = bucketCapacity;
-            this.Allocator = allocator;
+            _keys = keys;
+            _values = values;
+            _count = length;
+            _nextCapacity = length;
+            _bucketCapacity = bucketCapacity;
+            Allocator = allocator;
 
             // Allocated separate because buckets are fixed but next can change
-            this.Next = (int*)CollectionMemory.Allocate(sizeof(int) * length, JobsUtility.CacheLineSize, allocator);
-            this.Buckets = (int*)CollectionMemory.Allocate(sizeof(int) * bucketCapacity, JobsUtility.CacheLineSize, allocator);
+            Next = (int*)CollectionMemory.Allocate(sizeof(int) * length, JobsUtility.CacheLineSize, allocator);
+            Buckets = (int*)CollectionMemory.Allocate(sizeof(int) * bucketCapacity, JobsUtility.CacheLineSize, allocator);
 
-            this.RecalculateBuckets();
+            RecalculateBuckets();
         }
 
-        public bool IsCreated => this.Buckets != null;
+        public bool IsCreated => Buckets != null;
 
         [field: NativeDisableUnsafePtrRestriction]
         internal int* Next { get; private set; }
@@ -56,8 +56,8 @@ namespace BovineLabs.Core.Collections
         {
             get
             {
-                CheckIndexOutOfBounds(i, this.count);
-                return this.values[i];
+                CheckIndexOutOfBounds(i, _count);
+                return _values[i];
             }
         }
 
@@ -79,50 +79,50 @@ namespace BovineLabs.Core.Collections
         public void Dispose()
         {
             // Don't rewrite allocator
-            CollectionMemory.Free(this.Buckets, this.Allocator);
-            CollectionMemory.Free(this.Next, this.Allocator);
+            CollectionMemory.Free(Buckets, Allocator);
+            CollectionMemory.Free(Next, Allocator);
         }
 
         public JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new UnsafePartialKeyedMapDisposeJob
             {
-                Next = this.Next,
-                Buckets = this.Buckets,
-                Allocator = this.Allocator,
+                Next = Next,
+                Buckets = Buckets,
+                Allocator = Allocator,
             }.Schedule(inputDeps);
 
-            this.Buckets = null;
+            Buckets = null;
 
             return jobHandle;
         }
 
         public void Update(int* newKeys, TValue* newValues, int newLength)
         {
-            CheckAllKeysOutOfBounds(newKeys, newLength, this.bucketCapacity);
+            CheckAllKeysOutOfBounds(newKeys, newLength, _bucketCapacity);
 
-            this.keys = newKeys;
-            this.values = newValues;
-            this.count = newLength;
+            _keys = newKeys;
+            _values = newValues;
+            _count = newLength;
 
             // Check if we need more capacity
-            if (this.nextCapacity < newLength)
+            if (_nextCapacity < newLength)
             {
-                CollectionMemory.Free(this.Next, this.Allocator);
-                this.nextCapacity = newLength;
-                this.Next = (int*)CollectionMemory.Allocate(sizeof(int) * this.nextCapacity, JobsUtility.CacheLineSize, this.Allocator);
+                CollectionMemory.Free(Next, Allocator);
+                _nextCapacity = newLength;
+                Next = (int*)CollectionMemory.Allocate(sizeof(int) * _nextCapacity, JobsUtility.CacheLineSize, Allocator);
             }
 
-            this.RecalculateBuckets();
+            RecalculateBuckets();
         }
 
         public bool TryGetFirstValue(int key, out TValue item, out UnsafeKeyedMapIterator it)
         {
-            CheckKeyOutOfBounds(key, this.bucketCapacity);
+            CheckKeyOutOfBounds(key, _bucketCapacity);
 
             it = default;
 
-            if (this.count <= 0)
+            if (_count <= 0)
             {
                 it.EntryIndex = it.NextEntryIndex = -1;
                 item = default;
@@ -130,8 +130,8 @@ namespace BovineLabs.Core.Collections
             }
 
             // First find the slot based on the hash
-            it.NextEntryIndex = this.Buckets[key];
-            return this.TryGetNextValue(out item, ref it);
+            it.NextEntryIndex = Buckets[key];
+            return TryGetNextValue(out item, ref it);
         }
 
         public bool TryGetNextValue(out TValue item, ref UnsafeKeyedMapIterator it)
@@ -145,24 +145,24 @@ namespace BovineLabs.Core.Collections
                 return false;
             }
 
-            var nextPtrs = this.Next;
+            var nextPtrs = Next;
             it.NextEntryIndex = nextPtrs[it.EntryIndex];
 
             // Read the value
-            item = UnsafeUtility.ReadArrayElement<TValue>(this.values, it.EntryIndex);
+            item = UnsafeUtility.ReadArrayElement<TValue>(_values, it.EntryIndex);
 
             return true;
         }
 
         private void RecalculateBuckets()
         {
-            UnsafeUtility.MemSet(this.Buckets, 0xff, sizeof(int) * this.bucketCapacity);
+            UnsafeUtility.MemSet(Buckets, 0xff, sizeof(int) * _bucketCapacity);
 
-            for (var idx = 0; idx < this.count; idx++)
+            for (var idx = 0; idx < _count; idx++)
             {
-                var key = this.keys[idx];
-                this.Next[idx] = this.Buckets[key];
-                this.Buckets[key] = idx;
+                var key = _keys[idx];
+                Next[idx] = Buckets[key];
+                Buckets[key] = idx;
             }
         }
 
@@ -207,8 +207,8 @@ namespace BovineLabs.Core.Collections
 
         public void Execute()
         {
-            CollectionMemory.Free(this.Buckets, this.Allocator);
-            CollectionMemory.Free(this.Next, this.Allocator);
+            CollectionMemory.Free(Buckets, Allocator);
+            CollectionMemory.Free(Next, Allocator);
         }
     }
 }

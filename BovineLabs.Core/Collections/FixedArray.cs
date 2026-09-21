@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Collections
         where T : unmanaged
         where TS : unmanaged
     {
-        private TS data;
+        private TS _data;
 
         public readonly int Length => sizeof(TS) / sizeof(T);
 
@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                fixed (void* ptr = &this.data)
+                fixed (void* ptr = &_data)
                 {
                     return (T*)ptr;
                 }
@@ -30,23 +30,23 @@ namespace BovineLabs.Core.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
-                CollectionChecks.CheckIndexInRange(index, this.Length);
-                return UnsafeUtility.ReadArrayElement<T>(this.Buffer, CollectionChecks.AssumePositive(index));
+                CollectionChecks.CheckIndexInRange(index, Length);
+                return UnsafeUtility.ReadArrayElement<T>(Buffer, CollectionChecks.AssumePositive(index));
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
-                CollectionChecks.CheckIndexInRange(index, this.Length);
-                UnsafeUtility.WriteArrayElement(this.Buffer, CollectionChecks.AssumePositive(index), value);
+                CollectionChecks.CheckIndexInRange(index, Length);
+                UnsafeUtility.WriteArrayElement(Buffer, CollectionChecks.AssumePositive(index), value);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref T ElementAt(int index)
         {
-            CollectionChecks.CheckIndexInRange(index, this.Length);
-            return ref UnsafeUtility.ArrayElementAsRef<T>(this.Buffer, CollectionChecks.AssumePositive(index));
+            CollectionChecks.CheckIndexInRange(index, Length);
+            return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, CollectionChecks.AssumePositive(index));
         }
     }
 }

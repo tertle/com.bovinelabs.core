@@ -10,30 +10,30 @@
     [CustomEditor(typeof(ComponentFieldAsset))]
     public class ComponentFieldAssetEditor : ElementEditor
     {
-        private readonly List<string> fieldNames = new();
+        private readonly List<string> _fieldNames = new();
 
-        private SerializedProperty componentProperty;
-        private SerializedProperty fieldNameProperty;
+        private SerializedProperty _componentProperty;
+        private SerializedProperty _fieldNameProperty;
 
-        private PropertyField componentField;
-        private DropdownField fieldNameField;
+        private PropertyField _componentField;
+        private DropdownField _fieldNameField;
 
         protected override VisualElement CreateElement(SerializedProperty property)
         {
             switch (property.name)
             {
-                case "component":
-                    this.componentProperty = property;
-                    return this.componentField = CreatePropertyField(property);
-                case "fieldName":
+                case "_component":
+                    _componentProperty = property;
+                    return _componentField = CreatePropertyField(property);
+                case "_fieldName":
 
-                    this.fieldNameProperty = property;
-                    this.fieldNameField = new DropdownField { label = this.fieldNameProperty.displayName };
+                    _fieldNameProperty = property;
+                    _fieldNameField = new DropdownField { label = _fieldNameProperty.displayName };
 
-                    this.fieldNameField.AddToClassList(BaseField<string>.alignedFieldUssClassName);
-                    this.fieldNameField.RegisterValueChangedCallback(this.FieldNameChanged);
+                    _fieldNameField.AddToClassList(BaseField<string>.alignedFieldUssClassName);
+                    _fieldNameField.RegisterValueChangedCallback(FieldNameChanged);
 
-                    return this.fieldNameField;
+                    return _fieldNameField;
             }
 
             return base.CreateElement(property);
@@ -41,9 +41,9 @@
 
         protected override void PostElementCreation(VisualElement root, bool createdElements)
         {
-            this.SetupDropDown();
+            SetupDropDown();
 
-            this.componentField!.RegisterValueChangeCallback(_ => this.SetupDropDown());
+            _componentField!.RegisterValueChangeCallback(_ => SetupDropDown());
         }
 
         private void FieldNameChanged(ChangeEvent<string> evt)
@@ -53,15 +53,15 @@
                 return;
             }
 
-            this.fieldNameProperty!.stringValue = evt.newValue;
-            this.fieldNameProperty.serializedObject.ApplyModifiedProperties();
+            _fieldNameProperty!.stringValue = evt.newValue;
+            _fieldNameProperty.serializedObject.ApplyModifiedProperties();
         }
 
         private void SetupDropDown()
         {
-            this.fieldNames.Clear();
+            _fieldNames.Clear();
 
-            var componentAsset = this.componentProperty!.objectReferenceValue as ComponentAsset;
+            var componentAsset = _componentProperty!.objectReferenceValue as ComponentAsset;
             if (componentAsset)
             {
                 var type = componentAsset.ResolveType();
@@ -69,12 +69,12 @@
 
                 foreach (var field in fields)
                 {
-                    this.fieldNames.Add(field.Name);
+                    _fieldNames.Add(field.Name);
                 }
             }
 
-            this.fieldNameField!.choices = this.fieldNames;
-            this.fieldNameField.value = this.fieldNameProperty!.stringValue;
+            _fieldNameField!.choices = _fieldNames;
+            _fieldNameField.value = _fieldNameProperty!.stringValue;
         }
     }
 }

@@ -11,11 +11,11 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
 
     public sealed class FavouritesWindow : BaseObjectWindow<FavouritesItem, FavouritesService, FavouritesPreferences>
     {
-        private FavouritesService favouritesService;
-        private VisualElement dropLabel;
-        private Button addSelectionButton;
+        private FavouritesService _favouritesService;
+        private VisualElement _dropLabel;
+        private Button _addSelectionButton;
 
-        protected override FavouritesService Service => this.favouritesService ?? FavouritesService.Instance;
+        protected override FavouritesService Service => _favouritesService ?? FavouritesService.Instance;
 
         protected override string StylesheetPath => "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/Windows/Favourites/FavouritesWindow.uss";
 
@@ -33,21 +33,21 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
 
         protected override void InitializeServices()
         {
-            this.favouritesService = FavouritesService.Instance;
-            this.favouritesService.ItemsChanged += this.OnItemsChangedInternal;
+            _favouritesService = FavouritesService.Instance;
+            _favouritesService.ItemsChanged += OnItemsChangedInternal;
         }
 
         protected override void CleanupServices()
         {
-            if (this.favouritesService != null)
+            if (_favouritesService != null)
             {
-                this.favouritesService.ItemsChanged -= this.OnItemsChangedInternal;
+                _favouritesService.ItemsChanged -= OnItemsChangedInternal;
             }
         }
 
         protected override void SetupAdditionalFeatures(VisualElement root)
         {
-            this.SetupDragAndDrop(root);
+            SetupDragAndDrop(root);
         }
 
         protected override void OnItemsChanged(IReadOnlyList<FavouritesItem> items)
@@ -57,19 +57,19 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
         protected override void UpdateItemsVisualState()
         {
             base.UpdateItemsVisualState();
-            this.UpdateAddSelectionButton();
+            UpdateAddSelectionButton();
         }
 
         protected override void CreateCustomToolbarElements(Toolbar toolbar)
         {
-            this.addSelectionButton = new ToolbarButton(() => this.favouritesService.AddFavourites(Selection.objects))
+            _addSelectionButton = new ToolbarButton(() => _favouritesService.AddFavourites(Selection.objects))
             {
                 text = "Add Selection",
                 tooltip = "Add selected assets to favourites",
             };
 
-            toolbar.Add(this.addSelectionButton);
-            this.UpdateAddSelectionButton();
+            toolbar.Add(_addSelectionButton);
+            UpdateAddSelectionButton();
         }
 
         protected override Button CreateListItemActionButton()
@@ -82,26 +82,26 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
 
         protected override void BindListItem(VisualElement element, int index)
         {
-            if (index >= this.FilteredItems.Count)
+            if (index >= FilteredItems.Count)
             {
                 return;
             }
 
-            var item = this.FilteredItems[index];
-            this.BindListItemCommon(element, item);
+            var item = FilteredItems[index];
+            BindListItemCommon(element, item);
 
             // Handle open button
             var openButton = element.Q<Button>();
             if (openButton != null)
             {
                 openButton.SetEnabled(item.IsAsset);
-                this.BindButtonClickAction(openButton, () => OpenItem(item), this.OnOpenButtonClick);
+                BindButtonClickAction(openButton, () => OpenItem(item), OnOpenButtonClick);
             }
         }
 
         protected override void OnListItemClicked(FavouritesItem item)
         {
-            this.favouritesService?.SelectFromFavourites(item);
+            _favouritesService?.SelectFromFavourites(item);
         }
 
         protected override void OnListItemDoubleClicked(FavouritesItem item)
@@ -111,7 +111,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
 
         protected override void CreateContextMenu(ContextualMenuPopulateEvent evt, FavouritesItem item)
         {
-            evt.menu.AppendAction("Select Object", _ => this.favouritesService?.SelectFromFavourites(item));
+            evt.menu.AppendAction("Select Object", _ => _favouritesService?.SelectFromFavourites(item));
 
             if (item.IsAsset)
             {
@@ -131,7 +131,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             evt.menu.AppendAction("Remove from Favourites",
                 _ =>
                 {
-                    if (this.favouritesService?.ConfirmRemoval == true)
+                    if (_favouritesService?.ConfirmRemoval == true)
                     {
                         if (!EditorUtility.DisplayDialog("Remove Favourite", $"Remove '{item.Name}' from favourites?", "Remove", "Cancel"))
                         {
@@ -139,7 +139,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
                         }
                     }
 
-                    this.favouritesService?.RemoveItem(item);
+                    _favouritesService?.RemoveItem(item);
                 });
         }
 
@@ -171,28 +171,28 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
                     return;
                 }
 
-                this.favouritesService?.ClearFavourites();
+                _favouritesService?.ClearFavourites();
             });
         }
 
         protected override void CreateSettingsMenu()
         {
-            this.CreateStandardSettingsMenu(FavouritesService.PreferenceKey);
+            CreateStandardSettingsMenu(FavouritesService.PreferenceKey);
         }
 
-        protected override bool IsReorderable() => !this.IsFiltered();
+        protected override bool IsReorderable() => !IsFiltered();
 
         protected override void SetupListViewCallbacks()
         {
-            this.MainListView.reorderMode = ListViewReorderMode.Animated;
-            this.MainListView.itemIndexChanged += this.OnFavouriteItemReordered;
+            MainListView.reorderMode = ListViewReorderMode.Animated;
+            MainListView.itemIndexChanged += OnFavouriteItemReordered;
         }
 
         protected override void PostProcessFilteredItems()
         {
             // Update reorderable state
-            this.MainListView!.reorderable = !this.IsFiltered();
-            this.UpdateAddSelectionButton();
+            MainListView!.reorderable = !IsFiltered();
+            UpdateAddSelectionButton();
         }
 
         protected override string GetTimestampFormat() => "yyyy-MM-dd HH:mm";
@@ -211,34 +211,34 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
 
         private bool IsFiltered()
         {
-            return !string.IsNullOrEmpty(this.CurrentSearchText) || this.CurrentTypeFilter != "All";
+            return !string.IsNullOrEmpty(CurrentSearchText) || CurrentTypeFilter != "All";
         }
 
         private void UpdateAddSelectionButton()
         {
-            this.addSelectionButton.SetEnabled(Selection.objects.Any(obj =>
-                FavouritesService.CanAddFavourite(obj) && !this.favouritesService.IsFavourite(obj)));
+            _addSelectionButton.SetEnabled(Selection.objects.Any(obj =>
+                FavouritesService.CanAddFavourite(obj) && !_favouritesService.IsFavourite(obj)));
         }
 
         private void SetupDragAndDrop(VisualElement root)
         {
-            this.dropLabel = new VisualElement { pickingMode = PickingMode.Ignore };
-            this.dropLabel.AddToClassList("favourites-drop-overlay");
-            this.dropLabel.RegisterCallback<AttachToPanelEvent>(evt =>
-                evt.destinationPanel.visualTree.RegisterCallback<DragExitedEvent>(this.OnDragExited));
-            this.dropLabel.RegisterCallback<DetachFromPanelEvent>(evt =>
-                evt.originPanel.visualTree.UnregisterCallback<DragExitedEvent>(this.OnDragExited));
+            _dropLabel = new VisualElement { pickingMode = PickingMode.Ignore };
+            _dropLabel.AddToClassList("favourites-drop-overlay");
+            _dropLabel.RegisterCallback<AttachToPanelEvent>(evt =>
+                evt.destinationPanel.visualTree.RegisterCallback<DragExitedEvent>(OnDragExited));
+            _dropLabel.RegisterCallback<DetachFromPanelEvent>(evt =>
+                evt.originPanel.visualTree.UnregisterCallback<DragExitedEvent>(OnDragExited));
 
-            root.Add(this.dropLabel);
+            root.Add(_dropLabel);
 
             root.RegisterCallback<DragEnterEvent>(_ =>
             {
-                this.UpdateDropOverlay();
+                UpdateDropOverlay();
             });
 
             root.RegisterCallback<DragLeaveEvent>(_ =>
             {
-                this.dropLabel.style.display = DisplayStyle.None;
+                _dropLabel.style.display = DisplayStyle.None;
             });
 
             root.RegisterCallback<DragUpdatedEvent>(evt =>
@@ -248,14 +248,14 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
                     return;
                 }
 
-                var hasValidAssets = this.UpdateDropOverlay();
+                var hasValidAssets = UpdateDropOverlay();
                 DragAndDrop.visualMode = hasValidAssets ? DragAndDropVisualMode.Copy : DragAndDropVisualMode.Rejected;
                 evt.StopPropagation();
             });
 
             root.RegisterCallback<DragPerformEvent>(evt =>
             {
-                this.dropLabel.style.display = DisplayStyle.None;
+                _dropLabel.style.display = DisplayStyle.None;
 
                 var assetObjects = DragAndDrop.objectReferences.Where(FavouritesService.CanAddFavourite).ToArray();
                 if (assetObjects.Length == 0)
@@ -264,7 +264,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
                 }
 
                 DragAndDrop.AcceptDrag();
-                this.favouritesService.AddFavourites(assetObjects);
+                _favouritesService.AddFavourites(assetObjects);
                 evt.StopPropagation();
             });
         }
@@ -286,13 +286,13 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
         private bool UpdateDropOverlay()
         {
             var hasValidAssets = DragAndDrop.objectReferences.Any(FavouritesService.CanAddFavourite);
-            this.dropLabel.style.display = hasValidAssets ? DisplayStyle.Flex : DisplayStyle.None;
+            _dropLabel.style.display = hasValidAssets ? DisplayStyle.Flex : DisplayStyle.None;
             return hasValidAssets;
         }
 
         private void OnDragExited(DragExitedEvent evt)
         {
-            this.dropLabel.style.display = DisplayStyle.None;
+            _dropLabel.style.display = DisplayStyle.None;
         }
 
         private void OnOpenButtonClick(ClickEvent evt)
@@ -302,10 +302,10 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
 
         private void OnFavouriteItemReordered(int fromIndex, int toIndex)
         {
-            if (fromIndex >= 0 && fromIndex < this.FilteredItems.Count &&
-                toIndex >= 0 && toIndex < this.FilteredItems.Count)
+            if (fromIndex >= 0 && fromIndex < FilteredItems.Count &&
+                toIndex >= 0 && toIndex < FilteredItems.Count)
             {
-                this.favouritesService?.ReorderFavourite(fromIndex, toIndex);
+                _favouritesService?.ReorderFavourite(fromIndex, toIndex);
             }
         }
     }

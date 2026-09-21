@@ -23,66 +23,66 @@
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-        private readonly DynamicHashMapListElement<T, TBuffer, TKey, TValue> listElement;
+        private readonly DynamicHashMapListElement<T, TBuffer, TKey, TValue> _listElement;
 
-        private readonly DynamicHashMapSearchElement<T, TBuffer, TKey, TValue> searchElement;
+        private readonly DynamicHashMapSearchElement<T, TBuffer, TKey, TValue> _searchElement;
 
-        private readonly ToolbarToggle listElementToggle;
-        private readonly ToolbarToggle searchToggle;
+        private readonly ToolbarToggle _listElementToggle;
+        private readonly ToolbarToggle _searchToggle;
 
         public DynamicHashMapElement(object inspector, List<SearchView.Item> items = null, TValue defaultValue = default)
         {
             var hasItems = items is { Count: > 0 };
-            this.listElementToggle = new ToolbarToggle();
-            this.searchToggle = new ToolbarToggle();
+            _listElementToggle = new ToolbarToggle();
+            _searchToggle = new ToolbarToggle();
 
             if (hasItems)
             {
                 var toolbar = new Toolbar();
-                this.Add(toolbar);
+                Add(toolbar);
 
-                toolbar.Add(this.listElementToggle);
-                this.listElementToggle.style.flexGrow = 1;
-                this.listElementToggle.text = "List";
-                this.listElementToggle.value = true;
-                this.listElementToggle.RegisterValueChangedCallback(this.ListValueChanged);
+                toolbar.Add(_listElementToggle);
+                _listElementToggle.style.flexGrow = 1;
+                _listElementToggle.text = "List";
+                _listElementToggle.value = true;
+                _listElementToggle.RegisterValueChangedCallback(ListValueChanged);
 
-                toolbar.Add(this.searchToggle);
-                this.searchToggle.style.flexGrow = 1;
-                this.searchToggle.text = "Search";
-                this.searchToggle.RegisterValueChangedCallback(this.SearchValueChanged);
+                toolbar.Add(_searchToggle);
+                _searchToggle.style.flexGrow = 1;
+                _searchToggle.text = "Search";
+                _searchToggle.RegisterValueChangedCallback(SearchValueChanged);
             }
 
-            this.listElement = new DynamicHashMapListElement<T, TBuffer, TKey, TValue>(inspector, 0);
-            this.Add(this.listElement);
+            _listElement = new DynamicHashMapListElement<T, TBuffer, TKey, TValue>(inspector, 0);
+            Add(_listElement);
 
             if (hasItems)
             {
-                this.searchElement = new DynamicHashMapSearchElement<T, TBuffer, TKey, TValue>(inspector, items!, defaultValue, 0);
+                _searchElement = new DynamicHashMapSearchElement<T, TBuffer, TKey, TValue>(inspector, items!, defaultValue, 0);
             }
 
-            this.schedule.Execute(this.Update).Every(250);
+            schedule.Execute(Update).Every(250);
         }
 
         public Action<IEntityContext, TKey, TValue> SearchSetValue
         {
             get
             {
-                if (this.searchElement == null)
+                if (_searchElement == null)
                 {
                     return (_, _, _) =>
                     {
                     };
                 }
 
-                return this.searchElement.SetValue;
+                return _searchElement.SetValue;
             }
 
             set
             {
-                if (this.searchElement != null)
+                if (_searchElement != null)
                 {
-                    this.searchElement.SetValue = value;
+                    _searchElement.SetValue = value;
                 }
             }
         }
@@ -92,15 +92,15 @@
             if (!evt.newValue)
             {
                 // Don't allow it to toggle off
-                this.listElementToggle.SetValueWithoutNotify(true);
+                _listElementToggle.SetValueWithoutNotify(true);
                 return;
             }
 
-            this.searchToggle.SetValueWithoutNotify(false);
-            this.Remove(this.searchElement);
-            this.Add(this.listElement);
+            _searchToggle.SetValueWithoutNotify(false);
+            Remove(_searchElement);
+            Add(_listElement);
 
-            this.listElement.ForceUpdate();
+            _listElement.ForceUpdate();
         }
 
         private void SearchValueChanged(ChangeEvent<bool> evt)
@@ -108,25 +108,25 @@
             if (!evt.newValue)
             {
                 // Don't allow it to toggle off
-                this.searchToggle.SetValueWithoutNotify(true);
+                _searchToggle.SetValueWithoutNotify(true);
                 return;
             }
 
-            this.listElementToggle.SetValueWithoutNotify(false);
-            this.Remove(this.listElement);
-            this.Add(this.searchElement);
+            _listElementToggle.SetValueWithoutNotify(false);
+            Remove(_listElement);
+            Add(_searchElement);
         }
 
         private void Update()
         {
-            if (!this.listElement.IsValid())
+            if (!_listElement.IsValid())
             {
-                this.RemoveFromHierarchy();
+                RemoveFromHierarchy();
                 return;
             }
 
-            this.listElement.Update();
-            this.searchElement?.Update();
+            _listElement.Update();
+            _searchElement?.Update();
         }
     }
 }

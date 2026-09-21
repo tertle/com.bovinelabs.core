@@ -5,6 +5,6 @@
     public partial struct FacetComposition : IFacet
     {
         [Facet]
-        private TestFacet testFacet;
+        private TestFacet _testFacet;
     }
 }

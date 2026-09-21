@@ -13,35 +13,35 @@
     internal abstract class WeakObjectReferenceInspector<T> : PropertyInspector<WeakObjectReference<T>>
         where T : Object
     {
-        private Foldout field;
-        private ObjectField objectField;
+        private Foldout _field;
+        private ObjectField _objectField;
 
         public override VisualElement Build()
         {
-            this.field = new Foldout { value = false };
+            _field = new Foldout { value = false };
 
-            this.objectField = new ObjectField { enabledSelf = !this.IsReadOnly };
-            InspectorUtility.AddRuntimeBar(this.objectField);
+            _objectField = new ObjectField { enabledSelf = !IsReadOnly };
+            InspectorUtility.AddRuntimeBar(_objectField);
 
-            this.field.Add(this.objectField);
+            _field.Add(_objectField);
 
-            this.Update();
+            Update();
 
-            this.objectField.RegisterValueChangedCallback(evt =>
+            _objectField.RegisterValueChangedCallback(evt =>
             {
-                this.Target = new WeakObjectReference<T>((T)evt.newValue);
+                Target = new WeakObjectReference<T>((T)evt.newValue);
             });
 
-            return this.field;
+            return _field;
         }
 
         public override void Update()
         {
-            var target = this.Target;
+            var target = Target;
 
             var asset = target.GetEditorObject();
-            this.objectField!.value = asset;
-            this.field!.text = asset == null ? this.DisplayName : $"{this.DisplayName} : {asset.name}";
+            _objectField!.value = asset;
+            _field!.text = asset == null ? DisplayName : $"{DisplayName} : {asset.name}";
         }
     }
 

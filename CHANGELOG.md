@@ -16,6 +16,7 @@
 * Actions for adding selected assets and assets from Selection History to Favourites
 
 ### Changed
+* Private instance fields now use underscore prefixes. Migrate external settings/authoring, component/type assets, key values and serialized collection keys directly before import. Favourites and Selection History JSON also require the mapped private-key migration, including inherited display preferences. Native-container safety names and generated public APIs are preserved; no serialization aliases were added.
 * Facet and dynamic collection source generators now embed CodeGenHelpers source instead of depending on a separate helper assembly
 * Favourites now accepts only persistent assets and uses animated list reordering
 * `SaveAttribute`, `SaveIgnoreAttribute`, and `SaveFeature` are now defined by Core even when Savanna is installed, retaining the `BovineLabs.Savanna` namespace

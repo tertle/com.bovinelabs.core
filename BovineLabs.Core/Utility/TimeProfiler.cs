@@ -9,17 +9,17 @@ namespace BovineLabs.Core.Utility
     public readonly struct TimeProfiler : IDisposable
     {
 #if UNITY_EDITOR
-        private readonly long startTime;
-        private readonly FixedString64Bytes text;
-        private readonly LogLevel level;
-        private readonly int min;
+        private readonly long _startTime;
+        private readonly FixedString64Bytes _text;
+        private readonly LogLevel _level;
+        private readonly int _min;
 
         private TimeProfiler(long startTime, FixedString64Bytes text, LogLevel level, int min)
         {
-            this.startTime = startTime;
-            this.text = text;
-            this.level = level;
-            this.min = min;
+            _startTime = startTime;
+            _text = text;
+            _level = level;
+            _min = min;
         }
 #endif
 
@@ -63,17 +63,17 @@ namespace BovineLabs.Core.Utility
         public void Dispose()
         {
 #if UNITY_EDITOR
-            if (this.startTime == 0)
+            if (_startTime == 0)
             {
                 return;
             }
 
-            var elapsed = ProfilerUnsafeUtility.Timestamp - this.startTime;
+            var elapsed = ProfilerUnsafeUtility.Timestamp - _startTime;
             var elapsedMs = GetElapsedMilliseconds(elapsed);
 
-            if (elapsedMs >= this.min)
+            if (elapsedMs >= _min)
             {
-                BLGlobalLogger.Log128($"{this.text}: {elapsedMs}ms", this.level);
+                BLGlobalLogger.Log128($"{_text}: {elapsedMs}ms", _level);
             }
 #endif
         }

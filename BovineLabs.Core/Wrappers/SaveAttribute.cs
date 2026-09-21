@@ -7,7 +7,7 @@ namespace BovineLabs.Savanna
     {
         public SaveAttribute(SaveFeature feature = SaveFeature.None)
         {
-            this.Feature = feature;
+            Feature = feature;
         }
 
         public SaveFeature Feature { get; }

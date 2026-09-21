@@ -13,26 +13,26 @@
         where TValue : unmanaged
     {
         [NativeDisableUnsafePtrRestriction]
-        private readonly BlobHashMapData<TKey, TValue>* data;
-        private int index;
-        private int bucketIndex;
-        private int nextIndex;
+        private readonly BlobHashMapData<TKey, TValue>* _data;
+        private int _index;
+        private int _bucketIndex;
+        private int _nextIndex;
 
         internal BlobHashMapEnumerator(ref BlobHashMapData<TKey, TValue> data)
         {
-            this.data = (BlobHashMapData<TKey, TValue>*)UnsafeUtility.AddressOf(ref data);
-            this.index = -1;
-            this.bucketIndex = 0;
-            this.nextIndex = -1;
+            _data = (BlobHashMapData<TKey, TValue>*)UnsafeUtility.AddressOf(ref data);
+            _index = -1;
+            _bucketIndex = 0;
+            _nextIndex = -1;
         }
 
         public KVPair<TKey, TValue> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => new(this.data, this.index);
+            get => new(_data, _index);
         }
 
-        object IEnumerator.Current => this.Current;
+        object IEnumerator.Current => Current;
 
         public void Dispose()
         {
@@ -41,14 +41,14 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            return MoveNext(this.data, ref this.bucketIndex, ref this.nextIndex, out this.index);
+            return MoveNext(_data, ref _bucketIndex, ref _nextIndex, out _index);
         }
 
         public void Reset()
         {
-            this.index = -1;
-            this.bucketIndex = 0;
-            this.nextIndex = -1;
+            _index = -1;
+            _bucketIndex = 0;
+            _nextIndex = -1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

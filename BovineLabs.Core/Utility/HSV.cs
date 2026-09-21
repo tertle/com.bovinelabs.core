@@ -14,24 +14,24 @@
         public HSV(float h, float s = 1, float v = 1)
         {
             // TODO validate
-            this.H = math.clamp(h, 0, 360);
-            if (math.abs(this.H - 360) < math.EPSILON)
+            H = math.clamp(h, 0, 360);
+            if (math.abs(H - 360) < math.EPSILON)
             {
-                this.H = 0;
+                H = 0;
             }
 
-            this.S = math.clamp(s, 0, 1);
-            this.V = math.clamp(v, 0, 1);
+            S = math.clamp(s, 0, 1);
+            V = math.clamp(v, 0, 1);
         }
 
         public Color ToColor()
         {
-            var c = this.V * this.S;
-            var hh = this.H / 60f;
+            var c = V * S;
+            var hh = H / 60f;
             var x = c * (1 - math.abs((hh % 2) - 1));
-            var m = this.V - c;
+            var m = V - c;
 
-            return this.H switch
+            return H switch
             {
                 < 60 => new Color(c + m, x + m, m),
                 < 120 => new Color(x + m, c + m, m),

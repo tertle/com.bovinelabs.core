@@ -18,18 +18,18 @@
         [Test]
         public void Test()
         {
-            var archetype = this.Manager.CreateArchetype(typeof(Target));
-            using var entities = this.Manager.CreateEntity(archetype, count, Allocator.TempJob);
+            var archetype = Manager.CreateArchetype(typeof(Target));
+            using var entities = Manager.CreateEntity(archetype, count, Allocator.TempJob);
 
-            var target = this.Manager.CreateEntity(typeof(Count));
+            var target = Manager.CreateEntity(typeof(Count));
             for (var i = 0; i < entities.Length; i++)
             {
-                this.Manager.SetComponentData(entities[i], new Target { Value = target });
+                Manager.SetComponentData(entities[i], new Target { Value = target });
             }
 
-            this.World.CreateSystem<TestSystem>().Update(this.WorldUnmanaged);
+            World.CreateSystem<TestSystem>().Update(WorldUnmanaged);
 
-            Assert.AreEqual((count / skipCount) * writeCount, this.Manager.GetComponentData<Count>(target).Value.z);
+            Assert.AreEqual((count / skipCount) * writeCount, Manager.GetComponentData<Count>(target).Value.z);
         }
 
         private partial struct TestSystem : ISystem
@@ -64,9 +64,9 @@
                         return;
                     }
 
-                    ref var lt = ref this.Counts.GetRefRW(target.Value).ValueRW;
+                    ref var lt = ref Counts.GetRefRW(target.Value).ValueRW;
 
-                    using (this.EntityLock.Acquire(target.Value))
+                    using (EntityLock.Acquire(target.Value))
                     {
                         var z = lt.Value.z;
 

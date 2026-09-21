@@ -12,23 +12,23 @@
         where T : unmanaged, IBufferElementData
     {
         [NativeDisableUnsafePtrRestriction]
-        private readonly EntityDataAccess* access;
+        private readonly EntityDataAccess* _access;
 
-        private readonly TypeIndex typeIndex;
-        private readonly byte isReadOnly;
+        private readonly TypeIndex _typeIndex;
+        private readonly byte _isReadOnly;
 
-        private LookupCache cache;
-        private uint globalSystemVersion;
-        private int internalCapacity;
+        private LookupCache _cache;
+        private uint _globalSystemVersion;
+        private int _internalCapacity;
 
         internal UnsafeBufferLookup(TypeIndex typeIndex, EntityDataAccess* access, bool isReadOnly)
         {
-            this.typeIndex = typeIndex;
-            this.access = access;
-            this.isReadOnly = isReadOnly ? (byte)1 : (byte)0;
-            this.cache = default;
-            this.globalSystemVersion = access->EntityComponentStore->GlobalSystemVersion;
-            this.internalCapacity = TypeManager.GetTypeInfo<T>().BufferCapacity;
+            _typeIndex = typeIndex;
+            _access = access;
+            _isReadOnly = isReadOnly ? (byte)1 : (byte)0;
+            _cache = default;
+            _globalSystemVersion = access->EntityComponentStore->GlobalSystemVersion;
+            _internalCapacity = TypeManager.GetTypeInfo<T>().BufferCapacity;
         }
 
         /// <summary>
@@ -38,35 +38,35 @@
         {
             get
             {
-                var ecs = this.access->EntityComponentStore;
+                var ecs = _access->EntityComponentStore;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-                ecs->AssertEntityHasComponent(entity, this.typeIndex, ref this.cache);
+                ecs->AssertEntityHasComponent(entity, _typeIndex, ref _cache);
 #endif
 
-                var header = this.isReadOnly != 0
-                    ? (BufferHeader*)ecs->GetComponentDataWithTypeRO(entity, this.typeIndex, ref this.cache)
-                    : (BufferHeader*)ecs->GetComponentDataWithTypeRW(entity, this.typeIndex, this.globalSystemVersion, ref this.cache);
+                var header = _isReadOnly != 0
+                    ? (BufferHeader*)ecs->GetComponentDataWithTypeRO(entity, _typeIndex, ref _cache)
+                    : (BufferHeader*)ecs->GetComponentDataWithTypeRW(entity, _typeIndex, _globalSystemVersion, ref _cache);
 
-                return new UnsafeDynamicBuffer<T>(header, this.internalCapacity);
+                return new UnsafeDynamicBuffer<T>(header, _internalCapacity);
             }
         }
 
         public bool TryGetBuffer(Entity entity, out UnsafeDynamicBuffer<T> bufferData)
         {
-            var ecs = this.access->EntityComponentStore;
+            var ecs = _access->EntityComponentStore;
             if (Hint.Unlikely(!ecs->Exists(entity)))
             {
                 bufferData = default;
                 return false;
             }
 
-            var header = this.isReadOnly != 0
-                ? (BufferHeader*)ecs->GetOptionalComponentDataWithTypeRO(entity, this.typeIndex, ref this.cache)
-                : (BufferHeader*)ecs->GetOptionalComponentDataWithTypeRW(entity, this.typeIndex, this.globalSystemVersion, ref this.cache);
+            var header = _isReadOnly != 0
+                ? (BufferHeader*)ecs->GetOptionalComponentDataWithTypeRO(entity, _typeIndex, ref _cache)
+                : (BufferHeader*)ecs->GetOptionalComponentDataWithTypeRW(entity, _typeIndex, _globalSystemVersion, ref _cache);
 
             if (header != null)
             {
-                bufferData = new UnsafeDynamicBuffer<T>(header, this.internalCapacity);
+                bufferData = new UnsafeDynamicBuffer<T>(header, _internalCapacity);
                 return true;
             }
 
@@ -76,8 +76,8 @@
 
         public bool HasBuffer(Entity entity)
         {
-            var ecs = this.access->EntityComponentStore;
-            return ecs->HasComponent(entity, this.typeIndex, ref this.cache, out _);
+            var ecs = _access->EntityComponentStore;
+            return ecs->HasComponent(entity, _typeIndex, ref _cache, out _);
         }
 
         /// <summary>
@@ -85,15 +85,15 @@
         /// </summary>
         public bool DidChange(Entity entity, uint version)
         {
-            var ecs = this.access->EntityComponentStore;
+            var ecs = _access->EntityComponentStore;
             var chunk = ecs->GetChunk(entity);
             var archetype = ecs->GetArchetype(chunk);
-            if (Hint.Unlikely(archetype != this.cache.Archetype))
+            if (Hint.Unlikely(archetype != _cache.Archetype))
             {
-                this.cache.Update(archetype, this.typeIndex);
+                _cache.Update(archetype, _typeIndex);
             }
 
-            var typeIndexInArchetype = this.cache.IndexInArchetype;
+            var typeIndexInArchetype = _cache.IndexInArchetype;
             if (typeIndexInArchetype == -1)
             {
                 return false;
@@ -106,17 +106,17 @@
 
         public bool IsBufferEnabled(Entity entity)
         {
-            return this.access->IsComponentEnabled(entity, this.typeIndex, ref this.cache);
+            return _access->IsComponentEnabled(entity, _typeIndex, ref _cache);
         }
 
         public void SetBufferEnabled(Entity entity, bool value)
         {
-            this.access->SetComponentEnabled(entity, this.typeIndex, value, ref this.cache);
+            _access->SetComponentEnabled(entity, _typeIndex, value, ref _cache);
         }
 
         public void Update(SystemBase system)
         {
-            this.Update(ref *system.m_StatePtr);
+            Update(ref *system.m_StatePtr);
         }
 
         public void Update(ref SystemState systemState)
@@ -124,7 +124,7 @@
             // NOTE: We could in theory fetch all this data from m_Access.EntityComponentStore and void the SystemState from being passed in.
             //       That would unfortunately allow this API to be called from a job. So we use the required system parameter as a way of signifying to the user that this can only be invoked from main thread system code.
             //       Additionally this makes the API symmetric to ComponentTypeHandle.
-            this.globalSystemVersion = systemState.m_EntityComponentStore->GlobalSystemVersion;
+            _globalSystemVersion = systemState.m_EntityComponentStore->GlobalSystemVersion;
         }
     }
 }

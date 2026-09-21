@@ -41,7 +41,7 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
         [Test]
         public void SystemBaseEntitiesForeach([Values(JobsUtility.MaxJobThreadCount + 1)] int count)
         {
-            var system = this.World.AddSystemManaged(new CodeGenTestSystem(count));
+            var system = World.AddSystemManaged(new CodeGenTestSystem(count));
             system.Update();
         }
 
@@ -52,14 +52,14 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
 
 #pragma warning disable 649
             [NativeSetThreadIndex]
-            private int threadIndex;
+            private int _threadIndex;
 #pragma warning restore 649
 
             public void Execute(int index)
             {
                 for (var i = 0; i != index; i++)
                 {
-                    this.Writer.Write(this.threadIndex);
+                    Writer.Write(_threadIndex);
                 }
             }
         }
@@ -72,11 +72,11 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
 
             public void Execute(int index)
             {
-                var count = this.JobReader.BeginForEachIndex(index);
+                var count = JobReader.BeginForEachIndex(index);
 
                 for (var i = 0; i != count; i++)
                 {
-                    var value = this.JobReader.Read<int>();
+                    var value = JobReader.Read<int>();
 
                     UnityEngine.Assertions.Assert.AreEqual(index, value);
                 }
@@ -86,40 +86,40 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
         [DisableAutoCreation]
         private partial class CodeGenTestSystem : SystemBase
         {
-            private readonly int count;
-            private NativeParallelHashMap<int, byte> hashmap;
+            private readonly int _count;
+            private NativeParallelHashMap<int, byte> _hashmap;
 
             public CodeGenTestSystem(int count)
             {
-                this.count = count;
+                _count = count;
             }
 
             protected override void OnCreate()
             {
-                var arch = this.EntityManager.CreateArchetype(typeof(TestComponent));
+                var arch = EntityManager.CreateArchetype(typeof(TestComponent));
 
-                using var entities = new NativeArray<Entity>(this.count, Allocator.Temp);
-                this.EntityManager.CreateEntity(arch, entities);
+                using var entities = new NativeArray<Entity>(_count, Allocator.Temp);
+                EntityManager.CreateEntity(arch, entities);
 
                 for (var index = 0; index < entities.Length; index++)
                 {
                     var entity = entities[index];
 
-                    this.EntityManager.SetComponentData(entity, new TestComponent { Value = index });
+                    EntityManager.SetComponentData(entity, new TestComponent { Value = index });
                 }
 
-                this.hashmap = new NativeParallelHashMap<int, byte>(this.count, Allocator.Persistent);
+                _hashmap = new NativeParallelHashMap<int, byte>(_count, Allocator.Persistent);
             }
 
             protected override void OnDestroy()
             {
-                this.hashmap.Dispose();
+                _hashmap.Dispose();
             }
 
             protected override void OnUpdate()
             {
-                this.JobEntityTest();
-                this.JobTest();
+                JobEntityTest();
+                JobTest();
             }
 
             private void JobEntityTest()
@@ -127,25 +127,25 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
                 var stream = new NativeThreadStream(Allocator.TempJob);
                 NativeThreadStream.Writer writer = stream.AsWriter();
 
-                this.Dependency = new JobEntityJob { Writer = writer }.ScheduleParallel(this.Dependency);
+                Dependency = new JobEntityJob { Writer = writer }.ScheduleParallel(Dependency);
 
-                this.Dependency = new ReadJob
+                Dependency = new ReadJob
                     {
                         JobReader = stream.AsReader(),
-                        HashMap = this.hashmap.AsParallelWriter(),
+                        HashMap = _hashmap.AsParallelWriter(),
                     }
-                    .ScheduleParallel(UnsafeThreadStream.ForEachCount, 1, this.Dependency);
+                    .ScheduleParallel(UnsafeThreadStream.ForEachCount, 1, Dependency);
 
                 // this.Dependency = stream.Dispose(this.Dependency);
-                this.Dependency.Complete();
+                Dependency.Complete();
 
                 // Assert correct values were added
-                for (var i = 0; i < this.count; i++)
+                for (var i = 0; i < _count; i++)
                 {
-                    Assert.IsTrue(this.hashmap.TryGetValue(i, out _));
+                    Assert.IsTrue(_hashmap.TryGetValue(i, out _));
                 }
 
-                this.hashmap.Clear();
+                _hashmap.Clear();
                 stream.Dispose();
             }
 
@@ -154,31 +154,31 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
                 var stream = new NativeThreadStream(Allocator.TempJob);
                 var writer = stream.AsWriter();
 
-                var c = this.count;
+                var c = _count;
 
-                this.Dependency = new JobTestJob
+                Dependency = new JobTestJob
                 {
                     Writer = writer,
                     Count = c,
-                }.Schedule(this.Dependency);
+                }.Schedule(Dependency);
 
-                this.Dependency = new ReadJob
+                Dependency = new ReadJob
                     {
                         JobReader = stream.AsReader(),
-                        HashMap = this.hashmap.AsParallelWriter(),
+                        HashMap = _hashmap.AsParallelWriter(),
                     }
-                    .ScheduleParallel(UnsafeThreadStream.ForEachCount, 1, this.Dependency);
+                    .ScheduleParallel(UnsafeThreadStream.ForEachCount, 1, Dependency);
 
                 // this.Dependency = stream.Dispose(this.Dependency);
-                this.Dependency.Complete();
+                Dependency.Complete();
 
                 // Assert correct values were added
-                for (var i = 0; i < this.count; i++)
+                for (var i = 0; i < _count; i++)
                 {
-                    Assert.IsTrue(this.hashmap.TryGetValue(i, out _));
+                    Assert.IsTrue(_hashmap.TryGetValue(i, out _));
                 }
 
-                this.hashmap.Clear();
+                _hashmap.Clear();
                 stream.Dispose();
             }
 
@@ -189,7 +189,7 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
 
                 private void Execute(in TestComponent test)
                 {
-                    this.Writer.Write(test.Value);
+                    Writer.Write(test.Value);
                 }
             }
 
@@ -201,9 +201,9 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
 
                 public void Execute()
                 {
-                    for (var i = 0; i < this.Count; i++)
+                    for (var i = 0; i < Count; i++)
                     {
-                        this.Writer.Write(i);
+                        Writer.Write(i);
                     }
                 }
             }
@@ -218,12 +218,12 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
 
                 public void Execute(int index)
                 {
-                    var count = this.JobReader.BeginForEachIndex(index);
+                    var count = JobReader.BeginForEachIndex(index);
 
                     for (var i = 0; i != count; i++)
                     {
-                        var value = this.JobReader.Read<int>();
-                        this.HashMap.TryAdd(value, 0);
+                        var value = JobReader.Read<int>();
+                        HashMap.TryAdd(value, 0);
                     }
                 }
             }

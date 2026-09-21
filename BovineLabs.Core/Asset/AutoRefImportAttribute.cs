@@ -7,7 +7,7 @@ namespace BovineLabs.Core.Asset
     {
         public AutoRefImportAttribute(string extension)
         {
-            this.Extension = extension;
+            Extension = extension;
         }
 
         public string Extension { get; }

@@ -5,7 +5,7 @@ namespace BovineLabs.Core.Editor.Component
     [CustomEditor(typeof(ComponentAsset), true, isFallback = true)]
     public class ComponentAssetEditor : TypeAssetEditor
     {
-        protected override string SearchQuery => this.target switch
+        protected override string SearchQuery => target switch
         {
             ComponentTagAsset => "componentdata=true zerosized=true editor=false",
             ComponentEnableableAsset => "component=true enableable=true editor=false",

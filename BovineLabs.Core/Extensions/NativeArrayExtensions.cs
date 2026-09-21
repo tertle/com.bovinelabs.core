@@ -8,7 +8,6 @@
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Mathematics;
 
-#pragma warning disable SA1649
     public interface IPredicate<in T>
     {
         bool Check(T other);
@@ -18,21 +17,20 @@
     {
         TOutput Select(TInput val);
     }
-#pragma warning restore SA1649
 
     public struct Equals<T> : IPredicate<T>
         where T : IEquatable<T>
     {
-        private readonly T value;
+        private readonly T _value;
 
         public Equals(T value)
         {
-            this.value = value;
+            _value = value;
         }
 
         public bool Check(T other)
         {
-            return this.value.Equals(other);
+            return _value.Equals(other);
         }
     }
 

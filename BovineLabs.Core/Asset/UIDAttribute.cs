@@ -7,12 +7,12 @@ namespace BovineLabs.Core.Asset
     {
         public UIDAttribute(string type)
         {
-            this.Type = type;
+            Type = type;
         }
 
         public UIDAttribute(Type type)
         {
-            this.Type = type.Name;
+            Type = type.Name;
         }
 
         public string Type { get; }

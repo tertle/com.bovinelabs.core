@@ -2,6 +2,7 @@
 {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using Unity.Burst;
@@ -18,17 +19,25 @@
 
         [NativeDisableUnsafePtrRestriction]
         [NoAlias]
-        private readonly BufferHeader* buffer;
+        private readonly BufferHeader* _buffer;
 
         // Stores original internal capacity of the buffer header, so heap excess can be removed entirely when trimming.
-        private readonly int internalCapacity;
+        private readonly int _internalCapacity;
 
-        private readonly int alignOf;
+        private readonly int _alignOf;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         internal AtomicSafetyHandle m_Safety0;
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         internal AtomicSafetyHandle m_Safety1;
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         internal int m_SafetyReadOnlyCount;
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         internal int m_SafetyReadWriteCount;
 
         internal byte m_IsReadOnly;
@@ -41,17 +50,17 @@
             BufferHeader* header, AtomicSafetyHandle safety, AtomicSafetyHandle arrayInvalidationSafety, bool isReadOnly, bool useMemoryInitPattern,
             byte memoryInitPattern, int internalCapacity, int elementSize, int alignOf)
         {
-            this.buffer = header;
-            this.m_Safety0 = safety;
-            this.m_Safety1 = arrayInvalidationSafety;
-            this.m_SafetyReadOnlyCount = isReadOnly ? 2 : 0;
-            this.m_SafetyReadWriteCount = isReadOnly ? 0 : 2;
-            this.m_IsReadOnly = (byte)(isReadOnly ? 1 : 0);
-            this.internalCapacity = internalCapacity;
-            this.m_useMemoryInitPattern = (byte)(useMemoryInitPattern ? 1 : 0);
-            this.m_memoryInitPattern = memoryInitPattern;
-            this.ElementSize = elementSize;
-            this.alignOf = alignOf;
+            _buffer = header;
+            m_Safety0 = safety;
+            m_Safety1 = arrayInvalidationSafety;
+            m_SafetyReadOnlyCount = isReadOnly ? 2 : 0;
+            m_SafetyReadWriteCount = isReadOnly ? 0 : 2;
+            m_IsReadOnly = (byte)(isReadOnly ? 1 : 0);
+            _internalCapacity = internalCapacity;
+            m_useMemoryInitPattern = (byte)(useMemoryInitPattern ? 1 : 0);
+            m_memoryInitPattern = memoryInitPattern;
+            ElementSize = elementSize;
+            _alignOf = alignOf;
         }
 
 #else
@@ -68,10 +77,10 @@
         {
             get
             {
-                this.CheckReadAccess();
-                return this.buffer->Length;
+                CheckReadAccess();
+                return _buffer->Length;
             }
-            set => this.ResizeUninitialized(value);
+            set => ResizeUninitialized(value);
         }
 
         /// <summary>
@@ -81,21 +90,21 @@
         {
             get
             {
-                this.CheckReadAccess();
-                return this.buffer->Capacity;
+                CheckReadAccess();
+                return _buffer->Capacity;
             }
             set
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-                if (value < this.Length)
+                if (value < Length)
                 {
-                    throw new InvalidOperationException($"Capacity {value} can't be set smaller than Length {this.Length}");
+                    throw new InvalidOperationException($"Capacity {value} can't be set smaller than Length {Length}");
                 }
 #endif
-                this.CheckWriteAccessAndInvalidateArrayAliases();
+                CheckWriteAccessAndInvalidateArrayAliases();
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                BufferHeader.SetCapacity(this.buffer, value, this.ElementSize, this.alignOf, BufferHeader.TrashMode.RetainOldData,
-                    this.m_useMemoryInitPattern == 1, this.m_memoryInitPattern, this.internalCapacity);
+                BufferHeader.SetCapacity(_buffer, value, ElementSize, _alignOf, BufferHeader.TrashMode.RetainOldData,
+                    m_useMemoryInitPattern == 1, m_memoryInitPattern, _internalCapacity);
 #else
                 BufferHeader.SetCapacity(
                     this.buffer, value, this.ElementSize, this.alignOf, BufferHeader.TrashMode.RetainOldData, false, 0, this.internalCapacity);
@@ -103,9 +112,9 @@
             }
         }
 
-        public bool IsEmpty => !this.IsCreated || this.Length == 0;
+        public bool IsEmpty => !IsCreated || Length == 0;
 
-        public bool IsCreated => this.buffer != null;
+        public bool IsCreated => _buffer != null;
 
         public int ElementSize { get; }
 
@@ -113,9 +122,9 @@
         [Conditional("UNITY_DOTS_DEBUG")]
         private void CheckBounds(int index)
         {
-            if ((uint)index >= (uint)this.Length)
+            if ((uint)index >= (uint)Length)
             {
-                throw new IndexOutOfRangeException($"Index {index} is out of range in DynamicBuffer of '{this.Length}' Length.");
+                throw new IndexOutOfRangeException($"Index {index} is out of range in DynamicBuffer of '{Length}' Length.");
             }
         }
 
@@ -123,8 +132,8 @@
         private void CheckReadAccess()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety0);
-            AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety1);
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety0);
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety1);
 #endif
         }
 
@@ -132,8 +141,8 @@
         private void CheckWriteAccess()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety0);
-            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety1);
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety0);
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety1);
 #endif
         }
 
@@ -141,8 +150,8 @@
         private void CheckWriteAccessAndInvalidateArrayAliases()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety0);
-            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(this.m_Safety1);
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety0);
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety1);
 #endif
         }
 
@@ -150,46 +159,46 @@
         {
             get
             {
-                this.CheckReadAccess();
-                this.CheckBounds(index);
-                return BufferHeader.GetElementPointer(this.buffer) + (index * this.ElementSize);
+                CheckReadAccess();
+                CheckBounds(index);
+                return BufferHeader.GetElementPointer(_buffer) + (index * ElementSize);
             }
 
             set
             {
-                this.CheckWriteAccess();
-                this.CheckBounds(index);
-                var dst = BufferHeader.GetElementPointer(this.buffer) + (index * this.ElementSize);
-                UnsafeUtility.MemCpy(dst, value, this.ElementSize);
+                CheckWriteAccess();
+                CheckBounds(index);
+                var dst = BufferHeader.GetElementPointer(_buffer) + (index * ElementSize);
+                UnsafeUtility.MemCpy(dst, value, ElementSize);
             }
         }
 
         public void ResizeUninitialized(int length)
         {
-            this.EnsureCapacity(length);
-            this.buffer->Length = length;
+            EnsureCapacity(length);
+            _buffer->Length = length;
         }
 
         public void Resize(int length, NativeArrayOptions options)
         {
-            this.EnsureCapacity(length);
+            EnsureCapacity(length);
 
-            var oldLength = this.buffer->Length;
-            this.buffer->Length = length;
+            var oldLength = _buffer->Length;
+            _buffer->Length = length;
             if (options == NativeArrayOptions.ClearMemory && oldLength < length)
             {
                 var num = length - oldLength;
-                var ptr = BufferHeader.GetElementPointer(this.buffer);
-                UnsafeUtility.MemClear(ptr + (oldLength * this.ElementSize), num * this.ElementSize);
+                var ptr = BufferHeader.GetElementPointer(_buffer);
+                UnsafeUtility.MemClear(ptr + (oldLength * ElementSize), num * ElementSize);
             }
         }
 
         public void EnsureCapacity(int length)
         {
-            this.CheckWriteAccessAndInvalidateArrayAliases();
+            CheckWriteAccessAndInvalidateArrayAliases();
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            BufferHeader.EnsureCapacity(this.buffer, length, this.ElementSize, this.alignOf, BufferHeader.TrashMode.RetainOldData,
-                this.m_useMemoryInitPattern == 1, this.m_memoryInitPattern);
+            BufferHeader.EnsureCapacity(_buffer, length, ElementSize, _alignOf, BufferHeader.TrashMode.RetainOldData,
+                m_useMemoryInitPattern == 1, m_memoryInitPattern);
 #else
             BufferHeader.EnsureCapacity(this.buffer, length, this.ElementSize, this.alignOf, BufferHeader.TrashMode.RetainOldData, false, 0);
 #endif
@@ -200,66 +209,66 @@
         /// </summary>
         public void Clear()
         {
-            this.CheckWriteAccessAndInvalidateArrayAliases();
+            CheckWriteAccessAndInvalidateArrayAliases();
 
-            this.buffer->Length = 0;
+            _buffer->Length = 0;
         }
 
         public int Add(void* elem)
         {
-            this.CheckWriteAccess();
-            var length = this.Length;
-            this.ResizeUninitialized(length + 1);
+            CheckWriteAccess();
+            var length = Length;
+            ResizeUninitialized(length + 1);
             this[length] = elem;
             return length;
         }
 
         public void AddRange(void* elem, int count)
         {
-            this.CheckWriteAccess();
-            var oldLength = this.Length;
-            this.ResizeUninitialized(oldLength + count);
+            CheckWriteAccess();
+            var oldLength = Length;
+            ResizeUninitialized(oldLength + count);
 
-            void* basePtr = BufferHeader.GetElementPointer(this.buffer) + (oldLength * this.ElementSize);
-            UnsafeUtility.MemCpy(basePtr, elem, (long)this.ElementSize * count);
+            void* basePtr = BufferHeader.GetElementPointer(_buffer) + (oldLength * ElementSize);
+            UnsafeUtility.MemCpy(basePtr, elem, (long)ElementSize * count);
         }
 
         public void RemoveRange(int index, int count)
         {
-            this.CheckWriteAccess();
-            this.CheckBounds(index);
+            CheckWriteAccess();
+            CheckBounds(index);
             if (count == 0)
             {
                 return;
             }
 
-            this.CheckBounds((index + count) - 1);
+            CheckBounds((index + count) - 1);
 
-            var elemSize = this.ElementSize;
-            var basePtr = BufferHeader.GetElementPointer(this.buffer);
+            var elemSize = ElementSize;
+            var basePtr = BufferHeader.GetElementPointer(_buffer);
 
-            UnsafeUtility.MemMove(basePtr + (index * elemSize), basePtr + ((index + count) * elemSize), (long)elemSize * (this.Length - count - index));
+            UnsafeUtility.MemMove(basePtr + (index * elemSize), basePtr + ((index + count) * elemSize), (long)elemSize * (Length - count - index));
 
-            this.buffer->Length -= count;
+            _buffer->Length -= count;
         }
 
         public void RemoveAt(int index)
         {
-            this.RemoveRange(index, 1);
+            RemoveRange(index, 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void* GetUnsafePtr()
         {
-            this.CheckWriteAccess();
-            return BufferHeader.GetElementPointer(this.buffer);
+            CheckWriteAccess();
+            return BufferHeader.GetElementPointer(_buffer);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void* GetUnsafeReadOnlyPtr()
         {
-            this.CheckReadAccess();
-            return BufferHeader.GetElementPointer(this.buffer);
+            CheckReadAccess();
+            return BufferHeader.GetElementPointer(_buffer);
         }
     }
 }

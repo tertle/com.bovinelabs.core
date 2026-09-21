@@ -15,7 +15,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void Add_AllowsDuplicateExactPairs()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
 
             hashMap.Add(7, 1);
             hashMap.Add(7, 1);
@@ -28,7 +28,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void Enumeration_WithDuplicateAndCollidingKeys_ReturnsEveryPair()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
             var key = 7;
             var collidingKey = key + hashMap.Helper->BucketCapacity;
 
@@ -52,7 +52,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void TryAddUniquePair_IgnoresDuplicatePair()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
 
             Assert.IsTrue(hashMap.TryAddUniquePair(7, (byte)1));
             Assert.IsFalse(hashMap.TryAddUniquePair(7, (byte)1));
@@ -65,7 +65,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void RemoveExactPair_PreservesOtherValuesForKey()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
             hashMap.Add(7, 1);
             hashMap.Add(7, 2);
             hashMap.Add(7, 3);
@@ -82,7 +82,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void RemoveIterator_MiddleValue_CanContinueIteration()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
             hashMap.Add(7, 1);
             hashMap.Add(7, 2);
             hashMap.Add(7, 3);
@@ -104,7 +104,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void RemoveIterator_FirstValue_CanContinueIteration()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
             hashMap.Add(7, 1);
             hashMap.Add(7, 2);
             hashMap.Add(7, 3);
@@ -124,7 +124,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void RemoveIterator_PreservesCollidingKey()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
             var key = 1;
             var collidingKey = key + hashMap.Helper->BucketCapacity;
 
@@ -144,7 +144,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void RemoveIterator_ReusesFreedSlot()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
             hashMap.Add(7, 1);
             hashMap.Add(7, 2);
 
@@ -163,7 +163,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void RemoveIterator_WithRemovedIterator_Throws()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
             hashMap.Add(7, 1);
 
             Assert.IsTrue(hashMap.TryGetFirstValue(7, out _, out var it));
@@ -190,9 +190,8 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private DynamicMultiHashMap<int, byte> CreateHashMap()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicMultiHashMapTestsBuffer));
-            return this
-                .Manager
+            var entity = Manager.CreateEntity(typeof(DynamicMultiHashMapTestsBuffer));
+            return Manager
                 .GetBuffer<DynamicMultiHashMapTestsBuffer>(entity)
                 .InitializeMultiHashMap<DynamicMultiHashMapTestsBuffer, int, byte>(0, MinGrowth)
                 .AsMultiHashMap<DynamicMultiHashMapTestsBuffer, int, byte>();
@@ -200,9 +199,8 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private DynamicMultiHashMap<int, long> CreateHashMapLong()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicMultiHashMapTestsLongBuffer));
-            return this
-                .Manager
+            var entity = Manager.CreateEntity(typeof(DynamicMultiHashMapTestsLongBuffer));
+            return Manager
                 .GetBuffer<DynamicMultiHashMapTestsLongBuffer>(entity)
                 .InitializeMultiHashMap<DynamicMultiHashMapTestsLongBuffer, int, long>(0, MinGrowth)
                 .AsMultiHashMap<DynamicMultiHashMapTestsLongBuffer, int, long>();

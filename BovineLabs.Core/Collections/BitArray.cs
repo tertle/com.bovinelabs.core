@@ -1,5 +1,4 @@
-﻿#pragma warning disable SA1649 // Filename must match
-
+﻿
 namespace BovineLabs.Core.Collections
 {
     using System;
@@ -60,46 +59,46 @@ namespace BovineLabs.Core.Collections
         public static readonly BitArray8 None = default;
 
         [SerializeField]
-        private byte data;
+        private byte _data;
 
         public BitArray8(byte initValue)
         {
-            this.data = initValue;
+            _data = initValue;
         }
 
         public BitArray8(Span<uint> bitIndexTrue)
         {
-            this.data = (byte)0u;
+            _data = (byte)0u;
 
             foreach (var bitIndex in bitIndexTrue)
             {
-                if (bitIndex >= this.Capacity)
+                if (bitIndex >= Capacity)
                 {
                     continue;
                 }
 
-                this.data |= (byte)(1u << (int)bitIndex);
+                _data |= (byte)(1u << (int)bitIndex);
             }
         }
 
         public byte Data
         {
-            readonly get => this.data;
-            set => this.data = value;
+            readonly get => _data;
+            set => _data = value;
         }
 
         public readonly uint Capacity => 8u;
 
-        public readonly bool AllFalse => this.data == 0u;
+        public readonly bool AllFalse => _data == 0u;
 
-        public readonly bool AllTrue => this.data == byte.MaxValue;
+        public readonly bool AllTrue => _data == byte.MaxValue;
 
-        public readonly string HumanizedData => $"{Convert.ToString(this.data, 2),8}".Replace(' ', '0');
+        public readonly string HumanizedData => $"{Convert.ToString(_data, 2),8}".Replace(' ', '0');
 
         public bool this[uint index]
         {
-            readonly get => BitArrayUtilities.Get8(index, this.data);
-            set => BitArrayUtilities.Set8(index, ref this.data, value);
+            readonly get => BitArrayUtilities.Get8(index, _data);
+            set => BitArrayUtilities.Set8(index, ref _data, value);
         }
 
         public bool this[int index]
@@ -111,31 +110,31 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray8 operator ~(BitArray8 a)
         {
-            return new BitArray8((byte)~a.data);
+            return new BitArray8((byte)~a._data);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray8 operator |(BitArray8 a, BitArray8 b)
         {
-            return new BitArray8((byte)(a.data | b.data));
+            return new BitArray8((byte)(a._data | b._data));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray8 operator &(BitArray8 a, BitArray8 b)
         {
-            return new BitArray8((byte)(a.data & b.data));
+            return new BitArray8((byte)(a._data & b._data));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray8 a, BitArray8 b)
         {
-            return a.data == b.data;
+            return a._data == b._data;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitArray8 a, BitArray8 b)
         {
-            return a.data != b.data;
+            return a._data != b._data;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -158,22 +157,22 @@ namespace BovineLabs.Core.Collections
 
         public readonly int CountBits()
         {
-            return math.countbits((uint)this.data);
+            return math.countbits((uint)_data);
         }
 
         public readonly override bool Equals(object obj)
         {
-            return obj is BitArray8 array8 && array8.data == this.data;
+            return obj is BitArray8 array8 && array8._data == _data;
         }
 
         public readonly override int GetHashCode()
         {
-            return 1768953197 + this.data.GetHashCode();
+            return 1768953197 + _data.GetHashCode();
         }
 
         public readonly bool Equals(BitArray8 other)
         {
-            return this.data == other.data;
+            return _data == other._data;
         }
     }
 
@@ -185,46 +184,46 @@ namespace BovineLabs.Core.Collections
         public static readonly BitArray16 None = default;
 
         [SerializeField]
-        private ushort data;
+        private ushort _data;
 
         public BitArray16(ushort initValue)
         {
-            this.data = initValue;
+            _data = initValue;
         }
 
         public BitArray16(Span<uint> bitIndexTrue)
         {
-            this.data = (ushort)0u;
+            _data = (ushort)0u;
 
             foreach (var bitIndex in bitIndexTrue)
             {
-                if (bitIndex >= this.Capacity)
+                if (bitIndex >= Capacity)
                 {
                     continue;
                 }
 
-                this.data |= (ushort)(1u << (int)bitIndex);
+                _data |= (ushort)(1u << (int)bitIndex);
             }
         }
 
         public ushort Data
         {
-            readonly get => this.data;
-            set => this.data = value;
+            readonly get => _data;
+            set => _data = value;
         }
 
         public readonly uint Capacity => 16u;
 
-        public readonly bool AllFalse => this.data == 0u;
+        public readonly bool AllFalse => _data == 0u;
 
-        public readonly bool AllTrue => this.data == ushort.MaxValue;
+        public readonly bool AllTrue => _data == ushort.MaxValue;
 
-        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString(this.data, 2),16}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
+        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString(_data, 2),16}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         public bool this[uint index]
         {
-            readonly get => BitArrayUtilities.Get16(index, this.data);
-            set => BitArrayUtilities.Set16(index, ref this.data, value);
+            readonly get => BitArrayUtilities.Get16(index, _data);
+            set => BitArrayUtilities.Set16(index, ref _data, value);
         }
 
         public bool this[int index]
@@ -236,31 +235,31 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray16 operator ~(BitArray16 a)
         {
-            return new BitArray16((ushort)~a.data);
+            return new BitArray16((ushort)~a._data);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray16 operator |(BitArray16 a, BitArray16 b)
         {
-            return new BitArray16((ushort)(a.data | b.data));
+            return new BitArray16((ushort)(a._data | b._data));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray16 operator &(BitArray16 a, BitArray16 b)
         {
-            return new BitArray16((ushort)(a.data & b.data));
+            return new BitArray16((ushort)(a._data & b._data));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray16 a, BitArray16 b)
         {
-            return a.data == b.data;
+            return a._data == b._data;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitArray16 a, BitArray16 b)
         {
-            return a.data != b.data;
+            return a._data != b._data;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -283,22 +282,22 @@ namespace BovineLabs.Core.Collections
 
         public readonly int CountBits()
         {
-            return math.countbits((uint)this.data);
+            return math.countbits((uint)_data);
         }
 
         public readonly override bool Equals(object obj)
         {
-            return obj is BitArray16 array16 && array16.data == this.data;
+            return obj is BitArray16 array16 && array16._data == _data;
         }
 
         public readonly override int GetHashCode()
         {
-            return 1768953197 + this.data.GetHashCode();
+            return 1768953197 + _data.GetHashCode();
         }
 
         public readonly bool Equals(BitArray16 other)
         {
-            return this.data == other.data;
+            return _data == other._data;
         }
     }
 
@@ -310,46 +309,46 @@ namespace BovineLabs.Core.Collections
         public static readonly BitArray32 None = default;
 
         [SerializeField]
-        private uint data;
+        private uint _data;
 
         public BitArray32(uint rawValue)
         {
-            this.data = rawValue;
+            _data = rawValue;
         }
 
         public BitArray32(Span<uint> bitIndexTrue)
         {
-            this.data = 0u;
+            _data = 0u;
 
             foreach (var bitIndex in bitIndexTrue)
             {
-                if (bitIndex >= this.Capacity)
+                if (bitIndex >= Capacity)
                 {
                     continue;
                 }
 
-                this.data |= 1u << (int)bitIndex;
+                _data |= 1u << (int)bitIndex;
             }
         }
 
         public uint Data
         {
-            readonly get => this.data;
-            set => this.data = value;
+            readonly get => _data;
+            set => _data = value;
         }
 
         public readonly uint Capacity => 32u;
 
-        public readonly bool AllFalse => this.data == 0u;
+        public readonly bool AllFalse => _data == 0u;
 
-        public readonly bool AllTrue => this.data == uint.MaxValue;
+        public readonly bool AllTrue => _data == uint.MaxValue;
 
-        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString(this.data, 2),32}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
+        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString(_data, 2),32}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         public bool this[uint index]
         {
-            readonly get => BitArrayUtilities.Get32(index, this.data);
-            set => BitArrayUtilities.Set32(index, ref this.data, value);
+            readonly get => BitArrayUtilities.Get32(index, _data);
+            set => BitArrayUtilities.Set32(index, ref _data, value);
         }
 
         public bool this[int index]
@@ -361,31 +360,31 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray32 operator ~(BitArray32 a)
         {
-            return new BitArray32(~a.data);
+            return new BitArray32(~a._data);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray32 operator |(BitArray32 a, BitArray32 b)
         {
-            return new BitArray32(a.data | b.data);
+            return new BitArray32(a._data | b._data);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray32 operator &(BitArray32 a, BitArray32 b)
         {
-            return new BitArray32(a.data & b.data);
+            return new BitArray32(a._data & b._data);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray32 a, BitArray32 b)
         {
-            return a.data == b.data;
+            return a._data == b._data;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitArray32 a, BitArray32 b)
         {
-            return a.data != b.data;
+            return a._data != b._data;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -408,22 +407,22 @@ namespace BovineLabs.Core.Collections
 
         public readonly int CountBits()
         {
-            return math.countbits(this.data);
+            return math.countbits(_data);
         }
 
         public readonly override bool Equals(object obj)
         {
-            return obj is BitArray32 array32 && array32.data == this.data;
+            return obj is BitArray32 array32 && array32._data == _data;
         }
 
         public readonly override int GetHashCode()
         {
-            return 1768953197 + this.data.GetHashCode();
+            return 1768953197 + _data.GetHashCode();
         }
 
         public readonly bool Equals(BitArray32 other)
         {
-            return this.data == other.data;
+            return _data == other._data;
         }
     }
 
@@ -435,11 +434,11 @@ namespace BovineLabs.Core.Collections
         public static readonly BitArray64 None = default;
 
         [SerializeField]
-        private ulong data;
+        private ulong _data;
 
         public BitArray64(ulong initValue)
         {
-            this.data = initValue;
+            _data = initValue;
         }
 
         public unsafe BitArray64(uint bitIndexTrue)
@@ -449,37 +448,37 @@ namespace BovineLabs.Core.Collections
 
         public BitArray64(Span<uint> bitIndexTrue)
         {
-            this.data = 0L;
+            _data = 0L;
 
             foreach (var bitIndex in bitIndexTrue)
             {
-                if (bitIndex >= this.Capacity)
+                if (bitIndex >= Capacity)
                 {
                     continue;
                 }
 
-                this.data |= 1uL << (int)bitIndex;
+                _data |= 1uL << (int)bitIndex;
             }
         }
 
         public ulong Data
         {
-            readonly get => this.data;
-            set => this.data = value;
+            readonly get => _data;
+            set => _data = value;
         }
 
         public readonly uint Capacity => 64u;
 
-        public readonly bool AllFalse => this.data == 0uL;
+        public readonly bool AllFalse => _data == 0uL;
 
-        public readonly bool AllTrue => this.data == ulong.MaxValue;
+        public readonly bool AllTrue => _data == ulong.MaxValue;
 
-        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString((long)this.data, 2),64}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
+        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString((long)_data, 2),64}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         public bool this[uint index]
         {
-            readonly get => BitArrayUtilities.Get64(index, this.data);
-            set => BitArrayUtilities.Set64(index, ref this.data, value);
+            readonly get => BitArrayUtilities.Get64(index, _data);
+            set => BitArrayUtilities.Set64(index, ref _data, value);
         }
 
         public bool this[int index]
@@ -491,31 +490,31 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray64 operator ~(BitArray64 a)
         {
-            return new BitArray64(~a.data);
+            return new BitArray64(~a._data);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray64 operator |(BitArray64 a, BitArray64 b)
         {
-            return new BitArray64(a.data | b.data);
+            return new BitArray64(a._data | b._data);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray64 operator &(BitArray64 a, BitArray64 b)
         {
-            return new BitArray64(a.data & b.data);
+            return new BitArray64(a._data & b._data);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray64 a, BitArray64 b)
         {
-            return a.data == b.data;
+            return a._data == b._data;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitArray64 a, BitArray64 b)
         {
-            return a.data != b.data;
+            return a._data != b._data;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -538,22 +537,22 @@ namespace BovineLabs.Core.Collections
 
         public readonly int CountBits()
         {
-            return math.countbits(this.data);
+            return math.countbits(_data);
         }
 
         public readonly override bool Equals(object obj)
         {
-            return obj is BitArray64 array64 && array64.data == this.data;
+            return obj is BitArray64 array64 && array64._data == _data;
         }
 
         public readonly override int GetHashCode()
         {
-            return 1768953197 + this.data.GetHashCode();
+            return 1768953197 + _data.GetHashCode();
         }
 
         public readonly bool Equals(BitArray64 other)
         {
-            return this.data == other.data;
+            return _data == other._data;
         }
     }
 
@@ -565,21 +564,21 @@ namespace BovineLabs.Core.Collections
         public static readonly BitArray128 None = default;
 
         [SerializeField]
-        private ulong data1;
+        private ulong _data1;
 
         [SerializeField]
-        private ulong data2;
+        private ulong _data2;
 
         public BitArray128(ulong initValue1, ulong initValue2)
         {
-            this.data1 = initValue1;
-            this.data2 = initValue2;
+            _data1 = initValue1;
+            _data2 = initValue2;
         }
 
         public BitArray128(v128 initValue)
         {
-            this.data1 = initValue.ULong0;
-            this.data2 = initValue.ULong1;
+            _data1 = initValue.ULong0;
+            _data2 = initValue.ULong1;
         }
 
         public unsafe BitArray128(uint bitIndexTrue)
@@ -589,77 +588,77 @@ namespace BovineLabs.Core.Collections
 
         public BitArray128(Span<uint> bitIndexTrue)
         {
-            this.data1 = this.data2 = 0uL;
+            _data1 = _data2 = 0uL;
 
             foreach (var bitIndex in bitIndexTrue)
             {
                 if (bitIndex < 64u)
                 {
-                    this.data1 |= 1uL << (int)bitIndex;
+                    _data1 |= 1uL << (int)bitIndex;
                 }
                 else
                 {
-                    if (bitIndex < this.Capacity)
+                    if (bitIndex < Capacity)
                     {
-                        this.data2 |= 1uL << (int)(bitIndex - 64u);
+                        _data2 |= 1uL << (int)(bitIndex - 64u);
                     }
                 }
             }
         }
 
-        public readonly ulong Data1 => this.data1;
+        public readonly ulong Data1 => _data1;
 
-        public readonly ulong Data2 => this.data2;
+        public readonly ulong Data2 => _data2;
 
         public readonly uint Capacity => 128u;
 
-        public readonly bool AllFalse => this.data1 == 0uL && this.data2 == 0uL;
+        public readonly bool AllFalse => _data1 == 0uL && _data2 == 0uL;
 
-        public readonly bool AllTrue => this.data1 == ulong.MaxValue && this.data2 == ulong.MaxValue;
+        public readonly bool AllTrue => _data1 == ulong.MaxValue && _data2 == ulong.MaxValue;
 
-        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString((long)this.data2, 2),64}".Replace(' ', '0'), ".{8}", "$0.") +
-            Regex.Replace($"{Convert.ToString((long)this.data1, 2),64}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
+        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString((long)_data2, 2),64}".Replace(' ', '0'), ".{8}", "$0.") +
+            Regex.Replace($"{Convert.ToString((long)_data1, 2),64}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         public bool this[uint index]
         {
-            readonly get => BitArrayUtilities.Get128(index, this.data1, this.data2);
-            set => BitArrayUtilities.Set128(index, ref this.data1, ref this.data2, value);
+            readonly get => BitArrayUtilities.Get128(index, _data1, _data2);
+            set => BitArrayUtilities.Set128(index, ref _data1, ref _data2, value);
         }
 
         public bool this[int index]
         {
-            readonly get => BitArrayUtilities.Get128(index, this.data1, this.data2);
-            set => BitArrayUtilities.Set128(index, ref this.data1, ref this.data2, value);
+            readonly get => BitArrayUtilities.Get128(index, _data1, _data2);
+            set => BitArrayUtilities.Set128(index, ref _data1, ref _data2, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray128 operator ~(BitArray128 a)
         {
-            return new BitArray128(~a.data1, ~a.data2);
+            return new BitArray128(~a._data1, ~a._data2);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray128 operator |(BitArray128 a, BitArray128 b)
         {
-            return new BitArray128(a.data1 | b.data1, a.data2 | b.data2);
+            return new BitArray128(a._data1 | b._data1, a._data2 | b._data2);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray128 operator &(BitArray128 a, BitArray128 b)
         {
-            return new BitArray128(a.data1 & b.data1, a.data2 & b.data2);
+            return new BitArray128(a._data1 & b._data1, a._data2 & b._data2);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray128 a, BitArray128 b)
         {
-            return a.data1 == b.data1 && a.data2 == b.data2;
+            return a._data1 == b._data1 && a._data2 == b._data2;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitArray128 a, BitArray128 b)
         {
-            return a.data1 != b.data1 || a.data2 != b.data2;
+            return a._data1 != b._data1 || a._data2 != b._data2;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -682,25 +681,25 @@ namespace BovineLabs.Core.Collections
 
         public readonly int CountBits()
         {
-            return math.countbits(this.data1) + math.countbits(this.data2);
+            return math.countbits(_data1) + math.countbits(_data2);
         }
 
         public readonly override bool Equals(object obj)
         {
-            return obj is BitArray128 array128 && this.data1.Equals(array128.data1) && this.data2.Equals(array128.data2);
+            return obj is BitArray128 array128 && _data1.Equals(array128._data1) && _data2.Equals(array128._data2);
         }
 
         public readonly override int GetHashCode()
         {
             var hashCode = 1755735569;
-            hashCode = (hashCode * -1521134295) + this.data1.GetHashCode();
-            hashCode = (hashCode * -1521134295) + this.data2.GetHashCode();
+            hashCode = (hashCode * -1521134295) + _data1.GetHashCode();
+            hashCode = (hashCode * -1521134295) + _data2.GetHashCode();
             return hashCode;
         }
 
         public readonly bool Equals(BitArray128 other)
         {
-            return this.data1 == other.data1 && this.data2 == other.data2;
+            return _data1 == other._data1 && _data2 == other._data2;
         }
     }
 
@@ -713,26 +712,26 @@ namespace BovineLabs.Core.Collections
 
         [SerializeField]
         [DontCreateProperty]
-        private ulong data1;
+        private ulong _data1;
 
         [SerializeField]
         [DontCreateProperty]
-        private ulong data2;
+        private ulong _data2;
 
         [SerializeField]
         [DontCreateProperty]
-        private ulong data3;
+        private ulong _data3;
 
         [SerializeField]
         [DontCreateProperty]
-        private ulong data4;
+        private ulong _data4;
 
         public BitArray256(ulong initValue1, ulong initValue2, ulong initValue3, ulong initValue4)
         {
-            this.data1 = initValue1;
-            this.data2 = initValue2;
-            this.data3 = initValue3;
-            this.data4 = initValue4;
+            _data1 = initValue1;
+            _data2 = initValue2;
+            _data3 = initValue3;
+            _data4 = initValue4;
         }
 
         public unsafe BitArray256(uint bitIndexTrue)
@@ -742,57 +741,57 @@ namespace BovineLabs.Core.Collections
 
         public BitArray256(Span<uint> bitIndexTrue)
         {
-            this.data1 = this.data2 = this.data3 = this.data4 = 0uL;
+            _data1 = _data2 = _data3 = _data4 = 0uL;
 
             foreach (var bitIndex in bitIndexTrue)
             {
                 if (bitIndex < 64u)
                 {
-                    this.data1 |= 1uL << (int)bitIndex;
+                    _data1 |= 1uL << (int)bitIndex;
                 }
                 else if (bitIndex < 128u)
                 {
-                    this.data2 |= 1uL << (int)(bitIndex - 64u);
+                    _data2 |= 1uL << (int)(bitIndex - 64u);
                 }
                 else if (bitIndex < 192u)
                 {
-                    this.data3 |= 1uL << (int)(bitIndex - 128u);
+                    _data3 |= 1uL << (int)(bitIndex - 128u);
                 }
-                else if (bitIndex < this.Capacity)
+                else if (bitIndex < Capacity)
                 {
-                    this.data4 |= 1uL << (int)(bitIndex - 192u);
+                    _data4 |= 1uL << (int)(bitIndex - 192u);
                 }
             }
         }
 
         [CreateProperty]
-        public readonly ulong Data1 => this.data1;
+        public readonly ulong Data1 => _data1;
 
         [CreateProperty]
-        public readonly ulong Data2 => this.data2;
+        public readonly ulong Data2 => _data2;
 
         [CreateProperty]
-        public readonly ulong Data3 => this.data3;
+        public readonly ulong Data3 => _data3;
 
         [CreateProperty]
-        public readonly ulong Data4 => this.data4;
+        public readonly ulong Data4 => _data4;
 
         public readonly uint Capacity => 256u;
 
-        public readonly bool AllFalse => this.data1 == 0uL && this.data2 == 0uL && this.data3 == 0uL && this.data4 == 0uL;
+        public readonly bool AllFalse => _data1 == 0uL && _data2 == 0uL && _data3 == 0uL && _data4 == 0uL;
 
         public readonly bool AllTrue =>
-            this.data1 == ulong.MaxValue && this.data2 == ulong.MaxValue && this.data3 == ulong.MaxValue && this.data4 == ulong.MaxValue;
+            _data1 == ulong.MaxValue && _data2 == ulong.MaxValue && _data3 == ulong.MaxValue && _data4 == ulong.MaxValue;
 
-        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString((long)this.data4, 2),64}".Replace(' ', '0'), ".{8}", "$0.") +
-            Regex.Replace($"{Convert.ToString((long)this.data3, 2),64}".Replace(' ', '0'), ".{8}", "$0.") +
-            Regex.Replace($"{Convert.ToString((long)this.data2, 2),64}".Replace(' ', '0'), ".{8}", "$0.") +
-            Regex.Replace($"{Convert.ToString((long)this.data1, 2),64}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
+        public readonly string HumanizedData => Regex.Replace($"{Convert.ToString((long)_data4, 2),64}".Replace(' ', '0'), ".{8}", "$0.") +
+            Regex.Replace($"{Convert.ToString((long)_data3, 2),64}".Replace(' ', '0'), ".{8}", "$0.") +
+            Regex.Replace($"{Convert.ToString((long)_data2, 2),64}".Replace(' ', '0'), ".{8}", "$0.") +
+            Regex.Replace($"{Convert.ToString((long)_data1, 2),64}".Replace(' ', '0'), ".{8}", "$0.").TrimEnd('.');
 
         public bool this[uint index]
         {
-            readonly get => BitArrayUtilities.Get256(index, this.data1, this.data2, this.data3, this.data4);
-            set => BitArrayUtilities.Set256(index, ref this.data1, ref this.data2, ref this.data3, ref this.data4, value);
+            readonly get => BitArrayUtilities.Get256(index, _data1, _data2, _data3, _data4);
+            set => BitArrayUtilities.Set256(index, ref _data1, ref _data2, ref _data3, ref _data4, value);
         }
 
         public bool this[int index]
@@ -804,37 +803,37 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray256 operator ~(BitArray256 a)
         {
-            return new BitArray256(~a.data1, ~a.data2, ~a.data3, ~a.data4);
+            return new BitArray256(~a._data1, ~a._data2, ~a._data3, ~a._data4);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray256 operator |(BitArray256 a, BitArray256 b)
         {
-            return new BitArray256(a.data1 | b.data1, a.data2 | b.data2, a.data3 | b.data3, a.data4 | b.data4);
+            return new BitArray256(a._data1 | b._data1, a._data2 | b._data2, a._data3 | b._data3, a._data4 | b._data4);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitArray256 operator &(BitArray256 a, BitArray256 b)
         {
-            return new BitArray256(a.data1 & b.data1, a.data2 & b.data2, a.data3 & b.data3, a.data4 & b.data4);
+            return new BitArray256(a._data1 & b._data1, a._data2 & b._data2, a._data3 & b._data3, a._data4 & b._data4);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray256 a, BitArray256 b)
         {
-            return a.data1 == b.data1 && a.data2 == b.data2 && a.data3 == b.data3 && a.data4 == b.data4;
+            return a._data1 == b._data1 && a._data2 == b._data2 && a._data3 == b._data3 && a._data4 == b._data4;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitArray256 a, BitArray256 b)
         {
-            return a.data1 != b.data1 || a.data2 != b.data2 || a.data3 != b.data3 || a.data4 != b.data4;
+            return a._data1 != b._data1 || a._data2 != b._data2 || a._data3 != b._data3 || a._data4 != b._data4;
         }
 
         public readonly bool IsPowerOf2()
         {
             // Means only 1 bit set
-            return math.countbits(this.data1) + math.countbits(this.data2) + math.countbits(this.data3) + math.countbits(this.data4) == 1;
+            return math.countbits(_data1) + math.countbits(_data2) + math.countbits(_data3) + math.countbits(_data4) == 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -857,31 +856,31 @@ namespace BovineLabs.Core.Collections
 
         public readonly int CountBits()
         {
-            return math.countbits(this.data1) + math.countbits(this.data2) + math.countbits(this.data3) + math.countbits(this.data4);
+            return math.countbits(_data1) + math.countbits(_data2) + math.countbits(_data3) + math.countbits(_data4);
         }
 
         public readonly override bool Equals(object obj)
         {
             return obj is BitArray256 array256 &&
-                this.data1.Equals(array256.data1) &&
-                this.data2.Equals(array256.data2) &&
-                this.data3.Equals(array256.data3) &&
-                this.data4.Equals(array256.data4);
+                _data1.Equals(array256._data1) &&
+                _data2.Equals(array256._data2) &&
+                _data3.Equals(array256._data3) &&
+                _data4.Equals(array256._data4);
         }
 
         public readonly override int GetHashCode()
         {
             var hashCode = 1870826326;
-            hashCode = (hashCode * -1521134295) + this.data1.GetHashCode();
-            hashCode = (hashCode * -1521134295) + this.data2.GetHashCode();
-            hashCode = (hashCode * -1521134295) + this.data3.GetHashCode();
-            hashCode = (hashCode * -1521134295) + this.data4.GetHashCode();
+            hashCode = (hashCode * -1521134295) + _data1.GetHashCode();
+            hashCode = (hashCode * -1521134295) + _data2.GetHashCode();
+            hashCode = (hashCode * -1521134295) + _data3.GetHashCode();
+            hashCode = (hashCode * -1521134295) + _data4.GetHashCode();
             return hashCode;
         }
 
         public readonly bool Equals(BitArray256 other)
         {
-            return this.data1 == other.data1 && this.data2 == other.data2 && this.data3 == other.data3 && this.data4 == other.data4;
+            return _data1 == other._data1 && _data2 == other._data2 && _data3 == other._data3 && _data4 == other._data4;
         }
     }
 

@@ -29,9 +29,9 @@ namespace BovineLabs.Core.Iterators
         internal int AllocatedIndex;
         internal int FirstFreeIdx;
 
-        internal int BucketCapacity => this.BucketCapacityMask + 1;
+        internal int BucketCapacity => BucketCapacityMask + 1;
 
-        internal TValue* Values => (TValue*)((byte*)UnsafeUtility.AddressOf(ref this) + this.ValuesOffset);
+        internal TValue* Values => (TValue*)((byte*)UnsafeUtility.AddressOf(ref this) + ValuesOffset);
 
         internal static void Init(DynamicBuffer<byte> buffer, int capacity, int minGrowth)
         {
@@ -227,20 +227,20 @@ namespace BovineLabs.Core.Iterators
 
         internal void Clear()
         {
-            UnsafeUtility.MemClear(this.Values, (long)this.Capacity * sizeof(TValue));
-            this.KeyHash.Clear(this.Capacity, this.BucketCapacity);
-            this.Column.Clear();
+            UnsafeUtility.MemClear(Values, (long)Capacity * sizeof(TValue));
+            KeyHash.Clear(Capacity, BucketCapacity);
+            Column.Clear();
 
-            this.Count = 0;
-            this.FirstFreeIdx = -1;
-            this.AllocatedIndex = 0;
+            Count = 0;
+            FirstFreeIdx = -1;
+            AllocatedIndex = 0;
         }
 
         internal int Find(TKey key)
         {
-            if (this.AllocatedIndex > 0)
+            if (AllocatedIndex > 0)
             {
-                return this.KeyHash.Find(key, this.Capacity, this.BucketCapacityMask);
+                return KeyHash.Find(key, Capacity, BucketCapacityMask);
             }
 
             return -1;
@@ -248,45 +248,45 @@ namespace BovineLabs.Core.Iterators
 
         internal bool Remove(TKey key)
         {
-            if (this.Capacity == 0)
+            if (Capacity == 0)
             {
                 return false;
             }
 
             // First find the slot based on the hash
-            var bucket = HashHelper<TKey>.GetBucket(key, this.BucketCapacityMask);
+            var bucket = HashHelper<TKey>.GetBucket(key, BucketCapacityMask);
 
             var prevEntry = -1;
-            var entryIdx = this.KeyHash.Buckets[bucket];
+            var entryIdx = KeyHash.Buckets[bucket];
 
-            while (entryIdx >= 0 && entryIdx < this.Capacity)
+            while (entryIdx >= 0 && entryIdx < Capacity)
             {
-                if (UnsafeUtility.ReadArrayElement<TKey>(this.KeyHash.Keys, entryIdx).Equals(key))
+                if (UnsafeUtility.ReadArrayElement<TKey>(KeyHash.Keys, entryIdx).Equals(key))
                 {
                     // Found matching element, remove it
                     if (prevEntry < 0)
                     {
-                        this.KeyHash.Buckets[bucket] = this.KeyHash.Next[entryIdx];
+                        KeyHash.Buckets[bucket] = KeyHash.Next[entryIdx];
                     }
                     else
                     {
-                        this.KeyHash.Next[prevEntry] = this.KeyHash.Next[entryIdx];
+                        KeyHash.Next[prevEntry] = KeyHash.Next[entryIdx];
                     }
 
                     // And free the index
-                    this.KeyHash.Next[entryIdx] = this.FirstFreeIdx;
-                    this.FirstFreeIdx = entryIdx;
+                    KeyHash.Next[entryIdx] = FirstFreeIdx;
+                    FirstFreeIdx = entryIdx;
 
-                    this.Column.Remove(entryIdx);
-                    UnsafeUtility.MemClear(this.KeyHash.Keys + entryIdx, sizeof(TKey));
-                    UnsafeUtility.MemClear(this.Values + entryIdx, sizeof(TValue));
+                    Column.Remove(entryIdx);
+                    UnsafeUtility.MemClear(KeyHash.Keys + entryIdx, sizeof(TKey));
+                    UnsafeUtility.MemClear(Values + entryIdx, sizeof(TValue));
 
-                    this.Count--;
+                    Count--;
                     return true;
                 }
 
                 prevEntry = entryIdx;
-                entryIdx = this.KeyHash.Next[entryIdx];
+                entryIdx = KeyHash.Next[entryIdx];
             }
 
             return false;
@@ -294,58 +294,58 @@ namespace BovineLabs.Core.Iterators
 
         internal void RemoveAt(int entryIdx)
         {
-            this.CheckIndexOutOfBounds(entryIdx);
+            CheckIndexOutOfBounds(entryIdx);
 
             // Get the key at this index
-            var key = UnsafeUtility.ReadArrayElement<TKey>(this.KeyHash.Keys, entryIdx);
+            var key = UnsafeUtility.ReadArrayElement<TKey>(KeyHash.Keys, entryIdx);
 
-            this.ValidateKey(key, entryIdx);
+            ValidateKey(key, entryIdx);
 
             // Find which bucket this key belongs to
-            var bucket = HashHelper<TKey>.GetBucket(key, this.BucketCapacityMask);
+            var bucket = HashHelper<TKey>.GetBucket(key, BucketCapacityMask);
 
             // Walk the chain to find the previous element
             var prevEntry = -1;
-            var currentIdx = this.KeyHash.Buckets[bucket];
+            var currentIdx = KeyHash.Buckets[bucket];
 
-            while (currentIdx >= 0 && currentIdx < this.Capacity)
+            while (currentIdx >= 0 && currentIdx < Capacity)
             {
                 if (currentIdx == entryIdx)
                 {
                     // Found the element to remove
                     if (prevEntry < 0)
                     {
-                        this.KeyHash.Buckets[bucket] = this.KeyHash.Next[entryIdx];
+                        KeyHash.Buckets[bucket] = KeyHash.Next[entryIdx];
                     }
                     else
                     {
-                        this.KeyHash.Next[prevEntry] = this.KeyHash.Next[entryIdx];
+                        KeyHash.Next[prevEntry] = KeyHash.Next[entryIdx];
                     }
 
                     // Add to free list
-                    this.KeyHash.Next[entryIdx] = this.FirstFreeIdx;
-                    this.FirstFreeIdx = entryIdx;
+                    KeyHash.Next[entryIdx] = FirstFreeIdx;
+                    FirstFreeIdx = entryIdx;
 
-                    this.Column.Remove(entryIdx);
-                    UnsafeUtility.MemClear(this.KeyHash.Keys + entryIdx, sizeof(TKey));
-                    UnsafeUtility.MemClear(this.Values + entryIdx, sizeof(TValue));
-                    this.Count--;
+                    Column.Remove(entryIdx);
+                    UnsafeUtility.MemClear(KeyHash.Keys + entryIdx, sizeof(TKey));
+                    UnsafeUtility.MemClear(Values + entryIdx, sizeof(TValue));
+                    Count--;
                     return;
                 }
 
                 prevEntry = currentIdx;
-                currentIdx = this.KeyHash.Next[currentIdx];
+                currentIdx = KeyHash.Next[currentIdx];
             }
         }
 
         internal bool TryGetValue(TKey key, out TValue item, out T column)
         {
-            var idx = this.Find(key);
+            var idx = Find(key);
 
             if (idx != -1)
             {
-                item = UnsafeUtility.ReadArrayElement<TValue>(this.Values, idx);
-                column = this.Column.GetValue(idx);
+                item = UnsafeUtility.ReadArrayElement<TValue>(Values, idx);
+                column = Column.GetValue(idx);
                 return true;
             }
 
@@ -357,27 +357,27 @@ namespace BovineLabs.Core.Iterators
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal TKey GetKeyAtIndex(int index)
         {
-            return UnsafeUtility.ReadArrayElement<TKey>(this.KeyHash.Keys, index);
+            return UnsafeUtility.ReadArrayElement<TKey>(KeyHash.Keys, index);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal ref TValue GetValueAtIndex(int index)
         {
-            return ref UnsafeUtility.ArrayElementAsRef<TValue>(this.Values, index);
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(Values, index);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal T GetColumnAtIndex(int index)
         {
-            return this.Column.GetValue(index);
+            return Column.GetValue(index);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void GetAtIndex(int index, out TKey key, out TValue item, out T column)
         {
-            key = this.GetKeyAtIndex(index);
-            item = this.GetValueAtIndex(index);
-            column = this.GetColumnAtIndex(index);
+            key = GetKeyAtIndex(index);
+            item = GetValueAtIndex(index);
+            column = GetColumnAtIndex(index);
         }
 
         private static int CalculateDataSize(
@@ -434,7 +434,7 @@ namespace BovineLabs.Core.Iterators
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckDoesNotExist(TKey key)
         {
-            if (this.Find(key) != -1)
+            if (Find(key) != -1)
             {
                 throw new ArgumentException($"An item with the same key has already been added: {key}");
             }
@@ -445,7 +445,7 @@ namespace BovineLabs.Core.Iterators
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ValidateKey(TKey key, int idx)
         {
-            var actual = this.Find(key);
+            var actual = Find(key);
 
             if (actual != idx)
             {
@@ -458,7 +458,7 @@ namespace BovineLabs.Core.Iterators
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckIndexOutOfBounds(int idx)
         {
-            if ((uint)idx >= (uint)this.Capacity)
+            if ((uint)idx >= (uint)Capacity)
             {
                 throw new InvalidOperationException($"Index out of bounds,idx {idx}");
             }
@@ -474,51 +474,51 @@ namespace BovineLabs.Core.Iterators
 
             internal Enumerator(DynamicVariableMapHelper<TKey, TValue, T, TC>* data)
             {
-                this.Data = data;
-                this.Index = -1;
-                this.BucketIndex = 0;
-                this.NextIndex = -1;
+                Data = data;
+                Index = -1;
+                BucketIndex = 0;
+                NextIndex = -1;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal bool MoveNext()
             {
-                var next = this.Data->KeyHash.Next;
+                var next = Data->KeyHash.Next;
 
-                if (this.NextIndex != -1)
+                if (NextIndex != -1)
                 {
-                    this.Index = this.NextIndex;
-                    this.NextIndex = next[this.NextIndex];
+                    Index = NextIndex;
+                    NextIndex = next[NextIndex];
                     return true;
                 }
 
-                var buckets = this.Data->KeyHash.Buckets;
+                var buckets = Data->KeyHash.Buckets;
 
-                for (int i = this.BucketIndex, num = this.Data->BucketCapacity; i < num; ++i)
+                for (int i = BucketIndex, num = Data->BucketCapacity; i < num; ++i)
                 {
                     var idx = buckets[i];
 
                     if (idx != -1)
                     {
-                        this.Index = idx;
-                        this.BucketIndex = i + 1;
-                        this.NextIndex = next[idx];
+                        Index = idx;
+                        BucketIndex = i + 1;
+                        NextIndex = next[idx];
 
                         return true;
                     }
                 }
 
-                this.Index = -1;
-                this.BucketIndex = this.Data->BucketCapacity;
-                this.NextIndex = -1;
+                Index = -1;
+                BucketIndex = Data->BucketCapacity;
+                NextIndex = -1;
                 return false;
             }
 
             internal void Reset()
             {
-                this.Index = -1;
-                this.BucketIndex = 0;
-                this.NextIndex = -1;
+                Index = -1;
+                BucketIndex = 0;
+                NextIndex = -1;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -526,8 +526,8 @@ namespace BovineLabs.Core.Iterators
             {
                 return new DynamicVariableMap<TKey, TValue, T, TC>.KVC
                 {
-                    Data = this.Data,
-                    Index = this.Index,
+                    Data = Data,
+                    Index = Index,
                 };
             }
         }

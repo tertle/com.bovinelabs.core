@@ -380,21 +380,21 @@ namespace BovineLabs.DynamicGenerator
                 INamedTypeSymbol typeSymbol, DynamicType type, ITypeSymbol type1 = null, ITypeSymbol type2 = null, ITypeSymbol type3 = null,
                 ITypeSymbol type4 = null, ITypeSymbol type5 = null, ITypeSymbol type6 = null)
             {
-                this.TypeSymbol = typeSymbol;
-                this.TypeName = GetName(typeSymbol);
-                this.Type = type;
-                this.Type1Symbol = type1;
-                this.Type2Symbol = type2;
-                this.Type3Symbol = type3;
-                this.Type4Symbol = type4;
-                this.Type5Symbol = type5;
-                this.Type6Symbol = type6;
-                this.Type1 = GetName(type1);
-                this.Type2 = GetName(type2);
-                this.Type3 = GetName(type3);
-                this.Type4 = GetName(type4);
-                this.Type5 = GetName(type5);
-                this.Type6 = GetName(type6);
+                TypeSymbol = typeSymbol;
+                TypeName = GetName(typeSymbol);
+                Type = type;
+                Type1Symbol = type1;
+                Type2Symbol = type2;
+                Type3Symbol = type3;
+                Type4Symbol = type4;
+                Type5Symbol = type5;
+                Type6Symbol = type6;
+                Type1 = GetName(type1);
+                Type2 = GetName(type2);
+                Type3 = GetName(type3);
+                Type4 = GetName(type4);
+                Type5 = GetName(type5);
+                Type6 = GetName(type6);
             }
 
             public INamedTypeSymbol TypeSymbol { get; }
@@ -443,8 +443,8 @@ namespace BovineLabs.DynamicGenerator
         {
             public DynamicResult(DynamicData data, IReadOnlyList<Diagnostic> diagnostics)
             {
-                this.Data = data;
-                this.Diagnostics = diagnostics;
+                Data = data;
+                Diagnostics = diagnostics;
             }
 
             public DynamicData Data { get; }
@@ -456,8 +456,8 @@ namespace BovineLabs.DynamicGenerator
         {
             public DynamicInterface(DynamicType type, INamedTypeSymbol interfaceSymbol)
             {
-                this.Type = type;
-                this.InterfaceSymbol = interfaceSymbol;
+                Type = type;
+                InterfaceSymbol = interfaceSymbol;
             }
 
             public DynamicType Type { get; }
@@ -469,8 +469,8 @@ namespace BovineLabs.DynamicGenerator
         {
             public DynamicCandidate(TypeDeclarationSyntax typeSyntax, INamedTypeSymbol typeSymbol)
             {
-                this.TypeSyntax = typeSyntax;
-                this.TypeSymbol = typeSymbol;
+                TypeSyntax = typeSyntax;
+                TypeSymbol = typeSymbol;
             }
 
             public TypeDeclarationSyntax TypeSyntax { get; }

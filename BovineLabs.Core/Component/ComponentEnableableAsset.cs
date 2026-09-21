@@ -12,7 +12,7 @@ namespace BovineLabs.Core
             if (!TypeManager.IsEnableable(typeIndex))
             {
                 throw new InvalidCastException(
-                    $"Type '{TypeManager.GetType(typeIndex)}' assigned to {nameof(ComponentEnableableAsset)} '{this.name}' is not enableable.");
+                    $"Type '{TypeManager.GetType(typeIndex)}' assigned to {nameof(ComponentEnableableAsset)} '{name}' is not enableable.");
             }
         }
     }

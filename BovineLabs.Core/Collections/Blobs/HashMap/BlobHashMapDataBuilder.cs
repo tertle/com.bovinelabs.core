@@ -11,114 +11,114 @@
     {
         // we store these values in the builder because we cannot access BlobHashMapData itself (it must live in blob storage)
         internal readonly int KeyCapacity;
-        private readonly int bucketCapacityMask;
+        private readonly int _bucketCapacityMask;
 
-        private BlobBuilderArray<TValue> values;
-        private BlobBuilderArray<TKey> keys;
-        private BlobBuilderArray<int> next;
-        private BlobBuilderArray<int> buckets;
-        private BlobBuilderArray<int> count;
+        private BlobBuilderArray<TValue> _values;
+        private BlobBuilderArray<TKey> _keys;
+        private BlobBuilderArray<int> _next;
+        private BlobBuilderArray<int> _buckets;
+        private BlobBuilderArray<int> _count;
 
         internal BlobBuilderHashMapData(int capacity, int bucketCapacityRatio, ref BlobBuilder blobBuilder, ref BlobHashMapData<TKey, TValue> data)
         {
             var bucketCapacity = math.ceilpow2(capacity * bucketCapacityRatio);
 
             // bucketCapacityMask is neccessary for retrieval so set it on the data too
-            this.bucketCapacityMask = data.BucketCapacityMask = bucketCapacity - 1;
-            this.KeyCapacity = capacity;
+            _bucketCapacityMask = data.BucketCapacityMask = bucketCapacity - 1;
+            KeyCapacity = capacity;
 
-            this.values = blobBuilder.Allocate(ref data.Values, capacity);
-            this.keys = blobBuilder.Allocate(ref data.Keys, capacity);
-            this.next = blobBuilder.Allocate(ref data.Next, capacity);
-            this.buckets = blobBuilder.Allocate(ref data.Buckets, bucketCapacity);
+            _values = blobBuilder.Allocate(ref data.Values, capacity);
+            _keys = blobBuilder.Allocate(ref data.Keys, capacity);
+            _next = blobBuilder.Allocate(ref data.Next, capacity);
+            _buckets = blobBuilder.Allocate(ref data.Buckets, bucketCapacity);
 
             // so far the only way I've found to modify the true count on the data itself (without using unsafe code)
             // is by storing it in an array we can still access in the Add method.
             // count is only used in GetKeyArray and GetValueArray to size the array to the true count instead of capacity
             // count and keyCapacity are like
-            this.count = blobBuilder.Allocate(ref data.Count, 1);
+            _count = blobBuilder.Allocate(ref data.Count, 1);
 
-            this.Clear();
+            Clear();
         }
 
-        internal int Count => this.count[0];
+        internal int Count => _count[0];
 
         internal bool TryAdd(TKey key, TValue item, bool multi)
         {
-            ref var c = ref this.count[0];
+            ref var c = ref _count[0];
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (c >= this.KeyCapacity)
+            if (c >= KeyCapacity)
             {
                 throw new InvalidOperationException("HashMap is full");
             }
 #endif
 
-            var bucket = key.GetHashCode() & this.bucketCapacityMask;
+            var bucket = key.GetHashCode() & _bucketCapacityMask;
 
-            if (!multi && this.ContainsKey(bucket, key))
+            if (!multi && ContainsKey(bucket, key))
             {
                 return false;
             }
 
             var index = c++;
-            this.keys[index] = key;
-            this.values[index] = item;
-            this.next[index] = this.buckets[bucket];
-            this.buckets[bucket] = index;
+            _keys[index] = key;
+            _values[index] = item;
+            _next[index] = _buckets[bucket];
+            _buckets[bucket] = index;
 
             return true;
         }
 
         internal unsafe ref TValue AddUnique(TKey key, bool multi)
         {
-            ref var c = ref this.count[0];
+            ref var c = ref _count[0];
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (c >= this.KeyCapacity)
+            if (c >= KeyCapacity)
             {
                 throw new InvalidOperationException("HashMap is full");
             }
 #endif
 
-            var bucket = key.GetHashCode() & this.bucketCapacityMask;
+            var bucket = key.GetHashCode() & _bucketCapacityMask;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (!multi && this.ContainsKey(bucket, key))
+            if (!multi && ContainsKey(bucket, key))
             {
                 throw new InvalidOperationException("Already contains key");
             }
 #endif
 
             var index = c++;
-            this.keys[index] = key;
-            this.next[index] = this.buckets[bucket];
-            this.buckets[bucket] = index;
+            _keys[index] = key;
+            _next[index] = _buckets[bucket];
+            _buckets[bucket] = index;
 
-            return ref UnsafeUtility.ArrayElementAsRef<TValue>(this.values.GetUnsafePtr(), index);
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(_values.GetUnsafePtr(), index);
         }
 
         internal bool ContainsKey(TKey key)
         {
-            var bucket = key.GetHashCode() & this.bucketCapacityMask;
+            var bucket = key.GetHashCode() & _bucketCapacityMask;
 
-            return this.ContainsKey(bucket, key);
+            return ContainsKey(bucket, key);
         }
 
         // Safety check for regular hashmap Add
 
         private bool ContainsKey(int bucket, TKey key)
         {
-            var index = this.buckets[bucket];
+            var index = _buckets[bucket];
 
             if (index < 0)
             {
                 return false;
             }
 
-            while (!this.keys[index].Equals(key))
+            while (!_keys[index].Equals(key))
             {
-                index = this.next[index];
+                index = _next[index];
 
                 if (index < 0)
                 {
@@ -131,14 +131,14 @@
 
         private void Clear()
         {
-            for (var i = 0; i < this.buckets.Length; i++)
+            for (var i = 0; i < _buckets.Length; i++)
             {
-                this.buckets[i] = -1;
+                _buckets[i] = -1;
             }
 
-            for (var i = 0; i < this.next.Length; i++)
+            for (var i = 0; i < _next.Length; i++)
             {
-                this.next[i] = -1;
+                _next[i] = -1;
             }
         }
     }

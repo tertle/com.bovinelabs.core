@@ -16,39 +16,39 @@ namespace BovineLabs.Core.Spatial
     {
         private const int BoundsPadding = 2;
 
-        private readonly float outerRadius;
-        private readonly float worldHalfSize;
-        private readonly int2 boundsMin;
-        private readonly int2 boundsSize;
+        private readonly float _outerRadius;
+        private readonly float _worldHalfSize;
+        private readonly int2 _boundsMin;
+        private readonly int2 _boundsSize;
 
-        private NativeParallelMultiHashMap<int, int> map;
+        private NativeParallelMultiHashMap<int, int> _map;
 
         public SpatialHexMap(float quantizeStep, int size, Allocator allocator = Allocator.Persistent)
         {
-            this.outerRadius = quantizeStep / SpatialHexMap.Sqrt3;
-            this.worldHalfSize = size / 2f;
+            _outerRadius = quantizeStep / SpatialHexMap.Sqrt3;
+            _worldHalfSize = size / 2f;
 
-            CalculateBounds(this.outerRadius, this.worldHalfSize, out this.boundsMin, out this.boundsSize);
+            CalculateBounds(_outerRadius, _worldHalfSize, out _boundsMin, out _boundsSize);
 
-            this.map = new NativeParallelMultiHashMap<int, int>(0, allocator);
+            _map = new NativeParallelMultiHashMap<int, int>(0, allocator);
         }
 
-        public bool IsCreated => this.map.IsCreated;
+        public bool IsCreated => _map.IsCreated;
 
         public void Dispose()
         {
-            this.map.Dispose();
+            _map.Dispose();
         }
 
         public void Dispose(JobHandle dependency)
         {
-            this.map.Dispose(dependency);
+            _map.Dispose(dependency);
         }
 
         public JobHandle Build(
             NativeList<T> positions, JobHandle dependency, ResizeNativeParallelHashMapJob resizeStub = default, QuantizeJob quantizeStub = default)
         {
-            return this.Build(positions.AsDeferredJobArray(), dependency, resizeStub, quantizeStub);
+            return Build(positions.AsDeferredJobArray(), dependency, resizeStub, quantizeStub);
         }
 
         [SuppressMessage("ReSharper", "UnusedParameter.Global", Justification = "Sneaky way to allow this to run in bursted ISystem")]
@@ -58,24 +58,24 @@ namespace BovineLabs.Core.Spatial
             dependency = new ResizeNativeParallelHashMapJob
             {
                 Length = positions,
-                Map = this.map,
+                Map = _map,
             }.Schedule(dependency);
 
             var workers = math.max(1, JobsUtility.JobWorkerCount);
             dependency = new QuantizeJob
             {
                 Positions = positions,
-                Map = this.map,
-                OuterRadius = this.outerRadius,
-                BoundsMin = this.boundsMin,
-                BoundsSize = this.boundsSize,
-                WorldHalfSize = this.worldHalfSize,
+                Map = _map,
+                OuterRadius = _outerRadius,
+                BoundsMin = _boundsMin,
+                BoundsSize = _boundsSize,
+                WorldHalfSize = _worldHalfSize,
                 Workers = workers,
             }.ScheduleParallel(workers, 1, dependency);
 
             dependency = new SpatialHexMap.CalculateMap
             {
-                SpatialHashMap = this.map,
+                SpatialHashMap = _map,
             }.Schedule(dependency);
 
             return dependency;
@@ -83,7 +83,7 @@ namespace BovineLabs.Core.Spatial
 
         public SpatialHexMap.ReadOnly AsReadOnly()
         {
-            return new SpatialHexMap.ReadOnly(this.outerRadius, this.boundsMin, this.boundsSize, this.map);
+            return new SpatialHexMap.ReadOnly(_outerRadius, _boundsMin, _boundsSize, _map);
         }
 
         private static void CalculateBounds(float outerRadius, float worldHalfSize, out int2 boundsMin, out int2 boundsSize)
@@ -117,13 +117,13 @@ namespace BovineLabs.Core.Spatial
 
             public void Execute()
             {
-                if (this.Map.Capacity < this.Length.Length)
+                if (Map.Capacity < Length.Length)
                 {
-                    this.Map.Capacity = this.Length.Length;
+                    Map.Capacity = Length.Length;
                 }
 
-                this.Map.Clear();
-                this.Map.SetAllocatedIndexLength(this.Length.Length);
+                Map.Clear();
+                Map.SetAllocatedIndexLength(Length.Length);
             }
         }
 
@@ -145,26 +145,26 @@ namespace BovineLabs.Core.Spatial
 
             public void Execute(int index)
             {
-                var length = this.Positions.Length / this.Workers;
+                var length = Positions.Length / Workers;
                 var start = index * length;
                 var end = start + length;
-                if (index == this.Workers - 1)
+                if (index == Workers - 1)
                 {
-                    end += this.Positions.Length % this.Workers;
+                    end += Positions.Length % Workers;
                 }
 
-                var bucketData = this.Map.GetUnsafeBucketData();
+                var bucketData = Map.GetUnsafeBucketData();
                 var keys = (int*)bucketData.keys;
                 var values = (int*)bucketData.values;
 
                 for (var entityInQueryIndex = start; entityInQueryIndex < end; entityInQueryIndex++)
                 {
-                    var position = this.Positions[entityInQueryIndex].Position;
-                    var axial = SpatialHexMap.Quantized(position, this.OuterRadius);
+                    var position = Positions[entityInQueryIndex].Position;
+                    var axial = SpatialHexMap.Quantized(position, OuterRadius);
 
-                    this.ValidatePosition(position, axial);
+                    ValidatePosition(position, axial);
 
-                    var hashed = SpatialHexMap.Hash(axial, this.BoundsMin, this.BoundsSize.x);
+                    var hashed = SpatialHexMap.Hash(axial, BoundsMin, BoundsSize.x);
                     keys[entityInQueryIndex] = hashed;
                     values[entityInQueryIndex] = entityInQueryIndex;
                 }
@@ -174,19 +174,19 @@ namespace BovineLabs.Core.Spatial
             [Conditional("UNITY_DOTS_DEBUG")]
             private void ValidatePosition(float2 position, int2 axial)
             {
-                if (SpatialHexMap.IsWithinBounds(axial, this.BoundsMin, this.BoundsSize))
+                if (SpatialHexMap.IsWithinBounds(axial, BoundsMin, BoundsSize))
                 {
                     return;
                 }
 
-                var worldMin = new float2(-this.WorldHalfSize);
-                var worldMax = new float2(this.WorldHalfSize);
-                var axialMax = this.BoundsMin + this.BoundsSize - 1;
+                var worldMin = new float2(-WorldHalfSize);
+                var worldMax = new float2(WorldHalfSize);
+                var axialMax = BoundsMin + BoundsSize - 1;
 
                 BLGlobalLogger.LogError512(
-                    $"Position {position} quantized to {axial} is outside the hex map bounds, worldMin={worldMin} worldMax={worldMax} axialMin={this.BoundsMin} axialMax={axialMax}");
+                    $"Position {position} quantized to {axial} is outside the hex map bounds, worldMin={worldMin} worldMax={worldMax} axialMin={BoundsMin} axialMax={axialMax}");
                 throw new ArgumentException(
-                    $"Position {position} quantized to {axial} is outside the hex map bounds, worldMin={worldMin} worldMax={worldMax} axialMin={this.BoundsMin} axialMax={axialMax}");
+                    $"Position {position} quantized to {axial} is outside the hex map bounds, worldMin={worldMin} worldMax={worldMax} axialMin={BoundsMin} axialMax={axialMax}");
             }
         }
     }
@@ -282,16 +282,16 @@ namespace BovineLabs.Core.Spatial
 
         public readonly struct ReadOnly
         {
-            private readonly float outerRadius;
-            private readonly int2 boundsMin;
-            private readonly int2 boundsSize;
+            private readonly float _outerRadius;
+            private readonly int2 _boundsMin;
+            private readonly int2 _boundsSize;
 
             public ReadOnly(float outerRadius, int2 boundsMin, int2 boundsSize, NativeParallelMultiHashMap<int, int> map)
             {
-                this.outerRadius = outerRadius;
-                this.boundsMin = boundsMin;
-                this.boundsSize = boundsSize;
-                this.Map = map;
+                _outerRadius = outerRadius;
+                _boundsMin = boundsMin;
+                _boundsSize = boundsSize;
+                Map = map;
             }
 
             [field: ReadOnly]
@@ -300,37 +300,37 @@ namespace BovineLabs.Core.Spatial
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int2 Quantized(float2 position)
             {
-                return SpatialHexMap.Quantized(position, this.outerRadius);
+                return SpatialHexMap.Quantized(position, _outerRadius);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public float2 Center(int2 axial)
             {
-                return SpatialHexMap.Center(axial, this.outerRadius);
+                return SpatialHexMap.Center(axial, _outerRadius);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int Hash(int2 axial)
             {
-                return SpatialHexMap.Hash(axial, this.boundsMin, this.boundsSize.x);
+                return SpatialHexMap.Hash(axial, _boundsMin, _boundsSize.x);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool IsWithinBounds(int2 axial)
             {
-                return SpatialHexMap.IsWithinBounds(axial, this.boundsMin, this.boundsSize);
+                return SpatialHexMap.IsWithinBounds(axial, _boundsMin, _boundsSize);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int SearchRange(float radius)
             {
-                return SpatialHexMap.SearchRange(radius, this.outerRadius);
+                return SpatialHexMap.SearchRange(radius, _outerRadius);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public float CellMinDistanceSq(float2 position, int2 axial)
             {
-                return SpatialHexMap.CellMinDistanceSq(position, axial, this.outerRadius);
+                return SpatialHexMap.CellMinDistanceSq(position, axial, _outerRadius);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -347,7 +347,7 @@ namespace BovineLabs.Core.Spatial
 
             public void Execute()
             {
-                this.SpatialHashMap.RecalculateBuckets();
+                SpatialHashMap.RecalculateBuckets();
             }
         }
 

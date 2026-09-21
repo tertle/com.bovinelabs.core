@@ -18,16 +18,16 @@
         }
 
         private DynamicHashMap<TKey, TValue> GetMap(bool isReadOnly = true) =>
-            this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity, isReadOnly).AsHashMap<TBuffer, TKey, TValue>();
+            Context.EntityManager.GetBuffer<TBuffer>(Context.Entity, isReadOnly).AsHashMap<TBuffer, TKey, TValue>();
 
         public override bool IsValid()
         {
-            return base.IsValid() && this.Context.EntityManager.HasBuffer<TBuffer>(this.Context.Entity);
+            return base.IsValid() && Context.EntityManager.HasBuffer<TBuffer>(Context.Entity);
         }
 
         protected override void PopulateList(List<KVP> list)
         {
-            var map = this.GetMap();
+            var map = GetMap();
 
             using var e = map.GetEnumerator();
             while (e.MoveNext())
@@ -41,7 +41,7 @@
             var keys = newValues.Slice().SliceWithStride<TKey>();
             var values = newValues.Slice().SliceWithStride<TValue>(UnsafeUtility.SizeOf<TKey>());
 
-            var map = this.GetMap(false);
+            var map = GetMap(false);
             map.Clear();
             map.AddBatchUnsafe(keys, values);
         }
@@ -56,8 +56,8 @@
 
             public KVP(Iterators.KVPair<TKey, TValue> kvp)
             {
-                this.Key = kvp.Key;
-                this.Value = kvp.Value;
+                Key = kvp.Key;
+                Value = kvp.Value;
             }
         }
     }

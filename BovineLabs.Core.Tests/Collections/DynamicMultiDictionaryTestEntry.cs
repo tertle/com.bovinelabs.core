@@ -10,20 +10,20 @@ namespace BovineLabs.Core.Tests.Collections
 
         public uint Tag
         {
-            get => this.TagField;
-            set => this.TagField = value;
+            get => TagField;
+            set => TagField = value;
         }
 
         public int Key
         {
-            get => this.KeyField;
-            set => this.KeyField = value;
+            get => KeyField;
+            set => KeyField = value;
         }
 
         public int Value
         {
-            get => this.ValueField;
-            set => this.ValueField = value;
+            get => ValueField;
+            set => ValueField = value;
         }
     }
 }

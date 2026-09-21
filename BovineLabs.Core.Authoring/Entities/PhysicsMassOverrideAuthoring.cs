@@ -8,19 +8,19 @@ namespace BovineLabs.Core.Authoring.Entities
     public class PhysicsMassOverrideAuthoring : MonoBehaviour
     {
         [SerializeField]
-        private bool isKinematic = true;
+        private bool _isKinematic = true;
 
         [SerializeField]
-        private bool setVelocityToZero;
+        private bool _setVelocityToZero;
 
         private class Baker : Baker<PhysicsMassOverrideAuthoring>
         {
             public override void Bake(PhysicsMassOverrideAuthoring authoring)
             {
-                this.AddComponent(this.GetEntity(TransformUsageFlags.None), new PhysicsMassOverride
+                AddComponent(GetEntity(TransformUsageFlags.None), new PhysicsMassOverride
                 {
-                    IsKinematic = (byte)(authoring.isKinematic ? 1 : 0),
-                    SetVelocityToZero = (byte)(authoring.setVelocityToZero ? 1 : 0),
+                    IsKinematic = (byte)(authoring._isKinematic ? 1 : 0),
+                    SetVelocityToZero = (byte)(authoring._setVelocityToZero ? 1 : 0),
                 });
             }
         }

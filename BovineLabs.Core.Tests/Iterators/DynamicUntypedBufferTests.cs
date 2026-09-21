@@ -14,8 +14,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void InitializeAndReadMixedTypes()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
 
             var untyped = buffer.InitializeUntypedBuffer().AsUntypedBuffer();
 
@@ -37,8 +37,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void Set_OverwritesExisting()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
 
             var untyped = buffer.InitializeUntypedBuffer().AsUntypedBuffer();
 
@@ -53,8 +53,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void RemoveAt_CompactsAndPreservesOrder()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
 
             var untyped = buffer.InitializeUntypedBuffer().AsUntypedBuffer();
 
@@ -78,8 +78,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void LargeValuePointer_IsAligned_WhenMixedTypes()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
 
             var untyped = buffer.InitializeUntypedBuffer().AsUntypedBuffer();
 
@@ -97,8 +97,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void RemoveAt_KeepsLargeAlignment()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
 
             var untyped = buffer.InitializeUntypedBuffer().AsUntypedBuffer();
 
@@ -119,8 +119,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void ElementAt_WhenTypeDoesNotMatch_Throws()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
 
             var untyped = buffer.InitializeUntypedBuffer().AsUntypedBuffer();
 

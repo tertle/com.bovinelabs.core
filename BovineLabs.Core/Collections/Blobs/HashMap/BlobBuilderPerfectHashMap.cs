@@ -12,24 +12,24 @@
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged, IEquatable<TValue>
     {
-        private readonly int capacity;
-        private BlobBuilderArray<TValue> values;
+        private readonly int _capacity;
+        private BlobBuilderArray<TValue> _values;
 
         public BlobBuilderPerfectHashMap(
             ref BlobBuilder builder, ref BlobPerfectHashMap<TKey, TValue> data, NativeHashMap<TKey, TValue> hashmap, TValue nullValue = default)
         {
-            this.capacity = data.Capacity = GetRequiredCapacity(hashmap);
+            _capacity = data.Capacity = GetRequiredCapacity(hashmap);
             data.NullValue = nullValue;
 
-            this.values = builder.Allocate(ref data.Values, data.Capacity);
+            _values = builder.Allocate(ref data.Values, data.Capacity);
 
             // Write null values
-            UnsafeUtility.MemCpyReplicate(this.values.GetUnsafePtr(), &nullValue, sizeof(TValue), data.Capacity);
+            UnsafeUtility.MemCpyReplicate(_values.GetUnsafePtr(), &nullValue, sizeof(TValue), data.Capacity);
 
             foreach (var kvp in hashmap)
             {
                 var index = IndexFor(kvp.Key, data.Capacity);
-                this.values[index] = kvp.Value;
+                _values[index] = kvp.Value;
             }
         }
 
@@ -37,12 +37,12 @@
         {
             get
             {
-                if (!this.TryGetIndex(key, out var index))
+                if (!TryGetIndex(key, out var index))
                 {
                     throw new ArgumentException($"Key: {key} is not present.");
                 }
 
-                return ref this.values[index];
+                return ref _values[index];
             }
         }
 
@@ -92,14 +92,14 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryGetIndex(TKey key, out int index)
         {
-            index = this.IndexFor(key);
-            return index >= 0 && index < this.capacity;
+            index = IndexFor(key);
+            return index >= 0 && index < _capacity;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int IndexFor(TKey key)
         {
-            return key.GetHashCode() & (this.capacity - 1);
+            return key.GetHashCode() & (_capacity - 1);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

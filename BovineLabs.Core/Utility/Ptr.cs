@@ -11,17 +11,17 @@
 
         public Ptr(T* value)
         {
-            this.Value = value;
+            Value = value;
         }
 
         public Ptr(ref T value)
         {
-            this.Value = (T*)UnsafeUtility.AddressOf(ref value);
+            Value = (T*)UnsafeUtility.AddressOf(ref value);
         }
 
-        public bool IsCreated => this.Value != null;
+        public bool IsCreated => Value != null;
 
-        public ref T Ref => ref UnsafeUtility.AsRef<T>(this.Value);
+        public ref T Ref => ref UnsafeUtility.AsRef<T>(Value);
 
         public static implicit operator T*(Ptr<T> node)
         {
@@ -45,17 +45,17 @@
 
         public bool Equals(Ptr<T> other)
         {
-            return this.Value == other.Value;
+            return Value == other.Value;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is Ptr<T> other && this.Equals(other);
+            return obj is Ptr<T> other && Equals(other);
         }
 
         public override int GetHashCode()
         {
-            return unchecked((int)(long)this.Value);
+            return unchecked((int)(long)Value);
         }
     }
 }

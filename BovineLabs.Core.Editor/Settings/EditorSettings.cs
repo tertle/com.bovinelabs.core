@@ -18,39 +18,39 @@ namespace BovineLabs.Core.Editor.Settings
         public const string DefaultSettingsPrefabDirectory = "Assets/Settings/Prefabs";
 
         [SerializeField]
-        private List<string> scriptingDefineSymbols = new List<string>();
+        private List<string> _scriptingDefineSymbols = new List<string>();
 
         [SerializeField]
-        private KeyPath[] paths = Array.Empty<KeyPath>();
+        private KeyPath[] _paths = Array.Empty<KeyPath>();
 
         [Header("Settings")]
         [SerializeField]
-        private SettingsAuthoring defaultSettingsAuthoring;
+        private SettingsAuthoring _defaultSettingsAuthoring;
 
         [Tooltip("Additional world settings routes loaded as fallbacks in edit mode. Default settings are always included.")]
         [SerializeField]
-        private string[] additionalEditorWorldSettings = { "client" };
+        private string[] _additionalEditorWorldSettings = { "client" };
 
         [SerializeField]
-        private KeyAuthoring[] settingAuthoring = { new() { World = "service" } };
+        private KeyAuthoring[] _settingAuthoring = { new() { World = "service" } };
 
-        public IReadOnlyList<string> ScriptingDefineSymbols => this.scriptingDefineSymbols;
+        public IReadOnlyList<string> ScriptingDefineSymbols => _scriptingDefineSymbols;
 
-        public SettingsAuthoring DefaultSettingsAuthoring => this.defaultSettingsAuthoring;
+        public SettingsAuthoring DefaultSettingsAuthoring => _defaultSettingsAuthoring;
 
-        public IReadOnlyList<string> AdditionalEditorWorldSettings => this.additionalEditorWorldSettings;
+        public IReadOnlyList<string> AdditionalEditorWorldSettings => _additionalEditorWorldSettings;
 
-        public IReadOnlyList<KeyAuthoring> SettingsAuthorings => this.settingAuthoring;
+        public IReadOnlyList<KeyAuthoring> SettingsAuthorings => _settingAuthoring;
 
         public void GetOrAddPath(string key, ref string path)
         {
-            var result = this.paths.FirstOrDefault(k => k.Key.ToLower() == key);
+            var result = _paths.FirstOrDefault(k => k.Key.ToLower() == key);
             if (result == null)
             {
                 var serializedObject = new SerializedObject(this);
                 serializedObject.Update();
 
-                var serializedProperty = serializedObject.FindProperty("paths");
+                var serializedProperty = serializedObject.FindProperty("_paths");
 
                 var index = serializedProperty.arraySize;
                 serializedProperty.InsertArrayElementAtIndex(index);
@@ -70,7 +70,7 @@ namespace BovineLabs.Core.Editor.Settings
         {
             world = world.ToLower();
 
-            authoring = this.settingAuthoring.FirstOrDefault(k => k.World.ToLower() == world)?.Authoring;
+            authoring = _settingAuthoring.FirstOrDefault(k => k.World.ToLower() == world)?.Authoring;
 
 #if !UNITY_NETCODE
             if (!authoring && world is "client" or "server")
@@ -88,9 +88,9 @@ namespace BovineLabs.Core.Editor.Settings
 
             foreach (var d in add)
             {
-                if (!this.scriptingDefineSymbols.Contains(d))
+                if (!_scriptingDefineSymbols.Contains(d))
                 {
-                    this.scriptingDefineSymbols.Add(d);
+                    _scriptingDefineSymbols.Add(d);
                     changes = true;
                 }
             }
@@ -99,9 +99,9 @@ namespace BovineLabs.Core.Editor.Settings
             {
                 foreach (var d in remove)
                 {
-                    if (this.scriptingDefineSymbols.Contains(d))
+                    if (_scriptingDefineSymbols.Contains(d))
                     {
-                        this.scriptingDefineSymbols.Remove(d);
+                        _scriptingDefineSymbols.Remove(d);
                         changes = true;
                     }
                 }
@@ -120,7 +120,7 @@ namespace BovineLabs.Core.Editor.Settings
             var directory = DefaultSettingsPrefabDirectory;
             AssetDatabaseHelper.CreateDirectories(ref directory);
 
-            this.defaultSettingsAuthoring = GetOrCreateSettingsAuthoring(directory, "GameSettings");
+            _defaultSettingsAuthoring = GetOrCreateSettingsAuthoring(directory, "GameSettings");
 
             var authorings = new List<KeyAuthoring>
             {
@@ -136,7 +136,7 @@ namespace BovineLabs.Core.Editor.Settings
 
             authorings.Add(new KeyAuthoring { World = "menu", Authoring = GetOrCreateSettingsAuthoring(directory, "MenuSettings") });
 
-            this.settingAuthoring = authorings.ToArray();
+            _settingAuthoring = authorings.ToArray();
 
             EditorUtility.SetDirty(this);
             AssetDatabase.SaveAssets();

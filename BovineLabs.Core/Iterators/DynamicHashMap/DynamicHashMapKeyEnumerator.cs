@@ -14,8 +14,8 @@
         internal TKey key;
         internal byte isFirst;
 
-        private TValue value;
-        private HashMapIterator<TKey> iterator;
+        private TValue _value;
+        private HashMapIterator<TKey> _iterator;
 
         public void Dispose()
         {
@@ -25,27 +25,27 @@
         public bool MoveNext()
         {
             //Avoids going beyond the end of the collection.
-            if (this.isFirst == 1)
+            if (isFirst == 1)
             {
-                this.isFirst = 0;
-                return this.hashmap.TryGetFirstValue(this.key, out this.value, out this.iterator);
+                isFirst = 0;
+                return hashmap.TryGetFirstValue(key, out _value, out _iterator);
             }
 
-            return this.hashmap.TryGetNextValue(out this.value, ref this.iterator);
+            return hashmap.TryGetNextValue(out _value, ref _iterator);
         }
 
         public void Reset()
         {
-            this.isFirst = 1;
+            isFirst = 1;
         }
 
         public TValue Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.value;
+            get => _value;
         }
 
-        object IEnumerator.Current => this.Current;
+        object IEnumerator.Current => Current;
 
         public DynamicHashMapKeyEnumerator<TKey, TValue> GetEnumerator()
         {

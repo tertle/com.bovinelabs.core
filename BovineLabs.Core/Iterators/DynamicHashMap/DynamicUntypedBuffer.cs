@@ -9,28 +9,28 @@ namespace BovineLabs.Core.Iterators
 
     public unsafe struct DynamicUntypedBuffer
     {
-        private readonly DynamicBuffer<byte> buffer;
+        private readonly DynamicBuffer<byte> _buffer;
 
         [NativeDisableUnsafePtrRestriction]
-        private DynamicUntypedBufferHelper* helper;
+        private DynamicUntypedBufferHelper* _helper;
 
         internal DynamicUntypedBuffer(DynamicBuffer<byte> buffer)
         {
             CheckSize(buffer);
 
-            this.buffer = buffer;
-            this.helper = buffer.AsUntypedBufferHelper();
+            _buffer = buffer;
+            _helper = buffer.AsUntypedBufferHelper();
         }
 
-        public readonly bool IsCreated => this.buffer.IsCreated;
+        public readonly bool IsCreated => _buffer.IsCreated;
 
         public readonly bool IsEmpty
         {
             get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return !this.IsCreated || this.helper->IsEmpty;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return !IsCreated || _helper->IsEmpty;
             }
         }
 
@@ -39,9 +39,9 @@ namespace BovineLabs.Core.Iterators
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return this.helper->Count;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return _helper->Count;
             }
         }
 
@@ -53,72 +53,72 @@ namespace BovineLabs.Core.Iterators
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return this.helper->Capacity;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return _helper->Capacity;
             }
 
             set
             {
-                this.buffer.CheckWriteAccess();
-                this.RefCheck();
-                DynamicUntypedBufferHelper.Resize(this.buffer, ref this.helper, value);
+                _buffer.CheckWriteAccess();
+                RefCheck();
+                DynamicUntypedBufferHelper.Resize(_buffer, ref _helper, value);
             }
         }
 
-        internal DynamicUntypedBufferHelper* Helper => this.helper;
+        internal DynamicUntypedBufferHelper* Helper => _helper;
 
         public void Clear()
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            this.helper->Clear();
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            _helper->Clear();
         }
 
         public int Add<TValue>(TValue value)
             where TValue : unmanaged
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            return DynamicUntypedBufferHelper.Add(this.buffer, ref this.helper, value);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            return DynamicUntypedBufferHelper.Add(_buffer, ref _helper, value);
         }
 
         public ref TValue ElementAt<TValue>(int index)
             where TValue : unmanaged
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            return ref DynamicUntypedBufferHelper.GetValue<TValue>(this.helper, index);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            return ref DynamicUntypedBufferHelper.GetValue<TValue>(_helper, index);
         }
 
         public ref readonly TValue ElementAtRO<TValue>(int index)
             where TValue : unmanaged
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return ref DynamicUntypedBufferHelper.GetValue<TValue>(this.helper, index);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return ref DynamicUntypedBufferHelper.GetValue<TValue>(_helper, index);
         }
 
         public void Set<TValue>(int index, TValue value)
             where TValue : unmanaged
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            DynamicUntypedBufferHelper.SetValue(this.helper, index, value);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            DynamicUntypedBufferHelper.SetValue(_helper, index, value);
         }
 
         public void RemoveAt(int index)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            DynamicUntypedBufferHelper.RemoveAt(ref this.helper, index);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            DynamicUntypedBufferHelper.RemoveAt(ref _helper, index);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
         private readonly void RefCheck()
         {
-            if (this.helper != this.buffer.GetPtr())
+            if (_helper != _buffer.GetPtr())
             {
                 throw new ArgumentException("DynamicUntypedBuffer was not passed by ref when doing a resize and is now invalid");
             }

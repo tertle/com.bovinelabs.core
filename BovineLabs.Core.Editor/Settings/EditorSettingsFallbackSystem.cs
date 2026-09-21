@@ -13,18 +13,18 @@ namespace BovineLabs.Core.Editor.Settings
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     public partial class EditorSettingsFallbackSystem : SystemBase
     {
-        private readonly List<Fallback> fallbacks = new();
-        private EntityQuery settingsQuery;
+        private readonly List<Fallback> _fallbacks = new();
+        private EntityQuery _settingsQuery;
 
         protected override void OnCreate()
         {
-            this.settingsQuery = this.GetEntityQuery(ComponentType.ReadOnly<SettingsPrefabIdentity>());
+            _settingsQuery = GetEntityQuery(ComponentType.ReadOnly<SettingsPrefabIdentity>());
 
             if (!EditorSettingsUtility.TryGetSettings<EditorSettings>(out var settings))
             {
-                this.World.GetExistingSystemManaged<InitializationSystemGroup>().Enabled = false;
-                this.World.GetExistingSystemManaged<SimulationSystemGroup>().Enabled = false;
-                this.World.GetExistingSystemManaged<PresentationSystemGroup>().Enabled = false;
+                World.GetExistingSystemManaged<InitializationSystemGroup>().Enabled = false;
+                World.GetExistingSystemManaged<SimulationSystemGroup>().Enabled = false;
+                World.GetExistingSystemManaged<PresentationSystemGroup>().Enabled = false;
                 BLGlobalLogger.LogErrorString("Could not load EditorSettings, disabling EditorWorld. This should work again after a domain reload");
                 return;
             }
@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Editor.Settings
             var loaded = new HashSet<Hash128>();
             if (settings.DefaultSettingsAuthoring)
             {
-                this.LoadFallback(settings.DefaultSettingsAuthoring, loaded);
+                LoadFallback(settings.DefaultSettingsAuthoring, loaded);
             }
 
             foreach (var world in settings.AdditionalEditorWorldSettings)
@@ -47,29 +47,29 @@ namespace BovineLabs.Core.Editor.Settings
                     continue;
                 }
 
-                this.LoadFallback(authoring, loaded);
+                LoadFallback(authoring, loaded);
             }
         }
 
         protected override void OnDestroy()
         {
-            foreach (var fallback in this.fallbacks)
+            foreach (var fallback in _fallbacks)
             {
-                this.SetActive(fallback, false);
+                SetActive(fallback, false);
             }
         }
 
         protected override void OnUpdate()
         {
-            foreach (var fallback in this.fallbacks)
+            foreach (var fallback in _fallbacks)
             {
-                this.RefreshRoot(fallback);
+                RefreshRoot(fallback);
             }
 
-            using var settingsEntities = this.settingsQuery.ToEntityArray(Allocator.Temp);
-            using var settingsIdentities = this.settingsQuery.ToComponentDataArray<SettingsPrefabIdentity>(Allocator.Temp);
+            using var settingsEntities = _settingsQuery.ToEntityArray(Allocator.Temp);
+            using var settingsIdentities = _settingsQuery.ToComponentDataArray<SettingsPrefabIdentity>(Allocator.Temp);
 
-            foreach (var fallback in this.fallbacks)
+            foreach (var fallback in _fallbacks)
             {
                 if (!fallback.Valid)
                 {
@@ -85,7 +85,7 @@ namespace BovineLabs.Core.Editor.Settings
                     }
                 }
 
-                this.SetActive(fallback, authoritativeCount == 0);
+                SetActive(fallback, authoritativeCount == 0);
 
                 if (authoritativeCount > 1 && fallback.AuthoritativeCount <= 1)
                 {
@@ -106,19 +106,19 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             var path = AssetDatabase.GetAssetPath(authoring);
-            var sceneEntity = SceneSystem.LoadSceneAsync(this.World.Unmanaged, prefabGuid, new SceneSystem.LoadParameters
+            var sceneEntity = SceneSystem.LoadSceneAsync(World.Unmanaged, prefabGuid, new SceneSystem.LoadParameters
             {
                 Flags = SceneLoadFlags.BlockOnImport | SceneLoadFlags.BlockOnStreamIn | SceneLoadFlags.NewInstance,
             });
 
-            this.fallbacks.Add(new Fallback(prefabGuid, sceneEntity, path));
+            _fallbacks.Add(new Fallback(prefabGuid, sceneEntity, path));
         }
 
         private void RefreshRoot(Fallback fallback)
         {
-            if (!this.EntityManager.Exists(fallback.SceneEntity) || !this.EntityManager.HasComponent<PrefabRoot>(fallback.SceneEntity))
+            if (!EntityManager.Exists(fallback.SceneEntity) || !EntityManager.HasComponent<PrefabRoot>(fallback.SceneEntity))
             {
-                if (fallback.Root != Entity.Null && !this.EntityManager.Exists(fallback.Root))
+                if (fallback.Root != Entity.Null && !EntityManager.Exists(fallback.Root))
                 {
                     fallback.Reset();
                 }
@@ -126,36 +126,36 @@ namespace BovineLabs.Core.Editor.Settings
                 return;
             }
 
-            var root = this.EntityManager.GetComponentData<PrefabRoot>(fallback.SceneEntity).Root;
-            if (root == fallback.Root && this.EntityManager.Exists(root))
+            var root = EntityManager.GetComponentData<PrefabRoot>(fallback.SceneEntity).Root;
+            if (root == fallback.Root && EntityManager.Exists(root))
             {
                 return;
             }
 
-            this.SetActive(fallback, false);
+            SetActive(fallback, false);
             fallback.Reset(root);
 
-            if (!this.EntityManager.Exists(root) || !this.EntityManager.HasComponent<SettingsPrefabIdentity>(root))
+            if (!EntityManager.Exists(root) || !EntityManager.HasComponent<SettingsPrefabIdentity>(root))
             {
                 throw new InvalidOperationException($"Loaded editor settings prefab '{fallback.Path}' has no settings identity on its root.");
             }
 
-            var identity = this.EntityManager.GetComponentData<SettingsPrefabIdentity>(root);
+            var identity = EntityManager.GetComponentData<SettingsPrefabIdentity>(root);
             if (identity.PrefabGuid != fallback.PrefabGuid)
             {
                 throw new InvalidOperationException($"Loaded editor settings prefab '{fallback.Path}' has an unexpected settings identity.");
             }
 
-            if (this.EntityManager.HasBuffer<LinkedEntityGroup>(root))
+            if (EntityManager.HasBuffer<LinkedEntityGroup>(root))
             {
-                foreach (var linkedEntity in this.EntityManager.GetBuffer<LinkedEntityGroup>(root))
+                foreach (var linkedEntity in EntityManager.GetBuffer<LinkedEntityGroup>(root))
                 {
-                    this.CapturePrefabEntity(fallback, linkedEntity.Value);
+                    CapturePrefabEntity(fallback, linkedEntity.Value);
                 }
             }
             else
             {
-                this.CapturePrefabEntity(fallback, root);
+                CapturePrefabEntity(fallback, root);
             }
 
             if (fallback.PrefabEntities.Count == 0)
@@ -168,7 +168,7 @@ namespace BovineLabs.Core.Editor.Settings
 
         private void CapturePrefabEntity(Fallback fallback, Entity entity)
         {
-            if (this.EntityManager.Exists(entity) && this.EntityManager.HasComponent<Prefab>(entity))
+            if (EntityManager.Exists(entity) && EntityManager.HasComponent<Prefab>(entity))
             {
                 fallback.PrefabEntities.Add(entity);
             }
@@ -178,19 +178,19 @@ namespace BovineLabs.Core.Editor.Settings
         {
             foreach (var entity in fallback.PrefabEntities)
             {
-                if (!this.EntityManager.Exists(entity))
+                if (!EntityManager.Exists(entity))
                 {
                     continue;
                 }
 
-                var isPrefab = this.EntityManager.HasComponent<Prefab>(entity);
+                var isPrefab = EntityManager.HasComponent<Prefab>(entity);
                 if (active && isPrefab)
                 {
-                    this.EntityManager.RemoveComponent<Prefab>(entity);
+                    EntityManager.RemoveComponent<Prefab>(entity);
                 }
                 else if (!active && !isPrefab)
                 {
-                    this.EntityManager.AddComponent<Prefab>(entity);
+                    EntityManager.AddComponent<Prefab>(entity);
                 }
             }
         }
@@ -199,9 +199,9 @@ namespace BovineLabs.Core.Editor.Settings
         {
             public Fallback(Hash128 prefabGuid, Entity sceneEntity, string path)
             {
-                this.PrefabGuid = prefabGuid;
-                this.SceneEntity = sceneEntity;
-                this.Path = path;
+                PrefabGuid = prefabGuid;
+                SceneEntity = sceneEntity;
+                Path = path;
             }
 
             public Hash128 PrefabGuid { get; }
@@ -220,10 +220,10 @@ namespace BovineLabs.Core.Editor.Settings
 
             public void Reset(Entity root = default)
             {
-                this.Root = root;
-                this.PrefabEntities.Clear();
-                this.Valid = false;
-                this.AuthoritativeCount = -1;
+                Root = root;
+                PrefabEntities.Clear();
+                Valid = false;
+                AuthoritativeCount = -1;
             }
         }
     }

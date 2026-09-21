@@ -9,90 +9,90 @@
     {
         public Serializer(int capacity, Allocator allocator)
         {
-            this.Data = UnsafeList<byte>.Create(capacity, allocator);
+            Data = UnsafeList<byte>.Create(capacity, allocator);
         }
 
         [field: NativeDisableUnsafePtrRestriction]
         public UnsafeList<byte>* Data { get; }
 
-        public int Length => this.Data->Length;
+        public int Length => Data->Length;
 
         /// <summary>
         /// The argument is additional capacity, not the target total capacity.
         /// </summary>
         public void EnsureExtraCapacity(int capacity)
         {
-            if (this.Data->Length + capacity > this.Data->Capacity)
+            if (Data->Length + capacity > Data->Capacity)
             {
-                this.Data->Capacity = this.Data->Length + capacity;
+                Data->Capacity = Data->Length + capacity;
             }
         }
 
         public void Dispose()
         {
-            UnsafeList<byte>.Destroy(this.Data);
+            UnsafeList<byte>.Destroy(Data);
         }
 
         public int AllocateNoResize<T>()
             where T : unmanaged
         {
-            var idx = this.Data->Length;
-            this.Data->m_length += UnsafeUtility.SizeOf<T>();
+            var idx = Data->Length;
+            Data->m_length += UnsafeUtility.SizeOf<T>();
             return idx;
         }
 
         public int AllocateNoResize<T>(int length)
             where T : unmanaged
         {
-            var idx = this.Data->Length;
-            this.Data->m_length += length * UnsafeUtility.SizeOf<T>();
+            var idx = Data->Length;
+            Data->m_length += length * UnsafeUtility.SizeOf<T>();
             return idx;
         }
 
         public int Allocate<T>()
             where T : unmanaged
         {
-            var idx = this.Data->Length;
-            this.Data->Resize(this.Data->Length + UnsafeUtility.SizeOf<T>());
+            var idx = Data->Length;
+            Data->Resize(Data->Length + UnsafeUtility.SizeOf<T>());
             return idx;
         }
 
         public int Allocate<T>(int length)
             where T : unmanaged
         {
-            var idx = this.Data->Length;
-            this.Data->Resize(this.Data->Length + (length * UnsafeUtility.SizeOf<T>()));
+            var idx = Data->Length;
+            Data->Resize(Data->Length + (length * UnsafeUtility.SizeOf<T>()));
             return idx;
         }
 
         public T* GetAllocation<T>(int idx)
             where T : unmanaged
         {
-            return (T*)(this.Data->Ptr + idx);
+            return (T*)(Data->Ptr + idx);
         }
 
         public void AddNoResize<T>(T value)
             where T : unmanaged
         {
-            this.Data->AddRangeNoResize(&value, UnsafeUtility.SizeOf<T>());
+            Data->AddRangeNoResize(&value, UnsafeUtility.SizeOf<T>());
         }
 
         public void Add<T>(T value)
             where T : unmanaged
         {
-            this.Data->AddRange(&value, UnsafeUtility.SizeOf<T>());
+            Data->AddRange(&value, UnsafeUtility.SizeOf<T>());
         }
 
         public void AddBufferNoResize<T>(NativeArray<T> value)
             where T : unmanaged
         {
-            this.Data->AddRangeNoResize(value.GetUnsafeReadOnlyPtr(), value.Length * UnsafeUtility.SizeOf<T>());
+            Data->AddRangeNoResize(value.GetUnsafeReadOnlyPtr(), value.Length * UnsafeUtility.SizeOf<T>());
         }
 
         public void AddBufferNoResize<T>(NativeSlice<T> value)
             where T : unmanaged
         {
-            this.Data->ReserveNoResize(value.Length * UnsafeUtility.SizeOf<T>(), out var ptr, out _);
+            Data->ReserveNoResize(value.Length * UnsafeUtility.SizeOf<T>(), out var ptr, out _);
             var num = UnsafeUtility.SizeOf<T>();
             UnsafeUtility.MemCpyStride(ptr, num, value.GetUnsafeReadOnlyPtr(), value.Stride, num, value.Length);
         }
@@ -100,21 +100,21 @@
         public void AddBufferNoResize<T>(T* value, int length)
             where T : unmanaged
         {
-            this.Data->AddRangeNoResize(value, length * UnsafeUtility.SizeOf<T>());
+            Data->AddRangeNoResize(value, length * UnsafeUtility.SizeOf<T>());
         }
 
         public void AddBuffer<T>(NativeArray<T> value)
             where T : unmanaged
         {
-            this.Data->AddRange(value.GetUnsafeReadOnlyPtr(), value.Length * UnsafeUtility.SizeOf<T>());
+            Data->AddRange(value.GetUnsafeReadOnlyPtr(), value.Length * UnsafeUtility.SizeOf<T>());
         }
 
         public void AddBuffer<T>(NativeSlice<T> value)
             where T : unmanaged
         {
-            var idx = this.Data->Length;
-            this.Data->Resize(idx + (value.Length * UnsafeUtility.SizeOf<T>()));
-            var ptr = this.Data->Ptr + idx;
+            var idx = Data->Length;
+            Data->Resize(idx + (value.Length * UnsafeUtility.SizeOf<T>()));
+            var ptr = Data->Ptr + idx;
             var num = UnsafeUtility.SizeOf<T>();
             UnsafeUtility.MemCpyStride(ptr, num, value.GetUnsafeReadOnlyPtr(), value.Stride, num, value.Length);
         }
@@ -122,12 +122,12 @@
         public void AddBuffer<T>(T* value, int length)
             where T : unmanaged
         {
-            this.Data->AddRange(value, length * UnsafeUtility.SizeOf<T>());
+            Data->AddRange(value, length * UnsafeUtility.SizeOf<T>());
         }
 
         public void AddBuffer(byte* ptr, int size)
         {
-            this.Data->AddRange(ptr, size);
+            Data->AddRange(ptr, size);
         }
     }
 }

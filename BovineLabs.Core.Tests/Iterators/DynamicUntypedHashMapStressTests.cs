@@ -15,8 +15,8 @@ namespace BovineLabs.Core.Tests.Iterators
         {
             const int count = 4096;
 
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapStressTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapStressTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapStressTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapStressTestsBuffer>(entity);
 
             // Start extremely small to maximize the number of resizes.
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>(1).AsUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>();
@@ -89,8 +89,8 @@ namespace BovineLabs.Core.Tests.Iterators
         {
             const int count = 2048;
 
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapStressTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapStressTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapStressTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapStressTestsBuffer>(entity);
 
             // Start tiny so both the map and the Data segment will be resized repeatedly.
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>(1).AsUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>();
@@ -137,8 +137,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void Stress_OverwriteExistingLarge_DoesNotReallocateOrCorrupt()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapStressTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapStressTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapStressTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapStressTestsBuffer>(entity);
 
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>(1).AsUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>();
 
@@ -182,8 +182,8 @@ namespace BovineLabs.Core.Tests.Iterators
             const int operations = 5000;
             const int keySpace = 2048;
 
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapStressTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapStressTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapStressTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapStressTestsBuffer>(entity);
 
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>(1).AsUntypedHashMap<DynamicUntypedHashMapStressTestsBuffer, int>();
 

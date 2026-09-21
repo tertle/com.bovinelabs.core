@@ -24,13 +24,13 @@ namespace BovineLabs.Core.Editor.ConfigVars
         private const string HighlightClassName = "search";
         private const string ReadOnlyClassName = "config-var__readonly";
 
-        private readonly List<ConfigVarEntry> configVars = new();
-        private readonly List<FieldState> fields = new();
+        private readonly List<ConfigVarEntry> _configVars = new();
+        private readonly List<FieldState> _fields = new();
 
         internal void SetConfigVars(IEnumerable<(ConfigVarAttribute ConfigVar, FieldInfo Field)> configVars)
         {
-            this.configVars.Clear();
-            this.fields.Clear();
+            _configVars.Clear();
+            _fields.Clear();
 
             foreach (var (configVar, fieldInfo) in configVars)
             {
@@ -39,19 +39,19 @@ namespace BovineLabs.Core.Editor.ConfigVars
                     continue;
                 }
 
-                this.configVars.Add(new ConfigVarEntry(configVar, fieldInfo));
+                _configVars.Add(new ConfigVarEntry(configVar, fieldInfo));
             }
 
-            this.configVars.Sort(CompareEntries);
+            _configVars.Sort(CompareEntries);
         }
 
         internal void Render(string searchContext, VisualElement rootElement)
         {
             rootElement.Clear();
-            this.fields.Clear();
+            _fields.Clear();
 
             var filter = searchContext?.Trim() ?? string.Empty;
-            var matching = this.configVars.Where(c => c.Matches(filter)).ToList();
+            var matching = _configVars.Where(c => c.Matches(filter)).ToList();
 
             if (matching.Count == 0)
             {
@@ -71,22 +71,22 @@ namespace BovineLabs.Core.Editor.ConfigVars
 
                 foreach (var entry in group)
                 {
-                    groupRoot.Add(this.CreateRow(entry, filter));
+                    groupRoot.Add(CreateRow(entry, filter));
                 }
             }
 
-            this.UpdatePlayModeState();
+            UpdatePlayModeState();
         }
 
         internal void OnDeactivate()
         {
-            this.fields.Clear();
+            _fields.Clear();
         }
 
         internal void UpdatePlayModeState()
         {
             var isPlaying = EditorApplication.isPlaying;
-            foreach (var field in this.fields)
+            foreach (var field in _fields)
             {
                 UpdateState(field.Row, field.Field, field.ConfigVar, isPlaying);
             }
@@ -121,7 +121,7 @@ namespace BovineLabs.Core.Editor.ConfigVars
             field.AddToClassList(FieldClassName);
             row.Add(field);
 
-            this.fields.Add(new FieldState(entry.ConfigVar, row, field));
+            _fields.Add(new FieldState(entry.ConfigVar, row, field));
             return row;
         }
 
@@ -208,9 +208,9 @@ namespace BovineLabs.Core.Editor.ConfigVars
         {
             public FieldState(ConfigVarAttribute configVar, VisualElement row, VisualElement field)
             {
-                this.ConfigVar = configVar;
-                this.Row = row;
-                this.Field = field;
+                ConfigVar = configVar;
+                Row = row;
+                Field = field;
             }
 
             public ConfigVarAttribute ConfigVar { get; }
@@ -224,9 +224,9 @@ namespace BovineLabs.Core.Editor.ConfigVars
         {
             public ConfigVarEntry(ConfigVarAttribute configVar, FieldInfo fieldInfo)
             {
-                this.ConfigVar = configVar;
-                this.FieldInfo = fieldInfo;
-                this.GroupName = GetGroupName(configVar.Name);
+                ConfigVar = configVar;
+                FieldInfo = fieldInfo;
+                GroupName = GetGroupName(configVar.Name);
             }
 
             public ConfigVarAttribute ConfigVar { get; }
@@ -238,9 +238,9 @@ namespace BovineLabs.Core.Editor.ConfigVars
             public bool Matches(string searchContext)
             {
                 return string.IsNullOrWhiteSpace(searchContext)
-                       || MatchesSearchContext(this.ConfigVar.Name, searchContext)
-                       || MatchesSearchContext(this.ConfigVar.Description, searchContext)
-                       || MatchesSearchContext(this.GroupName, searchContext);
+                       || MatchesSearchContext(ConfigVar.Name, searchContext)
+                       || MatchesSearchContext(ConfigVar.Description, searchContext)
+                       || MatchesSearchContext(GroupName, searchContext);
             }
 
             private static string GetGroupName(string configVarName)

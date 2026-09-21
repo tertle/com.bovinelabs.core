@@ -19,50 +19,50 @@
         {
             get
             {
-                if (Hint.Likely(this.TryGetValue(key, out var value)))
+                if (Hint.Likely(TryGetValue(key, out var value)))
                 {
                     return ref value.Ref;
                 }
 
-                this.ThrowKeyNotPresent(key);
+                ThrowKeyNotPresent(key);
                 return ref value.Ref;
             }
         }
 
         public bool TryGetValue(TKey key, out Ptr<TValue> item)
         {
-            if (!this.TryGetIndex(key, out var index))
+            if (!TryGetIndex(key, out var index))
             {
                 item = default;
                 return false;
             }
 
-            item = new Ptr<TValue>(ref this.Values[index]);
-            return !item.Ref.Equals(this.NullValue);
+            item = new Ptr<TValue>(ref Values[index]);
+            return !item.Ref.Equals(NullValue);
         }
 
         public bool ContainsKey(TKey key)
         {
-            if (!this.TryGetIndex(key, out var index))
+            if (!TryGetIndex(key, out var index))
             {
                 return false;
             }
 
-            ref var value = ref this.Values[index];
-            return !value.Equals(this.NullValue);
+            ref var value = ref Values[index];
+            return !value.Equals(NullValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryGetIndex(TKey key, out int index)
         {
-            index = this.IndexFor(key);
-            return index >= 0 && index < this.Capacity;
+            index = IndexFor(key);
+            return index >= 0 && index < Capacity;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int IndexFor(TKey key)
         {
-            return key.GetHashCode() & (this.Capacity - 1);
+            return key.GetHashCode() & (Capacity - 1);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

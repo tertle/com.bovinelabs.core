@@ -6,26 +6,26 @@
     public unsafe struct UnsafeEnableableLookup
     {
         [NativeDisableUnsafePtrRestriction]
-        private readonly EntityDataAccess* access;
+        private readonly EntityDataAccess* _access;
 
         internal UnsafeEnableableLookup(EntityDataAccess* access)
         {
-            this.access = access;
+            _access = access;
         }
 
         public bool HasComponent(Entity entity, ComponentType componentType)
         {
-            return this.access->HasComponent(entity, componentType);
+            return _access->HasComponent(entity, componentType);
         }
 
         public bool IsComponentEnabled(Entity entity, ComponentType componentType)
         {
-            return this.access->IsComponentEnabled(entity, componentType.TypeIndex);
+            return _access->IsComponentEnabled(entity, componentType.TypeIndex);
         }
 
         public void SetComponentEnabled(Entity entity, ComponentType componentType, bool value)
         {
-            this.access->SetComponentEnabled(entity, componentType.TypeIndex, value);
+            _access->SetComponentEnabled(entity, componentType.TypeIndex, value);
         }
     }
 }

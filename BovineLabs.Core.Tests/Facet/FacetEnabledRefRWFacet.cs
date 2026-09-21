@@ -2,50 +2,50 @@ namespace BovineLabs.Core.Tests.Facet
 {
     public readonly partial struct FacetEnabledRefRWFacet : IFacet
     {
-        private readonly FacetEnabledRefRW<EnabledB> enabled;
+        private readonly FacetEnabledRefRW<EnabledB> _enabled;
 
-        public bool IsValid => this.enabled.IsValid;
+        public bool IsValid => _enabled.IsValid;
 
-        public bool ValueRO => this.enabled.GetComponentEnabled();
+        public bool ValueRO => _enabled.GetComponentEnabled();
 
         public void SetEnabled(bool value)
         {
-            this.enabled.SetComponentEnabled(value);
+            _enabled.SetComponentEnabled(value);
         }
     }
 
     public readonly partial struct OptionalFacetEnabledRefRWFacet : IFacet
     {
         [FacetOptional]
-        private readonly FacetEnabledRefRW<EnabledB> enabled;
+        private readonly FacetEnabledRefRW<EnabledB> _enabled;
 
-        public bool IsValid => this.enabled.IsValid;
+        public bool IsValid => _enabled.IsValid;
     }
 
     public readonly partial struct RequiredNestedFacetEnabledRefRWFacet : IFacet
     {
         [Facet]
-        private readonly FacetEnabledRefRWFacet enabled;
+        private readonly FacetEnabledRefRWFacet _enabled;
     }
 
     public readonly partial struct OptionalNestedFacetEnabledRefRWFacet : IFacet
     {
         [FacetOptional]
         [Facet]
-        private readonly FacetEnabledRefRWFacet enabled;
+        private readonly FacetEnabledRefRWFacet _enabled;
     }
 
     public readonly partial struct BufferFacetEnabledRefRWFacet : IFacet
     {
-        private readonly FacetEnabledRefRW<EnabledBufferElement> enabled;
+        private readonly FacetEnabledRefRW<EnabledBufferElement> _enabled;
 
-        public bool IsValid => this.enabled.IsValid;
+        public bool IsValid => _enabled.IsValid;
 
-        public bool ValueRO => this.enabled.GetComponentEnabled();
+        public bool ValueRO => _enabled.GetComponentEnabled();
 
         public void SetEnabled(bool value)
         {
-            this.enabled.SetComponentEnabled(value);
+            _enabled.SetComponentEnabled(value);
         }
     }
 

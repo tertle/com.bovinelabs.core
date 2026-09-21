@@ -22,9 +22,9 @@
         {
             get
             {
-                if (this.Index != -1)
+                if (Index != -1)
                 {
-                    return this.Data->Keys[this.Index];
+                    return Data->Keys[Index];
                 }
 
                 return default;
@@ -36,22 +36,22 @@
             get
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-                if (this.Index == -1)
+                if (Index == -1)
                 {
                     throw new ArgumentException("must be valid");
                 }
 #endif
 
-                return ref UnsafeUtility.AsRef<TValue>(this.Data->Values + (this.Data->SizeOfTValue * this.Index));
+                return ref UnsafeUtility.AsRef<TValue>(Data->Values + (Data->SizeOfTValue * Index));
             }
         }
 
         public bool GetKeyValue(out TKey key, out TValue value)
         {
-            if (this.Index != -1)
+            if (Index != -1)
             {
-                key = this.Data->Keys[this.Index];
-                value = UnsafeUtility.ReadArrayElement<TValue>(this.Data->Values, this.Index);
+                key = Data->Keys[Index];
+                value = UnsafeUtility.ReadArrayElement<TValue>(Data->Values, Index);
                 return true;
             }
 

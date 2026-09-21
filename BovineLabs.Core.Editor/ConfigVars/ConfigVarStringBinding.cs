@@ -9,35 +9,35 @@
     internal class ConfigVarStringBinding<TS> : IConfigVarBinding<string>
         where TS : unmanaged
     {
-        private readonly BaseField<string> baseField;
-        private readonly ConfigVarAttribute attribute;
-        private readonly IConfigVarContainer<TS> container;
-        private readonly ContextualMenuManipulator contextMenuManipulator;
+        private readonly BaseField<string> _baseField;
+        private readonly ConfigVarAttribute _attribute;
+        private readonly IConfigVarContainer<TS> _container;
+        private readonly ContextualMenuManipulator _contextMenuManipulator;
 
-        private bool hasFocus;
+        private bool _hasFocus;
 
         public ConfigVarStringBinding(BaseField<string> baseField, ConfigVarAttribute attribute, SharedStatic<TS> sharedStatic)
         {
-            this.attribute = attribute;
-            this.baseField = baseField;
-            this.container = new ConfigVarSharedStaticStringContainer<TS>(sharedStatic);
-            this.contextMenuManipulator = new ContextualMenuManipulator(this.OnContextMenu);
+            _attribute = attribute;
+            _baseField = baseField;
+            _container = new ConfigVarSharedStaticStringContainer<TS>(sharedStatic);
+            _contextMenuManipulator = new ContextualMenuManipulator(OnContextMenu);
 
-            this.baseField.RegisterCallback<FocusInEvent>(this.GainFocus);
-            this.baseField.RegisterCallback<FocusOutEvent>(this.LoseFocus);
-            this.baseField.AddManipulator(this.contextMenuManipulator);
+            _baseField.RegisterCallback<FocusInEvent>(GainFocus);
+            _baseField.RegisterCallback<FocusOutEvent>(LoseFocus);
+            _baseField.AddManipulator(_contextMenuManipulator);
 
-            this.baseField.RegisterValueChangedCallback(evt =>
+            _baseField.RegisterValueChangedCallback(evt =>
             {
-                this.Value = evt.newValue;
+                Value = evt.newValue;
                 EditorPrefs.SetString(ConfigVarManager.GetEditorPrefsKey(attribute.Name), evt.newValue.ToString());
             });
         }
 
         public string Value
         {
-            get => this.container.StringValue;
-            set => this.container.StringValue = value;
+            get => _container.StringValue;
+            set => _container.StringValue = value;
         }
 
         public void PreUpdate()
@@ -46,49 +46,49 @@
 
         public void Update()
         {
-            if (!this.hasFocus)
+            if (!_hasFocus)
             {
-                var v = this.Value;
-                if (!this.baseField.value.Equals(v))
+                var v = Value;
+                if (!_baseField.value.Equals(v))
                 {
-                    this.baseField.SetValueWithoutNotify(v);
+                    _baseField.SetValueWithoutNotify(v);
                 }
             }
         }
 
         public void Release()
         {
-            this.baseField.UnregisterCallback<FocusInEvent>(this.GainFocus);
-            this.baseField.UnregisterCallback<FocusOutEvent>(this.LoseFocus);
-            this.baseField.RemoveManipulator(this.contextMenuManipulator);
+            _baseField.UnregisterCallback<FocusInEvent>(GainFocus);
+            _baseField.UnregisterCallback<FocusOutEvent>(LoseFocus);
+            _baseField.RemoveManipulator(_contextMenuManipulator);
         }
 
         private void GainFocus(FocusInEvent focus)
         {
-            this.hasFocus = true;
+            _hasFocus = true;
         }
 
         private void LoseFocus(FocusOutEvent focus)
         {
-            this.hasFocus = false;
+            _hasFocus = false;
         }
 
         private void OnContextMenu(ContextualMenuPopulateEvent evt)
         {
-            evt.menu.AppendAction("Copy Name", _ => GUIUtility.systemCopyBuffer = this.attribute.Name);
-            evt.menu.AppendAction("Copy Value", _ => GUIUtility.systemCopyBuffer = this.Value);
+            evt.menu.AppendAction("Copy Name", _ => GUIUtility.systemCopyBuffer = _attribute.Name);
+            evt.menu.AppendAction("Copy Value", _ => GUIUtility.systemCopyBuffer = Value);
             evt.menu.AppendSeparator();
             evt.menu.AppendAction(
                 "Reset To Default",
-                _ => this.ResetToDefault(),
-                _ => this.baseField.enabledSelf ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+                _ => ResetToDefault(),
+                _ => _baseField.enabledSelf ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
         }
 
         private void ResetToDefault()
         {
-            EditorPrefs.DeleteKey(ConfigVarManager.GetEditorPrefsKey(this.attribute.Name));
-            this.container.StringValue = this.attribute.DefaultValue;
-            this.baseField.SetValueWithoutNotify(this.Value);
+            EditorPrefs.DeleteKey(ConfigVarManager.GetEditorPrefsKey(_attribute.Name));
+            _container.StringValue = _attribute.DefaultValue;
+            _baseField.SetValueWithoutNotify(Value);
         }
     }
 }

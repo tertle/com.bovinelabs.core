@@ -20,7 +20,7 @@
         [Multiline]
         [UsedImplicitly]
         [SerializeField]
-        private string description = string.Empty;
+        private string _description = string.Empty;
 
         public abstract IEnumerable<NameValue<TV>> Keys { get; }
     }

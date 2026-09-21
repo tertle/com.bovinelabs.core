@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Iterators
         internal byte FormatVersion;
         internal ushort Flags;
 
-        internal readonly bool IsCurrentFormat => this.FormatVersion == CurrentFormatVersion && this.Flags == CurrentFlags;
+        internal readonly bool IsCurrentFormat => FormatVersion == CurrentFormatVersion && Flags == CurrentFlags;
 
         internal static DynamicHashMapCompactHeader Create(int count, int capacity, int payloadBytes, int log2MinGrowth)
         {
@@ -41,12 +41,12 @@ namespace BovineLabs.Core.Iterators
         {
             Check.Assume(destination != null, "Compact header destination must not be null.");
 
-            WriteUInt32(destination, 0, this.Count);
-            WriteUInt32(destination, 4, this.Capacity);
-            WriteUInt32(destination, 8, this.PayloadBytes);
-            destination[12] = this.Log2MinGrowth;
-            destination[13] = this.FormatVersion;
-            WriteUInt16(destination, 14, this.Flags);
+            WriteUInt32(destination, 0, Count);
+            WriteUInt32(destination, 4, Capacity);
+            WriteUInt32(destination, 8, PayloadBytes);
+            destination[12] = Log2MinGrowth;
+            destination[13] = FormatVersion;
+            WriteUInt16(destination, 14, Flags);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

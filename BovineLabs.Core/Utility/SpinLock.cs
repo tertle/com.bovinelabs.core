@@ -6,7 +6,7 @@
     // Taken from com.unity.collections\Unity.Collections\AllocatorManager.cs
     public struct SpinLock
     {
-        private int @lock;
+        private int _lock;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Acquire()
@@ -14,13 +14,13 @@
             for (;;)
             {
                 // Optimistically assume the lock is free on the first try.
-                if (Interlocked.CompareExchange(ref this.@lock, 1, 0) == 0)
+                if (Interlocked.CompareExchange(ref _lock, 1, 0) == 0)
                 {
                     return;
                 }
 
                 // Wait for lock to be released without generating cache misses.
-                while (Volatile.Read(ref this.@lock) == 1)
+                while (Volatile.Read(ref _lock) == 1)
                 {
                 }
 
@@ -36,7 +36,7 @@
         public bool TryAcquire()
         {
             // First do a memory load (read) to check if lock is free in order to prevent unnecessary cache misses.
-            return Volatile.Read(ref this.@lock) == 0 && Interlocked.CompareExchange(ref this.@lock, 1, 0) == 0;
+            return Volatile.Read(ref _lock) == 0 && Interlocked.CompareExchange(ref _lock, 1, 0) == 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -44,17 +44,17 @@
         {
             if (spin)
             {
-                this.Acquire();
+                Acquire();
                 return true;
             }
 
-            return this.TryAcquire();
+            return TryAcquire();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Release()
         {
-            Volatile.Write(ref this.@lock, 0);
+            Volatile.Write(ref _lock, 0);
         }
     }
 }

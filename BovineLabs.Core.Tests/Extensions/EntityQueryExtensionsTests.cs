@@ -12,9 +12,9 @@ namespace BovineLabs.Core.Tests.Extensions
         [Test]
         public void GetSingletonBufferNoSync_ReadWriteAccessRequiresReadWriteQuery()
         {
-            this.CreateSingletonBuffer();
+            CreateSingletonBuffer();
 
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<SingletonBuffer>().Build(this.Manager);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<SingletonBuffer>().Build(Manager);
 
             var exception = Assert.Throws<InvalidOperationException>(() => query.GetSingletonBufferNoSync<SingletonBuffer>(false));
 
@@ -24,9 +24,9 @@ namespace BovineLabs.Core.Tests.Extensions
         [Test]
         public void GetSingletonBufferNoSync_ReadOnlyAccessRequiresQueryToIncludeBuffer()
         {
-            this.CreateSingletonBufferWithQueryTag();
+            CreateSingletonBufferWithQueryTag();
 
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<QueryTag>().Build(this.Manager);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<QueryTag>().Build(Manager);
 
             var exception = Assert.Throws<InvalidOperationException>(() => query.GetSingletonBufferNoSync<SingletonBuffer>(true));
 
@@ -36,9 +36,9 @@ namespace BovineLabs.Core.Tests.Extensions
         [Test]
         public void GetSingletonBufferNoSync_ReadOnlyAccessAllowsReadOnlyQuery()
         {
-            this.CreateSingletonBuffer();
+            CreateSingletonBuffer();
 
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<SingletonBuffer>().Build(this.Manager);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<SingletonBuffer>().Build(Manager);
 
             var buffer = query.GetSingletonBufferNoSync<SingletonBuffer>(true);
 
@@ -48,28 +48,28 @@ namespace BovineLabs.Core.Tests.Extensions
         [Test]
         public void GetSingletonBufferNoSync_ReadWriteAccessAllowsReadWriteQuery()
         {
-            var entity = this.CreateSingletonBuffer();
+            var entity = CreateSingletonBuffer();
 
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<SingletonBuffer>().Build(this.Manager);
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAllRW<SingletonBuffer>().Build(Manager);
 
             var buffer = query.GetSingletonBufferNoSync<SingletonBuffer>(false);
             buffer.Add(new SingletonBuffer { Value = 2 });
 
-            Assert.AreEqual(2, this.Manager.GetBuffer<SingletonBuffer>(entity).Length);
+            Assert.AreEqual(2, Manager.GetBuffer<SingletonBuffer>(entity).Length);
         }
 
         private Entity CreateSingletonBuffer()
         {
-            var entity = this.Manager.CreateEntity(typeof(SingletonBuffer));
-            var buffer = this.Manager.GetBuffer<SingletonBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(SingletonBuffer));
+            var buffer = Manager.GetBuffer<SingletonBuffer>(entity);
             buffer.Add(new SingletonBuffer { Value = 1 });
             return entity;
         }
 
         private Entity CreateSingletonBufferWithQueryTag()
         {
-            var entity = this.Manager.CreateEntity(typeof(SingletonBuffer), typeof(QueryTag));
-            var buffer = this.Manager.GetBuffer<SingletonBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(SingletonBuffer), typeof(QueryTag));
+            var buffer = Manager.GetBuffer<SingletonBuffer>(entity);
             buffer.Add(new SingletonBuffer { Value = 1 });
             return entity;
         }

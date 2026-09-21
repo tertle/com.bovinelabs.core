@@ -10,19 +10,19 @@
     public unsafe struct UnsafeEntityDataAccess
     {
         [NativeDisableUnsafePtrRestriction]
-        private readonly EntityDataAccess* access;
+        private readonly EntityDataAccess* _access;
 
         internal UnsafeEntityDataAccess(EntityDataAccess* access)
         {
-            this.access = access;
-            this.GlobalSystemVersion = access->EntityComponentStore->GlobalSystemVersion;
+            _access = access;
+            GlobalSystemVersion = access->EntityComponentStore->GlobalSystemVersion;
         }
 
         public uint GlobalSystemVersion { get; private set; }
 
         public void Update(ref SystemState systemState)
         {
-            this.GlobalSystemVersion = systemState.m_EntityComponentStore->GlobalSystemVersion;
+            GlobalSystemVersion = systemState.m_EntityComponentStore->GlobalSystemVersion;
         }
 
         public static byte* GetComponentDataPtrRW(ArchetypeChunk archetypeChunk, ComponentType componentType, uint globalSystemVersion)
@@ -83,67 +83,67 @@
 
         public readonly bool HasComponent(Entity entity, ComponentType componentType)
         {
-            return this.access->EntityComponentStore->HasComponent(entity, componentType, out _);
+            return _access->EntityComponentStore->HasComponent(entity, componentType, out _);
         }
 
         public readonly bool HasComponent(Entity entity, TypeIndex typeIndex)
         {
-            return this.access->EntityComponentStore->HasComponent(entity, typeIndex, out _);
+            return _access->EntityComponentStore->HasComponent(entity, typeIndex, out _);
         }
 
         public readonly bool Exists(Entity entity)
         {
-            return this.access->EntityComponentStore->Exists(entity);
+            return _access->EntityComponentStore->Exists(entity);
         }
 
         public readonly EntityStorageInfo GetEntityStorageInfo(Entity entity)
         {
-            this.access->EntityComponentStore->AssertEntitiesExist(&entity, 1);
+            _access->EntityComponentStore->AssertEntitiesExist(&entity, 1);
 
-            var entityInChunk = this.access->EntityComponentStore->GetEntityInChunk(entity);
+            var entityInChunk = _access->EntityComponentStore->GetEntityInChunk(entity);
 
             return new EntityStorageInfo
             {
-                Chunk = new ArchetypeChunk(entityInChunk.Chunk, this.access->EntityComponentStore),
+                Chunk = new ArchetypeChunk(entityInChunk.Chunk, _access->EntityComponentStore),
                 IndexInChunk = entityInChunk.IndexInChunk,
             };
         }
 
         public readonly byte* GetRequiredComponentDataPtrRO(Entity entity, ComponentType componentType)
         {
-            return this.GetRequiredComponentDataPtrRO(entity, componentType.TypeIndex);
+            return GetRequiredComponentDataPtrRO(entity, componentType.TypeIndex);
         }
 
         public readonly byte* GetRequiredComponentDataPtrRO(Entity entity, TypeIndex typeIndex)
         {
-            var ecs = this.access->EntityComponentStore;
+            var ecs = _access->EntityComponentStore;
             ecs->AssertEntityHasComponent(entity, typeIndex);
             return ecs->GetComponentDataWithTypeRO(entity, typeIndex);
         }
 
         public readonly byte* GetRequiredComponentDataPtrRW(Entity entity, ComponentType componentType)
         {
-            return this.GetRequiredComponentDataPtrRW(entity, componentType.TypeIndex);
+            return GetRequiredComponentDataPtrRW(entity, componentType.TypeIndex);
         }
 
         public readonly byte* GetRequiredComponentDataPtrRW(Entity entity, TypeIndex typeIndex)
         {
-            var ecs = this.access->EntityComponentStore;
+            var ecs = _access->EntityComponentStore;
             ecs->AssertEntityHasComponent(entity, typeIndex);
-            return ecs->GetComponentDataWithTypeRW(entity, typeIndex, this.GlobalSystemVersion);
+            return ecs->GetComponentDataWithTypeRW(entity, typeIndex, GlobalSystemVersion);
         }
 
         public readonly byte* GetComponentDataPtrRO(Entity entity, ComponentType componentType)
         {
-            return this.HasComponent(entity, componentType)
-                ? this.access->EntityComponentStore->GetComponentDataWithTypeRO(entity, componentType.TypeIndex)
+            return HasComponent(entity, componentType)
+                ? _access->EntityComponentStore->GetComponentDataWithTypeRO(entity, componentType.TypeIndex)
                 : null;
         }
 
         public readonly byte* GetComponentDataPtrRW(Entity entity, ComponentType componentType)
         {
-            return this.HasComponent(entity, componentType)
-                ? this.access->EntityComponentStore->GetComponentDataWithTypeRW(entity, componentType.TypeIndex, this.GlobalSystemVersion)
+            return HasComponent(entity, componentType)
+                ? _access->EntityComponentStore->GetComponentDataWithTypeRW(entity, componentType.TypeIndex, GlobalSystemVersion)
                 : null;
         }
 
@@ -151,7 +151,7 @@
         {
             var typeIndex = componentType.TypeIndex;
 
-            var header = (BufferHeader*)this.access->EntityComponentStore->GetComponentDataWithTypeRO(entity, typeIndex);
+            var header = (BufferHeader*)_access->EntityComponentStore->GetComponentDataWithTypeRO(entity, typeIndex);
 
             var internalCapacity = TypeManager.GetTypeInfo(typeIndex).BufferCapacity;
             var typeInfo = TypeManager.GetTypeInfo(typeIndex);
@@ -163,7 +163,7 @@
         {
             var typeIndex = componentType.TypeIndex;
 
-            var header = (BufferHeader*)this.access->EntityComponentStore->GetComponentDataWithTypeRW(entity, typeIndex, this.GlobalSystemVersion);
+            var header = (BufferHeader*)_access->EntityComponentStore->GetComponentDataWithTypeRW(entity, typeIndex, GlobalSystemVersion);
 
             var internalCapacity = TypeManager.GetTypeInfo(typeIndex).BufferCapacity;
             var typeInfo = TypeManager.GetTypeInfo(typeIndex);

@@ -104,7 +104,7 @@ namespace BovineLabs.Core.Tests.Utility
                     result.VectorSum += vectors.List[i];
                 }
 
-                this.Results[index] = result;
+                Results[index] = result;
             }
         }
     }

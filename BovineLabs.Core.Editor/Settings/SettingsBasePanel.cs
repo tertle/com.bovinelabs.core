@@ -13,27 +13,27 @@
     public abstract class SettingsBasePanel<T> : ISettingsPanel
         where T : ScriptableObject, ISettings
     {
-        private readonly Dictionary<string, List<string>> keywordList = new();
+        private readonly Dictionary<string, List<string>> _keywordList = new();
 
         protected SettingsBasePanel()
         {
-            this.Settings = EditorSettingsUtility.GetSettings<T>();
-            this.GroupName = typeof(T).GetCustomAttribute<SettingsGroupAttribute>()?.Group ?? this.Settings.DisplayName();
+            Settings = EditorSettingsUtility.GetSettings<T>();
+            GroupName = typeof(T).GetCustomAttribute<SettingsGroupAttribute>()?.Group ?? Settings.DisplayName();
 
-            this.SerializedObject = new SerializedObject(this.Settings);
+            SerializedObject = new SerializedObject(Settings);
 
             // ReSharper disable once VirtualMemberCallInConstructor, Justification: GetKeyWords marked with a warning
-            this.IsEmpty = !this.GetKeyWords(this.keywordList);
-            if (this.IsEmpty)
+            IsEmpty = !GetKeyWords(_keywordList);
+            if (IsEmpty)
             {
                 if (typeof(T).GetCustomAttribute<AlwaysShowSettingsAttribute>() != null)
                 {
-                    this.IsEmpty = false;
+                    IsEmpty = false;
                 }
             }
         }
 
-        public string DisplayName => this.Settings.DisplayName();
+        public string DisplayName => Settings.DisplayName();
 
         public string GroupName { get; }
 
@@ -48,14 +48,14 @@
         /// </summary>
         public virtual void OnActivate(string searchContext, VisualElement rootElement)
         {
-            var inspectorElement = new InspectorElement(this.SerializedObject);
+            var inspectorElement = new InspectorElement(SerializedObject);
             rootElement.Add(inspectorElement);
 
             if (!string.IsNullOrWhiteSpace(searchContext))
             {
                 var parents = new HashSet<string>();
 
-                foreach (var c in this.keywordList)
+                foreach (var c in _keywordList)
                 {
                     if (!MatchesSearchContext(c.Key, searchContext))
                     {
@@ -78,7 +78,7 @@
 
         public bool MatchesFilter(string searchContext, bool allowEmpty)
         {
-            if (!allowEmpty && this.IsEmpty)
+            if (!allowEmpty && IsEmpty)
             {
                 return false;
             }
@@ -88,7 +88,7 @@
                 return true;
             }
 
-            return this.keywordList.Any(s => MatchesSearchContext(s.Key, searchContext));
+            return _keywordList.Any(s => MatchesSearchContext(s.Key, searchContext));
         }
 
         /// <summary>
@@ -96,12 +96,12 @@
         /// </summary>
         protected virtual bool GetKeyWords(Dictionary<string, List<string>> keywords)
         {
-            foreach (var c in this.Settings.DisplayName().Split(' '))
+            foreach (var c in Settings.DisplayName().Split(' '))
             {
                 AddToKeyWord(keywords, c, null);
             }
 
-            var groups = IterateAllChildren(this.SerializedObject);
+            var groups = IterateAllChildren(SerializedObject);
             var anyChildren = false;
 
             foreach (var g in groups)

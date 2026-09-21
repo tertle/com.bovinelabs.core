@@ -10,60 +10,60 @@
     [CustomPropertyDrawer(typeof(InlineObjectAttribute))]
     public class InlineObjectProperty : PropertyDrawer
     {
-        private VisualElement parent = null!;
-        private ObjectField rootField = null!;
-        private SerializedProperty rootProperty = null!;
+        private VisualElement _parent = null!;
+        private ObjectField _rootField = null!;
+        private SerializedProperty _rootProperty = null!;
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            this.rootProperty = property;
+            _rootProperty = property;
 
             if (property.propertyType != SerializedPropertyType.ObjectReference)
             {
                 return new Label("InlineObjectAttribute can only be used on Objects");
             }
 
-            this.parent = new VisualElement();
-            this.rootField = new ObjectField(property.name)
+            _parent = new VisualElement();
+            _rootField = new ObjectField(property.name)
             {
                 objectType = property.GetFieldType(),
                 value = property.objectReferenceValue,
             };
 
-            this.parent.Add(this.rootField);
+            _parent.Add(_rootField);
 
-            this.rootField.AddToClassList(BaseField<Object>.alignedFieldUssClassName);
-            this.rootField.RegisterValueChangedCallback(this.Callback);
+            _rootField.AddToClassList(BaseField<Object>.alignedFieldUssClassName);
+            _rootField.RegisterValueChangedCallback(Callback);
 
-            this.Rebuild();
+            Rebuild();
 
-            return this.parent;
+            return _parent;
         }
 
         private void Callback(ChangeEvent<Object> changeEvent)
         {
-            this.rootProperty.objectReferenceValue = changeEvent.newValue;
-            this.rootProperty.serializedObject.ApplyModifiedProperties();
+            _rootProperty.objectReferenceValue = changeEvent.newValue;
+            _rootProperty.serializedObject.ApplyModifiedProperties();
 
-            this.Rebuild();
+            Rebuild();
         }
 
         private void Rebuild()
         {
-            this.parent.Clear();
-            this.parent.Add(this.rootField);
+            _parent.Clear();
+            _parent.Add(_rootField);
 
-            if (this.rootProperty.objectReferenceValue == null)
+            if (_rootProperty.objectReferenceValue == null)
             {
                 return;
             }
 
-            var serializedObject = new SerializedObject(this.rootProperty.objectReferenceValue);
+            var serializedObject = new SerializedObject(_rootProperty.objectReferenceValue);
 
             foreach (var linkedProperty in SerializedHelper.IterateAllChildren(serializedObject, false))
             {
                 var element = PropertyUtil.CreateProperty(linkedProperty, serializedObject);
-                this.parent.Add(element);
+                _parent.Add(element);
             }
         }
     }

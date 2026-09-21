@@ -15,13 +15,13 @@
         [Test]
         public void OverflowTest()
         {
-            var testSystem = this.World.CreateSystem<TestSystem>();
-            testSystem.Update(this.WorldUnmanaged);
-            this.Manager.CompleteAllTrackedJobs();
+            var testSystem = World.CreateSystem<TestSystem>();
+            testSystem.Update(WorldUnmanaged);
+            Manager.CompleteAllTrackedJobs();
 
-            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<DamageBuffer>().Build(this.Manager);
+            var query = new EntityQueryBuilder(Allocator.Temp).WithAll<DamageBuffer>().Build(Manager);
             var chunks = query.ToArchetypeChunkArray(Allocator.Temp);
-            var handle = this.Manager.GetBufferTypeHandle<DamageBuffer>(false);
+            var handle = Manager.GetBufferTypeHandle<DamageBuffer>(false);
 
             var count = 0;
 
@@ -179,25 +179,25 @@
 
         private partial struct TestSystem : ISystem
         {
-            private NativeArray<Entity> entities;
-            private NativeParallelMultiHashMapFallback<Entity, int> damageInstances;
-            private ThreadRandom random;
+            private NativeArray<Entity> _entities;
+            private NativeParallelMultiHashMapFallback<Entity, int> _damageInstances;
+            private ThreadRandom _random;
 
             public void OnCreate(ref SystemState state)
             {
                 var arch = state.EntityManager.CreateArchetype(typeof(DamageBuffer));
-                this.entities = state.EntityManager.CreateEntity(arch, EntityCount, Allocator.Persistent);
-                this.damageInstances =
+                _entities = state.EntityManager.CreateEntity(arch, EntityCount, Allocator.Persistent);
+                _damageInstances =
                     new NativeParallelMultiHashMapFallback<Entity, int>((int)(EntityCount * 0.75f), Allocator.Persistent); // Capacity < count so it'll overflow
 
-                this.random = new ThreadRandom(1234, Allocator.Persistent);
+                _random = new ThreadRandom(1234, Allocator.Persistent);
             }
 
             public void OnDestroy(ref SystemState state)
             {
-                this.entities.Dispose();
-                this.damageInstances.Dispose();
-                this.random.Dispose();
+                _entities.Dispose();
+                _damageInstances.Dispose();
+                _random.Dispose();
             }
 
             [BurstCompile]
@@ -205,12 +205,12 @@
             {
                 state.Dependency = new WriteDamageJob
                 {
-                    Random = this.random,
-                    Entities = this.entities,
-                    DamageInstances = this.damageInstances.AsWriter(),
+                    Random = _random,
+                    Entities = _entities,
+                    DamageInstances = _damageInstances.AsWriter(),
                 }.ScheduleParallel(state.Dependency);
 
-                state.Dependency = this.damageInstances.Apply(state.Dependency, out var reader);
+                state.Dependency = _damageInstances.Apply(state.Dependency, out var reader);
 
                 state.Dependency = new ReadDamageJob
                 {
@@ -233,9 +233,9 @@
 
             private void Execute()
             {
-                ref var random = ref this.Random.GetRandomRef();
-                var index = random.NextInt(this.Entities.Length);
-                this.DamageInstances.Add(this.Entities[index], random.NextInt());
+                ref var random = ref Random.GetRandomRef();
+                var index = random.NextInt(Entities.Length);
+                DamageInstances.Add(Entities[index], random.NextInt());
             }
         }
 
@@ -250,8 +250,8 @@
 
             public void ExecuteNext(int entryIndex, int jobIndex)
             {
-                this.Read(this.DamageInstances, entryIndex, out var target, out var damage);
-                this.DamageBuffers[target].Add(new DamageBuffer { Value = damage });
+                this.Read(DamageInstances, entryIndex, out var target, out var damage);
+                DamageBuffers[target].Add(new DamageBuffer { Value = damage });
             }
         }
 

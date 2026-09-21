@@ -14,23 +14,23 @@
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-        private readonly TValue defaultValue;
-        private readonly PropertyElement content;
+        private readonly TValue _defaultValue;
+        private readonly PropertyElement _content;
 
-        private TKey? current;
+        private TKey? _current;
 
         public DynamicHashMapSearchElement(object inspector, List<SearchView.Item> items, TValue defaultValue = default, int refreshRate = 250)
             : base(inspector)
         {
-            this.defaultValue = defaultValue;
-            this.SetValue = this.SetValueDirect; // Default Value
+            _defaultValue = defaultValue;
+            SetValue = SetValueDirect; // Default Value
             var popup = new SearchElement(items, string.Empty);
 
-            this.content = new PropertyElement();
-            this.content.AddContext(this.Context.Context);
-            this.content.OnChanged += this.OnComponentChanged;
+            _content = new PropertyElement();
+            _content.AddContext(Context.Context);
+            _content.OnChanged += OnComponentChanged;
 
-            popup.OnSelection += evt => this.UpdateValue(evt.Data);
+            popup.OnSelection += evt => UpdateValue(evt.Data);
 
             if (items.Count > 0)
             {
@@ -39,15 +39,15 @@
 
             if (items.Count > 0)
             {
-                this.UpdateValue(items[0].Data);
+                UpdateValue(items[0].Data);
             }
 
-            this.Add(popup);
-            this.Add(this.content);
+            Add(popup);
+            Add(_content);
 
             if (refreshRate > 0)
             {
-                this.schedule.Execute(this.Update).Every(refreshRate);
+                schedule.Execute(Update).Every(refreshRate);
             }
         }
 
@@ -55,57 +55,57 @@
 
         private DynamicHashMap<TKey, TValue> GetMap(bool isReadOnly = true)
         {
-            return this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity, isReadOnly).AsHashMap<TBuffer, TKey, TValue>();
+            return Context.EntityManager.GetBuffer<TBuffer>(Context.Entity, isReadOnly).AsHashMap<TBuffer, TKey, TValue>();
         }
 
         public unsafe void Update()
         {
-            if (!this.IsValid())
+            if (!IsValid())
             {
                 return;
             }
 
-            if (this.current == null)
+            if (_current == null)
             {
                 return;
             }
 
-            var oldValue = this.content.GetTarget<ValueStruct>();
+            var oldValue = _content.GetTarget<ValueStruct>();
 
-            var map = this.GetMap();
-            var value = this.TryGetValue(map, this.current.Value);
+            var map = GetMap();
+            var value = TryGetValue(map, _current.Value);
 
             if (UnsafeUtility.MemCmp(&oldValue.Value, &value, UnsafeUtility.SizeOf<TValue>()) != 0)
             {
-                this.content.SetTarget(new ValueStruct { Value = value });
+                _content.SetTarget(new ValueStruct { Value = value });
             }
         }
 
         private void OnComponentChanged(BindingContextElement element, PropertyPath path)
         {
-            if (!this.IsValid() || this.current == null)
+            if (!IsValid() || _current == null)
             {
                 return;
             }
 
-            if (this.Context.IsReadOnly)
+            if (Context.IsReadOnly)
             {
                 return;
             }
 
             var value = element.GetTarget<ValueStruct>();
-            this.SetValue(this.Context, this.current!.Value, value.Value);
+            SetValue(Context, _current!.Value, value.Value);
         }
 
         private void SetValueDirect(IEntityContext context, TKey key, TValue value)
         {
-            var map = this.GetMap(false);
+            var map = GetMap(false);
             map[key] = value;
         }
 
         private void UpdateValue(object data)
         {
-            if (!this.IsValid())
+            if (!IsValid())
             {
                 return;
             }
@@ -116,18 +116,18 @@
                 return;
             }
 
-            var map = this.GetMap();
+            var map = GetMap();
 
-            this.current = key;
-            var value = this.TryGetValue(map, key);
-            this.content.SetTarget(new ValueStruct { Value = value });
+            _current = key;
+            var value = TryGetValue(map, key);
+            _content.SetTarget(new ValueStruct { Value = value });
         }
 
         private TValue TryGetValue(DynamicHashMap<TKey, TValue> map, TKey key)
         {
             if (!map.TryGetValue(key, out var value))
             {
-                value = this.defaultValue;
+                value = _defaultValue;
             }
 
             return value;

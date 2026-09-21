@@ -9,63 +9,63 @@
     public class ComponentFieldAsset : ScriptableObject
     {
         [SerializeField]
-        private ComponentAsset component;
+        private ComponentAsset _component;
 
         [SerializeField]
-        private string fieldName = string.Empty;
+        private string _fieldName = string.Empty;
 
         // We use a non-serialized cache to stop multiple calls triggering reflection
-        private Cache cache;
+        private Cache _cache;
 
         public ulong GetStableTypeHash()
         {
-            return this.GetComponentAsset().GetStableTypeHash();
+            return GetComponentAsset().GetStableTypeHash();
         }
 
         public Type GetComponentType()
         {
-            return this.GetComponentAsset().ResolveType();
+            return GetComponentAsset().ResolveType();
         }
 
         public Type GetFieldType()
         {
-            return this.GetField().FieldType;
+            return GetField().FieldType;
         }
 
         public ushort GetOffset()
         {
-            if (this.TryGetOffsetFromCache(out var cachedOffset))
+            if (TryGetOffsetFromCache(out var cachedOffset))
             {
                 return cachedOffset;
             }
 
-            var field = this.GetField();
+            var field = GetField();
             var offset = (ushort)UnsafeUtility.GetFieldOffset(field);
-            this.cache = new Cache(this, offset);
+            _cache = new Cache(this, offset);
             return offset;
         }
 
         private ComponentAsset GetComponentAsset()
         {
-            if (this.component == null)
+            if (_component == null)
             {
-                throw new NullReferenceException($"{nameof(this.component)} not set");
+                throw new NullReferenceException($"{nameof(_component)} not set");
             }
 
-            return this.component;
+            return _component;
         }
 
         private FieldInfo GetField()
         {
-            if (string.IsNullOrWhiteSpace(this.fieldName))
+            if (string.IsNullOrWhiteSpace(_fieldName))
             {
-                throw new NullReferenceException($"{nameof(this.fieldName)} not set");
+                throw new NullReferenceException($"{nameof(_fieldName)} not set");
             }
 
-            var field = this.GetComponentType().GetField(this.fieldName, BindingFlags.Instance | BindingFlags.Public);
+            var field = GetComponentType().GetField(_fieldName, BindingFlags.Instance | BindingFlags.Public);
             if (field == null)
             {
-                throw new InvalidOperationException($"FieldInfo not found for field {this.fieldName} on {this.name}");
+                throw new InvalidOperationException($"FieldInfo not found for field {_fieldName} on {name}");
             }
 
             return field;
@@ -73,13 +73,13 @@
 
         private bool TryGetOffsetFromCache(out ushort offset)
         {
-            if (this.cache.Component != this.component || this.cache.FieldName != this.fieldName)
+            if (_cache.Component != _component || _cache.FieldName != _fieldName)
             {
                 offset = 0;
                 return false;
             }
 
-            offset = this.cache.Offset;
+            offset = _cache.Offset;
             return true;
         }
 
@@ -91,9 +91,9 @@
 
             public Cache(ComponentFieldAsset asset, ushort offset)
             {
-                this.Component = asset.component;
-                this.FieldName = asset.fieldName;
-                this.Offset = offset;
+                Component = asset._component;
+                FieldName = asset._fieldName;
+                Offset = offset;
             }
         }
     }

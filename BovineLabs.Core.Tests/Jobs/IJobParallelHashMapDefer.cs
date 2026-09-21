@@ -49,9 +49,9 @@
 
             public void Execute()
             {
-                for (var i = 0; i < this.Count; i++)
+                for (var i = 0; i < Count; i++)
                 {
-                    this.HashMap.Add(i, (i * 3) + 1);
+                    HashMap.Add(i, (i * 3) + 1);
                 }
             }
         }
@@ -66,8 +66,8 @@
 
             public void ExecuteNext(int entryIndex, int jobIndex)
             {
-                this.Read(this.HashMap, entryIndex, out var key, out var value);
-                this.Results.Enqueue(new int2(key, value));
+                this.Read(HashMap, entryIndex, out var key, out var value);
+                Results.Enqueue(new int2(key, value));
             }
         }
     }

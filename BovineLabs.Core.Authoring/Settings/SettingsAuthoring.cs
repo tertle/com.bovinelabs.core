@@ -11,7 +11,7 @@
     public class SettingsAuthoring : MonoBehaviour
     {
         [SerializeField]
-        private SettingsBase[] settings = Array.Empty<SettingsBase>();
+        private SettingsBase[] _settings = Array.Empty<SettingsBase>();
 
         internal static Hash128 GetPrefabGuid(SettingsAuthoring authoring)
         {
@@ -47,16 +47,16 @@
         {
             public override void Bake(SettingsAuthoring authoring)
             {
-                var entity = this.GetEntity(TransformUsageFlags.None);
-                this.AddComponent<SettingsTag>(entity);
+                var entity = GetEntity(TransformUsageFlags.None);
+                AddComponent<SettingsTag>(entity);
 
                 var prefabGuid = GetPrefabGuid(authoring);
-                if (this.IsBakingForEditor())
+                if (IsBakingForEditor())
                 {
-                    this.AddComponent(entity, new SettingsPrefabIdentity { PrefabGuid = prefabGuid });
+                    AddComponent(entity, new SettingsPrefabIdentity { PrefabGuid = prefabGuid });
                 }
 
-                foreach (var setting in authoring.settings.Distinct())
+                foreach (var setting in authoring._settings.Distinct())
                 {
                     if (!setting)
                     {
@@ -64,7 +64,7 @@
                         continue;
                     }
 
-                    this.DependsOn(setting);
+                    DependsOn(setting);
                     setting.Bake(this);
                 }
             }

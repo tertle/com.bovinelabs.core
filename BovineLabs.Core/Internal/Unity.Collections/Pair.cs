@@ -11,6 +11,6 @@ namespace BovineLabs.Core.Internal
             this.value = value;
         }
 
-        public override string ToString() => $"{this.key} = {this.value}";
+        public override string ToString() => $"{key} = {value}";
     }
 }

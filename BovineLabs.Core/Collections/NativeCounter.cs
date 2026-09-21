@@ -1,6 +1,7 @@
 namespace BovineLabs.Core.Collections
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using BovineLabs.Core.Internal;
     using Unity.Burst;
@@ -11,27 +12,31 @@ namespace BovineLabs.Core.Collections
     public unsafe struct NativeCounter : IDisposable
     {
         [NativeDisableUnsafePtrRestriction]
-        private int* count;
+        private int* _count;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         private AtomicSafetyHandle m_Safety;
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeCounter>();
 #endif
 
-        private readonly AllocatorManager.AllocatorHandle allocator;
+        private readonly AllocatorManager.AllocatorHandle _allocator;
 
         public NativeCounter(AllocatorManager.AllocatorHandle allocator)
         {
-            this.allocator = allocator;
+            _allocator = allocator;
 
-            this.count = CollectionMemory.Allocate<int>(allocator);
-            UnsafeUtility.MemClear(this.count, UnsafeUtility.SizeOf<int>());
+            _count = CollectionMemory.Allocate<int>(allocator);
+            UnsafeUtility.MemClear(_count, UnsafeUtility.SizeOf<int>());
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
 
-            CollectionHelper.SetStaticSafetyId<NativeCounter>(ref this.m_Safety, ref s_staticSafetyId.Data);
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(this.m_Safety, true);
+            CollectionHelper.SetStaticSafetyId<NativeCounter>(ref m_Safety, ref s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
 
@@ -40,11 +45,11 @@ namespace BovineLabs.Core.Collections
             // Verify that the caller has write permission on this data.
             // This is the race condition protection, without these checks the AtomicSafetyHandle is useless
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-            (*this.count)++;
+            (*_count)++;
 
-            return *this.count;
+            return *_count;
         }
 
         public int Count
@@ -52,30 +57,30 @@ namespace BovineLabs.Core.Collections
             get
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                return *this.count;
+                return *_count;
             }
 
             set
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-                *this.count = value;
+                *_count = value;
             }
         }
 
-        public bool IsCreated => this.count != null;
+        public bool IsCreated => _count != null;
 
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
 
-            CollectionMemory.Free(this.count, this.allocator);
-            this.count = null;
+            CollectionMemory.Free(_count, _allocator);
+            _count = null;
         }
 
         public ParallelWriter AsParallelWriter()
@@ -88,29 +93,31 @@ namespace BovineLabs.Core.Collections
         public struct ParallelWriter
         {
             [NativeDisableUnsafePtrRestriction]
-            private readonly int* count;
+            private readonly int* _count;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
             private readonly AtomicSafetyHandle m_Safety;
 #endif
 
             internal ParallelWriter(NativeCounter counter)
             {
-                this.count = counter.count;
+                _count = counter._count;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(counter.m_Safety);
-                this.m_Safety = counter.m_Safety;
-                AtomicSafetyHandle.UseSecondaryVersion(ref this.m_Safety);
+                m_Safety = counter.m_Safety;
+                AtomicSafetyHandle.UseSecondaryVersion(ref m_Safety);
 #endif
             }
 
             public int Increment()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-                return Interlocked.Increment(ref *this.count);
+                return Interlocked.Increment(ref *_count);
             }
         }
     }

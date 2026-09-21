@@ -14,57 +14,57 @@
     public abstract class DynamicListElement<T, TElement> : EntityInspector<T>
         where TElement : unmanaged
     {
-        private readonly PropertyElement content;
-        private readonly List<TElement> autoRefreshList = new();
+        private readonly PropertyElement _content;
+        private readonly List<TElement> _autoRefreshList = new();
 
-        private bool autoRefresh;
+        private bool _autoRefresh;
 
         protected DynamicListElement(object inspector, int refreshRate = 250)
             : base(inspector)
         {
-            this.content = this.InitializeContent();
-            this.Add(this.content);
+            _content = InitializeContent();
+            Add(_content);
 
-            this.Add(this.InitializeRefreshButton());
+            Add(InitializeRefreshButton());
 
-            this.UpdateElement();
+            UpdateElement();
 
             if (refreshRate > 0)
             {
-                this.schedule.Execute(this.Update).Every(refreshRate);
+                schedule.Execute(Update).Every(refreshRate);
             }
         }
 
         public void Update()
         {
-            if (!this.IsValid())
+            if (!IsValid())
             {
                 return;
             }
 
-            if (!this.autoRefresh)
+            if (!_autoRefresh)
             {
                 return;
             }
 
-            this.ForceUpdate();
-            this.OnRefresh();
+            ForceUpdate();
+            OnRefresh();
         }
 
         public void ForceUpdate()
         {
-            var target = this.content.GetTarget<Inspected>().Value;
+            var target = _content.GetTarget<Inspected>().Value;
 
-            this.autoRefreshList.Clear();
-            this.PopulateList(this.autoRefreshList);
-            if (this.autoRefreshList.SequenceEqual(target))
+            _autoRefreshList.Clear();
+            PopulateList(_autoRefreshList);
+            if (_autoRefreshList.SequenceEqual(target))
             {
                 return;
             }
 
             target.Clear();
-            target.AddRange(this.autoRefreshList);
-            this.Rebuild();
+            target.AddRange(_autoRefreshList);
+            Rebuild();
         }
 
         protected virtual void OnRefresh() {}
@@ -75,25 +75,25 @@
 
         private void Rebuild()
         {
-            this.content.ForceReload();
-            this.UpdateElement();
+            _content.ForceReload();
+            UpdateElement();
         }
 
         private void UpdateElement()
         {
-            var addButton = this.content.Q<Button>(className: "unity-platforms__list-element__add-item-button");
+            var addButton = _content.Q<Button>(className: "unity-platforms__list-element__add-item-button");
             addButton.RemoveFromHierarchy();
-            StylingUtility.AlignInspectorLabelWidth(this.content);
+            StylingUtility.AlignInspectorLabelWidth(_content);
         }
 
         private unsafe void OnComponentChanged(BindingContextElement element, PropertyPath path)
         {
-            if (!this.IsValid())
+            if (!IsValid())
             {
                 return;
             }
 
-            if (this.Context.IsReadOnly || this.autoRefresh)
+            if (Context.IsReadOnly || _autoRefresh)
             {
                 return;
             }
@@ -108,20 +108,20 @@
             NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref nativeArray, AtomicSafetyHandle.Create());
 #endif
 
-            this.OnValueChanged(nativeArray);
+            OnValueChanged(nativeArray);
             handle.Free();
 
-            var inspected = this.content.GetTarget<Inspected>().Value;
+            var inspected = _content.GetTarget<Inspected>().Value;
             inspected.Clear();
-            this.PopulateList(inspected);
-            this.Rebuild();
+            PopulateList(inspected);
+            Rebuild();
         }
 
         private PropertyElement InitializeContent()
         {
             var propertyElement = new PropertyElement();
             var list = new List<TElement>();
-            this.PopulateList(list);
+            PopulateList(list);
 
             // Something about live updating, taken from BufferElement
             if (EditorApplication.isPlaying)
@@ -129,9 +129,9 @@
                 propertyElement.userData = propertyElement;
             }
 
-            propertyElement.AddContext(this.Context.Context);
+            propertyElement.AddContext(Context.Context);
             propertyElement.SetTarget(new Inspected { Value = list });
-            propertyElement.OnChanged += this.OnComponentChanged;
+            propertyElement.OnChanged += OnComponentChanged;
             return propertyElement;
         }
 
@@ -144,7 +144,7 @@
             };
 
             button.AddToClassList("unity-platforms__list-element__add-item-button");
-            button.RegisterValueChangedCallback(evt => this.autoRefresh = evt.newValue);
+            button.RegisterValueChangedCallback(evt => _autoRefresh = evt.newValue);
             return button;
         }
 

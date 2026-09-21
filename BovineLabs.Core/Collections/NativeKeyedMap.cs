@@ -12,35 +12,37 @@ namespace BovineLabs.Core.Collections
     public struct NativeKeyedMap<TValue>
         where TValue : unmanaged
     {
-        private UnsafeKeyedMap<TValue> keyedMapData;
+        private UnsafeKeyedMap<TValue> _keyedMapData;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Required by safety injection.")]
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         private AtomicSafetyHandle m_Safety;
 
-        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Required by safety injection.")]
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeKeyedMap<TValue>>();
 #endif
 
         public NativeKeyedMap(int capacity, int maxKey, AllocatorManager.AllocatorHandle allocator)
         {
-            this.keyedMapData = new UnsafeKeyedMap<TValue>(capacity, maxKey, allocator.Handle);
+            _keyedMapData = new UnsafeKeyedMap<TValue>(capacity, maxKey, allocator.Handle);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionChecks.CheckAllocator(allocator);
-            this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
 
             if (UnsafeUtility.IsNativeContainerType<TValue>())
             {
-                AtomicSafetyHandle.SetNestedContainer(this.m_Safety, true);
+                AtomicSafetyHandle.SetNestedContainer(m_Safety, true);
             }
 
-            CollectionHelper.SetStaticSafetyId<NativeKeyedMap<TValue>>(ref this.m_Safety, ref s_staticSafetyId.Data);
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(this.m_Safety, true);
+            CollectionHelper.SetStaticSafetyId<NativeKeyedMap<TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
 
-        public bool IsCreated => this.keyedMapData.IsCreated;
+        public bool IsCreated => _keyedMapData.IsCreated;
 
         /// <summary>
         /// Capacity cannot shrink.
@@ -49,23 +51,23 @@ namespace BovineLabs.Core.Collections
         {
             get
             {
-                this.CheckRead();
-                return this.keyedMapData.Capacity;
+                CheckRead();
+                return _keyedMapData.Capacity;
             }
 
             set
             {
-                this.CheckWrite();
-                this.keyedMapData.Capacity = value;
+                CheckWrite();
+                _keyedMapData.Capacity = value;
             }
         }
 
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
-            this.keyedMapData.Dispose();
+            _keyedMapData.Dispose();
         }
 
         public unsafe JobHandle Dispose(JobHandle inputDeps)
@@ -74,87 +76,87 @@ namespace BovineLabs.Core.Collections
             {
                 Data = new UnsafeKeyedMapDataDispose
                 {
-                    Buffer = this.keyedMapData.buffer,
-                    AllocatorLabel = this.keyedMapData.allocator,
+                    Buffer = _keyedMapData.buffer,
+                    AllocatorLabel = _keyedMapData.allocator,
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                    m_Safety = this.m_Safety,
+                    m_Safety = m_Safety,
 #endif
                 },
             }.Schedule(inputDeps);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.Release(this.m_Safety);
+            AtomicSafetyHandle.Release(m_Safety);
 #endif
-            this.keyedMapData.buffer = null;
+            _keyedMapData.buffer = null;
 
             return jobHandle;
         }
 
         public void Clear()
         {
-            this.CheckWrite();
-            this.keyedMapData.Clear();
+            CheckWrite();
+            _keyedMapData.Clear();
         }
 
         public void Add(int key, TValue item)
         {
-            this.CheckWrite();
-            this.keyedMapData.Add(key, item);
+            CheckWrite();
+            _keyedMapData.Add(key, item);
         }
 
         public bool TryGetFirstValue(int key, out TValue item, out UnsafeKeyedMapIterator it)
         {
-            this.CheckRead();
-            return this.keyedMapData.TryGetFirstValue(key, out item, out it);
+            CheckRead();
+            return _keyedMapData.TryGetFirstValue(key, out item, out it);
         }
 
         public bool TryGetNextValue(out TValue item, ref UnsafeKeyedMapIterator it)
         {
-            this.CheckRead();
-            return this.keyedMapData.TryGetNextValue(out item, ref it);
+            CheckRead();
+            return _keyedMapData.TryGetNextValue(out item, ref it);
         }
 
         public void SetLength(int length)
         {
-            this.CheckWrite();
-            this.keyedMapData.SetLength(length);
+            CheckWrite();
+            _keyedMapData.SetLength(length);
         }
 
         public void RecalculateBuckets()
         {
-            this.CheckWrite();
-            this.keyedMapData.RecalculateBuckets();
+            CheckWrite();
+            _keyedMapData.RecalculateBuckets();
         }
 
         public unsafe int* GetUnsafeKeysPtr()
         {
-            this.CheckWrite();
-            return this.keyedMapData.GetUnsafeKeysPtr();
+            CheckWrite();
+            return _keyedMapData.GetUnsafeKeysPtr();
         }
 
         public unsafe TValue* GetUnsafeValuesPtr()
         {
-            this.CheckWrite();
-            return this.keyedMapData.GetUnsafeValuesPtr();
+            CheckWrite();
+            return _keyedMapData.GetUnsafeValuesPtr();
         }
 
         public unsafe int* GetUnsafeReadOnlyKeysPtr()
         {
-            this.CheckRead();
-            return this.keyedMapData.GetUnsafeKeysPtr();
+            CheckRead();
+            return _keyedMapData.GetUnsafeKeysPtr();
         }
 
         public unsafe TValue* GetUnsafeReadOnlyValuesPtr()
         {
-            this.CheckRead();
-            return this.keyedMapData.GetUnsafeValuesPtr();
+            CheckRead();
+            return _keyedMapData.GetUnsafeValuesPtr();
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
         }
 
@@ -162,7 +164,7 @@ namespace BovineLabs.Core.Collections
         private void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(this.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
         }
     }

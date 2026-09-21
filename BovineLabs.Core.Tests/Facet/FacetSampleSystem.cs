@@ -6,27 +6,27 @@ namespace BovineLabs.Core.Tests.Facet
 
     public partial struct FacetSampleSystem : ISystem
     {
-        private TestFacet.Lookup facetLookup;
-        private TestFacet.TypeHandle facetHandle;
-        private EntityQuery facetQuery;
+        private TestFacet.Lookup _facetLookup;
+        private TestFacet.TypeHandle _facetHandle;
+        private EntityQuery _facetQuery;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            this.facetLookup.Create(ref state);
-            this.facetHandle.Create(ref state);
-            this.facetQuery = TestFacet.CreateQueryBuilder().Build(ref state);
+            _facetLookup.Create(ref state);
+            _facetHandle.Create(ref state);
+            _facetQuery = TestFacet.CreateQueryBuilder().Build(ref state);
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            this.facetLookup.Update(ref state);
-            this.facetHandle.Update(ref state);
+            _facetLookup.Update(ref state);
+            _facetHandle.Update(ref state);
 
-            state.Dependency = new JobChunk { FacetHandle = this.facetHandle }.ScheduleParallel(this.facetQuery, state.Dependency);
+            state.Dependency = new JobChunk { FacetHandle = _facetHandle }.ScheduleParallel(_facetQuery, state.Dependency);
             state.Dependency = new JobEntity().ScheduleParallel(state.Dependency);
-            state.Dependency = new JobLookup { FacetLookup = this.facetLookup, }.Schedule(state.Dependency);
+            state.Dependency = new JobLookup { FacetLookup = _facetLookup, }.Schedule(state.Dependency);
         }
 
         [BurstCompile]
@@ -36,7 +36,7 @@ namespace BovineLabs.Core.Tests.Facet
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var resolved = this.FacetHandle.Resolve(chunk);
+                var resolved = FacetHandle.Resolve(chunk);
 
                 for (var i = 0; i < chunk.Count; i++)
                 {
@@ -61,11 +61,11 @@ namespace BovineLabs.Core.Tests.Facet
 
             private void Execute(in ReferenceComponent comp)
             {
-                if (this.FacetLookup.TryGet(comp.FacetEntity, out TestFacet facet))
+                if (FacetLookup.TryGet(comp.FacetEntity, out TestFacet facet))
                 {
                 }
 
-                TestFacet facet2 = this.FacetLookup[comp.FacetEntity];
+                TestFacet facet2 = FacetLookup[comp.FacetEntity];
             }
         }
 

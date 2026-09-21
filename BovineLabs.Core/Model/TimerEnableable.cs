@@ -15,23 +15,23 @@
         where TActive : unmanaged, IComponentData, IEnableableComponent
         where TDuration : unmanaged, IComponentData
     {
-        private ComponentTypeHandle<TOn> onHandle;
-        private ComponentTypeHandle<TRemaining> remainingHandle;
-        private ComponentTypeHandle<TActive> activeHandle;
-        private ComponentTypeHandle<TDuration> durationHandle;
-        private EntityQuery query;
+        private ComponentTypeHandle<TOn> _onHandle;
+        private ComponentTypeHandle<TRemaining> _remainingHandle;
+        private ComponentTypeHandle<TActive> _activeHandle;
+        private ComponentTypeHandle<TDuration> _durationHandle;
+        private EntityQuery _query;
 
         public void OnCreate(ref SystemState state)
         {
             Check.Assume(UnsafeUtility.SizeOf<float>() == UnsafeUtility.SizeOf<TRemaining>());
             Check.Assume(UnsafeUtility.SizeOf<float>() == UnsafeUtility.SizeOf<TDuration>());
 
-            this.onHandle = state.GetComponentTypeHandle<TOn>();
-            this.remainingHandle = state.GetComponentTypeHandle<TRemaining>();
-            this.activeHandle = state.GetComponentTypeHandle<TActive>(true);
-            this.durationHandle = state.GetComponentTypeHandle<TDuration>(true);
+            _onHandle = state.GetComponentTypeHandle<TOn>();
+            _remainingHandle = state.GetComponentTypeHandle<TRemaining>();
+            _activeHandle = state.GetComponentTypeHandle<TActive>(true);
+            _durationHandle = state.GetComponentTypeHandle<TDuration>(true);
 
-            this.query = new EntityQueryBuilder(Allocator.Temp)
+            _query = new EntityQueryBuilder(Allocator.Temp)
                 .WithAllRW<TRemaining, TOn>()
                 .WithAll<TActive, TDuration>()
                 .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState | EntityQueryOptions.FilterWriteGroup)
@@ -40,19 +40,19 @@
 
         public void OnUpdate(ref SystemState state, UpdateTimeJob job = default)
         {
-            this.onHandle.Update(ref state);
-            this.remainingHandle.Update(ref state);
-            this.activeHandle.Update(ref state);
-            this.durationHandle.Update(ref state);
+            _onHandle.Update(ref state);
+            _remainingHandle.Update(ref state);
+            _activeHandle.Update(ref state);
+            _durationHandle.Update(ref state);
 
-            job.OnHandle = this.onHandle;
-            job.RemainingHandle = this.remainingHandle;
-            job.ActiveHandle = this.activeHandle;
-            job.DurationHandle = this.durationHandle;
+            job.OnHandle = _onHandle;
+            job.RemainingHandle = _remainingHandle;
+            job.ActiveHandle = _activeHandle;
+            job.DurationHandle = _durationHandle;
             job.DeltaTime = state.WorldUnmanaged.Time.DeltaTime;
             job.SystemVersion = state.LastSystemVersion;
 
-            state.Dependency = job.ScheduleParallel(this.query, state.Dependency);
+            state.Dependency = job.ScheduleParallel(_query, state.Dependency);
         }
 
         [NoAlias]
@@ -73,14 +73,14 @@
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var activeChanged = chunk.DidChange(ref this.ActiveHandle, this.SystemVersion);
+                var activeChanged = chunk.DidChange(ref ActiveHandle, SystemVersion);
 
                 if (activeChanged)
                 {
-                    var remainings = (float*)chunk.GetRequiredComponentDataPtrRW(ref this.RemainingHandle);
-                    var durations = (float*)chunk.GetRequiredComponentDataPtrRO(ref this.DurationHandle);
-                    var durationOnBits = chunk.GetRequiredEnabledBitsRO(ref this.OnHandle);
-                    var triggerBits = chunk.GetRequiredEnabledBitsRO(ref this.ActiveHandle);
+                    var remainings = (float*)chunk.GetRequiredComponentDataPtrRW(ref RemainingHandle);
+                    var durations = (float*)chunk.GetRequiredComponentDataPtrRO(ref DurationHandle);
+                    var durationOnBits = chunk.GetRequiredEnabledBitsRO(ref OnHandle);
+                    var triggerBits = chunk.GetRequiredEnabledBitsRO(ref ActiveHandle);
                     var durationOns = (ulong*)&durationOnBits;
                     var triggers = (ulong*)&triggerBits;
 
@@ -93,20 +93,20 @@
                     }
                 }
 
-                if (activeChanged || chunk.DidChange(ref this.RemainingHandle, this.SystemVersion))
+                if (activeChanged || chunk.DidChange(ref RemainingHandle, SystemVersion))
                 {
                     // We open RO to avoid change filter trigger unless it has changed
-                    ref readonly var original = ref chunk.GetRequiredEnabledBitsRO(ref this.OnHandle);
+                    ref readonly var original = ref chunk.GetRequiredEnabledBitsRO(ref OnHandle);
                     var updated = original;
-                    var remainings = (float*)chunk.GetRequiredComponentDataPtrRW(ref this.RemainingHandle);
+                    var remainings = (float*)chunk.GetRequiredComponentDataPtrRW(ref RemainingHandle);
 
-                    CalculateOn(remainings, (ulong*)&updated, chunk.Count, this.DeltaTime);
+                    CalculateOn(remainings, (ulong*)&updated, chunk.Count, DeltaTime);
 
                     var hasChanged = updated.ULong0 != original.ULong0 || updated.ULong1 != original.ULong1;
 
                     if (hasChanged)
                     {
-                        ref var enabledBits = ref chunk.GetRequiredEnabledBitsRW(ref this.OnHandle, out var count);
+                        ref var enabledBits = ref chunk.GetRequiredEnabledBitsRW(ref OnHandle, out var count);
                         enabledBits = updated;
 
                         *count = chunk.Count - math.countbits(enabledBits.ULong0) - math.countbits(enabledBits.ULong1);

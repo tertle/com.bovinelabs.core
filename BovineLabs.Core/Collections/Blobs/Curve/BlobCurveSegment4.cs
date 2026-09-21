@@ -10,12 +10,12 @@
 
         public float4 Sample(float4 timeSerial)
         {
-            return math.mul(timeSerial, this.Factors);
+            return math.mul(timeSerial, Factors);
         }
 
         public BlobCurveSegment4(float4 factorX, float4 factorY, float4 factorZ, float4 factorW)
         {
-            this.Factors = new float4x4(factorX, factorY, factorZ, factorW);
+            Factors = new float4x4(factorX, factorY, factorZ, factorW);
         }
 
         public BlobCurveSegment4(Keyframe k0x, Keyframe k0y, Keyframe k0z, Keyframe k0w, Keyframe k1x, Keyframe k1y, Keyframe k1z, Keyframe k1w)
@@ -29,7 +29,7 @@
                 Mathf.Approximately(k1x.time, k1w.time), "Time not sync");
 
             var duration = k1x.time - k0x.time;
-            this.Factors = new float4x4(BlobShared.UnityFactor(k0x.value, k0x.outTangent, k1x.inTangent, k1x.value, duration),
+            Factors = new float4x4(BlobShared.UnityFactor(k0x.value, k0x.outTangent, k1x.inTangent, k1x.value, duration),
                 BlobShared.UnityFactor(k0y.value, k0y.outTangent, k1y.inTangent, k1y.value, duration),
                 BlobShared.UnityFactor(k0z.value, k0z.outTangent, k1z.inTangent, k1z.value, duration),
                 BlobShared.UnityFactor(k0w.value, k0w.outTangent, k1w.inTangent, k1w.value, duration));

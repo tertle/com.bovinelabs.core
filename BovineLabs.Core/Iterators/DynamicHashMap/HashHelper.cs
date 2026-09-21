@@ -11,9 +11,9 @@
     internal unsafe struct HashHelper<TKey>
         where TKey : unmanaged, IEquatable<TKey>
     {
-        private readonly int keyOffset;
-        private readonly int nextOffset;
-        private readonly int bucketsOffset;
+        private readonly int _keyOffset;
+        private readonly int _nextOffset;
+        private readonly int _bucketsOffset;
 
         public HashHelper(byte* parentPtr, HashHelper<TKey>* thisPtr, int hashMapDataSize, int keyOffset, int nextOffset, int bucketsOffset)
         {
@@ -21,34 +21,34 @@
             var offset = (int)(ptr - parentPtr);
             Check.Assume(offset < int.MaxValue);
 
-            this.keyOffset = (hashMapDataSize + keyOffset) - offset;
-            this.nextOffset = (hashMapDataSize + nextOffset) - offset;
-            this.bucketsOffset = (hashMapDataSize + bucketsOffset) - offset;
+            _keyOffset = (hashMapDataSize + keyOffset) - offset;
+            _nextOffset = (hashMapDataSize + nextOffset) - offset;
+            _bucketsOffset = (hashMapDataSize + bucketsOffset) - offset;
         }
 
-        public TKey* Keys => (TKey*)((byte*)UnsafeUtility.AddressOf(ref this) + this.keyOffset);
+        public TKey* Keys => (TKey*)((byte*)UnsafeUtility.AddressOf(ref this) + _keyOffset);
 
-        public int* Next => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + this.nextOffset);
+        public int* Next => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + _nextOffset);
 
-        public int* Buckets => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + this.bucketsOffset);
+        public int* Buckets => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + _bucketsOffset);
 
         public void Clear(int capacity, int bucketCapacity)
         {
-            UnsafeUtility.MemClear(this.Keys, (long)capacity * sizeof(TKey));
-            UnsafeUtility.MemSet(this.Next, 0xff, capacity * sizeof(int));
-            UnsafeUtility.MemSet(this.Buckets, 0xff, bucketCapacity * sizeof(int));
+            UnsafeUtility.MemClear(Keys, (long)capacity * sizeof(TKey));
+            UnsafeUtility.MemSet(Next, 0xff, capacity * sizeof(int));
+            UnsafeUtility.MemSet(Buckets, 0xff, bucketCapacity * sizeof(int));
         }
 
         public int Find(TKey key, int capacity, int bucketCapacityMask)
         {
             // First find the slot based on the hash
             var bucket = GetBucket(key, bucketCapacityMask);
-            var entryIdx = this.Buckets[bucket];
+            var entryIdx = Buckets[bucket];
 
             if ((uint)entryIdx < (uint)capacity)
             {
-                var keys = this.Keys;
-                var next = this.Next;
+                var keys = Keys;
+                var next = Next;
 
                 while (!UnsafeUtility.ReadArrayElement<TKey>(keys, entryIdx).Equals(key))
                 {
@@ -68,30 +68,30 @@
         public void RemoveIndex(int entryIdx, int bucketCapacityMask)
         {
             // We need to iterate until we find the same index
-            var index = UnsafeUtility.ReadArrayElement<TKey>(this.Keys, entryIdx);
+            var index = UnsafeUtility.ReadArrayElement<TKey>(Keys, entryIdx);
 
             var indexBucket = GetBucket(index, bucketCapacityMask);
             var indexPrevEntry = -1;
-            var indexEntryIdx = this.Buckets[indexBucket];
+            var indexEntryIdx = Buckets[indexBucket];
 
             while (entryIdx != indexEntryIdx)
             {
                 indexPrevEntry = indexEntryIdx;
-                indexEntryIdx = this.Next[indexEntryIdx];
+                indexEntryIdx = Next[indexEntryIdx];
             }
 
             // Found matching element, remove it
             if (indexPrevEntry < 0)
             {
-                this.Buckets[indexBucket] = this.Next[indexEntryIdx];
+                Buckets[indexBucket] = Next[indexEntryIdx];
             }
             else
             {
-                this.Next[indexPrevEntry] = this.Next[indexEntryIdx];
+                Next[indexPrevEntry] = Next[indexEntryIdx];
             }
 
             // And free the index
-            this.Next[indexEntryIdx] = this.Next[entryIdx]; // TODO we don't add this way so it shouldn't matter
+            Next[indexEntryIdx] = Next[entryIdx]; // TODO we don't add this way so it shouldn't matter
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -110,42 +110,42 @@
 
             public Resize(ref HashHelper<TKey> helper, int oldCapacity, int oldBucketCapacity)
             {
-                this.OldCapacity = oldCapacity;
-                this.OldBucketCapacity = oldBucketCapacity;
-                this.OldKeys = (TKey*)UnsafeUtility.Malloc(oldCapacity * sizeof(TKey), UnsafeUtility.AlignOf<TKey>(), Allocator.Temp);
-                this.OldNext = (int*)UnsafeUtility.Malloc(oldCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
-                this.OldBuckets = (int*)UnsafeUtility.Malloc(oldBucketCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
+                OldCapacity = oldCapacity;
+                OldBucketCapacity = oldBucketCapacity;
+                OldKeys = (TKey*)UnsafeUtility.Malloc(oldCapacity * sizeof(TKey), UnsafeUtility.AlignOf<TKey>(), Allocator.Temp);
+                OldNext = (int*)UnsafeUtility.Malloc(oldCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
+                OldBuckets = (int*)UnsafeUtility.Malloc(oldBucketCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
 
-                UnsafeUtility.MemCpy(this.OldKeys, helper.Keys, oldCapacity * sizeof(TKey));
-                UnsafeUtility.MemCpy(this.OldNext, helper.Next, oldCapacity * sizeof(int));
-                UnsafeUtility.MemCpy(this.OldBuckets, helper.Buckets, oldBucketCapacity * sizeof(int));
+                UnsafeUtility.MemCpy(OldKeys, helper.Keys, oldCapacity * sizeof(TKey));
+                UnsafeUtility.MemCpy(OldNext, helper.Next, oldCapacity * sizeof(int));
+                UnsafeUtility.MemCpy(OldBuckets, helper.Buckets, oldBucketCapacity * sizeof(int));
             }
 
             public void Increase(ref HashHelper<TKey> helper, int newCapacity, int newBucketCapacity)
             {
                 var newBucketCapacityMask = newBucketCapacity - 1;
 
-                Check.Assume(newCapacity > this.OldCapacity);
+                Check.Assume(newCapacity > OldCapacity);
 
                 var next = helper.Next;
                 var buckets = helper.Buckets;
 
                 UnsafeUtility.MemClear(helper.Keys, (long)newCapacity * sizeof(TKey));
 
-                UnsafeUtility.MemCpy(next, this.OldNext, this.OldCapacity * sizeof(int));
-                UnsafeUtility.MemSet(next + this.OldCapacity, 0xff, (newCapacity - this.OldCapacity) * sizeof(int));
+                UnsafeUtility.MemCpy(next, OldNext, OldCapacity * sizeof(int));
+                UnsafeUtility.MemSet(next + OldCapacity, 0xff, (newCapacity - OldCapacity) * sizeof(int));
 
                 // re-hash the buckets, first clear the new bucket list, then insert all values from the old list
                 UnsafeUtility.MemSet(buckets, 0xff, newBucketCapacity * sizeof(int));
 
-                for (var bucket = 0; bucket < this.OldBucketCapacity; ++bucket)
+                for (var bucket = 0; bucket < OldBucketCapacity; ++bucket)
                 {
-                    while (this.OldBuckets[bucket] >= 0)
+                    while (OldBuckets[bucket] >= 0)
                     {
-                        var curEntry = this.OldBuckets[bucket];
-                        UnsafeUtility.MemCpy(helper.Keys + curEntry, this.OldKeys + curEntry, sizeof(TKey));
-                        this.OldBuckets[bucket] = next[curEntry];
-                        var newBucket = GetBucket(this.OldKeys[curEntry], newBucketCapacityMask);
+                        var curEntry = OldBuckets[bucket];
+                        UnsafeUtility.MemCpy(helper.Keys + curEntry, OldKeys + curEntry, sizeof(TKey));
+                        OldBuckets[bucket] = next[curEntry];
+                        var newBucket = GetBucket(OldKeys[curEntry], newBucketCapacityMask);
                         next[curEntry] = buckets[newBucket];
                         buckets[newBucket] = curEntry;
                     }

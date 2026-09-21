@@ -8,32 +8,32 @@
     [CustomEditor(typeof(EditorSettings))]
     public class EditorSettingsEditor : ElementEditor
     {
-        private readonly List<string> scriptingDefineSymbols = new();
-        private readonly List<string> scriptingDefineSymbolsOriginal = new();
+        private readonly List<string> _scriptingDefineSymbols = new();
+        private readonly List<string> _scriptingDefineSymbolsOriginal = new();
 
-        private readonly List<string> removed = new();
+        private readonly List<string> _removed = new();
 
 
         protected override VisualElement CreateElement(SerializedProperty property)
         {
             return property.name switch
             {
-                "scriptingDefineSymbols" => this.CreateScriptingDefine(property),
+                "_scriptingDefineSymbols" => CreateScriptingDefine(property),
                 _ => base.CreateElement(property),
             };
         }
 
         private VisualElement CreateScriptingDefine(SerializedProperty property)
         {
-            this.scriptingDefineSymbolsOriginal.Clear();
-            this.scriptingDefineSymbols.Clear();
+            _scriptingDefineSymbolsOriginal.Clear();
+            _scriptingDefineSymbols.Clear();
 
             for (var i = 0; i < property.arraySize; i++)
             {
-                this.scriptingDefineSymbols.Add(property.GetArrayElementAtIndex(i).stringValue);
+                _scriptingDefineSymbols.Add(property.GetArrayElementAtIndex(i).stringValue);
             }
 
-            this.scriptingDefineSymbolsOriginal.AddRange(this.scriptingDefineSymbols);
+            _scriptingDefineSymbolsOriginal.AddRange(_scriptingDefineSymbols);
 
             var ve = CreateFoldout(property.displayName, property.isExpanded);
 
@@ -45,7 +45,7 @@
 
             EventCallback<ChangeEvent<string>> changeCallback = null;
 
-            var listView = new ListView(this.scriptingDefineSymbols)
+            var listView = new ListView(_scriptingDefineSymbols)
             {
                 selectionType = SelectionType.None,
                 reorderable = true,
@@ -74,9 +74,9 @@
             void BindItem(VisualElement element, int index)
             {
                 var tf = (TextField)element;
-                tf.value = this.scriptingDefineSymbols[index];
+                tf.value = _scriptingDefineSymbols[index];
 
-                changeCallback = evt => this.scriptingDefineSymbols[index] = evt.newValue;
+                changeCallback = evt => _scriptingDefineSymbols[index] = evt.newValue;
                 tf.RegisterValueChangedCallback(changeCallback);
             }
 
@@ -88,41 +88,41 @@
 
             void Revert()
             {
-                this.scriptingDefineSymbols.Clear();
-                this.scriptingDefineSymbols.AddRange(this.scriptingDefineSymbolsOriginal);
+                _scriptingDefineSymbols.Clear();
+                _scriptingDefineSymbols.AddRange(_scriptingDefineSymbolsOriginal);
                 listView.Rebuild();
             }
 
             void Apply()
             {
-                this.removed.Clear();
+                _removed.Clear();
 
-                foreach (var c in this.scriptingDefineSymbolsOriginal)
+                foreach (var c in _scriptingDefineSymbolsOriginal)
                 {
-                    if (!this.scriptingDefineSymbols.Contains(c))
+                    if (!_scriptingDefineSymbols.Contains(c))
                     {
-                        this.removed.Add(c);
+                        _removed.Add(c);
                     }
                 }
 
-                this.scriptingDefineSymbolsOriginal.Clear();
-                this.scriptingDefineSymbolsOriginal.AddRange(this.scriptingDefineSymbols);
+                _scriptingDefineSymbolsOriginal.Clear();
+                _scriptingDefineSymbolsOriginal.AddRange(_scriptingDefineSymbols);
 
-                property.arraySize = this.scriptingDefineSymbols.Count;
+                property.arraySize = _scriptingDefineSymbols.Count;
 
-                for (var i = 0; i < this.scriptingDefineSymbols.Count; i++)
+                for (var i = 0; i < _scriptingDefineSymbols.Count; i++)
                 {
-                    property.GetArrayElementAtIndex(i).stringValue = this.scriptingDefineSymbols[i];
+                    property.GetArrayElementAtIndex(i).stringValue = _scriptingDefineSymbols[i];
                 }
 
                 property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
-                ScriptingDefineSymbolsEditor.ApplyDefinesToAll(this.scriptingDefineSymbols, this.removed);
+                ScriptingDefineSymbolsEditor.ApplyDefinesToAll(_scriptingDefineSymbols, _removed);
             }
         }
 
         protected override void PostElementCreation(VisualElement root, bool createdElements)
         {
-            var editorSettings = (EditorSettings)this.target;
+            var editorSettings = (EditorSettings)target;
 
             var button = new Button(() => EditorSettingsUtility.UpdateSettings(editorSettings))
             {

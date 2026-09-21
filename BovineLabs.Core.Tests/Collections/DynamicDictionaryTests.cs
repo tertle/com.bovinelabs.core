@@ -12,8 +12,8 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void IndexerSetAddsAndUpdates()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestEntry));
-            var buffer = this.Manager.GetBuffer<TestEntry>(entity);
+            var entity = Manager.CreateEntity(typeof(TestEntry));
+            var buffer = Manager.GetBuffer<TestEntry>(entity);
 
             var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
 
@@ -31,8 +31,8 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void RemoveMaintainsCluster()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestEntry));
-            var buffer = this.Manager.GetBuffer<TestEntry>(entity);
+            var entity = Manager.CreateEntity(typeof(TestEntry));
+            var buffer = Manager.GetBuffer<TestEntry>(entity);
 
             var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
 
@@ -53,8 +53,8 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void ReconstructAfterRemapUpdatesTags()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestEntry));
-            var buffer = this.Manager.GetBuffer<TestEntry>(entity);
+            var entity = Manager.CreateEntity(typeof(TestEntry));
+            var buffer = Manager.GetBuffer<TestEntry>(entity);
 
             var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
 
@@ -88,8 +88,8 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void TryAddResizesMultipleTimes()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestEntry));
-            var buffer = this.Manager.GetBuffer<TestEntry>(entity);
+            var entity = Manager.CreateEntity(typeof(TestEntry));
+            var buffer = Manager.GetBuffer<TestEntry>(entity);
 
             var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
 
@@ -113,8 +113,8 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void EnsureCapacityRoundsToPowerOfTwo()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestEntry));
-            var buffer = this.Manager.GetBuffer<TestEntry>(entity);
+            var entity = Manager.CreateEntity(typeof(TestEntry));
+            var buffer = Manager.GetBuffer<TestEntry>(entity);
 
             var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
 
@@ -138,8 +138,8 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void RemoveMarksTombstone()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestEntry));
-            var buffer = this.Manager.GetBuffer<TestEntry>(entity);
+            var entity = Manager.CreateEntity(typeof(TestEntry));
+            var buffer = Manager.GetBuffer<TestEntry>(entity);
 
             var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
 
@@ -163,8 +163,8 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void ClearRemovesEntries()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestEntry));
-            var buffer = this.Manager.GetBuffer<TestEntry>(entity);
+            var entity = Manager.CreateEntity(typeof(TestEntry));
+            var buffer = Manager.GetBuffer<TestEntry>(entity);
 
             var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
 
@@ -195,8 +195,8 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void WriteRebuildsHeaderAfterSpareCapacityRemoved()
         {
-            var entity = this.Manager.CreateEntity(typeof(TestEntry));
-            var buffer = this.Manager.GetBuffer<TestEntry>(entity);
+            var entity = Manager.CreateEntity(typeof(TestEntry));
+            var buffer = Manager.GetBuffer<TestEntry>(entity);
 
             var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
 
@@ -237,9 +237,9 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void LengthExcludesHeaderForRemappableValueEntries()
         {
-            var target = this.Manager.CreateEntity();
-            var entity = this.Manager.CreateEntity(typeof(EntityValueEntry));
-            var buffer = this.Manager.GetBuffer<EntityValueEntry>(entity);
+            var target = Manager.CreateEntity();
+            var entity = Manager.CreateEntity(typeof(EntityValueEntry));
+            var buffer = Manager.GetBuffer<EntityValueEntry>(entity);
 
             var map = buffer.AsDynamicDictionary<int, Entity, EntityValueEntry>();
 

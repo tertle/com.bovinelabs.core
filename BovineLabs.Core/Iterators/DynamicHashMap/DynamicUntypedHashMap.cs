@@ -11,28 +11,28 @@
     public unsafe struct DynamicUntypedHashMap<TKey>
         where TKey : unmanaged, IEquatable<TKey>
     {
-        private readonly DynamicBuffer<byte> buffer;
+        private readonly DynamicBuffer<byte> _buffer;
 
         [NativeDisableUnsafePtrRestriction]
-        private DynamicUntypedHashMapHelper<TKey>* helper;
+        private DynamicUntypedHashMapHelper<TKey>* _helper;
 
         internal DynamicUntypedHashMap(DynamicBuffer<byte> buffer)
         {
             CheckSize(buffer);
 
-            this.buffer = buffer;
-            this.helper = buffer.AsUntypedHelper<TKey>();
+            _buffer = buffer;
+            _helper = buffer.AsUntypedHelper<TKey>();
         }
 
-        public readonly bool IsCreated => this.buffer.IsCreated;
+        public readonly bool IsCreated => _buffer.IsCreated;
 
         public readonly bool IsEmpty
         {
             get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return !this.IsCreated || this.helper->IsEmpty;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return !IsCreated || _helper->IsEmpty;
             }
         }
 
@@ -41,9 +41,9 @@
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return this.helper->Count;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return _helper->Count;
             }
         }
 
@@ -55,40 +55,40 @@
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return this.helper->Capacity;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return _helper->Capacity;
             }
 
             set
             {
-                this.buffer.CheckWriteAccess();
-                this.RefCheck();
-                DynamicUntypedHashMapHelper<TKey>.Resize(this.buffer, ref this.helper, value);
+                _buffer.CheckWriteAccess();
+                RefCheck();
+                DynamicUntypedHashMapHelper<TKey>.Resize(_buffer, ref _helper, value);
             }
         }
 
-        internal DynamicUntypedHashMapHelper<TKey>* Helper => this.helper;
+        internal DynamicUntypedHashMapHelper<TKey>* Helper => _helper;
 
         public void Add<TValue>(TKey key, TValue item)
             where TValue : unmanaged
         {
-            DynamicUntypedHashMapHelper<TKey>.AddUnique(this.buffer, ref this.helper, key, item);
+            DynamicUntypedHashMapHelper<TKey>.AddUnique(_buffer, ref _helper, key, item);
         }
 
         public void AddOrSet<TValue>(TKey key, TValue item)
             where TValue : unmanaged
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            DynamicUntypedHashMapHelper<TKey>.AddOrSet(this.buffer, ref this.helper, key, item);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            DynamicUntypedHashMapHelper<TKey>.AddOrSet(_buffer, ref _helper, key, item);
         }
 
         public void AddOrSet(TKey key, void* value, int length)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            DynamicUntypedHashMapHelper<TKey>.AddOrSetRaw(this.buffer, ref this.helper, key, value, length);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            DynamicUntypedHashMapHelper<TKey>.AddOrSetRaw(_buffer, ref _helper, key, value, length);
         }
 
         /// <summary>
@@ -97,75 +97,75 @@
         public ref TValue GetOrAddRefUnsafe<TValue>(TKey key, TValue defaultValue = default)
             where TValue : unmanaged
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
 
-            var idx = this.helper->Find(key);
+            var idx = _helper->Find(key);
             if (idx == -1)
             {
-                idx = DynamicUntypedHashMapHelper<TKey>.AddUnique(this.buffer, ref this.helper, key, defaultValue);
+                idx = DynamicUntypedHashMapHelper<TKey>.AddUnique(_buffer, ref _helper, key, defaultValue);
             }
 
-            return ref DynamicUntypedHashMapHelper<TKey>.GetValue<TValue>(this.helper, idx);
+            return ref DynamicUntypedHashMapHelper<TKey>.GetValue<TValue>(_helper, idx);
         }
 
         public byte* GetOrAddRaw(TKey key, void* defaultValue, int length, out int storedLength)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
 
-            var idx = this.helper->Find(key);
+            var idx = _helper->Find(key);
             if (idx == -1)
             {
-                idx = DynamicUntypedHashMapHelper<TKey>.AddUniqueRaw(this.buffer, ref this.helper, key, defaultValue, length);
+                idx = DynamicUntypedHashMapHelper<TKey>.AddUniqueRaw(_buffer, ref _helper, key, defaultValue, length);
             }
 
-            return DynamicUntypedHashMapHelper<TKey>.GetValueRaw(this.helper, idx, out storedLength);
+            return DynamicUntypedHashMapHelper<TKey>.GetValueRaw(_helper, idx, out storedLength);
         }
 
         public readonly bool TryGetValue<TValue>(TKey key, out TValue item)
             where TValue : unmanaged
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->TryGetValue(key, out item);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->TryGetValue(key, out item);
         }
 
         public readonly bool TryGetValue(TKey key, out byte* value, out int length)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->TryGetValueRaw(key, out value, out length);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->TryGetValueRaw(key, out value, out length);
         }
 
         public readonly bool ContainsKey(TKey key)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
+            _buffer.CheckReadAccess();
+            RefCheck();
 
-            var idx = this.helper->Find(key);
+            var idx = _helper->Find(key);
             return idx != -1;
         }
 
         public readonly bool Remove(TKey key)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            return this.helper->TryRemove(key) != -1;
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            return _helper->TryRemove(key) != -1;
         }
 
         public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->GetKeyArray(allocator);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->GetKeyArray(allocator);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
         private readonly void RefCheck()
         {
-            if (this.helper != this.buffer.GetPtr())
+            if (_helper != _buffer.GetPtr())
             {
                 throw new ArgumentException("DynamicUntypedHashMap was not passed by ref when doing a resize and is now invalid");
             }

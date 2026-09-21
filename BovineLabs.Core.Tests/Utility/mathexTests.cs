@@ -7,7 +7,6 @@
     using Unity.Mathematics;
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "matching mathematics package")]
-    [SuppressMessage("ReSharper", "SA1300", Justification = "matching mathematics package")]
     public class mathexTests
     {
         [Test]

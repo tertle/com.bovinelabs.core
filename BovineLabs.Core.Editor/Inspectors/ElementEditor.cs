@@ -7,42 +7,42 @@
 
     public abstract class ElementEditor : Editor
     {
-        private VisualElement parent;
+        private VisualElement _parent;
 
-        protected VisualElement Parent => this.parent!;
+        protected VisualElement Parent => _parent!;
 
         protected virtual bool IncludeScript => true;
 
-        protected bool MultiEditing => this.targets.Length > 1;
+        protected bool MultiEditing => targets.Length > 1;
 
         public sealed override VisualElement CreateInspectorGUI()
         {
-            this.parent = new VisualElement();
+            _parent = new VisualElement();
 
-            if (this.IncludeScript)
+            if (IncludeScript)
             {
-                var scriptProperty = this.serializedObject.FindProperty("m_Script");
-                var scriptElement = CreatePropertyField(scriptProperty, this.serializedObject);
+                var scriptProperty = serializedObject.FindProperty("m_Script");
+                var scriptElement = CreatePropertyField(scriptProperty, serializedObject);
                 scriptElement.SetEnabled(false);
-                this.Parent.Add(scriptElement);
+                Parent.Add(scriptElement);
             }
 
-            var createElements = this.PreElementCreation(this.parent);
+            var createElements = PreElementCreation(_parent);
             if (createElements)
             {
-                foreach (var property in SerializedHelper.IterateAllChildren(this.serializedObject, false))
+                foreach (var property in SerializedHelper.IterateAllChildren(serializedObject, false))
                 {
-                    var element = this.CreateElement(property);
+                    var element = CreateElement(property);
                     if (element != null)
                     {
-                        this.Parent.Add(element);
+                        Parent.Add(element);
                     }
                 }
             }
 
-            this.PostElementCreation(this.Parent, createElements);
+            PostElementCreation(Parent, createElements);
 
-            return this.Parent;
+            return Parent;
         }
 
         protected static PropertyField CreatePropertyField(SerializedProperty property, SerializedObject serializedObject)
@@ -57,7 +57,7 @@
 
         protected virtual VisualElement CreateElement(SerializedProperty property)
         {
-            return CreatePropertyField(property, this.serializedObject);
+            return CreatePropertyField(property, serializedObject);
         }
 
         protected virtual bool PreElementCreation(VisualElement root)

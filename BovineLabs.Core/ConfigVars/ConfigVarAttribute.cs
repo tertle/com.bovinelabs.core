@@ -13,11 +13,11 @@
     {
         public ConfigVarAttribute(string name, string defaultValue, string description, bool isReadOnly = false, bool isHidden = false)
         {
-            this.Name = name;
-            this.Description = description;
-            this.DefaultValue = defaultValue;
-            this.IsReadOnly = isReadOnly;
-            this.IsHidden = isHidden;
+            Name = name;
+            Description = description;
+            DefaultValue = defaultValue;
+            IsReadOnly = isReadOnly;
+            IsHidden = isHidden;
         }
 
         public ConfigVarAttribute(string name, float defaultValue, string description, bool isReadOnly = false, bool isHidden = false)
@@ -67,14 +67,14 @@
                 return true;
             }
 
-            return base.Equals(other) && this.Name == other.Name;
+            return base.Equals(other) && Name == other.Name;
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return (base.GetHashCode() * 397) ^ this.Name.GetHashCode();
+                return (base.GetHashCode() * 397) ^ Name.GetHashCode();
             }
         }
 

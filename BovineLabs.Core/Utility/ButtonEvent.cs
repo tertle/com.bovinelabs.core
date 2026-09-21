@@ -6,9 +6,9 @@
 
         public bool TryConsume()
         {
-            if (this.Value)
+            if (Value)
             {
-                this.Value = false;
+                Value = false;
                 return true;
             }
 
@@ -17,9 +17,9 @@
 
         public bool TryProduce(bool value = true)
         {
-            if (value && !this.Value)
+            if (value && !Value)
             {
-                this.Value = true;
+                Value = true;
                 return true;
             }
 

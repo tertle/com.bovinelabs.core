@@ -14,44 +14,44 @@
     public struct SpatialMap<T> : IDisposable
         where T : unmanaged, ISpatialPosition
     {
-        private readonly float quantizeStep;
-        private readonly int quantizeSize;
-        private readonly int2 halfSize;
+        private readonly float _quantizeStep;
+        private readonly int _quantizeSize;
+        private readonly int2 _halfSize;
 
-        private NativeParallelMultiHashMap<int, int> map;
+        private NativeParallelMultiHashMap<int, int> _map;
 
         public SpatialMap(float quantizeStep, int size, Allocator allocator = Allocator.Persistent)
         {
-            this.quantizeStep = quantizeStep;
-            this.quantizeSize = (int)math.ceil(size / quantizeStep);
-            this.halfSize = new int2(size) / 2;
+            _quantizeStep = quantizeStep;
+            _quantizeSize = (int)math.ceil(size / quantizeStep);
+            _halfSize = new int2(size) / 2;
 
-            this.map = new NativeParallelMultiHashMap<int, int>(0, allocator);
+            _map = new NativeParallelMultiHashMap<int, int>(0, allocator);
         }
 
-        public bool IsCreated => this.map.IsCreated;
+        public bool IsCreated => _map.IsCreated;
 
         public void Dispose()
         {
-            this.map.Dispose();
+            _map.Dispose();
         }
 
         public void Dispose(JobHandle dependency)
         {
-            this.map.Dispose(dependency);
+            _map.Dispose(dependency);
         }
 
         public JobHandle Build(
             NativeList<T> positions, JobHandle dependency, ResizeNativeParallelHashMapJob resizeStub = default, QuantizeJob quantizeJob = default)
         {
-            return this.Build(positions.AsDeferredJobArray(), dependency, resizeStub, quantizeJob);
+            return Build(positions.AsDeferredJobArray(), dependency, resizeStub, quantizeJob);
         }
 
         public JobHandle BuildWithPositionOutput(
             NativeList<T> positions, NativeArray<float2> positionOutput, JobHandle dependency, ResizeNativeParallelHashMapJob resizeStub = default,
             QuantizePositionJob quantizeJob = default)
         {
-            return this.BuildWithPositionOutput(positions.AsDeferredJobArray(), positionOutput, dependency, resizeStub, quantizeJob);
+            return BuildWithPositionOutput(positions.AsDeferredJobArray(), positionOutput, dependency, resizeStub, quantizeJob);
         }
 
         [SuppressMessage("ReSharper", "UnusedParameter.Global", Justification = "Sneaky way to allow this to run in bursted ISystem")]
@@ -59,21 +59,21 @@
             NativeArray<T> positions, JobHandle dependency, ResizeNativeParallelHashMapJob resizeJob = default, QuantizeJob quantizeJob = default)
         {
             resizeJob.Length = positions;
-            resizeJob.Map = this.map;
+            resizeJob.Map = _map;
             dependency = resizeJob.Schedule(dependency);
 
             var workers = math.max(1, JobsUtility.JobWorkerCount);
             quantizeJob.Positions = positions;
-            quantizeJob.Map = this.map;
-            quantizeJob.QuantizeStep = this.quantizeStep;
-            quantizeJob.QuantizeWidth = this.quantizeSize;
-            quantizeJob.HalfSize = this.halfSize;
+            quantizeJob.Map = _map;
+            quantizeJob.QuantizeStep = _quantizeStep;
+            quantizeJob.QuantizeWidth = _quantizeSize;
+            quantizeJob.HalfSize = _halfSize;
             quantizeJob.Workers = workers;
             dependency = quantizeJob.ScheduleParallel(workers, 1, dependency);
 
             dependency = new SpatialMap.CalculateMap
             {
-                SpatialHashMap = this.map,
+                SpatialHashMap = _map,
             }.Schedule(dependency);
 
             return dependency;
@@ -85,22 +85,22 @@
             QuantizePositionJob quantizeJob = default)
         {
             resizeJob.Length = positions;
-            resizeJob.Map = this.map;
+            resizeJob.Map = _map;
             dependency = resizeJob.Schedule(dependency);
 
             var workers = math.max(1, JobsUtility.JobWorkerCount);
             quantizeJob.Positions = positions;
-            quantizeJob.Map = this.map;
+            quantizeJob.Map = _map;
             quantizeJob.PositionOutput = positionOutput;
-            quantizeJob.QuantizeStep = this.quantizeStep;
-            quantizeJob.QuantizeWidth = this.quantizeSize;
-            quantizeJob.HalfSize = this.halfSize;
+            quantizeJob.QuantizeStep = _quantizeStep;
+            quantizeJob.QuantizeWidth = _quantizeSize;
+            quantizeJob.HalfSize = _halfSize;
             quantizeJob.Workers = workers;
             dependency = quantizeJob.ScheduleParallel(workers, 1, dependency);
 
             dependency = new SpatialMap.CalculateMap
             {
-                SpatialHashMap = this.map,
+                SpatialHashMap = _map,
             }.Schedule(dependency);
 
             return dependency;
@@ -108,7 +108,7 @@
 
         public SpatialMap.ReadOnly AsReadOnly()
         {
-            return new SpatialMap.ReadOnly(this.quantizeStep, this.quantizeSize, this.halfSize, this.map);
+            return new SpatialMap.ReadOnly(_quantizeStep, _quantizeSize, _halfSize, _map);
         }
 
         // Jobs outside to avoid generic issues
@@ -122,13 +122,13 @@
 
             public void Execute()
             {
-                if (this.Map.Capacity < this.Length.Length)
+                if (Map.Capacity < Length.Length)
                 {
-                    this.Map.Capacity = this.Length.Length;
+                    Map.Capacity = Length.Length;
                 }
 
-                this.Map.Clear();
-                this.Map.SetAllocatedIndexLength(this.Length.Length);
+                Map.Clear();
+                Map.SetAllocatedIndexLength(Length.Length);
             }
         }
 
@@ -150,26 +150,26 @@
 
             public void Execute(int index)
             {
-                var length = this.Positions.Length / this.Workers;
+                var length = Positions.Length / Workers;
                 var start = index * length;
                 var end = start + length;
-                if (index == this.Workers - 1)
+                if (index == Workers - 1)
                 {
                     // Last thread handles remainder
-                    end += this.Positions.Length % this.Workers;
+                    end += Positions.Length % Workers;
                 }
 
-                var keys = (int*)this.Map.GetUnsafeBucketData().keys;
-                var values = (int*)this.Map.GetUnsafeBucketData().values;
+                var keys = (int*)Map.GetUnsafeBucketData().keys;
+                var values = (int*)Map.GetUnsafeBucketData().values;
 
                 for (var entityInQueryIndex = start; entityInQueryIndex < end; entityInQueryIndex++)
                 {
-                    var position = this.Positions[entityInQueryIndex].Position;
-                    var quantized = SpatialMap.Quantized(position, this.QuantizeStep, this.HalfSize);
+                    var position = Positions[entityInQueryIndex].Position;
+                    var quantized = SpatialMap.Quantized(position, QuantizeStep, HalfSize);
 
-                    this.ValidatePosition(position, quantized);
+                    ValidatePosition(position, quantized);
 
-                    var hashed = SpatialMap.Hash(quantized, this.QuantizeWidth);
+                    var hashed = SpatialMap.Hash(quantized, QuantizeWidth);
                     keys[entityInQueryIndex] = hashed;
                     values[entityInQueryIndex] = entityInQueryIndex;
                 }
@@ -179,13 +179,13 @@
             [Conditional("UNITY_DOTS_DEBUG")]
             private void ValidatePosition(float2 position, int2 quantized)
             {
-                if (SpatialMap.IsWithinBounds(quantized, this.QuantizeWidth))
+                if (SpatialMap.IsWithinBounds(quantized, QuantizeWidth))
                 {
                     return;
                 }
 
-                var min = new int2(-this.HalfSize);
-                var max = new int2(this.HalfSize - 1);
+                var min = new int2(-HalfSize);
+                var max = new int2(HalfSize - 1);
 
                 BLGlobalLogger.LogError512($"Position {position} is outside the size of the world, min={min} max={max}");
                 throw new ArgumentException($"Position {position} is outside the size of the world, min={min} max={max}");
@@ -214,29 +214,29 @@
 
             public void Execute(int index)
             {
-                var length = this.Positions.Length / this.Workers;
+                var length = Positions.Length / Workers;
                 var start = index * length;
                 var end = start + length;
-                if (index == this.Workers - 1)
+                if (index == Workers - 1)
                 {
                     // Last thread handles remainder
-                    end += this.Positions.Length % this.Workers;
+                    end += Positions.Length % Workers;
                 }
 
-                var keys = (int*)this.Map.GetUnsafeBucketData().keys;
-                var values = (int*)this.Map.GetUnsafeBucketData().values;
+                var keys = (int*)Map.GetUnsafeBucketData().keys;
+                var values = (int*)Map.GetUnsafeBucketData().values;
 
                 for (var entityInQueryIndex = start; entityInQueryIndex < end; entityInQueryIndex++)
                 {
-                    var position = this.Positions[entityInQueryIndex].Position;
-                    var quantized = SpatialMap.Quantized(position, this.QuantizeStep, this.HalfSize);
+                    var position = Positions[entityInQueryIndex].Position;
+                    var quantized = SpatialMap.Quantized(position, QuantizeStep, HalfSize);
 
-                    this.ValidatePosition(position, quantized);
+                    ValidatePosition(position, quantized);
 
-                    var hashed = SpatialMap.Hash(quantized, this.QuantizeWidth);
+                    var hashed = SpatialMap.Hash(quantized, QuantizeWidth);
                     keys[entityInQueryIndex] = hashed;
                     values[entityInQueryIndex] = entityInQueryIndex;
-                    this.PositionOutput[entityInQueryIndex] = position;
+                    PositionOutput[entityInQueryIndex] = position;
                 }
             }
 
@@ -244,13 +244,13 @@
             [Conditional("UNITY_DOTS_DEBUG")]
             private void ValidatePosition(float2 position, int2 quantized)
             {
-                if (SpatialMap.IsWithinBounds(quantized, this.QuantizeWidth))
+                if (SpatialMap.IsWithinBounds(quantized, QuantizeWidth))
                 {
                     return;
                 }
 
-                var min = new int2(-this.HalfSize);
-                var max = new int2(this.HalfSize - 1);
+                var min = new int2(-HalfSize);
+                var max = new int2(HalfSize - 1);
 
                 BLGlobalLogger.LogError512($"Position {position} is outside the size of the world, min={min} max={max}");
                 throw new ArgumentException($"Position {position} is outside the size of the world, min={min} max={max}");
@@ -295,16 +295,16 @@
 
         public readonly struct ReadOnly
         {
-            private readonly float quantizeStep;
-            private readonly int quantizeWidth;
-            private readonly int2 halfSize;
+            private readonly float _quantizeStep;
+            private readonly int _quantizeWidth;
+            private readonly int2 _halfSize;
 
             public ReadOnly(float quantizeStep, int quantizeWidth, int2 halfSize, NativeParallelMultiHashMap<int, int> map)
             {
-                this.quantizeStep = quantizeStep;
-                this.quantizeWidth = quantizeWidth;
-                this.halfSize = halfSize;
-                this.Map = map;
+                _quantizeStep = quantizeStep;
+                _quantizeWidth = quantizeWidth;
+                _halfSize = halfSize;
+                Map = map;
             }
 
             [field: ReadOnly]
@@ -313,31 +313,31 @@
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int2 Quantized(float2 position)
             {
-                return SpatialMap.Quantized(position, this.quantizeStep, this.halfSize);
+                return SpatialMap.Quantized(position, _quantizeStep, _halfSize);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int Hash(int2 quantized)
             {
-                return SpatialMap.Hash(quantized, this.quantizeWidth);
+                return SpatialMap.Hash(quantized, _quantizeWidth);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool IsWithinBounds(int2 quantized)
             {
-                return SpatialMap.IsWithinBounds(quantized, this.quantizeWidth);
+                return SpatialMap.IsWithinBounds(quantized, _quantizeWidth);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int2 Clamp(int2 quantized)
             {
-                return SpatialMap.Clamp(quantized, this.quantizeWidth);
+                return SpatialMap.Clamp(quantized, _quantizeWidth);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public float CellMinDistanceSq(float2 position, int2 cell)
             {
-                return SpatialMap.CellMinDistanceSq(position, cell, this.quantizeStep, this.halfSize);
+                return SpatialMap.CellMinDistanceSq(position, cell, _quantizeStep, _halfSize);
             }
         }
 
@@ -348,7 +348,7 @@
 
             public void Execute()
             {
-                this.SpatialHashMap.RecalculateBuckets();
+                SpatialHashMap.RecalculateBuckets();
             }
         }
     }

@@ -86,8 +86,8 @@ namespace BovineLabs.Core.Tests.Extensions
                 var isCleared = array[0] == 0 && array[1] == 0 && array[2] == 0 && array[3] == 0;
 
                 array[2] = 42;
-                this.Result[0] = isCleared ? 1 : 0;
-                this.Result[1] = array[2];
+                Result[0] = isCleared ? 1 : 0;
+                Result[1] = array[2];
                 array.Dispose();
             }
         }

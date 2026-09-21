@@ -19,8 +19,8 @@
                 return new Label($"{typeof(T).Name} can only be applied to integer fields.");
             }
 
-            var attr = (T)this.attribute;
-            var keyValues = this.GetKeyValues(attr);
+            var attr = (T)attribute;
+            var keyValues = GetKeyValues(attr);
 
             if (keyValues == null)
             {

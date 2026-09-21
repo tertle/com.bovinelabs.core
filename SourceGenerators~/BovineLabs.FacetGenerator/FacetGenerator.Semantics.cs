@@ -622,8 +622,8 @@ namespace BovineLabs.FacetGenerator
         {
             public FacetTraversalKey(INamedTypeSymbol facetType, string path)
             {
-                this.FacetType = facetType;
-                this.Path = path ?? string.Empty;
+                FacetType = facetType;
+                Path = path ?? string.Empty;
             }
 
             public INamedTypeSymbol FacetType { get; }
@@ -632,22 +632,22 @@ namespace BovineLabs.FacetGenerator
 
             public bool Equals(FacetTraversalKey other)
             {
-                return SymbolEqualityComparer.Default.Equals(this.FacetType, other.FacetType) &&
-                       string.Equals(this.Path, other.Path, StringComparison.Ordinal);
+                return SymbolEqualityComparer.Default.Equals(FacetType, other.FacetType) &&
+                       string.Equals(Path, other.Path, StringComparison.Ordinal);
             }
 
             public override bool Equals(object obj)
             {
-                return obj is FacetTraversalKey other && this.Equals(other);
+                return obj is FacetTraversalKey other && Equals(other);
             }
 
             public override int GetHashCode()
             {
-                var hash = SymbolEqualityComparer.Default.GetHashCode(this.FacetType);
+                var hash = SymbolEqualityComparer.Default.GetHashCode(FacetType);
 
                 unchecked
                 {
-                    hash = (hash * 397) ^ StringComparer.Ordinal.GetHashCode(this.Path);
+                    hash = (hash * 397) ^ StringComparer.Ordinal.GetHashCode(Path);
                 }
 
                 return hash;

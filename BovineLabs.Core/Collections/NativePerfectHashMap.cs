@@ -2,6 +2,7 @@
 {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using Unity.Burst;
     using Unity.Collections;
@@ -13,77 +14,81 @@
         where TValue : unmanaged, IEquatable<TValue>
     {
         [NativeDisableUnsafePtrRestriction]
-        private UnsafePerfectHashMap<TKey, TValue>* data;
+        private UnsafePerfectHashMap<TKey, TValue>* _data;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         internal AtomicSafetyHandle m_Safety;
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<UnsafePerfectHashMap<TKey, TValue>>();
 #endif
 
         public NativePerfectHashMap(NativeArray<TKey> keys, NativeArray<TValue> values, TValue nullValue, AllocatorManager.AllocatorHandle allocator)
         {
-            this.data = UnsafePerfectHashMap<TKey, TValue>.Alloc(keys, values, nullValue, allocator);
+            _data = UnsafePerfectHashMap<TKey, TValue>.Alloc(keys, values, nullValue, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
 
             if (UnsafeUtility.IsNativeContainerType<TKey>() || UnsafeUtility.IsNativeContainerType<TValue>())
             {
-                AtomicSafetyHandle.SetNestedContainer(this.m_Safety, true);
+                AtomicSafetyHandle.SetNestedContainer(m_Safety, true);
             }
 
-            CollectionHelper.SetStaticSafetyId<NativePerfectHashMap<TKey, TValue>>(ref this.m_Safety, ref s_staticSafetyId.Data);
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(this.m_Safety, true);
+            CollectionHelper.SetStaticSafetyId<NativePerfectHashMap<TKey, TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
 
         public readonly bool IsCreated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.data != null;
+            get => _data != null;
         }
 
         public TValue this[TKey key]
         {
             get
             {
-                this.CheckRead();
-                return (*this.data)[key];
+                CheckRead();
+                return (*_data)[key];
             }
 
             set
             {
-                this.CheckWrite();
-                (*this.data)[key] = value;
+                CheckWrite();
+                (*_data)[key] = value;
             }
         }
 
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (!AtomicSafetyHandle.IsDefaultValue(this.m_Safety))
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
             {
-                AtomicSafetyHandle.CheckExistsAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
             }
 #endif
 
-            if (!this.IsCreated)
+            if (!IsCreated)
             {
                 return;
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
 
-            UnsafePerfectHashMap<TKey, TValue>.Free(this.data);
-            this.data = null;
+            UnsafePerfectHashMap<TKey, TValue>.Free(_data);
+            _data = null;
         }
 
         public bool TryGetValue(TKey key, out TValue item)
         {
-            this.CheckRead();
-            return this.data->TryGetValue(key, out item);
+            CheckRead();
+            return _data->TryGetValue(key, out item);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -91,7 +96,7 @@
         private readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
         }
 
@@ -100,7 +105,7 @@
         private void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(this.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
         }
 

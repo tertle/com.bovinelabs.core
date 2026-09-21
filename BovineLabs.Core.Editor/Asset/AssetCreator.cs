@@ -18,31 +18,31 @@ namespace BovineLabs.Core.Editor.Asset
 
     public class AssetCreator
     {
-        private readonly string path;
-        private readonly SerializedObject serializedObject;
-        private readonly SerializedProperty serializedProperty;
-        private readonly Type type;
-        private readonly bool isAbstract;
-        private readonly List<SearchView.Item> items = new();
+        private readonly string _path;
+        private readonly SerializedObject _serializedObject;
+        private readonly SerializedProperty _serializedProperty;
+        private readonly Type _type;
+        private readonly bool _isAbstract;
+        private readonly List<SearchView.Item> _items = new();
 
-        private ListView listView;
+        private ListView _listView;
 
         public AssetCreator(SerializedObject serializedObject, SerializedProperty serializedProperty, Type type)
         {
             var attr = TryGetAttribute(serializedObject, serializedProperty, type);
 
-            this.serializedObject = serializedObject;
-            this.serializedProperty = serializedProperty;
-            this.type = type;
-            this.serializedProperty.isExpanded = false;
+            _serializedObject = serializedObject;
+            _serializedProperty = serializedProperty;
+            _type = type;
+            _serializedProperty.isExpanded = false;
 
-            this.isAbstract = this.type.IsAbstract;
+            _isAbstract = _type.IsAbstract;
 
-            if (this.isAbstract)
+            if (_isAbstract)
             {
                 foreach (var i in ReflectionUtility.GetAllImplementations(type))
                 {
-                    this.items.Add(new SearchView.Item
+                    _items.Add(new SearchView.Item
                     {
                         Path = i.Name,
                         Data = i,
@@ -50,13 +50,13 @@ namespace BovineLabs.Core.Editor.Asset
                 }
             }
 
-            this.Element = PropertyUtil.CreateProperty(serializedProperty, this.serializedObject);
+            Element = PropertyUtil.CreateProperty(serializedProperty, _serializedObject);
 
             if (attr != null)
             {
-                this.Element.RegisterCallback<GeometryChangedEvent>(this.Init);
-                this.Element.AddManipulator(new ContextualMenuManipulator(this.MenuBuilder));
-                this.path = this.isAbstract ? AssetUtility.GetDefaultPathWithoutFileName(attr) : AssetUtility.GetDefaultPath(attr);
+                Element.RegisterCallback<GeometryChangedEvent>(Init);
+                Element.AddManipulator(new ContextualMenuManipulator(MenuBuilder));
+                _path = _isAbstract ? AssetUtility.GetDefaultPathWithoutFileName(attr) : AssetUtility.GetDefaultPath(attr);
             }
         }
 
@@ -83,41 +83,41 @@ namespace BovineLabs.Core.Editor.Asset
 
         private void Init(GeometryChangedEvent evt)
         {
-            this.listView = this.Element.Q<ListView>();
-            if (this.listView == null)
+            _listView = Element.Q<ListView>();
+            if (_listView == null)
             {
                 return;
             }
 
-            this.Element.UnregisterCallback<GeometryChangedEvent>(this.Init);
+            Element.UnregisterCallback<GeometryChangedEvent>(Init);
 
-            var removeButton = this.listView.Q<Button>("unity-list-view__remove-button");
+            var removeButton = _listView.Q<Button>("unity-list-view__remove-button");
             removeButton.parent.Remove(removeButton);
 
-            this.listView.showBoundCollectionSize = false;
+            _listView.showBoundCollectionSize = false;
 
-            this.listView.itemsAdded += ints =>
+            _listView.itemsAdded += ints =>
             {
                 var count = ints.Count();
 
-                if (this.isAbstract)
+                if (_isAbstract)
                 {
                     // Remove the elements unity just force added, they will be added back properly via autoref
-                    this.serializedObject.Update();
-                    this.serializedProperty.arraySize -= count;
-                    this.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+                    _serializedObject.Update();
+                    _serializedProperty.arraySize -= count;
+                    _serializedObject.ApplyModifiedPropertiesWithoutUndo();
 
                     var searchWindow = SearchWindow.Create();
 
-                    searchWindow.Items = this.items;
+                    searchWindow.Items = _items;
                     searchWindow.OnSelection += item =>
                     {
                         var t = (Type)item.Data;
-                        var p = Path.Combine(this.path!, item.Name + ".asset");
+                        var p = Path.Combine(_path!, item.Name + ".asset");
                         Create(count, t, p);
                     };
 
-                    var button = this.listView.Q<Button>("unity-list-view__add-button");
+                    var button = _listView.Q<Button>("unity-list-view__add-button");
 
                     var screenPosition = VisualElementUtil.GetScreenPosition(button);
                     var size = new Rect(screenPosition.x, screenPosition.y + button.worldBound.height, 400, 400);
@@ -126,7 +126,7 @@ namespace BovineLabs.Core.Editor.Asset
                 }
                 else
                 {
-                    Create(count, this.type, this.path!);
+                    Create(count, _type, _path!);
                 }
 
                 return;
@@ -140,22 +140,22 @@ namespace BovineLabs.Core.Editor.Asset
                 }
             };
 
-            this.listView.Q<VisualElement>("unity-content-container").SetEnabled(false);
+            _listView.Q<VisualElement>("unity-content-container").SetEnabled(false);
         }
 
         private void MenuBuilder(ContextualMenuPopulateEvent evt)
         {
             evt.menu.AppendAction("Remove Missing", _ =>
             {
-                for (var i = this.serializedProperty.arraySize - 1; i >= 0; i--)
+                for (var i = _serializedProperty.arraySize - 1; i >= 0; i--)
                 {
-                    if (this.serializedProperty.GetArrayElementAtIndex(i).objectReferenceValue == null)
+                    if (_serializedProperty.GetArrayElementAtIndex(i).objectReferenceValue == null)
                     {
-                        this.serializedProperty.DeleteArrayElementAtIndex(i);
+                        _serializedProperty.DeleteArrayElementAtIndex(i);
                     }
                 }
 
-                this.serializedObject.ApplyModifiedProperties();
+                _serializedObject.ApplyModifiedProperties();
             });
         }
     }

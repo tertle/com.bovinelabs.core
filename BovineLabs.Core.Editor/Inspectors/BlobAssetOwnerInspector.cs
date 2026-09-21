@@ -15,17 +15,17 @@
 
             var ptr = new TextField
             {
-                label = this.DisplayName,
-                value = new IntPtr(this.Target.BlobAssetBatchPtr).ToString(),
+                label = DisplayName,
+                value = new IntPtr(Target.BlobAssetBatchPtr).ToString(),
             };
 
             ptr.SetEnabled(false);
 
             parent.Add(ptr);
 
-            if (this.Target.IsCreated)
+            if (Target.IsCreated)
             {
-                var wrapper = UnsafeUtility.AsRef<BlobAssetBatchWrapper>(this.Target.BlobAssetBatchPtr);
+                var wrapper = UnsafeUtility.AsRef<BlobAssetBatchWrapper>(Target.BlobAssetBatchPtr);
 
                 var totalDataSize = new IntegerField
                 {

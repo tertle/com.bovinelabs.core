@@ -5,23 +5,23 @@ namespace BovineLabs.Core.Tests.Facet
 
     public partial struct FacetTest : IFacet
     {
-        private Entity entity;
-        private RefRO<ComponentA> compA;
-        private RefRW<ComponentB> compB;
-        [FacetOptional] private RefRO<ComponentC> compC;
-        [FacetOptional] private RefRW<ComponentD> compD;
-        private EnabledRefRO<EnabledA> enableA;
-        private FacetEnabledRefRW<EnabledB> enableB;
-        [FacetOptional] private EnabledRefRO<EnabledC> enableC;
-        [FacetOptional] private FacetEnabledRefRW<EnabledD> enableD;
-        [ReadOnly] private DynamicBuffer<BufferA> bufferA;
-        private DynamicBuffer<BufferB> bufferB;
-        [FacetOptional] [ReadOnly] private DynamicBuffer<BufferC> bufferC;
-        [FacetOptional] private DynamicBuffer<BufferD> bufferD;
-        [ReadOnly][Singleton] private SingletonA singletonA;
-        [ReadOnly][Singleton] private DynamicBuffer<SingletonB> singletonB;
-        [Facet] private Facet2Test facet2;
-        [FacetOptional] [Facet] private Facet3Test facet3;
+        private Entity _entity;
+        private RefRO<ComponentA> _compA;
+        private RefRW<ComponentB> _compB;
+        [FacetOptional] private RefRO<ComponentC> _compC;
+        [FacetOptional] private RefRW<ComponentD> _compD;
+        private EnabledRefRO<EnabledA> _enableA;
+        private FacetEnabledRefRW<EnabledB> _enableB;
+        [FacetOptional] private EnabledRefRO<EnabledC> _enableC;
+        [FacetOptional] private FacetEnabledRefRW<EnabledD> _enableD;
+        [ReadOnly] private DynamicBuffer<BufferA> _bufferA;
+        private DynamicBuffer<BufferB> _bufferB;
+        [FacetOptional] [ReadOnly] private DynamicBuffer<BufferC> _bufferC;
+        [FacetOptional] private DynamicBuffer<BufferD> _bufferD;
+        [ReadOnly][Singleton] private SingletonA _singletonA;
+        [ReadOnly][Singleton] private DynamicBuffer<SingletonB> _singletonB;
+        [Facet] private Facet2Test _facet2;
+        [FacetOptional] [Facet] private Facet3Test _facet3;
     }
 
     public partial struct Facet2Test : IFacet

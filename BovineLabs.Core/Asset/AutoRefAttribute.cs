@@ -13,8 +13,8 @@ namespace BovineLabs.Core.Asset
         public AutoRefAttribute(string managerType, string fieldName)
             : this(managerType, fieldName, null, null, null)
         {
-            this.ManagerType = managerType;
-            this.FieldName = fieldName;
+            ManagerType = managerType;
+            FieldName = fieldName;
         }
 
         public AutoRefAttribute(string managerType, string fieldName, string key, string subDirectory)
@@ -24,12 +24,12 @@ namespace BovineLabs.Core.Asset
 
         public AutoRefAttribute(string managerType, string fieldName, string directoryKey, string defaultDirectory, string defaultFileName)
         {
-            this.ManagerType = managerType;
-            this.FieldName = fieldName;
+            ManagerType = managerType;
+            FieldName = fieldName;
 
-            this.DirectoryKey = directoryKey;
-            this.DefaultDirectory = defaultDirectory;
-            this.DefaultFileName = defaultFileName;
+            DirectoryKey = directoryKey;
+            DefaultDirectory = defaultDirectory;
+            DefaultFileName = defaultFileName;
         }
 
         public string ManagerType { get; }

@@ -23,12 +23,12 @@ namespace BovineLabs.Core.Collections
 
             internal Reader(ref UnsafeThreadStream stream)
             {
-                this.m_BlockStream = stream.blockData;
-                this.m_CurrentBlock = null;
-                this.m_CurrentPtr = null;
-                this.m_CurrentBlockEnd = null;
-                this.m_RemainingItemCount = 0;
-                this.m_LastBlockSize = 0;
+                m_BlockStream = stream._blockData;
+                m_CurrentBlock = null;
+                m_CurrentPtr = null;
+                m_CurrentBlockEnd = null;
+                m_RemainingItemCount = 0;
+                m_LastBlockSize = 0;
             }
 
             /// <summary>
@@ -36,14 +36,14 @@ namespace BovineLabs.Core.Collections
             /// </summary>
             public int BeginForEachIndex(int foreachIndex)
             {
-                this.m_RemainingItemCount = this.m_BlockStream->Ranges[foreachIndex].ElementCount;
-                this.m_LastBlockSize = this.m_BlockStream->Ranges[foreachIndex].LastOffset;
+                m_RemainingItemCount = m_BlockStream->Ranges[foreachIndex].ElementCount;
+                m_LastBlockSize = m_BlockStream->Ranges[foreachIndex].LastOffset;
 
-                this.m_CurrentBlock = this.m_BlockStream->Ranges[foreachIndex].Block;
-                this.m_CurrentPtr = (byte*)this.m_CurrentBlock + this.m_BlockStream->Ranges[foreachIndex].OffsetInFirstBlock;
-                this.m_CurrentBlockEnd = (byte*)this.m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
+                m_CurrentBlock = m_BlockStream->Ranges[foreachIndex].Block;
+                m_CurrentPtr = (byte*)m_CurrentBlock + m_BlockStream->Ranges[foreachIndex].OffsetInFirstBlock;
+                m_CurrentBlockEnd = (byte*)m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
 
-                return this.m_RemainingItemCount;
+                return m_RemainingItemCount;
             }
 
             /// <summary>
@@ -55,24 +55,24 @@ namespace BovineLabs.Core.Collections
 
             public int ForEachCount => UnsafeThreadStream.ForEachCount;
 
-            public int RemainingItemCount => this.m_RemainingItemCount;
+            public int RemainingItemCount => m_RemainingItemCount;
 
             public byte* ReadUnsafePtr(int size)
             {
-                this.m_RemainingItemCount--;
+                m_RemainingItemCount--;
 
-                var ptr = this.m_CurrentPtr;
-                this.m_CurrentPtr += size;
+                var ptr = m_CurrentPtr;
+                m_CurrentPtr += size;
 
-                if (this.m_CurrentPtr > this.m_CurrentBlockEnd)
+                if (m_CurrentPtr > m_CurrentBlockEnd)
                 {
-                    this.m_CurrentBlock = this.m_CurrentBlock->Next;
-                    this.m_CurrentPtr = this.m_CurrentBlock->Data;
+                    m_CurrentBlock = m_CurrentBlock->Next;
+                    m_CurrentPtr = m_CurrentBlock->Data;
 
-                    this.m_CurrentBlockEnd = (byte*)this.m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
+                    m_CurrentBlockEnd = (byte*)m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
 
-                    ptr = this.m_CurrentPtr;
-                    this.m_CurrentPtr += size;
+                    ptr = m_CurrentPtr;
+                    m_CurrentPtr += size;
                 }
 
                 return ptr;
@@ -82,7 +82,7 @@ namespace BovineLabs.Core.Collections
                 where T : unmanaged
             {
                 var size = UnsafeUtility.SizeOf<T>();
-                return ref UnsafeUtility.AsRef<T>(this.ReadUnsafePtr(size));
+                return ref UnsafeUtility.AsRef<T>(ReadUnsafePtr(size));
             }
 
             public ref T Peek<T>()
@@ -90,10 +90,10 @@ namespace BovineLabs.Core.Collections
             {
                 var size = UnsafeUtility.SizeOf<T>();
 
-                var ptr = this.m_CurrentPtr;
-                if (ptr + size > this.m_CurrentBlockEnd)
+                var ptr = m_CurrentPtr;
+                if (ptr + size > m_CurrentBlockEnd)
                 {
-                    ptr = this.m_CurrentBlock->Next->Data;
+                    ptr = m_CurrentBlock->Next->Data;
                 }
 
                 return ref UnsafeUtility.AsRef<T>(ptr);
@@ -104,7 +104,7 @@ namespace BovineLabs.Core.Collections
                 var itemCount = 0;
                 for (var i = 0; i != UnsafeThreadStream.ForEachCount; i++)
                 {
-                    itemCount += this.m_BlockStream->Ranges[i].ElementCount;
+                    itemCount += m_BlockStream->Ranges[i].ElementCount;
                 }
 
                 return itemCount;
@@ -118,13 +118,13 @@ namespace BovineLabs.Core.Collections
                 // Write the remainder first as this helps avoid an extra chunk allocation most times
                 if (allocationRemainder > 0)
                 {
-                    var ptr = this.ReadUnsafePtr(allocationRemainder);
+                    var ptr = ReadUnsafePtr(allocationRemainder);
                     UnsafeUtility.MemCpy(buffer + (allocationCount * MaxLargeSize), ptr, allocationRemainder);
                 }
 
                 for (var i = 0; i < allocationCount; i++)
                 {
-                    var ptr = this.ReadUnsafePtr(MaxLargeSize);
+                    var ptr = ReadUnsafePtr(MaxLargeSize);
                     UnsafeUtility.MemCpy(buffer + (i * MaxLargeSize), ptr, MaxLargeSize);
                 }
             }
@@ -140,13 +140,13 @@ namespace BovineLabs.Core.Collections
                 // Write the remainder first as this helps avoid an extra chunk allocation most times
                 if (allocationRemainder > 0)
                 {
-                    var ptr = this.ReadUnsafePtr(allocationRemainder);
+                    var ptr = ReadUnsafePtr(allocationRemainder);
                     UnsafeUtility.MemCpy(buffer + (allocationCount * MaxLargeSize), ptr, allocationRemainder);
                 }
 
                 for (var i = 0; i < allocationCount; i++)
                 {
-                    var ptr = this.ReadUnsafePtr(MaxLargeSize);
+                    var ptr = ReadUnsafePtr(MaxLargeSize);
                     UnsafeUtility.MemCpy(buffer + (i * MaxLargeSize), ptr, MaxLargeSize);
                 }
             }

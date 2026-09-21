@@ -12,7 +12,7 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void EmptyBufferSupportsZeroCapacityReads()
         {
-            var set = this.CreateSet(out _, out _);
+            var set = CreateSet(out _, out _);
 
             set.EnsureCapacity(0);
 
@@ -26,7 +26,7 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void DuplicateInsertionUsesSetSemantics()
         {
-            var set = this.CreateSet(out _, out _);
+            var set = CreateSet(out _, out _);
 
             Assert.IsTrue(set.TryAdd(7));
             Assert.IsFalse(set.TryAdd(7));
@@ -37,7 +37,7 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void CollisionsRemainQueryableAcrossGrowth()
         {
-            var set = this.CreateSet(out _, out var buffer);
+            var set = CreateSet(out _, out var buffer);
             set.EnsureCapacity(8);
 
             for (var i = 0; i < 32; i++)
@@ -56,7 +56,7 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void RemovalMaintainsClusterAndReusesTombstone()
         {
-            var set = this.CreateSet(out _, out var buffer);
+            var set = CreateSet(out _, out var buffer);
             set.EnsureCapacity(8);
 
             Assert.IsTrue(set.TryAdd(1));
@@ -87,7 +87,7 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void ClearPreservesCapacityAndRemovesKeys()
         {
-            var set = this.CreateSet(out _, out _);
+            var set = CreateSet(out _, out _);
             for (var i = 0; i < 12; i++)
             {
                 set.Add(i);
@@ -111,12 +111,12 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void ReadOnlyBufferSupportsContainsCountAndKeyCopy()
         {
-            var set = this.CreateSet(out var entity, out _);
+            var set = CreateSet(out var entity, out _);
             set.Add(3);
             set.Add(11);
             set.Add(19);
 
-            var readOnlyBuffer = this.Manager.GetBuffer<TestEntry>(entity, true);
+            var readOnlyBuffer = Manager.GetBuffer<TestEntry>(entity, true);
             var readOnlySet = readOnlyBuffer.AsDynamicHashSet<int, TestEntry>();
             var keys = readOnlySet.GetKeyArray(Allocator.Temp);
 
@@ -130,7 +130,7 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void ReconstructAfterRemapUpdatesTagsAndPositions()
         {
-            var set = this.CreateSet(out _, out var buffer);
+            var set = CreateSet(out _, out var buffer);
             set.Add(1);
             set.Add(9);
 
@@ -157,8 +157,8 @@ namespace BovineLabs.Core.Tests.Collections
 
         private DynamicHashSet<int, TestEntry> CreateSet(out Entity entity, out DynamicBuffer<TestEntry> buffer)
         {
-            entity = this.Manager.CreateEntity(typeof(TestEntry));
-            buffer = this.Manager.GetBuffer<TestEntry>(entity);
+            entity = Manager.CreateEntity(typeof(TestEntry));
+            buffer = Manager.GetBuffer<TestEntry>(entity);
             return buffer.AsDynamicHashSet<int, TestEntry>();
         }
 
@@ -169,14 +169,14 @@ namespace BovineLabs.Core.Tests.Collections
 
             public uint Tag
             {
-                get => this.TagField;
-                set => this.TagField = value;
+                get => TagField;
+                set => TagField = value;
             }
 
             public int Key
             {
-                get => this.KeyField;
-                set => this.KeyField = value;
+                get => KeyField;
+                set => KeyField = value;
             }
         }
     }

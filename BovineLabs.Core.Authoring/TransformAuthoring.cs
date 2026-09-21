@@ -12,7 +12,7 @@
     {
         public override void Bake(TransformAuthoring authoring)
         {
-            this.GetEntity(authoring.TransformUsageFlags);
+            GetEntity(authoring.TransformUsageFlags);
         }
     }
 }

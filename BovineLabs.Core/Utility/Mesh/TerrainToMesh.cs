@@ -66,64 +66,64 @@ namespace BovineLabs.Core.Utility
 
         public struct Result : IDisposable
         {
-            private JobHandle jobHandle;
-            private ComputeTerrainMeshJob job;
+            private JobHandle _jobHandle;
+            private ComputeTerrainMeshJob _job;
 
             public Result(ComputeTerrainMeshJob job, JobHandle jobHandle)
             {
-                this.job = job;
-                this.jobHandle = jobHandle;
+                _job = job;
+                _jobHandle = jobHandle;
             }
 
-            public bool Done => this.jobHandle.IsCompleted;
+            public bool Done => _jobHandle.IsCompleted;
 
-            public JobHandle Dependency => this.jobHandle;
+            public JobHandle Dependency => _jobHandle;
 
             public void Dispose()
             {
-                this.job.DisposeArrays();
+                _job.DisposeArrays();
             }
 
             public Mesh GetMesh()
             {
-                Check.Assume(this.Done);
+                Check.Assume(Done);
 
                 var mesh = new Mesh { indexFormat = IndexFormat.UInt32 };
-                mesh.SetVertices(this.job.Positions);
-                mesh.SetUVs(0, this.job.Uvs);
-                mesh.SetNormals(this.job.Normals);
-                mesh.SetIndices(this.TriangleIndicesWithoutHoles(Allocator.Temp).AsArray(), MeshTopology.Triangles, 0);
+                mesh.SetVertices(_job.Positions);
+                mesh.SetUVs(0, _job.Uvs);
+                mesh.SetNormals(_job.Normals);
+                mesh.SetIndices(TriangleIndicesWithoutHoles(Allocator.Temp).AsArray(), MeshTopology.Triangles, 0);
 
                 return mesh;
             }
 
             public NativeArray<float3> GetVerts(Allocator allocator)
             {
-                Check.Assume(this.Done);
+                Check.Assume(Done);
 
-                return new NativeArray<float3>(this.job.Positions, allocator);
+                return new NativeArray<float3>(_job.Positions, allocator);
             }
 
             public NativeList<int> GetTris(Allocator allocator)
             {
-                Check.Assume(this.Done);
+                Check.Assume(Done);
 
-                return this.TriangleIndicesWithoutHoles(allocator);
+                return TriangleIndicesWithoutHoles(allocator);
             }
 
             public void WaitForCompletion()
             {
-                this.jobHandle.Complete();
+                _jobHandle.Complete();
             }
 
             private NativeList<int> TriangleIndicesWithoutHoles(Allocator allocator)
             {
-                var trianglesWithoutHoles = new NativeList<int>((this.job.Width - 1) * (this.job.Height - 1) * 6, allocator);
-                for (var i = 0; i < this.job.Indices.Length; i += 3)
+                var trianglesWithoutHoles = new NativeList<int>((_job.Width - 1) * (_job.Height - 1) * 6, allocator);
+                for (var i = 0; i < _job.Indices.Length; i += 3)
                 {
-                    var i1 = this.job.Indices[i];
-                    var i2 = this.job.Indices[i + 1];
-                    var i3 = this.job.Indices[i + 2];
+                    var i1 = _job.Indices[i];
+                    var i2 = _job.Indices[i + 1];
+                    var i3 = _job.Indices[i + 2];
 
                     if (i1 != 0 && i2 != 0 && i3 != 0)
                     {
@@ -166,47 +166,47 @@ namespace BovineLabs.Core.Utility
 
             public void DisposeArrays()
             {
-                this.Heightmap.Dispose();
-                this.Holes.Dispose();
-                this.Positions.Dispose();
-                this.Uvs.Dispose();
-                this.Normals.Dispose();
-                this.Indices.Dispose();
+                Heightmap.Dispose();
+                Holes.Dispose();
+                Positions.Dispose();
+                Uvs.Dispose();
+                Normals.Dispose();
+                Indices.Dispose();
             }
 
             public void Execute(int i)
             {
                 var vertexIndex = i;
-                var x = i % this.Width;
-                var y = i / this.Height;
+                var x = i % Width;
+                var y = i / Height;
 
-                var v = new float3(x, this.Heightmap[(y * this.Width) + x], y);
+                var v = new float3(x, Heightmap[(y * Width) + x], y);
 
-                this.Positions[vertexIndex] = v * this.HeightmapScale;
-                this.Uvs[vertexIndex] = v.xz / new float2(this.Width, this.Height);
-                this.Normals[vertexIndex] = CalculateTerrainNormal(this.Heightmap, x, y, this.Width, this.Height, this.HeightmapScale);
+                Positions[vertexIndex] = v * HeightmapScale;
+                Uvs[vertexIndex] = v.xz / new float2(Width, Height);
+                Normals[vertexIndex] = CalculateTerrainNormal(Heightmap, x, y, Width, Height, HeightmapScale);
 
-                if (x < this.Width - 1 && y < this.Height - 1)
+                if (x < Width - 1 && y < Height - 1)
                 {
-                    var i1 = (y * this.Width) + x;
+                    var i1 = (y * Width) + x;
                     var i2 = i1 + 1;
-                    var i3 = i1 + this.Width;
+                    var i3 = i1 + Width;
                     var i4 = i3 + 1;
 
-                    var faceIndex = x + (y * (this.Width - 1));
+                    var faceIndex = x + (y * (Width - 1));
 
-                    if (!this.Holes[faceIndex])
+                    if (!Holes[faceIndex])
                     {
                         i1 = i2 = i3 = i4 = 0;
                     }
 
-                    this.Indices[(6 * faceIndex) + 0] = i1;
-                    this.Indices[(6 * faceIndex) + 1] = i4;
-                    this.Indices[(6 * faceIndex) + 2] = i2;
+                    Indices[(6 * faceIndex) + 0] = i1;
+                    Indices[(6 * faceIndex) + 1] = i4;
+                    Indices[(6 * faceIndex) + 2] = i2;
 
-                    this.Indices[(6 * faceIndex) + 3] = i1;
-                    this.Indices[(6 * faceIndex) + 4] = i3;
-                    this.Indices[(6 * faceIndex) + 5] = i4;
+                    Indices[(6 * faceIndex) + 3] = i1;
+                    Indices[(6 * faceIndex) + 4] = i3;
+                    Indices[(6 * faceIndex) + 5] = i4;
                 }
             }
 

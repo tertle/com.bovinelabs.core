@@ -11,51 +11,51 @@ namespace BovineLabs.Core.Collections
     public unsafe struct NativePartialKeyedMap<TValue> : INativeDisposable
         where TValue : unmanaged
     {
-        private UnsafePartialKeyedMap<TValue>* map;
+        private UnsafePartialKeyedMap<TValue>* _map;
 
         public NativePartialKeyedMap(int* keys, TValue* values, int length, int bucketCapacity, AllocatorManager.AllocatorHandle allocator)
         {
-            this.map = UnsafePartialKeyedMap<TValue>.Create(keys, values, length, bucketCapacity, allocator);
+            _map = UnsafePartialKeyedMap<TValue>.Create(keys, values, length, bucketCapacity, allocator);
         }
 
-        public bool IsCreated => this.map != null;
+        public bool IsCreated => _map != null;
 
-        public TValue this[int i] => (*this.map)[i];
+        public TValue this[int i] => (*_map)[i];
 
         public void Dispose()
         {
-            UnsafePartialKeyedMap<TValue>.Destroy(this.map);
-            this.map = null;
+            UnsafePartialKeyedMap<TValue>.Destroy(_map);
+            _map = null;
         }
 
         public JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new NativePartialKeyedMapDisposeJob
             {
-                Map = this.map,
-                Next = this.map->Next,
-                Buckets = this.map->Buckets,
-                Allocator = this.map->Allocator,
+                Map = _map,
+                Next = _map->Next,
+                Buckets = _map->Buckets,
+                Allocator = _map->Allocator,
             }.Schedule(inputDeps);
 
-            this.map = null;
+            _map = null;
 
             return jobHandle;
         }
 
         public void Update(int* newKeys, TValue* newValues, int newLength)
         {
-            this.map->Update(newKeys, newValues, newLength);
+            _map->Update(newKeys, newValues, newLength);
         }
 
         public bool TryGetFirstValue(int key, out TValue item, out UnsafeKeyedMapIterator it)
         {
-            return this.map->TryGetFirstValue(key, out item, out it);
+            return _map->TryGetFirstValue(key, out item, out it);
         }
 
         public bool TryGetNextValue(out TValue item, ref UnsafeKeyedMapIterator it)
         {
-            return this.map->TryGetNextValue(out item, ref it);
+            return _map->TryGetNextValue(out item, ref it);
         }
     }
 
@@ -75,9 +75,9 @@ namespace BovineLabs.Core.Collections
 
         public void Execute()
         {
-            CollectionMemory.Free(this.Buckets, this.Allocator);
-            CollectionMemory.Free(this.Next, this.Allocator);
-            CollectionMemory.Free(this.Map, this.Allocator);
+            CollectionMemory.Free(Buckets, Allocator);
+            CollectionMemory.Free(Next, Allocator);
+            CollectionMemory.Free(Map, Allocator);
         }
     }
 }

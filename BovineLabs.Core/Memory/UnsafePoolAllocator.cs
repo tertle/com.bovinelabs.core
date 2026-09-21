@@ -8,49 +8,49 @@
     public unsafe struct UnsafePoolAllocator<T> : IDisposable
         where T : unmanaged
     {
-        private UnsafeSlabAllocator<T> slabAllocator;
-        private UnsafeParallelHashSet<Ptr> free;
+        private UnsafeSlabAllocator<T> _slabAllocator;
+        private UnsafeParallelHashSet<Ptr> _free;
 
         public UnsafePoolAllocator(int countPerChunk, Allocator allocator)
         {
             Debug.Assert(countPerChunk > 0);
 
-            this.slabAllocator = new UnsafeSlabAllocator<T>(countPerChunk, allocator);
-            this.free = new UnsafeParallelHashSet<Ptr>(0, allocator);
+            _slabAllocator = new UnsafeSlabAllocator<T>(countPerChunk, allocator);
+            _free = new UnsafeParallelHashSet<Ptr>(0, allocator);
         }
 
-        public bool IsCreated => this.slabAllocator.IsCreated;
+        public bool IsCreated => _slabAllocator.IsCreated;
 
         public void Dispose()
         {
-            this.slabAllocator.Dispose();
-            this.free.Dispose();
-            this.slabAllocator = default;
-            this.free = default;
+            _slabAllocator.Dispose();
+            _free.Dispose();
+            _slabAllocator = default;
+            _free = default;
         }
 
         public T* Alloc()
         {
-            using var e = this.free.GetEnumerator();
+            using var e = _free.GetEnumerator();
             if (!e.MoveNext())
             {
                 // No free allocations, need to allocate new
-                return this.slabAllocator.Alloc();
+                return _slabAllocator.Alloc();
             }
 
             var ptr = e.Current;
-            this.free.Remove(ptr);
+            _free.Remove(ptr);
             return (T*)ptr;
         }
 
         public void Free(T* p)
         {
-            this.free.Add(new Ptr(p));
+            _free.Add(new Ptr(p));
         }
 
         public int Allocated()
         {
-            return this.slabAllocator.Allocated();
+            return _slabAllocator.Allocated();
         }
     }
 }

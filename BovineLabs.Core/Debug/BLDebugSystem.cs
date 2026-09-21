@@ -41,7 +41,7 @@
 
         protected override void OnCreate()
         {
-            Create(this.World);
+            Create(World);
         }
 
         protected override void OnUpdate()

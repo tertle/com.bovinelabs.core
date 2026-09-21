@@ -6,23 +6,23 @@ namespace BovineLabs.Core.ConfigVars
 
     public class ConfigVarSharedStaticRectContainer : IConfigVarContainer<Rect>
     {
-        private readonly SharedStatic<Rect> field;
+        private readonly SharedStatic<Rect> _field;
 
         public ConfigVarSharedStaticRectContainer(SharedStatic<Rect> field)
         {
-            this.field = field;
+            _field = field;
         }
 
         Rect IConfigVarContainer<Rect>.Value
         {
-            get => this.field.Data;
-            set => this.field.Data = value;
+            get => _field.Data;
+            set => _field.Data = value;
         }
 
         string IConfigVarContainer.StringValue
         {
-            get => ConfigVarAttribute.RectToVector4(RectToVector4(this.field.Data));
-            set => this.field.Data = Vector4ToRect(ConfigVarAttribute.StringToVector4(value));
+            get => ConfigVarAttribute.RectToVector4(RectToVector4(_field.Data));
+            set => _field.Data = Vector4ToRect(ConfigVarAttribute.StringToVector4(value));
         }
 
         public Type Type => typeof(Vector4);

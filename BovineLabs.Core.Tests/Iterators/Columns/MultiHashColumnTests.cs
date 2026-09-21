@@ -13,7 +13,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void WhenAddingItemsWithSameColumnValue_ShouldFindAllEntries()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
 
             map.Add(1, 0.5f, 5);
             map.Add(2, -1.5f, 5);
@@ -62,7 +62,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void WhenRemovingItemsWithSameColumnValue_ShouldUpdateColumnCorrectly()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
             map.Add(1, 0.5f, 5);
             map.Add(2, -1.5f, 5);
             map.Add(3, 35.5f, 7);
@@ -97,7 +97,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void WhenSearchingForNonExistentColumnValue_ShouldReturnFalse()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
             map.Add(1, 0.5f, 5);
             map.Add(2, -1.5f, 7);
 
@@ -107,7 +107,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void AfterRemovalAndResize_ColumnIndicesShouldBeUpdatedCorrectly()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
 
             // Setup multiple keys with the same column value
             map.Add(10, 100.5f, 50);
@@ -143,7 +143,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void WhenReusingRemovedKeys_ColumnValuesShouldBeUpdated()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
             map.Add(111, 333.5f, 222);
 
             // Verify original column association
@@ -169,7 +169,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void Replace_WithExistingKey_ShouldUpdateColumnValue()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
             map.Add(100, 100.5f, 50);
             map.Add(200, 200.5f, 60);
 
@@ -190,7 +190,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void Replace_MovingToDifferentBucket_ShouldUpdateCorrectly()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
             map.Add(100, 100.5f, 50);
             map.Add(200, 200.5f, 50);
             map.Add(300, 300.5f, 60);
@@ -225,7 +225,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void Replace_WithNonExistentKey_ShouldThrow()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
             map.Add(100, 100.5f, 50);
 
             Assert.Throws<ArgumentException>(() => map.Replace(999, 75), "Replace should throw for non-existent key");
@@ -234,7 +234,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
 [Test]
         public void RemoveInternal_WhenRemovingNonFirstItemInBucket_ShouldNotCauseInfiniteLoop()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
 
             // Add multiple items that might hash to the same bucket
             // Using a small initial capacity to increase collision likelihood
@@ -285,9 +285,8 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
 
         private DynamicVariableMap<int, float, short, MultiHashColumn<short>> CreateMap(int growth = 64)
         {
-            var entity = this.Manager.CreateEntity(typeof(MultiHashColumnTestsBuffer));
-            return this
-                .Manager
+            var entity = Manager.CreateEntity(typeof(MultiHashColumnTestsBuffer));
+            return Manager
                 .GetBuffer<MultiHashColumnTestsBuffer>(entity)
                 .InitializeVariableMap<MultiHashColumnTestsBuffer, int, float, short, MultiHashColumn<short>>(0, growth)
                 .AsVariableMap<MultiHashColumnTestsBuffer, int, float, short, MultiHashColumn<short>>();

@@ -12,7 +12,6 @@
     using Random = Unity.Mathematics.Random;
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "matching mathematics package")]
-    [SuppressMessage("ReSharper", "SA1300", Justification = "matching mathematics package")]
     [SuppressMessage("ReSharper", "IdentifierTypo", Justification = "lower case causes issues")]
     [BurstCompile]
     public static class mathex

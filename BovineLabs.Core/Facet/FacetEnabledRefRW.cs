@@ -11,26 +11,26 @@ namespace BovineLabs.Core
     public unsafe readonly struct FacetEnabledRefRW<T>
         where T : unmanaged, IEnableableComponent
     {
-        private readonly EnabledRefRW<T> enabled;
-        private readonly bool lookup;
+        private readonly EnabledRefRW<T> _enabled;
+        private readonly bool _lookup;
 
         public FacetEnabledRefRW(EnabledRefRW<T> enabled, bool lookup)
         {
-            this.enabled = enabled;
-            this.lookup = lookup;
+            _enabled = enabled;
+            _lookup = lookup;
         }
 
-        public bool IsValid => this.enabled.IsValid;
+        public bool IsValid => _enabled.IsValid;
 
         public void SetComponentEnabled(bool value)
         {
-            if (!this.lookup)
+            if (!_lookup)
             {
-                this.enabled.ValueRW = value;
+                _enabled.ValueRW = value;
                 return;
             }
 
-            var enabledInternal = GetInternal(this.enabled);
+            var enabledInternal = GetInternal(_enabled);
             GetBitAddress(enabledInternal, out var bits, out var mask);
             var oldBits = Interlocked.Read(ref UnsafeUtility.AsRef<long>(bits));
             long newBits;
@@ -55,12 +55,12 @@ namespace BovineLabs.Core
 
         public bool GetComponentEnabled()
         {
-            if (!this.lookup)
+            if (!_lookup)
             {
-                return this.enabled.ValueRO;
+                return _enabled.ValueRO;
             }
 
-            var enabledInternal = GetInternal(this.enabled);
+            var enabledInternal = GetInternal(_enabled);
             GetBitAddress(enabledInternal, out var bits, out var mask);
             var value = Interlocked.Read(ref UnsafeUtility.AsRef<long>(bits));
             return (value & mask) != 0;

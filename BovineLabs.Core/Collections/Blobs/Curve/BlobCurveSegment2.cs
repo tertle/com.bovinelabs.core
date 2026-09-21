@@ -10,19 +10,19 @@
 
         public float2 Sample(float4 timeSerial)
         {
-            return math.mul(timeSerial, this.Factor);
+            return math.mul(timeSerial, Factor);
         }
 
         public BlobCurveSegment2(float4 factorX, float4 factorY)
         {
-            this.Factor = new float4x2(factorX, factorY);
+            Factor = new float4x2(factorX, factorY);
         }
 
         public BlobCurveSegment2(Keyframe k0x, Keyframe k0y, Keyframe k1x, Keyframe k1y)
         {
             Assert.IsTrue(Mathf.Approximately(k0x.time, k0y.time) && Mathf.Approximately(k1x.time, k1y.time), "Time not sync");
             var duration = k1x.time - k0x.time;
-            this.Factor = new float4x2(BlobShared.UnityFactor(k0x.value, k0x.outTangent, k1x.inTangent, k1x.value, duration),
+            Factor = new float4x2(BlobShared.UnityFactor(k0x.value, k0x.outTangent, k1x.inTangent, k1x.value, duration),
                 BlobShared.UnityFactor(k0y.value, k0y.outTangent, k1y.inTangent, k1y.value, duration));
         }
 

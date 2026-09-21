@@ -6,23 +6,23 @@
     internal class ConfigVarSharedStaticContainer<T> : IConfigVarContainer<T>
         where T : unmanaged
     {
-        private readonly SharedStatic<T> field;
+        private readonly SharedStatic<T> _field;
 
         public ConfigVarSharedStaticContainer(SharedStatic<T> field)
         {
-            this.field = field;
+            _field = field;
         }
 
         T IConfigVarContainer<T>.Value
         {
-            get => this.field.Data;
-            set => this.field.Data = value;
+            get => _field.Data;
+            set => _field.Data = value;
         }
 
         string IConfigVarContainer.StringValue
         {
-            get => this.field.Data.ToString();
-            set => this.field.Data = (T)Convert.ChangeType(value, typeof(T));
+            get => _field.Data.ToString();
+            set => _field.Data = (T)Convert.ChangeType(value, typeof(T));
         }
 
         public Type Type => typeof(T);

@@ -14,26 +14,26 @@
     [StructLayout(LayoutKind.Sequential)]
     public struct BlobCurve : IBlobCurve<float>
     {
-        private BlobCurveHeader header;
-        private BlobArray<BlobCurveSegment> segments;
+        private BlobCurveHeader _header;
+        private BlobArray<BlobCurveSegment> _segments;
 
-        public unsafe ref BlobCurveHeader Header => ref UnsafeUtility.AsRef<BlobCurveHeader>(UnsafeUtility.AddressOf(ref this.header));
+        public unsafe ref BlobCurveHeader Header => ref UnsafeUtility.AsRef<BlobCurveHeader>(UnsafeUtility.AddressOf(ref _header));
 
-        public unsafe ref BlobArray<float> Times => ref UnsafeUtility.AsRef<BlobArray<float>>(UnsafeUtility.AddressOf(ref this.header.Times));
+        public unsafe ref BlobArray<float> Times => ref UnsafeUtility.AsRef<BlobArray<float>>(UnsafeUtility.AddressOf(ref _header.Times));
 
-        public BlobCurveHeader.WrapMode WrapModePrev => this.header.WrapModePrev;
+        public BlobCurveHeader.WrapMode WrapModePrev => _header.WrapModePrev;
 
-        public BlobCurveHeader.WrapMode WrapModePost => this.header.WrapModePost;
+        public BlobCurveHeader.WrapMode WrapModePost => _header.WrapModePost;
 
-        public int SegmentCount => this.header.SegmentCount;
+        public int SegmentCount => _header.SegmentCount;
 
-        public float StartTime => this.header.StartTime;
+        public float StartTime => _header.StartTime;
 
-        public float EndTime => this.header.EndTime;
+        public float EndTime => _header.EndTime;
 
-        public float Duration => this.header.Duration;
+        public float Duration => _header.Duration;
 
-        public bool IsCreated => this.SegmentCount > 0;
+        public bool IsCreated => SegmentCount > 0;
 
         public static BlobAssetReference<BlobCurve> Create(AnimationCurve curve, Allocator allocator = Allocator.Persistent)
         {
@@ -54,23 +54,23 @@
 
             var hasOnlyOneKeyframe = keyFrameCount == 1;
             var segmentCount = math.select(keyFrameCount - 1, 1, hasOnlyOneKeyframe);
-            blobCurve.header.SegmentCount = segmentCount;
-            blobCurve.header.WrapModePrev = BlobShared.ConvertWrapMode(curve.preWrapMode);
-            blobCurve.header.WrapModePost = BlobShared.ConvertWrapMode(curve.postWrapMode);
+            blobCurve._header.SegmentCount = segmentCount;
+            blobCurve._header.WrapModePrev = BlobShared.ConvertWrapMode(curve.preWrapMode);
+            blobCurve._header.WrapModePost = BlobShared.ConvertWrapMode(curve.postWrapMode);
 
             if (hasOnlyOneKeyframe)
             {
                 var key0 = keys[0];
-                var timeBuilder = builder.Allocate(ref blobCurve.header.Times, 4);
+                var timeBuilder = builder.Allocate(ref blobCurve._header.Times, 4);
                 timeBuilder[0] = timeBuilder[1] = timeBuilder[2] = timeBuilder[3] = key0.time;
-                builder.Allocate(ref blobCurve.segments, 1)[0] = new BlobCurveSegment(key0, key0);
-                blobCurve.header.StartTime = key0.time;
-                blobCurve.header.EndTime = key0.time;
+                builder.Allocate(ref blobCurve._segments, 1)[0] = new BlobCurveSegment(key0, key0);
+                blobCurve._header.StartTime = key0.time;
+                blobCurve._header.EndTime = key0.time;
             }
             else
             {
-                var timeBuilder = builder.Allocate(ref blobCurve.header.Times, keyFrameCount + 2);
-                var segBuilder = builder.Allocate(ref blobCurve.segments, segmentCount);
+                var timeBuilder = builder.Allocate(ref blobCurve._header.Times, keyFrameCount + 2);
+                var segBuilder = builder.Allocate(ref blobCurve._segments, segmentCount);
                 for (int i = 0, j = 1; i < segmentCount; i = j++)
                 {
                     var keyI = keys[i];
@@ -78,8 +78,8 @@
                     segBuilder[i] = new BlobCurveSegment(keyI, keys[j]);
                 }
 
-                blobCurve.header.StartTime = keys[0].time;
-                blobCurve.header.EndTime = timeBuilder[keyFrameCount] = keys[segmentCount].time;
+                blobCurve._header.StartTime = keys[0].time;
+                blobCurve._header.EndTime = timeBuilder[keyFrameCount] = keys[segmentCount].time;
                 timeBuilder[0] = float.MaxValue;
                 timeBuilder[keyFrameCount + 1] = float.MinValue;
             }
@@ -88,29 +88,29 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float EvaluateIgnoreWrapMode(in float time, [NoAlias] ref BlobCurveCache cache)
         {
-            var i = this.header.SearchIgnoreWrapMode(time, ref cache, out var t);
-            return this.segments[i].Sample(BlobShared.PowerSerial(t));
+            var i = _header.SearchIgnoreWrapMode(time, ref cache, out var t);
+            return _segments[i].Sample(BlobShared.PowerSerial(t));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float EvaluateIgnoreWrapMode(in float time)
         {
-            var i = this.header.SearchIgnoreWrapMode(time, out var t);
-            return this.segments[i].Sample(BlobShared.PowerSerial(t));
+            var i = _header.SearchIgnoreWrapMode(time, out var t);
+            return _segments[i].Sample(BlobShared.PowerSerial(t));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float Evaluate(in float time, [NoAlias] ref BlobCurveCache cache)
         {
-            var i = this.header.Search(time, ref cache, out var t);
-            return this.segments[i].Sample(BlobShared.PowerSerial(t));
+            var i = _header.Search(time, ref cache, out var t);
+            return _segments[i].Sample(BlobShared.PowerSerial(t));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float Evaluate(in float time)
         {
-            var i = this.header.Search(time, out var t);
-            return this.segments[i].Sample(BlobShared.PowerSerial(t));
+            var i = _header.Search(time, out var t);
+            return _segments[i].Sample(BlobShared.PowerSerial(t));
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Iterators
 
         public int EncodedValueSize => default(TValueCodec).EncodedSize;
 
-        public int EncodedEntrySize => this.EncodedKeySize + this.EncodedValueSize;
+        public int EncodedEntrySize => EncodedKeySize + EncodedValueSize;
 
         public ulong SchemaHash
         {
@@ -27,8 +27,8 @@ namespace BovineLabs.Core.Iterators
                 hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicGhostPrimitiveCodec.Hash64(typeof(TValue).FullName));
                 hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, default(TKeyCodec).SchemaHash);
                 hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, default(TValueCodec).SchemaHash);
-                hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, (ulong)this.EncodedKeySize);
-                hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, (ulong)this.EncodedValueSize);
+                hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, (ulong)EncodedKeySize);
+                hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, (ulong)EncodedValueSize);
                 hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicGhostPrimitiveCodec.Hash64("CollectionKind:DynamicMultiHashMap"));
                 hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicGhostPrimitiveCodec.Hash64("TraversalOrder:BucketChain"));
                 hash = DynamicGhostPrimitiveCodec.CombineHash64(hash, DynamicGhostPrimitiveCodec.Hash64("DuplicatePolicy:AllowDuplicateKeys"));

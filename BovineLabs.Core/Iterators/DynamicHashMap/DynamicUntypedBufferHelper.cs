@@ -84,7 +84,7 @@ namespace BovineLabs.Core.Iterators
         internal readonly bool IsEmpty
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.Count == 0;
+            get => Count == 0;
         }
 
         internal static void Init(DynamicBuffer<byte> buffer, int capacity, int dataCapacity, int minGrowth)
@@ -221,11 +221,11 @@ namespace BovineLabs.Core.Iterators
             fixed (DynamicUntypedBufferHelper* data = &this)
             {
                 var headerSize = sizeof(DynamicUntypedBufferHelper);
-                UnsafeUtility.MemClear((byte*)data + headerSize, (long)this.DataOffset + this.DataCapacity - headerSize);
+                UnsafeUtility.MemClear((byte*)data + headerSize, (long)DataOffset + DataCapacity - headerSize);
             }
 
-            this.Count = 0;
-            this.DataAllocatedIndex = 0;
+            Count = 0;
+            DataAllocatedIndex = 0;
         }
 
         internal static int Add<TValue>(DynamicBuffer<byte> buffer, ref DynamicUntypedBufferHelper* data, TValue value)
@@ -416,7 +416,7 @@ namespace BovineLabs.Core.Iterators
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckIndexOutOfBounds(int idx)
         {
-            if ((uint)idx >= (uint)this.Capacity)
+            if ((uint)idx >= (uint)Capacity)
             {
                 throw new InvalidOperationException($"Internal buffer error. idx {idx}");
             }
@@ -427,9 +427,9 @@ namespace BovineLabs.Core.Iterators
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckIndexInRange(int idx)
         {
-            if ((uint)idx >= (uint)this.Count)
+            if ((uint)idx >= (uint)Count)
             {
-                throw new IndexOutOfRangeException($"Index {idx} is out of range in DynamicUntypedBuffer of '{this.Count}' Length.");
+                throw new IndexOutOfRangeException($"Index {idx} is out of range in DynamicUntypedBuffer of '{Count}' Length.");
             }
         }
 
@@ -440,13 +440,13 @@ namespace BovineLabs.Core.Iterators
             where TValue : unmanaged
         {
             var expected = BurstRuntime.GetHashCode32<TValue>();
-            var actual = UnsafeUtility.ReadArrayElement<int>(this.Types, idx);
+            var actual = UnsafeUtility.ReadArrayElement<int>(Types, idx);
             if (!expected.Equals(actual))
             {
                 throw new InvalidOperationException($"Type {actual} does not match stored {expected}");
             }
 
-            var size = UnsafeUtility.ReadArrayElement<int>(this.Sizes, idx);
+            var size = UnsafeUtility.ReadArrayElement<int>(Sizes, idx);
             if (size != sizeof(TValue))
             {
                 throw new InvalidOperationException($"Size {size} does not match stored {sizeof(TValue)}");

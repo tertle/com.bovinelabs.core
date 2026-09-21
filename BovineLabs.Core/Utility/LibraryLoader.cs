@@ -15,7 +15,6 @@
     /// Portions copyright (c) 2023 Undream AI and copyright (c) 2023 Qais Ammari under the MIT License.
     /// See LibraryLoader.LICENSE.md for the complete notices.
     /// </summary>
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Platform specific")]
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Platform specific")]
     public static class LibraryLoader
     {

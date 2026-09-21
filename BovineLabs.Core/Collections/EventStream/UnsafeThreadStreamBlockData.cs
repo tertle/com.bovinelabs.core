@@ -1,11 +1,9 @@
 namespace BovineLabs.Core.Collections
 {
-    using System.Diagnostics.CodeAnalysis;
     using BovineLabs.Core.Internal;
     using Unity.Collections;
     using UnityEngine;
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Convenience")]
     internal unsafe struct UnsafeThreadStreamBlock
     {
         internal UnsafeThreadStreamBlock* Next;
@@ -40,14 +38,14 @@ namespace BovineLabs.Core.Collections
         {
             Debug.Assert(threadIndex < UnsafeThreadStream.ForEachCount && threadIndex >= 0);
 
-            var block = (UnsafeThreadStreamBlock*)CollectionMemory.Allocate(AllocationSize, 16, this.Allocator);
+            var block = (UnsafeThreadStreamBlock*)CollectionMemory.Allocate(AllocationSize, 16, Allocator);
             block->Next = null;
 
             if (oldBlock == null)
             {
                 // Append our new block in front of the previous head.
-                block->Next = this.Blocks[threadIndex];
-                this.Blocks[threadIndex] = block;
+                block->Next = Blocks[threadIndex];
+                Blocks[threadIndex] = block;
             }
             else
             {

@@ -19,48 +19,48 @@ namespace BovineLabs.Core.Collections
 
         public NativeParallelMultiHashMapFallback(int capacity, Allocator allocator)
         {
-            this.HashMap = new NativeParallelMultiHashMap<TKey, TValue>(capacity, allocator);
-            this.Fallback = new NativeQueue<FallbackData>(allocator);
+            HashMap = new NativeParallelMultiHashMap<TKey, TValue>(capacity, allocator);
+            Fallback = new NativeQueue<FallbackData>(allocator);
         }
 
         public ParallelWriter AsWriter()
         {
-            return new ParallelWriter(this.HashMap.AsParallelWriter(), this.Fallback.AsParallelWriter());
+            return new ParallelWriter(HashMap.AsParallelWriter(), Fallback.AsParallelWriter());
         }
 
         public void Dispose()
         {
-            this.HashMap.Dispose();
-            this.Fallback.Dispose();
+            HashMap.Dispose();
+            Fallback.Dispose();
         }
 
         public void Clear()
         {
-            this.HashMap.Clear();
-            this.Fallback.Clear();
+            HashMap.Clear();
+            Fallback.Clear();
         }
 
         public JobHandle Apply(JobHandle jobHandle, out NativeParallelMultiHashMap<TKey, TValue>.ReadOnly reader, ApplyJob job = default)
         {
-            job.HashMap = this.HashMap;
-            job.Fallback = this.Fallback;
+            job.HashMap = HashMap;
+            job.Fallback = Fallback;
             jobHandle = job.Schedule(jobHandle);
-            reader = this.HashMap.AsReadOnly();
+            reader = HashMap.AsReadOnly();
             return jobHandle;
         }
 
         public JobHandle Dispose(JobHandle jobHandle)
         {
-            var hashMapDispose = this.HashMap.Dispose(jobHandle);
-            var fallbackDispose = this.Fallback.Dispose(jobHandle);
+            var hashMapDispose = HashMap.Dispose(jobHandle);
+            var fallbackDispose = Fallback.Dispose(jobHandle);
             return JobHandle.CombineDependencies(hashMapDispose, fallbackDispose);
         }
 
         public JobHandle Clear(JobHandle dependency, ClearNativeParallelMultiHashMapJob<TKey, TValue> job = default, ClearFallbackJob fallbackJob = default)
         {
-            job.HashMap = this.HashMap;
+            job.HashMap = HashMap;
             dependency = job.Schedule(dependency);
-            fallbackJob.Fallback = this.Fallback;
+            fallbackJob.Fallback = Fallback;
             return fallbackJob.Schedule(dependency);
         }
 
@@ -71,28 +71,28 @@ namespace BovineLabs.Core.Collections
 
             public void Execute()
             {
-                this.Fallback.Clear();
+                Fallback.Clear();
             }
         }
 
         public readonly struct ParallelWriter
         {
-            private readonly NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap;
-            private readonly NativeQueue<FallbackData>.ParallelWriter fallback;
+            private readonly NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter _hashMap;
+            private readonly NativeQueue<FallbackData>.ParallelWriter _fallback;
 
             internal ParallelWriter(NativeParallelMultiHashMap<TKey, TValue>.ParallelWriter hashMap, NativeQueue<FallbackData>.ParallelWriter fallback)
             {
-                this.hashMap = hashMap;
-                this.fallback = fallback;
+                _hashMap = hashMap;
+                _fallback = fallback;
             }
 
             public void Add(TKey key, TValue item)
             {
-                var hashMap = this.hashMap;
+                var hashMap = _hashMap;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
 #endif
-                if (Hint.Likely(this.hashMap.TryReserve(1, out var idx)))
+                if (Hint.Likely(_hashMap.TryReserve(1, out var idx)))
                 {
                     var data = hashMap.GetWriter().GetBuffer();
                     UnsafeUtility.WriteArrayElement(data->keys, idx, key);
@@ -101,27 +101,27 @@ namespace BovineLabs.Core.Collections
                 }
                 else
                 {
-                    this.fallback.Enqueue(new FallbackData(key, item, key.GetHashCode()));
+                    _fallback.Enqueue(new FallbackData(key, item, key.GetHashCode()));
                 }
             }
 
             public void AddBatch(NativeArray<TKey> keys, NativeArray<TValue> values)
             {
-                var hashMap = this.hashMap;
+                var hashMap = _hashMap;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
                 Check.Assume(keys.Length == values.Length);
 #endif
-                this.AddBatch((TKey*)keys.GetUnsafeReadOnlyPtr(), (TValue*)values.GetUnsafeReadOnlyPtr(), keys.Length);
+                AddBatch((TKey*)keys.GetUnsafeReadOnlyPtr(), (TValue*)values.GetUnsafeReadOnlyPtr(), keys.Length);
             }
 
             public void AddBatch(TKey* keys, TValue* values, int length)
             {
-                var hashMap = this.hashMap;
+                var hashMap = _hashMap;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
 #endif
-                if (Hint.Likely(this.hashMap.TryReserve(length, out var idx)))
+                if (Hint.Likely(_hashMap.TryReserve(length, out var idx)))
                 {
                     var data = hashMap.GetWriter().GetBuffer();
                     var keyPtr = (TKey*)data->keys + idx;
@@ -140,7 +140,7 @@ namespace BovineLabs.Core.Collections
                 {
                     for (var i = 0; i < length; i++)
                     {
-                        this.fallback.Enqueue(new FallbackData(keys[i], values[i], keys[i].GetHashCode()));
+                        _fallback.Enqueue(new FallbackData(keys[i], values[i], keys[i].GetHashCode()));
                     }
                 }
             }
@@ -154,17 +154,17 @@ namespace BovineLabs.Core.Collections
 
             public void Execute()
             {
-                var requiredCapacity = this.HashMap.Count() + this.Fallback.Count;
-                if (requiredCapacity > this.HashMap.Capacity)
+                var requiredCapacity = HashMap.Count() + Fallback.Count;
+                if (requiredCapacity > HashMap.Capacity)
                 {
-                    this.HashMap.Capacity = requiredCapacity;
+                    HashMap.Capacity = requiredCapacity;
                 }
 
-                this.HashMap.RecalculateBucketsCached();
+                HashMap.RecalculateBucketsCached();
 
-                while (this.Fallback.TryDequeue(out var item))
+                while (Fallback.TryDequeue(out var item))
                 {
-                    this.HashMap.Add(item.Key, item.Value, item.Hash);
+                    HashMap.Add(item.Key, item.Value, item.Hash);
                 }
             }
         }
@@ -177,9 +177,9 @@ namespace BovineLabs.Core.Collections
 
             internal FallbackData(TKey key, TValue value, int hash)
             {
-                this.Key = key;
-                this.Value = value;
-                this.Hash = hash;
+                Key = key;
+                Value = value;
+                Hash = hash;
             }
         }
     }

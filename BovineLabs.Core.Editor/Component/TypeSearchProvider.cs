@@ -242,54 +242,54 @@
         {
             public readonly Type Type;
 
-            private readonly TypeIndex typeIndex;
-            private readonly TypeManager.TypeCategory category;
-            private readonly bool isZeroSized;
-            private readonly ulong stableTypeHash;
+            private readonly TypeIndex _typeIndex;
+            private readonly TypeManager.TypeCategory _category;
+            private readonly bool _isZeroSized;
+            private readonly ulong _stableTypeHash;
 
             public TypeDescriptor(Type type)
             {
-                this.Type = type;
-                this.typeIndex = TypeIndex.Null;
-                this.category = TypeManager.TypeCategory.UnityEngineObject;
-                this.isZeroSized = false;
-                this.stableTypeHash = 0;
+                Type = type;
+                _typeIndex = TypeIndex.Null;
+                _category = TypeManager.TypeCategory.UnityEngineObject;
+                _isZeroSized = false;
+                _stableTypeHash = 0;
             }
 
             public TypeDescriptor(TypeManager.TypeInfo typeInfo)
             {
-                this.Type = typeInfo.Type;
-                this.typeIndex = typeInfo.TypeIndex;
-                this.category = typeInfo.Category;
-                this.isZeroSized = typeInfo.IsZeroSized;
-                this.stableTypeHash = typeInfo.StableTypeHash;
+                Type = typeInfo.Type;
+                _typeIndex = typeInfo.TypeIndex;
+                _category = typeInfo.Category;
+                _isZeroSized = typeInfo.IsZeroSized;
+                _stableTypeHash = typeInfo.StableTypeHash;
             }
 
-            public string Name => this.Type.Name;
+            public string Name => Type.Name;
 
-            public string SimplifiedQualifiedName => $"{this.Type.FullName}, {this.Type.Assembly.GetName().Name}";
+            public string SimplifiedQualifiedName => $"{Type.FullName}, {Type.Assembly.GetName().Name}";
 
-            public string FullName => this.Type.AssemblyQualifiedName;
+            public string FullName => Type.AssemblyQualifiedName;
 
-            public int TypeIndexValue => this.typeIndex.Value;
+            public int TypeIndexValue => _typeIndex.Value;
 
-            public int TypeIndexWithoutFlags => this.typeIndex.Index;
+            public int TypeIndexWithoutFlags => _typeIndex.Index;
 
-            public ulong StableTypeHash => this.stableTypeHash;
+            public ulong StableTypeHash => _stableTypeHash;
 
-            public bool IsUnmanaged => UnsafeUtility.IsUnmanaged(this.Type);
+            public bool IsUnmanaged => UnsafeUtility.IsUnmanaged(Type);
 
-            public bool IsUnityObject => typeof(UnityEngine.Object).IsAssignableFrom(this.Type);
+            public bool IsUnityObject => typeof(UnityEngine.Object).IsAssignableFrom(Type);
 
-            public bool IsComponent => this.category is TypeManager.TypeCategory.ComponentData or TypeManager.TypeCategory.BufferData;
+            public bool IsComponent => _category is TypeManager.TypeCategory.ComponentData or TypeManager.TypeCategory.BufferData;
 
-            public bool IsComponentData => this.category == TypeManager.TypeCategory.ComponentData;
+            public bool IsComponentData => _category == TypeManager.TypeCategory.ComponentData;
 
-            public bool IsEnableable => this.typeIndex != TypeIndex.Null && TypeManager.IsEnableable(this.typeIndex);
+            public bool IsEnableable => _typeIndex != TypeIndex.Null && TypeManager.IsEnableable(_typeIndex);
 
-            public bool IsZeroSized => this.isZeroSized;
+            public bool IsZeroSized => _isZeroSized;
 
-            public bool IsEditorAssembly => this.Type.Assembly.IsAssemblyEditorAssembly() || this.Type.Assembly.IsTestEditorAssembly();
+            public bool IsEditorAssembly => Type.Assembly.IsAssemblyEditorAssembly() || Type.Assembly.IsTestEditorAssembly();
         }
     }
 }

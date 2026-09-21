@@ -12,12 +12,12 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void HashMapClear_FromBurstCompiledSystem_ClearsHashMapAndFallback()
         {
-            var systemHandle = this.World.CreateSystem<HashMapClearSystem>();
+            var systemHandle = World.CreateSystem<HashMapClearSystem>();
 
-            systemHandle.Update(this.WorldUnmanaged);
-            this.WorldUnmanaged.ResolveSystemStateRef(systemHandle).CompleteDependency();
+            systemHandle.Update(WorldUnmanaged);
+            WorldUnmanaged.ResolveSystemStateRef(systemHandle).CompleteDependency();
 
-            ref var system = ref this.WorldUnmanaged.GetUnsafeSystemRef<HashMapClearSystem>(systemHandle);
+            ref var system = ref WorldUnmanaged.GetUnsafeSystemRef<HashMapClearSystem>(systemHandle);
             Assert.AreEqual(0, system.Map.HashMap.Count());
             Assert.AreEqual(0, system.Map.Fallback.Count);
         }
@@ -25,12 +25,12 @@ namespace BovineLabs.Core.Tests.Collections
         [Test]
         public void MultiHashMapClear_FromBurstCompiledSystem_ClearsHashMapAndFallback()
         {
-            var systemHandle = this.World.CreateSystem<MultiHashMapClearSystem>();
+            var systemHandle = World.CreateSystem<MultiHashMapClearSystem>();
 
-            systemHandle.Update(this.WorldUnmanaged);
-            this.WorldUnmanaged.ResolveSystemStateRef(systemHandle).CompleteDependency();
+            systemHandle.Update(WorldUnmanaged);
+            WorldUnmanaged.ResolveSystemStateRef(systemHandle).CompleteDependency();
 
-            ref var system = ref this.WorldUnmanaged.GetUnsafeSystemRef<MultiHashMapClearSystem>(systemHandle);
+            ref var system = ref WorldUnmanaged.GetUnsafeSystemRef<MultiHashMapClearSystem>(systemHandle);
             Assert.AreEqual(0, system.Map.HashMap.Count());
             Assert.AreEqual(0, system.Map.Fallback.Count);
         }
@@ -41,9 +41,9 @@ namespace BovineLabs.Core.Tests.Collections
 
             public void OnCreate(ref SystemState state)
             {
-                this.Map = new NativeParallelHashMapFallback<Entity, HashMapValue>(1, Allocator.Persistent);
+                Map = new NativeParallelHashMapFallback<Entity, HashMapValue>(1, Allocator.Persistent);
 
-                var writer = this.Map.AsWriter();
+                var writer = Map.AsWriter();
                 writer.Add(new Entity { Index = 1, Version = 1 }, new HashMapValue { Value = 10 });
                 writer.Add(new Entity { Index = 2, Version = 1 }, new HashMapValue { Value = 20 });
             }
@@ -51,13 +51,13 @@ namespace BovineLabs.Core.Tests.Collections
             public void OnDestroy(ref SystemState state)
             {
                 state.Dependency.Complete();
-                this.Map.Dispose();
+                Map.Dispose();
             }
 
             [BurstCompile]
             public void OnUpdate(ref SystemState state)
             {
-                state.Dependency = this.Map.Clear(state.Dependency);
+                state.Dependency = Map.Clear(state.Dependency);
             }
         }
 
@@ -67,9 +67,9 @@ namespace BovineLabs.Core.Tests.Collections
 
             public void OnCreate(ref SystemState state)
             {
-                this.Map = new NativeParallelMultiHashMapFallback<Entity, MultiHashMapValue>(1, Allocator.Persistent);
+                Map = new NativeParallelMultiHashMapFallback<Entity, MultiHashMapValue>(1, Allocator.Persistent);
 
-                var writer = this.Map.AsWriter();
+                var writer = Map.AsWriter();
                 writer.Add(new Entity { Index = 1, Version = 1 }, new MultiHashMapValue { Value = 10 });
                 writer.Add(new Entity { Index = 2, Version = 1 }, new MultiHashMapValue { Value = 20 });
             }
@@ -77,13 +77,13 @@ namespace BovineLabs.Core.Tests.Collections
             public void OnDestroy(ref SystemState state)
             {
                 state.Dependency.Complete();
-                this.Map.Dispose();
+                Map.Dispose();
             }
 
             [BurstCompile]
             public void OnUpdate(ref SystemState state)
             {
-                state.Dependency = this.Map.Clear(state.Dependency);
+                state.Dependency = Map.Clear(state.Dependency);
             }
         }
 

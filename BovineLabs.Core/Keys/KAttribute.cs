@@ -9,8 +9,8 @@
     {
         public KAttribute(string settings, bool flags = false)
         {
-            this.Settings = settings;
-            this.Flags = flags;
+            Settings = settings;
+            Flags = flags;
         }
 
         public string Settings { get; }

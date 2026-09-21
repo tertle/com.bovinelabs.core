@@ -18,28 +18,28 @@
         [ConfigVar("debug.selection", true, "Write the current hierarchy selection to SelectedEntity and SelectedEntities.")]
         public static readonly SharedStatic<bool> IsEnabled = SharedStatic<bool>.GetOrCreate<SelectedEntityEditorSystem>();
 
-        private NativeList<Entity> entities;
+        private NativeList<Entity> _entities;
 
-        private NativeList<EntityId> instanceIds;
-        private NativeParallelMultiHashMap<EntityId, Entity> entityLookup;
+        private NativeList<EntityId> _instanceIds;
+        private NativeParallelMultiHashMap<EntityId, Entity> _entityLookup;
 
-        private JobHandle lastFrame;
+        private JobHandle _lastFrame;
 
         protected override void OnCreate()
         {
-            this.entities = new NativeList<Entity>(512, Allocator.Persistent);
+            _entities = new NativeList<Entity>(512, Allocator.Persistent);
 
-            this.instanceIds = new NativeList<EntityId>(512, Allocator.Persistent);
-            this.entityLookup = new NativeParallelMultiHashMap<EntityId, Entity>(1024, Allocator.Persistent);
+            _instanceIds = new NativeList<EntityId>(512, Allocator.Persistent);
+            _entityLookup = new NativeParallelMultiHashMap<EntityId, Entity>(1024, Allocator.Persistent);
 
-            this.EntityManager.CreateEntity<SelectedEntity, SelectedEntities>("Selected Entity");
+            EntityManager.CreateEntity<SelectedEntity, SelectedEntities>("Selected Entity");
         }
 
         protected override void OnDestroy()
         {
-            this.instanceIds.Dispose();
-            this.entities.Dispose();
-            this.entityLookup.Dispose();
+            _instanceIds.Dispose();
+            _entities.Dispose();
+            _entityLookup.Dispose();
         }
 
         protected override void OnUpdate()
@@ -49,16 +49,16 @@
                 return;
             }
 
-            this.lastFrame.Complete();
-            this.instanceIds.Clear();
-            this.entities.Clear();
+            _lastFrame.Complete();
+            _instanceIds.Clear();
+            _entities.Clear();
 
             var selectedEntities = SystemAPI.QueryBuilder().WithAllRW<SelectedEntities>().Build().GetSingletonBufferNoSync<SelectedEntities>(false);
 
-            EntitySelection.GetAllSelectionsInWorld(this.World, this.entities, this.instanceIds);
+            EntitySelection.GetAllSelectionsInWorld(World, _entities, _instanceIds);
 
             // No need to build this if not selecting a gameobject
-            if (this.instanceIds.Length > 0)
+            if (_instanceIds.Length > 0)
             {
                 var query = SystemAPI
                     .QueryBuilder()
@@ -68,32 +68,32 @@
 
                 var count = query.CalculateEntityCount();
 
-                this.Dependency = new ResizeJob
+                Dependency = new ResizeJob
                 {
-                    EntityLookup = this.entityLookup,
+                    EntityLookup = _entityLookup,
                     Count = count,
-                }.Schedule(this.Dependency);
+                }.Schedule(Dependency);
 
-                this.Dependency = new BuildInstanceIDToEntityIndexJob
+                Dependency = new BuildInstanceIDToEntityIndexJob
                 {
-                    EntityLookup = this.entityLookup.AsParallelWriter(),
+                    EntityLookup = _entityLookup.AsParallelWriter(),
                     GuidType = SystemAPI.GetComponentTypeHandle<EntityGuid>(true),
                     EntityType = SystemAPI.GetEntityTypeHandle(),
-                }.ScheduleParallel(query, this.Dependency);
+                }.ScheduleParallel(query, Dependency);
             }
 
-            this.Dependency = new SetSelectionJob
+            Dependency = new SetSelectionJob
             {
-                EntityLookup = this.entityLookup,
-                InstanceIDs = this.instanceIds,
-                Entities = this.entities,
+                EntityLookup = _entityLookup,
+                InstanceIDs = _instanceIds,
+                Entities = _entities,
                 EntityGuids = SystemAPI.GetComponentLookup<EntityGuid>(true),
                 SelectedEntitys = SystemAPI.GetComponentLookup<SelectedEntity>(),
                 SelectedEntities = selectedEntities,
                 SingletonEntity = SystemAPI.GetSingletonEntity<SelectedEntity>(),
-            }.Schedule(this.Dependency);
+            }.Schedule(Dependency);
 
-            this.lastFrame = this.Dependency;
+            _lastFrame = Dependency;
         }
 
         [BurstCompile]
@@ -104,10 +104,10 @@
 
             public void Execute()
             {
-                this.EntityLookup.Clear();
-                if (this.EntityLookup.Capacity < this.Count)
+                EntityLookup.Clear();
+                if (EntityLookup.Capacity < Count)
                 {
-                    this.EntityLookup.Capacity = this.Count;
+                    EntityLookup.Capacity = Count;
                 }
             }
         }
@@ -125,10 +125,10 @@
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var entities = chunk.GetNativeArray(this.EntityType);
-                var guids = chunk.GetNativeArray(ref this.GuidType).Slice()
+                var entities = chunk.GetNativeArray(EntityType);
+                var guids = chunk.GetNativeArray(ref GuidType).Slice()
                     .SliceWithStride<EntityId>();
-                this.EntityLookup.AddBatchUnsafe(guids, entities);
+                EntityLookup.AddBatchUnsafe(guids, entities);
             }
         }
 
@@ -155,40 +155,40 @@
             public void Execute()
             {
                 var selectedEntity = default(SelectedEntity);
-                this.SelectedEntities.Clear();
+                SelectedEntities.Clear();
 
-                foreach (var entity in this.Entities)
+                foreach (var entity in Entities)
                 {
                     if (selectedEntity.Value == Entity.Null)
                     {
                         selectedEntity.Value = entity;
                     }
 
-                    this.SelectedEntities.Add(new SelectedEntities { Value = entity });
+                    SelectedEntities.Add(new SelectedEntities { Value = entity });
                 }
 
-                foreach (var instanceID in this.InstanceIDs)
+                foreach (var instanceID in InstanceIDs)
                 {
-                    if (this.EntityLookup.TryGetFirstValue(instanceID, out var entity, out var it))
+                    if (EntityLookup.TryGetFirstValue(instanceID, out var entity, out var it))
                     {
                         do
                         {
-                            if (this.EntityGuids[entity].Serial == 0)
+                            if (EntityGuids[entity].Serial == 0)
                             {
                                 if (selectedEntity.Value == Entity.Null)
                                 {
                                     selectedEntity.Value = entity;
                                 }
 
-                                this.SelectedEntities.Add(new SelectedEntities { Value = entity });
+                                SelectedEntities.Add(new SelectedEntities { Value = entity });
                                 break;
                             }
                         }
-                        while (this.EntityLookup.TryGetNextValue(out entity, ref it));
+                        while (EntityLookup.TryGetNextValue(out entity, ref it));
                     }
                 }
 
-                this.SelectedEntitys[this.SingletonEntity] = selectedEntity;
+                SelectedEntitys[SingletonEntity] = selectedEntity;
             }
         }
     }

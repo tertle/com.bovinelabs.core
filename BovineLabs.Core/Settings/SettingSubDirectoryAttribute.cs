@@ -7,7 +7,7 @@ namespace BovineLabs.Core.Settings
     {
         public SettingSubDirectoryAttribute(string directory)
         {
-            this.Directory = directory;
+            Directory = directory;
         }
 
         public string Directory { get; }

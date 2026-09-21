@@ -14,7 +14,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public unsafe void OrderedListColumnPointers_AreAligned_SmallCapacity()
         {
-            var map = this.CreateSmallCapacityOrderedMap();
+            var map = CreateSmallCapacityOrderedMap();
 
             ref var column = ref map.Column;
             ref var layout = ref UnsafeUtility.As<OrderedListColumn<short>, OrderedListColumnLayout<short>>(ref column);
@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void WithOrderedColumn_ShouldMaintainSortedOrder()
         {
-            var map = this.CreateOrderedMap();
+            var map = CreateOrderedMap();
 
             // Add items with columns in non-sorted order
             map.Add(1, 10.5f, 30);
@@ -65,7 +65,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void WithOrderedColumn_ResizeShouldPreserveSortedOrder()
         {
-            var map = this.CreateOrderedMap();
+            var map = CreateOrderedMap();
 
             // Add items in non-sorted order
             var testData = new (int key, float value, int column)[]
@@ -107,7 +107,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void WithOrderedColumn_EmptyColumnValueShouldReturnFalse()
         {
-            var map = this.CreateOrderedMap();
+            var map = CreateOrderedMap();
 
             // Add some items
             map.Add(1, 10.5f, 30);
@@ -138,7 +138,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void OrderedColumn_HeadRemoval_ShouldUpdateCorrectly()
         {
-            var map = this.CreateOrderedMap();
+            var map = CreateOrderedMap();
 
             map.Add(1, 10.5f, 10);
             map.Add(2, 20.5f, 20);
@@ -164,7 +164,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void OrderedColumn_AfterClear_ShouldAcceptNewElements()
         {
-            var map = this.CreateOrderedMap();
+            var map = CreateOrderedMap();
 
             map.Add(1, 10.5f, 30);
             map.Add(2, 20.5f, 10);
@@ -186,7 +186,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void Replace_WithExistingKey_ShouldUpdateColumnAndMaintainOrder()
         {
-            var map = this.CreateOrderedMap();
+            var map = CreateOrderedMap();
             map.Add(1, 10.5f, 30);
             map.Add(2, 20.5f, 10);
             map.Add(3, 30.5f, 50);
@@ -222,7 +222,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void Replace_MovingToNewSortPosition_ShouldReorderCorrectly()
         {
-            var map = this.CreateOrderedMap();
+            var map = CreateOrderedMap();
             map.Add(1, 10.5f, 30);
             map.Add(2, 20.5f, 40);
             map.Add(3, 30.5f, 50);
@@ -255,7 +255,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
         [Test]
         public void Replace_WithNonExistentKey_ShouldThrow()
         {
-            var map = this.CreateOrderedMap();
+            var map = CreateOrderedMap();
             map.Add(1, 10.5f, 30);
 
             Assert.Throws<ArgumentException>(() => map.Replace(999, 40), "Replace should throw for non-existent key");
@@ -263,9 +263,8 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
 
         private DynamicVariableMap<int, float, int, OrderedListColumn<int>> CreateOrderedMap(int growth = 64)
         {
-            var entity = this.Manager.CreateEntity(typeof(OrderedListColumnTestsBuffer));
-            return this
-                .Manager
+            var entity = Manager.CreateEntity(typeof(OrderedListColumnTestsBuffer));
+            return Manager
                 .GetBuffer<OrderedListColumnTestsBuffer>(entity)
                 .InitializeVariableMap<OrderedListColumnTestsBuffer, int, float, int, OrderedListColumn<int>>(0, growth)
                 .AsVariableMap<OrderedListColumnTestsBuffer, int, float, int, OrderedListColumn<int>>();
@@ -273,9 +272,8 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
 
         private DynamicVariableMap<long, short, short, OrderedListColumn<short>> CreateSmallCapacityOrderedMap()
         {
-            var entity = this.Manager.CreateEntity(typeof(OrderedListColumnTestsSmallBuffer));
-            return this
-                .Manager
+            var entity = Manager.CreateEntity(typeof(OrderedListColumnTestsSmallBuffer));
+            return Manager
                 .GetBuffer<OrderedListColumnTestsSmallBuffer>(entity)
                 .InitializeVariableMap<OrderedListColumnTestsSmallBuffer, long, short, short, OrderedListColumn<short>>(0, 1)
                 .AsVariableMap<OrderedListColumnTestsSmallBuffer, long, short, short, OrderedListColumn<short>>();

@@ -2,6 +2,7 @@ namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -12,27 +13,31 @@ namespace BovineLabs.Core.Collections
         [NativeContainerIsAtomicWriteOnly]
         public readonly struct Writer
         {
-            private readonly UnsafeThreadStream.Writer writer;
+            private readonly UnsafeThreadStream.Writer _writer;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
             internal readonly AtomicSafetyHandle m_Safety;
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
             internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<Writer>();
 #endif
 
             internal Writer(ref NativeThreadStream stream)
             {
-                this.writer = stream.stream.AsWriter();
+                _writer = stream._stream.AsWriter();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                this.m_Safety = stream.m_Safety;
-                CollectionHelper.SetStaticSafetyId(ref this.m_Safety, ref s_staticSafetyId.Data, "BovineLabs.Core.Collections.NativeThreadStream.Writer");
+                m_Safety = stream.m_Safety;
+                CollectionHelper.SetStaticSafetyId(ref m_Safety, ref s_staticSafetyId.Data, "BovineLabs.Core.Collections.NativeThreadStream.Writer");
 #endif
             }
 
             public void Write<T>(T value)
                 where T : unmanaged
             {
-                ref var dst = ref this.Allocate<T>();
+                ref var dst = ref Allocate<T>();
                 dst = value;
             }
 
@@ -40,20 +45,20 @@ namespace BovineLabs.Core.Collections
                 where T : unmanaged
             {
                 var size = UnsafeUtility.SizeOf<T>();
-                return ref UnsafeUtility.AsRef<T>(this.Allocate(size));
+                return ref UnsafeUtility.AsRef<T>(Allocate(size));
             }
 
             public byte* Allocate(int size)
             {
-                this.CheckAllocateSize(size);
-                return this.writer.Allocate(size);
+                CheckAllocateSize(size);
+                return _writer.Allocate(size);
             }
 
             public void WriteLarge<T>(NativeArray<T> array)
                 where T : unmanaged
             {
                 var byteArray = array.Reinterpret<byte>(UnsafeUtility.SizeOf<T>());
-                this.WriteLarge((byte*)byteArray.GetUnsafeReadOnlyPtr(), byteArray.Length);
+                WriteLarge((byte*)byteArray.GetUnsafeReadOnlyPtr(), byteArray.Length);
             }
 
             public void WriteLarge<T>(NativeSlice<T> data)
@@ -74,13 +79,13 @@ namespace BovineLabs.Core.Collections
                 // as you'd usually write at minimum the length beforehand
                 if (allocationRemainder > 0)
                 {
-                    var dst = this.Allocate(allocationRemainder * num);
+                    var dst = Allocate(allocationRemainder * num);
                     UnsafeUtility.MemCpyStride(dst, num, src + (allocationCount * maxOffset), data.Stride, num, allocationRemainder);
                 }
 
                 for (var i = 0; i < allocationCount; i++)
                 {
-                    var dst = this.Allocate(maxSize);
+                    var dst = Allocate(maxSize);
                     UnsafeUtility.MemCpyStride(dst, num, src + (i * maxOffset), data.Stride, num, countPerAllocate);
                 }
             }
@@ -94,13 +99,13 @@ namespace BovineLabs.Core.Collections
                 // as you'd usually write at minimum the length beforehand
                 if (allocationRemainder > 0)
                 {
-                    var ptr = this.Allocate(allocationRemainder);
+                    var ptr = Allocate(allocationRemainder);
                     UnsafeUtility.MemCpy(ptr, data + (allocationCount * MaxLargeSize), allocationRemainder);
                 }
 
                 for (var i = 0; i < allocationCount; i++)
                 {
-                    var ptr = this.Allocate(MaxLargeSize);
+                    var ptr = Allocate(MaxLargeSize);
                     UnsafeUtility.MemCpy(ptr, data + (i * MaxLargeSize), MaxLargeSize);
                 }
             }
@@ -109,7 +114,7 @@ namespace BovineLabs.Core.Collections
             private void CheckAllocateSize(int size)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 
                 if (size > UnsafeThreadStreamBlockData.AllocationSize - sizeof(void*))
                 {
@@ -124,46 +129,46 @@ namespace BovineLabs.Core.Collections
         public readonly struct Writer<T>
             where T : unmanaged
         {
-            private readonly UnsafeThreadStream.Writer writer;
+            private readonly UnsafeThreadStream.Writer _writer;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#pragma warning disable SA1308
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
             private readonly AtomicSafetyHandle m_Safety;
-#pragma warning restore SA1308
 #endif
 
             internal Writer(ref NativeThreadStream stream)
             {
-                this.writer = stream.stream.AsWriter();
+                _writer = stream._stream.AsWriter();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                this.m_Safety = stream.m_Safety;
+                m_Safety = stream.m_Safety;
 #endif
             }
 
             public void Write(T value)
             {
-                ref var dst = ref this.Allocate();
+                ref var dst = ref Allocate();
                 dst = value;
             }
 
             public ref T Allocate()
             {
                 var size = UnsafeUtility.SizeOf<T>();
-                return ref UnsafeUtility.AsRef<T>(this.Allocate(size));
+                return ref UnsafeUtility.AsRef<T>(Allocate(size));
             }
 
             private byte* Allocate(int size)
             {
-                this.CheckAllocateSize(size);
-                return this.writer.Allocate(size);
+                CheckAllocateSize(size);
+                return _writer.Allocate(size);
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             private void CheckAllocateSize(int size)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 
                 if (size > UnsafeThreadStreamBlockData.AllocationSize - sizeof(void*))
                 {

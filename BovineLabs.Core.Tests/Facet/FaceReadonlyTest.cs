@@ -5,17 +5,17 @@ namespace BovineLabs.Core.Tests.Facet
 
     public readonly partial struct FaceReadonlyTest : IFacet
     {
-        private readonly RefRO<ComponentA> compA;
-        private readonly RefRW<ComponentB> compB;
-        [FacetOptional] private readonly RefRO<ComponentC> compC;
-        [FacetOptional] private readonly RefRW<ComponentD> compD;
-        private readonly EnabledRefRO<EnabledA> enableA;
-        private readonly FacetEnabledRefRW<EnabledB> enableB;
-        [FacetOptional] private readonly EnabledRefRO<EnabledC> enableC;
-        [FacetOptional] private readonly FacetEnabledRefRW<EnabledD> enableD;
-        [ReadOnly] private readonly DynamicBuffer<BufferA> bufferA;
-        private readonly DynamicBuffer<BufferB> bufferB;
-        [FacetOptional] [ReadOnly] private readonly DynamicBuffer<BufferC> bufferC;
-        [FacetOptional] private readonly DynamicBuffer<BufferD> bufferD;
+        private readonly RefRO<ComponentA> _compA;
+        private readonly RefRW<ComponentB> _compB;
+        [FacetOptional] private readonly RefRO<ComponentC> _compC;
+        [FacetOptional] private readonly RefRW<ComponentD> _compD;
+        private readonly EnabledRefRO<EnabledA> _enableA;
+        private readonly FacetEnabledRefRW<EnabledB> _enableB;
+        [FacetOptional] private readonly EnabledRefRO<EnabledC> _enableC;
+        [FacetOptional] private readonly FacetEnabledRefRW<EnabledD> _enableD;
+        [ReadOnly] private readonly DynamicBuffer<BufferA> _bufferA;
+        private readonly DynamicBuffer<BufferB> _bufferB;
+        [FacetOptional] [ReadOnly] private readonly DynamicBuffer<BufferC> _bufferC;
+        [FacetOptional] private readonly DynamicBuffer<BufferD> _bufferD;
     }
 }

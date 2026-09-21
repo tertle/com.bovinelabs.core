@@ -28,7 +28,7 @@
         internal int Log2MinGrowth;
         internal int DataAllocatedIndex;
 
-        internal int BucketCapacity => this.BucketCapacityMask + 1;
+        internal int BucketCapacity => BucketCapacityMask + 1;
 
         internal byte* Values
         {
@@ -99,7 +99,7 @@
         internal readonly bool IsEmpty
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.Count == 0;
+            get => Count == 0;
         }
 
         internal static void Init(DynamicBuffer<byte> buffer, int capacity, int dataCapacity, int minGrowth)
@@ -598,26 +598,26 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal int GetBucket(in TKey key)
         {
-            return (int)((uint)key.GetHashCode() & this.BucketCapacityMask);
+            return (int)((uint)key.GetHashCode() & BucketCapacityMask);
         }
 
         internal int Find(TKey key)
         {
-            if (this.Count > 0)
+            if (Count > 0)
             {
                 // First find the slot based on the hash
-                var bucket = this.GetBucket(key);
-                var entryIdx = this.Buckets[bucket];
+                var bucket = GetBucket(key);
+                var entryIdx = Buckets[bucket];
 
-                if ((uint)entryIdx < (uint)this.Capacity)
+                if ((uint)entryIdx < (uint)Capacity)
                 {
-                    var keys = this.Keys;
-                    var next = this.Next;
+                    var keys = Keys;
+                    var next = Next;
 
                     while (!UnsafeUtility.ReadArrayElement<TKey>(keys, entryIdx).Equals(key))
                     {
                         entryIdx = next[entryIdx];
-                        if ((uint)entryIdx >= (uint)this.Capacity)
+                        if ((uint)entryIdx >= (uint)Capacity)
                         {
                             return -1;
                         }
@@ -633,7 +633,7 @@
         internal bool TryGetValue<TValue>(TKey key, out TValue item)
             where TValue : unmanaged
         {
-            var idx = this.Find(key);
+            var idx = Find(key);
 
             if (idx != -1)
             {
@@ -651,7 +651,7 @@
 
         internal bool TryGetValueRaw(TKey key, out byte* value, out int length)
         {
-            var idx = this.Find(key);
+            var idx = Find(key);
 
             if (idx != -1)
             {
@@ -670,26 +670,26 @@
 
         internal int TryRemove(TKey key)
         {
-            if (this.Count == 0)
+            if (Count == 0)
             {
                 return -1;
             }
 
-            var bucket = this.GetBucket(key);
+            var bucket = GetBucket(key);
 
             var prevEntry = -1;
-            var entryIdx = this.Buckets[bucket];
+            var entryIdx = Buckets[bucket];
 
-            while ((uint)entryIdx < (uint)this.Capacity)
+            while ((uint)entryIdx < (uint)Capacity)
             {
-                if (UnsafeUtility.ReadArrayElement<TKey>(this.Keys, entryIdx).Equals(key))
+                if (UnsafeUtility.ReadArrayElement<TKey>(Keys, entryIdx).Equals(key))
                 {
-                    this.RemoveAt(bucket, prevEntry, entryIdx);
+                    RemoveAt(bucket, prevEntry, entryIdx);
                     return 1;
                 }
 
                 prevEntry = entryIdx;
-                entryIdx = this.Next[entryIdx];
+                entryIdx = Next[entryIdx];
             }
 
             return -1;
@@ -697,13 +697,13 @@
 
         internal NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
-            var result = CollectionHelper.CreateNativeArray<TKey>(this.Count, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = CollectionHelper.CreateNativeArray<TKey>(Count, allocator, NativeArrayOptions.UninitializedMemory);
 
-            var keys = this.Keys;
-            var buckets = this.Buckets;
-            var next = this.Next;
+            var keys = Keys;
+            var buckets = Buckets;
+            var next = Next;
 
-            for (int i = 0, count = 0, max = result.Length, capacity = this.BucketCapacity; i < capacity && count < max; i++)
+            for (int i = 0, count = 0, max = result.Length, capacity = BucketCapacity; i < capacity && count < max; i++)
             {
                 var bucket = buckets[i];
 
@@ -754,8 +754,8 @@
 
         private void RemoveAt(int bucket, int prevEntry, int entryIdx)
         {
-            var next = this.Next;
-            var buckets = this.Buckets;
+            var next = Next;
+            var buckets = Buckets;
             var nextEntry = next[entryIdx];
 
             if (prevEntry < 0)
@@ -768,18 +768,18 @@
             }
 
             // Release the removed payload before the last slot replaces its metadata.
-            var removedSize = this.Sizes[entryIdx];
+            var removedSize = Sizes[entryIdx];
             if (removedSize > sizeof(int))
             {
-                var removedOffset = ((int*)this.Values)[entryIdx];
-                UnsafeUtility.MemClear(this.Data + removedOffset, CollectionHelper.Align(removedSize, sizeof(int)));
+                var removedOffset = ((int*)Values)[entryIdx];
+                UnsafeUtility.MemClear(Data + removedOffset, CollectionHelper.Align(removedSize, sizeof(int)));
             }
 
-            var lastIndex = this.Count - 1;
+            var lastIndex = Count - 1;
             if (entryIdx != lastIndex)
             {
-                var lastKey = UnsafeUtility.ReadArrayElement<TKey>(this.Keys, lastIndex);
-                var lastBucket = this.GetBucket(lastKey);
+                var lastKey = UnsafeUtility.ReadArrayElement<TKey>(Keys, lastIndex);
+                var lastBucket = GetBucket(lastKey);
                 var lastPrevEntry = -1;
                 var lastEntryIdx = buckets[lastBucket];
 
@@ -798,22 +798,22 @@
                     next[lastPrevEntry] = entryIdx;
                 }
 
-                UnsafeUtility.WriteArrayElement(this.Keys, entryIdx, lastKey);
-                UnsafeUtility.WriteArrayElement(this.Sizes, entryIdx, UnsafeUtility.ReadArrayElement<ushort>(this.Sizes, lastIndex));
-                UnsafeUtility.MemCpy(this.Values + (entryIdx * sizeof(int)), this.Values + (lastIndex * sizeof(int)), sizeof(int));
+                UnsafeUtility.WriteArrayElement(Keys, entryIdx, lastKey);
+                UnsafeUtility.WriteArrayElement(Sizes, entryIdx, UnsafeUtility.ReadArrayElement<ushort>(Sizes, lastIndex));
+                UnsafeUtility.MemCpy(Values + (entryIdx * sizeof(int)), Values + (lastIndex * sizeof(int)), sizeof(int));
                 next[entryIdx] = next[lastIndex];
             }
 
-            UnsafeUtility.MemClear(this.Keys + lastIndex, sizeof(TKey));
-            UnsafeUtility.MemClear(this.Values + (lastIndex * sizeof(int)), sizeof(int));
-            this.Sizes[lastIndex] = 0;
+            UnsafeUtility.MemClear(Keys + lastIndex, sizeof(TKey));
+            UnsafeUtility.MemClear(Values + (lastIndex * sizeof(int)), sizeof(int));
+            Sizes[lastIndex] = 0;
             next[lastIndex] = -1;
-            this.Count--;
+            Count--;
 
-            if (this.Count == 0)
+            if (Count == 0)
             {
-                UnsafeUtility.MemClear(this.Data, (long)this.DataCapacity * sizeof(int));
-                this.DataAllocatedIndex = 0;
+                UnsafeUtility.MemClear(Data, (long)DataCapacity * sizeof(int));
+                DataAllocatedIndex = 0;
             }
         }
 
@@ -852,7 +852,7 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckDoesNotExist(TKey key)
         {
-            if (this.Find(key) != -1)
+            if (Find(key) != -1)
             {
                 throw new ArgumentException($"An item with the same key has already been added: {key}");
             }
@@ -863,7 +863,7 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckIndexOutOfBounds(int idx)
         {
-            if ((uint)idx >= (uint)this.Capacity)
+            if ((uint)idx >= (uint)Capacity)
             {
                 throw new InvalidOperationException($"Internal HashMap error. idx {idx}");
             }
@@ -876,7 +876,7 @@
             where TValue : unmanaged
         {
             var expected = UnsafeUtility.SizeOf<TValue>();
-            this.CheckSize(idx, expected);
+            CheckSize(idx, expected);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -884,7 +884,7 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckSize(int idx, int expected)
         {
-            var actual = UnsafeUtility.ReadArrayElement<ushort>(this.Sizes, idx);
+            var actual = UnsafeUtility.ReadArrayElement<ushort>(Sizes, idx);
             if (expected != actual)
             {
                 throw new InvalidOperationException($"Size of type {expected} does not match stored {actual}");

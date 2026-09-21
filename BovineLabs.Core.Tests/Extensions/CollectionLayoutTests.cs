@@ -192,7 +192,7 @@ namespace BovineLabs.Core.Tests.Extensions
 
             public void Execute()
             {
-                this.Result.Value = MemoryUtil.CreateLabel(this.Category, this.Name).IsCreated ? 1 : 0;
+                Result.Value = MemoryUtil.CreateLabel(Category, Name).IsCreated ? 1 : 0;
             }
         }
 
@@ -205,7 +205,7 @@ namespace BovineLabs.Core.Tests.Extensions
             {
                 for (var i = 0; i < 128; i++)
                 {
-                    this.Map.GetOrAddRefUnsafe(i) = i * 3L;
+                    Map.GetOrAddRefUnsafe(i) = i * 3L;
                 }
             }
         }

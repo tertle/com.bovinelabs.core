@@ -9,17 +9,17 @@
         public const string SearchProviderType = "types";
 
         [SerializeField]
-        private string typeName;
+        private string _typeName;
 
         public virtual Type ResolveType()
         {
-            if (string.IsNullOrWhiteSpace(this.typeName))
+            if (string.IsNullOrWhiteSpace(_typeName))
             {
-                throw new InvalidOperationException($"{this.GetType().Name} '{this.name}' does not have a type assigned.");
+                throw new InvalidOperationException($"{GetType().Name} '{name}' does not have a type assigned.");
             }
 
-            return Type.GetType(this.typeName) ?? throw new TypeLoadException(
-                $"{this.GetType().Name} '{this.name}' could not resolve type '{this.typeName}'. " +
+            return Type.GetType(_typeName) ?? throw new TypeLoadException(
+                $"{GetType().Name} '{name}' could not resolve type '{_typeName}'. " +
                 "The type may have been renamed, moved to another assembly, or removed.");
         }
     }

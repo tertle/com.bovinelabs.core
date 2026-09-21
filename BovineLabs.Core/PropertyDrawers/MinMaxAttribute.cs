@@ -8,8 +8,8 @@
     {
         public MinMaxAttribute(float min, float max)
         {
-            this.Min = min;
-            this.Max = max;
+            Min = min;
+            Max = max;
         }
 
         public float Min { get; }

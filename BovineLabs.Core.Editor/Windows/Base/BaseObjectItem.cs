@@ -14,15 +14,15 @@ namespace BovineLabs.Core.Editor.Windows.Base
         protected BaseObjectItem(
             UnityEngine.Object obj, string name, string typeName, string assetPath, GlobalObjectId globalObjectId, Texture2D icon, DateTime timestamp)
         {
-            this.Name = name ?? string.Empty;
-            this.TypeName = typeName ?? string.Empty;
-            this.AssetPath = assetPath ?? string.Empty;
-            this.GlobalId = globalObjectId;
-            this.Icon = icon;
-            this.Timestamp = timestamp;
+            Name = name ?? string.Empty;
+            TypeName = typeName ?? string.Empty;
+            AssetPath = assetPath ?? string.Empty;
+            GlobalId = globalObjectId;
+            Icon = icon;
+            Timestamp = timestamp;
 
-            this.ObjectRef = obj == null ? new WeakReference(null) : new WeakReference(obj);
-            this.RefreshMetadata();
+            ObjectRef = obj == null ? new WeakReference(null) : new WeakReference(obj);
+            RefreshMetadata();
         }
 
         public string Name { get; private set; }
@@ -43,12 +43,12 @@ namespace BovineLabs.Core.Editor.Windows.Base
         {
             get
             {
-                var obj = this.ObjectRef.Target as UnityEngine.Object;
-                return obj != null && obj.GetType().Name == this.TypeName;
+                var obj = ObjectRef.Target as UnityEngine.Object;
+                return obj != null && obj.GetType().Name == TypeName;
             }
         }
 
-        public bool IsAsset => !string.IsNullOrEmpty(this.AssetPath);
+        public bool IsAsset => !string.IsNullOrEmpty(AssetPath);
 
         public bool MatchesObject(UnityEngine.Object obj, GlobalObjectId objectId)
         {
@@ -57,59 +57,59 @@ namespace BovineLabs.Core.Editor.Windows.Base
                 return false;
             }
 
-            return this.ObjectRef.Target is UnityEngine.Object current && current != null && current == obj ||
-                HasValidObjectId(this.GlobalId) && HasValidObjectId(objectId) && this.GlobalId.Equals(objectId);
+            return ObjectRef.Target is UnityEngine.Object current && current != null && current == obj ||
+                HasValidObjectId(GlobalId) && HasValidObjectId(objectId) && GlobalId.Equals(objectId);
         }
 
         public void RefreshMetadata()
         {
-            var obj = this.ObjectRef.Target as UnityEngine.Object;
-            if (obj == null || obj.GetType().Name != this.TypeName)
+            var obj = ObjectRef.Target as UnityEngine.Object;
+            if (obj == null || obj.GetType().Name != TypeName)
             {
                 return;
             }
 
-            this.Name = obj.name;
-            this.AssetPath = AssetDatabase.GetAssetPath(obj);
+            Name = obj.name;
+            AssetPath = AssetDatabase.GetAssetPath(obj);
         }
 
         public UnityEngine.Object GetObject()
         {
             // First try to get from weak reference (fastest)
-            var obj = this.ObjectRef.Target as UnityEngine.Object;
+            var obj = ObjectRef.Target as UnityEngine.Object;
 
             // Unity replaces assets with the importer (MonoImporter, AssetImporter) when unloading an asset so it appears loaded, but it's the wrong type
-            if (obj != null && obj.GetType().Name == this.TypeName)
+            if (obj != null && obj.GetType().Name == TypeName)
             {
-                this.RefreshMetadata();
+                RefreshMetadata();
                 return obj;
             }
 
             // If weak reference is null, try to reload using GlobalObjectId
-            if (HasValidObjectId(this.GlobalId))
+            if (HasValidObjectId(GlobalId))
             {
-                obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(this.GlobalId);
-                if (obj != null && (obj is not AssetImporter || obj.GetType().Name == this.TypeName))
+                obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(GlobalId);
+                if (obj != null && (obj is not AssetImporter || obj.GetType().Name == TypeName))
                 {
                     // Update the weak reference for future calls
-                    this.ObjectRef.Target = obj;
-                    this.TypeName = obj.GetType().Name;
-                    this.RefreshMetadata();
-                    this.Icon = AssetPreview.GetMiniThumbnail(obj);
+                    ObjectRef.Target = obj;
+                    TypeName = obj.GetType().Name;
+                    RefreshMetadata();
+                    Icon = AssetPreview.GetMiniThumbnail(obj);
                     return obj;
                 }
             }
 
             // Old preference entries may not have a valid GlobalObjectId. Path fallback is only safe when no exact identity was persisted.
-            if (!HasValidObjectId(this.GlobalId) && !string.IsNullOrEmpty(this.AssetPath))
+            if (!HasValidObjectId(GlobalId) && !string.IsNullOrEmpty(AssetPath))
             {
-                obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(this.AssetPath);
-                if (obj != null && obj.GetType().Name == this.TypeName)
+                obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(AssetPath);
+                if (obj != null && obj.GetType().Name == TypeName)
                 {
-                    this.ObjectRef.Target = obj;
-                    this.GlobalId = GlobalObjectId.GetGlobalObjectIdSlow(obj);
-                    this.RefreshMetadata();
-                    this.Icon = AssetPreview.GetMiniThumbnail(obj);
+                    ObjectRef.Target = obj;
+                    GlobalId = GlobalObjectId.GetGlobalObjectIdSlow(obj);
+                    RefreshMetadata();
+                    Icon = AssetPreview.GetMiniThumbnail(obj);
                     return obj;
                 }
             }
@@ -124,33 +124,33 @@ namespace BovineLabs.Core.Editor.Windows.Base
 
         internal void RefreshIdentity()
         {
-            if (this.IsAlive)
+            if (IsAlive)
             {
-                this.GlobalId = GlobalObjectId.GetGlobalObjectIdSlow((UnityEngine.Object)this.ObjectRef.Target);
+                GlobalId = GlobalObjectId.GetGlobalObjectIdSlow((UnityEngine.Object)ObjectRef.Target);
             }
         }
 
         public string GetDisplayText(bool showTimestamps = true, bool showAssetPaths = true, bool showTypeNames = true, string timestampFormat = "HH:mm:ss")
         {
-            var result = this.Name;
+            var result = Name;
 
             // Add type information if enabled
             if (showTypeNames)
             {
-                result += $" ({this.TypeName})";
+                result += $" ({TypeName})";
             }
 
             // Add timestamp if enabled
             if (showTimestamps)
             {
-                var timeStr = this.Timestamp.ToString(timestampFormat);
+                var timeStr = Timestamp.ToString(timestampFormat);
                 result = $"[{timeStr}] {result}";
             }
 
             // Add path information if enabled
             if (showAssetPaths)
             {
-                var pathStr = this.IsAsset ? $" [{this.AssetPath}]" : " (Scene)";
+                var pathStr = IsAsset ? $" [{AssetPath}]" : " (Scene)";
                 result += pathStr;
             }
 

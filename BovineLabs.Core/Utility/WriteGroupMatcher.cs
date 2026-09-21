@@ -10,13 +10,13 @@
     public struct WriteGroupMatcher<T> : IDisposable
     {
         [ReadOnly]
-        private NativeArray<ComponentType> enableComponentTypes;
-        private EntityQueryMask entityQueryMask;
+        private NativeArray<ComponentType> _enableComponentTypes;
+        private EntityQueryMask _entityQueryMask;
 
         public WriteGroupMatcher(ref SystemState state)
         {
-            TypeManagerUtil.GetWriteGroupComponents<T>(Allocator.Persistent, out this.enableComponentTypes, out var normalComponents);
-            foreach (var c in this.enableComponentTypes)
+            TypeManagerUtil.GetWriteGroupComponents<T>(Allocator.Persistent, out _enableComponentTypes, out var normalComponents);
+            foreach (var c in _enableComponentTypes)
             {
                 state.AddDependency(c);
             }
@@ -31,11 +31,11 @@
                 }
 
                 using var query = queryBuilder.Build(state.EntityManager);
-                this.entityQueryMask = query.GetEntityQueryMask();
+                _entityQueryMask = query.GetEntityQueryMask();
             }
             else
             {
-                this.entityQueryMask = default;
+                _entityQueryMask = default;
             }
 
             normalComponents.Dispose();
@@ -43,18 +43,18 @@
 
         public void Dispose()
         {
-            this.enableComponentTypes.Dispose();
+            _enableComponentTypes.Dispose();
         }
 
         public BitArray128 Matches(ArchetypeChunk archetypeChunk)
         {
-            if (this.entityQueryMask.IsCreated() && this.entityQueryMask.MatchesIgnoreFilter(archetypeChunk))
+            if (_entityQueryMask.IsCreated() && _entityQueryMask.MatchesIgnoreFilter(archetypeChunk))
             {
                 return BitArray128.All;
             }
 
             var matches = BitArray128.None;
-            foreach (var componentType in this.enableComponentTypes)
+            foreach (var componentType in _enableComponentTypes)
             {
                 ref readonly var bits = ref UnsafeEntityDataAccess.GetRequiredEnabledBitsRO(archetypeChunk, componentType);
                 matches |= new BitArray128(bits);

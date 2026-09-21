@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Editor.UI
     {
         public sealed override VisualElement CreateInspectorGUI()
         {
-            var obj = (ObjectSelectionProxy)this.target;
+            var obj = (ObjectSelectionProxy)target;
 
             if (obj.Obj == null)
             {

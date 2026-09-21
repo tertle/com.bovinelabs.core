@@ -9,49 +9,49 @@ namespace BovineLabs.Core.Memory
     public unsafe struct UnsafeParallelPoolAllocator<T> : IDisposable
         where T : unmanaged
     {
-        private readonly Allocator allocator;
+        private readonly Allocator _allocator;
 
         [NativeDisableUnsafePtrRestriction]
-        private UnsafePoolAllocator<T>* pools;
+        private UnsafePoolAllocator<T>* _pools;
 
         [NativeSetThreadIndex]
-        private int threadIndex;
+        private int _threadIndex;
 
         public UnsafeParallelPoolAllocator(int countPerChunk, Allocator allocator)
         {
-            this.allocator = allocator;
-            this.pools = (UnsafePoolAllocator<T>*)CollectionMemory.Allocate(UnsafeUtility.SizeOf<UnsafePoolAllocator<T>>() * JobsUtility.ThreadIndexCount,
+            _allocator = allocator;
+            _pools = (UnsafePoolAllocator<T>*)CollectionMemory.Allocate(UnsafeUtility.SizeOf<UnsafePoolAllocator<T>>() * JobsUtility.ThreadIndexCount,
                 UnsafeUtility.AlignOf<UnsafePoolAllocator<T>>(), allocator);
 
             for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
             {
-                this.pools[i] = new UnsafePoolAllocator<T>(countPerChunk, allocator);
+                _pools[i] = new UnsafePoolAllocator<T>(countPerChunk, allocator);
             }
 
-            this.threadIndex = 0;
+            _threadIndex = 0;
         }
 
-        public bool IsCreated => this.pools != null;
+        public bool IsCreated => _pools != null;
 
         public void Dispose()
         {
             for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
             {
-                this.pools[i].Dispose();
+                _pools[i].Dispose();
             }
 
-            CollectionMemory.Free(this.pools, this.allocator);
-            this.pools = null;
+            CollectionMemory.Free(_pools, _allocator);
+            _pools = null;
         }
 
         public T* Alloc()
         {
-            return this.pools[this.threadIndex].Alloc();
+            return _pools[_threadIndex].Alloc();
         }
 
         public void Free(T* p)
         {
-            this.pools[this.threadIndex].Free(p);
+            _pools[_threadIndex].Free(p);
         }
 
         public int Allocated()
@@ -60,7 +60,7 @@ namespace BovineLabs.Core.Memory
 
             for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
             {
-                allocated += this.pools[i].Allocated();
+                allocated += _pools[i].Allocated();
             }
 
             return allocated;

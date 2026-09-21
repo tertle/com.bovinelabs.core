@@ -20,8 +20,8 @@
             input.Add(-6772, 3);
             input.Add(1234, 4);
 
-            var entity = this.Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
 
             var hashMap = buffer.InitializePerfectHashMap<DynamicPerfectHashMapTestsBuffer, int, short>(input, -1).AsPerfectHashMap<DynamicPerfectHashMapTestsBuffer, int, short>();
             Assert.AreEqual((short)0, hashMap[1]);
@@ -37,8 +37,8 @@
             var input = new NativeHashMap<int, short>(1, Allocator.Temp);
             input.Add(123, 7);
 
-            var entity = this.Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
 
             var hashMap = buffer.InitializePerfectHashMap<DynamicPerfectHashMapTestsBuffer, int, short>(input, -1).AsPerfectHashMap<DynamicPerfectHashMapTestsBuffer, int, short>();
 
@@ -63,8 +63,8 @@
             values[3] = 3;
             values[4] = 4;
 
-            var entity = this.Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
 
             Assert.Throws<ArgumentException>(() => buffer.InitializePerfectHashMap<DynamicPerfectHashMapTestsBuffer, int, short>(keys, values, -1));
         }
@@ -80,8 +80,8 @@
             values[0] = 10;
             values[1] = 20;
 
-            var entity = this.Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsByteLongBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicPerfectHashMapTestsByteLongBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsByteLongBuffer));
+            var buffer = Manager.GetBuffer<DynamicPerfectHashMapTestsByteLongBuffer>(entity);
 
             var hashMap = buffer.InitializePerfectHashMap(keys, values, long.MinValue)
                 .AsPerfectHashMap<DynamicPerfectHashMapTestsByteLongBuffer, byte, long>();
@@ -101,8 +101,8 @@
             var values = new NativeArray<short>(1, Allocator.Temp);
             values[0] = 3;
 
-            var entity = this.Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
 
             Assert.Throws<ArgumentException>(() => buffer.InitializePerfectHashMap(keys, values, (short)-1));
         }

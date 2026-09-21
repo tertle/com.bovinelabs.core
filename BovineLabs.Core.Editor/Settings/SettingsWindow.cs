@@ -10,7 +10,7 @@
 
     internal class SettingsWindow : SettingsBaseWindow<SettingsWindow>
     {
-        private readonly Dictionary<Type, Type> settingsPanelMap = new();
+        private readonly Dictionary<Type, Type> _settingsPanelMap = new();
 
         protected override string TitleText => "Settings";
 
@@ -22,7 +22,7 @@
 
         protected override void GetPanels(List<ISettingsPanel> settingPanels)
         {
-            this.settingsPanelMap.Clear();
+            _settingsPanelMap.Clear();
 
             if (EditorApplication.isCompiling)
             {
@@ -33,7 +33,7 @@
             {
                 try
                 {
-                    this.settingsPanelMap.Add(settings, panel);
+                    _settingsPanelMap.Add(settings, panel);
                 }
                 catch (ArgumentException)
                 {
@@ -45,7 +45,7 @@
             foreach (var settingsType in ReflectionUtility.GetAllImplementationsRootOnly<ISettings, ScriptableObject>())
             {
                 // Custom implementation
-                if (this.settingsPanelMap.ContainsKey(settingsType))
+                if (_settingsPanelMap.ContainsKey(settingsType))
                 {
                     continue;
                 }
@@ -53,11 +53,11 @@
                 var genericPanelType = typeof(GenericSettingsPanel<>);
                 var panelType = genericPanelType.MakeGenericType(settingsType);
 
-                this.settingsPanelMap.Add(settingsType, panelType);
+                _settingsPanelMap.Add(settingsType, panelType);
             }
 
             // Create an implementations for all settings without a custom implementation
-            foreach (var s in this.settingsPanelMap)
+            foreach (var s in _settingsPanelMap)
             {
                 ISettingsPanel panel;
                 try

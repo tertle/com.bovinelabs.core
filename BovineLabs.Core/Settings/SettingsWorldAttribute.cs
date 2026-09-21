@@ -7,7 +7,7 @@
     {
         public SettingsWorldAttribute(params string[] worlds)
         {
-            this.Worlds = worlds;
+            Worlds = worlds;
         }
 
         /// <summary>

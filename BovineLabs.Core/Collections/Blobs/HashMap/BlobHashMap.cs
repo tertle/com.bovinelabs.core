@@ -13,13 +13,13 @@
     {
         internal BlobHashMapData<TKey, TValue> Data;
 
-        public int Count => this.Data.Count[0];
+        public int Count => Data.Count[0];
 
         public ref TValue this[TKey key]
         {
             get
             {
-                if (this.TryGetValue(key, out var value))
+                if (TryGetValue(key, out var value))
                 {
                     return ref value.Ref;
                 }
@@ -34,12 +34,12 @@
 
         public bool TryGetValue(TKey key, out Ptr<TValue> item)
         {
-            return this.Data.TryGetFirstValue(key, out item, out _);
+            return Data.TryGetFirstValue(key, out item, out _);
         }
 
         public bool ContainsKey(TKey key)
         {
-            return this.TryGetValue(key, out _);
+            return TryGetValue(key, out _);
         }
 
         public unsafe BlobHashMapEnumerator<TKey, TValue> GetEnumerator()

@@ -7,19 +7,19 @@
     public struct NameValue<T>
     {
         [SerializeField]
-        private string name;
+        private string _name;
 
         [SerializeField]
-        private T value;
+        private T _value;
 
         public NameValue(string name, T value)
         {
-            this.name = name;
-            this.value = value;
+            _name = name;
+            _value = value;
         }
 
-        public string Name => this.name;
+        public string Name => _name;
 
-        public T Value => this.value;
+        public T Value => _value;
     }
 }

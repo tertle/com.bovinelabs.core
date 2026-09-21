@@ -8,12 +8,12 @@ namespace BovineLabs.Core
     {
         public void OnCreate(ref SystemState state)
         {
-            this.EnsureLogger(ref state);
+            EnsureLogger(ref state);
         }
 
         public void OnUpdate(ref SystemState state)
         {
-            this.EnsureLogger(ref state);
+            EnsureLogger(ref state);
         }
 
         private void EnsureLogger(ref SystemState state)

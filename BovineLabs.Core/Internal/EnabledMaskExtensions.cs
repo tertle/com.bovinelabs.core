@@ -1,5 +1,6 @@
 ﻿namespace BovineLabs.Core.Internal
 {
+    using System.Diagnostics.CodeAnalysis;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
@@ -30,6 +31,8 @@
             public readonly ulong* m_Ptr;
             public readonly int m_OffsetInBits;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
             public readonly AtomicSafetyHandle m_Safety;
 #endif
         }

@@ -34,16 +34,16 @@ namespace BovineLabs.Core
             }
 #endif
 
-            this.RawValue = id == 0 ? 0 : mod << ModShift | id;
+            RawValue = id == 0 ? 0 : mod << ModShift | id;
         }
 
         [CreateProperty]
-        public readonly ushort Mod => (ushort)((uint)this.RawValue >> ModShift);
+        public readonly ushort Mod => (ushort)((uint)RawValue >> ModShift);
 
         [CreateProperty]
-        public readonly int ID => this.RawValue & IDMask;
+        public readonly int ID => RawValue & IDMask;
 
-        public readonly bool IsNull => this.ID == 0;
+        public readonly bool IsNull => ID == 0;
 
         public static bool operator ==(BLId left, BLId right)
         {
@@ -57,33 +57,33 @@ namespace BovineLabs.Core
 
         public readonly BLId WithMod(ushort mod)
         {
-            return new BLId(this.ID, mod);
+            return new BLId(ID, mod);
         }
 
         public readonly int CompareTo(BLId other)
         {
-            var modCompare = this.Mod.CompareTo(other.Mod);
-            return modCompare != 0 ? modCompare : this.ID.CompareTo(other.ID);
+            var modCompare = Mod.CompareTo(other.Mod);
+            return modCompare != 0 ? modCompare : ID.CompareTo(other.ID);
         }
 
         public override readonly bool Equals(object obj)
         {
-            return obj is BLId other && this.Equals(other);
+            return obj is BLId other && Equals(other);
         }
 
         public readonly bool Equals(BLId other)
         {
-            return this.RawValue == other.RawValue;
+            return RawValue == other.RawValue;
         }
 
         public override readonly int GetHashCode()
         {
-            return this.RawValue;
+            return RawValue;
         }
 
         public override readonly string ToString()
         {
-            return this.Mod == 0 ? $"ID:{this.ID}" : $"Mod:{this.Mod} ID:{this.ID}";
+            return Mod == 0 ? $"ID:{ID}" : $"Mod:{Mod} ID:{ID}";
         }
     }
 }

@@ -278,15 +278,15 @@ namespace BovineLabs.Core.Tests.Collections
 
             public void Execute(int index)
             {
-                if (!this.Pool.TryGet(out var list))
+                if (!Pool.TryGet(out var list))
                 {
-                    var failurePtr = (int*)this.Failures.GetUnsafePtr();
+                    var failurePtr = (int*)Failures.GetUnsafePtr();
                     Interlocked.Increment(ref failurePtr[0]);
                     return;
                 }
 
                 var value = list[0];
-                var seenPtr = (int*)this.Seen.GetUnsafePtr();
+                var seenPtr = (int*)Seen.GetUnsafePtr();
                 Interlocked.Increment(ref seenPtr[value]);
                 list.Dispose();
             }

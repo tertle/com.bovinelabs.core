@@ -8,15 +8,15 @@ namespace BovineLabs.Testing
 
     public abstract class ECSTestsFixture
     {
-        private bool jobsDebuggerWasEnabled;
-        private PlayerLoopSystem previousPlayerLoop;
-        private World previousWorld;
+        private bool _jobsDebuggerWasEnabled;
+        private PlayerLoopSystem _previousPlayerLoop;
+        private World _previousWorld;
 
-        private World world;
+        private World _world;
 
-        protected World World => this.world!;
+        protected World World => _world!;
 
-        protected WorldUnmanaged WorldUnmanaged => this.World!.Unmanaged;
+        protected WorldUnmanaged WorldUnmanaged => World!.Unmanaged;
 
         protected EntityManager Manager { get; private set; }
 
@@ -30,23 +30,23 @@ namespace BovineLabs.Testing
         public virtual void Setup()
         {
             // unit tests preserve the current player loop to restore later, and start from a blank slate.
-            this.previousPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
+            _previousPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
             PlayerLoop.SetPlayerLoop(PlayerLoop.GetDefaultPlayerLoop());
 
-            this.previousWorld = World.DefaultGameObjectInjectionWorld;
-            this.world = World.DefaultGameObjectInjectionWorld = new World("Test World", this.IsEditModeTest ? WorldFlags.Editor : WorldFlags.Game);
-            this.World.UpdateAllocatorEnableBlockFree = true;
-            this.Manager = this.World.EntityManager;
-            this.ManagerDebug = new EntityManager.EntityManagerDebug(this.Manager);
+            _previousWorld = World.DefaultGameObjectInjectionWorld;
+            _world = World.DefaultGameObjectInjectionWorld = new World("Test World", IsEditModeTest ? WorldFlags.Editor : WorldFlags.Game);
+            World.UpdateAllocatorEnableBlockFree = true;
+            Manager = World.EntityManager;
+            ManagerDebug = new EntityManager.EntityManagerDebug(Manager);
 
             // Many ECS tests will only pass if the Jobs Debugger enabled;
             // force it enabled for all tests, and restore the original value at teardown.
-            this.jobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
+            _jobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
             JobsUtility.JobDebuggerEnabled = true;
 
-            BLDebugSystem.Create(this.world);
+            BLDebugSystem.Create(_world);
 
-            this.BlobAssetStore = new BlobAssetStore(128);
+            BlobAssetStore = new BlobAssetStore(128);
 
 #if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
             // In case entities journaling is initialized, clear it
@@ -59,27 +59,27 @@ namespace BovineLabs.Testing
         [TearDown]
         public virtual void TearDown()
         {
-            this.World.EntityManager.CompleteAllTrackedJobs();
+            World.EntityManager.CompleteAllTrackedJobs();
 
-            this.World.DestroyAllSystemsAndLogException(out var errorsWhileDestroyingSystems);
+            World.DestroyAllSystemsAndLogException(out var errorsWhileDestroyingSystems);
             Assert.IsFalse(errorsWhileDestroyingSystems,
                 "One or more exceptions were thrown while destroying systems during test teardown; consult the log for details.");
 
-            this.ManagerDebug.CheckInternalConsistency();
+            ManagerDebug.CheckInternalConsistency();
 
-            this.World.Dispose();
-            this.world = null;
+            World.Dispose();
+            _world = null;
 
-            World.DefaultGameObjectInjectionWorld = this.previousWorld;
-            this.previousWorld = null;
+            World.DefaultGameObjectInjectionWorld = _previousWorld;
+            _previousWorld = null;
 
-            this.Manager = default;
+            Manager = default;
 
-            this.BlobAssetStore.Dispose();
+            BlobAssetStore.Dispose();
 
-            JobsUtility.JobDebuggerEnabled = this.jobsDebuggerWasEnabled;
+            JobsUtility.JobDebuggerEnabled = _jobsDebuggerWasEnabled;
 
-            PlayerLoop.SetPlayerLoop(this.previousPlayerLoop);
+            PlayerLoop.SetPlayerLoop(_previousPlayerLoop);
         }
     }
 }

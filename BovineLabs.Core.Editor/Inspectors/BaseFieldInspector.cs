@@ -12,9 +12,9 @@
         {
             var field = new TField
             {
-                name = this.Name,
-                label = this.DisplayName,
-                tooltip = this.Tooltip,
+                name = Name,
+                label = DisplayName,
+                tooltip = Tooltip,
                 bindingPath = ".",
             };
 

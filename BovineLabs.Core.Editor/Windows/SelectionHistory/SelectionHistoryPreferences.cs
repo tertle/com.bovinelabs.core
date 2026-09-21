@@ -13,42 +13,42 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
         [SerializeField]
         [Tooltip("Maximum number of unlocked items to keep in selection history")]
         [Min(1)]
-        private int maxHistorySize = 10;
+        private int _maxHistorySize = 10;
 
         [SerializeField]
         [Tooltip("Whether to track scene objects in selection history")]
-        private bool trackSceneObjects;
+        private bool _trackSceneObjects;
 
         [SerializeField]
         [HideInInspector] // Hide from preferences UI
-        private List<SerializableHistoryItem> lockedHistoryData = new();
+        private List<SerializableHistoryItem> _lockedHistoryData = new();
 
         [SerializeField]
         [HideInInspector] // Hide from preferences UI
-        private List<SerializableHistoryItem> normalHistoryData = new();
+        private List<SerializableHistoryItem> _normalHistoryData = new();
 
         public int MaxHistorySize
         {
-            get => Math.Max(1, this.maxHistorySize);
-            set => this.maxHistorySize = value;
+            get => Math.Max(1, _maxHistorySize);
+            set => _maxHistorySize = value;
         }
 
         public bool TrackSceneObjects
         {
-            get => this.trackSceneObjects;
-            set => this.trackSceneObjects = value;
+            get => _trackSceneObjects;
+            set => _trackSceneObjects = value;
         }
 
         public List<SerializableHistoryItem> LockedHistoryData
         {
-            get => this.lockedHistoryData;
-            set => this.lockedHistoryData = value ?? new List<SerializableHistoryItem>();
+            get => _lockedHistoryData;
+            set => _lockedHistoryData = value ?? new List<SerializableHistoryItem>();
         }
 
         public List<SerializableHistoryItem> NormalHistoryData
         {
-            get => this.normalHistoryData;
-            set => this.normalHistoryData = value ?? new List<SerializableHistoryItem>();
+            get => _normalHistoryData;
+            set => _normalHistoryData = value ?? new List<SerializableHistoryItem>();
         }
 
         public override string[] GetSearchKeywords()

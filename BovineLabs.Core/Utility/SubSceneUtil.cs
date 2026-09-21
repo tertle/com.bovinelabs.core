@@ -7,19 +7,19 @@
     public struct SubSceneUtil
     {
         [ReadOnly]
-        private ComponentLookup<SceneReference> sceneReferences;
+        private ComponentLookup<SceneReference> _sceneReferences;
 
         [ReadOnly]
-        private BufferLookup<ResolvedSectionEntity> resolvedSectionEntitys;
+        private BufferLookup<ResolvedSectionEntity> _resolvedSectionEntitys;
 
         [ReadOnly]
-        private ComponentLookup<SceneSectionStreamingSystem.StreamingState> streamingStates;
+        private ComponentLookup<SceneSectionStreamingSystem.StreamingState> _streamingStates;
 
         public SubSceneUtil(ref SystemState state)
         {
-            this.sceneReferences = state.GetComponentLookup<SceneReference>(true);
-            this.resolvedSectionEntitys = state.GetBufferLookup<ResolvedSectionEntity>(true);
-            this.streamingStates = state.GetComponentLookup<SceneSectionStreamingSystem.StreamingState>(true);
+            _sceneReferences = state.GetComponentLookup<SceneReference>(true);
+            _resolvedSectionEntitys = state.GetBufferLookup<ResolvedSectionEntity>(true);
+            _streamingStates = state.GetComponentLookup<SceneSectionStreamingSystem.StreamingState>(true);
         }
 
         public static bool IsSectionLoaded(ref SystemState state, Entity sectionEntity)
@@ -54,24 +54,24 @@
 
         public void Update(ref SystemState state)
         {
-            this.sceneReferences.Update(ref state);
-            this.resolvedSectionEntitys.Update(ref state);
-            this.streamingStates.Update(ref state);
+            _sceneReferences.Update(ref state);
+            _resolvedSectionEntitys.Update(ref state);
+            _streamingStates.Update(ref state);
         }
 
         public bool IsSceneLoaded(Entity entity)
         {
-            if (!this.sceneReferences.HasComponent(entity))
+            if (!_sceneReferences.HasComponent(entity))
             {
                 return false;
             }
 
-            if (!this.resolvedSectionEntitys.HasBuffer(entity))
+            if (!_resolvedSectionEntitys.HasBuffer(entity))
             {
                 return false;
             }
 
-            var resolvedSectionEntities = this.resolvedSectionEntitys[entity];
+            var resolvedSectionEntities = _resolvedSectionEntitys[entity];
 
             if (resolvedSectionEntities.Length == 0)
             {
@@ -80,7 +80,7 @@
 
             foreach (var s in resolvedSectionEntities)
             {
-                if (!this.IsSectionLoaded(s.SectionEntity))
+                if (!IsSectionLoaded(s.SectionEntity))
                 {
                     return false;
                 }
@@ -91,7 +91,7 @@
 
         public bool IsSectionLoaded(Entity sectionEntity)
         {
-            if (!this.streamingStates.TryGetComponent(sectionEntity, out var status))
+            if (!_streamingStates.TryGetComponent(sectionEntity, out var status))
             {
                 return false;
             }

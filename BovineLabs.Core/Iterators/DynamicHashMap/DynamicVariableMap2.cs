@@ -32,28 +32,28 @@ namespace BovineLabs.Core.Iterators
         where T2 : unmanaged, IEquatable<T2>
         where TC2 : unmanaged, IColumn<T2>
     {
-        private readonly DynamicBuffer<byte> buffer;
+        private readonly DynamicBuffer<byte> _buffer;
 
         [NativeDisableUnsafePtrRestriction]
-        private DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* helper;
+        private DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* _helper;
 
         internal DynamicVariableMap(DynamicBuffer<byte> buffer)
         {
             CheckSize(buffer);
 
-            this.buffer = buffer;
-            this.helper = buffer.AsVariableHelper<TKey, TValue, T1, TC1, T2, TC2>();
+            _buffer = buffer;
+            _helper = buffer.AsVariableHelper<TKey, TValue, T1, TC1, T2, TC2>();
         }
 
-        public readonly bool IsCreated => this.buffer.IsCreated;
+        public readonly bool IsCreated => _buffer.IsCreated;
 
         public readonly bool IsEmpty
         {
             get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return !this.IsCreated || this.helper->Count == 0;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return !IsCreated || _helper->Count == 0;
             }
         }
 
@@ -62,9 +62,9 @@ namespace BovineLabs.Core.Iterators
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return this.helper->Count;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return _helper->Count;
             }
         }
 
@@ -76,171 +76,171 @@ namespace BovineLabs.Core.Iterators
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return this.helper->Capacity;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return _helper->Capacity;
             }
 
             set
             {
-                this.buffer.CheckWriteAccess();
-                this.RefCheck();
-                DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.Resize(this.buffer, ref this.helper, value);
+                _buffer.CheckWriteAccess();
+                RefCheck();
+                DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.Resize(_buffer, ref _helper, value);
             }
         }
 
         /// <summary>
         /// Must be used and stored by ref.
         /// </summary>
-        public ref TC1 Column1 => ref this.helper->Column1;
+        public ref TC1 Column1 => ref _helper->Column1;
 
         /// <summary>
         /// Must be used and stored by ref.
         /// </summary>
-        public ref TC2 Column2 => ref this.helper->Column2;
+        public ref TC2 Column2 => ref _helper->Column2;
 
-        internal DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* Helper => this.helper;
+        internal DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* Helper => _helper;
 
         public readonly void Clear()
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            this.helper->Clear();
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            _helper->Clear();
         }
 
         public bool TryAdd(TKey key, TValue item, T1 column1, T2 column2)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
 
-            var idx = DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.TryAdd(this.buffer, ref this.helper, key, item, column1, column2);
+            var idx = DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.TryAdd(_buffer, ref _helper, key, item, column1, column2);
             return idx != -1;
         }
 
         public void Add(TKey key, TValue item, T1 column1, T2 column2)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
 
-            DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.AddUnique(this.buffer, ref this.helper, key, item, column1, column2);
+            DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.AddUnique(_buffer, ref _helper, key, item, column1, column2);
         }
 
         public readonly bool Remove(TKey key)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            return this.helper->Remove(key);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            return _helper->Remove(key);
         }
 
         public readonly void RemoveAt(int idx)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            this.helper->RemoveAt(idx);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            _helper->RemoveAt(idx);
         }
 
         public readonly ref TValue Replace(TKey key, T1 column1, T2 column2)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
 
-            var idx = this.helper->Find(key);
+            var idx = _helper->Find(key);
             if (idx == -1)
             {
                 ThrowKeyNotPresent(key);
             }
 
-            this.helper->Column1.Replace(column1, idx);
-            this.helper->Column2.Replace(column2, idx);
-            return ref UnsafeUtility.ArrayElementAsRef<TValue>(this.helper->Values, idx);
+            _helper->Column1.Replace(column1, idx);
+            _helper->Column2.Replace(column2, idx);
+            return ref UnsafeUtility.ArrayElementAsRef<TValue>(_helper->Values, idx);
         }
 
         public readonly void ReplaceColumn1(int idx, T1 column)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            this.helper->Column1.Replace(column, idx);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            _helper->Column1.Replace(column, idx);
         }
 
         public readonly void ReplaceColumn2(int idx, T2 column)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            this.helper->Column2.Replace(column, idx);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            _helper->Column2.Replace(column, idx);
         }
 
         public void AddOrReplace(TKey key, TValue value, T1 column1, T2 column2)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
 
-            var idx = this.helper->Find(key);
+            var idx = _helper->Find(key);
             if (idx == -1)
             {
-                this.Add(key, value, column1, column2);
+                Add(key, value, column1, column2);
             }
             else
             {
-                this.helper->Column1.Replace(column1, idx);
-                this.helper->Column2.Replace(column2, idx);
-                UnsafeUtility.WriteArrayElement(this.helper->Values, idx, value);
+                _helper->Column1.Replace(column1, idx);
+                _helper->Column2.Replace(column2, idx);
+                UnsafeUtility.WriteArrayElement(_helper->Values, idx, value);
             }
         }
 
         public readonly bool ContainsKey(TKey key)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->Find(key) != -1;
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->Find(key) != -1;
         }
 
         public readonly bool TryGetValue(TKey key, out TValue item, out T1 column1, out T2 column2)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->TryGetValue(key, out item, out column1, out column2);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->TryGetValue(key, out item, out column1, out column2);
         }
 
         public readonly int TryGetIndex(TKey key)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->Find(key);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->Find(key);
         }
 
         public readonly TKey GetKeyAtIndex(int index)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->GetKeyAtIndex(index);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->GetKeyAtIndex(index);
         }
 
         public readonly ref TValue GetValueAtIndex(int index)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return ref this.helper->GetValueAtIndex(index);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return ref _helper->GetValueAtIndex(index);
         }
 
         public readonly T1 GetColumn1AtIndex(int index)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->GetColumn1AtIndex(index);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->GetColumn1AtIndex(index);
         }
 
         public readonly T2 GetColumn2AtIndex(int index)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->GetColumn2AtIndex(index);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->GetColumn2AtIndex(index);
         }
 
         public readonly void GetAtIndex(int index, out TKey key, out TValue item, out T1 column1, out T2 column2)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            this.helper->GetValueAtIndex(index, out key, out item, out column1, out column2);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            _helper->GetValueAtIndex(index, out key, out item, out column1, out column2);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -254,8 +254,8 @@ namespace BovineLabs.Core.Iterators
         [Conditional("UNITY_DOTS_DEBUG")]
         private readonly void RefCheck()
         {
-            var ptr = this.buffer.GetPtr();
-            if (this.helper != ptr)
+            var ptr = _buffer.GetPtr();
+            if (_helper != ptr)
             {
                 throw new ArgumentException("DynamicHashMap was not passed by ref when doing a resize and is now invalid");
             }
@@ -290,9 +290,9 @@ namespace BovineLabs.Core.Iterators
             {
                 get
                 {
-                    if (this.Index != -1)
+                    if (Index != -1)
                     {
-                        return this.Data->KeyHash.Keys[this.Index];
+                        return Data->KeyHash.Keys[Index];
                     }
 
                     return default;
@@ -304,13 +304,13 @@ namespace BovineLabs.Core.Iterators
                 get
                 {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-                    if (this.Index == -1)
+                    if (Index == -1)
                     {
                         throw new ArgumentException("must be valid");
                     }
 #endif
 
-                    return ref UnsafeUtility.AsRef<TValue>(this.Data->Values + this.Index);
+                    return ref UnsafeUtility.AsRef<TValue>(Data->Values + Index);
                 }
             }
 
@@ -319,13 +319,13 @@ namespace BovineLabs.Core.Iterators
                 get
                 {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-                    if (this.Index == -1)
+                    if (Index == -1)
                     {
                         throw new ArgumentException("must be valid");
                     }
 #endif
 
-                    return this.Data->Column1.GetValue(this.Index);
+                    return Data->Column1.GetValue(Index);
                 }
             }
 
@@ -334,13 +334,13 @@ namespace BovineLabs.Core.Iterators
                 get
                 {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-                    if (this.Index == -1)
+                    if (Index == -1)
                     {
                         throw new ArgumentException("must be valid");
                     }
 #endif
 
-                    return this.Data->Column2.GetValue(this.Index);
+                    return Data->Column2.GetValue(Index);
                 }
             }
         }
@@ -350,30 +350,30 @@ namespace BovineLabs.Core.Iterators
         public struct Enumerator : IEnumerator<KVC>
         {
             [NativeDisableUnsafePtrRestriction]
-            private DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.Enumerator enumerator;
+            private DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.Enumerator _enumerator;
 
             internal Enumerator(DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>* data)
             {
-                this.enumerator = new DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.Enumerator(data);
+                _enumerator = new DynamicVariableMapHelper<TKey, TValue, T1, TC1, T2, TC2>.Enumerator(data);
             }
 
             public KVC Current
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => this.enumerator.GetCurrent();
+                get => _enumerator.GetCurrent();
             }
 
-            object IEnumerator.Current => this.Current;
+            object IEnumerator.Current => Current;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
-                return this.enumerator.MoveNext();
+                return _enumerator.MoveNext();
             }
 
             public void Reset()
             {
-                this.enumerator.Reset();
+                _enumerator.Reset();
             }
 
             public void Dispose()
@@ -383,9 +383,9 @@ namespace BovineLabs.Core.Iterators
 
         public readonly Enumerator GetEnumerator()
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return new Enumerator(this.helper);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return new Enumerator(_helper);
         }
 
         /// <summary>

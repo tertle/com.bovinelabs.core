@@ -16,10 +16,10 @@
 
         internal UnsafeHashMapBucketData(TValue* v, TKey* k, int* n, int* b)
         {
-            this.Values = v;
-            this.Keys = k;
-            this.Next = n;
-            this.Buckets = b;
+            Values = v;
+            Keys = k;
+            Next = n;
+            Buckets = b;
         }
     }
 }

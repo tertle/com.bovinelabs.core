@@ -28,8 +28,8 @@ namespace BovineLabs.Core.Editor.SearchWindow
 
         public void Show()
         {
-            var title = string.IsNullOrEmpty(this.Title) ? "Select" : this.Title;
-            var context = SearchService.CreateContext(this.CreateProvider(title));
+            var title = string.IsNullOrEmpty(Title) ? "Select" : Title;
+            var context = SearchService.CreateContext(CreateProvider(title));
             var viewState = new SearchViewState(
                 context,
                 SearchViewFlags.ListView |
@@ -39,9 +39,9 @@ namespace BovineLabs.Core.Editor.SearchWindow
             {
                 title = title,
                 windowTitle = new GUIContent(title),
-                position = this.Position,
+                position = Position,
                 excludeClearItem = true,
-                selectHandler = this.Select,
+                selectHandler = Select,
             };
 
             SearchService.ShowPicker(viewState);
@@ -51,16 +51,16 @@ namespace BovineLabs.Core.Editor.SearchWindow
         {
             return new SearchProvider(ProviderId, title)
             {
-                fetchItems = this.FetchItems,
+                fetchItems = FetchItems,
             };
         }
 
         private IEnumerable<SearchItem> FetchItems(SearchContext context, List<SearchItem> searchItems, SearchProvider provider)
         {
             var score = 0;
-            for (var i = 0; i < this.Items.Count; i++)
+            for (var i = 0; i < Items.Count; i++)
             {
-                var item = this.Items[i];
+                var item = Items[i];
                 if (!string.IsNullOrEmpty(context.searchQuery) &&
                     item.Name.IndexOf(context.searchQuery, StringComparison.CurrentCultureIgnoreCase) < 0)
                 {
@@ -75,11 +75,11 @@ namespace BovineLabs.Core.Editor.SearchWindow
         {
             if (canceled || searchItem == null)
             {
-                this.OnClose?.Invoke();
+                OnClose?.Invoke();
                 return;
             }
 
-            this.OnSelection?.Invoke((SearchView.Item)searchItem.data);
+            OnSelection?.Invoke((SearchView.Item)searchItem.data);
         }
     }
 }

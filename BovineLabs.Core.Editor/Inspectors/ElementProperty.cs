@@ -9,8 +9,8 @@
 
     public abstract class ElementProperty : PropertyDrawer
     {
-        private SerializedObject serializedObject;
-        private VisualElement parent;
+        private SerializedObject _serializedObject;
+        private VisualElement _parent;
 
         [NoAutoStaticsCleanup]
         private static readonly Dictionary<SerializedProperty, object> Caches = new();
@@ -28,88 +28,88 @@
 
         protected virtual bool IterateChildren => true;
 
-        protected VisualElement Parent => this.parent!;
+        protected VisualElement Parent => _parent!;
 
-        protected SerializedObject SerializedObject => this.serializedObject!;
+        protected SerializedObject SerializedObject => _serializedObject!;
 
         protected SerializedProperty RootProperty { get; private set; }
 
         public sealed override VisualElement CreatePropertyGUI(SerializedProperty rootProperty)
         {
-            this.RootProperty = rootProperty;
-            this.serializedObject = rootProperty.serializedObject;
+            RootProperty = rootProperty;
+            _serializedObject = rootProperty.serializedObject;
 
-            var iterateChildren = this.IterateChildren && rootProperty.propertyType == SerializedPropertyType.Generic;
+            var iterateChildren = IterateChildren && rootProperty.propertyType == SerializedPropertyType.Generic;
 
-            switch (this.ParentType)
+            switch (ParentType)
             {
                 case ParentTypes.Label:
-                    this.parent = new VisualElement();
+                    _parent = new VisualElement();
 
                     if (iterateChildren)
                     {
                         if (!rootProperty.displayName.StartsWith("Element "))
                         {
-                            this.parent.AddToClassList("unity-decorator-drawers-container");
+                            _parent.AddToClassList("unity-decorator-drawers-container");
                         }
 
-                        var label = new Label(this.GetDisplayName(rootProperty));
+                        var label = new Label(GetDisplayName(rootProperty));
                         label.AddToClassList("unity-header-drawer__label");
-                        this.parent.Add(label);
+                        _parent.Add(label);
                     }
 
                     break;
                 case ParentTypes.None:
-                    this.parent = new VisualElement();
+                    _parent = new VisualElement();
                     break;
 
                 case ParentTypes.Foldout:
                 default:
-                    this.parent = new Foldout { text = this.GetDisplayName(rootProperty), tooltip = this.GetTooltip(rootProperty) };
-                    this.parent.AddToClassList("unity-collection-view");
-                    this.parent.AddToClassList("unity-list-view");
-                    this.parent.AddToClassList("unity-list-view__foldout-header");
+                    _parent = new Foldout { text = GetDisplayName(rootProperty), tooltip = GetTooltip(rootProperty) };
+                    _parent.AddToClassList("unity-collection-view");
+                    _parent.AddToClassList("unity-list-view");
+                    _parent.AddToClassList("unity-list-view__foldout-header");
                     break;
             }
 
-            var createElements = this.PreElementCreation(this.parent);
+            var createElements = PreElementCreation(_parent);
 
             if (createElements)
             {
                 if (iterateChildren)
                 {
-                    foreach (var property in SerializedHelper.GetChildren(rootProperty, this.SkipSingleRoot))
+                    foreach (var property in SerializedHelper.GetChildren(rootProperty, SkipSingleRoot))
                     {
-                        var element = this.CreateElement(property);
+                        var element = CreateElement(property);
                         if (element != null)
                         {
-                            this.Parent.Add(element);
+                            Parent.Add(element);
                         }
                     }
                 }
                 else
                 {
-                    var root = this.SkipSingleRoot && SerializedHelper.TryGetSingleChildRoot(rootProperty, out var singleChildRoot)
+                    var root = SkipSingleRoot && SerializedHelper.TryGetSingleChildRoot(rootProperty, out var singleChildRoot)
                         ? singleChildRoot
                         : rootProperty;
 
-                    var element = this.CreateElement(root);
+                    var element = CreateElement(root);
 
                     if (element is PropertyField pf)
                     {
-                        pf.label = this.GetDisplayName(rootProperty);
+                        pf.label = GetDisplayName(rootProperty);
                     }
 
                     if (element != null)
                     {
-                        this.Parent.Add(element);
+                        Parent.Add(element);
                     }
                 }
             }
 
-            this.PostElementCreation(this.Parent, createElements);
+            PostElementCreation(Parent, createElements);
 
-            return this.Parent;
+            return Parent;
         }
 
         protected static PropertyField CreatePropertyField(SerializedProperty property)
@@ -125,9 +125,9 @@
         protected T Cache<T>()
             where T : class, new()
         {
-            if (!Caches.TryGetValue(this.RootProperty!, out var cache))
+            if (!Caches.TryGetValue(RootProperty!, out var cache))
             {
-                Caches[this.RootProperty!] = cache = new T();
+                Caches[RootProperty!] = cache = new T();
             }
 
             return (T)cache;
@@ -145,7 +145,7 @@
 
         protected virtual VisualElement CreateElement(SerializedProperty property)
         {
-            return CreatePropertyField(property, this.SerializedObject);
+            return CreatePropertyField(property, SerializedObject);
         }
 
         protected virtual bool PreElementCreation(VisualElement root)

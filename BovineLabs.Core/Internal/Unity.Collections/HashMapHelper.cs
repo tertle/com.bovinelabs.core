@@ -42,62 +42,62 @@ namespace BovineLabs.Core.Internal
         private ref Unity.Collections.LowLevel.Unsafe.HashMapHelper<TKey> Actual => ref UnsafeUtility.As<HashMapHelper<TKey>,
         Unity.Collections.LowLevel.Unsafe.HashMapHelper<TKey>>(ref this);
 
-        internal bool IsCreated => this.Actual.IsCreated;
-        internal bool IsEmpty => this.Actual.IsEmpty;
+        internal bool IsCreated => Actual.IsCreated;
+        internal bool IsEmpty => Actual.IsEmpty;
 
         internal int CalcCapacityCeilPow2(int capacity)
         {
-            return this.Actual.CalcCapacityCeilPow2(capacity);
+            return Actual.CalcCapacityCeilPow2(capacity);
         }
 
         internal void Clear()
         {
-            this.Actual.Clear();
+            Actual.Clear();
         }
 
         internal void Init(int capacity, int sizeOfValueT, int minGrowth, AllocatorManager.AllocatorHandle allocator)
         {
-            this.Actual.Init(capacity, sizeOfValueT, minGrowth, allocator);
+            Actual.Init(capacity, sizeOfValueT, minGrowth, allocator);
         }
 
         internal void Dispose()
         {
-            this.Actual.Dispose();
+            Actual.Dispose();
         }
 
         internal void Resize(int newCapacity)
         {
-            this.Actual.Resize(newCapacity);
+            Actual.Resize(newCapacity);
         }
 
         internal void TrimExcess()
         {
-            this.Actual.TrimExcess();
+            Actual.TrimExcess();
         }
 
         internal int Find(TKey key)
         {
-            return this.Actual.Find(key);
+            return Actual.Find(key);
         }
 
         internal bool TryGetValue<TValue>(TKey key, out TValue item) where TValue : unmanaged
         {
-            return this.Actual.TryGetValue<TValue>(key, out item);
+            return Actual.TryGetValue<TValue>(key, out item);
         }
 
         internal NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
-            return this.Actual.GetKeyArray(allocator);
+            return Actual.GetKeyArray(allocator);
         }
 
         internal NativeArray<TValue> GetValueArray<TValue>(AllocatorManager.AllocatorHandle allocator) where TValue : unmanaged
         {
-            return this.Actual.GetValueArray<TValue>(allocator);
+            return Actual.GetValueArray<TValue>(allocator);
         }
 
         internal NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays<TValue>(AllocatorManager.AllocatorHandle allocator) where TValue : unmanaged
         {
-            return this.Actual.GetKeyValueArrays<TValue>(allocator);
+            return Actual.GetKeyValueArrays<TValue>(allocator);
         }
 
         internal static int GetBucketSize(int capacity)

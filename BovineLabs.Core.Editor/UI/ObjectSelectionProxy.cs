@@ -6,12 +6,12 @@ namespace BovineLabs.Core.Editor.UI
     public class ObjectSelectionProxy : ScriptableObject, ISerializationCallbackReceiver
     {
         // [SerializeReference]
-        private object obj;
+        private object _obj;
 
         public object Obj
         {
-            get => this.obj;
-            set => this.obj = value;
+            get => _obj;
+            set => _obj = value;
         }
 
         public static ObjectSelectionProxy CreateInstance(object obj)

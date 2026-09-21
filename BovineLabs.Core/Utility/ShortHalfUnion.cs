@@ -14,14 +14,14 @@
 
         public ShortHalfUnion(short value)
         {
-            this.HalfValue = default;
-            this.ShortValue = value;
+            HalfValue = default;
+            ShortValue = value;
         }
 
         public ShortHalfUnion(half value)
         {
-            this.ShortValue = default;
-            this.HalfValue = value;
+            ShortValue = default;
+            HalfValue = value;
         }
     }
 }

@@ -15,16 +15,16 @@
         {
         }
 
-        private DynamicHashSet<T> GetSet => this.Context.EntityManager.GetBuffer<TBuffer>(this.Context.Entity, true).AsHashSet<TBuffer, T>();
+        private DynamicHashSet<T> GetSet => Context.EntityManager.GetBuffer<TBuffer>(Context.Entity, true).AsHashSet<TBuffer, T>();
 
         public override bool IsValid()
         {
-            return base.IsValid() && this.Context.EntityManager.HasBuffer<TBuffer>(this.Context.Entity);
+            return base.IsValid() && Context.EntityManager.HasBuffer<TBuffer>(Context.Entity);
         }
 
         protected override void PopulateList(List<KVP> list)
         {
-            var set = this.GetSet;
+            var set = GetSet;
 
             using var e = set.GetEnumerator();
             while (e.MoveNext())
@@ -35,7 +35,7 @@
 
         protected override void OnValueChanged(NativeArray<KVP> newValues)
         {
-            var set = this.GetSet;
+            var set = GetSet;
             set.Clear();
 
             foreach (var v in newValues)

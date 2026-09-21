@@ -17,7 +17,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void GetOrAddRefUnsafe()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
 
             // Test with new key
             ref var value1 = ref hashMap.GetOrAddRefUnsafe(42, 50);
@@ -37,7 +37,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void GetOrAddRefUnsafeWithFlag()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
 
             // Test with new key
             ref var value1 = ref hashMap.GetOrAddRefUnsafe(42, out var wasAdded1, 50);
@@ -54,7 +54,7 @@ namespace BovineLabs.Core.Tests.Iterators
         public void EnumerationConsistency()
         {
             const int count = 100;
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
 
             // Add elements
             for (var i = 0; i < count; i++)
@@ -78,7 +78,7 @@ namespace BovineLabs.Core.Tests.Iterators
         public unsafe void Enumeration_WhenDense_RemainsFinishedUntilReset()
         {
             const int count = 4;
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
 
             for (var i = 0; i < count; i++)
             {
@@ -113,7 +113,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void Enumeration_WithSparseCollidingChain_ReturnsOnlyActiveEntries()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
             var key = 1;
             var collidingKey = key + hashMap.Helper->BucketCapacity;
             var secondCollidingKey = collidingKey + hashMap.Helper->BucketCapacity;
@@ -137,7 +137,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void ClearDense_WithCollidingKeys_ClearsAndAllowsReuse()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
             var key = 1;
             var collidingKey = key + hashMap.Helper->BucketCapacity;
             var capacity = hashMap.Capacity;
@@ -185,7 +185,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void ClearDense_WithHoles_FallsBackToFullClear()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
 
             hashMap.Add(1, 10);
             hashMap.Add(2, 20);
@@ -213,7 +213,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void ResizeStressTest()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
 
             // Force multiple resizes by adding many elements
             const int count = 1000;
@@ -235,7 +235,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void ValuesPointer_IsAlignedToValueType()
         {
-            var hashMap = this.CreateHashMapLong();
+            var hashMap = CreateHashMapLong();
 
             var align = UnsafeUtility.AlignOf<long>();
             var valuesPtr = (ulong)hashMap.Helper->Values;
@@ -246,7 +246,7 @@ namespace BovineLabs.Core.Tests.Iterators
         public unsafe void Resize_WithHoles_RebuildsAndClearsFreeList()
         {
             const int count = 256;
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
 
             for (var i = 0; i < count; i++)
             {
@@ -284,7 +284,7 @@ namespace BovineLabs.Core.Tests.Iterators
         public unsafe void CopyActiveEntriesTo_WithDenseMap_UsesActiveEntries()
         {
             const int count = 32;
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
 
             for (var i = 0; i < count; i++)
             {
@@ -311,7 +311,7 @@ namespace BovineLabs.Core.Tests.Iterators
         public unsafe void CopyActiveEntriesTo_WithSparseMap_SkipsRemovedEntriesWithoutMutation()
         {
             const int count = 64;
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
 
             for (var i = 0; i < count; i++)
             {
@@ -354,7 +354,7 @@ namespace BovineLabs.Core.Tests.Iterators
         public unsafe void DenseRebuild_RoundTripsPackedSparseMap()
         {
             const int count = 96;
-            var source = this.CreateHashMap();
+            var source = CreateHashMap();
 
             for (var i = 0; i < count; i++)
             {
@@ -372,7 +372,7 @@ namespace BovineLabs.Core.Tests.Iterators
             var values = new NativeArray<byte>(packedCount, Allocator.Temp);
             sourceHelper->CopyActiveEntriesTo((byte*)keys.GetUnsafePtr(), sizeof(int), (byte*)values.GetUnsafePtr(), sizeof(byte));
 
-            var targetBuffer = this.CreateHashMapBuffer();
+            var targetBuffer = CreateHashMapBuffer();
             var targetBytes = targetBuffer.Reinterpret<byte>();
             var targetSize = DynamicHashMapHelper<int>.CalculateDataSize(sourceHelper->Capacity, sizeof(byte), out _);
             targetBytes.ResizeUninitialized(targetSize);
@@ -441,7 +441,7 @@ namespace BovineLabs.Core.Tests.Iterators
         public unsafe void RawCompactPayload_WithDenseMap_RoundTripsActiveEntries()
         {
             const int count = 40;
-            var source = this.CreateHashMap();
+            var source = CreateHashMap();
 
             for (var i = 0; i < count; i++)
             {
@@ -460,7 +460,7 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.IsTrue(DynamicHashMapRawCompactPayload<int, byte>.TryGetTargetDataSize(
                 (byte*)payload.GetUnsafeReadOnlyPtr(), payload.Length, out var targetSize));
 
-            var targetBuffer = this.CreateHashMapBuffer();
+            var targetBuffer = CreateHashMapBuffer();
             var targetBytes = targetBuffer.Reinterpret<byte>();
             targetBytes.ResizeUninitialized(targetSize);
             DynamicHashMapRawCompactPayload<int, byte>.RebuildFromPayload(
@@ -474,7 +474,7 @@ namespace BovineLabs.Core.Tests.Iterators
         public unsafe void RawCompactPayload_WithSparseMap_RoundTripsWithoutMutation()
         {
             const int count = 96;
-            var source = this.CreateHashMap();
+            var source = CreateHashMap();
 
             for (var i = 0; i < count; i++)
             {
@@ -500,7 +500,7 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.IsTrue(DynamicHashMapRawCompactPayload<int, byte>.TryGetTargetDataSize(
                 (byte*)payload.GetUnsafeReadOnlyPtr(), payload.Length, out var targetSize));
 
-            var targetBuffer = this.CreateHashMapBuffer();
+            var targetBuffer = CreateHashMapBuffer();
             var targetBytes = targetBuffer.Reinterpret<byte>();
             targetBytes.ResizeUninitialized(targetSize);
             DynamicHashMapRawCompactPayload<int, byte>.RebuildFromPayload(
@@ -541,7 +541,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void DenseRebuild_WithDuplicateKeys_Throws()
         {
-            var targetBuffer = this.CreateHashMapBuffer();
+            var targetBuffer = CreateHashMapBuffer();
             var targetBytes = targetBuffer.Reinterpret<byte>();
             var targetSize = DynamicHashMapHelper<int>.CalculateDataSize(MinGrowth, sizeof(byte), out _);
             targetBytes.ResizeUninitialized(targetSize);
@@ -559,7 +559,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void AddBatchUnsafe_WithHoles_Throws()
         {
-            var hashMap = this.CreateHashMap();
+            var hashMap = CreateHashMap();
 
             for (var i = 0; i < 32; i++)
             {
@@ -585,19 +585,19 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private DynamicHashMap<int, byte> CreateHashMap()
         {
-            return this.CreateHashMapBuffer().AsHashMap<DynamicHashMapTestsBuffer, int, byte>();
+            return CreateHashMapBuffer().AsHashMap<DynamicHashMapTestsBuffer, int, byte>();
         }
 
         private DynamicBuffer<DynamicHashMapTestsBuffer> CreateHashMapBuffer()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicHashMapTestsBuffer));
-            return this.Manager.GetBuffer<DynamicHashMapTestsBuffer>(entity).InitializeHashMap<DynamicHashMapTestsBuffer, int, byte>(0, MinGrowth);
+            var entity = Manager.CreateEntity(typeof(DynamicHashMapTestsBuffer));
+            return Manager.GetBuffer<DynamicHashMapTestsBuffer>(entity).InitializeHashMap<DynamicHashMapTestsBuffer, int, byte>(0, MinGrowth);
         }
 
         private DynamicHashMap<int, long> CreateHashMapLong()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicHashMapTestsLongBuffer));
-            return this.Manager.GetBuffer<DynamicHashMapTestsLongBuffer>(entity)
+            var entity = Manager.CreateEntity(typeof(DynamicHashMapTestsLongBuffer));
+            return Manager.GetBuffer<DynamicHashMapTestsLongBuffer>(entity)
                 .InitializeHashMap<DynamicHashMapTestsLongBuffer, int, long>(0, MinGrowth)
                 .AsHashMap<DynamicHashMapTestsLongBuffer, int, long>();
         }

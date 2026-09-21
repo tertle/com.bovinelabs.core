@@ -10,18 +10,18 @@
     [CustomPropertyDrawer(typeof(PrefabElementAttribute))]
     public class PrefabElementProperty : ElementProperty
     {
-        private SerializedObject prefabObject;
+        private SerializedObject _prefabObject;
 
-        private bool IsPrefab => ((Component)this.SerializedObject.targetObject).IsPrefab();
+        private bool IsPrefab => ((Component)SerializedObject.targetObject).IsPrefab();
 
         protected override bool PreElementCreation(VisualElement root)
         {
-            if (this.IsPrefab)
+            if (IsPrefab)
             {
                 return true;
             }
 
-            var target = this.SerializedObject.targetObject;
+            var target = SerializedObject.targetObject;
 
             var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(target);
             if (string.IsNullOrEmpty(prefabPath))
@@ -35,7 +35,7 @@
                 return true;
             }
 
-            this.prefabObject = new SerializedObject(prefab);
+            _prefabObject = new SerializedObject(prefab);
 
             var label = new Label("Changes are applied to the prefab");
             ElementUtility.AddLabelStyles(label);
@@ -46,15 +46,15 @@
 
         protected override VisualElement CreateElement(SerializedProperty property)
         {
-            if (this.IsPrefab || this.prefabObject == null)
+            if (IsPrefab || _prefabObject == null)
             {
-                return CreatePropertyField(property, this.SerializedObject);
+                return CreatePropertyField(property, SerializedObject);
             }
 
-            var prefabProperty = this.prefabObject.FindProperty(property.propertyPath);
+            var prefabProperty = _prefabObject.FindProperty(property.propertyPath);
             Assert.IsNotNull(prefabProperty);
 
-            return CreatePropertyField(prefabProperty, this.prefabObject);
+            return CreatePropertyField(prefabProperty, _prefabObject);
         }
     }
 }

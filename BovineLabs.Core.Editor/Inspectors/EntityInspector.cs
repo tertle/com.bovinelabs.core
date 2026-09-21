@@ -7,14 +7,14 @@
     {
         protected EntityInspector(object inspector)
         {
-            this.Context = ContextGetter.Create<T>(inspector);
+            Context = ContextGetter.Create<T>(inspector);
         }
 
         internal IContextGetter Context { get; }
 
         public virtual bool IsValid()
         {
-            return this.Context.World.IsCreated && this.Context.EntityManager.SafeExists(this.Context.Entity);
+            return Context.World.IsCreated && Context.EntityManager.SafeExists(Context.Entity);
         }
     }
 }

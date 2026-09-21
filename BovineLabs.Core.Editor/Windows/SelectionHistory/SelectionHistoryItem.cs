@@ -10,7 +10,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
         public SelectionHistoryItem(UnityEngine.Object obj, GlobalObjectId objectId, bool isLocked)
             : base(obj, objectId)
         {
-            this.IsLocked = isLocked;
+            IsLocked = isLocked;
         }
 
         public SelectionHistoryItem(
@@ -18,7 +18,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             bool isLocked)
             : base(obj, name, typeName, assetPath, globalObjectId, icon, timestamp)
         {
-            this.IsLocked = isLocked;
+            IsLocked = isLocked;
         }
 
         public bool IsLocked { get; set; }

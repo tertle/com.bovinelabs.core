@@ -2,6 +2,7 @@ namespace BovineLabs.Core.Memory
 {
     using System;
     using BovineLabs.Core.Internal;
+    using System.Diagnostics.CodeAnalysis;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -11,29 +12,31 @@ namespace BovineLabs.Core.Memory
     public unsafe struct NativeSlabAllocator<T> : IDisposable
         where T : unmanaged
     {
-        private UnsafeSlabAllocator<T> slabAllocator;
+        private UnsafeSlabAllocator<T> _slabAllocator;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#pragma warning disable SA1308
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         private AtomicSafetyHandle m_Safety;
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeSlabAllocator<T>>();
-#pragma warning restore SA1308
 #endif
 
         public NativeSlabAllocator(int countPerSlab, AllocatorManager.AllocatorHandle allocator)
         {
             Debug.Assert(countPerSlab > 0);
 
-            this.slabAllocator = new UnsafeSlabAllocator<T>(countPerSlab, allocator);
+            _slabAllocator = new UnsafeSlabAllocator<T>(countPerSlab, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionChecks.CheckAllocator(allocator.Handle);
 
-            this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
-            CollectionChecks.InitNativeContainer<T>(this.m_Safety);
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
+            CollectionChecks.InitNativeContainer<T>(m_Safety);
 
-            CollectionHelper.SetStaticSafetyId<NativeSlabAllocator<T>>(ref this.m_Safety, ref s_staticSafetyId.Data);
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(this.m_Safety, true);
+            CollectionHelper.SetStaticSafetyId<NativeSlabAllocator<T>>(ref m_Safety, ref s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
 
@@ -42,13 +45,13 @@ namespace BovineLabs.Core.Memory
             get
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                return this.slabAllocator.AllocationCount;
+                return _slabAllocator.AllocationCount;
             }
         }
 
-        public bool IsCreated => this.slabAllocator.IsCreated;
+        public bool IsCreated => _slabAllocator.IsCreated;
 
         /// <summary>
         /// Returned memory is not cleared.
@@ -56,25 +59,25 @@ namespace BovineLabs.Core.Memory
         public T* Alloc()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-            return this.slabAllocator.Alloc();
+            return _slabAllocator.Alloc();
         }
 
         public void Clear()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-            this.slabAllocator.Clear();
+            _slabAllocator.Clear();
         }
 
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
-            this.slabAllocator.Dispose();
+            _slabAllocator.Dispose();
         }
     }
 }

@@ -25,8 +25,8 @@ namespace BovineLabs.FacetGenerator
     {
         public FacetResult(FacetData data, IReadOnlyList<Diagnostic> diagnostics)
         {
-            this.Data = data;
-            this.Diagnostics = diagnostics ?? Array.Empty<Diagnostic>();
+            Data = data;
+            Diagnostics = diagnostics ?? Array.Empty<Diagnostic>();
         }
 
         public FacetData Data { get; }
@@ -38,8 +38,8 @@ namespace BovineLabs.FacetGenerator
     {
         public FacetCandidate(TypeDeclarationSyntax typeSyntax, INamedTypeSymbol typeSymbol)
         {
-            this.TypeSyntax = typeSyntax;
-            this.TypeSymbol = typeSymbol;
+            TypeSyntax = typeSyntax;
+            TypeSymbol = typeSymbol;
         }
 
         public TypeDeclarationSyntax TypeSyntax { get; }
@@ -55,18 +55,18 @@ namespace BovineLabs.FacetGenerator
             INamedTypeSymbol entityStorageInfoLookupType, INamedTypeSymbol componentLookupType, INamedTypeSymbol bufferLookupType,
             INamedTypeSymbol bufferElementDataType, INamedTypeSymbol facetEnabledRefRWType)
         {
-            this.FacetInterface = facetInterface;
-            this.OptionalAttribute = optionalAttribute;
-            this.FacetAttribute = facetAttribute;
-            this.ReadOnlyAttribute = readOnlyAttribute;
-            this.SingletonAttribute = singletonAttribute;
-            this.EntityType = entityType;
-            this.EntityStorageInfoType = entityStorageInfoType;
-            this.EntityStorageInfoLookupType = entityStorageInfoLookupType;
-            this.ComponentLookupType = componentLookupType;
-            this.BufferLookupType = bufferLookupType;
-            this.BufferElementDataType = bufferElementDataType;
-            this.FacetEnabledRefRWType = facetEnabledRefRWType;
+            FacetInterface = facetInterface;
+            OptionalAttribute = optionalAttribute;
+            FacetAttribute = facetAttribute;
+            ReadOnlyAttribute = readOnlyAttribute;
+            SingletonAttribute = singletonAttribute;
+            EntityType = entityType;
+            EntityStorageInfoType = entityStorageInfoType;
+            EntityStorageInfoLookupType = entityStorageInfoLookupType;
+            ComponentLookupType = componentLookupType;
+            BufferLookupType = bufferLookupType;
+            BufferElementDataType = bufferElementDataType;
+            FacetEnabledRefRWType = facetEnabledRefRWType;
         }
 
         public INamedTypeSymbol FacetInterface { get; }
@@ -117,11 +117,11 @@ namespace BovineLabs.FacetGenerator
             INamedTypeSymbol typeSymbol, IReadOnlyList<FacetField> fields, IReadOnlyList<FacetSingletonDependency> singletonDependencies,
             IReadOnlyList<QueryBuilderInvocation> queryBuilderInvocations)
         {
-            this.TypeSymbol = typeSymbol;
-            this.Fields = fields;
-            this.SingletonDependencies = singletonDependencies;
-            this.QueryBuilderInvocations = queryBuilderInvocations;
-            this.TypeName = typeSymbol.ToDisplayString(FacetGenerator.ShortTypeFormat);
+            TypeSymbol = typeSymbol;
+            Fields = fields;
+            SingletonDependencies = singletonDependencies;
+            QueryBuilderInvocations = queryBuilderInvocations;
+            TypeName = typeSymbol.ToDisplayString(FacetGenerator.ShortTypeFormat);
         }
 
         public INamedTypeSymbol TypeSymbol { get; }
@@ -139,8 +139,8 @@ namespace BovineLabs.FacetGenerator
     {
         public QueryBuilderInvocation(string invocation, ITypeSymbol componentTypeSymbol)
         {
-            this.Invocation = invocation;
-            this.ComponentTypeSymbol = componentTypeSymbol;
+            Invocation = invocation;
+            ComponentTypeSymbol = componentTypeSymbol;
         }
 
         public string Invocation { get; }
@@ -152,8 +152,8 @@ namespace BovineLabs.FacetGenerator
     {
         public FacetSingletonDependency(string parameterName, FacetField field)
         {
-            this.ParameterName = parameterName;
-            this.Field = field;
+            ParameterName = parameterName;
+            Field = field;
         }
 
         public string ParameterName { get; }
@@ -167,16 +167,16 @@ namespace BovineLabs.FacetGenerator
             IFieldSymbol symbol, ITypeSymbol componentType, FacetFieldKind kind, bool isOptional, bool isReadOnly, bool hasReadOnlyAttribute,
             bool isBufferElement = false)
         {
-            this.Symbol = symbol;
-            this.ComponentTypeSymbol = componentType;
-            this.Kind = kind;
-            this.IsOptional = isOptional;
-            this.IsReadOnly = isReadOnly;
-            this.HasReadOnlyAttribute = hasReadOnlyAttribute;
-            this.IsBufferElement = isBufferElement;
-            this.FieldTypeName = symbol.Type.ToDisplayString(FacetGenerator.ShortTypeFormat);
-            this.ComponentTypeName = componentType.ToDisplayString(FacetGenerator.ShortTypeFormat);
-            this.ArgumentName = this.FieldName is "entity" or "facet" ? $"{this.FieldName}Value" : this.FieldName;
+            Symbol = symbol;
+            ComponentTypeSymbol = componentType;
+            Kind = kind;
+            IsOptional = isOptional;
+            IsReadOnly = isReadOnly;
+            HasReadOnlyAttribute = hasReadOnlyAttribute;
+            IsBufferElement = isBufferElement;
+            FieldTypeName = symbol.Type.ToDisplayString(FacetGenerator.ShortTypeFormat);
+            ComponentTypeName = componentType.ToDisplayString(FacetGenerator.ShortTypeFormat);
+            ArgumentName = FieldName is "entity" or "facet" ? $"{FieldName}Value" : FieldName;
         }
 
         public IFieldSymbol Symbol { get; }
@@ -193,31 +193,31 @@ namespace BovineLabs.FacetGenerator
 
         public bool IsBufferElement { get; }
 
-        public bool IsEntity => this.Kind == FacetFieldKind.Entity;
+        public bool IsEntity => Kind == FacetFieldKind.Entity;
 
-        public bool IsEntityStorageInfo => this.Kind == FacetFieldKind.EntityStorageInfo;
+        public bool IsEntityStorageInfo => Kind == FacetFieldKind.EntityStorageInfo;
 
-        public bool IsEntityStorageInfoLookup => this.Kind == FacetFieldKind.EntityStorageInfoLookup;
+        public bool IsEntityStorageInfoLookup => Kind == FacetFieldKind.EntityStorageInfoLookup;
 
-        public bool IsComponentLookup => this.Kind == FacetFieldKind.ComponentLookup;
+        public bool IsComponentLookup => Kind == FacetFieldKind.ComponentLookup;
 
-        public bool IsBufferLookup => this.Kind == FacetFieldKind.BufferLookup;
+        public bool IsBufferLookup => Kind == FacetFieldKind.BufferLookup;
 
-        public bool IsSingleton => this.Kind == FacetFieldKind.Singleton;
+        public bool IsSingleton => Kind == FacetFieldKind.Singleton;
 
-        public bool IsBuffer => this.Kind == FacetFieldKind.DynamicBuffer;
+        public bool IsBuffer => Kind == FacetFieldKind.DynamicBuffer;
 
-        public bool UsesBufferStorage => this.IsBuffer || this.IsBufferElement;
+        public bool UsesBufferStorage => IsBuffer || IsBufferElement;
 
         public bool IsEnabled =>
-            this.Kind == FacetFieldKind.FacetEnabledRefRW ||
-            this.Kind == FacetFieldKind.EnabledRefRO;
+            Kind == FacetFieldKind.FacetEnabledRefRW ||
+            Kind == FacetFieldKind.EnabledRefRO;
 
-        public bool IsFacet => this.Kind == FacetFieldKind.Facet;
+        public bool IsFacet => Kind == FacetFieldKind.Facet;
 
         public IReadOnlyList<FacetSingletonDependency> FacetSingletonDependencies { get; private set; } = Array.Empty<FacetSingletonDependency>();
 
-        public string FieldName => this.Symbol.Name;
+        public string FieldName => Symbol.Name;
 
         public string ParameterName => FieldName.Length > 1 && FieldName[0] == '_' ? FieldName.Substring(1) : FieldName;
 
@@ -231,17 +231,17 @@ namespace BovineLabs.FacetGenerator
         {
             get
             {
-                if (this.IsSingleton || this.IsFacet || this.IsEntityStorageInfo || this.IsEntityStorageInfoLookup || this.IsComponentLookup || this.IsBufferLookup)
+                if (IsSingleton || IsFacet || IsEntityStorageInfo || IsEntityStorageInfoLookup || IsComponentLookup || IsBufferLookup)
                 {
-                    return this.PascalFieldName;
+                    return PascalFieldName;
                 }
 
-                if (this.IsEntity)
+                if (IsEntity)
                 {
                     return "Entities";
                 }
 
-                return Pluralize(this.ComponentTypeSymbol.Name);
+                return Pluralize(ComponentTypeSymbol.Name);
             }
         }
 
@@ -249,22 +249,22 @@ namespace BovineLabs.FacetGenerator
         {
             get
             {
-                if (!string.IsNullOrEmpty(this.resolvedFieldNameOverride))
+                if (!string.IsNullOrEmpty(_resolvedFieldNameOverride))
                 {
-                    return this.resolvedFieldNameOverride;
+                    return _resolvedFieldNameOverride;
                 }
 
-                if (this.IsSingleton || this.IsFacet || this.IsEntityStorageInfo || this.IsEntityStorageInfoLookup || this.IsComponentLookup || this.IsBufferLookup)
+                if (IsSingleton || IsFacet || IsEntityStorageInfo || IsEntityStorageInfoLookup || IsComponentLookup || IsBufferLookup)
                 {
-                    return this.PascalFieldName;
+                    return PascalFieldName;
                 }
 
-                if (this.IsEntity)
+                if (IsEntity)
                 {
                     return "Entities";
                 }
 
-                return Pluralize(this.ComponentTypeSymbol.Name);
+                return Pluralize(ComponentTypeSymbol.Name);
             }
         }
 
@@ -272,112 +272,112 @@ namespace BovineLabs.FacetGenerator
         {
             get
             {
-                if (this.IsSingleton)
+                if (IsSingleton)
                 {
-                    return this.PascalFieldName;
+                    return PascalFieldName;
                 }
 
-                if (this.IsFacet || this.IsEntityStorageInfo || this.IsEntityStorageInfoLookup || this.IsComponentLookup || this.IsBufferLookup)
+                if (IsFacet || IsEntityStorageInfo || IsEntityStorageInfoLookup || IsComponentLookup || IsBufferLookup)
                 {
-                    return $"{this.PascalFieldName}Handle";
+                    return $"{PascalFieldName}Handle";
                 }
 
-                return $"{this.ComponentTypeSymbol.Name}Handle";
+                return $"{ComponentTypeSymbol.Name}Handle";
             }
         }
 
-        public string LookupTypeName => this.IsSingleton
-            ? this.FieldTypeName
-            : this.IsFacet
-                ? $"{this.ComponentTypeName}.Lookup"
-                : this.IsEntityStorageInfo || this.IsEntityStorageInfoLookup
+        public string LookupTypeName => IsSingleton
+            ? FieldTypeName
+            : IsFacet
+                ? $"{ComponentTypeName}.Lookup"
+                : IsEntityStorageInfo || IsEntityStorageInfoLookup
                     ? "EntityStorageInfoLookup"
-                    : this.IsComponentLookup || this.IsBufferLookup
-                        ? this.FieldTypeName
-                    : this.IsEntity
-                        ? this.ComponentTypeName
-                        : this.UsesBufferStorage
-                            ? $"BufferLookup<{this.ComponentTypeName}>"
-                            : $"ComponentLookup<{this.ComponentTypeName}>";
+                    : IsComponentLookup || IsBufferLookup
+                        ? FieldTypeName
+                    : IsEntity
+                        ? ComponentTypeName
+                        : UsesBufferStorage
+                            ? $"BufferLookup<{ComponentTypeName}>"
+                            : $"ComponentLookup<{ComponentTypeName}>";
 
         public void SetFacetSingletonDependencies(IReadOnlyList<FacetSingletonDependency> dependencies)
         {
-            this.FacetSingletonDependencies = dependencies ?? Array.Empty<FacetSingletonDependency>();
+            FacetSingletonDependencies = dependencies ?? Array.Empty<FacetSingletonDependency>();
         }
 
         public void SetResolvedFieldNameOverride(string resolvedFieldName)
         {
-            this.resolvedFieldNameOverride = resolvedFieldName;
+            _resolvedFieldNameOverride = resolvedFieldName;
         }
 
         public string ResolvedFieldTypeName
         {
             get
             {
-                if (this.IsSingleton)
+                if (IsSingleton)
                 {
-                    return this.FieldTypeName;
+                    return FieldTypeName;
                 }
 
-                if (this.IsFacet)
+                if (IsFacet)
                 {
-                    return $"{this.ComponentTypeName}.ResolvedChunk";
+                    return $"{ComponentTypeName}.ResolvedChunk";
                 }
 
-                if (this.IsBuffer)
+                if (IsBuffer)
                 {
-                    return $"BufferAccessor<{this.ComponentTypeName}>";
+                    return $"BufferAccessor<{ComponentTypeName}>";
                 }
 
-                if (this.IsEntity)
+                if (IsEntity)
                 {
                     return "NativeArray<Entity>";
                 }
 
-                if (this.IsEntityStorageInfo)
+                if (IsEntityStorageInfo)
                 {
                     return "ArchetypeChunk";
                 }
 
-                if (this.IsEntityStorageInfoLookup)
+                if (IsEntityStorageInfoLookup)
                 {
                     return "EntityStorageInfoLookup";
                 }
 
-                if (this.IsComponentLookup || this.IsBufferLookup)
+                if (IsComponentLookup || IsBufferLookup)
                 {
-                    return this.FieldTypeName;
+                    return FieldTypeName;
                 }
 
-                if (this.IsEnabled)
+                if (IsEnabled)
                 {
                     return "EnabledMask";
                 }
 
-                return $"NativeArray<{this.ComponentTypeName}>";
+                return $"NativeArray<{ComponentTypeName}>";
             }
         }
 
-        public string HandleTypeName => this.IsSingleton
-            ? this.FieldTypeName
-            : this.IsFacet
-                ? $"{this.ComponentTypeName}.TypeHandle"
-                : this.IsEntityStorageInfo || this.IsEntityStorageInfoLookup
+        public string HandleTypeName => IsSingleton
+            ? FieldTypeName
+            : IsFacet
+                ? $"{ComponentTypeName}.TypeHandle"
+                : IsEntityStorageInfo || IsEntityStorageInfoLookup
                     ? "EntityStorageInfoLookup"
-                    : this.IsComponentLookup || this.IsBufferLookup
-                        ? this.FieldTypeName
-                    : this.IsEntity
+                    : IsComponentLookup || IsBufferLookup
+                        ? FieldTypeName
+                    : IsEntity
                         ? "EntityTypeHandle"
-                        : this.UsesBufferStorage
-                            ? $"BufferTypeHandle<{this.ComponentTypeName}>"
-                            : $"ComponentTypeHandle<{this.ComponentTypeName}>";
+                        : UsesBufferStorage
+                            ? $"BufferTypeHandle<{ComponentTypeName}>"
+                            : $"ComponentTypeHandle<{ComponentTypeName}>";
 
         private static string Pluralize(string name)
         {
             return name.EndsWith("s", StringComparison.OrdinalIgnoreCase) ? name : $"{name}s";
         }
 
-        private string resolvedFieldNameOverride;
+        private string _resolvedFieldNameOverride;
 
         private string PascalFieldName =>
             $"{char.ToUpper(ParameterName[0], System.Globalization.CultureInfo.InvariantCulture)}{ParameterName.Substring(1)}";

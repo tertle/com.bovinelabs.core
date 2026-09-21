@@ -16,42 +16,42 @@
     public unsafe struct LocalSpatialMap<T> : IDisposable
         where T : unmanaged, ISpatialPosition
     {
-        private readonly float quantizeStep;
-        private readonly int quantizeSize;
-        private readonly int2 halfSize;
+        private readonly float _quantizeStep;
+        private readonly int _quantizeSize;
+        private readonly int2 _halfSize;
 
-        private UnsafePartialKeyedMap<T>* map;
-        private UnsafeList<int>* keys;
+        private UnsafePartialKeyedMap<T>* _map;
+        private UnsafeList<int>* _keys;
 
         public LocalSpatialMap(float quantizeStep, int size, Allocator allocator = Allocator.Persistent)
         {
-            this.quantizeStep = quantizeStep;
-            this.quantizeSize = (int)math.ceil(size / quantizeStep);
-            this.halfSize = new int2(size) / 2;
+            _quantizeStep = quantizeStep;
+            _quantizeSize = (int)math.ceil(size / quantizeStep);
+            _halfSize = new int2(size) / 2;
 
-            this.map = UnsafePartialKeyedMap<T>.Create(null, null, 0, this.quantizeSize * this.quantizeSize, allocator);
-            this.keys = UnsafeList<int>.Create(0, allocator);
+            _map = UnsafePartialKeyedMap<T>.Create(null, null, 0, _quantizeSize * _quantizeSize, allocator);
+            _keys = UnsafeList<int>.Create(0, allocator);
         }
 
-        public bool IsCreated => this.map != null;
+        public bool IsCreated => _map != null;
 
         public void Dispose()
         {
-            if (!this.IsCreated)
+            if (!IsCreated)
             {
                 return;
             }
 
-            UnsafePartialKeyedMap<T>.Destroy(this.map);
-            UnsafeList<int>.Destroy(this.keys);
+            UnsafePartialKeyedMap<T>.Destroy(_map);
+            UnsafeList<int>.Destroy(_keys);
 
-            this.map = null;
-            this.keys = null;
+            _map = null;
+            _keys = null;
         }
 
         public JobHandle Build(NativeList<T> positions, JobHandle dependency, ResizeKeys resizeStub = default, QuantizeJob quantizeStub = default)
         {
-            return this.Build(positions.AsDeferredJobArray(), dependency, resizeStub, quantizeStub);
+            return Build(positions.AsDeferredJobArray(), dependency, resizeStub, quantizeStub);
         }
 
         [SuppressMessage("ReSharper", "UnusedParameter.Global", Justification = "Sneaky way to allow this to run in bursted ISystem")]
@@ -61,7 +61,7 @@
             // Deferred native arrays are supported so we must part it into the job to get the length
             dependency = new ResizeKeys
             {
-                Keys = this.keys,
+                Keys = _keys,
                 Values = positions,
             }.Schedule(dependency);
 
@@ -69,17 +69,17 @@
             dependency = new QuantizeJob
             {
                 Positions = positions,
-                Keys = this.keys,
-                QuantizeStep = this.quantizeStep,
-                QuantizeWidth = this.quantizeSize,
-                HalfSize = this.halfSize,
+                Keys = _keys,
+                QuantizeStep = _quantizeStep,
+                QuantizeWidth = _quantizeSize,
+                HalfSize = _halfSize,
                 Workers = workers,
             }.ScheduleParallel(workers, 1, dependency);
 
             dependency = new UpdateMap
             {
-                SpatialHashMap = this.map,
-                Keys = this.keys,
+                SpatialHashMap = _map,
+                Keys = _keys,
                 Values = positions,
             }.Schedule(dependency);
 
@@ -88,7 +88,7 @@
 
         public ReadOnly AsReadOnly()
         {
-            return new ReadOnly(this.quantizeStep, this.quantizeSize, this.halfSize, this.map);
+            return new ReadOnly(_quantizeStep, _quantizeSize, _halfSize, _map);
         }
 
         // Jobs outside to avoid generic issues
@@ -102,7 +102,7 @@
 
             public void Execute()
             {
-                this.Keys->Resize(this.Values.Length);
+                Keys->Resize(Values.Length);
             }
         }
 
@@ -124,24 +124,24 @@
 
             public void Execute(int index)
             {
-                var length = this.Positions.Length / this.Workers;
+                var length = Positions.Length / Workers;
                 var start = index * length;
                 var end = start + length;
-                if (index == this.Workers - 1)
+                if (index == Workers - 1)
                 {
                     // Last thread handles remainder
-                    end += this.Positions.Length % this.Workers;
+                    end += Positions.Length % Workers;
                 }
 
                 for (var entityInQueryIndex = start; entityInQueryIndex < end; entityInQueryIndex++)
                 {
-                    var position = this.Positions[entityInQueryIndex].Position;
-                    var quantized = PartialSpatialMap.Quantized(position, this.QuantizeStep, this.HalfSize);
+                    var position = Positions[entityInQueryIndex].Position;
+                    var quantized = PartialSpatialMap.Quantized(position, QuantizeStep, HalfSize);
 
-                    this.ValidatePosition(position, quantized);
+                    ValidatePosition(position, quantized);
 
-                    var hashed = PartialSpatialMap.Hash(quantized, this.QuantizeWidth);
-                    (*this.Keys)[entityInQueryIndex] = hashed;
+                    var hashed = PartialSpatialMap.Hash(quantized, QuantizeWidth);
+                    (*Keys)[entityInQueryIndex] = hashed;
                 }
             }
 
@@ -149,10 +149,10 @@
             [Conditional("UNITY_DOTS_DEBUG")]
             private void ValidatePosition(float2 position, int2 quantized)
             {
-                if (math.any(quantized >= this.QuantizeWidth))
+                if (math.any(quantized >= QuantizeWidth))
                 {
-                    var min = new int2(-this.HalfSize);
-                    var max = new int2(this.HalfSize - 1);
+                    var min = new int2(-HalfSize);
+                    var max = new int2(HalfSize - 1);
 
                     BLGlobalLogger.LogError512($"Position {position} is outside the size of the world, min={min} max={max}");
                     throw new ArgumentException($"Position {position} is outside the size of the world, min={min} max={max}");
@@ -169,24 +169,24 @@
 
             public void Execute()
             {
-                Check.Assume(this.Keys->Length == this.Values.Length);
+                Check.Assume(Keys->Length == Values.Length);
 
-                this.SpatialHashMap->Update(this.Keys->Ptr, (T*)this.Values.GetUnsafeReadOnlyPtr(), this.Values.Length);
+                SpatialHashMap->Update(Keys->Ptr, (T*)Values.GetUnsafeReadOnlyPtr(), Values.Length);
             }
         }
 
         public readonly struct ReadOnly
         {
-            private readonly float quantizeStep;
-            private readonly int quantizeWidth;
-            private readonly int2 halfSize;
+            private readonly float _quantizeStep;
+            private readonly int _quantizeWidth;
+            private readonly int2 _halfSize;
 
             public ReadOnly(float quantizeStep, int quantizeWidth, int2 halfSize, UnsafePartialKeyedMap<T>* map)
             {
-                this.quantizeStep = quantizeStep;
-                this.quantizeWidth = quantizeWidth;
-                this.halfSize = halfSize;
-                this.Map = map;
+                _quantizeStep = quantizeStep;
+                _quantizeWidth = quantizeWidth;
+                _halfSize = halfSize;
+                Map = map;
             }
 
             [field: ReadOnly]
@@ -195,13 +195,13 @@
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int2 Quantized(float2 position)
             {
-                return PartialSpatialMap.Quantized(position, this.quantizeStep, this.halfSize);
+                return PartialSpatialMap.Quantized(position, _quantizeStep, _halfSize);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int Hash(int2 quantized)
             {
-                return PartialSpatialMap.Hash(quantized, this.quantizeWidth);
+                return PartialSpatialMap.Hash(quantized, _quantizeWidth);
             }
         }
     }

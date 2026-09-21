@@ -17,13 +17,13 @@ namespace BovineLabs.Core.Iterators
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged, IEquatable<TValue>
     {
-        private readonly DynamicBuffer<byte> buffer;
+        private readonly DynamicBuffer<byte> _buffer;
 
         internal DynamicPerfectHashMap(DynamicBuffer<byte> buffer)
         {
             CheckSize(buffer);
-            this.buffer = buffer;
-            this.Helper = buffer.AsHelper<TKey, TValue>(); // TODO enable
+            _buffer = buffer;
+            Helper = buffer.AsHelper<TKey, TValue>(); // TODO enable
         }
 
         [field: NativeDisableUnsafePtrRestriction]
@@ -36,10 +36,10 @@ namespace BovineLabs.Core.Iterators
         {
             get
             {
-                this.buffer.CheckReadAccess();
-                if (Hint.Unlikely(!this.TryGetValue(key, out var value)))
+                _buffer.CheckReadAccess();
+                if (Hint.Unlikely(!TryGetValue(key, out var value)))
                 {
-                    this.ThrowKeyNotPresent(key);
+                    ThrowKeyNotPresent(key);
                     return default;
                 }
 
@@ -48,21 +48,21 @@ namespace BovineLabs.Core.Iterators
 
             set
             {
-                this.buffer.CheckWriteAccess();
-                if (Hint.Unlikely(!this.TryGetIndex(key, out var index)))
+                _buffer.CheckWriteAccess();
+                if (Hint.Unlikely(!TryGetIndex(key, out var index)))
                 {
-                    this.ThrowKeyNotPresent(key);
+                    ThrowKeyNotPresent(key);
                     return;
                 }
 
-                var values = this.Helper->Values;
+                var values = Helper->Values;
                 var current = values[index];
 
-                if (!current.Equals(this.Helper->NullValue))
+                if (!current.Equals(Helper->NullValue))
                 {
-                    if (!this.Helper->Keys[index].Equals(key))
+                    if (!Helper->Keys[index].Equals(key))
                     {
-                        this.ThrowKeyNotPresent(key);
+                        ThrowKeyNotPresent(key);
                         return;
                     }
 
@@ -70,22 +70,22 @@ namespace BovineLabs.Core.Iterators
                     return;
                 }
 
-                this.Helper->Keys[index] = key;
+                Helper->Keys[index] = key;
                 values[index] = value;
             }
         }
 
         public bool TryGetValue(TKey key, out TValue item)
         {
-            this.buffer.CheckReadAccess();
-            if (!this.TryGetIndex(key, out var index))
+            _buffer.CheckReadAccess();
+            if (!TryGetIndex(key, out var index))
             {
                 item = default;
                 return false;
             }
 
-            var value = this.Helper->Values[index];
-            if (value.Equals(this.Helper->NullValue) || !this.Helper->Keys[index].Equals(key))
+            var value = Helper->Values[index];
+            if (value.Equals(Helper->NullValue) || !Helper->Keys[index].Equals(key))
             {
                 item = default;
                 return false;
@@ -97,14 +97,14 @@ namespace BovineLabs.Core.Iterators
 
         public bool ContainsKey(TKey key)
         {
-            this.buffer.CheckReadAccess();
-            if (!this.TryGetIndex(key, out var index))
+            _buffer.CheckReadAccess();
+            if (!TryGetIndex(key, out var index))
             {
                 return false;
             }
 
-            var value = this.Helper->Values[index];
-            return !value.Equals(this.Helper->NullValue) && this.Helper->Keys[index].Equals(key);
+            var value = Helper->Values[index];
+            return !value.Equals(Helper->NullValue) && Helper->Keys[index].Equals(key);
         }
 
         /// <summary>
@@ -126,14 +126,14 @@ namespace BovineLabs.Core.Iterators
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryGetIndex(TKey key, out int index)
         {
-            index = this.IndexFor(key);
-            return index >= 0 && index < this.Helper->Size;
+            index = IndexFor(key);
+            return index >= 0 && index < Helper->Size;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int IndexFor(TKey key)
         {
-            return key.GetHashCode() & (this.Helper->Size - 1);
+            return key.GetHashCode() & (Helper->Size - 1);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -163,11 +163,11 @@ namespace BovineLabs.Core.Iterators
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged, IEquatable<TValue>
     {
-        private readonly DynamicPerfectHashMapHelper<TKey, TValue>* helper;
+        private readonly DynamicPerfectHashMapHelper<TKey, TValue>* _helper;
 
         public DynamicPerfectHashMapDebuggerTypeProxy(DynamicPerfectHashMap<TKey, TValue> target)
         {
-            this.helper = target.Helper;
+            _helper = target.Helper;
         }
 
         public List<Pair<TKey, TValue>> Items
@@ -176,20 +176,20 @@ namespace BovineLabs.Core.Iterators
             {
                 var result = new List<Pair<TKey, TValue>>();
 
-                if (this.helper == null)
+                if (_helper == null)
                 {
                     return result;
                 }
 
-                var keys = this.helper->Keys;
-                var values = this.helper->Values;
-                var size = this.helper->Size;
+                var keys = _helper->Keys;
+                var values = _helper->Values;
+                var size = _helper->Size;
 
                 for (var i = 0; i < size; ++i)
                 {
                     var value = values[i];
 
-                    if (UnsafeUtility.MemCmp(&value, &this.helper->NullValue, sizeof(TValue)) != 0)
+                    if (UnsafeUtility.MemCmp(&value, &_helper->NullValue, sizeof(TValue)) != 0)
                     {
                         result.Add(new Pair<TKey, TValue>(keys[i], value));
                     }

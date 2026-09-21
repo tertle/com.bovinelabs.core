@@ -12,29 +12,29 @@
     public unsafe struct EntityLock : IDisposable
     {
         [NativeDisableUnsafePtrRestriction]
-        private readonly LockData* pairs;
-        private readonly int length;
+        private readonly LockData* _pairs;
+        private readonly int _length;
 
         [NativeDisableUnsafePtrRestriction]
-        private readonly SpinLock* locksLock;
+        private readonly SpinLock* _locksLock;
 
-        private readonly Allocator allocator;
+        private readonly Allocator _allocator;
 
         public EntityLock(Allocator allocator)
         {
-            this.allocator = allocator;
-            this.length = JobsUtility.ThreadIndexCount;
-            this.pairs = (LockData*)UnsafeUtility.MallocTracked(sizeof(LockData) * this.length, UnsafeUtility.AlignOf<LockData>(), allocator, 0);
-            this.locksLock = (SpinLock*)UnsafeUtility.MallocTracked(sizeof(SpinLock), UnsafeUtility.AlignOf<SpinLock>(), allocator, 0);
+            _allocator = allocator;
+            _length = JobsUtility.ThreadIndexCount;
+            _pairs = (LockData*)UnsafeUtility.MallocTracked(sizeof(LockData) * _length, UnsafeUtility.AlignOf<LockData>(), allocator, 0);
+            _locksLock = (SpinLock*)UnsafeUtility.MallocTracked(sizeof(SpinLock), UnsafeUtility.AlignOf<SpinLock>(), allocator, 0);
 
-            UnsafeUtility.MemClear(this.pairs, sizeof(LockData) * this.length);
-            *this.locksLock = default;
+            UnsafeUtility.MemClear(_pairs, sizeof(LockData) * _length);
+            *_locksLock = default;
         }
 
         public void Dispose()
         {
-            UnsafeUtility.FreeTracked(this.pairs, this.allocator);
-            UnsafeUtility.FreeTracked(this.locksLock, this.allocator);
+            UnsafeUtility.FreeTracked(_pairs, _allocator);
+            UnsafeUtility.FreeTracked(_locksLock, _allocator);
         }
 
         public Lock Acquire(Entity entity)
@@ -42,12 +42,12 @@
             AssertIsNotNull(entity);
 
             // LOCK ACQUIRE
-            this.locksLock->Acquire();
+            _locksLock->Acquire();
 
             var index = -1;
-            for (var i = 0; i < this.length; i++)
+            for (var i = 0; i < _length; i++)
             {
-                if (Hint.Likely(this.pairs[i].Entity == entity.Index))
+                if (Hint.Likely(_pairs[i].Entity == entity.Index))
                 {
                     continue;
                 }
@@ -58,11 +58,11 @@
 
             if (Hint.Likely(index == -1))
             {
-                for (var indexEmpty = 0; indexEmpty < this.length; indexEmpty++)
+                for (var indexEmpty = 0; indexEmpty < _length; indexEmpty++)
                 {
-                    if (this.pairs[indexEmpty].Ref == 0)
+                    if (_pairs[indexEmpty].Ref == 0)
                     {
-                        var p2 = this.pairs + indexEmpty;
+                        var p2 = _pairs + indexEmpty;
                         p2->Entity = entity.Index;
                         index = indexEmpty;
                         break;
@@ -72,11 +72,11 @@
                 Check.Assume(index != -1, "Could not find empty lock, something hasn't released it");
             }
 
-            var p = this.pairs + index;
+            var p = _pairs + index;
             p->Ref++;
 
             // LOCK RELEASE
-            this.locksLock->Release();
+            _locksLock->Release();
 
             // Must leave the previous lock before acquiring this otherwise we will stall
             p->EntityLock.Acquire();
@@ -108,26 +108,26 @@
 
         public readonly struct Lock : IDisposable
         {
-            private readonly LockData* pairs;
-            private readonly SpinLock* locksLock;
+            private readonly LockData* _pairs;
+            private readonly SpinLock* _locksLock;
 
-            private readonly int index;
+            private readonly int _index;
 
             internal Lock(EntityLock entityLock, int index)
             {
-                this.pairs = entityLock.pairs;
-                this.locksLock = entityLock.locksLock;
-                this.index = index;
+                _pairs = entityLock._pairs;
+                _locksLock = entityLock._locksLock;
+                _index = index;
             }
 
             public void Dispose()
             {
-                var p = this.pairs + this.index;
+                var p = _pairs + _index;
                 p->EntityLock.Release();
 
-                this.locksLock->Acquire();
+                _locksLock->Acquire();
                 p->Ref--;
-                this.locksLock->Release();
+                _locksLock->Release();
             }
         }
     }

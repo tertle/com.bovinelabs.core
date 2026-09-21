@@ -15,42 +15,42 @@ namespace BovineLabs.Core.Editor.Windows.Base
     {
         protected BaseObjectService(string preferenceKey)
         {
-            this.Preferences = UserSettings<TPreferences>.GetOrCreate(preferenceKey);
+            Preferences = UserSettings<TPreferences>.GetOrCreate(preferenceKey);
 
             // Listen for preference changes
-            this.Preferences.PreferencesChanged += this.OnPreferencesChanged;
+            Preferences.PreferencesChanged += OnPreferencesChanged;
 
             // Load persisted
             // ReSharper disable once VirtualMemberCallInConstructor
-            this.Load();
+            Load();
         }
 
         public event Action<IReadOnlyList<TItem>> ItemsChanged;
 
         public abstract IReadOnlyList<TItem> Items { get; }
 
-        public int ItemHeight => this.Preferences.ItemHeight;
+        public int ItemHeight => Preferences.ItemHeight;
 
-        public bool UseMonospaceFont => this.Preferences.UseMonospaceFont;
+        public bool UseMonospaceFont => Preferences.UseMonospaceFont;
 
-        public bool ShowIcons => this.Preferences.ShowIcons;
+        public bool ShowIcons => Preferences.ShowIcons;
 
-        public bool ShowTimestamps => this.Preferences.ShowTimestamps;
+        public bool ShowTimestamps => Preferences.ShowTimestamps;
 
-        public bool ShowAssetPaths => this.Preferences.ShowAssetPaths;
+        public bool ShowAssetPaths => Preferences.ShowAssetPaths;
 
-        public bool ShowTypeNames => this.Preferences.ShowTypeNames;
+        public bool ShowTypeNames => Preferences.ShowTypeNames;
 
-        public bool ShowStatusBar => this.Preferences.ShowStatusBar;
+        public bool ShowStatusBar => Preferences.ShowStatusBar;
 
-        public bool GreyOutMissingObjects => this.Preferences.GreyOutUnloadedObjects;
+        public bool GreyOutMissingObjects => Preferences.GreyOutUnloadedObjects;
 
-        public bool HighlightCurrentSelection => this.Preferences.HighlightCurrentSelection;
+        public bool HighlightCurrentSelection => Preferences.HighlightCurrentSelection;
 
         /// <summary>
         /// Threshold in seconds.
         /// </summary>
-        public float DoubleClickThreshold => this.Preferences.DoubleClickThreshold;
+        public float DoubleClickThreshold => Preferences.DoubleClickThreshold;
 
         protected TPreferences Preferences { get; }
 
@@ -58,13 +58,13 @@ namespace BovineLabs.Core.Editor.Windows.Base
 
         public virtual void Dispose()
         {
-            if (this.Disposed)
+            if (Disposed)
             {
                 return;
             }
 
-            this.CleanupServices();
-            this.Disposed = true;
+            CleanupServices();
+            Disposed = true;
         }
 
         public virtual void SelectItem(TItem item)
@@ -89,7 +89,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
                     ProjectView.Internal.ShowFolderContents(projectBrowser, item.AssetPath);
                 }
 
-                this.SelectFolder(obj);
+                SelectFolder(obj);
             }
             else
             {
@@ -100,23 +100,23 @@ namespace BovineLabs.Core.Editor.Windows.Base
 
         public void RemoveItem(TItem item)
         {
-            if (this.TryRemoveItem(item))
+            if (TryRemoveItem(item))
             {
-                this.Save();
-                this.NotifyItemsChanged();
+                Save();
+                NotifyItemsChanged();
             }
         }
 
         protected virtual void CleanupServices()
         {
-            this.Preferences.PreferencesChanged -= this.OnPreferencesChanged;
+            Preferences.PreferencesChanged -= OnPreferencesChanged;
 
-            this.Save();
+            Save();
         }
 
         protected virtual void NotifyItemsChanged()
         {
-            this.ItemsChanged?.Invoke(this.Items);
+            ItemsChanged?.Invoke(Items);
         }
 
         protected static List<TSerializable> CreateSerializableItems<TObjectItem, TSerializable>(IReadOnlyList<TObjectItem> items)
@@ -166,8 +166,8 @@ namespace BovineLabs.Core.Editor.Windows.Base
 
         protected sealed class LoadedObjectLookup
         {
-            private readonly List<Object> allObjects = Resources.FindObjectsOfTypeAll<Object>().ToList();
-            private readonly Dictionary<GlobalObjectId, Object> objectsById = new();
+            private readonly List<Object> _allObjects = Resources.FindObjectsOfTypeAll<Object>().ToList();
+            private readonly Dictionary<GlobalObjectId, Object> _objectsById = new();
 
             public Object TryGetObject(SerializableObjectItem item, out GlobalObjectId objectId)
             {
@@ -177,7 +177,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
                     return null;
                 }
 
-                if (this.objectsById.TryGetValue(objectId, out var loadedObject))
+                if (_objectsById.TryGetValue(objectId, out var loadedObject))
                 {
                     return loadedObject;
                 }
@@ -186,9 +186,9 @@ namespace BovineLabs.Core.Editor.Windows.Base
 
                 try
                 {
-                    for (index = 0; index < this.allObjects.Count; index++)
+                    for (index = 0; index < _allObjects.Count; index++)
                     {
-                        var obj = this.allObjects[index];
+                        var obj = _allObjects[index];
                         if (obj == null)
                         {
                             continue;
@@ -200,7 +200,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
                             continue;
                         }
 
-                        this.objectsById.TryAdd(loadedObjectId, obj);
+                        _objectsById.TryAdd(loadedObjectId, obj);
 
                         if (loadedObjectId.Equals(objectId))
                         {
@@ -211,7 +211,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
                 }
                 finally
                 {
-                    this.allObjects.RemoveRange(0, index);
+                    _allObjects.RemoveRange(0, index);
                 }
 
                 return null;
@@ -258,7 +258,7 @@ namespace BovineLabs.Core.Editor.Windows.Base
         protected virtual void OnPreferencesChanged()
         {
             // Notify that history has changed to trigger UI refresh
-            this.NotifyItemsChanged();
+            NotifyItemsChanged();
         }
 
         private static GlobalObjectId ParseObjectId(string globalIdString)

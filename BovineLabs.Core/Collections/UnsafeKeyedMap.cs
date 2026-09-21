@@ -2,6 +2,7 @@ namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using BovineLabs.Core.Assertions;
     using BovineLabs.Core.Internal;
@@ -155,7 +156,7 @@ namespace BovineLabs.Core.Collections
 
         public void Execute()
         {
-            this.Data.Dispose();
+            Data.Dispose();
         }
     }
 
@@ -168,12 +169,14 @@ namespace BovineLabs.Core.Collections
         internal AllocatorManager.AllocatorHandle AllocatorLabel;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         internal AtomicSafetyHandle m_Safety;
 #endif
 
         public void Dispose()
         {
-            KeyedMapData.DeallocateHashMap(this.Buffer, this.AllocatorLabel);
+            KeyedMapData.DeallocateHashMap(Buffer, AllocatorLabel);
         }
     }
 
@@ -190,57 +193,57 @@ namespace BovineLabs.Core.Collections
             Check.Assume(maxKey > 0);
 
             this.allocator = allocator;
-            KeyedMapData.AllocateHashMap<TValue>(capacity, maxKey, allocator, out this.buffer);
-            this.Clear();
+            KeyedMapData.AllocateHashMap<TValue>(capacity, maxKey, allocator, out buffer);
+            Clear();
         }
 
-        public bool IsCreated => this.buffer != null;
+        public bool IsCreated => buffer != null;
 
         /// <summary>
         /// Capacity cannot shrink.
         /// </summary>
         public int Capacity
         {
-            get => this.buffer->KeyCapacity;
-            set => KeyedMapData.ReallocateHashMap<TValue>(this.buffer, value, this.allocator);
+            get => buffer->KeyCapacity;
+            set => KeyedMapData.ReallocateHashMap<TValue>(buffer, value, allocator);
         }
 
         public void Dispose()
         {
-            KeyedMapData.DeallocateHashMap(this.buffer, this.allocator);
-            this.buffer = null;
+            KeyedMapData.DeallocateHashMap(buffer, allocator);
+            buffer = null;
         }
 
         public void Clear()
         {
-            UnsafeUtility.MemSet(this.buffer->Next, 0xff, this.buffer->KeyCapacity * 4);
-            UnsafeUtility.MemSet(this.buffer->Buckets, 0xff, this.buffer->BucketCapacity * 4);
+            UnsafeUtility.MemSet(buffer->Next, 0xff, buffer->KeyCapacity * 4);
+            UnsafeUtility.MemSet(buffer->Buckets, 0xff, buffer->BucketCapacity * 4);
 
-            this.buffer->Length = 0;
+            buffer->Length = 0;
         }
 
         public void Add(int key, TValue item)
         {
-            CheckKeyOutOfBounds(this.buffer, key);
+            CheckKeyOutOfBounds(buffer, key);
 
             // Allocate an entry from the free list
-            if (this.buffer->Length >= this.buffer->KeyCapacity)
+            if (buffer->Length >= buffer->KeyCapacity)
             {
-                var newCap = KeyedMapData.GrowCapacity(this.buffer->KeyCapacity);
-                KeyedMapData.ReallocateHashMap<TValue>(this.buffer, newCap, this.allocator);
+                var newCap = KeyedMapData.GrowCapacity(buffer->KeyCapacity);
+                KeyedMapData.ReallocateHashMap<TValue>(buffer, newCap, allocator);
             }
 
-            var idx = this.buffer->Length++;
+            var idx = buffer->Length++;
 
-            CheckIndexOutOfBounds(this.buffer, idx);
+            CheckIndexOutOfBounds(buffer, idx);
 
             // Write the new value to the entry
-            UnsafeUtility.WriteArrayElement(this.buffer->Keys, idx, key);
-            UnsafeUtility.WriteArrayElement(this.buffer->Values, idx, item);
+            UnsafeUtility.WriteArrayElement(buffer->Keys, idx, key);
+            UnsafeUtility.WriteArrayElement(buffer->Values, idx, item);
 
             // Add the index to the hash-map
-            var buckets = (int*)this.buffer->Buckets;
-            var nextPtrs = (int*)this.buffer->Next;
+            var buckets = (int*)buffer->Buckets;
+            var nextPtrs = (int*)buffer->Next;
 
             nextPtrs[idx] = buckets[key];
             buckets[key] = idx;
@@ -248,11 +251,11 @@ namespace BovineLabs.Core.Collections
 
         public bool TryGetFirstValue(int key, out TValue item, out UnsafeKeyedMapIterator it)
         {
-            CheckKeyOutOfBounds(this.buffer, key);
+            CheckKeyOutOfBounds(buffer, key);
 
             it = default;
 
-            if (this.buffer->Length <= 0)
+            if (buffer->Length <= 0)
             {
                 it.EntryIndex = it.NextEntryIndex = -1;
                 item = default;
@@ -260,9 +263,9 @@ namespace BovineLabs.Core.Collections
             }
 
             // First find the slot based on the hash
-            var buckets = (int*)this.buffer->Buckets;
+            var buckets = (int*)buffer->Buckets;
             it.NextEntryIndex = buckets[key];
-            return this.TryGetNextValue(out item, ref it);
+            return TryGetNextValue(out item, ref it);
         }
 
         public bool TryGetNextValue(out TValue item, ref UnsafeKeyedMapIterator it)
@@ -275,32 +278,32 @@ namespace BovineLabs.Core.Collections
                 return false;
             }
 
-            var nextPtrs = (int*)this.buffer->Next;
+            var nextPtrs = (int*)buffer->Next;
             it.NextEntryIndex = nextPtrs[it.EntryIndex];
 
             // Read the value
-            item = UnsafeUtility.ReadArrayElement<TValue>(this.buffer->Values, it.EntryIndex);
+            item = UnsafeUtility.ReadArrayElement<TValue>(buffer->Values, it.EntryIndex);
             return true;
         }
 
         public void SetLength(int length)
         {
-            this.buffer->Length = length;
+            buffer->Length = length;
         }
 
         public void RecalculateBuckets()
         {
-            var length = this.buffer->Length;
+            var length = buffer->Length;
 
             // var data = hashMap.GetUnsafeBucketData();
-            var buckets = (int*)this.buffer->Buckets;
-            var nextPtrs = (int*)this.buffer->Next;
-            var keys = (int*)this.buffer->Keys;
+            var buckets = (int*)buffer->Buckets;
+            var nextPtrs = (int*)buffer->Next;
+            var keys = (int*)buffer->Keys;
 
             for (var idx = 0; idx < length; idx++)
             {
                 var key = keys[idx];
-                CheckKeyOutOfBounds(this.buffer, key);
+                CheckKeyOutOfBounds(buffer, key);
                 nextPtrs[idx] = buckets[key];
                 buckets[key] = idx;
             }
@@ -308,12 +311,12 @@ namespace BovineLabs.Core.Collections
 
         public int* GetUnsafeKeysPtr()
         {
-            return (int*)this.buffer->Keys;
+            return (int*)buffer->Keys;
         }
 
         public TValue* GetUnsafeValuesPtr()
         {
-            return (TValue*)this.buffer->Values;
+            return (TValue*)buffer->Values;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

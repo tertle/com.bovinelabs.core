@@ -8,8 +8,8 @@
     /// </summary>
     public readonly struct UITemplate
     {
-        private readonly string uxmlPath;
-        private readonly string ussPath;
+        private readonly string _uxmlPath;
+        private readonly string _ussPath;
 
         private const string k_ProSuffix = "_dark";
         private const string k_PersonalSuffix = "_light";
@@ -18,18 +18,18 @@
 
         public UITemplate(string path)
         {
-            this.uxmlPath = $"{path}.uxml";
-            this.ussPath = $"{path}.uss";
+            _uxmlPath = $"{path}.uxml";
+            _ussPath = $"{path}.uss";
         }
 
-        private VisualTreeAsset Template => (VisualTreeAsset)EditorGUIUtility.Load(this.uxmlPath);
+        private VisualTreeAsset Template => (VisualTreeAsset)EditorGUIUtility.Load(_uxmlPath);
 
-        private StyleSheet StyleSheet => AssetDatabase.LoadAssetAtPath<StyleSheet>(this.ussPath);
+        private StyleSheet StyleSheet => AssetDatabase.LoadAssetAtPath<StyleSheet>(_ussPath);
 
         public VisualElement Clone(VisualElement root = null)
         {
-            root = this.CloneTemplate(root);
-            this.AddStyleSheetSkinVariant(root);
+            root = CloneTemplate(root);
+            AddStyleSheetSkinVariant(root);
             return root;
         }
 
@@ -37,16 +37,16 @@
         {
             if (element == null)
             {
-                return this.Template.CloneTree();
+                return Template.CloneTree();
             }
 
-            this.Template.CloneTree(element);
+            Template.CloneTree(element);
             return element;
         }
 
         private void AddStyleSheetSkinVariant(VisualElement element)
         {
-            if (this.StyleSheet == null)
+            if (StyleSheet == null)
             {
                 return;
             }
@@ -56,8 +56,8 @@
                 return;
             }
 
-            element.styleSheets.Add(this.StyleSheet);
-            var assetPath = AssetDatabase.GetAssetPath(this.StyleSheet);
+            element.styleSheets.Add(StyleSheet);
+            var assetPath = AssetDatabase.GetAssetPath(StyleSheet);
             assetPath = assetPath.Insert(assetPath.LastIndexOf('.'), SkinSuffix);
             if (string.IsNullOrEmpty(assetPath))
             {

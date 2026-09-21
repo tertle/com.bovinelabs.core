@@ -9,17 +9,17 @@ namespace BovineLabs.Core.Collections
         public readonly struct Writer
         {
             [NativeDisableUnsafePtrRestriction]
-            private readonly UnsafeThreadStreamBlockData* blockStream;
+            private readonly UnsafeThreadStreamBlockData* _blockStream;
 
             internal Writer(ref UnsafeThreadStream stream)
             {
-                this.blockStream = stream.blockData;
+                _blockStream = stream._blockData;
             }
 
             public void Write<T>(T value)
                 where T : struct
             {
-                ref var dst = ref this.Allocate<T>();
+                ref var dst = ref Allocate<T>();
                 dst = value;
             }
 
@@ -27,14 +27,14 @@ namespace BovineLabs.Core.Collections
                 where T : struct
             {
                 var size = UnsafeUtility.SizeOf<T>();
-                return ref UnsafeUtility.AsRef<T>(this.Allocate(size));
+                return ref UnsafeUtility.AsRef<T>(Allocate(size));
             }
 
             public byte* Allocate(int size)
             {
                 var threadIndex = JobsUtility.ThreadIndex;
 
-                var ranges = this.blockStream->Ranges + threadIndex;
+                var ranges = _blockStream->Ranges + threadIndex;
 
                 var ptr = ranges->CurrentPtr;
                 var allocationEnd = ptr + size;
@@ -44,7 +44,7 @@ namespace BovineLabs.Core.Collections
                 if (allocationEnd > ranges->CurrentBlockEnd)
                 {
                     var oldBlock = ranges->CurrentBlock;
-                    var newBlock = this.blockStream->Allocate(oldBlock, threadIndex);
+                    var newBlock = _blockStream->Allocate(oldBlock, threadIndex);
 
                     ranges->CurrentBlock = newBlock;
                     ranges->CurrentPtr = newBlock->Data;
@@ -75,7 +75,7 @@ namespace BovineLabs.Core.Collections
                 where T : unmanaged
             {
                 var byteArray = array.Reinterpret<byte>(UnsafeUtility.SizeOf<T>());
-                this.WriteLarge((byte*)byteArray.GetUnsafeReadOnlyPtr(), byteArray.Length);
+                WriteLarge((byte*)byteArray.GetUnsafeReadOnlyPtr(), byteArray.Length);
             }
 
             public void WriteLarge<T>(NativeSlice<T> data)
@@ -96,13 +96,13 @@ namespace BovineLabs.Core.Collections
                 // as you'd usually write at minimum the length beforehand
                 if (allocationRemainder > 0)
                 {
-                    var dst = this.Allocate(allocationRemainder * num);
+                    var dst = Allocate(allocationRemainder * num);
                     UnsafeUtility.MemCpyStride(dst, num, src + (allocationCount * maxOffset), data.Stride, num, allocationRemainder);
                 }
 
                 for (var i = 0; i < allocationCount; i++)
                 {
-                    var dst = this.Allocate(maxSize);
+                    var dst = Allocate(maxSize);
                     UnsafeUtility.MemCpyStride(dst, num, src + (i * maxOffset), data.Stride, num, countPerAllocate);
                 }
             }
@@ -116,13 +116,13 @@ namespace BovineLabs.Core.Collections
                 // as you'd usually write at minimum the length beforehand
                 if (allocationRemainder > 0)
                 {
-                    var ptr = this.Allocate(allocationRemainder);
+                    var ptr = Allocate(allocationRemainder);
                     UnsafeUtility.MemCpy(ptr, data + (allocationCount * MaxLargeSize), allocationRemainder);
                 }
 
                 for (var i = 0; i < allocationCount; i++)
                 {
-                    var ptr = this.Allocate(MaxLargeSize);
+                    var ptr = Allocate(MaxLargeSize);
                     UnsafeUtility.MemCpy(ptr, data + (i * MaxLargeSize), MaxLargeSize);
                 }
             }

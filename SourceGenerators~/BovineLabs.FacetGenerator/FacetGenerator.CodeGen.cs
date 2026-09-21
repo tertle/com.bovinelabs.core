@@ -409,8 +409,8 @@ namespace BovineLabs.FacetGenerator
         {
             public LookupSlot(FacetField field, bool isReadOnly)
             {
-                this.Field = field;
-                this.IsReadOnly = isReadOnly;
+                Field = field;
+                IsReadOnly = isReadOnly;
             }
 
             public FacetField Field { get; }

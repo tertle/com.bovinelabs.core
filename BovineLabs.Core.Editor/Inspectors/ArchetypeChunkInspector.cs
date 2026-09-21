@@ -11,8 +11,8 @@
         {
             var chunk = new TextField
             {
-                label = this.DisplayName,
-                value = new IntPtr(this.Target.m_Chunk).ToString(),
+                label = DisplayName,
+                value = new IntPtr(Target.m_Chunk).ToString(),
             };
 
             chunk.SetEnabled(false);

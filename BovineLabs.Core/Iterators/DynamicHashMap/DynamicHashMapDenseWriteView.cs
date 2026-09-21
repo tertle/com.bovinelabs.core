@@ -12,8 +12,8 @@ namespace BovineLabs.Core.Iterators
         internal int Count;
         internal int TotalSize;
 
-        internal TKey* Keys => this.Data->Keys;
+        internal TKey* Keys => Data->Keys;
 
-        internal byte* Values => this.Data->Values;
+        internal byte* Values => Data->Values;
     }
 }

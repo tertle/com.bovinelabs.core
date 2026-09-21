@@ -22,7 +22,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void CopyToSnapshotAndCopyFromSnapshot_CoversPrespawnAndPredictedSpawnSnapshotSetup()
         {
-            var sourceBuffer = this.CreateHashMapBuffer();
+            var sourceBuffer = CreateHashMapBuffer();
             var source = sourceBuffer.AsHashMap<DynamicHashMapTestsBuffer, int, byte>();
             FillSparse(ref source);
 
@@ -32,7 +32,7 @@ namespace BovineLabs.Core.Tests.Iterators
             DynamicHashMapNetcodeSerializer<DynamicHashMapTestsBuffer, int, byte>.CopyToSnapshot(
                 IntPtr.Zero, (IntPtr)snapshot.GetUnsafePtr(), 0, 1, (IntPtr)sourceBytes.GetPtr(), 1, sourceBytes.Length);
 
-            var targetBuffer = this.CreateHashMapBuffer();
+            var targetBuffer = CreateHashMapBuffer();
             var targetBytes = targetBuffer.Reinterpret<byte>();
             targetBytes.ResizeUninitialized(sourceBytes.Length);
 
@@ -137,7 +137,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void GeneratedStructCodec_RoundTripsSparseMap()
         {
-            var sourceBuffer = this.CreateGeneratedStructHashMapBuffer();
+            var sourceBuffer = CreateGeneratedStructHashMapBuffer();
             var source = sourceBuffer.AsHashMap<DynamicHashMapGeneratedStructTestsBuffer, GeneratedPaddedKey, GeneratedMixedValue>();
             var removedKey = new GeneratedPaddedKey { A = 2, B = 20, @event = 200 };
             source.Add(new GeneratedPaddedKey { A = 1, B = 10, @event = 100 }, CreateGeneratedMixedValue(5, true, GeneratedSmallEnum.One, 'a', 1.25f, 9));
@@ -151,7 +151,7 @@ namespace BovineLabs.Core.Tests.Iterators
             DynamicHashMapGeneratedStructTestsBufferDynamicHashMapGhostSerializer.CopyToSnapshot(
                 IntPtr.Zero, (IntPtr)snapshot.GetUnsafePtr(), 0, 1, (IntPtr)sourceBytes.GetPtr(), 1, sourceBytes.Length);
 
-            var targetBuffer = this.CreateGeneratedStructHashMapBuffer();
+            var targetBuffer = CreateGeneratedStructHashMapBuffer();
             var targetBytes = targetBuffer.Reinterpret<byte>();
             targetBytes.ResizeUninitialized(sourceBytes.Length);
 
@@ -177,14 +177,14 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void GeneratedFieldCodec_IgnoresPaddingBytes()
         {
-            var first = this.CreateGeneratedPaddingHashMapBuffer();
+            var first = CreateGeneratedPaddingHashMapBuffer();
             var firstMap = first.AsHashMap<DynamicHashMapGeneratedPaddingTestsBuffer, int, GeneratedPaddedValue>();
             firstMap.Add(7, new GeneratedPaddedValue { A = 11, B = 123456 });
             firstMap.Helper->Values[1] = 0x11;
             firstMap.Helper->Values[2] = 0x22;
             firstMap.Helper->Values[3] = 0x33;
 
-            var second = this.CreateGeneratedPaddingHashMapBuffer();
+            var second = CreateGeneratedPaddingHashMapBuffer();
             var secondMap = second.AsHashMap<DynamicHashMapGeneratedPaddingTestsBuffer, int, GeneratedPaddedValue>();
             secondMap.Add(7, new GeneratedPaddedValue { A = 11, B = 123456 });
             secondMap.Helper->Values[1] = 0xaa;
@@ -218,7 +218,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void Deserialize_ConsumesOnlyCompactPayloadBytes()
         {
-            var sourceBuffer = this.CreateHashMapBuffer();
+            var sourceBuffer = CreateHashMapBuffer();
             var source = sourceBuffer.AsHashMap<DynamicHashMapTestsBuffer, int, byte>();
             FillSparse(ref source);
 
@@ -245,7 +245,7 @@ namespace BovineLabs.Core.Tests.Iterators
 
             Assert.AreEqual(payloadBytes * 8, reader.GetBitsRead());
 
-            var targetBuffer = this.CreateHashMapBuffer();
+            var targetBuffer = CreateHashMapBuffer();
             var targetBytes = targetBuffer.Reinterpret<byte>();
             targetBytes.ResizeUninitialized(sourceBytes.Length);
 
@@ -265,7 +265,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void PostSerializeBuffer_MatchesDirectSerializationForPreSerializedGhosts()
         {
-            var sourceBuffer = this.CreateHashMapBuffer();
+            var sourceBuffer = CreateHashMapBuffer();
             var source = sourceBuffer.AsHashMap<DynamicHashMapTestsBuffer, int, byte>();
             FillSparse(ref source);
 
@@ -326,7 +326,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void SerializeBuffer_WithoutBaselinesWritesFullPayloadForLateJoinAndBaselineLoss()
         {
-            var sourceBuffer = this.CreateHashMapBuffer();
+            var sourceBuffer = CreateHashMapBuffer();
             var source = sourceBuffer.AsHashMap<DynamicHashMapTestsBuffer, int, byte>();
             FillSparse(ref source);
 
@@ -382,7 +382,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void SerializeBuffer_SuppressesUnchangedAndForcesFullChangedUpdates()
         {
-            var sourceBuffer = this.CreateHashMapBuffer();
+            var sourceBuffer = CreateHashMapBuffer();
             var source = sourceBuffer.AsHashMap<DynamicHashMapTestsBuffer, int, byte>();
             FillSparse(ref source);
 
@@ -487,21 +487,21 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private DynamicBuffer<DynamicHashMapTestsBuffer> CreateHashMapBuffer()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicHashMapTestsBuffer));
-            return this.Manager.GetBuffer<DynamicHashMapTestsBuffer>(entity).InitializeHashMap<DynamicHashMapTestsBuffer, int, byte>(0, MinGrowth);
+            var entity = Manager.CreateEntity(typeof(DynamicHashMapTestsBuffer));
+            return Manager.GetBuffer<DynamicHashMapTestsBuffer>(entity).InitializeHashMap<DynamicHashMapTestsBuffer, int, byte>(0, MinGrowth);
         }
 
         private DynamicBuffer<DynamicHashMapGeneratedStructTestsBuffer> CreateGeneratedStructHashMapBuffer()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicHashMapGeneratedStructTestsBuffer));
-            return this.Manager.GetBuffer<DynamicHashMapGeneratedStructTestsBuffer>(entity)
+            var entity = Manager.CreateEntity(typeof(DynamicHashMapGeneratedStructTestsBuffer));
+            return Manager.GetBuffer<DynamicHashMapGeneratedStructTestsBuffer>(entity)
                 .InitializeHashMap<DynamicHashMapGeneratedStructTestsBuffer, GeneratedPaddedKey, GeneratedMixedValue>(0, MinGrowth);
         }
 
         private DynamicBuffer<DynamicHashMapGeneratedPaddingTestsBuffer> CreateGeneratedPaddingHashMapBuffer()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicHashMapGeneratedPaddingTestsBuffer));
-            return this.Manager.GetBuffer<DynamicHashMapGeneratedPaddingTestsBuffer>(entity)
+            var entity = Manager.CreateEntity(typeof(DynamicHashMapGeneratedPaddingTestsBuffer));
+            return Manager.GetBuffer<DynamicHashMapGeneratedPaddingTestsBuffer>(entity)
                 .InitializeHashMap<DynamicHashMapGeneratedPaddingTestsBuffer, int, GeneratedPaddedValue>(0, MinGrowth);
         }
 

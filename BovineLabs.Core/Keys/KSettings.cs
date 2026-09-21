@@ -10,11 +10,11 @@
         where TV : unmanaged, IEquatable<TV>
     {
         [SerializeField]
-        private NameValue<TV>[] keys = Array.Empty<NameValue<TV>>();
+        private NameValue<TV>[] _keys = Array.Empty<NameValue<TV>>();
 
-        public override IEnumerable<NameValue<TV>> Keys => this.keys;
+        public override IEnumerable<NameValue<TV>> Keys => _keys;
 
-        public TV this[string key] => this.keys.First(k => k.Name == key).Value;
+        public TV this[string key] => _keys.First(k => k.Name == key).Value;
 
         protected virtual IEnumerable<NameValue<TV>> SetReset()
         {
@@ -24,7 +24,7 @@
 #if UNITY_EDITOR
         private void Reset()
         {
-            this.keys = this.SetReset().ToArray();
+            _keys = SetReset().ToArray();
         }
 #endif
     }

@@ -17,58 +17,58 @@
     {
         private const long MaximumAllocationBytes = 1L << 40;
 
-        private AllocatorManager.AllocatorHandle handle;
+        private AllocatorManager.AllocatorHandle _handle;
 
-        private MemoryLabel memoryLabel;
-        private int allocationCount;
+        private MemoryLabel _memoryLabel;
+        private int _allocationCount;
 
         public AllocatorManager.TryFunction Function => Try;
 
         public AllocatorManager.AllocatorHandle Handle
         {
-            get => this.handle;
-            set => this.handle = value;
+            get => _handle;
+            set => _handle = value;
         }
 
-        public Allocator ToAllocator => this.handle.ToAllocator;
+        public Allocator ToAllocator => _handle.ToAllocator;
 
-        public bool IsCustomAllocator => this.handle.IsCustomAllocator;
+        public bool IsCustomAllocator => _handle.IsCustomAllocator;
 
         public bool IsAutoDispose => false;
 
         public void Initialize(FixedString32Bytes category, FixedString64Bytes name)
         {
             var label = MemoryUtil.CreateLabel(category, name);
-            this.memoryLabel = label;
+            _memoryLabel = label;
         }
 
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var remaining = Volatile.Read(ref this.allocationCount);
+            var remaining = Volatile.Read(ref _allocationCount);
             if (remaining > 0)
             {
                 BLGlobalLogger.LogError512($"MemoryLabelAllocator disposed with {remaining} outstanding allocations.");
             }
 #endif
-            this.handle.Dispose();
+            _handle.Dispose();
         }
 
         public int Try(ref AllocatorManager.Block block)
         {
-            Check.Assume(this.memoryLabel.IsCreated);
+            Check.Assume(_memoryLabel.IsCreated);
 
             if (block.Range.Pointer == IntPtr.Zero)
             {
-                return this.Allocate(ref block);
+                return Allocate(ref block);
             }
 
             if (block.Bytes == 0)
             {
-                return this.Free(ref block);
+                return Free(ref block);
             }
 
-            return this.Reallocate(ref block);
+            return Reallocate(ref block);
         }
 
         [BurstCompile(CompileSynchronously = true)]
@@ -113,7 +113,7 @@
             }
 
             var alignment = EnsureAlignment(ref block);
-            var pointer = UnsafeUtility.MallocTracked(bytes, alignment, this.memoryLabel, 0);
+            var pointer = UnsafeUtility.MallocTracked(bytes, alignment, _memoryLabel, 0);
 
             if (pointer == null)
             {
@@ -124,7 +124,7 @@
             block.AllocatedItems = block.Range.Items;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var allocated = Interlocked.Increment(ref this.allocationCount);
+            var allocated = Interlocked.Increment(ref _allocationCount);
             Assert.IsTrue(allocated > 0, "MemoryLabelAllocator allocation count overflowed.");
 #else
             Interlocked.Increment(ref this.allocationCount);
@@ -137,12 +137,12 @@
             var pointer = (void*)block.Range.Pointer;
             if (pointer != null)
             {
-                UnsafeUtility.FreeTracked(pointer, this.memoryLabel);
+                UnsafeUtility.FreeTracked(pointer, _memoryLabel);
 
                 block.Range.Pointer = IntPtr.Zero;
                 block.AllocatedItems = 0;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                var remaining = Interlocked.Decrement(ref this.allocationCount);
+                var remaining = Interlocked.Decrement(ref _allocationCount);
                 Assert.IsTrue(remaining >= 0, "MemoryLabelAllocator allocation count went negative.");
 #else
                 Interlocked.Decrement(ref this.allocationCount);
@@ -161,11 +161,11 @@
 
             if (bytes == 0)
             {
-                return this.Free(ref block);
+                return Free(ref block);
             }
 
             var alignment = EnsureAlignment(ref block);
-            var newPointer = UnsafeUtility.MallocTracked(bytes, alignment, this.memoryLabel, 0);
+            var newPointer = UnsafeUtility.MallocTracked(bytes, alignment, _memoryLabel, 0);
 
             if (newPointer == null)
             {
@@ -182,7 +182,7 @@
                     UnsafeUtility.MemCpy(newPointer, existingPointer, copyBytes);
                 }
 
-                UnsafeUtility.FreeTracked(existingPointer, this.memoryLabel);
+                UnsafeUtility.FreeTracked(existingPointer, _memoryLabel);
             }
 
             block.Range.Pointer = (IntPtr)newPointer;

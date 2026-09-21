@@ -16,28 +16,28 @@ namespace BovineLabs.Core.Iterators
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-        private readonly DynamicBuffer<byte> buffer;
+        private readonly DynamicBuffer<byte> _buffer;
 
         [NativeDisableUnsafePtrRestriction]
-        private DynamicHashMapHelper<TKey>* helper;
+        private DynamicHashMapHelper<TKey>* _helper;
 
         internal DynamicMultiHashMap(DynamicBuffer<byte> buffer)
         {
             CheckSize(buffer);
 
-            this.buffer = buffer;
-            this.helper = buffer.AsHelper<TKey>();
+            _buffer = buffer;
+            _helper = buffer.AsHelper<TKey>();
         }
 
-        public readonly bool IsCreated => this.buffer.IsCreated;
+        public readonly bool IsCreated => _buffer.IsCreated;
 
         public readonly bool IsEmpty
         {
             get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return !this.IsCreated || this.helper->IsEmpty;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return !IsCreated || _helper->IsEmpty;
             }
         }
 
@@ -46,9 +46,9 @@ namespace BovineLabs.Core.Iterators
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return this.helper->Count;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return _helper->Count;
             }
         }
 
@@ -60,44 +60,44 @@ namespace BovineLabs.Core.Iterators
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return this.helper->Capacity;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return _helper->Capacity;
             }
 
             set
             {
-                this.buffer.CheckWriteAccess();
-                this.RefCheck();
-                DynamicHashMapHelper<TKey>.Resize(this.buffer, ref this.helper, value);
+                _buffer.CheckWriteAccess();
+                RefCheck();
+                DynamicHashMapHelper<TKey>.Resize(_buffer, ref _helper, value);
             }
         }
 
-        internal DynamicHashMapHelper<TKey>* Helper => this.helper;
+        internal DynamicHashMapHelper<TKey>* Helper => _helper;
 
         public readonly void Clear()
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            this.helper->Clear();
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            _helper->Clear();
         }
 
         public void Add(TKey key, TValue item)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            var idx = DynamicHashMapHelper<TKey>.AddMulti(this.buffer, ref this.helper, key);
-            UnsafeUtility.WriteArrayElement(this.helper->Values, idx, item);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            var idx = DynamicHashMapHelper<TKey>.AddMulti(_buffer, ref _helper, key);
+            UnsafeUtility.WriteArrayElement(_helper->Values, idx, item);
         }
 
         public bool TryAddUniquePair<T>(TKey key, T item)
             where T : unmanaged, IEquatable<TValue>
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
             CheckValueSize<T>();
 
-            if (this.helper->TryGetFirstValue(key, out TValue value, out var it))
+            if (_helper->TryGetFirstValue(key, out TValue value, out var it))
             {
                 do
                 {
@@ -106,26 +106,26 @@ namespace BovineLabs.Core.Iterators
                         return false;
                     }
                 }
-                while (this.helper->TryGetNextValue(out value, ref it));
+                while (_helper->TryGetNextValue(out value, ref it));
             }
 
-            var idx = DynamicHashMapHelper<TKey>.AddMulti(this.buffer, ref this.helper, key);
-            UnsafeUtility.WriteArrayElement(this.helper->Values, idx, item);
+            var idx = DynamicHashMapHelper<TKey>.AddMulti(_buffer, ref _helper, key);
+            UnsafeUtility.WriteArrayElement(_helper->Values, idx, item);
             return true;
         }
 
         public readonly int Remove(TKey key)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            return this.helper->Remove(key);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            return _helper->Remove(key);
         }
 
         public readonly void Remove(HashMapIterator<TKey> it)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            this.helper->Remove(it);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            _helper->Remove(it);
         }
 
         /// <summary>
@@ -134,11 +134,11 @@ namespace BovineLabs.Core.Iterators
         public readonly bool Remove<T>(TKey key, T value)
             where T : unmanaged, IEquatable<TValue>
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
             CheckValueSize<T>();
 
-            if (!this.helper->TryGetFirstValue(key, out TValue item, out var it))
+            if (!_helper->TryGetFirstValue(key, out TValue item, out var it))
             {
                 return false;
             }
@@ -150,41 +150,41 @@ namespace BovineLabs.Core.Iterators
                     continue;
                 }
 
-                this.helper->Remove(it);
+                _helper->Remove(it);
                 return true;
             }
-            while (this.helper->TryGetNextValue(out item, ref it));
+            while (_helper->TryGetNextValue(out item, ref it));
 
             return false;
         }
 
         public readonly bool TryGetFirstValue(TKey key, out TValue item, out HashMapIterator<TKey> it)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->TryGetFirstValue(key, out item, out it);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->TryGetFirstValue(key, out item, out it);
         }
 
         public readonly bool TryGetNextValue(out TValue item, ref HashMapIterator<TKey> it)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->TryGetNextValue(out item, ref it);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->TryGetNextValue(out item, ref it);
         }
 
         public readonly bool ContainsKey(TKey key)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->Find(key) != -1;
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->Find(key) != -1;
         }
 
         public readonly bool Contains<T>(TKey key, T value)
             where T : unmanaged, IEquatable<TValue>
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            var e = this.GetValuesForKey(key);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            var e = GetValuesForKey(key);
             while (e.MoveNext())
             {
                 if (value.Equals(e.Current))
@@ -198,10 +198,10 @@ namespace BovineLabs.Core.Iterators
 
         public readonly int CountValuesForKey(TKey key)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
+            _buffer.CheckReadAccess();
+            RefCheck();
             var count = 0;
-            var e = this.GetValuesForKey(key);
+            var e = GetValuesForKey(key);
             while (e.MoveNext())
             {
                 count++;
@@ -212,51 +212,51 @@ namespace BovineLabs.Core.Iterators
 
         public void Flatten()
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            DynamicHashMapHelper<TKey>.Flatten(this.buffer, ref this.helper);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            DynamicHashMapHelper<TKey>.Flatten(_buffer, ref _helper);
         }
 
         public void AddBatchUnsafe(NativeArray<TKey> keys, NativeArray<TValue> values)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
             CheckLengthsMatch(keys.Length, values.Length);
-            this.AddBatchUnsafe((TKey*)keys.GetUnsafeReadOnlyPtr(), (TValue*)values.GetUnsafeReadOnlyPtr(), keys.Length);
+            AddBatchUnsafe((TKey*)keys.GetUnsafeReadOnlyPtr(), (TValue*)values.GetUnsafeReadOnlyPtr(), keys.Length);
         }
 
         public void AddBatchUnsafe(TKey* keys, TValue* values, int length)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            DynamicHashMapHelper<TKey>.AddBatchUnsafe(this.buffer, ref this.helper, keys, (byte*)values, length);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            DynamicHashMapHelper<TKey>.AddBatchUnsafe(_buffer, ref _helper, keys, (byte*)values, length);
         }
 
         public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->GetKeyArray(allocator);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->GetKeyArray(allocator);
         }
 
         public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->GetValueArray<TValue>(allocator);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->GetValueArray<TValue>(allocator);
         }
 
         public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->GetKeyValueArrays<TValue>(allocator);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->GetKeyValueArrays<TValue>(allocator);
         }
 
         public readonly DynamicHashMapKeyEnumerator<TKey, TValue> GetValuesForKey(TKey key)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
+            _buffer.CheckReadAccess();
+            RefCheck();
             return new DynamicHashMapKeyEnumerator<TKey, TValue>
             {
                 hashmap = this,
@@ -267,9 +267,9 @@ namespace BovineLabs.Core.Iterators
 
         public readonly DynamicHashMapEnumerator<TKey, TValue> GetEnumerator()
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return new DynamicHashMapEnumerator<TKey, TValue>(this.helper);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return new DynamicHashMapEnumerator<TKey, TValue>(_helper);
         }
 
         /// <summary>
@@ -292,7 +292,7 @@ namespace BovineLabs.Core.Iterators
         [Conditional("UNITY_DOTS_DEBUG")]
         private readonly void RefCheck()
         {
-            if (this.helper != this.buffer.GetPtr())
+            if (_helper != _buffer.GetPtr())
             {
                 throw new ArgumentException("DynamicMultiHashMap was not passed by ref when doing a resize and is now invalid");
             }
@@ -339,11 +339,11 @@ namespace BovineLabs.Core.Iterators
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-        private readonly DynamicHashMapHelper<TKey>* helper;
+        private readonly DynamicHashMapHelper<TKey>* _helper;
 
         public DynamicMultiHashMapDebuggerTypeProxy(DynamicMultiHashMap<TKey, TValue> target)
         {
-            this.helper = target.Helper;
+            _helper = target.Helper;
         }
 
         public List<Pair<TKey, TValue>> Items
@@ -352,12 +352,12 @@ namespace BovineLabs.Core.Iterators
             {
                 var result = new List<Pair<TKey, TValue>>();
 
-                if (this.helper == null)
+                if (_helper == null)
                 {
                     return result;
                 }
 
-                using var kva = this.helper->GetKeyValueArrays<TValue>(Allocator.Temp);
+                using var kva = _helper->GetKeyValueArrays<TValue>(Allocator.Temp);
 
                 for (var i = 0; i < kva.Length; ++i)
                 {

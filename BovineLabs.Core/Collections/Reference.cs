@@ -18,34 +18,34 @@
     public readonly unsafe struct Reference<T> : IEquatable<Reference<T>>
         where T : unmanaged
     {
-        private readonly ReferenceData data;
+        private readonly ReferenceData _data;
 
         public Reference(ReferenceData value)
         {
-            this.data = value;
+            _data = value;
         }
 
         public static Reference<T> Null => default(Reference<T>);
 
-        public bool IsCreated => this.data.Ptr != null;
+        public bool IsCreated => _data.Ptr != null;
 
         public ref T Value
         {
             get
             {
-                this.data.ValidateNotNull();
-                return ref UnsafeUtility.AsRef<T>(this.data.Ptr);
+                _data.ValidateNotNull();
+                return ref UnsafeUtility.AsRef<T>(_data.Ptr);
             }
         }
 
         public static bool operator ==(Reference<T> lhs, Reference<T> rhs)
         {
-            return lhs.data.Ptr == rhs.data.Ptr;
+            return lhs._data.Ptr == rhs._data.Ptr;
         }
 
         public static bool operator !=(Reference<T> lhs, Reference<T> rhs)
         {
-            return lhs.data.Ptr != rhs.data.Ptr;
+            return lhs._data.Ptr != rhs._data.Ptr;
         }
 
         public static Reference<T> Create(void* ptr, int length, MemoryAllocator allocator)
@@ -105,11 +105,11 @@
         /// </summary>
         public void* GetUnsafePtr()
         {
-            this.data.ValidateAllowNull();
-            return this.data.Ptr;
+            _data.ValidateAllowNull();
+            return _data.Ptr;
         }
 
-        public ReferenceData ReferenceData => this.data;
+        public ReferenceData ReferenceData => _data;
 
         // /// <summary> Destroys the referenced blob asset and frees its memory. </summary>
         // /// <exception cref="InvalidOperationException">Thrown if you attempt to dispose a blob asset that loaded as
@@ -121,7 +121,7 @@
 
         public bool Equals(Reference<T> other)
         {
-            return this.data.Equals(other.data);
+            return _data.Equals(other._data);
         }
 
         public override bool Equals(object obj)
@@ -131,7 +131,7 @@
 
         public override int GetHashCode()
         {
-            return this.data.GetHashCode();
+            return _data.GetHashCode();
         }
 
         internal static Reference<T> Create(ReferenceData blobData)
@@ -155,31 +155,31 @@
 
         internal ReferenceHeader* Header
         {
-            get { return ((ReferenceHeader*)this.Ptr) - 1; }
+            get { return ((ReferenceHeader*)Ptr) - 1; }
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         internal void ValidateNotNull()
         {
-            if (this.Ptr == null)
+            if (Ptr == null)
             {
                 throw new InvalidOperationException("The BlobAssetReference is null.");
             }
 
-            this.ValidateNonBurst();
-            this.ValidateBurst();
+            ValidateNonBurst();
+            ValidateBurst();
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         internal void ValidateAllowNull()
         {
-            if (this.Ptr == null)
+            if (Ptr == null)
             {
                 return;
             }
 
-            this.ValidateNonBurst();
-            this.ValidateBurst();
+            ValidateNonBurst();
+            ValidateBurst();
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -197,7 +197,7 @@
             {
             }
 
-            if (validationPtr != this.Ptr)
+            if (validationPtr != Ptr)
             {
                 throw new InvalidOperationException("The Reference is not valid. Likely it has already been unloaded or released.");
             }
@@ -207,7 +207,7 @@
         private void ValidateBurst()
         {
             void* validationPtr = Header->ValidationPtr;
-            if (validationPtr != this.Ptr)
+            if (validationPtr != Ptr)
             {
                 throw new InvalidOperationException("The Reference is not valid. Likely it has already been unloaded or released.");
             }

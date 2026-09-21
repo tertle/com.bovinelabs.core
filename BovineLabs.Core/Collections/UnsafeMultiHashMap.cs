@@ -30,28 +30,28 @@ namespace Unity.Collections
 
         public UnsafeMultiHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator, int minGrowth = 256)
         {
-            this.data = default;
-            this.data.Init(initialCapacity, sizeof(TValue), minGrowth, allocator);
+            data = default;
+            data.Init(initialCapacity, sizeof(TValue), minGrowth, allocator);
         }
 
         public readonly bool IsCreated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.data.IsCreated;
+            get => data.IsCreated;
         }
 
         public readonly bool IsEmpty
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => !this.IsCreated || this.data.IsEmpty;
+            get => !IsCreated || data.IsEmpty;
         }
 
-        public UnsafeHashMapBucketData<TKey, TValue> UnsafeBucketData => new((TValue*)this.data.Ptr, this.data.Keys, this.data.Next, this.data.Buckets);
+        public UnsafeHashMapBucketData<TKey, TValue> UnsafeBucketData => new((TValue*)data.Ptr, data.Keys, data.Next, data.Buckets);
 
         public readonly int Count
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.data.Count;
+            get => data.Count;
         }
 
         /// <summary>
@@ -60,96 +60,96 @@ namespace Unity.Collections
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            readonly get => this.data.Capacity;
+            readonly get => data.Capacity;
 
-            set => this.data.Resize(value);
+            set => data.Resize(value);
         }
 
         public void Dispose()
         {
-            if (!this.IsCreated)
+            if (!IsCreated)
             {
                 return;
             }
 
-            this.data.Dispose();
+            data.Dispose();
         }
 
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            if (!this.IsCreated)
+            if (!IsCreated)
             {
                 return inputDeps;
             }
 
-            var jobHandle = CollectionAccess.ScheduleDispose(this.data.Ptr, this.data.Allocator, inputDeps);
+            var jobHandle = CollectionAccess.ScheduleDispose(data.Ptr, data.Allocator, inputDeps);
 
-            this.data = default;
+            data = default;
 
             return jobHandle;
         }
 
         public void Clear()
         {
-            this.data.Clear();
+            data.Clear();
         }
 
         public void Add(TKey key, TValue item)
         {
-            var idx = this.data.AddNoFind(key);
-            UnsafeUtility.WriteArrayElement(this.data.Ptr, idx, item);
+            var idx = data.AddNoFind(key);
+            UnsafeUtility.WriteArrayElement(data.Ptr, idx, item);
         }
 
         public void AddNoResize(TKey key, TValue item)
         {
-            var idx = this.data.AddNoFindNoResize(key);
-            UnsafeUtility.WriteArrayElement(this.data.Ptr, idx, item);
+            var idx = data.AddNoFindNoResize(key);
+            UnsafeUtility.WriteArrayElement(data.Ptr, idx, item);
         }
 
         public void AddLinear(TKey key, TValue item)
         {
-            var idx = this.data.AddLinearNoResize(key);
-            UnsafeUtility.WriteArrayElement(this.data.Ptr, idx, item);
+            var idx = data.AddLinearNoResize(key);
+            UnsafeUtility.WriteArrayElement(data.Ptr, idx, item);
         }
 
         public int Remove(TKey key)
         {
-            return this.data.Remove(key);
+            return data.Remove(key);
         }
 
         public bool TryGetFirstValue(TKey key, out TValue item, out HashMapIterator<TKey> it)
         {
-            return this.data.TryGetFirstValue(key, out item, out it);
+            return data.TryGetFirstValue(key, out item, out it);
         }
 
         public bool TryGetNextValue(out TValue item, ref HashMapIterator<TKey> it)
         {
-            return this.data.TryGetNextValue(out item, ref it);
+            return data.TryGetNextValue(out item, ref it);
         }
 
         public bool ContainsKey(TKey key)
         {
-            return this.data.Find(key) != -1;
+            return data.Find(key) != -1;
         }
 
         public void TrimExcess()
         {
-            this.data.TrimExcess();
+            data.TrimExcess();
         }
 
         public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
-            return this.data.GetKeyArray(allocator);
+            return data.GetKeyArray(allocator);
         }
 
         public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
-            return this.data.GetValueArray<TValue>(allocator);
+            return data.GetValueArray<TValue>(allocator);
         }
 
         public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
-            return this.data.GetKeyValueArrays<TValue>(allocator);
+            return data.GetKeyValueArrays<TValue>(allocator);
         }
 
         public UnsafeHashMap<TKey, TValue>.Enumerator GetEnumerator()
@@ -235,11 +235,11 @@ namespace Unity.Collections
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-        private HashMapHelper<TKey> Data;
+        private HashMapHelper<TKey> _data;
 
         public UnsafeMultiHashMapDebuggerTypeProxy(UnsafeMultiHashMap<TKey, TValue> target)
         {
-            this.Data = target.data;
+            _data = target.data;
         }
 
         public List<Pair<TKey, TValue>> Items
@@ -247,7 +247,7 @@ namespace Unity.Collections
             get
             {
                 var result = new List<Pair<TKey, TValue>>();
-                using var kva = this.Data.GetKeyValueArrays<TValue>(Allocator.Temp);
+                using var kva = _data.GetKeyValueArrays<TValue>(Allocator.Temp);
 
                 for (var i = 0; i < kva.Length; ++i)
                 {

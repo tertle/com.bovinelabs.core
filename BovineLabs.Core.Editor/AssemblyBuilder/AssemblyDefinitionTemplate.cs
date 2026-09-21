@@ -5,12 +5,10 @@
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "match expected json.")]
     [SuppressMessage("ReSharper", "NotAccessedField.Local", Justification = "match expected json.")]
-    [SuppressMessage("ReSharper", "SA1307", Justification = "match expected json.")]
     [SuppressMessage("ReSharper", "CollectionNeverQueried.Local", Justification = "match expected json.")]
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Local", Justification = "match expected json.")]
     [SuppressMessage("ReSharper", "NotAccessedField.Global", Justification = "match expected json.")]
     [SuppressMessage("ReSharper", "UnusedMember.Global", Justification = "match expected json.")]
-    [SuppressMessage("ReSharper", "SA1600", Justification = "match expected json.")]
     [SuppressMessage("ReSharper", "CollectionNeverQueried.Global", Justification = "match expected json.")]
     public struct AssemblyDefinitionTemplate
     {

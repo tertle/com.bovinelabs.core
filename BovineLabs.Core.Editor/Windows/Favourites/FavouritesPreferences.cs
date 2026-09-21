@@ -12,28 +12,28 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
     {
         [SerializeField]
         [Tooltip("Whether to show confirmation dialog when removing favourites")]
-        private bool confirmRemoval = true;
+        private bool _confirmRemoval = true;
 
         [SerializeField]
         [HideInInspector] // Hide from preferences UI
-        private List<SerializableFavouriteItem> favouritesData = new();
+        private List<SerializableFavouriteItem> _favouritesData = new();
 
         public FavouritesPreferences()
         {
             // Set defaults specific to favourites
-            this.GreyOutUnloadedObjects = true;
+            GreyOutUnloadedObjects = true;
         }
 
         public bool ConfirmRemoval
         {
-            get => this.confirmRemoval;
-            set => this.confirmRemoval = value;
+            get => _confirmRemoval;
+            set => _confirmRemoval = value;
         }
 
         public List<SerializableFavouriteItem> FavouritesData
         {
-            get => this.favouritesData;
-            set => this.favouritesData = value ?? new List<SerializableFavouriteItem>();
+            get => _favouritesData;
+            set => _favouritesData = value ?? new List<SerializableFavouriteItem>();
         }
 
         public override string[] GetSearchKeywords()

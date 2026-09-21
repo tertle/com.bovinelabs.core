@@ -33,7 +33,7 @@ namespace BovineLabs.Core.Internal
 
         public const int IntsPerCacheLine = Unity.Collections.LowLevel.Unsafe.UnsafeParallelHashMapData.IntsPerCacheLine;
 
-        public unsafe int* firstFreeTLS => this.Actual.firstFreeTLS;
+        public unsafe int* firstFreeTLS => Actual.firstFreeTLS;
 
         private ref Unity.Collections.LowLevel.Unsafe.UnsafeParallelHashMapData Actual => ref UnsafeUtility.As<UnsafeParallelHashMapData,
         Unity.Collections.LowLevel.Unsafe.UnsafeParallelHashMapData>(ref this);
@@ -62,6 +62,6 @@ namespace BovineLabs.Core.Internal
             result);
         }
 
-        internal UnsafeParallelHashMapBucketData GetBucketData() => this.Actual.GetBucketData();
+        internal UnsafeParallelHashMapBucketData GetBucketData() => Actual.GetBucketData();
     }
 }

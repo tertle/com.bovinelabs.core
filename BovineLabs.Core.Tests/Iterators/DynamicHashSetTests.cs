@@ -16,7 +16,7 @@ namespace BovineLabs.Core.Tests.Iterators
         {
             const int count = 1024;
 
-            var set = this.CreateSet();
+            var set = CreateSet();
 
             for (var i = 0; i < count; i++)
             {
@@ -38,7 +38,7 @@ namespace BovineLabs.Core.Tests.Iterators
         public void EnumerationConsistency()
         {
             const int count = 100;
-            var set = this.CreateSet();
+            var set = CreateSet();
 
             for (var i = 0; i < count; i++)
             {
@@ -57,7 +57,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void KeysPointer_IsAlignedToKeyType()
         {
-            var set = this.CreateSet();
+            var set = CreateSet();
 
             var align = UnsafeUtility.AlignOf<int>();
             var keysPtr = (ulong)set.Helper->Keys;
@@ -68,7 +68,7 @@ namespace BovineLabs.Core.Tests.Iterators
         public unsafe void Resize_WithHoles_RebuildsAndClearsFreeList()
         {
             const int count = 256;
-            var set = this.CreateSet();
+            var set = CreateSet();
 
             for (var i = 0; i < count; i++)
             {
@@ -105,7 +105,7 @@ namespace BovineLabs.Core.Tests.Iterators
         public unsafe void Flatten_RemovesHolesAndClearsFreeList()
         {
             const int count = 128;
-            var set = this.CreateSet();
+            var set = CreateSet();
 
             for (var i = 0; i < count; i++)
             {
@@ -138,14 +138,14 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void Remove_ReadOnlyBuffer_Throws()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicHashSetTestsBuffer));
+            var entity = Manager.CreateEntity(typeof(DynamicHashSetTestsBuffer));
 
-            var rw = this.Manager.GetBuffer<DynamicHashSetTestsBuffer>(entity).InitializeHashSet<DynamicHashSetTestsBuffer, int>(0, MinGrowth);
+            var rw = Manager.GetBuffer<DynamicHashSetTestsBuffer>(entity).InitializeHashSet<DynamicHashSetTestsBuffer, int>(0, MinGrowth);
             var setRw = rw.AsHashSet<DynamicHashSetTestsBuffer, int>();
             setRw.Add(1);
             Assert.IsTrue(setRw.Contains(1));
 
-            var ro = this.Manager.GetBuffer<DynamicHashSetTestsBuffer>(entity, true);
+            var ro = Manager.GetBuffer<DynamicHashSetTestsBuffer>(entity, true);
             var setRo = ro.AsHashSet<DynamicHashSetTestsBuffer, int>();
             Assert.Throws<InvalidOperationException>(() => setRo.Remove(1));
         }
@@ -153,9 +153,8 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private DynamicHashSet<int> CreateSet()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicHashSetTestsBuffer));
-            return this
-                .Manager
+            var entity = Manager.CreateEntity(typeof(DynamicHashSetTestsBuffer));
+            return Manager
                 .GetBuffer<DynamicHashSetTestsBuffer>(entity)
                 .InitializeHashSet<DynamicHashSetTestsBuffer, int>(0, MinGrowth)
                 .AsHashSet<DynamicHashSetTestsBuffer, int>();

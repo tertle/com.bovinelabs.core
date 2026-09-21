@@ -10,17 +10,17 @@
     [NativeContainerIsReadOnly]
     public unsafe struct UntypedDynamicHashMapIterator : IEnumerator<(IntPtr Key, IntPtr Value)>
     {
-        private readonly int keySize;
-        private readonly int valueSize;
+        private readonly int _keySize;
+        private readonly int _valueSize;
 
         [NativeDisableUnsafePtrRestriction]
-        private UntypedDynamicHashMapHelper.Enumerator enumerator;
+        private UntypedDynamicHashMapHelper.Enumerator _enumerator;
 
         internal UntypedDynamicHashMapIterator(UntypedDynamicHashMapHelper* data, int keySize, int valueSize)
         {
-            this.keySize = keySize;
-            this.valueSize = valueSize;
-            this.enumerator = new UntypedDynamicHashMapHelper.Enumerator(data);
+            _keySize = keySize;
+            _valueSize = valueSize;
+            _enumerator = new UntypedDynamicHashMapHelper.Enumerator(data);
         }
 
         public (IntPtr Key, IntPtr Value) Current
@@ -28,27 +28,27 @@
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                var current = this.enumerator.GetCurrent();
+                var current = _enumerator.GetCurrent();
 
                 var helper = (UntypedDynamicHashMapHelper*)current.UntypedDynamicHashMapHelper;
-                var key = helper->Keys + (this.keySize * current.Index);
-                var value = helper->Values + (this.valueSize * current.Index);
+                var key = helper->Keys + (_keySize * current.Index);
+                var value = helper->Values + (_valueSize * current.Index);
 
                 return ((IntPtr)key, (IntPtr)value);
             }
         }
 
-        object IEnumerator.Current => this.Current;
+        object IEnumerator.Current => Current;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            return this.enumerator.MoveNext();
+            return _enumerator.MoveNext();
         }
 
         public void Reset()
         {
-            this.enumerator.Reset();
+            _enumerator.Reset();
         }
 
         public void Dispose()

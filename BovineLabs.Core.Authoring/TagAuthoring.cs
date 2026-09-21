@@ -12,7 +12,7 @@
         {
             public override void Bake(TagAuthoring authoring)
             {
-                var entity = this.GetEntity(TransformUsageFlags.None);
+                var entity = GetEntity(TransformUsageFlags.None);
 
                 foreach (var c in authoring.Components)
                 {
@@ -21,9 +21,9 @@
                         continue;
                     }
 
-                    this.DependsOn(c);
+                    DependsOn(c);
 
-                    this.AddComponent(entity, c.ResolveType());
+                    AddComponent(entity, c.ResolveType());
                 }
             }
         }

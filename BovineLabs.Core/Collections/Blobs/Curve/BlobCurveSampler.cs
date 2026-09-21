@@ -6,38 +6,38 @@
     public struct BlobCurveSampler : IBlobCurveSampler<float>
     {
         public readonly BlobAssetReference<BlobCurve> Curve;
-        private BlobCurveCache cache;
+        private BlobCurveCache _cache;
 
         public BlobCurveSampler(BlobAssetReference<BlobCurve> curve)
         {
-            this.Curve = curve;
-            this.cache = BlobCurveCache.Empty;
+            Curve = curve;
+            _cache = BlobCurveCache.Empty;
         }
 
-        public bool IsCreated => this.Curve.IsCreated;
+        public bool IsCreated => Curve.IsCreated;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float Evaluate(in float time)
         {
-            return this.Curve.Value.Evaluate(time, ref this.cache);
+            return Curve.Value.Evaluate(time, ref _cache);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float EvaluateIgnoreWrapMode(in float time)
         {
-            return this.Curve.Value.EvaluateIgnoreWrapMode(time, ref this.cache);
+            return Curve.Value.EvaluateIgnoreWrapMode(time, ref _cache);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float EvaluateWithoutCache(in float time)
         {
-            return this.Curve.Value.Evaluate(time);
+            return Curve.Value.Evaluate(time);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float EvaluateIgnoreWrapModeWithoutCache(in float time)
         {
-            return this.Curve.Value.EvaluateIgnoreWrapMode(time);
+            return Curve.Value.EvaluateIgnoreWrapMode(time);
         }
     }
 }

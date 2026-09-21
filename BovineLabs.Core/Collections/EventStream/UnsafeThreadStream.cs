@@ -16,30 +16,30 @@ namespace BovineLabs.Core.Collections
         private static readonly int MaxLargeSize = UnsafeThreadStreamBlockData.AllocationSize - sizeof(void*);
 
         [NativeDisableUnsafePtrRestriction]
-        private UnsafeThreadStreamBlockData* blockData;
+        private UnsafeThreadStreamBlockData* _blockData;
 
-        private AllocatorManager.AllocatorHandle allocator;
+        private AllocatorManager.AllocatorHandle _allocator;
 
         public UnsafeThreadStream(Allocator allocator)
         {
             AllocateBlock(out this, allocator);
-            this.AllocateForEach();
+            AllocateForEach();
         }
 
         public static int ForEachCount => JobsUtility.ThreadIndexCount;
 
-        public bool IsCreated => this.blockData != null;
+        public bool IsCreated => _blockData != null;
 
         public bool IsEmpty()
         {
-            if (!this.IsCreated)
+            if (!IsCreated)
             {
                 return true;
             }
 
             for (var i = 0; i != ForEachCount; i++)
             {
-                if (this.blockData->Ranges[i].ElementCount > 0)
+                if (_blockData->Ranges[i].ElementCount > 0)
                 {
                     return false;
                 }
@@ -64,7 +64,7 @@ namespace BovineLabs.Core.Collections
 
             for (var i = 0; i != ForEachCount; i++)
             {
-                itemCount += this.blockData->Ranges[i].ElementCount;
+                itemCount += _blockData->Ranges[i].ElementCount;
             }
 
             return itemCount;
@@ -73,8 +73,8 @@ namespace BovineLabs.Core.Collections
         public NativeArray<T> ToNativeArray<T>(Allocator arrayAllocator)
             where T : unmanaged
         {
-            var array = new NativeArray<T>(this.Count(), arrayAllocator, NativeArrayOptions.UninitializedMemory);
-            var reader = this.AsReader();
+            var array = new NativeArray<T>(Count(), arrayAllocator, NativeArrayOptions.UninitializedMemory);
+            var reader = AsReader();
 
             var offset = 0;
             for (var i = 0; i != reader.ForEachCount; i++)
@@ -95,18 +95,18 @@ namespace BovineLabs.Core.Collections
 
         public void Dispose()
         {
-            this.Deallocate();
+            Deallocate();
         }
 
         public bool Equals(UnsafeThreadStream other)
         {
-            return this.blockData == other.blockData;
+            return _blockData == other._blockData;
         }
 
         public JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new DisposeJob { Container = this }.Schedule(inputDeps);
-            this.blockData = null;
+            _blockData = null;
             return jobHandle;
         }
 
@@ -118,8 +118,8 @@ namespace BovineLabs.Core.Collections
 
             var block = (UnsafeThreadStreamBlockData*)buffer;
 
-            stream.blockData = block;
-            stream.allocator = allocator;
+            stream._blockData = block;
+            stream._allocator = allocator;
 
             block->Allocator = allocator;
             block->Blocks = (UnsafeThreadStreamBlock**)(buffer + sizeof(UnsafeThreadStreamBlockData));
@@ -130,32 +130,32 @@ namespace BovineLabs.Core.Collections
         internal void AllocateForEach()
         {
             long allocationSize = sizeof(UnsafeThreadStreamRange) * ForEachCount;
-            this.blockData->Ranges = (UnsafeThreadStreamRange*)CollectionMemory.Allocate(allocationSize, 16, this.allocator);
-            UnsafeUtility.MemClear(this.blockData->Ranges, allocationSize);
+            _blockData->Ranges = (UnsafeThreadStreamRange*)CollectionMemory.Allocate(allocationSize, 16, _allocator);
+            UnsafeUtility.MemClear(_blockData->Ranges, allocationSize);
         }
 
         private void Deallocate()
         {
-            if (this.blockData == null)
+            if (_blockData == null)
             {
                 return;
             }
 
             for (var i = 0; i != ForEachCount; i++)
             {
-                var block = this.blockData->Blocks[i];
+                var block = _blockData->Blocks[i];
                 while (block != null)
                 {
                     var next = block->Next;
-                    CollectionMemory.Free(block, this.allocator);
+                    CollectionMemory.Free(block, _allocator);
                     block = next;
                 }
             }
 
-            CollectionMemory.Free(this.blockData->Ranges, this.allocator);
-            CollectionMemory.Free(this.blockData, this.allocator);
-            this.blockData = null;
-            this.allocator = Allocator.None;
+            CollectionMemory.Free(_blockData->Ranges, _allocator);
+            CollectionMemory.Free(_blockData, _allocator);
+            _blockData = null;
+            _allocator = Allocator.None;
         }
 
         [BurstCompile]
@@ -165,7 +165,7 @@ namespace BovineLabs.Core.Collections
 
             public void Execute()
             {
-                this.Container.Deallocate();
+                Container.Deallocate();
             }
         }
     }

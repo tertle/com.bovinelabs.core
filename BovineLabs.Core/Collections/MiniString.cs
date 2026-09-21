@@ -16,58 +16,58 @@
 
         // First byte is utf8LengthInBytes
         [SerializeField]
-        private FixedBytes16 bytes;
+        private FixedBytes16 _bytes;
 
         public MiniString(string source)
         {
-            this.bytes = default;
+            _bytes = default;
             unsafe
             {
                 fixed (char* sourceptr = source)
                 {
-                    var error = UTF8ArrayUnsafeUtility.Copy(this.GetUnsafePtr(), out var lengthInBytes, UTF8MaxLengthInBytes, sourceptr, source.Length);
-                    this.UTF8LengthInBytes = (byte)lengthInBytes;
+                    var error = UTF8ArrayUnsafeUtility.Copy(GetUnsafePtr(), out var lengthInBytes, UTF8MaxLengthInBytes, sourceptr, source.Length);
+                    UTF8LengthInBytes = (byte)lengthInBytes;
                     CheckCopyError(error, source);
-                    this.Length = this.UTF8LengthInBytes;
+                    Length = UTF8LengthInBytes;
                 }
             }
         }
 
         public MiniString(FixedString32Bytes source)
         {
-            this.bytes = default;
+            _bytes = default;
 
-            this.UTF8LengthInBytes = (byte)source.Length;
-            this.Length = this.UTF8LengthInBytes;
+            UTF8LengthInBytes = (byte)source.Length;
+            Length = UTF8LengthInBytes;
 
             unsafe
             {
-                UnsafeUtility.MemCpy(this.GetUnsafePtr(), source.GetUnsafePtr(), this.Length);
+                UnsafeUtility.MemCpy(GetUnsafePtr(), source.GetUnsafePtr(), Length);
             }
         }
 
         public int Length
         {
-            get => this.UTF8LengthInBytes;
+            get => UTF8LengthInBytes;
             set
             {
-                this.CheckLengthInRange(value);
-                this.UTF8LengthInBytes = (byte)value;
+                CheckLengthInRange(value);
+                UTF8LengthInBytes = (byte)value;
             }
         }
 
         public int Capacity
         {
             get => UTF8MaxLengthInBytes;
-            set => this.CheckCapacityInRange(value);
+            set => CheckCapacityInRange(value);
         }
 
-        public bool IsEmpty => this.UTF8LengthInBytes == 0;
+        public bool IsEmpty => UTF8LengthInBytes == 0;
 
         private byte UTF8LengthInBytes
         {
-            get => this.bytes.byte0000;
-            set => this.bytes.byte0000 = value;
+            get => _bytes.byte0000;
+            set => _bytes.byte0000 = value;
         }
 
         /// <summary>
@@ -79,8 +79,8 @@
             {
                 unsafe
                 {
-                    this.CheckIndexInRange(index);
-                    return this.GetUnsafePtr()[index];
+                    CheckIndexInRange(index);
+                    return GetUnsafePtr()[index];
                 }
             }
 
@@ -88,8 +88,8 @@
             {
                 unsafe
                 {
-                    this.CheckIndexInRange(index);
-                    this.GetUnsafePtr()[index] = value;
+                    CheckIndexInRange(index);
+                    GetUnsafePtr()[index] = value;
                 }
             }
         }
@@ -142,8 +142,8 @@
             return obj switch
             {
                 null => false,
-                string aString => this.Equals(aString),
-                MiniString miniString => this.Equals(miniString),
+                string aString => Equals(aString),
+                MiniString miniString => Equals(miniString),
                 _ => false,
             };
         }
@@ -151,7 +151,7 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
-            return (byte*)UnsafeUtility.AddressOf(ref this.bytes.byte0001);
+            return (byte*)UnsafeUtility.AddressOf(ref _bytes.byte0001);
         }
 
         public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
@@ -161,7 +161,7 @@
                 return false;
             }
 
-            if (newLength == this.UTF8LengthInBytes)
+            if (newLength == UTF8LengthInBytes)
             {
                 return true;
             }
@@ -170,17 +170,17 @@
             {
                 if (clearOptions == NativeArrayOptions.ClearMemory)
                 {
-                    if (newLength > this.UTF8LengthInBytes)
+                    if (newLength > UTF8LengthInBytes)
                     {
-                        UnsafeUtility.MemClear(this.GetUnsafePtr() + this.UTF8LengthInBytes, newLength - this.UTF8LengthInBytes);
+                        UnsafeUtility.MemClear(GetUnsafePtr() + UTF8LengthInBytes, newLength - UTF8LengthInBytes);
                     }
                     else
                     {
-                        UnsafeUtility.MemClear(this.GetUnsafePtr() + newLength, this.UTF8LengthInBytes - newLength);
+                        UnsafeUtility.MemClear(GetUnsafePtr() + newLength, UTF8LengthInBytes - newLength);
                     }
                 }
 
-                this.UTF8LengthInBytes = (byte)newLength;
+                UTF8LengthInBytes = (byte)newLength;
             }
 
             return true;
@@ -193,14 +193,14 @@
         {
             unsafe
             {
-                this.CheckIndexInRange(index);
-                return ref this.GetUnsafePtr()[index];
+                CheckIndexInRange(index);
+                return ref GetUnsafePtr()[index];
             }
         }
 
         public void Clear()
         {
-            this.Length = 0;
+            Length = 0;
         }
 
         /// <summary>
@@ -208,17 +208,17 @@
         /// </summary>
         public void Add(in byte value)
         {
-            this[this.Length++] = value;
+            this[Length++] = value;
         }
 
         public int CompareTo(string other)
         {
-            return this.ToString().CompareTo(other);
+            return ToString().CompareTo(other);
         }
 
         public bool Equals(string other)
         {
-            return this.ToString().Equals(other);
+            return ToString().Equals(other);
         }
 
         public bool Equals(MiniString other)
@@ -249,9 +249,9 @@
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
             }
 
-            if (index >= this.UTF8LengthInBytes)
+            if (index >= UTF8LengthInBytes)
             {
-                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString32 of '{this.UTF8LengthInBytes}' Length.");
+                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString32 of '{UTF8LengthInBytes}' Length.");
             }
         }
 

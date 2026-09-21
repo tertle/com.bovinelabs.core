@@ -37,7 +37,7 @@ namespace BovineLabs.Core.Editor.EditorPreferences
         protected EditorPreferences(string path, SettingsScope scope, IEnumerable<string> keywords = null)
             : base(PathForScope(scope) + path, scope, Keywords.Concat(keywords ?? Array.Empty<string>()))
         {
-            this.Title = path.Replace("/", " ");
+            Title = path.Replace("/", " ");
         }
 
         protected static bool HasAnyPreferences => Preferences.Count > 0;
@@ -59,7 +59,7 @@ namespace BovineLabs.Core.Editor.EditorPreferences
             };
 
             // Add title
-            var titleLabel = new Label(this.Title)
+            var titleLabel = new Label(Title)
             {
                 style =
                 {

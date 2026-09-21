@@ -9,46 +9,46 @@ namespace BovineLabs.Core.Editor.Inspectors
 
     internal class EntitySceneReferenceInspector : PropertyInspector<EntitySceneReference>
     {
-        private PropertyElement idField;
-        private ObjectField objectField;
-        private Foldout field;
+        private PropertyElement _idField;
+        private ObjectField _objectField;
+        private Foldout _field;
 
         public override VisualElement Build()
         {
-            this.field = new Foldout { value = false };
+            _field = new Foldout { value = false };
 
-            this.idField = PropertyElement.MakeWithValue(this.Target.Id);
-            this.idField.SetEnabled(false);
-            InspectorUtility.AddRuntimeBar(this.idField);
+            _idField = PropertyElement.MakeWithValue(Target.Id);
+            _idField.SetEnabled(false);
+            InspectorUtility.AddRuntimeBar(_idField);
 
-            this.objectField = new ObjectField { enabledSelf = !this.IsReadOnly };
+            _objectField = new ObjectField { enabledSelf = !IsReadOnly };
 
-            InspectorUtility.AddRuntimeBar(this.objectField);
+            InspectorUtility.AddRuntimeBar(_objectField);
 
-            this.field.Add(this.idField);
-            this.field.Add(this.objectField);
+            _field.Add(_idField);
+            _field.Add(_objectField);
 
-            this.Update();
+            Update();
 
-            this.objectField.RegisterValueChangedCallback(evt =>
+            _objectField.RegisterValueChangedCallback(evt =>
             {
-                this.Target = new EntitySceneReference((SceneAsset)evt.newValue);
+                Target = new EntitySceneReference((SceneAsset)evt.newValue);
             });
 
             // this.objectField.RegisterCallback<GeometryChangedEvent, VisualElement>((_, f) => StylingUtility.AlignInspectorLabelWidth(f), this.objectField);
 
-            return this.field;
+            return _field;
         }
 
         public override void Update()
         {
-            var target = this.Target;
-            var sceneAsset = this.GetSceneAsset(target);
+            var target = Target;
+            var sceneAsset = GetSceneAsset(target);
 
-            this.idField!.SetTarget(target.Id);
-            this.objectField!.value = sceneAsset;
+            _idField!.SetTarget(target.Id);
+            _objectField!.value = sceneAsset;
 
-            this.field!.text = sceneAsset == null ? this.DisplayName : $"{this.DisplayName} : {sceneAsset.name}";
+            _field!.text = sceneAsset == null ? DisplayName : $"{DisplayName} : {sceneAsset.name}";
         }
 
         private SceneAsset GetSceneAsset(EntitySceneReference sceneReference)

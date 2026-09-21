@@ -1,5 +1,6 @@
 ﻿namespace BovineLabs.Core.Iterators
 {
+    using System.Diagnostics.CodeAnalysis;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
@@ -8,22 +9,24 @@
         where T : unmanaged, ISharedComponentData
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         private AtomicSafetyHandle m_Safety;
-        private readonly byte m_IsReadOnly;
+        private readonly byte _isReadOnly;
 #endif
         [NativeDisableUnsafePtrRestriction]
-        private readonly EntityDataAccess* m_Access;
+        private readonly EntityDataAccess* _access;
 
-        private readonly TypeIndex m_TypeIndex;
+        private readonly TypeIndex _typeIndex;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal SharedComponentLookup(TypeIndex typeIndex, EntityDataAccess* access, bool isReadOnly)
         {
             var safetyHandles = &access->DependencyManager->Safety;
-            this.m_Safety = safetyHandles->GetSafetyHandleForComponentLookup(typeIndex, isReadOnly);
-            this.m_IsReadOnly = isReadOnly ? (byte)1 : (byte)0;
-            this.m_Access = access;
-            this.m_TypeIndex = typeIndex;
+            m_Safety = safetyHandles->GetSafetyHandleForComponentLookup(typeIndex, isReadOnly);
+            _isReadOnly = isReadOnly ? (byte)1 : (byte)0;
+            _access = access;
+            _typeIndex = typeIndex;
         }
 
 #else
@@ -39,9 +42,9 @@
             get
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                return this.m_Access->GetSharedComponentData_Unmanaged<T>(index);
+                return _access->GetSharedComponentData_Unmanaged<T>(index);
             }
         }
 
@@ -50,28 +53,28 @@
             get
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                return this.m_Access->GetSharedComponentData_Unmanaged<T>(entity);
+                return _access->GetSharedComponentData_Unmanaged<T>(entity);
             }
         }
 
         public bool HasComponent(Entity entity)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-            return this.m_Access->EntityComponentStore->HasComponent(entity, this.m_TypeIndex, out _);
+            return _access->EntityComponentStore->HasComponent(entity, _typeIndex, out _);
         }
 
         public bool TryGetComponent(Entity entity, out T sharedComponentData)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
 
             // Not efficient yet, just convenient
-            if (!this.HasComponent(entity))
+            if (!HasComponent(entity))
             {
                 sharedComponentData = default;
                 return false;
@@ -83,14 +86,14 @@
 
         public void Update(SystemBase system)
         {
-            this.Update(ref *system.m_StatePtr);
+            Update(ref *system.m_StatePtr);
         }
 
         public void Update(ref SystemState systemState)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var safetyHandles = &this.m_Access->DependencyManager->Safety;
-            this.m_Safety = safetyHandles->GetSafetyHandleForComponentLookup(this.m_TypeIndex, this.m_IsReadOnly != 0);
+            var safetyHandles = &_access->DependencyManager->Safety;
+            m_Safety = safetyHandles->GetSafetyHandleForComponentLookup(_typeIndex, _isReadOnly != 0);
 #endif
         }
     }

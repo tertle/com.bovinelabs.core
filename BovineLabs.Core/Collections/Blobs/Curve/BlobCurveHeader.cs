@@ -23,11 +23,11 @@
             PingPong = 2,
         }
 
-        public float Duration => this.EndTime - this.StartTime;
+        public float Duration => EndTime - StartTime;
 
         public unsafe int SearchIgnoreWrapMode(in float time, [NoAlias] ref BlobCurveCache cache, [NoAlias] out float t)
         {
-            var wrappedTime = math.clamp(time, this.StartTime, this.EndTime);
+            var wrappedTime = math.clamp(time, StartTime, EndTime);
             var isPrev = wrappedTime < cache.NeighborhoodTimes.x;
             var isPost = wrappedTime > cache.NeighborhoodTimes.y;
             if ((cache.Index >= 0) & !(isPrev | isPost))
@@ -37,8 +37,8 @@
                 return cache.Index;
             }
 
-            var times = (float*)this.Times.GetUnsafePtr();
-            int lo = 0, hi = this.SegmentCount - 1;
+            var times = (float*)Times.GetUnsafePtr();
+            int lo = 0, hi = SegmentCount - 1;
             cache.Index = math.clamp(cache.Index, lo, hi);
             var neighborhoodIDs = new int2(cache.Index - 1, cache.Index + 1);
             var neighborhoodTimes = *(float4*)(times + cache.Index);
@@ -73,8 +73,8 @@
 
         public unsafe int SearchIgnoreWrapMode(in float time, [NoAlias] out float t)
         {
-            var wrappedTime = math.clamp(time, this.StartTime, this.EndTime);
-            var times = (float*)this.Times.GetUnsafePtr();
+            var wrappedTime = math.clamp(time, StartTime, EndTime);
+            var times = (float*)Times.GetUnsafePtr();
             var timeRange = *(float2*)(times + 1);
             if (wrappedTime <= timeRange.y)
             {
@@ -83,7 +83,7 @@
                 return 0;
             }
 
-            int lo = 0, hi = this.SegmentCount - 1, i = 0;
+            int lo = 0, hi = SegmentCount - 1, i = 0;
             bool notFound;
             do
             {
@@ -106,34 +106,34 @@
         public unsafe int Search(in float time, [NoAlias] ref BlobCurveCache cache, [NoAlias] out float t)
         {
             float wrappedTime, duration;
-            var preClamp = this.WrapModePrev == WrapMode.Clamp;
-            var postClamp = this.WrapModePost == WrapMode.Clamp;
+            var preClamp = WrapModePrev == WrapMode.Clamp;
+            var postClamp = WrapModePost == WrapMode.Clamp;
             if (preClamp & postClamp)
             {
-                wrappedTime = math.clamp(time, this.StartTime, this.EndTime);
+                wrappedTime = math.clamp(time, StartTime, EndTime);
             }
             else
             {
-                var left = time < this.StartTime;
-                var right = time > this.EndTime;
+                var left = time < StartTime;
+                var right = time > EndTime;
                 if (left | right)
                 {
-                    var wrapMode = left ? this.WrapModePrev : this.WrapModePost;
+                    var wrapMode = left ? WrapModePrev : WrapModePost;
                     switch (wrapMode)
                     {
                         default:
                         case WrapMode.Clamp:
-                            wrappedTime = left ? this.StartTime : this.EndTime;
+                            wrappedTime = left ? StartTime : EndTime;
                             break;
                         case WrapMode.Loop:
-                            wrappedTime = ModPlus(time - this.StartTime, this.Duration) + this.StartTime;
+                            wrappedTime = ModPlus(time - StartTime, Duration) + StartTime;
                             break;
                         case WrapMode.PingPong:
-                            duration = this.Duration;
-                            var offset = ModPlus(time - this.StartTime, duration);
-                            var loopCounter = (int)math.floor((time - this.StartTime) / this.Duration);
+                            duration = Duration;
+                            var offset = ModPlus(time - StartTime, duration);
+                            var loopCounter = (int)math.floor((time - StartTime) / Duration);
                             var isMirror = (loopCounter & 1) == 1;
-                            wrappedTime = this.StartTime + (isMirror ? this.Duration - offset : offset);
+                            wrappedTime = StartTime + (isMirror ? Duration - offset : offset);
                             break;
                     }
                 }
@@ -152,8 +152,8 @@
                 return cache.Index;
             }
 
-            var times = (float*)this.Times.GetUnsafePtr();
-            int lo = 0, hi = this.SegmentCount - 1;
+            var times = (float*)Times.GetUnsafePtr();
+            int lo = 0, hi = SegmentCount - 1;
             cache.Index = math.clamp(cache.Index, lo, hi);
             var neighborhoodIDs = new int2(cache.Index - 1, cache.Index + 1);
             var neighborhoodTimes = *(float4*)(times + cache.Index);
@@ -190,34 +190,34 @@
         public unsafe int Search(in float time, [NoAlias] out float t)
         {
             float wrappedTime, duration;
-            var preClamp = this.WrapModePrev == WrapMode.Clamp;
-            var postClamp = this.WrapModePost == WrapMode.Clamp;
+            var preClamp = WrapModePrev == WrapMode.Clamp;
+            var postClamp = WrapModePost == WrapMode.Clamp;
             if (preClamp & postClamp)
             {
-                wrappedTime = math.clamp(time, this.StartTime, this.EndTime);
+                wrappedTime = math.clamp(time, StartTime, EndTime);
             }
             else
             {
-                var left = time < this.StartTime;
-                var right = time > this.EndTime;
+                var left = time < StartTime;
+                var right = time > EndTime;
                 if (left | right)
                 {
-                    var wrapMode = left ? this.WrapModePrev : this.WrapModePost;
+                    var wrapMode = left ? WrapModePrev : WrapModePost;
                     switch (wrapMode)
                     {
                         default:
                         case WrapMode.Clamp:
-                            wrappedTime = left ? this.StartTime : this.EndTime;
+                            wrappedTime = left ? StartTime : EndTime;
                             break;
                         case WrapMode.Loop:
-                            wrappedTime = ModPlus(time - this.StartTime, this.Duration) + this.StartTime;
+                            wrappedTime = ModPlus(time - StartTime, Duration) + StartTime;
                             break;
                         case WrapMode.PingPong:
-                            duration = this.Duration;
-                            var offset = ModPlus(time - this.StartTime, duration);
-                            var loopCounter = (int)math.floor((time - this.StartTime) / this.Duration);
+                            duration = Duration;
+                            var offset = ModPlus(time - StartTime, duration);
+                            var loopCounter = (int)math.floor((time - StartTime) / Duration);
                             var isMirror = (loopCounter & 1) == 1;
-                            wrappedTime = this.StartTime + (isMirror ? this.Duration - offset : offset);
+                            wrappedTime = StartTime + (isMirror ? Duration - offset : offset);
                             break;
                     }
                 }
@@ -227,7 +227,7 @@
                 }
             }
 
-            var times = (float*)this.Times.GetUnsafePtr();
+            var times = (float*)Times.GetUnsafePtr();
             var timeRange = *(float2*)(times + 1);
             if (wrappedTime <= timeRange.y)
             {
@@ -237,7 +237,7 @@
             }
 
             var lo = 0;
-            var hi = this.SegmentCount - 1;
+            var hi = SegmentCount - 1;
             var i = 0;
 
             bool notFound;

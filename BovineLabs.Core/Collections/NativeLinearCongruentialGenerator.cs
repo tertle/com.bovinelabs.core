@@ -2,6 +2,7 @@ namespace BovineLabs.Core.Collections
 {
     using System;
     using BovineLabs.Core.Internal;
+    using System.Diagnostics.CodeAnalysis;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -17,19 +18,23 @@ namespace BovineLabs.Core.Collections
         private const int Modulus = int.MaxValue;
 
         [NativeDisableUnsafePtrRestriction]
-        private int* current;
+        private int* _current;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         private AtomicSafetyHandle m_Safety;
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeLinearCongruentialGenerator>();
 #endif
 
-        private AllocatorManager.AllocatorHandle allocatorLabel;
+        private AllocatorManager.AllocatorHandle _allocatorLabel;
 
         public NativeLinearCongruentialGenerator(int seed, Allocator allocator)
         {
             Allocate(allocator, out this);
-            *this.current = seed;
+            *_current = seed;
         }
 
         private static void Allocate(AllocatorManager.AllocatorHandle allocator, out NativeLinearCongruentialGenerator reference)
@@ -37,8 +42,8 @@ namespace BovineLabs.Core.Collections
             CollectionChecks.CheckAllocator(allocator);
 
             reference = default;
-            reference.current = (int*)CollectionMemory.Allocate(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator);
-            reference.allocatorLabel = allocator;
+            reference._current = (int*)CollectionMemory.Allocate(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>(), allocator);
+            reference._allocatorLabel = allocator;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             reference.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
@@ -51,24 +56,24 @@ namespace BovineLabs.Core.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
-            CollectionMemory.Free(this.current, this.allocatorLabel);
+            CollectionMemory.Free(_current, _allocatorLabel);
 
-            this.current = null;
+            _current = null;
         }
 
         public int Next()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
 
-            var x = *this.current;
+            var x = *_current;
             var x1 = ((Multiplier * x) + Increment) & Modulus;
-            *this.current = x1;
+            *_current = x1;
 
-            return *this.current;
+            return *_current;
         }
     }
 }

@@ -1150,12 +1150,12 @@ namespace BovineLabs.DynamicGenerator
         {
             public PrimitiveCodec(int encodedSize, string writeMethod, string readMethod, string encodeCast, string decodeCast, string schemaName)
             {
-                this.EncodedSize = encodedSize;
-                this.WriteMethod = writeMethod;
-                this.ReadMethod = readMethod;
-                this.EncodeCast = encodeCast;
-                this.DecodeCast = decodeCast;
-                this.SchemaHash = Fnv1A64("primitive:" + schemaName);
+                EncodedSize = encodedSize;
+                WriteMethod = writeMethod;
+                ReadMethod = readMethod;
+                EncodeCast = encodeCast;
+                DecodeCast = decodeCast;
+                SchemaHash = Fnv1A64("primitive:" + schemaName);
             }
 
             public int EncodedSize { get; }
@@ -1175,9 +1175,9 @@ namespace BovineLabs.DynamicGenerator
         {
             public DynamicHashMapNetcodeCandidate(TypeDeclarationSyntax typeSyntax, INamedTypeSymbol typeSymbol, AttributeData attribute)
             {
-                this.TypeSyntax = typeSyntax;
-                this.TypeSymbol = typeSymbol;
-                this.Attribute = attribute;
+                TypeSyntax = typeSyntax;
+                TypeSymbol = typeSymbol;
+                Attribute = attribute;
             }
 
             public TypeDeclarationSyntax TypeSyntax { get; }
@@ -1192,12 +1192,12 @@ namespace BovineLabs.DynamicGenerator
             private DynamicHashMapValueCodecPlan(
                 ITypeSymbol typeSymbol, string codecTypeName, int encodedSize, string encodedSizeExpression, ulong schemaHash, string source)
             {
-                this.TypeSymbol = typeSymbol;
-                this.CodecTypeName = codecTypeName;
-                this.EncodedSize = encodedSize;
-                this.EncodedSizeExpression = encodedSizeExpression;
-                this.SchemaHash = schemaHash;
-                this.Source = source;
+                TypeSymbol = typeSymbol;
+                CodecTypeName = codecTypeName;
+                EncodedSize = encodedSize;
+                EncodedSizeExpression = encodedSizeExpression;
+                SchemaHash = schemaHash;
+                Source = source;
             }
 
             public ITypeSymbol TypeSymbol { get; }
@@ -1239,9 +1239,9 @@ namespace BovineLabs.DynamicGenerator
         {
             public DynamicHashMapFieldCodecPlan(IFieldSymbol field, DynamicHashMapValueCodecPlan codec, int offset)
             {
-                this.Field = field;
-                this.Codec = codec;
-                this.Offset = offset;
+                Field = field;
+                Codec = codec;
+                Offset = offset;
             }
 
             public IFieldSymbol Field { get; }
@@ -1259,30 +1259,30 @@ namespace BovineLabs.DynamicGenerator
                 IReadOnlyList<DynamicHashMapValueCodecPlan> generatedCodecs, bool useRawSerializerPath, bool sendDataForChildEntity,
                 string prefabTypeExpression, string sendTypeExpression, string ownerSendTypeExpression)
             {
-                this.CollectionKind = collectionKind;
-                this.SerializerSuffix = GetSerializerSuffix(collectionKind);
-                this.TypeSymbol = typeSymbol;
-                this.Namespace = typeSymbol.ContainingNamespace.IsGlobalNamespace ? string.Empty : typeSymbol.ContainingNamespace.ToDisplayString();
-                this.TypeName = typeSymbol.ToDisplayString(QualifiedFormat);
-                this.KeyTypeName = keyType.ToDisplayString(QualifiedFormat);
-                this.ValueTypeName = valueType.ToDisplayString(QualifiedFormat);
-                this.KeyCodec = keyCodec;
-                this.ValueCodec = valueCodec;
-                this.MapCodecTypeName = mapCodecTypeName;
-                this.GeneratedCodecs = generatedCodecs.Where(static codec => codec.Source.Length != 0).Distinct().ToArray();
-                this.UseRawSerializerPath = useRawSerializerPath;
-                this.DisplayName = ToSentenceDisplayName(typeSymbol.Name);
-                this.SendDataForChildEntity = sendDataForChildEntity;
-                this.PrefabTypeExpression = prefabTypeExpression;
-                this.SendTypeExpression = sendTypeExpression;
-                this.OwnerSendTypeExpression = ownerSendTypeExpression;
-                this.HintName = typeSymbol.ToDisplayString(QualifiedFormat)
+                CollectionKind = collectionKind;
+                SerializerSuffix = GetSerializerSuffix(collectionKind);
+                TypeSymbol = typeSymbol;
+                Namespace = typeSymbol.ContainingNamespace.IsGlobalNamespace ? string.Empty : typeSymbol.ContainingNamespace.ToDisplayString();
+                TypeName = typeSymbol.ToDisplayString(QualifiedFormat);
+                KeyTypeName = keyType.ToDisplayString(QualifiedFormat);
+                ValueTypeName = valueType.ToDisplayString(QualifiedFormat);
+                KeyCodec = keyCodec;
+                ValueCodec = valueCodec;
+                MapCodecTypeName = mapCodecTypeName;
+                GeneratedCodecs = generatedCodecs.Where(static codec => codec.Source.Length != 0).Distinct().ToArray();
+                UseRawSerializerPath = useRawSerializerPath;
+                DisplayName = ToSentenceDisplayName(typeSymbol.Name);
+                SendDataForChildEntity = sendDataForChildEntity;
+                PrefabTypeExpression = prefabTypeExpression;
+                SendTypeExpression = sendTypeExpression;
+                OwnerSendTypeExpression = ownerSendTypeExpression;
+                HintName = typeSymbol.ToDisplayString(QualifiedFormat)
                     .Replace("global::", string.Empty)
                     .Replace(".", "_")
                     .Replace("<", "_")
                     .Replace(">", "_")
                     .Replace(",", "_")
-                    .Replace(" ", string.Empty) + "." + this.SerializerSuffix + "GhostSerializer.g.cs";
+                    .Replace(" ", string.Empty) + "." + SerializerSuffix + "GhostSerializer.g.cs";
             }
 
             public DynamicHashMapCollectionKind CollectionKind { get; }
@@ -1326,8 +1326,8 @@ namespace BovineLabs.DynamicGenerator
         {
             public DynamicHashMapNetcodeResult(DynamicHashMapNetcodeData data, IReadOnlyList<Diagnostic> diagnostics)
             {
-                this.Data = data;
-                this.Diagnostics = diagnostics;
+                Data = data;
+                Diagnostics = diagnostics;
             }
 
             public DynamicHashMapNetcodeData Data { get; }

@@ -10,27 +10,27 @@
         where T : unmanaged, IComponentData
     {
         [NativeDisableUnsafePtrRestriction]
-        private readonly EntityDataAccess* access;
+        private readonly EntityDataAccess* _access;
 
-        private readonly TypeIndex typeIndex;
-        private readonly byte isZeroSized;
+        private readonly TypeIndex _typeIndex;
+        private readonly byte _isZeroSized;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        private readonly byte isReadOnly;
+        private readonly byte _isReadOnly;
 #endif
 
-        private LookupCache cache;
-        private uint globalSystemVersion;
+        private LookupCache _cache;
+        private uint _globalSystemVersion;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal UnsafeComponentLookup(TypeIndex typeIndex, EntityDataAccess* access, bool isReadOnly)
         {
-            this.isReadOnly = isReadOnly ? (byte)1 : (byte)0;
-            this.typeIndex = typeIndex;
-            this.access = access;
-            this.cache = default;
-            this.globalSystemVersion = access->EntityComponentStore->GlobalSystemVersion;
-            this.isZeroSized = ComponentType.FromTypeIndex(typeIndex).IsZeroSized ? (byte)1 : (byte)0;
+            _isReadOnly = isReadOnly ? (byte)1 : (byte)0;
+            _typeIndex = typeIndex;
+            _access = access;
+            _cache = default;
+            _globalSystemVersion = access->EntityComponentStore->GlobalSystemVersion;
+            _isZeroSized = ComponentType.FromTypeIndex(typeIndex).IsZeroSized ? (byte)1 : (byte)0;
         }
 #else
         internal UnsafeComponentLookup(int typeIndex, EntityDataAccess* access)
@@ -47,15 +47,15 @@
         {
             get
             {
-                var ecs = this.access->EntityComponentStore;
-                ecs->AssertEntityHasComponent(entity, this.typeIndex, ref this.cache);
+                var ecs = _access->EntityComponentStore;
+                ecs->AssertEntityHasComponent(entity, _typeIndex, ref _cache);
 
-                if (this.isZeroSized != 0)
+                if (_isZeroSized != 0)
                 {
                     return default;
                 }
 
-                void* ptr = ecs->GetComponentDataWithTypeRO(entity, this.typeIndex, ref this.cache);
+                void* ptr = ecs->GetComponentDataWithTypeRO(entity, _typeIndex, ref _cache);
                 UnsafeUtility.CopyPtrToStructure(ptr, out T data);
 
                 return data;
@@ -66,15 +66,15 @@
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 CheckWriteAndThrow(this);
 #endif
-                var ecs = this.access->EntityComponentStore;
-                ecs->AssertEntityHasComponent(entity, this.typeIndex, ref this.cache);
+                var ecs = _access->EntityComponentStore;
+                ecs->AssertEntityHasComponent(entity, _typeIndex, ref _cache);
 
-                if (this.isZeroSized != 0)
+                if (_isZeroSized != 0)
                 {
                     return;
                 }
 
-                void* ptr = ecs->GetComponentDataWithTypeRW(entity, this.typeIndex, this.globalSystemVersion, ref this.cache);
+                void* ptr = ecs->GetComponentDataWithTypeRW(entity, _typeIndex, _globalSystemVersion, ref _cache);
                 UnsafeUtility.CopyStructureToPtr(ref value, ptr);
             }
         }
@@ -87,34 +87,34 @@
 
         public void Update(SystemBase system)
         {
-            this.Update(ref *system.m_StatePtr);
+            Update(ref *system.m_StatePtr);
         }
 
         public void Update(ref SystemState systemState)
         {
-            this.globalSystemVersion = systemState.m_EntityComponentStore->GlobalSystemVersion;
+            _globalSystemVersion = systemState.m_EntityComponentStore->GlobalSystemVersion;
         }
 
         public bool HasComponent(Entity entity)
         {
-            var ecs = this.access->EntityComponentStore;
-            return ecs->HasComponent(entity, this.typeIndex, ref this.cache, out _);
+            var ecs = _access->EntityComponentStore;
+            return ecs->HasComponent(entity, _typeIndex, ref _cache, out _);
         }
 
         public bool HasComponent(SystemHandle system)
         {
-            var ecs = this.access->EntityComponentStore;
-            return ecs->HasComponent(system.m_Entity, this.typeIndex, ref this.cache, out _);
+            var ecs = _access->EntityComponentStore;
+            return ecs->HasComponent(system.m_Entity, _typeIndex, ref _cache, out _);
         }
 
         public bool TryGetComponent(Entity entity, out T componentData)
         {
-            var ecs = this.access->EntityComponentStore;
+            var ecs = _access->EntityComponentStore;
 
-            if (this.isZeroSized != 0)
+            if (_isZeroSized != 0)
             {
                 componentData = default;
-                return ecs->HasComponent(entity, this.typeIndex, ref this.cache, out _);
+                return ecs->HasComponent(entity, _typeIndex, ref _cache, out _);
             }
 
             if (Hint.Unlikely(!ecs->Exists(entity)))
@@ -123,7 +123,7 @@
                 return false;
             }
 
-            void* ptr = ecs->GetOptionalComponentDataWithTypeRO(entity, this.typeIndex, ref this.cache);
+            void* ptr = ecs->GetOptionalComponentDataWithTypeRO(entity, _typeIndex, ref _cache);
             if (ptr == null)
             {
                 componentData = default;
@@ -139,15 +139,15 @@
         /// </summary>
         public bool DidChange(Entity entity, uint version)
         {
-            var ecs = this.access->EntityComponentStore;
+            var ecs = _access->EntityComponentStore;
             var chunk = ecs->GetChunk(entity);
             var archetype = ecs->GetArchetype(chunk);
-            if (Hint.Unlikely(archetype != this.cache.Archetype))
+            if (Hint.Unlikely(archetype != _cache.Archetype))
             {
-                this.cache.Update(archetype, this.typeIndex);
+                _cache.Update(archetype, _typeIndex);
             }
 
-            var typeIndexInArchetype = this.cache.IndexInArchetype;
+            var typeIndexInArchetype = _cache.IndexInArchetype;
             if (typeIndexInArchetype == -1)
             {
                 return false;
@@ -160,12 +160,12 @@
 
         public bool IsComponentEnabled(Entity entity)
         {
-            return this.access->IsComponentEnabled(entity, this.typeIndex, ref this.cache);
+            return _access->IsComponentEnabled(entity, _typeIndex, ref _cache);
         }
 
         public bool IsComponentEnabled(SystemHandle systemHandle)
         {
-            return this.access->IsComponentEnabled(systemHandle.m_Entity, this.typeIndex, ref this.cache);
+            return _access->IsComponentEnabled(systemHandle.m_Entity, _typeIndex, ref _cache);
         }
 
         public void SetComponentEnabled(SystemHandle systemHandle, bool value)
@@ -173,7 +173,7 @@
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CheckWriteAndThrow(this);
 #endif
-            this.access->SetComponentEnabled(systemHandle.m_Entity, this.typeIndex, value, ref this.cache);
+            _access->SetComponentEnabled(systemHandle.m_Entity, _typeIndex, value, ref _cache);
         }
 
         public void SetComponentEnabled(Entity entity, bool value)
@@ -181,14 +181,14 @@
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CheckWriteAndThrow(this);
 #endif
-            this.access->SetComponentEnabled(entity, this.typeIndex, value, ref this.cache);
+            _access->SetComponentEnabled(entity, _typeIndex, value, ref _cache);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private static void CheckWriteAndThrow(in UnsafeComponentLookup<T> componentLookup)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (componentLookup.isReadOnly != 0)
+            if (componentLookup._isReadOnly != 0)
             {
                 throw new InvalidOperationException("Writing when read only");
             }

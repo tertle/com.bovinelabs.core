@@ -13,14 +13,14 @@
 
         public IntFloatUnion(int value)
         {
-            this.FloatValue = 0;
-            this.IntValue = value;
+            FloatValue = 0;
+            IntValue = value;
         }
 
         public IntFloatUnion(float value)
         {
-            this.IntValue = 0;
-            this.FloatValue = value;
+            IntValue = 0;
+            FloatValue = value;
         }
     }
 }

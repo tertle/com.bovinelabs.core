@@ -10,29 +10,29 @@
         where TTo : unmanaged, IComponentData, IEnableableComponent
         where TFrom : unmanaged, IComponentData, IEnableableComponent
     {
-        private EntityQuery query;
-        private ComponentTypeHandle<TTo> toHandle;
-        private ComponentTypeHandle<TFrom> fromHandle;
+        private EntityQuery _query;
+        private ComponentTypeHandle<TTo> _toHandle;
+        private ComponentTypeHandle<TFrom> _fromHandle;
 
         public void OnCreate(ref SystemState state)
         {
-            this.query = new EntityQueryBuilder(Allocator.Temp).WithPresentRW<TTo>().WithPresent<TFrom>().Build(ref state);
+            _query = new EntityQueryBuilder(Allocator.Temp).WithPresentRW<TTo>().WithPresent<TFrom>().Build(ref state);
 
-            this.query.AddChangedVersionFilter(ComponentType.ReadOnly<TFrom>());
+            _query.AddChangedVersionFilter(ComponentType.ReadOnly<TFrom>());
 
-            this.toHandle = state.GetComponentTypeHandle<TTo>();
-            this.fromHandle = state.GetComponentTypeHandle<TFrom>(true);
+            _toHandle = state.GetComponentTypeHandle<TTo>();
+            _fromHandle = state.GetComponentTypeHandle<TFrom>(true);
         }
 
         public void OnUpdate(ref SystemState state, SetPreviousJob job = default)
         {
-            this.toHandle.Update(ref state);
-            this.fromHandle.Update(ref state);
+            _toHandle.Update(ref state);
+            _fromHandle.Update(ref state);
 
-            job.ToHandle = this.toHandle;
-            job.FromHandle = this.fromHandle;
+            job.ToHandle = _toHandle;
+            job.FromHandle = _fromHandle;
 
-            state.Dependency = job.ScheduleParallel(this.query, state.Dependency);
+            state.Dependency = job.ScheduleParallel(_query, state.Dependency);
         }
 
         [BurstCompile]
@@ -45,7 +45,7 @@
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                chunk.CopyEnableMaskFrom(ref this.ToHandle, ref this.FromHandle);
+                chunk.CopyEnableMaskFrom(ref ToHandle, ref FromHandle);
             }
         }
     }

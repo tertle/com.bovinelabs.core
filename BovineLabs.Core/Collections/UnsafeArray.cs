@@ -17,9 +17,9 @@
         where T : unmanaged
     {
         [NativeDisableUnsafePtrRestriction]
-        private unsafe void* buffer;
+        private unsafe void* _buffer;
 
-        private Allocator allocatorLabel;
+        private Allocator _allocatorLabel;
 
         public unsafe UnsafeArray(int length, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
@@ -29,18 +29,18 @@
                 return;
             }
 
-            UnsafeUtility.MemClear(this.buffer, this.Length * (long)UnsafeUtility.SizeOf<T>());
+            UnsafeUtility.MemClear(_buffer, Length * (long)UnsafeUtility.SizeOf<T>());
         }
 
         public int Length { get; private set; }
 
-        public unsafe bool IsCreated => (IntPtr)this.buffer != IntPtr.Zero;
+        public unsafe bool IsCreated => (IntPtr)_buffer != IntPtr.Zero;
 
         public unsafe T this[int index]
         {
-            get => UnsafeUtility.ReadArrayElement<T>(this.buffer, index);
+            get => UnsafeUtility.ReadArrayElement<T>(_buffer, index);
             [WriteAccessRequired]
-            set => UnsafeUtility.WriteArrayElement(this.buffer, index, value);
+            set => UnsafeUtility.WriteArrayElement(_buffer, index, value);
         }
 
         public static bool operator ==(UnsafeArray<T> left, UnsafeArray<T> right)
@@ -56,60 +56,60 @@
         [WriteAccessRequired]
         public unsafe void Dispose()
         {
-            if ((IntPtr)this.buffer == IntPtr.Zero)
+            if ((IntPtr)_buffer == IntPtr.Zero)
             {
                 throw new ObjectDisposedException("The UnsafeArray is already disposed.");
             }
 
-            if (this.allocatorLabel == Allocator.Invalid)
+            if (_allocatorLabel == Allocator.Invalid)
             {
                 throw new InvalidOperationException("The UnsafeArray can not be Disposed because it was not allocated with a valid allocator.");
             }
 
-            if (this.allocatorLabel > Allocator.None)
+            if (_allocatorLabel > Allocator.None)
             {
-                UnsafeUtility.FreeTracked(this.buffer, this.allocatorLabel);
-                this.allocatorLabel = Allocator.Invalid;
+                UnsafeUtility.FreeTracked(_buffer, _allocatorLabel);
+                _allocatorLabel = Allocator.Invalid;
             }
 
-            this.buffer = null;
+            _buffer = null;
         }
 
         public unsafe JobHandle Dispose(JobHandle inputDeps)
         {
-            if (this.allocatorLabel == Allocator.Invalid)
+            if (_allocatorLabel == Allocator.Invalid)
             {
                 throw new InvalidOperationException("The UnsafeArray can not be Disposed because it was not allocated with a valid allocator.");
             }
 
-            if ((IntPtr)this.buffer == IntPtr.Zero)
+            if ((IntPtr)_buffer == IntPtr.Zero)
             {
                 throw new InvalidOperationException("The UnsafeArray is already disposed.");
             }
 
-            if (this.allocatorLabel > Allocator.None)
+            if (_allocatorLabel > Allocator.None)
             {
                 var jobHandle = new UnsafeArrayDisposeJob
                 {
                     Data = new UnsafeArrayDispose
                     {
-                        Buffer = this.buffer,
-                        AllocatorLabel = this.allocatorLabel,
+                        Buffer = _buffer,
+                        AllocatorLabel = _allocatorLabel,
                     },
                 }.Schedule(inputDeps);
 
-                this.buffer = null;
-                this.allocatorLabel = Allocator.Invalid;
+                _buffer = null;
+                _allocatorLabel = Allocator.Invalid;
                 return jobHandle;
             }
 
-            this.buffer = null;
+            _buffer = null;
             return inputDeps;
         }
 
         public unsafe void* GetUnsafePtr()
         {
-            return this.buffer;
+            return _buffer;
         }
 
         [WriteAccessRequired]
@@ -136,8 +136,8 @@
 
         public T[] ToArray()
         {
-            var dst = new T[this.Length];
-            Copy(this, dst, this.Length);
+            var dst = new T[Length];
+            Copy(this, dst, Length);
             return dst;
         }
 
@@ -153,22 +153,22 @@
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
 
         public unsafe bool Equals(UnsafeArray<T> other)
         {
-            return this.buffer == other.buffer && this.Length == other.Length;
+            return _buffer == other._buffer && Length == other.Length;
         }
 
         public override bool Equals(object obj)
         {
-            return obj != null && obj is UnsafeArray<T> other && this.Equals(other);
+            return obj != null && obj is UnsafeArray<T> other && Equals(other);
         }
 
         public override unsafe int GetHashCode()
         {
-            return ((int)this.buffer * 397) ^ this.Length;
+            return ((int)_buffer * 397) ^ Length;
         }
 
         public static void Copy(UnsafeArray<T> src, UnsafeArray<T> dst)
@@ -244,9 +244,9 @@
             CheckAllocateArguments(length, allocator);
             array = default;
             IsUnmanagedAndThrow();
-            array.buffer = UnsafeUtility.MallocTracked(size, UnsafeUtility.AlignOf<T>(), allocator, 0);
+            array._buffer = UnsafeUtility.MallocTracked(size, UnsafeUtility.AlignOf<T>(), allocator, 0);
             array.Length = length;
-            array.allocatorLabel = allocator;
+            array._allocatorLabel = allocator;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -262,8 +262,8 @@
         private static unsafe void CopySafe(UnsafeArray<T> src, int srcIndex, UnsafeArray<T> dst, int dstIndex, int length)
         {
             CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
-            UnsafeUtility.MemCpy((void*)((IntPtr)dst.buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
-                (void*)((IntPtr)src.buffer + (srcIndex * UnsafeUtility.SizeOf<T>())), length * UnsafeUtility.SizeOf<T>());
+            UnsafeUtility.MemCpy((void*)((IntPtr)dst._buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
+                (void*)((IntPtr)src._buffer + (srcIndex * UnsafeUtility.SizeOf<T>())), length * UnsafeUtility.SizeOf<T>());
         }
 
         private static unsafe void CopySafe(T[] src, int srcIndex, UnsafeArray<T> dst, int dstIndex, int length)
@@ -272,7 +272,7 @@
             CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
             var gcHandle = GCHandle.Alloc(src, GCHandleType.Pinned);
             var num = gcHandle.AddrOfPinnedObject();
-            UnsafeUtility.MemCpy((void*)((IntPtr)dst.buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
+            UnsafeUtility.MemCpy((void*)((IntPtr)dst._buffer + (dstIndex * UnsafeUtility.SizeOf<T>())),
                 (void*)((IntPtr)(void*)num + (srcIndex * UnsafeUtility.SizeOf<T>())), length * UnsafeUtility.SizeOf<T>());
 
             gcHandle.Free();
@@ -284,7 +284,7 @@
             CheckCopyArguments(src.Length, srcIndex, dst.Length, dstIndex, length);
             var gcHandle = GCHandle.Alloc(dst, GCHandleType.Pinned);
             UnsafeUtility.MemCpy((void*)((IntPtr)(void*)gcHandle.AddrOfPinnedObject() + (dstIndex * UnsafeUtility.SizeOf<T>())),
-                (void*)((IntPtr)src.buffer + (srcIndex * UnsafeUtility.SizeOf<T>())), length * UnsafeUtility.SizeOf<T>());
+                (void*)((IntPtr)src._buffer + (srcIndex * UnsafeUtility.SizeOf<T>())), length * UnsafeUtility.SizeOf<T>());
 
             gcHandle.Free();
         }
@@ -351,18 +351,18 @@
         [ExcludeFromDocs]
         public struct Enumerator : IEnumerator<T>
         {
-            private UnsafeArray<T> array;
-            private int index;
+            private UnsafeArray<T> _array;
+            private int _index;
 
             public Enumerator(ref UnsafeArray<T> array)
             {
-                this.array = array;
-                this.index = -1;
+                _array = array;
+                _index = -1;
             }
 
-            public T Current => this.array[this.index];
+            public T Current => _array[_index];
 
-            object IEnumerator.Current => this.Current;
+            object IEnumerator.Current => Current;
 
             public void Dispose()
             {
@@ -370,13 +370,13 @@
 
             public bool MoveNext()
             {
-                ++this.index;
-                return this.index < this.array.Length;
+                ++_index;
+                return _index < _array.Length;
             }
 
             public void Reset()
             {
-                this.index = -1;
+                _index = -1;
             }
         }
 
@@ -386,7 +386,7 @@
 
             public void Execute()
             {
-                this.Data.Dispose();
+                Data.Dispose();
             }
         }
 
@@ -400,20 +400,20 @@
 
             public unsafe void Dispose()
             {
-                UnsafeUtility.FreeTracked(this.Buffer, this.AllocatorLabel);
+                UnsafeUtility.FreeTracked(Buffer, AllocatorLabel);
             }
         }
 
         private sealed class UnsafeArrayDebugView
         {
-            private UnsafeArray<T> array;
+            private UnsafeArray<T> _array;
 
             public UnsafeArrayDebugView(UnsafeArray<T> array)
             {
-                this.array = array;
+                _array = array;
             }
 
-            public T[] Items => this.array.ToArray();
+            public T[] Items => _array.ToArray();
         }
     }
 }

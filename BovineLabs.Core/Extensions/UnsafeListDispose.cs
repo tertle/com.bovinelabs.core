@@ -8,17 +8,17 @@ namespace BovineLabs.Core.Extensions
     public unsafe struct UnsafeListDispose : IJob
     {
         [NativeDisableUnsafePtrRestriction]
-        private void* ListData;
+        private void* _listData;
 
         public static JobHandle Dispose<T>(UnsafeList<T>* list, JobHandle handle)
             where T : unmanaged
         {
-            return new UnsafeListDispose { ListData = (void*)list }.Schedule(handle);
+            return new UnsafeListDispose { _listData = (void*)list }.Schedule(handle);
         }
 
         public void Execute()
         {
-            var listData = (UnsafeList<int>*)this.ListData;
+            var listData = (UnsafeList<int>*)_listData;
             UnsafeList<int>.Destroy(listData);
         }
     }

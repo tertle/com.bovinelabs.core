@@ -1,4 +1,3 @@
-#pragma warning disable SA1649
 
 namespace BovineLabs.Core.Tests.Facet
 {
@@ -6,10 +5,10 @@ namespace BovineLabs.Core.Tests.Facet
 
     public readonly partial struct TestFacet : IFacet
     {
-        private readonly RefRW<ComponentA> compA;
-        private readonly RefRO<ComponentB> compB;
-        private readonly EnabledRefRO<EnabledA> enableA;
-        private readonly DynamicBuffer<BufferA> bufferA;
+        private readonly RefRW<ComponentA> _compA;
+        private readonly RefRO<ComponentB> _compB;
+        private readonly EnabledRefRO<EnabledA> _enableA;
+        private readonly DynamicBuffer<BufferA> _bufferA;
 
         public partial struct Lookup {}
     }

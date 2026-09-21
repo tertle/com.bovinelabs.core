@@ -14,14 +14,14 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
         [NoAutoStaticsCleanup]
         private static FavouritesService instance;
 
-        private readonly List<FavouritesItem> favourites = new();
+        private readonly List<FavouritesItem> _favourites = new();
 
         private FavouritesService()
             : base(PreferenceKey)
         {
         }
 
-        public override IReadOnlyList<FavouritesItem> Items => this.favourites;
+        public override IReadOnlyList<FavouritesItem> Items => _favourites;
 
         public static FavouritesService Instance
         {
@@ -36,7 +36,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             }
         }
 
-        public bool ConfirmRemoval => this.Preferences.ConfirmRemoval;
+        public bool ConfirmRemoval => Preferences.ConfirmRemoval;
 
         public bool AddFavourite(Object obj)
         {
@@ -48,7 +48,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             var objectId = GlobalObjectId.GetGlobalObjectIdSlow(obj);
 
             // Check if already exists
-            var existingIndex = this.favourites.FindIndex(f => f.MatchesObject(obj, objectId));
+            var existingIndex = _favourites.FindIndex(f => f.MatchesObject(obj, objectId));
             if (existingIndex >= 0)
             {
                 return false; // Already exists
@@ -56,10 +56,10 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
 
             // Add new favourite
             var favouriteItem = new FavouritesItem(obj, objectId);
-            this.favourites.Add(favouriteItem);
+            _favourites.Add(favouriteItem);
 
-            this.Save();
-            this.NotifyItemsChanged();
+            Save();
+            NotifyItemsChanged();
             return true;
         }
 
@@ -78,21 +78,21 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
                 var objectId = objectIds[index];
 
                 // Check if already exists
-                if (this.favourites.Any(f => f.MatchesObject(obj, objectId)))
+                if (_favourites.Any(f => f.MatchesObject(obj, objectId)))
                 {
                     continue;
                 }
 
                 // Add new favourite
                 var favouriteItem = new FavouritesItem(obj, objectId);
-                this.favourites.Add(favouriteItem);
+                _favourites.Add(favouriteItem);
                 addedCount++;
             }
 
             if (addedCount > 0)
             {
-                this.Save();
-                this.NotifyItemsChanged();
+                Save();
+                NotifyItemsChanged();
             }
 
             return addedCount;
@@ -106,13 +106,13 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             }
 
             var objectId = GlobalObjectId.GetGlobalObjectIdSlow(obj);
-            var index = this.favourites.FindIndex(f => f.MatchesObject(obj, objectId));
+            var index = _favourites.FindIndex(f => f.MatchesObject(obj, objectId));
 
             if (index >= 0)
             {
-                this.favourites.RemoveAt(index);
-                this.Save();
-                this.NotifyItemsChanged();
+                _favourites.RemoveAt(index);
+                Save();
+                NotifyItemsChanged();
                 return true;
             }
 
@@ -121,11 +121,11 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
 
         public void ClearFavourites()
         {
-            if (this.favourites.Count > 0)
+            if (_favourites.Count > 0)
             {
-                this.favourites.Clear();
-                this.Save();
-                this.NotifyItemsChanged();
+                _favourites.Clear();
+                Save();
+                NotifyItemsChanged();
             }
         }
 
@@ -137,29 +137,29 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
             }
 
             var objectId = GlobalObjectId.GetGlobalObjectIdSlow(obj);
-            return this.favourites.Any(f => f.MatchesObject(obj, objectId));
+            return _favourites.Any(f => f.MatchesObject(obj, objectId));
         }
 
         public void ReorderFavourite(int fromIndex, int toIndex)
         {
-            if (fromIndex < 0 || fromIndex >= this.favourites.Count ||
-                toIndex < 0 || toIndex >= this.favourites.Count ||
+            if (fromIndex < 0 || fromIndex >= _favourites.Count ||
+                toIndex < 0 || toIndex >= _favourites.Count ||
                 fromIndex == toIndex)
             {
                 return;
             }
 
-            var item = this.favourites[fromIndex];
-            this.favourites.RemoveAt(fromIndex);
-            this.favourites.Insert(toIndex, item);
+            var item = _favourites[fromIndex];
+            _favourites.RemoveAt(fromIndex);
+            _favourites.Insert(toIndex, item);
 
-            this.Save();
-            this.NotifyItemsChanged();
+            Save();
+            NotifyItemsChanged();
         }
 
         public void SelectFromFavourites(FavouritesItem item)
         {
-            this.SelectItem(item);
+            SelectItem(item);
         }
 
         internal static bool CanAddFavourite(Object obj)
@@ -169,24 +169,24 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
 
         protected override bool TryRemoveItem(FavouritesItem item)
         {
-            return this.favourites.Remove(item);
+            return _favourites.Remove(item);
         }
 
         protected override void Save()
         {
-            this.Preferences.FavouritesData = CreateSerializableItems<FavouritesItem, SerializableFavouriteItem>(this.favourites);
+            Preferences.FavouritesData = CreateSerializableItems<FavouritesItem, SerializableFavouriteItem>(_favourites);
         }
 
         protected override void Load()
         {
-            if (this.Preferences.FavouritesData.Count == 0)
+            if (Preferences.FavouritesData.Count == 0)
             {
                 return;
             }
 
             var loadedObjects = new LoadedObjectLookup();
 
-            foreach (var item in this.Preferences.FavouritesData)
+            foreach (var item in Preferences.FavouritesData)
             {
                 if (!LoadedObjectLookup.TryGetTimestamp(item, out var timestamp))
                 {
@@ -197,7 +197,7 @@ namespace BovineLabs.Core.Editor.Windows.Favourites
                 var icon = LoadedObjectLookup.GetIcon(obj);
 
                 var favouriteItem = new FavouritesItem(obj, item.Name, item.TypeName, item.AssetPath, savedGlobalId, icon, timestamp);
-                this.favourites.Add(favouriteItem);
+                _favourites.Add(favouriteItem);
             }
         }
     }

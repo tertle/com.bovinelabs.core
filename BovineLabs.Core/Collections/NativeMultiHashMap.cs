@@ -30,31 +30,35 @@ namespace Unity.Collections
         internal HashMapHelper<TKey>* data;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         internal AtomicSafetyHandle m_Safety;
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeMultiHashMap<TKey, TValue>>();
 #endif
 
         public NativeMultiHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
         {
-            this.data = HashMapHelper<TKey>.Alloc(initialCapacity, sizeof(TValue), 256, allocator);
+            data = HashMapHelper<TKey>.Alloc(initialCapacity, sizeof(TValue), 256, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
 
             if (UnsafeUtility.IsNativeContainerType<TKey>() || UnsafeUtility.IsNativeContainerType<TValue>())
             {
-                AtomicSafetyHandle.SetNestedContainer(this.m_Safety, true);
+                AtomicSafetyHandle.SetNestedContainer(m_Safety, true);
             }
 
-            CollectionHelper.SetStaticSafetyId<NativeMultiHashMap<TKey, TValue>>(ref this.m_Safety, ref s_staticSafetyId.Data);
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(this.m_Safety, true);
+            CollectionHelper.SetStaticSafetyId<NativeMultiHashMap<TKey, TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
 
         public readonly bool IsCreated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.data != null && this.data->IsCreated;
+            get => data != null && data->IsCreated;
         }
 
         public readonly bool IsEmpty
@@ -62,13 +66,13 @@ namespace Unity.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (!this.IsCreated)
+                if (!IsCreated)
                 {
                     return true;
                 }
 
-                this.CheckRead();
-                return this.data->IsEmpty;
+                CheckRead();
+                return data->IsEmpty;
             }
         }
 
@@ -77,8 +81,8 @@ namespace Unity.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                this.CheckRead();
-                return this.data->Count;
+                CheckRead();
+                return data->Count;
             }
         }
 
@@ -90,140 +94,140 @@ namespace Unity.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
-                this.CheckRead();
-                return this.data->Capacity;
+                CheckRead();
+                return data->Capacity;
             }
 
             set
             {
-                this.CheckWrite();
-                this.data->Resize(value);
+                CheckWrite();
+                data->Resize(value);
             }
         }
 
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (!AtomicSafetyHandle.IsDefaultValue(this.m_Safety))
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
             {
-                AtomicSafetyHandle.CheckExistsAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
             }
 #endif
-            if (!this.IsCreated)
+            if (!IsCreated)
             {
                 return;
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
 
-            HashMapHelper<TKey>.Free(this.data);
-            this.data = null;
+            HashMapHelper<TKey>.Free(data);
+            data = null;
         }
 
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (!AtomicSafetyHandle.IsDefaultValue(this.m_Safety))
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
             {
-                AtomicSafetyHandle.CheckExistsAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
             }
 #endif
-            if (!this.IsCreated)
+            if (!IsCreated)
             {
                 return inputDeps;
             }
 
-            var jobHandle = CollectionAccess.ScheduleHashMapDispose(this.data, inputDeps
+            var jobHandle = CollectionAccess.ScheduleHashMapDispose(data, inputDeps
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                , this.m_Safety
+                , m_Safety
 #endif
             );
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.Release(this.m_Safety);
+            AtomicSafetyHandle.Release(m_Safety);
 #endif
-            this.data = null;
+            data = null;
 
             return jobHandle;
         }
 
         public void Clear()
         {
-            this.CheckWrite();
-            this.data->Clear();
+            CheckWrite();
+            data->Clear();
         }
 
         public void Add(TKey key, TValue item)
         {
-            this.CheckWrite();
+            CheckWrite();
 
-            var idx = this.data->AddNoFind(key);
-            UnsafeUtility.WriteArrayElement(this.data->Ptr, idx, item);
+            var idx = data->AddNoFind(key);
+            UnsafeUtility.WriteArrayElement(data->Ptr, idx, item);
         }
 
         public int Remove(TKey key)
         {
-            this.CheckWrite();
-            return this.data->Remove(key);
+            CheckWrite();
+            return data->Remove(key);
         }
 
         public readonly bool TryGetFirstValue(TKey key, out TValue item, out HashMapIterator<TKey> it)
         {
-            this.CheckRead();
-            return this.data->TryGetFirstValue(key, out item, out it);
+            CheckRead();
+            return data->TryGetFirstValue(key, out item, out it);
         }
 
         public readonly bool TryGetNextValue(out TValue item, ref HashMapIterator<TKey> it)
         {
-            this.CheckRead();
-            return this.data->TryGetNextValue(out item, ref it);
+            CheckRead();
+            return data->TryGetNextValue(out item, ref it);
         }
 
         public readonly bool ContainsKey(TKey key)
         {
-            this.CheckRead();
-            return this.data->Find(key) != -1;
+            CheckRead();
+            return data->Find(key) != -1;
         }
 
         public void TrimExcess()
         {
-            this.CheckWrite();
-            this.data->TrimExcess();
+            CheckWrite();
+            data->TrimExcess();
         }
 
         public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
-            this.CheckRead();
-            return this.data->GetKeyArray(allocator);
+            CheckRead();
+            return data->GetKeyArray(allocator);
         }
 
         public readonly void GetKeyArray(NativeList<TKey> keys)
         {
-            this.CheckRead();
-            this.data->GetKeyArray(keys);
+            CheckRead();
+            data->GetKeyArray(keys);
         }
 
         public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
-            this.CheckRead();
-            return this.data->GetValueArray<TValue>(allocator);
+            CheckRead();
+            return data->GetValueArray<TValue>(allocator);
         }
 
         public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
-            this.CheckRead();
-            return this.data->GetKeyValueArrays<TValue>(allocator);
+            CheckRead();
+            return data->GetKeyValueArrays<TValue>(allocator);
         }
 
         public readonly NativeHashMap<TKey, TValue>.Enumerator GetEnumerator()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(this.m_Safety);
-            var ash = this.m_Safety;
+            AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Safety);
+            var ash = m_Safety;
             AtomicSafetyHandle.UseSecondaryVersion(ref ash);
 #endif
-            return CollectionAccess.CreateNativeEnumerator<TKey, TValue>(this.data
+            return CollectionAccess.CreateNativeEnumerator<TKey, TValue>(data
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 , ash
 #endif
@@ -251,7 +255,7 @@ namespace Unity.Collections
         internal readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
         }
 
@@ -260,7 +264,7 @@ namespace Unity.Collections
         internal readonly void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(this.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
         }
 
@@ -280,19 +284,23 @@ namespace Unity.Collections
         public readonly struct ReadOnly : IEnumerable<KVPair<TKey, TValue>>
         {
             [NativeDisableUnsafePtrRestriction]
-            private readonly HashMapHelper<TKey>* data;
+            private readonly HashMapHelper<TKey>* _data;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
             internal readonly AtomicSafetyHandle m_Safety;
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
             internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ReadOnly>();
 #endif
 
             internal ReadOnly(ref NativeMultiHashMap<TKey, TValue> data)
             {
-                this.data = data.data;
+                _data = data.data;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                this.m_Safety = data.m_Safety;
-                CollectionHelper.SetStaticSafetyId<ReadOnly>(ref this.m_Safety, ref s_staticSafetyId.Data);
+                m_Safety = data.m_Safety;
+                CollectionHelper.SetStaticSafetyId<ReadOnly>(ref m_Safety, ref s_staticSafetyId.Data);
 #endif
             }
 
@@ -301,8 +309,8 @@ namespace Unity.Collections
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
-                    this.CheckRead();
-                    return this.data->IsCreated;
+                    CheckRead();
+                    return _data->IsCreated;
                 }
             }
 
@@ -311,13 +319,13 @@ namespace Unity.Collections
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
-                    this.CheckRead();
-                    if (!this.data->IsCreated)
+                    CheckRead();
+                    if (!_data->IsCreated)
                     {
                         return true;
                     }
 
-                    return this.data->IsEmpty;
+                    return _data->IsEmpty;
                 }
             }
 
@@ -326,8 +334,8 @@ namespace Unity.Collections
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
-                    this.CheckRead();
-                    return this.data->Count;
+                    CheckRead();
+                    return _data->Count;
                 }
             }
 
@@ -336,39 +344,39 @@ namespace Unity.Collections
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
-                    this.CheckRead();
-                    return this.data->Capacity;
+                    CheckRead();
+                    return _data->Capacity;
                 }
             }
 
             public bool TryGetFirstValue(TKey key, out TValue item, out HashMapIterator<TKey> it)
             {
-                this.CheckRead();
-                return this.data->TryGetFirstValue(key, out item, out it);
+                CheckRead();
+                return _data->TryGetFirstValue(key, out item, out it);
             }
 
             public bool TryGetNextValue(out TValue item, ref HashMapIterator<TKey> it)
             {
-                this.CheckRead();
-                return this.data->TryGetNextValue(out item, ref it);
+                CheckRead();
+                return _data->TryGetNextValue(out item, ref it);
             }
 
             public readonly bool ContainsKey(TKey key)
             {
-                this.CheckRead();
-                return this.data->Find(key) != -1;
+                CheckRead();
+                return _data->Find(key) != -1;
             }
 
             public readonly TValue this[TKey key]
             {
                 get
                 {
-                    this.CheckRead();
+                    CheckRead();
 
                     TValue result;
-                    if (!this.data->TryGetValue(key, out result))
+                    if (!_data->TryGetValue(key, out result))
                     {
-                        this.ThrowKeyNotPresent(key);
+                        ThrowKeyNotPresent(key);
                     }
 
                     return result;
@@ -377,30 +385,30 @@ namespace Unity.Collections
 
             public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
             {
-                this.CheckRead();
-                return this.data->GetKeyArray(allocator);
+                CheckRead();
+                return _data->GetKeyArray(allocator);
             }
 
             public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
             {
-                this.CheckRead();
-                return this.data->GetValueArray<TValue>(allocator);
+                CheckRead();
+                return _data->GetValueArray<TValue>(allocator);
             }
 
             public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
             {
-                this.CheckRead();
-                return this.data->GetKeyValueArrays<TValue>(allocator);
+                CheckRead();
+                return _data->GetKeyValueArrays<TValue>(allocator);
             }
 
             public readonly NativeHashMap<TKey, TValue>.Enumerator GetEnumerator()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(this.m_Safety);
-                var ash = this.m_Safety;
+                AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Safety);
+                var ash = m_Safety;
                 AtomicSafetyHandle.UseSecondaryVersion(ref ash);
 #endif
-                return CollectionAccess.CreateNativeEnumerator<TKey, TValue>(this.data
+                return CollectionAccess.CreateNativeEnumerator<TKey, TValue>(_data
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     , ash
 #endif
@@ -428,7 +436,7 @@ namespace Unity.Collections
             private readonly void CheckRead()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
             }
 
@@ -754,11 +762,11 @@ namespace Unity.Collections
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-        private readonly HashMapHelper<TKey>* data;
+        private readonly HashMapHelper<TKey>* _data;
 
         public NativeMultiHashMapDebuggerTypeProxy(NativeMultiHashMap<TKey, TValue> target)
         {
-            this.data = target.data;
+            _data = target.data;
         }
 
         public List<Pair<TKey, TValue>> Items
@@ -767,12 +775,12 @@ namespace Unity.Collections
             {
                 var result = new List<Pair<TKey, TValue>>();
 
-                if (this.data == null)
+                if (_data == null)
                 {
                     return result;
                 }
 
-                using var kva = this.data->GetKeyValueArrays<TValue>(Allocator.Temp);
+                using var kva = _data->GetKeyValueArrays<TValue>(Allocator.Temp);
 
                 for (var i = 0; i < kva.Length; ++i)
                 {

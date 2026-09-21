@@ -2,6 +2,7 @@ namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using BovineLabs.Core.Internal;
     using Unity.Burst;
@@ -16,46 +17,50 @@ namespace BovineLabs.Core.Collections
         where T : unmanaged
     {
         [NativeDisableUnsafePtrRestriction]
-        private readonly T* queue;
+        private readonly T* _queue;
 
         [NativeDisableUnsafePtrRestriction]
-        private readonly int* queueWriteHead;
+        private readonly int* _queueWriteHead;
 
         [NativeDisableUnsafePtrRestriction]
-        private readonly int* queueReadHead;
+        private readonly int* _queueReadHead;
 
         [NativeDisableUnsafePtrRestriction]
-        private readonly int* currentRef;
+        private readonly int* _currentRef;
 
-        private readonly AllocatorManager.AllocatorHandle allocator;
+        private readonly AllocatorManager.AllocatorHandle _allocator;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         private AtomicSafetyHandle m_Safety;
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeWorkQueue<T>>();
 #endif
 
         public NativeWorkQueue(int maxQueueSize, AllocatorManager.AllocatorHandle allocator)
         {
-            this.allocator = allocator.Handle;
-            this.queue = (T*)AllocatorManager.Allocate(allocator, UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), maxQueueSize);
-            this.queueWriteHead = (int*)AllocatorManager.Allocate(allocator, UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>());
+            _allocator = allocator.Handle;
+            _queue = (T*)AllocatorManager.Allocate(allocator, UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), maxQueueSize);
+            _queueWriteHead = (int*)AllocatorManager.Allocate(allocator, UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>());
 
-            this.queueReadHead = (int*)AllocatorManager.Allocate(allocator, UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>());
-            this.currentRef = (int*)AllocatorManager.Allocate(allocator, UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>());
+            _queueReadHead = (int*)AllocatorManager.Allocate(allocator, UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>());
+            _currentRef = (int*)AllocatorManager.Allocate(allocator, UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>());
 
-            this.Capacity = maxQueueSize;
+            Capacity = maxQueueSize;
 
-            *this.queueWriteHead = 0;
-            *this.queueReadHead = 0;
-            *this.currentRef = 0;
+            *_queueWriteHead = 0;
+            *_queueReadHead = 0;
+            *_currentRef = 0;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionChecks.CheckAllocator(allocator.Handle);
 
-            this.m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
-            CollectionChecks.InitNativeContainer<T>(this.m_Safety);
-            CollectionHelper.SetStaticSafetyId<NativeWorkQueue<T>>(ref this.m_Safety, ref s_staticSafetyId.Data);
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(this.m_Safety, true);
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
+            CollectionChecks.InitNativeContainer<T>(m_Safety);
+            CollectionHelper.SetStaticSafetyId<NativeWorkQueue<T>>(ref m_Safety, ref s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
 
@@ -64,55 +69,55 @@ namespace BovineLabs.Core.Collections
             get
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
                 // Our queue system can push the length of the list above it's capacity so it's actual length is whatever is smaller
-                return math.min(this.Capacity, *this.queueWriteHead);
+                return math.min(Capacity, *_queueWriteHead);
             }
         }
 
         public int Capacity { get; }
 
-        public bool HasCapacity => this.Length < this.Capacity;
+        public bool HasCapacity => Length < Capacity;
 
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.DisposeSafetyHandle(ref this.m_Safety);
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
 
-            AllocatorManager.Free(this.allocator, this.queue, this.Capacity);
-            AllocatorManager.Free(this.allocator, this.queueWriteHead);
-            AllocatorManager.Free(this.allocator, this.queueReadHead);
-            AllocatorManager.Free(this.allocator, this.currentRef);
+            AllocatorManager.Free(_allocator, _queue, Capacity);
+            AllocatorManager.Free(_allocator, _queueWriteHead);
+            AllocatorManager.Free(_allocator, _queueReadHead);
+            AllocatorManager.Free(_allocator, _currentRef);
         }
 
         public void Update()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
 
-            *this.queueWriteHead = 0; // math.min(*this.queueWriteHead, this.Capacity);
-            *this.queueReadHead = 0; // math.min(*this.queueReadHead, *this.queueWriteHead);
+            *_queueWriteHead = 0; // math.min(*this.queueWriteHead, this.Capacity);
+            *_queueReadHead = 0; // math.min(*this.queueReadHead, *this.queueWriteHead);
         }
 
         public JobHandle Update(JobHandle handle)
         {
             return new UpdateNativeWorkQueueJob
             {
-                QueueReadHead = this.queueReadHead,
-                QueueWriteHead = this.queueWriteHead,
+                QueueReadHead = _queueReadHead,
+                QueueWriteHead = _queueWriteHead,
             }.Schedule(handle);
         }
 
         public int TryAdd(out T* ptr)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
 
-            if (this.Capacity < *this.queueWriteHead + 1)
+            if (Capacity < *_queueWriteHead + 1)
             {
                 // we've gone past end of list, don't write we'll requeue this next frame
                 ptr = null;
@@ -120,42 +125,42 @@ namespace BovineLabs.Core.Collections
                 return 0;
             }
 
-            *this.queueWriteHead += 1;
+            *_queueWriteHead += 1;
 
             int queueRef;
             do
             {
-                queueRef = ++*this.currentRef;
+                queueRef = ++*_currentRef;
             }
             while (Hint.Unlikely(queueRef == 0));
 
-            ptr = (this.queue + *this.queueWriteHead) - 1;
+            ptr = (_queue + *_queueWriteHead) - 1;
             return queueRef;
         }
 
         public T* Add(out int queueRef)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
 
-            CheckSufficientCapacity(this.Capacity, *this.queueWriteHead + 1);
+            CheckSufficientCapacity(Capacity, *_queueWriteHead + 1);
 
-            *this.queueWriteHead += 1;
+            *_queueWriteHead += 1;
 
             do
             {
-                queueRef = ++*this.currentRef;
+                queueRef = ++*_currentRef;
             }
             while (Hint.Unlikely(queueRef == 0));
 
-            return (this.queue + *this.queueWriteHead) - 1;
+            return (_queue + *_queueWriteHead) - 1;
         }
 
         public ParallelReader AsParallelReader()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            return new ParallelReader(this, ref this.m_Safety);
+            return new ParallelReader(this, ref m_Safety);
 #else
             return new ParallelReader(this);
 #endif
@@ -164,7 +169,7 @@ namespace BovineLabs.Core.Collections
         public ParallelWriter AsParallelWriter()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            return new ParallelWriter(this, ref this.m_Safety);
+            return new ParallelWriter(this, ref m_Safety);
 #else
             return new ParallelWriter(this);
 #endif
@@ -185,26 +190,30 @@ namespace BovineLabs.Core.Collections
         public struct ParallelReader
         {
             [NativeDisableUnsafePtrRestriction]
-            private readonly T* queue;
+            private readonly T* _queue;
 
             [NativeDisableUnsafePtrRestriction]
-            private readonly int* queueReadHead;
+            private readonly int* _queueReadHead;
 
             [NativeDisableUnsafePtrRestriction]
-            private readonly int* queueWriteHead;
+            private readonly int* _queueWriteHead;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
             internal readonly AtomicSafetyHandle m_Safety;
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
             internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ParallelWriter>();
 
             internal ParallelReader(NativeWorkQueue<T> workQueue, ref AtomicSafetyHandle safety)
             {
-                this.queue = workQueue.queue;
-                this.queueReadHead = workQueue.queueReadHead;
-                this.queueWriteHead = workQueue.queueWriteHead;
-                this.Capacity = workQueue.Capacity;
-                this.m_Safety = safety;
-                CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref this.m_Safety, ref s_staticSafetyId.Data);
+                _queue = workQueue._queue;
+                _queueReadHead = workQueue._queueReadHead;
+                _queueWriteHead = workQueue._queueWriteHead;
+                Capacity = workQueue.Capacity;
+                m_Safety = safety;
+                CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref m_Safety, ref s_staticSafetyId.Data);
             }
 #else
             internal ParallelReader(NativeWorkQueue<T> workQueue)
@@ -222,27 +231,27 @@ namespace BovineLabs.Core.Collections
                 get
                 {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                    AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+                    AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
                     // Our queue system can push the length of the list above it's capacity so it's actual length is whatever is smaller
-                    return math.min(this.Capacity, *this.queueWriteHead);
+                    return math.min(Capacity, *_queueWriteHead);
                 }
             }
 
             public bool TryGetNext(out T* value)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-                var idx = Interlocked.Increment(ref *this.queueReadHead) - 1;
+                var idx = Interlocked.Increment(ref *_queueReadHead) - 1;
 
-                if (idx >= this.Length)
+                if (idx >= Length)
                 {
                     value = null;
                     return false;
                 }
 
-                value = this.queue + idx;
+                value = _queue + idx;
                 return true;
             }
         }
@@ -252,26 +261,30 @@ namespace BovineLabs.Core.Collections
         public struct ParallelWriter
         {
             [NativeDisableUnsafePtrRestriction]
-            private readonly T* queue;
+            private readonly T* _queue;
 
             [NativeDisableUnsafePtrRestriction]
-            private readonly int* queueWriteHead;
+            private readonly int* _queueWriteHead;
 
             [NativeDisableUnsafePtrRestriction]
-            private readonly int* currentRef;
+            private readonly int* _currentRef;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
             internal readonly AtomicSafetyHandle m_Safety;
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
             internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ParallelWriter>();
 
             internal ParallelWriter(NativeWorkQueue<T> workQueue, ref AtomicSafetyHandle safety)
             {
-                this.queue = workQueue.queue;
-                this.queueWriteHead = workQueue.queueWriteHead;
-                this.currentRef = workQueue.currentRef;
-                this.Capacity = workQueue.Capacity;
-                this.m_Safety = safety;
-                CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref this.m_Safety, ref s_staticSafetyId.Data);
+                _queue = workQueue._queue;
+                _queueWriteHead = workQueue._queueWriteHead;
+                _currentRef = workQueue._currentRef;
+                Capacity = workQueue.Capacity;
+                m_Safety = safety;
+                CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref m_Safety, ref s_staticSafetyId.Data);
             }
 #else
             internal ParallelWriter(NativeWorkQueue<T> workQueue)
@@ -288,12 +301,12 @@ namespace BovineLabs.Core.Collections
             public int TryAdd(out T* ptr)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckWriteAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
 
-                var idx = Interlocked.Increment(ref *this.queueWriteHead) - 1;
+                var idx = Interlocked.Increment(ref *_queueWriteHead) - 1;
 
-                if (idx >= this.Capacity)
+                if (idx >= Capacity)
                 {
                     // we've gone past end of list, don't write we'll requeue this next frame
                     ptr = null;
@@ -304,11 +317,11 @@ namespace BovineLabs.Core.Collections
                 int queueRef;
                 do
                 {
-                    queueRef = Interlocked.Increment(ref *this.currentRef);
+                    queueRef = Interlocked.Increment(ref *_currentRef);
                 }
                 while (Hint.Unlikely(queueRef == 0));
 
-                ptr = this.queue + idx;
+                ptr = _queue + idx;
                 return queueRef;
             }
         }
@@ -326,8 +339,8 @@ namespace BovineLabs.Core.Collections
         public void Execute()
         {
             // TODO safety?
-            *this.QueueWriteHead = 0;
-            *this.QueueReadHead = 0;
+            *QueueWriteHead = 0;
+            *QueueReadHead = 0;
         }
     }
 }

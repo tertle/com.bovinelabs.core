@@ -14,28 +14,28 @@
     public unsafe struct DynamicHashSet<T> : IEnumerable<T>
         where T : unmanaged, IEquatable<T>
     {
-        private readonly DynamicBuffer<byte> buffer;
+        private readonly DynamicBuffer<byte> _buffer;
 
         [NativeDisableUnsafePtrRestriction]
-        private DynamicHashMapHelper<T>* helper;
+        private DynamicHashMapHelper<T>* _helper;
 
         internal DynamicHashSet(DynamicBuffer<byte> buffer)
         {
             CheckSize(buffer);
 
-            this.buffer = buffer;
-            this.helper = buffer.AsHelper<T>();
+            _buffer = buffer;
+            _helper = buffer.AsHelper<T>();
         }
 
-        public readonly bool IsCreated => this.buffer.IsCreated;
+        public readonly bool IsCreated => _buffer.IsCreated;
 
         public readonly bool IsEmpty
         {
             get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return !this.IsCreated || this.helper->IsEmpty;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return !IsCreated || _helper->IsEmpty;
             }
         }
 
@@ -44,9 +44,9 @@
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return this.helper->Count;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return _helper->Count;
             }
         }
 
@@ -58,68 +58,68 @@
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return this.helper->Capacity;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return _helper->Capacity;
             }
 
             set
             {
-                this.buffer.CheckWriteAccess();
-                this.RefCheck();
-                DynamicHashMapHelper<T>.Resize(this.buffer, ref this.helper, value);
+                _buffer.CheckWriteAccess();
+                RefCheck();
+                DynamicHashMapHelper<T>.Resize(_buffer, ref _helper, value);
             }
         }
 
-        internal readonly DynamicHashMapHelper<T>* Helper => this.helper;
+        internal readonly DynamicHashMapHelper<T>* Helper => _helper;
 
         public readonly void Clear()
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            this.helper->Clear();
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            _helper->Clear();
         }
 
         public bool Add(T item)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            return DynamicHashMapHelper<T>.TryAdd(this.buffer, ref this.helper, item) != -1;
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            return DynamicHashMapHelper<T>.TryAdd(_buffer, ref _helper, item) != -1;
         }
 
         public readonly bool Remove(T item)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            return this.helper->TryRemove(item) != -1;
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            return _helper->TryRemove(item) != -1;
         }
 
         public readonly bool Contains(T item)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->Find(item) != -1;
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->Find(item) != -1;
         }
 
         public void Flatten()
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
-            DynamicHashMapHelper<T>.Flatten(this.buffer, ref this.helper);
+            _buffer.CheckWriteAccess();
+            RefCheck();
+            DynamicHashMapHelper<T>.Flatten(_buffer, ref _helper);
         }
 
         public readonly NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.helper->GetKeyArray(allocator);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return _helper->GetKeyArray(allocator);
         }
 
         public readonly DynamicHashSetEnumerator<T> GetEnumerator()
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return new DynamicHashSetEnumerator<T>(this.helper);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return new DynamicHashSetEnumerator<T>(_helper);
         }
 
         /// <summary>
@@ -142,7 +142,7 @@
         [Conditional("UNITY_DOTS_DEBUG")]
         private readonly void RefCheck()
         {
-            if (this.helper != this.buffer.GetPtr())
+            if (_helper != _buffer.GetPtr())
             {
                 throw new ArgumentException("DynamicHashSet was not passed by ref when doing a resize and is now invalid");
             }
@@ -167,11 +167,11 @@
     internal sealed unsafe class DynamicHashSetDebuggerTypeProxy<T>
         where T : unmanaged, IEquatable<T>
     {
-        private readonly DynamicHashMapHelper<T>* helper;
+        private readonly DynamicHashMapHelper<T>* _helper;
 
         public DynamicHashSetDebuggerTypeProxy(DynamicHashSet<T> target)
         {
-            this.helper = target.Helper;
+            _helper = target.Helper;
         }
 
         public List<T> Items
@@ -180,12 +180,12 @@
             {
                 var result = new List<T>();
 
-                if (this.helper == null)
+                if (_helper == null)
                 {
                     return result;
                 }
 
-                using var items = this.helper->GetKeyArray(Allocator.Temp);
+                using var items = _helper->GetKeyArray(Allocator.Temp);
 
                 for (var i = 0; i < items.Length; ++i)
                 {

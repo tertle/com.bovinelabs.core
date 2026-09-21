@@ -16,31 +16,31 @@
         where TRemaining : unmanaged, IComponentData
         where TActive : unmanaged, IComponentData
     {
-        private readonly float duration;
-        private ComponentTypeHandle<TOn> onHandle;
-        private ComponentTypeHandle<TRemaining> remainingHandle;
-        private ComponentTypeHandle<TActive> activeHandle;
-        private EntityQuery query;
+        private readonly float _duration;
+        private ComponentTypeHandle<TOn> _onHandle;
+        private ComponentTypeHandle<TRemaining> _remainingHandle;
+        private ComponentTypeHandle<TActive> _activeHandle;
+        private EntityQuery _query;
 
         public TimerFixed(float duration)
         {
             this = default;
-            this.duration = duration;
+            _duration = duration;
         }
 
         public void OnCreate(ref SystemState state)
         {
-            Assert.AreNotEqual(0, this.duration, "No duration set for TimerFixed. Use the constructor.");
+            Assert.AreNotEqual(0, _duration, "No duration set for TimerFixed. Use the constructor.");
 
             Assert.AreEqual(UnsafeUtility.SizeOf<bool>(), UnsafeUtility.SizeOf<TOn>());
             Assert.AreEqual(UnsafeUtility.SizeOf<float>(), UnsafeUtility.SizeOf<TRemaining>());
             Assert.AreEqual(UnsafeUtility.SizeOf<bool>(), UnsafeUtility.SizeOf<TActive>());
 
-            this.onHandle = state.GetComponentTypeHandle<TOn>();
-            this.remainingHandle = state.GetComponentTypeHandle<TRemaining>();
-            this.activeHandle = state.GetComponentTypeHandle<TActive>(true);
+            _onHandle = state.GetComponentTypeHandle<TOn>();
+            _remainingHandle = state.GetComponentTypeHandle<TRemaining>();
+            _activeHandle = state.GetComponentTypeHandle<TActive>(true);
 
-            this.query = new EntityQueryBuilder(Allocator.Temp)
+            _query = new EntityQueryBuilder(Allocator.Temp)
                 .WithAllRW<TRemaining, TOn>()
                 .WithAll<TActive>()
                 .WithOptions(EntityQueryOptions.FilterWriteGroup)
@@ -49,18 +49,18 @@
 
         public void OnUpdate(ref SystemState state, UpdateTimeJob job)
         {
-            this.onHandle.Update(ref state);
-            this.remainingHandle.Update(ref state);
-            this.activeHandle.Update(ref state);
+            _onHandle.Update(ref state);
+            _remainingHandle.Update(ref state);
+            _activeHandle.Update(ref state);
 
-            job.OnHandle = this.onHandle;
-            job.RemainingHandle = this.remainingHandle;
-            job.ActiveHandle = this.activeHandle;
-            job.Duration = this.duration;
+            job.OnHandle = _onHandle;
+            job.RemainingHandle = _remainingHandle;
+            job.ActiveHandle = _activeHandle;
+            job.Duration = _duration;
             job.DeltaTime = state.WorldUnmanaged.Time.DeltaTime;
             job.SystemVersion = state.LastSystemVersion;
 
-            state.Dependency = job.ScheduleParallel(this.query, state.Dependency);
+            state.Dependency = job.ScheduleParallel(_query, state.Dependency);
         }
 
         [BurstCompile]
@@ -78,48 +78,48 @@
             public uint SystemVersion;
 
             [NativeDisableContainerSafetyRestriction] // Only initialized in the job
-            private NativeList<bool> onBuffer;
+            private NativeList<bool> _onBuffer;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                var activeChanged = chunk.DidChange(ref this.ActiveHandle, this.SystemVersion);
+                var activeChanged = chunk.DidChange(ref ActiveHandle, SystemVersion);
 
                 if (activeChanged)
                 {
-                    var remainings = (float*)chunk.GetRequiredComponentDataPtrRW(ref this.RemainingHandle);
-                    var triggers = (bool*)chunk.GetRequiredComponentDataPtrRO(ref this.ActiveHandle);
-                    var durationOns = (bool*)chunk.GetRequiredComponentDataPtrRO(ref this.OnHandle);
+                    var remainings = (float*)chunk.GetRequiredComponentDataPtrRW(ref RemainingHandle);
+                    var triggers = (bool*)chunk.GetRequiredComponentDataPtrRO(ref ActiveHandle);
+                    var durationOns = (bool*)chunk.GetRequiredComponentDataPtrRO(ref OnHandle);
 
                     for (var i = 0; i < chunk.Count; i++)
                     {
                         if (triggers[i] && !durationOns[i])
                         {
-                            remainings[i] = this.Duration;
+                            remainings[i] = Duration;
                         }
                     }
                 }
 
-                if (activeChanged || chunk.DidChange(ref this.RemainingHandle, this.SystemVersion))
+                if (activeChanged || chunk.DidChange(ref RemainingHandle, SystemVersion))
                 {
-                    var remainings = (float*)chunk.GetRequiredComponentDataPtrRW(ref this.RemainingHandle);
+                    var remainings = (float*)chunk.GetRequiredComponentDataPtrRW(ref RemainingHandle);
 
-                    if (!this.onBuffer.IsCreated)
+                    if (!_onBuffer.IsCreated)
                     {
-                        this.onBuffer = new NativeList<bool>(chunk.Count, Allocator.Temp);
+                        _onBuffer = new NativeList<bool>(chunk.Count, Allocator.Temp);
                     }
 
-                    this.onBuffer.ResizeUninitialized(chunk.Count);
-                    CalculateOnVectorized(remainings, this.onBuffer.GetUnsafeReadOnlyPtr(), this.onBuffer.Length, this.DeltaTime);
+                    _onBuffer.ResizeUninitialized(chunk.Count);
+                    CalculateOnVectorized(remainings, _onBuffer.GetUnsafeReadOnlyPtr(), _onBuffer.Length, DeltaTime);
 
                     // We open RO to avoid change filter trigger unless it has changed
-                    var original = chunk.GetComponentDataPtrRO(ref this.OnHandle);
-                    var updated = this.onBuffer.GetUnsafeReadOnlyPtr();
-                    var hasChanged = UnsafeUtility.MemCmp(original, updated, UnsafeUtility.SizeOf<bool>() * this.onBuffer.Length) != 0;
+                    var original = chunk.GetComponentDataPtrRO(ref OnHandle);
+                    var updated = _onBuffer.GetUnsafeReadOnlyPtr();
+                    var hasChanged = UnsafeUtility.MemCmp(original, updated, UnsafeUtility.SizeOf<bool>() * _onBuffer.Length) != 0;
 
                     if (hasChanged)
                     {
-                        var ons = chunk.GetNativeArray(ref this.OnHandle);
-                        ons.Reinterpret<bool>().CopyFrom(this.onBuffer.AsArray());
+                        var ons = chunk.GetNativeArray(ref OnHandle);
+                        ons.Reinterpret<bool>().CopyFrom(_onBuffer.AsArray());
                     }
                 }
             }

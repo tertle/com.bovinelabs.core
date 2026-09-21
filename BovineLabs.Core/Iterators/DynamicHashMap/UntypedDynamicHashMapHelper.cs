@@ -20,7 +20,7 @@
         internal int FirstFreeIdx;
         internal int SizeOfTValue;
 
-        internal int BucketCapacity => this.BucketCapacityMask + 1;
+        internal int BucketCapacity => BucketCapacityMask + 1;
 
         internal byte* Values
         {
@@ -76,57 +76,57 @@
 
             internal Enumerator(UntypedDynamicHashMapHelper* data)
             {
-                this.Data = data;
-                this.Index = -1;
-                this.BucketIndex = 0;
-                this.NextIndex = -1;
+                Data = data;
+                Index = -1;
+                BucketIndex = 0;
+                NextIndex = -1;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal bool MoveNext()
             {
-                var next = this.Data->Next;
+                var next = Data->Next;
 
-                if (this.NextIndex != -1)
+                if (NextIndex != -1)
                 {
-                    this.Index = this.NextIndex;
-                    this.NextIndex = next[this.NextIndex];
+                    Index = NextIndex;
+                    NextIndex = next[NextIndex];
                     return true;
                 }
 
-                var buckets = this.Data->Buckets;
+                var buckets = Data->Buckets;
 
-                for (int i = this.BucketIndex, num = this.Data->BucketCapacity; i < num; ++i)
+                for (int i = BucketIndex, num = Data->BucketCapacity; i < num; ++i)
                 {
                     var idx = buckets[i];
 
                     if (idx != -1)
                     {
-                        this.Index = idx;
-                        this.BucketIndex = i + 1;
-                        this.NextIndex = next[idx];
+                        Index = idx;
+                        BucketIndex = i + 1;
+                        NextIndex = next[idx];
 
                         return true;
                     }
                 }
 
-                this.Index = -1;
-                this.BucketIndex = this.Data->BucketCapacity;
-                this.NextIndex = -1;
+                Index = -1;
+                BucketIndex = Data->BucketCapacity;
+                NextIndex = -1;
                 return false;
             }
 
             internal void Reset()
             {
-                this.Index = -1;
-                this.BucketIndex = 0;
-                this.NextIndex = -1;
+                Index = -1;
+                BucketIndex = 0;
+                NextIndex = -1;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal (IntPtr UntypedDynamicHashMapHelper, int Index) GetCurrent()
             {
-                return ((IntPtr)this.Data, this.Index);
+                return ((IntPtr)Data, Index);
             }
         }
     }

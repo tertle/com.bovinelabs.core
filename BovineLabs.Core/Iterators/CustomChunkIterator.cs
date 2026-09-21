@@ -14,17 +14,17 @@
     public readonly struct CustomChunkIterator<T>
         where T : unmanaged, ICustomChunkIterator
     {
-        private readonly T execute;
+        private readonly T _execute;
 
         public CustomChunkIterator(T execute)
         {
-            this.execute = execute;
+            _execute = execute;
         }
 
         public void Execute(in ArchetypeChunk chunk, bool useEnabledMask, in v128 chunkEnabledMask)
         {
             var chunkEntityCount = chunk.Count;
-            var executor = this.execute;
+            var executor = _execute;
 
             if (!useEnabledMask)
             {

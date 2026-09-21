@@ -5,8 +5,8 @@ namespace BovineLabs.Core.Utility
 
     public sealed class ProfilerRecorderGroup : IDisposable
     {
-        private readonly ProfilerRecorder[] recorders;
-        private bool disposed;
+        private readonly ProfilerRecorder[] _recorders;
+        private bool _disposed;
 
         public ProfilerRecorderGroup(ProfilerCategory category, params string[] counterNames)
         {
@@ -20,18 +20,18 @@ namespace BovineLabs.Core.Utility
                 throw new ArgumentException("At least one profiler counter name is required.", nameof(counterNames));
             }
 
-            this.recorders = new ProfilerRecorder[counterNames.Length];
+            _recorders = new ProfilerRecorder[counterNames.Length];
 
             try
             {
-                for (var i = 0; i < this.recorders.Length; i++)
+                for (var i = 0; i < _recorders.Length; i++)
                 {
-                    this.recorders[i] = ProfilerRecorder.StartNew(category, counterNames[i], 1);
+                    _recorders[i] = ProfilerRecorder.StartNew(category, counterNames[i], 1);
                 }
             }
             catch
             {
-                this.Dispose();
+                Dispose();
                 throw;
             }
         }
@@ -40,12 +40,12 @@ namespace BovineLabs.Core.Utility
         {
             get
             {
-                if (this.disposed)
+                if (_disposed)
                 {
                     return false;
                 }
 
-                foreach (var recorder in this.recorders)
+                foreach (var recorder in _recorders)
                 {
                     if (!recorder.Valid)
                     {
@@ -62,7 +62,7 @@ namespace BovineLabs.Core.Utility
             get
             {
                 var value = 0L;
-                foreach (var recorder in this.recorders)
+                foreach (var recorder in _recorders)
                 {
                     if (recorder.Valid && recorder.Count > 0)
                     {
@@ -76,17 +76,17 @@ namespace BovineLabs.Core.Utility
 
         public void Dispose()
         {
-            if (this.disposed)
+            if (_disposed)
             {
                 return;
             }
 
-            this.disposed = true;
-            for (var i = 0; i < this.recorders.Length; i++)
+            _disposed = true;
+            for (var i = 0; i < _recorders.Length; i++)
             {
-                if (this.recorders[i].Valid)
+                if (_recorders[i].Valid)
                 {
-                    this.recorders[i].Dispose();
+                    _recorders[i].Dispose();
                 }
             }
         }

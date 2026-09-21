@@ -7,7 +7,7 @@
     {
         public SettingsGroupAttribute(string group)
         {
-            this.Group = group;
+            Group = group;
         }
 
         public string Group { get; }

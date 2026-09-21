@@ -12,26 +12,26 @@ namespace BovineLabs.Core.Collections
     /// </summary>
     public unsafe struct ThreadRandom
     {
-        private readonly AllocatorManager.AllocatorHandle allocator;
+        private readonly AllocatorManager.AllocatorHandle _allocator;
 
         [NativeDisableUnsafePtrRestriction]
-        private Randoms* buffer;
+        private Randoms* _buffer;
 
         public ThreadRandom(uint seed, AllocatorManager.AllocatorHandle allocator)
         {
-            this.allocator = allocator;
-            this.buffer = (Randoms*)CollectionMemory.Allocate(sizeof(Randoms) * JobsUtility.ThreadIndexCount, UnsafeUtility.AlignOf<Randoms>(), allocator);
+            _allocator = allocator;
+            _buffer = (Randoms*)CollectionMemory.Allocate(sizeof(Randoms) * JobsUtility.ThreadIndexCount, UnsafeUtility.AlignOf<Randoms>(), allocator);
 
             // uint.MaxValue is invalid for Random.CreateFromIndex
             seed = (uint)math.min(seed, uint.MaxValue - JobsUtility.ThreadIndexCount - 1);
 
             for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
             {
-                this.buffer[i].Random = Random.CreateFromIndex((uint)(seed + i));
+                _buffer[i].Random = Random.CreateFromIndex((uint)(seed + i));
             }
         }
 
-        public readonly bool IsCreated => this.buffer != null;
+        public readonly bool IsCreated => _buffer != null;
 
         public ref Random GetRandomRef()
         {
@@ -39,19 +39,19 @@ namespace BovineLabs.Core.Collections
             UnityEngine.Debug.Assert(JobsUtility.IsExecutingJob || UnityEditorInternal.InternalEditorUtility.CurrentThreadIsMainThread(),
                 "Can only be used on main or worker threads");
 #endif
-            ref var randoms = ref UnsafeUtility.ArrayElementAsRef<Randoms>(this.buffer, JobsUtility.ThreadIndex);
+            ref var randoms = ref UnsafeUtility.ArrayElementAsRef<Randoms>(_buffer, JobsUtility.ThreadIndex);
             return ref randoms.Random;
         }
 
         public void Dispose()
         {
-            if (!this.IsCreated)
+            if (!IsCreated)
             {
                 return;
             }
 
-            CollectionMemory.Free(this.buffer, this.allocator);
-            this.buffer = null;
+            CollectionMemory.Free(_buffer, _allocator);
+            _buffer = null;
         }
 
         // 1 random per cache line to avoid false sharing

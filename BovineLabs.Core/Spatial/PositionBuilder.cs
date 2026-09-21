@@ -14,37 +14,37 @@
     {
         public float3 Position;
 
-        float2 ISpatialPosition.Position => this.Position.xz;
+        float2 ISpatialPosition.Position => Position.xz;
 
-        float3 ISpatialPosition3.Position => this.Position;
+        float3 ISpatialPosition3.Position => Position;
     }
 
     public struct PositionBuilder
     {
-        private EntityQuery query;
-        private ComponentTypeHandle<LocalTransform> transformHandle;
+        private EntityQuery _query;
+        private ComponentTypeHandle<LocalTransform> _transformHandle;
 
         public PositionBuilder(ref SystemState state, EntityQuery query)
         {
-            this.query = query;
+            _query = query;
 
-            this.transformHandle = state.GetComponentTypeHandle<LocalTransform>(true);
+            _transformHandle = state.GetComponentTypeHandle<LocalTransform>(true);
         }
 
         public JobHandle Gather(ref SystemState state, JobHandle dependency, out NativeArray<SpatialPosition> positions)
         {
-            this.transformHandle.Update(ref state);
+            _transformHandle.Update(ref state);
 
-            positions = state.WorldRewindableAllocator.AllocateNativeArray<SpatialPosition>(this.query.CalculateEntityCount());
+            positions = state.WorldRewindableAllocator.AllocateNativeArray<SpatialPosition>(_query.CalculateEntityCount());
 
-            var firstEntityIndices = this.query.CalculateBaseEntityIndexArrayAsync(state.WorldUpdateAllocator, dependency, out dependency);
+            var firstEntityIndices = _query.CalculateBaseEntityIndexArrayAsync(state.WorldUpdateAllocator, dependency, out dependency);
 
             dependency = new GatherPositionsJob
             {
-                TransformHandle = this.transformHandle,
+                TransformHandle = _transformHandle,
                 Positions = positions,
                 FirstEntityIndices = firstEntityIndices,
-            }.ScheduleParallel(this.query, dependency);
+            }.ScheduleParallel(_query, dependency);
 
             return dependency;
         }
@@ -65,11 +65,11 @@
             {
                 Assert.IsFalse(useEnabledMask, "PositionBuilder does not support enable components");
 
-                var ptr = (float3*)this.Positions.GetUnsafePtr();
-                var dst = ptr + this.FirstEntityIndices[unfilteredChunkIndex];
+                var ptr = (float3*)Positions.GetUnsafePtr();
+                var dst = ptr + FirstEntityIndices[unfilteredChunkIndex];
 
                 var size = UnsafeUtility.SizeOf<float3>();
-                var positions = chunk.GetNativeArray(ref this.TransformHandle).Slice().SliceWithStride<float3>(0);
+                var positions = chunk.GetNativeArray(ref TransformHandle).Slice().SliceWithStride<float3>(0);
 
                 UnsafeUtility.MemCpyStride(dst, size, positions.GetUnsafeReadOnlyPtr(), positions.Stride, size, positions.Length);
             }

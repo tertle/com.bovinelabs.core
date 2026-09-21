@@ -173,8 +173,8 @@ namespace BovineLabs.Core.Tests.Collections
 
             public void Execute(int index)
             {
-                var key = this.Keys[index];
-                this.Writer.Add(key, key * 10);
+                var key = Keys[index];
+                Writer.Add(key, key * 10);
             }
         }
 
@@ -188,8 +188,8 @@ namespace BovineLabs.Core.Tests.Collections
 
             public void ExecuteNext(int entryIndex, int jobIndex)
             {
-                this.Read(this.Map, entryIndex, out var key, out _);
-                this.Keys.Enqueue(key);
+                this.Read(Map, entryIndex, out var key, out _);
+                Keys.Enqueue(key);
             }
         }
     }

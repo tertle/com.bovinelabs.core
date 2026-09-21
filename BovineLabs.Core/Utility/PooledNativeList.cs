@@ -12,13 +12,13 @@ namespace BovineLabs.Core.Utility
     public unsafe struct PooledNativeList<T> : IDisposable
         where T : unmanaged
     {
-        private NativeList<T> list;
+        private NativeList<T> _list;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        private AtomicSafetyHandle oldHandle;
+        private AtomicSafetyHandle _oldHandle;
 #endif
 
-        public NativeList<T> List => this.list;
+        public NativeList<T> List => _list;
 
         private PooledNativeList<T> Create()
         {
@@ -35,7 +35,7 @@ namespace BovineLabs.Core.Utility
             if (lp.Length == 0)
             {
                 // Nothing in the pool, just create a new one
-                this.list = new NativeList<T>(0, data.Allocator);
+                _list = new NativeList<T>(0, data.Allocator);
             }
             else
             {
@@ -43,14 +43,14 @@ namespace BovineLabs.Core.Utility
                 var byteList = lp[^1];
                 lp.RemoveAt(lp.Length - 1);
 
-                this.list = UnsafeUtility.As<NativeList<byte>, NativeList<T>>(ref byteList);
-                this.list.GetListData()->m_capacity = byteList.Capacity / UnsafeUtility.SizeOf<T>();
+                _list = UnsafeUtility.As<NativeList<byte>, NativeList<T>>(ref byteList);
+                _list.GetListData()->m_capacity = byteList.Capacity / UnsafeUtility.SizeOf<T>();
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             // Replace our safety as it's not valid within the job as we've stored these inside another container so can't be injected
-            ref var safety = ref this.list.GetSafety();
-            this.oldHandle = safety;
+            ref var safety = ref _list.GetSafety();
+            _oldHandle = safety;
             safety = AtomicSafetyHandle.Create();
 #endif
 
@@ -67,25 +67,25 @@ namespace BovineLabs.Core.Utility
 
         public void Dispose()
         {
-            if (!this.list.IsCreated)
+            if (!_list.IsCreated)
             {
                 return;
             }
 
             ref var lp = ref PooledNativeList.Pool.Data.GetThreadList();
 
-            this.list.Clear();
+            _list.Clear();
 
             // Convert back to a byte list
-            ref var byteList = ref UnsafeUtility.As<NativeList<T>, NativeList<byte>>(ref this.list);
-            byteList.GetListData()->m_capacity = this.list.Capacity * UnsafeUtility.SizeOf<T>();
+            ref var byteList = ref UnsafeUtility.As<NativeList<T>, NativeList<byte>>(ref _list);
+            byteList.GetListData()->m_capacity = _list.Capacity * UnsafeUtility.SizeOf<T>();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             // Release the Temp handle
             ref var safety = ref byteList.GetSafety();
             AtomicSafetyHandle.CheckDeallocateAndThrow(safety);
             AtomicSafetyHandle.Release(safety);
-            safety = this.oldHandle;
+            safety = _oldHandle;
 #endif
 
             // Only add back to pool if we haven't exceeded the max size
@@ -99,10 +99,10 @@ namespace BovineLabs.Core.Utility
                 byteList.Dispose();
             }
 
-            this.list = default;
+            _list = default;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            this.oldHandle = default;
+            _oldHandle = default;
 #endif
         }
     }
@@ -129,21 +129,21 @@ namespace BovineLabs.Core.Utility
             internal readonly AllocatorManager.AllocatorHandle Allocator;
 
             [NativeDisableUnsafePtrRestriction]
-            private ThreadData* buffer;
+            private ThreadData* _buffer;
 
             public Data(AllocatorManager.AllocatorHandle allocator)
             {
-                this.Allocator = allocator;
-                this.buffer = (ThreadData*)CollectionMemory.Allocate(sizeof(ThreadData) * JobsUtility.ThreadIndexCount, UnsafeUtility.AlignOf<ThreadData>(),
+                Allocator = allocator;
+                _buffer = (ThreadData*)CollectionMemory.Allocate(sizeof(ThreadData) * JobsUtility.ThreadIndexCount, UnsafeUtility.AlignOf<ThreadData>(),
                     allocator);
 
                 for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
                 {
-                    this.buffer[i].ThreadList = new UnsafeList<NativeList<byte>>(0, this.Allocator);
+                    _buffer[i].ThreadList = new UnsafeList<NativeList<byte>>(0, Allocator);
                 }
             }
 
-            public readonly bool IsCreated => this.buffer != null;
+            public readonly bool IsCreated => _buffer != null;
 
             public ref UnsafeList<NativeList<byte>> GetThreadList()
             {
@@ -152,29 +152,29 @@ namespace BovineLabs.Core.Utility
                     "Can only be used on main or worker threads");
 #endif
 
-                ref var list = ref UnsafeUtility.ArrayElementAsRef<ThreadData>(this.buffer, JobsUtility.ThreadIndex);
+                ref var list = ref UnsafeUtility.ArrayElementAsRef<ThreadData>(_buffer, JobsUtility.ThreadIndex);
                 return ref list.ThreadList;
             }
 
             public void Dispose()
             {
-                if (!this.IsCreated)
+                if (!IsCreated)
                 {
                     return;
                 }
 
                 for (var i = 0; i < JobsUtility.ThreadIndexCount; i++)
                 {
-                    foreach (var l in this.buffer[i].ThreadList)
+                    foreach (var l in _buffer[i].ThreadList)
                     {
                         l.Dispose();
                     }
 
-                    this.buffer[i].ThreadList.Dispose();
+                    _buffer[i].ThreadList.Dispose();
                 }
 
-                CollectionMemory.Free(this.buffer, this.Allocator);
-                this.buffer = null;
+                CollectionMemory.Free(_buffer, Allocator);
+                _buffer = null;
             }
         }
 

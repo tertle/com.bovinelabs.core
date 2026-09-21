@@ -5,49 +5,49 @@
 
     public struct CommandBufferParallelCommands : IEntityCommands
     {
-        private readonly int sortKey;
-        private EntityCommandBuffer.ParallelWriter commandBuffer;
-        private BlobAssetStore blobAssetStore;
+        private readonly int _sortKey;
+        private EntityCommandBuffer.ParallelWriter _commandBuffer;
+        private BlobAssetStore _blobAssetStore;
 
         public CommandBufferParallelCommands(
             EntityCommandBuffer.ParallelWriter commandBuffer, int sortKey, Entity localEntity = default, BlobAssetStore blobAssetStore = default)
         {
-            this.commandBuffer = commandBuffer;
-            this.sortKey = sortKey;
-            this.Entity = localEntity;
-            this.blobAssetStore = blobAssetStore;
+            _commandBuffer = commandBuffer;
+            _sortKey = sortKey;
+            Entity = localEntity;
+            _blobAssetStore = blobAssetStore;
         }
 
         public Entity Entity { get; set; }
 
         public Entity CreateEntity()
         {
-            this.Entity = this.commandBuffer.CreateEntity(this.sortKey);
-            return this.Entity;
+            Entity = _commandBuffer.CreateEntity(_sortKey);
+            return Entity;
         }
 
         public Entity Instantiate(Entity prefab)
         {
-            this.Entity = this.commandBuffer.Instantiate(this.sortKey, prefab);
-            return this.Entity;
+            Entity = _commandBuffer.Instantiate(_sortKey, prefab);
+            return Entity;
         }
 
         public void SetName(FixedString64Bytes name)
         {
-            this.commandBuffer.SetName(this.sortKey, this.Entity, name);
+            _commandBuffer.SetName(_sortKey, Entity, name);
         }
 
         public void SetName(Entity entity, FixedString64Bytes name)
         {
-            this.commandBuffer.SetName(this.sortKey, entity, name);
+            _commandBuffer.SetName(_sortKey, entity, name);
         }
 
         public void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)
             where T : unmanaged
         {
-            if (this.blobAssetStore.IsCreated)
+            if (_blobAssetStore.IsCreated)
             {
-                this.blobAssetStore.TryAdd(ref blobAssetReference, out objectHash);
+                _blobAssetStore.TryAdd(ref blobAssetReference, out objectHash);
             }
             else
             {
@@ -58,107 +58,107 @@
         public void AddComponent<T>()
             where T : unmanaged, IComponentData
         {
-            this.AddComponent<T>(this.Entity);
+            AddComponent<T>(Entity);
         }
 
         public void AddComponent<T>(Entity entity)
             where T : unmanaged, IComponentData
         {
-            this.commandBuffer.AddComponent<T>(this.sortKey, entity);
+            _commandBuffer.AddComponent<T>(_sortKey, entity);
         }
 
         public void AddComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            this.AddComponent(this.Entity, component);
+            AddComponent(Entity, component);
         }
 
         public void AddComponent<T>(Entity entity, in T component)
             where T : unmanaged, IComponentData
         {
-            this.commandBuffer.AddComponent(this.sortKey, entity, component);
+            _commandBuffer.AddComponent(_sortKey, entity, component);
         }
 
         public void AddComponent(in ComponentTypeSet components)
         {
-            this.AddComponent(this.Entity, components);
+            AddComponent(Entity, components);
         }
 
         public void AddComponent(Entity entity, in ComponentTypeSet components)
         {
-            this.commandBuffer.AddComponent(this.sortKey, entity, components);
+            _commandBuffer.AddComponent(_sortKey, entity, components);
         }
 
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            this.SetComponent(this.Entity, component);
+            SetComponent(Entity, component);
         }
 
         public void SetComponent<T>(Entity entity, in T component)
             where T : unmanaged, IComponentData
         {
-            this.commandBuffer.SetComponent(this.sortKey, entity, component);
+            _commandBuffer.SetComponent(_sortKey, entity, component);
         }
 
         public DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            return this.AddBuffer<T>(this.Entity);
+            return AddBuffer<T>(Entity);
         }
 
         public DynamicBuffer<T> AddBuffer<T>(Entity entity)
             where T : unmanaged, IBufferElementData
         {
-            return this.commandBuffer.AddBuffer<T>(this.sortKey, entity);
+            return _commandBuffer.AddBuffer<T>(_sortKey, entity);
         }
 
         public DynamicBuffer<T> SetBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            return this.SetBuffer<T>(this.Entity);
+            return SetBuffer<T>(Entity);
         }
 
         public DynamicBuffer<T> SetBuffer<T>(Entity entity)
             where T : unmanaged, IBufferElementData
         {
-            return this.commandBuffer.SetBuffer<T>(this.sortKey, entity);
+            return _commandBuffer.SetBuffer<T>(_sortKey, entity);
         }
 
         public void AppendToBuffer<T>(in T element)
             where T : unmanaged, IBufferElementData
         {
-            this.AppendToBuffer(this.Entity, element);
+            AppendToBuffer(Entity, element);
         }
 
         public void AppendToBuffer<T>(Entity entity, in T element)
             where T : unmanaged, IBufferElementData
         {
-            this.commandBuffer.AppendToBuffer(this.sortKey, entity, element);
+            _commandBuffer.AppendToBuffer(_sortKey, entity, element);
         }
 
         public void SetComponentEnabled<T>(bool enabled)
             where T : unmanaged, IEnableableComponent
         {
-            this.SetComponentEnabled<T>(this.Entity, enabled);
+            SetComponentEnabled<T>(Entity, enabled);
         }
 
         public void SetComponentEnabled<T>(Entity entity, bool enabled)
             where T : unmanaged, IEnableableComponent
         {
-            this.commandBuffer.SetComponentEnabled<T>(this.sortKey, entity, enabled);
+            _commandBuffer.SetComponentEnabled<T>(_sortKey, entity, enabled);
         }
 
         public void AddSharedComponent<T>(Entity entity, in T component)
             where T : unmanaged, ISharedComponentData
         {
-            this.commandBuffer.AddSharedComponent(this.sortKey, entity, component);
+            _commandBuffer.AddSharedComponent(_sortKey, entity, component);
         }
 
         public void SetSharedComponent<T>(Entity entity, in T component)
             where T : unmanaged, ISharedComponentData
         {
-            this.commandBuffer.SetSharedComponent(this.sortKey, entity, component);
+            _commandBuffer.SetSharedComponent(_sortKey, entity, component);
         }
     }
 }

@@ -15,22 +15,22 @@ namespace BovineLabs.Core.Utility
         private static IntPtr cachedWrapperPtr;
 
         [NativeDisableUnsafePtrRestriction]
-        private readonly IntPtr managedFunctionPtr;
+        private readonly IntPtr _managedFunctionPtr;
 
         [NativeDisableUnsafePtrRestriction]
-        private readonly IntPtr wrapperPtr;
+        private readonly IntPtr _wrapperPtr;
 
         public BurstTrampoline(delegate*<void*, int, void> managedFunctionPtr)
         {
             Initialize();
-            this.wrapperPtr = cachedWrapperPtr;
-            this.managedFunctionPtr = new IntPtr(managedFunctionPtr);
+            _wrapperPtr = cachedWrapperPtr;
+            _managedFunctionPtr = new IntPtr(managedFunctionPtr);
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void WrapperDelegate(void* managedFunctionPtr, void* argumentsPtr, int argumentsSize);
 
-        public bool IsCreated => this.managedFunctionPtr != default;
+        public bool IsCreated => _managedFunctionPtr != default;
 
         [MonoPInvokeCallback(typeof(WrapperDelegate))]
         private static void Wrapper(void* managedFunctionPtr, void* argumentsPtr, int argumentsSize)
@@ -52,13 +52,13 @@ namespace BovineLabs.Core.Utility
 
         public void Invoke(void* argumentsPtr, int argumentsSize)
         {
-            if (this.managedFunctionPtr == default)
+            if (_managedFunctionPtr == default)
             {
                 throw new NullReferenceException("Trying to invoke a null function pointer.");
             }
 
-            ((delegate* unmanaged[Cdecl]<void*, void*, int, void>)this.wrapperPtr)(
-                (void*)this.managedFunctionPtr,
+            ((delegate* unmanaged[Cdecl]<void*, void*, int, void>)_wrapperPtr)(
+                (void*)_managedFunctionPtr,
                 argumentsPtr,
                 argumentsSize);
         }
@@ -68,7 +68,7 @@ namespace BovineLabs.Core.Utility
         {
             fixed (T* argumentsPtr = &arguments)
             {
-                this.Invoke(argumentsPtr, UnsafeUtility.SizeOf<T>());
+                Invoke(argumentsPtr, UnsafeUtility.SizeOf<T>());
             }
         }
 

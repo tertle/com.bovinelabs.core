@@ -240,13 +240,13 @@ namespace BovineLabs.Core.Collections
 
             public BlobDataRef Allocate(int size, int alignment)
             {
-                if (size > this.ChunkSize)
+                if (size > ChunkSize)
                 {
                     size = CollectionHelper.Align(size, 16);
-                    var allocIndex = this.Allocations.Length;
-                    var mem = (byte*)CollectionMemory.Allocate(size, alignment, this.Allocator);
+                    var allocIndex = Allocations.Length;
+                    var mem = (byte*)CollectionMemory.Allocate(size, alignment, Allocator);
                     UnsafeUtility.MemClear(mem, size);
-                    this.Allocations.Add(new BlobAllocation
+                    Allocations.Add(new BlobAllocation
                     {
                         P = mem,
                         Size = size,
@@ -259,56 +259,56 @@ namespace BovineLabs.Core.Collections
                     };
                 }
 
-                var alloc = this.EnsureEnoughRoomInChunk(size, alignment);
+                var alloc = EnsureEnoughRoomInChunk(size, alignment);
 
                 var offset = alloc.Size;
                 UnsafeUtility.MemClear(alloc.P + alloc.Size, size);
                 alloc.Size += size;
-                this.Allocations[this.CurrentChunkIndex] = alloc;
+                Allocations[CurrentChunkIndex] = alloc;
                 return new BlobDataRef
                 {
-                    AllocIndex = this.CurrentChunkIndex,
+                    AllocIndex = CurrentChunkIndex,
                     Offset = offset,
                 };
             }
 
             public void* AllocationToPointer(BlobDataRef blobDataRef)
             {
-                return this.Allocations[blobDataRef.AllocIndex].P + blobDataRef.Offset;
+                return Allocations[blobDataRef.AllocIndex].P + blobDataRef.Offset;
             }
 
             public void AllocateBlobAssetReference(ref BlobBuilder target, ref BlobPtr<BlobAssetHeader> blobPtr)
             {
                 // Avoid crash when there are no chunks (DOTS-8681)
-                if (this.CurrentChunkIndex != -1)
+                if (CurrentChunkIndex != -1)
                 {
                     //Align last chunk upwards so all chunks are 16 byte aligned
-                    this.AlignChunk(this.CurrentChunkIndex);
+                    AlignChunk(CurrentChunkIndex);
                 }
 
-                var offsets = new NativeArray<int>(this.Allocations.Length + 1, Unity.Collections.Allocator.Temp);
-                var sortedAllocs = new NativeArray<SortedIndex>(this.Allocations.Length, Unity.Collections.Allocator.Temp);
+                var offsets = new NativeArray<int>(Allocations.Length + 1, Unity.Collections.Allocator.Temp);
+                var sortedAllocs = new NativeArray<SortedIndex>(Allocations.Length, Unity.Collections.Allocator.Temp);
 
                 offsets[0] = 0;
-                for (var i = 0; i < this.Allocations.Length; ++i)
+                for (var i = 0; i < Allocations.Length; ++i)
                 {
-                    offsets[i + 1] = offsets[i] + this.Allocations[i].Size;
+                    offsets[i + 1] = offsets[i] + Allocations[i].Size;
                     sortedAllocs[i] = new SortedIndex
                     {
-                        P = this.Allocations[i].P,
+                        P = Allocations[i].P,
                         Index = i,
                     };
                 }
 
-                var dataSize = offsets[this.Allocations.Length];
+                var dataSize = offsets[Allocations.Length];
 
                 sortedAllocs.Sort();
-                var sortedPatches = new NativeArray<SortedIndex>(this.Patches.Length, Unity.Collections.Allocator.Temp);
-                for (var i = 0; i < this.Patches.Length; ++i)
+                var sortedPatches = new NativeArray<SortedIndex>(Patches.Length, Unity.Collections.Allocator.Temp);
+                for (var i = 0; i < Patches.Length; ++i)
                 {
                     sortedPatches[i] = new SortedIndex
                     {
-                        P = (byte*)this.Patches[i].OffsetPtr,
+                        P = (byte*)Patches[i].OffsetPtr,
                         Index = i,
                     };
                 }
@@ -320,16 +320,16 @@ namespace BovineLabs.Core.Collections
 
                 var data = buffer + sizeof(BlobAssetHeader);
 
-                for (var i = 0; i < this.Allocations.Length; ++i)
+                for (var i = 0; i < Allocations.Length; ++i)
                 {
-                    UnsafeUtility.MemCpy(data + offsets[i], this.Allocations[i].P, this.Allocations[i].Size);
+                    UnsafeUtility.MemCpy(data + offsets[i], Allocations[i].P, Allocations[i].Size);
                 }
 
                 var iAlloc = 0;
-                var allocStart = this.Allocations[sortedAllocs[0].Index].P;
-                var allocEnd = allocStart + this.Allocations[sortedAllocs[0].Index].Size;
+                var allocStart = Allocations[sortedAllocs[0].Index].P;
+                var allocEnd = allocStart + Allocations[sortedAllocs[0].Index].Size;
 
-                for (var i = 0; i < this.Patches.Length; ++i)
+                for (var i = 0; i < Patches.Length; ++i)
                 {
                     var patchIndex = sortedPatches[i].Index;
                     var offsetPtr = (int*)sortedPatches[i].P;
@@ -337,11 +337,11 @@ namespace BovineLabs.Core.Collections
                     while (offsetPtr >= allocEnd)
                     {
                         ++iAlloc;
-                        allocStart = this.Allocations[sortedAllocs[iAlloc].Index].P;
-                        allocEnd = allocStart + this.Allocations[sortedAllocs[iAlloc].Index].Size;
+                        allocStart = Allocations[sortedAllocs[iAlloc].Index].P;
+                        allocEnd = allocStart + Allocations[sortedAllocs[iAlloc].Index].Size;
                     }
 
-                    var patch = this.Patches[patchIndex];
+                    var patch = Patches[patchIndex];
 
                     var offsetPtrInData = offsets[sortedAllocs[iAlloc].Index] + (int)((byte*)offsetPtr - allocStart);
                     var targetPtrInData = offsets[patch.Target.AllocIndex] + patch.Target.Offset;
@@ -373,9 +373,9 @@ namespace BovineLabs.Core.Collections
             {
                 var offsetPtr = (int*)UnsafeUtility.AddressOf(ref ptr.m_OffsetPtr);
 
-                this.ValidateAllocation(offsetPtr);
+                ValidateAllocation(offsetPtr);
 
-                var allocation = this.Allocate(size, UnsafeUtility.AlignOf<T>());
+                var allocation = Allocate(size, UnsafeUtility.AlignOf<T>());
 
                 var patch = new OffsetPtrPatch
                 {
@@ -384,22 +384,22 @@ namespace BovineLabs.Core.Collections
                     Length = 0,
                 };
 
-                this.Patches.Add(patch);
-                return this.AllocationToPointer(allocation);
+                Patches.Add(patch);
+                return AllocationToPointer(allocation);
             }
 
             private BlobAllocation EnsureEnoughRoomInChunk(int size, int alignment)
             {
-                if (this.CurrentChunkIndex == -1)
+                if (CurrentChunkIndex == -1)
                 {
-                    return this.AllocateNewChunk();
+                    return AllocateNewChunk();
                 }
 
-                var alloc = this.Allocations[this.CurrentChunkIndex];
+                var alloc = Allocations[CurrentChunkIndex];
                 var startOffset = CollectionHelper.Align(alloc.Size, alignment);
-                if (startOffset + size > this.ChunkSize)
+                if (startOffset + size > ChunkSize)
                 {
-                    return this.AllocateNewChunk();
+                    return AllocateNewChunk();
                 }
 
                 UnsafeUtility.MemClear(alloc.P + alloc.Size, startOffset - alloc.Size);
@@ -411,28 +411,28 @@ namespace BovineLabs.Core.Collections
             private BlobAllocation AllocateNewChunk()
             {
                 // align size of last chunk to 16 bytes so chunks can be concatenated without breaking alignment
-                if (this.CurrentChunkIndex != -1)
+                if (CurrentChunkIndex != -1)
                 {
-                    this.AlignChunk(this.CurrentChunkIndex);
+                    AlignChunk(CurrentChunkIndex);
                 }
 
-                this.CurrentChunkIndex = this.Allocations.Length;
+                CurrentChunkIndex = Allocations.Length;
                 var alloc = new BlobAllocation
                 {
-                    P = (byte*)CollectionMemory.Allocate(this.ChunkSize, 16, this.Allocator),
+                    P = (byte*)CollectionMemory.Allocate(ChunkSize, 16, Allocator),
                     Size = 0,
                 };
 
-                this.Allocations.Add(alloc);
+                Allocations.Add(alloc);
                 return alloc;
             }
 
             private void AlignChunk(int chunkIndex)
             {
-                var chunk = this.Allocations[chunkIndex];
+                var chunk = Allocations[chunkIndex];
                 var oldSize = chunk.Size;
                 chunk.Size = CollectionHelper.Align(chunk.Size, 16);
-                this.Allocations[chunkIndex] = chunk;
+                Allocations[chunkIndex] = chunk;
                 UnsafeUtility.MemSet(chunk.P + oldSize, 0, chunk.Size - oldSize);
             }
 
@@ -442,9 +442,9 @@ namespace BovineLabs.Core.Collections
             {
                 // ValidateAllocation is most often called with data in recently allocated allocations
                 // so this searches backwards
-                for (var i = this.Allocations.Length - 1; i >= 0; --i)
+                for (var i = Allocations.Length - 1; i >= 0; --i)
                 {
-                    var allocation = this.Allocations[i];
+                    var allocation = Allocations[i];
                     if (address >= allocation.P && address < allocation.P + allocation.Size)
                     {
                         return;
@@ -463,7 +463,7 @@ namespace BovineLabs.Core.Collections
 
                 public int CompareTo(SortedIndex other)
                 {
-                    return ((ulong)this.P).CompareTo((ulong)other.P);
+                    return ((ulong)P).CompareTo((ulong)other.P);
                 }
             }
         }

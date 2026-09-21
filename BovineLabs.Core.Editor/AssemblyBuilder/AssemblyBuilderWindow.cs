@@ -42,19 +42,19 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private void Update()
         {
-            this.rootVisualElement.Q<TextField>("directory").value = ProjectView.Internal.GetDirectory();
+            rootVisualElement.Q<TextField>("directory").value = ProjectView.Internal.GetDirectory();
         }
 
         private void OnEnable()
         {
             // Reference to the root of the window.
-            var root = this.rootVisualElement;
+            var root = rootVisualElement;
             AssemblyBuilderTemplate.Clone(root);
 
-            this.rootVisualElement.Query<Toggle>(className: "assembly").ForEach(this.BindAssemblyToggle);
-            this.rootVisualElement.Q<Button>("create").clickable.clicked += this.Create;
-            this.rootVisualElement.Q<TextField>("name").value = $"{PlayerSettings.companyName}.";
-            this.rootVisualElement.Q<TextField>("directory").SetEnabled(false);
+            rootVisualElement.Query<Toggle>(className: "assembly").ForEach(BindAssemblyToggle);
+            rootVisualElement.Q<Button>("create").clickable.clicked += Create;
+            rootVisualElement.Q<TextField>("name").value = $"{PlayerSettings.companyName}.";
+            rootVisualElement.Q<TextField>("directory").SetEnabled(false);
 
 #if !UNITY_NETCODE
             foreach (var toggle in this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().ToList())
@@ -79,7 +79,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
         {
             toggle.RegisterValueChangedCallback(evt =>
             {
-                var foldout = this.rootVisualElement.Q<Foldout>($"reference{toggle.label}");
+                var foldout = rootVisualElement.Q<Foldout>($"reference{toggle.label}");
                 if (foldout == null)
                 {
                     return;
@@ -94,7 +94,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
         {
             var activeFolderPath = ProjectView.Internal.GetDirectory().TrimEnd('/', '\\');;
 
-            var assemblyToggles = this.rootVisualElement.Query<Toggle>(className: "assembly").Where(t => t.value).ToList();
+            var assemblyToggles = rootVisualElement.Query<Toggle>(className: "assembly").Where(t => t.value).ToList();
 
             // Sort so Data is first, Systems is second, so it can be added to other packages
             assemblyToggles.Sort((t1, t2) => t1.label == "Data" ? -1 :
@@ -102,7 +102,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 t1.label is "Main" or "Server" ? -1 :
                 t2.label is "Main" or "Server" ? 1 : 0);
 
-            var nameField = this.rootVisualElement.Q<TextField>("name").value;
+            var nameField = rootVisualElement.Q<TextField>("name").value;
 
             if (string.IsNullOrWhiteSpace(nameField))
             {
@@ -110,10 +110,10 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 return;
             }
 
-            var internalAccess = this.GetToggleValue("internalAccess");
-            var disableAutoCreation = this.GetToggleValue("disableAutoCreation");
-            var allowUnsafeCode = this.GetToggleValue("allowUnsafeCode");
-            var addAnchor = this.GetToggleValue("addAnchor");
+            var internalAccess = GetToggleValue("internalAccess");
+            var disableAutoCreation = GetToggleValue("disableAutoCreation");
+            var allowUnsafeCode = GetToggleValue("allowUnsafeCode");
+            var addAnchor = GetToggleValue("addAnchor");
 
             foreach (var toggle in assemblyToggles)
             {
@@ -138,7 +138,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 definition.name = assemblyName;
                 definition.allowUnsafeCode = allowUnsafeCode;
 
-                var references = this.rootVisualElement.Q<Foldout>($"reference{toggle.label}")?.Children().OfType<Toggle>().Select(t => t.label).ToList() ??
+                var references = rootVisualElement.Q<Foldout>($"reference{toggle.label}")?.Children().OfType<Toggle>().Select(t => t.label).ToList() ??
                     new List<string>();
 
                 references.Add("BovineLabs.Core");
@@ -147,13 +147,13 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 #endif
 
                 // Also add our main references
-                references.AddRange(this.GetCommonReferences());
+                references.AddRange(GetCommonReferences());
 
                 if (label == "Data")
                 {
                     if (internalAccess)
                     {
-                        this.WriteAssemblyInfo(nameField, folder, "Data");
+                        WriteAssemblyInfo(nameField, folder, "Data");
                     }
                 }
                 else
@@ -177,15 +177,15 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                         {
                             if (label == "Main")
                             {
-                                this.WriteAssemblyInfo(nameField, folder, "Data", "Main", "Authoring");
+                                WriteAssemblyInfo(nameField, folder, "Data", "Main", "Authoring");
                             }
                             else if (label == "Server")
                             {
-                                this.WriteAssemblyInfo(nameField, folder, "Data", "Main", "Server", "Authoring");
+                                WriteAssemblyInfo(nameField, folder, "Data", "Main", "Server", "Authoring");
                             }
                             else if (label == "Authoring")
                             {
-                                this.WriteAssemblyInfo(nameField, folder, "Data", "Main", "Authoring", "Debug");
+                                WriteAssemblyInfo(nameField, folder, "Data", "Main", "Authoring", "Debug");
                             }
                         }
                     }
@@ -281,19 +281,18 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private IEnumerable<string> GetCommonReferences()
         {
-            return this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().Where(t => t.value).Select(t => t.label);
+            return rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().Where(t => t.value).Select(t => t.label);
         }
 
         private bool GetToggleValue(string toggleName)
         {
-            return this.rootVisualElement.Q<Toggle>(toggleName).value;
+            return rootVisualElement.Q<Toggle>(toggleName).value;
         }
 
         private void WriteAssemblyInfo(string nameField, string folder, params string[] ignore)
         {
             var otherAssemblies =
-                this
-                    .rootVisualElement
+                rootVisualElement
                     .Query<Toggle>(className: "assembly")
                     .ToList()
                     .Where(t => !ignore.Contains(t.label))

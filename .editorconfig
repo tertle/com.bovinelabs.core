@@ -1,0 +1,29 @@
+root = true
+
+# C# preferences for this standalone BovineLabs package.
+[{BovineLabs.*/**,SourceGenerators~/BovineLabs.*/**}.cs]
+indent_style = space
+indent_size = 4
+max_line_length = 160
+
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+dotnet_diagnostic.IDE0003.severity = suggestion
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscored_camel.capitalization = camel_case
+dotnet_naming_style.underscored_camel.required_prefix = _
+dotnet_naming_rule.private_fields_underscored.symbols = private_fields
+dotnet_naming_rule.private_fields_underscored.style = underscored_camel
+dotnet_naming_rule.private_fields_underscored.severity = suggestion
+
+# Static fields (including constants) are outside the instance-field convention.
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
+dotnet_naming_rule.private_static_fields_unchanged.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_unchanged.style = underscored_camel
+dotnet_naming_rule.private_static_fields_unchanged.severity = none

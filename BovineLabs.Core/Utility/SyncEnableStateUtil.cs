@@ -10,9 +10,9 @@ namespace BovineLabs.Core.Utility
         where T : unmanaged, IComponentData, IEnableableComponent
         where TP : unmanaged, IComponentData, IEnableableComponent
     {
-        private EntityQuery query;
-        private ComponentTypeHandle<TP> activePreviousHandle;
-        private ComponentTypeHandle<T> activeHandle;
+        private EntityQuery _query;
+        private ComponentTypeHandle<TP> _activePreviousHandle;
+        private ComponentTypeHandle<T> _activeHandle;
 
         public void OnCreate(ref SystemState state, bool includeDisabled = false)
         {
@@ -23,20 +23,20 @@ namespace BovineLabs.Core.Utility
                 builder = builder.WithOptions(EntityQueryOptions.IncludeDisabledEntities);
             }
 
-            this.query = builder.Build(ref state);
+            _query = builder.Build(ref state);
 
-            this.activePreviousHandle = state.GetComponentTypeHandle<TP>();
-            this.activeHandle = state.GetComponentTypeHandle<T>(true);
+            _activePreviousHandle = state.GetComponentTypeHandle<TP>();
+            _activeHandle = state.GetComponentTypeHandle<T>(true);
         }
 
         public void OnUpdate(ref SystemState state, SetPreviousJob job = default)
         {
-            this.activePreviousHandle.Update(ref state);
-            this.activeHandle.Update(ref state);
+            _activePreviousHandle.Update(ref state);
+            _activeHandle.Update(ref state);
 
-            job.ActivePreviousHandle = this.activePreviousHandle;
-            job.ActiveHandle = this.activeHandle;
-            state.Dependency = job.ScheduleParallel(this.query, state.Dependency);
+            job.ActivePreviousHandle = _activePreviousHandle;
+            job.ActiveHandle = _activeHandle;
+            state.Dependency = job.ScheduleParallel(_query, state.Dependency);
         }
 
         [BurstCompile]
@@ -49,7 +49,7 @@ namespace BovineLabs.Core.Utility
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                chunk.CopyEnableMaskFrom(ref this.ActivePreviousHandle, ref this.ActiveHandle);
+                chunk.CopyEnableMaskFrom(ref ActivePreviousHandle, ref ActiveHandle);
             }
         }
     }

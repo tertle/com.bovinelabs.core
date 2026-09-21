@@ -15,8 +15,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void TryGetValue_WhenMissing_ReturnsFalseAndDefault()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
 
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
 
@@ -30,8 +30,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void TryGetValue_LargeValueOffsetBeyond255_Works()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
 
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
 
@@ -54,8 +54,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void AddOrSet_LargeValue_OverwritesExisting()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
 
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
 
@@ -71,8 +71,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void Remove_MovesLastEntryAndKeepsRemainingValues()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
 
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
 
@@ -102,8 +102,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void GetOrAddRef_LargeValue_AllowsMutationByRef()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
 
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
 
@@ -121,8 +121,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void ResizeData_WhenCapacityExceedsDataCapacity_DoesNotCorrupt()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
 
             // Start tiny so Capacity grows via Resize while DataCapacity remains at the original initialization size.
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>(1).AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
@@ -153,8 +153,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void KeysPointer_IsAlignedToKeyType_LongKey_DefaultInit()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsLongKeyBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsLongKeyBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsLongKeyBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapTestsLongKeyBuffer>(entity);
 
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsLongKeyBuffer, long>().AsUntypedHashMap<DynamicUntypedHashMapTestsLongKeyBuffer, long>();
 
@@ -167,8 +167,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void LargeValuePointer_IsAligned_WhenMixedLargeTypes()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
 
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
 
@@ -192,8 +192,8 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void GetOrAddRef_WhenTypeDoesNotMatch_Throws()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = this.Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
+            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
+            var buffer = Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
 
             var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
 

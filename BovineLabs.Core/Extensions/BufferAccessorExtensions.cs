@@ -48,9 +48,9 @@
             [Conditional("UNITY_DOTS_DEBUG")]
             public void AssertIndexInRange(int index)
             {
-                if (Hint.Unlikely(index < 0 || index >= this.Length))
+                if (Hint.Unlikely(index < 0 || index >= Length))
                 {
-                    throw new InvalidOperationException($"index {index} out of range in LowLevelBufferAccessor of length {this.Length}");
+                    throw new InvalidOperationException($"index {index} out of range in LowLevelBufferAccessor of length {Length}");
                 }
             }
         }

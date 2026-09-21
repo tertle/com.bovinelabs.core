@@ -3,6 +3,7 @@ namespace BovineLabs.Core.Collections
     using System;
     using System.Diagnostics;
     using BovineLabs.Core.Internal;
+    using System.Diagnostics.CodeAnalysis;
     using Unity.Assertions;
     using Unity.Burst;
     using Unity.Collections;
@@ -14,41 +15,45 @@ namespace BovineLabs.Core.Collections
         [NativeContainerIsReadOnly]
         public struct Reader : INativeStreamReader
         {
-            private UnsafeThreadStream.Reader reader;
+            private UnsafeThreadStream.Reader _reader;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            private int remainingBlocks;
+            private int _remainingBlocks;
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
             internal AtomicSafetyHandle m_Safety;
+            [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+            [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
             internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<Reader>();
 #endif
 
             internal Reader(ref NativeThreadStream stream)
             {
-                this.reader = stream.stream.AsReader();
+                _reader = stream._stream.AsReader();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                this.remainingBlocks = 0;
-                this.m_Safety = stream.m_Safety;
-                CollectionHelper.SetStaticSafetyId(ref this.m_Safety, ref s_staticSafetyId.Data, "BovineLabs.Core.Collections.NativeThreadStream.Reader");
+                _remainingBlocks = 0;
+                m_Safety = stream.m_Safety;
+                CollectionHelper.SetStaticSafetyId(ref m_Safety, ref s_staticSafetyId.Data, "BovineLabs.Core.Collections.NativeThreadStream.Reader");
 #endif
             }
 
-            public int ForEachCount => this.reader.ForEachCount;
+            public int ForEachCount => _reader.ForEachCount;
 
-            public int RemainingItemCount => CollectionChecks.AssumePositive(this.reader.RemainingItemCount);
+            public int RemainingItemCount => CollectionChecks.AssumePositive(_reader.RemainingItemCount);
 
             public int BeginForEachIndex(int foreachIndex)
             {
-                this.CheckBeginForEachIndex(foreachIndex);
+                CheckBeginForEachIndex(foreachIndex);
 
-                var remainingItemCount = this.reader.BeginForEachIndex(foreachIndex);
+                var remainingItemCount = _reader.BeginForEachIndex(foreachIndex);
                 remainingItemCount = CollectionChecks.AssumePositive(remainingItemCount);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                this.remainingBlocks = this.reader.m_BlockStream->Ranges[foreachIndex].NumberOfBlocks;
-                if (this.remainingBlocks == 0)
+                _remainingBlocks = _reader.m_BlockStream->Ranges[foreachIndex].NumberOfBlocks;
+                if (_remainingBlocks == 0)
                 {
-                    this.reader.m_CurrentBlockEnd = (byte*)this.reader.m_CurrentBlock + this.reader.m_LastBlockSize;
+                    _reader.m_CurrentBlockEnd = (byte*)_reader.m_CurrentBlock + _reader.m_LastBlockSize;
                 }
 #endif
 
@@ -60,42 +65,42 @@ namespace BovineLabs.Core.Collections
             /// </summary>
             public void EndForEachIndex()
             {
-                this.reader.EndForEachIndex();
-                this.CheckEndForEachIndex();
+                _reader.EndForEachIndex();
+                CheckEndForEachIndex();
             }
 
             public byte* ReadUnsafePtr(int size)
             {
-                this.CheckReadSize(size);
+                CheckReadSize(size);
 
-                this.reader.m_RemainingItemCount--;
+                _reader.m_RemainingItemCount--;
 
-                var ptr = this.reader.m_CurrentPtr;
-                this.reader.m_CurrentPtr += size;
+                var ptr = _reader.m_CurrentPtr;
+                _reader.m_CurrentPtr += size;
 
-                if (this.reader.m_CurrentPtr > this.reader.m_CurrentBlockEnd)
+                if (_reader.m_CurrentPtr > _reader.m_CurrentBlockEnd)
                 {
-                    this.reader.m_CurrentBlock = this.reader.m_CurrentBlock->Next;
-                    this.reader.m_CurrentPtr = this.reader.m_CurrentBlock->Data;
+                    _reader.m_CurrentBlock = _reader.m_CurrentBlock->Next;
+                    _reader.m_CurrentPtr = _reader.m_CurrentBlock->Data;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                    this.remainingBlocks--;
+                    _remainingBlocks--;
 
-                    this.CheckNotReadingOutOfBounds(size);
+                    CheckNotReadingOutOfBounds(size);
 
-                    if (this.remainingBlocks <= 0)
+                    if (_remainingBlocks <= 0)
                     {
-                        this.reader.m_CurrentBlockEnd = (byte*)this.reader.m_CurrentBlock + this.reader.m_LastBlockSize;
+                        _reader.m_CurrentBlockEnd = (byte*)_reader.m_CurrentBlock + _reader.m_LastBlockSize;
                     }
                     else
                     {
-                        this.reader.m_CurrentBlockEnd = (byte*)this.reader.m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
+                        _reader.m_CurrentBlockEnd = (byte*)_reader.m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
                     }
 #else
                     this.reader.m_CurrentBlockEnd = (byte*)this.reader.m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
 #endif
-                    ptr = this.reader.m_CurrentPtr;
-                    this.reader.m_CurrentPtr += size;
+                    ptr = _reader.m_CurrentPtr;
+                    _reader.m_CurrentPtr += size;
                 }
 
                 return ptr;
@@ -105,13 +110,13 @@ namespace BovineLabs.Core.Collections
                 where T : unmanaged
             {
                 var size = UnsafeUtility.SizeOf<T>();
-                return ref UnsafeUtility.AsRef<T>(this.ReadUnsafePtr(size));
+                return ref UnsafeUtility.AsRef<T>(ReadUnsafePtr(size));
             }
 
             public int Count()
             {
-                this.CheckRead();
-                return this.reader.Count();
+                CheckRead();
+                return _reader.Count();
             }
 
             public void ReadLarge(byte* buffer, int size)
@@ -122,13 +127,13 @@ namespace BovineLabs.Core.Collections
                 // Write the remainder first as this helps avoid an extra chunk allocation most times
                 if (allocationRemainder > 0)
                 {
-                    var ptr = this.ReadUnsafePtr(allocationRemainder);
+                    var ptr = ReadUnsafePtr(allocationRemainder);
                     UnsafeUtility.MemCpy(buffer + (allocationCount * MaxLargeSize), ptr, allocationRemainder);
                 }
 
                 for (var i = 0; i < allocationCount; i++)
                 {
-                    var ptr = this.ReadUnsafePtr(MaxLargeSize);
+                    var ptr = ReadUnsafePtr(MaxLargeSize);
                     UnsafeUtility.MemCpy(buffer + (i * MaxLargeSize), ptr, MaxLargeSize);
                 }
             }
@@ -144,13 +149,13 @@ namespace BovineLabs.Core.Collections
                 // Write the remainder first as this helps avoid an extra chunk allocation most times
                 if (allocationRemainder > 0)
                 {
-                    var ptr = this.ReadUnsafePtr(allocationRemainder);
+                    var ptr = ReadUnsafePtr(allocationRemainder);
                     UnsafeUtility.MemCpy(buffer + (allocationCount * MaxLargeSize), ptr, allocationRemainder);
                 }
 
                 for (var i = 0; i < allocationCount; i++)
                 {
-                    var ptr = this.ReadUnsafePtr(MaxLargeSize);
+                    var ptr = ReadUnsafePtr(MaxLargeSize);
                     UnsafeUtility.MemCpy(buffer + (i * MaxLargeSize), ptr, MaxLargeSize);
                 }
             }
@@ -159,12 +164,12 @@ namespace BovineLabs.Core.Collections
             private void CheckNotReadingOutOfBounds(int size)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                if (this.remainingBlocks < 0)
+                if (_remainingBlocks < 0)
                 {
                     throw new ArgumentException("Reading out of bounds");
                 }
 
-                if (this.remainingBlocks == 0 && size + sizeof(void*) > this.reader.m_LastBlockSize)
+                if (_remainingBlocks == 0 && size + sizeof(void*) > _reader.m_LastBlockSize)
                 {
                     throw new ArgumentException("Reading out of bounds");
                 }
@@ -175,7 +180,7 @@ namespace BovineLabs.Core.Collections
             private void CheckRead()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
             }
 
@@ -183,10 +188,10 @@ namespace BovineLabs.Core.Collections
             private void CheckReadSize(int size)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 
                 Assert.IsTrue(size <= UnsafeThreadStreamBlockData.AllocationSize - sizeof(void*));
-                if (this.reader.m_RemainingItemCount < 1)
+                if (_reader.m_RemainingItemCount < 1)
                 {
                     throw new ArgumentException("There are no more items left to be read.");
                 }
@@ -197,12 +202,12 @@ namespace BovineLabs.Core.Collections
             private void CheckBeginForEachIndex(int forEachIndex)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 
-                if ((uint)forEachIndex >= (uint)this.ForEachCount)
+                if ((uint)forEachIndex >= (uint)ForEachCount)
                 {
                     throw new ArgumentOutOfRangeException(nameof(forEachIndex),
-                        $"foreachIndex: {forEachIndex} must be between 0 and ForEachCount: {this.ForEachCount}");
+                        $"foreachIndex: {forEachIndex} must be between 0 and ForEachCount: {ForEachCount}");
                 }
 #endif
             }
@@ -210,12 +215,12 @@ namespace BovineLabs.Core.Collections
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             private void CheckEndForEachIndex()
             {
-                if (this.reader.m_RemainingItemCount != 0)
+                if (_reader.m_RemainingItemCount != 0)
                 {
                     throw new ArgumentException("Not all elements (Count) have been read. If this is intentional, simply skip calling EndForEachIndex();");
                 }
 
-                if (this.reader.m_CurrentBlockEnd != this.reader.m_CurrentPtr)
+                if (_reader.m_CurrentBlockEnd != _reader.m_CurrentPtr)
                 {
                     throw new ArgumentException("Not all data (Data Size) has been read. If this is intentional, simply skip calling EndForEachIndex();");
                 }

@@ -27,12 +27,12 @@
         internal int FirstFreeIdx;
         internal int SizeOfTValue;
 
-        internal int BucketCapacity => this.BucketCapacityMask + 1;
+        internal int BucketCapacity => BucketCapacityMask + 1;
 
         internal readonly bool IsDense
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.FirstFreeIdx == -1 && this.AllocatedIndex == this.Count;
+            get => FirstFreeIdx == -1 && AllocatedIndex == Count;
         }
 
         internal byte* Values
@@ -82,7 +82,7 @@
         internal readonly bool IsEmpty
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.Count == 0;
+            get => Count == 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -462,84 +462,84 @@
         internal void Clear()
         {
             // Values, keys and the gaps between them are part of DynamicBuffer.Length.
-            UnsafeUtility.MemClear(this.Values, this.NextOffset - this.ValuesOffset);
-            UnsafeUtility.MemSet(this.Buckets, 0xff, this.BucketCapacity * sizeof(int));
-            UnsafeUtility.MemSet(this.Next, 0xff, this.Capacity * sizeof(int));
+            UnsafeUtility.MemClear(Values, NextOffset - ValuesOffset);
+            UnsafeUtility.MemSet(Buckets, 0xff, BucketCapacity * sizeof(int));
+            UnsafeUtility.MemSet(Next, 0xff, Capacity * sizeof(int));
 
-            this.Count = 0;
-            this.FirstFreeIdx = -1;
-            this.AllocatedIndex = 0;
+            Count = 0;
+            FirstFreeIdx = -1;
+            AllocatedIndex = 0;
         }
 
         internal void ClearDense()
         {
-            if (!this.IsDense)
+            if (!IsDense)
             {
-                this.Clear();
+                Clear();
                 return;
             }
 
-            var keys = this.Keys;
-            var buckets = this.Buckets;
-            var count = this.Count;
+            var keys = Keys;
+            var buckets = Buckets;
+            var count = Count;
 
             for (var i = 0; i < count; i++)
             {
-                buckets[this.GetBucket(keys[i])] = -1;
+                buckets[GetBucket(keys[i])] = -1;
             }
 
-            UnsafeUtility.MemClear(this.Values, (long)count * this.SizeOfTValue);
+            UnsafeUtility.MemClear(Values, (long)count * SizeOfTValue);
             UnsafeUtility.MemClear(keys, (long)count * sizeof(TKey));
-            UnsafeUtility.MemSet(this.Next, 0xff, (long)count * sizeof(int));
+            UnsafeUtility.MemSet(Next, 0xff, (long)count * sizeof(int));
 
-            this.Count = 0;
-            this.FirstFreeIdx = -1;
-            this.AllocatedIndex = 0;
+            Count = 0;
+            FirstFreeIdx = -1;
+            AllocatedIndex = 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal int GetBucket(in TKey key)
         {
-            return (int)((uint)key.GetHashCode() & this.BucketCapacityMask);
+            return (int)((uint)key.GetHashCode() & BucketCapacityMask);
         }
 
         internal int CopyActiveEntriesTo(byte* keysDestination, int keyStride, byte* valuesDestination, int valueStride)
         {
-            return this.CopyActiveEntriesTo(keysDestination, keyStride, valuesDestination, valueStride, DynamicHashMapTraversalOrder.DenseIndex);
+            return CopyActiveEntriesTo(keysDestination, keyStride, valuesDestination, valueStride, DynamicHashMapTraversalOrder.DenseIndex);
         }
 
         internal int CopyActiveEntriesTo(
             byte* keysDestination, int keyStride, byte* valuesDestination, int valueStride, DynamicHashMapTraversalOrder traversalOrder)
         {
-            Check.Assume(keysDestination != null || this.Count == 0, "Keys destination must not be null.");
-            Check.Assume(valuesDestination != null || this.Count == 0 || this.SizeOfTValue == 0, "Values destination must not be null.");
+            Check.Assume(keysDestination != null || Count == 0, "Keys destination must not be null.");
+            Check.Assume(valuesDestination != null || Count == 0 || SizeOfTValue == 0, "Values destination must not be null.");
             Check.Assume(keyStride >= sizeof(TKey), "Key stride is too small.");
-            Check.Assume(valueStride >= this.SizeOfTValue, "Value stride is too small.");
+            Check.Assume(valueStride >= SizeOfTValue, "Value stride is too small.");
 
-            if (this.Count == 0)
+            if (Count == 0)
             {
                 return 0;
             }
 
-            if (traversalOrder == DynamicHashMapTraversalOrder.DenseIndex && this.IsDense)
+            if (traversalOrder == DynamicHashMapTraversalOrder.DenseIndex && IsDense)
             {
-                UnsafeUtility.MemCpyStride(keysDestination, keyStride, this.Keys, sizeof(TKey), sizeof(TKey), this.Count);
+                UnsafeUtility.MemCpyStride(keysDestination, keyStride, Keys, sizeof(TKey), sizeof(TKey), Count);
 
-                if (this.SizeOfTValue > 0)
+                if (SizeOfTValue > 0)
                 {
-                    UnsafeUtility.MemCpyStride(valuesDestination, valueStride, this.Values, this.SizeOfTValue, this.SizeOfTValue, this.Count);
+                    UnsafeUtility.MemCpyStride(valuesDestination, valueStride, Values, SizeOfTValue, SizeOfTValue, Count);
                 }
 
-                return this.Count;
+                return Count;
             }
 
-            var keys = this.Keys;
-            var values = this.Values;
-            var buckets = this.Buckets;
-            var next = this.Next;
+            var keys = Keys;
+            var values = Values;
+            var buckets = Buckets;
+            var next = Next;
             var packedIndex = 0;
 
-            for (int i = 0, capacity = this.BucketCapacity; i < capacity && packedIndex < this.Count; ++i)
+            for (int i = 0, capacity = BucketCapacity; i < capacity && packedIndex < Count; ++i)
             {
                 var entryIndex = buckets[i];
 
@@ -547,9 +547,9 @@
                 {
                     UnsafeUtility.MemCpy(keysDestination + (packedIndex * keyStride), keys + entryIndex, sizeof(TKey));
 
-                    if (this.SizeOfTValue > 0)
+                    if (SizeOfTValue > 0)
                     {
-                        UnsafeUtility.MemCpy(valuesDestination + (packedIndex * valueStride), values + (entryIndex * this.SizeOfTValue), this.SizeOfTValue);
+                        UnsafeUtility.MemCpy(valuesDestination + (packedIndex * valueStride), values + (entryIndex * SizeOfTValue), SizeOfTValue);
                     }
 
                     packedIndex++;
@@ -557,27 +557,27 @@
                 }
             }
 
-            Check.Assume(packedIndex == this.Count, "Active entry traversal did not visit Count entries.");
+            Check.Assume(packedIndex == Count, "Active entry traversal did not visit Count entries.");
             return packedIndex;
         }
 
         internal int Find(TKey key)
         {
-            if (this.AllocatedIndex > 0)
+            if (AllocatedIndex > 0)
             {
                 // First find the slot based on the hash
-                var bucket = this.GetBucket(key);
-                var entryIdx = this.Buckets[bucket];
+                var bucket = GetBucket(key);
+                var entryIdx = Buckets[bucket];
 
-                if ((uint)entryIdx < (uint)this.Capacity)
+                if ((uint)entryIdx < (uint)Capacity)
                 {
-                    var keys = this.Keys;
-                    var next = this.Next;
+                    var keys = Keys;
+                    var next = Next;
 
                     while (!UnsafeUtility.ReadArrayElement<TKey>(keys, entryIdx).Equals(key))
                     {
                         entryIdx = next[entryIdx];
-                        if ((uint)entryIdx >= (uint)this.Capacity)
+                        if ((uint)entryIdx >= (uint)Capacity)
                         {
                             return -1;
                         }
@@ -592,21 +592,21 @@
 
         internal int TryRemove(TKey key)
         {
-            if (this.Capacity != 0)
+            if (Capacity != 0)
             {
                 var removed = 0;
 
                 // First find the slot based on the hash
-                var bucket = this.GetBucket(key);
+                var bucket = GetBucket(key);
 
-                var keys = this.Keys;
-                var next = this.Next;
-                var buckets = this.Buckets;
+                var keys = Keys;
+                var next = Next;
+                var buckets = Buckets;
 
                 var prevEntry = -1;
                 var entryIdx = buckets[bucket];
 
-                while (entryIdx >= 0 && entryIdx < this.Capacity)
+                while (entryIdx >= 0 && entryIdx < Capacity)
                 {
                     if (UnsafeUtility.ReadArrayElement<TKey>(keys, entryIdx).Equals(key))
                     {
@@ -623,9 +623,9 @@
                         }
 
                         // And free the index
-                        this.ClearEntryData(entryIdx);
-                        next[entryIdx] = this.FirstFreeIdx;
-                        this.FirstFreeIdx = entryIdx;
+                        ClearEntryData(entryIdx);
+                        next[entryIdx] = FirstFreeIdx;
+                        FirstFreeIdx = entryIdx;
                         break;
                     }
 
@@ -633,7 +633,7 @@
                     entryIdx = next[entryIdx];
                 }
 
-                this.Count -= removed;
+                Count -= removed;
                 return removed != 0 ? removed : -1;
             }
 
@@ -642,7 +642,7 @@
 
         internal int Remove(TKey key)
         {
-            if (this.Capacity == 0)
+            if (Capacity == 0)
             {
                 return 0;
             }
@@ -650,92 +650,92 @@
             var removed = 0;
 
             // First find the slot based on the hash
-            var bucket = this.GetBucket(key);
+            var bucket = GetBucket(key);
 
             var prevEntry = -1;
-            var entryIdx = this.Buckets[bucket];
+            var entryIdx = Buckets[bucket];
 
-            while (entryIdx >= 0 && entryIdx < this.Capacity)
+            while (entryIdx >= 0 && entryIdx < Capacity)
             {
-                if (UnsafeUtility.ReadArrayElement<TKey>(this.Keys, entryIdx).Equals(key))
+                if (UnsafeUtility.ReadArrayElement<TKey>(Keys, entryIdx).Equals(key))
                 {
                     ++removed;
 
                     // Found matching element, remove it
                     if (prevEntry < 0)
                     {
-                        this.Buckets[bucket] = this.Next[entryIdx];
+                        Buckets[bucket] = Next[entryIdx];
                     }
                     else
                     {
-                        this.Next[prevEntry] = this.Next[entryIdx];
+                        Next[prevEntry] = Next[entryIdx];
                     }
 
                     // And free the index
-                    var nextIdx = this.Next[entryIdx];
-                    this.ClearEntryData(entryIdx);
-                    this.Next[entryIdx] = this.FirstFreeIdx;
-                    this.FirstFreeIdx = entryIdx;
+                    var nextIdx = Next[entryIdx];
+                    ClearEntryData(entryIdx);
+                    Next[entryIdx] = FirstFreeIdx;
+                    FirstFreeIdx = entryIdx;
                     entryIdx = nextIdx;
                 }
                 else
                 {
                     prevEntry = entryIdx;
-                    entryIdx = this.Next[entryIdx];
+                    entryIdx = Next[entryIdx];
                 }
             }
 
-            this.Count -= removed;
+            Count -= removed;
             return removed;
         }
 
         internal void Remove(HashMapIterator<TKey> it)
         {
-            if ((uint)it.EntryIndex >= (uint)this.Capacity)
+            if ((uint)it.EntryIndex >= (uint)Capacity)
             {
                 ThrowInvalidIterator();
                 return;
             }
 
-            this.CheckIteratorKey(it);
+            CheckIteratorKey(it);
 
-            var bucket = this.GetBucket(it.Key);
-            var entryIdx = this.Buckets[bucket];
+            var bucket = GetBucket(it.Key);
+            var entryIdx = Buckets[bucket];
 
             if (entryIdx == it.EntryIndex)
             {
-                this.Buckets[bucket] = this.Next[entryIdx];
+                Buckets[bucket] = Next[entryIdx];
             }
             else
             {
-                while (entryIdx >= 0 && entryIdx < this.Capacity && this.Next[entryIdx] != it.EntryIndex)
+                while (entryIdx >= 0 && entryIdx < Capacity && Next[entryIdx] != it.EntryIndex)
                 {
-                    entryIdx = this.Next[entryIdx];
+                    entryIdx = Next[entryIdx];
                 }
 
-                if ((uint)entryIdx >= (uint)this.Capacity)
+                if ((uint)entryIdx >= (uint)Capacity)
                 {
                     ThrowInvalidIterator();
                     return;
                 }
 
-                this.Next[entryIdx] = this.Next[it.EntryIndex];
+                Next[entryIdx] = Next[it.EntryIndex];
             }
 
-            this.ClearEntryData(it.EntryIndex);
-            this.Next[it.EntryIndex] = this.FirstFreeIdx;
-            this.FirstFreeIdx = it.EntryIndex;
-            this.Count--;
+            ClearEntryData(it.EntryIndex);
+            Next[it.EntryIndex] = FirstFreeIdx;
+            FirstFreeIdx = it.EntryIndex;
+            Count--;
         }
 
         internal bool TryGetValue<TValue>(TKey key, out TValue item)
             where TValue : unmanaged
         {
-            var idx = this.Find(key);
+            var idx = Find(key);
 
             if (idx != -1)
             {
-                item = UnsafeUtility.ReadArrayElement<TValue>(this.Values, idx);
+                item = UnsafeUtility.ReadArrayElement<TValue>(Values, idx);
                 return true;
             }
 
@@ -748,7 +748,7 @@
         {
             it.Key = key;
 
-            if (this.AllocatedIndex <= 0)
+            if (AllocatedIndex <= 0)
             {
                 it.EntryIndex = it.NextEntryIndex = -1;
                 item = default;
@@ -756,10 +756,10 @@
             }
 
             // First find the slot based on the hash
-            var bucket = this.GetBucket(it.Key);
-            it.EntryIndex = it.NextEntryIndex = this.Buckets[bucket];
+            var bucket = GetBucket(it.Key);
+            it.EntryIndex = it.NextEntryIndex = Buckets[bucket];
 
-            return this.TryGetNextValue(out item, ref it);
+            return TryGetNextValue(out item, ref it);
         }
 
         internal bool TryGetNextValue<TValue>(out TValue item, ref HashMapIterator<TKey> it)
@@ -769,19 +769,19 @@
             it.NextEntryIndex = -1;
             it.EntryIndex = -1;
 
-            if (entryIdx < 0 || entryIdx >= this.Capacity)
+            if (entryIdx < 0 || entryIdx >= Capacity)
             {
                 item = default;
                 return false;
             }
 
-            var next = this.Next;
-            var keys = this.Keys;
+            var next = Next;
+            var keys = Keys;
 
             while (!UnsafeUtility.ReadArrayElement<TKey>(keys, entryIdx).Equals(it.Key))
             {
                 entryIdx = next[entryIdx];
-                if ((uint)entryIdx >= (uint)this.Capacity)
+                if ((uint)entryIdx >= (uint)Capacity)
                 {
                     item = default;
                     return false;
@@ -790,19 +790,19 @@
 
             it.NextEntryIndex = next[entryIdx];
             it.EntryIndex = entryIdx;
-            item = UnsafeUtility.ReadArrayElement<TValue>(this.Values, entryIdx);
+            item = UnsafeUtility.ReadArrayElement<TValue>(Values, entryIdx);
             return true;
         }
 
         internal NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
-            var result = CollectionHelper.CreateNativeArray<TKey>(this.Count, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = CollectionHelper.CreateNativeArray<TKey>(Count, allocator, NativeArrayOptions.UninitializedMemory);
 
-            var keys = this.Keys;
-            var buckets = this.Buckets;
-            var next = this.Next;
+            var keys = Keys;
+            var buckets = Buckets;
+            var next = Next;
 
-            for (int i = 0, count = 0, max = result.Length, capacity = this.BucketCapacity; i < capacity && count < max; i++)
+            for (int i = 0, count = 0, max = result.Length, capacity = BucketCapacity; i < capacity && count < max; i++)
             {
                 var bucket = buckets[i];
 
@@ -819,13 +819,13 @@
         internal NativeArray<TValue> GetValueArray<TValue>(AllocatorManager.AllocatorHandle allocator)
             where TValue : unmanaged
         {
-            var result = CollectionHelper.CreateNativeArray<TValue>(this.Count, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = CollectionHelper.CreateNativeArray<TValue>(Count, allocator, NativeArrayOptions.UninitializedMemory);
 
-            var values = this.Values;
-            var buckets = this.Buckets;
-            var next = this.Next;
+            var values = Values;
+            var buckets = Buckets;
+            var next = Next;
 
-            for (int i = 0, count = 0, max = result.Length, capacity = this.BucketCapacity; i < capacity && count < max; ++i)
+            for (int i = 0, count = 0, max = result.Length, capacity = BucketCapacity; i < capacity && count < max; ++i)
             {
                 var bucket = buckets[i];
 
@@ -842,14 +842,14 @@
         internal NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays<TValue>(AllocatorManager.AllocatorHandle allocator)
             where TValue : unmanaged
         {
-            var result = new NativeKeyValueArrays<TKey, TValue>(this.Count, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = new NativeKeyValueArrays<TKey, TValue>(Count, allocator, NativeArrayOptions.UninitializedMemory);
 
-            var keys = this.Keys;
-            var values = this.Values;
-            var buckets = this.Buckets;
-            var next = this.Next;
+            var keys = Keys;
+            var values = Values;
+            var buckets = Buckets;
+            var next = Next;
 
-            for (int i = 0, count = 0, max = result.Length, capacity = this.BucketCapacity; i < capacity && count < max; ++i)
+            for (int i = 0, count = 0, max = result.Length, capacity = BucketCapacity; i < capacity && count < max; ++i)
             {
                 var bucket = buckets[i];
 
@@ -872,34 +872,34 @@
                 return;
             }
 
-            Check.Assume(this.FirstFreeIdx == -1, "Trying to RemoveRangeShiftDown on map with holes. Call Flatten() first.");
-            Check.Assume(start >= 0 && start < this.Count);
-            Check.Assume(length >= 0 && start + length <= this.Count);
+            Check.Assume(FirstFreeIdx == -1, "Trying to RemoveRangeShiftDown on map with holes. Call Flatten() first.");
+            Check.Assume(start >= 0 && start < Count);
+            Check.Assume(length >= 0 && start + length <= Count);
 
-            var keys = this.Keys;
-            var values = this.Values;
+            var keys = Keys;
+            var values = Values;
 
-            var shift = this.Count - length - start;
+            var shift = Count - length - start;
 
             // var shift = count - le
             UnsafeUtility.MemMove(keys + start, keys + start + length, UnsafeUtility.SizeOf<TKey>() * shift);
-            UnsafeUtility.MemMove(values + (start * this.SizeOfTValue), values + ((start + length) * this.SizeOfTValue), shift * this.SizeOfTValue);
+            UnsafeUtility.MemMove(values + (start * SizeOfTValue), values + ((start + length) * SizeOfTValue), shift * SizeOfTValue);
 
-            UnsafeUtility.MemSet(this.Buckets, 0xff, this.BucketCapacity * sizeof(int));
-            UnsafeUtility.MemSet((this.Next + this.Count) - length, 0xff, length * sizeof(int)); // only need to clear replaced elements
+            UnsafeUtility.MemSet(Buckets, 0xff, BucketCapacity * sizeof(int));
+            UnsafeUtility.MemSet((Next + Count) - length, 0xff, length * sizeof(int)); // only need to clear replaced elements
 
-            this.AllocatedIndex -= length;
-            this.Count -= length;
+            AllocatedIndex -= length;
+            Count -= length;
 
-            UnsafeUtility.MemClear(keys + this.Count, (long)length * sizeof(TKey));
-            UnsafeUtility.MemClear(values + ((long)this.Count * this.SizeOfTValue), (long)length * this.SizeOfTValue);
+            UnsafeUtility.MemClear(keys + Count, (long)length * sizeof(TKey));
+            UnsafeUtility.MemClear(values + ((long)Count * SizeOfTValue), (long)length * SizeOfTValue);
 
-            var buckets = this.Buckets;
-            var next = this.Next;
+            var buckets = Buckets;
+            var next = Next;
 
-            for (var idx = 0; idx < this.Count; idx++)
+            for (var idx = 0; idx < Count; idx++)
             {
-                var bucket = keys[idx].GetHashCode() & this.BucketCapacityMask;
+                var bucket = keys[idx].GetHashCode() & BucketCapacityMask;
                 next[idx] = buckets[bucket];
                 buckets[bucket] = idx;
             }
@@ -909,34 +909,34 @@
         private void ClearEntryData(int index)
         {
             // Only this removed slot is dead. Other live slots can be above Count.
-            UnsafeUtility.MemClear(this.Keys + index, sizeof(TKey));
-            UnsafeUtility.MemClear(this.Values + ((long)index * this.SizeOfTValue), this.SizeOfTValue);
+            UnsafeUtility.MemClear(Keys + index, sizeof(TKey));
+            UnsafeUtility.MemClear(Values + ((long)index * SizeOfTValue), SizeOfTValue);
         }
 
         private int AddNoCollideNoAlloc(in TKey key)
         {
-            Check.Assume(this.AllocatedIndex < this.Capacity || this.FirstFreeIdx >= 0);
+            Check.Assume(AllocatedIndex < Capacity || FirstFreeIdx >= 0);
 
-            var idx = this.FirstFreeIdx;
+            var idx = FirstFreeIdx;
 
             if (idx >= 0)
             {
-                this.FirstFreeIdx = this.Next[idx];
+                FirstFreeIdx = Next[idx];
             }
             else
             {
-                idx = this.AllocatedIndex++;
+                idx = AllocatedIndex++;
             }
 
-            this.CheckIndexOutOfBounds(idx);
+            CheckIndexOutOfBounds(idx);
 
-            UnsafeUtility.WriteArrayElement(this.Keys, idx, key);
-            var bucket = this.GetBucket(key);
+            UnsafeUtility.WriteArrayElement(Keys, idx, key);
+            var bucket = GetBucket(key);
 
-            var next = this.Next;
-            next[idx] = this.Buckets[bucket];
-            this.Buckets[bucket] = idx;
-            this.Count++;
+            var next = Next;
+            next[idx] = Buckets[bucket];
+            Buckets[bucket] = idx;
+            Count++;
 
             return idx;
         }
@@ -1057,7 +1057,7 @@
         [Conditional("UNITY_DOTS_DEBUG")]
         private void CheckNoHolesForAddBatchUnsafe()
         {
-            if (this.FirstFreeIdx != -1 || this.AllocatedIndex != this.Count)
+            if (FirstFreeIdx != -1 || AllocatedIndex != Count)
             {
                 throw new InvalidOperationException("AddBatchUnsafe requires a map with no holes. Call Flatten() first.");
             }
@@ -1067,7 +1067,7 @@
         [Conditional("UNITY_DOTS_DEBUG")]
         private void CheckIteratorKey(HashMapIterator<TKey> it)
         {
-            if (!UnsafeUtility.ReadArrayElement<TKey>(this.Keys, it.EntryIndex).Equals(it.Key))
+            if (!UnsafeUtility.ReadArrayElement<TKey>(Keys, it.EntryIndex).Equals(it.Key))
             {
                 ThrowInvalidIterator();
             }
@@ -1085,7 +1085,7 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckDoesNotExist(TKey key)
         {
-            if (this.Find(key) != -1)
+            if (Find(key) != -1)
             {
                 throw new ArgumentException($"An item with the same key has already been added: {key}");
             }
@@ -1114,7 +1114,7 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckIndexOutOfBounds(int idx)
         {
-            if ((uint)idx >= (uint)this.Capacity)
+            if ((uint)idx >= (uint)Capacity)
             {
                 throw new InvalidOperationException($"Internal HashMap error. idx {idx}");
             }
@@ -1132,66 +1132,66 @@
 
             internal Enumerator(DynamicHashMapHelper<TKey>* data)
             {
-                this.Data = data;
-                this.Index = -1;
-                this.BucketIndex = data->IsDense ? DenseTraversal : 0;
-                this.NextIndex = -1;
+                Data = data;
+                Index = -1;
+                BucketIndex = data->IsDense ? DenseTraversal : 0;
+                NextIndex = -1;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal bool MoveNext()
             {
-                if (this.BucketIndex == DenseTraversal)
+                if (BucketIndex == DenseTraversal)
                 {
-                    var index = this.Index + 1;
+                    var index = Index + 1;
 
-                    if (index < this.Data->Count)
+                    if (index < Data->Count)
                     {
-                        this.Index = index;
+                        Index = index;
                         return true;
                     }
 
-                    this.Index = -1;
-                    this.BucketIndex = this.Data->BucketCapacity;
+                    Index = -1;
+                    BucketIndex = Data->BucketCapacity;
                     return false;
                 }
 
-                var next = this.Data->Next;
+                var next = Data->Next;
 
-                if (this.NextIndex != -1)
+                if (NextIndex != -1)
                 {
-                    this.Index = this.NextIndex;
-                    this.NextIndex = next[this.NextIndex];
+                    Index = NextIndex;
+                    NextIndex = next[NextIndex];
                     return true;
                 }
 
-                var buckets = this.Data->Buckets;
+                var buckets = Data->Buckets;
 
-                for (int i = this.BucketIndex, num = this.Data->BucketCapacity; i < num; ++i)
+                for (int i = BucketIndex, num = Data->BucketCapacity; i < num; ++i)
                 {
                     var idx = buckets[i];
 
                     if (idx != -1)
                     {
-                        this.Index = idx;
-                        this.BucketIndex = i + 1;
-                        this.NextIndex = next[idx];
+                        Index = idx;
+                        BucketIndex = i + 1;
+                        NextIndex = next[idx];
 
                         return true;
                     }
                 }
 
-                this.Index = -1;
-                this.BucketIndex = this.Data->BucketCapacity;
-                this.NextIndex = -1;
+                Index = -1;
+                BucketIndex = Data->BucketCapacity;
+                NextIndex = -1;
                 return false;
             }
 
             internal void Reset()
             {
-                this.Index = -1;
-                this.BucketIndex = this.Data->IsDense ? DenseTraversal : 0;
-                this.NextIndex = -1;
+                Index = -1;
+                BucketIndex = Data->IsDense ? DenseTraversal : 0;
+                NextIndex = -1;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1200,17 +1200,17 @@
             {
                 return new KVPair<TKey, TValue>
                 {
-                    Data = this.Data,
-                    Index = this.Index,
+                    Data = Data,
+                    Index = Index,
                 };
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal TKey GetCurrentKey()
             {
-                if (this.Index != -1)
+                if (Index != -1)
                 {
-                    return this.Data->Keys[this.Index];
+                    return Data->Keys[Index];
                 }
 
                 return default;

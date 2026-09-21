@@ -9,7 +9,7 @@ namespace BovineLabs.Core.Editor.EditorPreferences
 
         protected EditorPreferenceAttribute(string sectionName)
         {
-            this.SectionName = sectionName;
+            SectionName = sectionName;
         }
     }
 }

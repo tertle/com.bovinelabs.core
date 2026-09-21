@@ -9,14 +9,14 @@
     {
         public ulong GetStableTypeHash()
         {
-            var typeIndex = TypeManager.GetTypeIndex(this.ResolveType());
+            var typeIndex = TypeManager.GetTypeIndex(ResolveType());
             return TypeManager.GetTypeInfo(typeIndex).StableTypeHash;
         }
 
         public override Type ResolveType()
         {
             var type = base.ResolveType();
-            this.ValidateType(TypeManager.GetTypeIndex(type));
+            ValidateType(TypeManager.GetTypeIndex(type));
             return type;
         }
 

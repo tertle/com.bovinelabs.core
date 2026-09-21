@@ -8,15 +8,15 @@
     public unsafe struct DynamicBufferAccessor
     {
         [NativeDisableUnsafePtrRestriction]
-        private readonly byte* pointer;
+        private readonly byte* _pointer;
 
-        private readonly int internalCapacity;
-        private readonly int stride;
+        private readonly int _internalCapacity;
+        private readonly int _stride;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        private readonly AtomicSafetyHandle safety0;
-        private readonly AtomicSafetyHandle arrayInvalidationSafety;
-        private readonly bool isReadOnly;
+        private readonly AtomicSafetyHandle _safety0;
+        private readonly AtomicSafetyHandle _arrayInvalidationSafety;
+        private readonly bool _isReadOnly;
 #endif
 
         public int Length { get; }
@@ -30,15 +30,15 @@
             byte* basePointer, int length, int stride, int elementSize, int elementAlign, int internalCapacity, bool readOnly, AtomicSafetyHandle safety0,
             AtomicSafetyHandle arrayInvalidationSafety)
         {
-            this.pointer = basePointer;
-            this.internalCapacity = internalCapacity;
-            this.ElementSize = elementSize;
-            this.ElementAlign = elementAlign;
-            this.stride = stride;
-            this.Length = length;
-            this.safety0 = safety0;
-            this.arrayInvalidationSafety = arrayInvalidationSafety;
-            this.isReadOnly = readOnly;
+            _pointer = basePointer;
+            _internalCapacity = internalCapacity;
+            ElementSize = elementSize;
+            ElementAlign = elementAlign;
+            _stride = stride;
+            Length = length;
+            _safety0 = safety0;
+            _arrayInvalidationSafety = arrayInvalidationSafety;
+            _isReadOnly = readOnly;
         }
 #else
             internal DynamicBufferAccessor(byte* basePointer, int length, int stride, int elementSize, int elementAlign, int internalCapacity)
@@ -55,12 +55,12 @@
         public DynamicBuffer<T> GetBuffer<T>(int index)
             where T : unmanaged
         {
-            this.CheckWriteAccess();
-            this.AssertIndexInRange(index);
-            var header = (BufferHeader*)(this.pointer + (index * this.stride));
+            CheckWriteAccess();
+            AssertIndexInRange(index);
+            var header = (BufferHeader*)(_pointer + (index * _stride));
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            return new DynamicBuffer<T>(header, this.safety0, this.arrayInvalidationSafety, this.isReadOnly, false, 0, this.internalCapacity);
+            return new DynamicBuffer<T>(header, _safety0, _arrayInvalidationSafety, _isReadOnly, false, 0, _internalCapacity);
 #else
             return new DynamicBuffer<T>(header, this.internalCapacity);
 #endif
@@ -68,13 +68,13 @@
 
         public UntypedDynamicBuffer GetUntypedBuffer(int index)
         {
-            this.CheckWriteAccess();
-            this.AssertIndexInRange(index);
-            var header = (BufferHeader*)(this.pointer + (index * this.stride));
+            CheckWriteAccess();
+            AssertIndexInRange(index);
+            var header = (BufferHeader*)(_pointer + (index * _stride));
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            return new UntypedDynamicBuffer(header, this.safety0, this.arrayInvalidationSafety, this.isReadOnly, false, 0, this.internalCapacity,
-                this.ElementSize, this.ElementAlign);
+            return new UntypedDynamicBuffer(header, _safety0, _arrayInvalidationSafety, _isReadOnly, false, 0, _internalCapacity,
+                ElementSize, ElementAlign);
 #else
             return new UntypedDynamicBuffer(header, this.internalCapacity, this.ElementSize, this.ElementAlign);
 #endif
@@ -84,8 +84,8 @@
         private void CheckWriteAccess()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(this.safety0);
-            AtomicSafetyHandle.CheckWriteAndThrow(this.arrayInvalidationSafety);
+            AtomicSafetyHandle.CheckWriteAndThrow(_safety0);
+            AtomicSafetyHandle.CheckWriteAndThrow(_arrayInvalidationSafety);
 #endif
         }
 
@@ -93,9 +93,9 @@
         [Conditional("UNITY_DOTS_DEBUG")]
         private void AssertIndexInRange(int index)
         {
-            if (index < 0 || index >= this.Length)
+            if (index < 0 || index >= Length)
             {
-                throw new InvalidOperationException($"index {index} out of range in LowLevelBufferAccessor of length {this.Length}");
+                throw new InvalidOperationException($"index {index} out of range in LowLevelBufferAccessor of length {Length}");
             }
         }
     }

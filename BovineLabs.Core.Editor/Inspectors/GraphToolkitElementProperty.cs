@@ -26,7 +26,7 @@ namespace BovineLabs.Core.Editor.Inspectors
         private const float GraphToolkitLabelFontSize = 12;
         private const float GraphToolkitLabelWidthBuffer = 4;
 
-        protected override sealed ParentTypes ParentType => this.UseFoldout ? ParentTypes.Foldout : ParentTypes.None;
+        protected override sealed ParentTypes ParentType => UseFoldout ? ParentTypes.Foldout : ParentTypes.None;
 
         protected virtual bool UseFoldout => true;
 

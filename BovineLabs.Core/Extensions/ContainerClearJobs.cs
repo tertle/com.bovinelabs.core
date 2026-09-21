@@ -13,7 +13,7 @@
 
         public void Execute()
         {
-            this.List.Clear();
+            List.Clear();
         }
     }
 
@@ -25,7 +25,7 @@
 
         public void Execute()
         {
-            this.HashSet.Clear();
+            HashSet.Clear();
         }
     }
 
@@ -37,7 +37,7 @@
 
         public void Execute()
         {
-            this.HashSet.Clear();
+            HashSet.Clear();
         }
     }
 
@@ -49,7 +49,7 @@
 
         public void Execute()
         {
-            this.HashSet.Clear();
+            HashSet.Clear();
         }
     }
 
@@ -62,7 +62,7 @@
 
         public void Execute()
         {
-            this.HashMap.Clear();
+            HashMap.Clear();
         }
     }
 
@@ -75,7 +75,7 @@
 
         public void Execute()
         {
-            this.HashMap.Clear();
+            HashMap.Clear();
         }
     }
 
@@ -88,7 +88,7 @@
 
         public void Execute()
         {
-            this.HashMap.Clear();
+            HashMap.Clear();
         }
     }
 }

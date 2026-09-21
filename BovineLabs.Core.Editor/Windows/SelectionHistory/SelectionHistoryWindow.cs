@@ -12,17 +12,17 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 
     public sealed class SelectionHistoryWindow : BaseObjectWindow<SelectionHistoryItem, SelectionHistoryService, SelectionHistoryPreferences>
     {
-        private readonly List<SelectionHistoryItem> filteredLockedItems = new();
-        private readonly List<SelectionHistoryItem> filteredNormalItems = new();
+        private readonly List<SelectionHistoryItem> _filteredLockedItems = new();
+        private readonly List<SelectionHistoryItem> _filteredNormalItems = new();
 
-        private double lastLockedClickTime;
-        private SelectionHistoryItem lastLockedClickedItem;
+        private double _lastLockedClickTime;
+        private SelectionHistoryItem _lastLockedClickedItem;
 
-        private SelectionHistoryService historyService;
-        private ListView lockedItemsListView;
-        private Button clearButton;
+        private SelectionHistoryService _historyService;
+        private ListView _lockedItemsListView;
+        private Button _clearButton;
 
-        protected override SelectionHistoryService Service => this.historyService ?? SelectionHistoryService.Instance;
+        protected override SelectionHistoryService Service => _historyService ?? SelectionHistoryService.Instance;
 
         protected override string StylesheetPath => "Packages/com.bovinelabs.core/BovineLabs.Core.Editor/Windows/SelectionHistory/SelectionHistoryWindow.uss";
 
@@ -42,46 +42,46 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
         {
             base.UpdateItemsVisualState();
 
-            this.lockedItemsListView?.RefreshItems();
+            _lockedItemsListView?.RefreshItems();
         }
 
         protected override void InitializeServices()
         {
-            this.historyService = SelectionHistoryService.Instance;
-            this.historyService.ItemsChanged += this.OnItemsChangedInternal;
+            _historyService = SelectionHistoryService.Instance;
+            _historyService.ItemsChanged += OnItemsChangedInternal;
         }
 
         protected override void CleanupServices()
         {
-            if (this.historyService != null)
+            if (_historyService != null)
             {
-                this.historyService.ItemsChanged -= this.OnItemsChangedInternal;
+                _historyService.ItemsChanged -= OnItemsChangedInternal;
             }
         }
 
         protected override void SetupAdditionalFeatures(VisualElement root)
         {
             // Create locked items section
-            this.CreateLockedItemsSection();
+            CreateLockedItemsSection();
 
             // Handle window resize to update locked section height
-            root.RegisterCallback<GeometryChangedEvent>(this.OnWindowResize);
+            root.RegisterCallback<GeometryChangedEvent>(OnWindowResize);
         }
 
         protected override void OnItemsChanged(IReadOnlyList<SelectionHistoryItem> items)
         {
-            this.RefreshLockedSection();
+            RefreshLockedSection();
         }
 
         protected override void CreateCustomToolbarElements(Toolbar toolbar)
         {
-            this.clearButton = new ToolbarButton(() => this.historyService?.ClearHistory())
+            _clearButton = new ToolbarButton(() => _historyService?.ClearHistory())
             {
                 text = "Clear",
                 tooltip = "Clear unlocked selection history",
             };
 
-            toolbar.Add(this.clearButton);
+            toolbar.Add(_clearButton);
         }
 
         protected override Button CreateListItemActionButton()
@@ -93,18 +93,18 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 
         protected override void BindListItem(VisualElement element, int index)
         {
-            if (index >= this.FilteredItems.Count)
+            if (index >= FilteredItems.Count)
             {
                 return;
             }
 
-            var item = this.FilteredItems[index];
-            this.BindHistoryItem(element, item);
+            var item = FilteredItems[index];
+            BindHistoryItem(element, item);
         }
 
         protected override void OnListItemClicked(SelectionHistoryItem item)
         {
-            this.historyService?.SelectItem(item);
+            _historyService?.SelectItem(item);
         }
 
         protected override void OnListItemDoubleClicked(SelectionHistoryItem item)
@@ -117,7 +117,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 
         protected override void CreateContextMenu(ContextualMenuPopulateEvent evt, SelectionHistoryItem item)
         {
-            evt.menu.AppendAction("Select Object", _ => this.historyService?.SelectItem(item));
+            evt.menu.AppendAction("Select Object", _ => _historyService?.SelectItem(item));
 
             if (item.IsAsset)
             {
@@ -147,14 +147,14 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             }
 
             evt.menu.AppendSeparator();
-            evt.menu.AppendAction("Remove from History", _ => this.historyService?.RemoveItem(item));
+            evt.menu.AppendAction("Remove from History", _ => _historyService?.RemoveItem(item));
         }
 
         protected override string GetStatusText(int totalCount, int filteredCount, int aliveCount)
         {
-            var lockedCount = this.filteredLockedItems.Count;
+            var lockedCount = _filteredLockedItems.Count;
             filteredCount += lockedCount;
-            aliveCount += this.filteredLockedItems.Count(item => item.IsAlive);
+            aliveCount += _filteredLockedItems.Count(item => item.IsAlive);
             return filteredCount == totalCount
                 ? $"{totalCount} items ({aliveCount} alive, {lockedCount} locked)"
                 : $"{filteredCount} of {totalCount} items ({aliveCount} alive, {lockedCount} locked)";
@@ -162,7 +162,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 
         protected override void CreateCustomSettingsMenuItems(DropdownMenu menu)
         {
-            var service = this.historyService;
+            var service = _historyService;
             if (service != null)
             {
                 var prefs = UserSettings<SelectionHistoryPreferences>.GetOrCreate(SelectionHistoryService.PreferenceKey);
@@ -176,94 +176,94 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 
         protected override void CreateSettingsMenu()
         {
-            this.CreateStandardSettingsMenu(SelectionHistoryService.PreferenceKey);
+            CreateStandardSettingsMenu(SelectionHistoryService.PreferenceKey);
         }
 
         protected override void PostProcessFilteredItems()
         {
             // Split items into locked and normal for selection history
-            this.filteredLockedItems.Clear();
-            this.filteredNormalItems.Clear();
+            _filteredLockedItems.Clear();
+            _filteredNormalItems.Clear();
 
-            if (this.historyService != null)
+            if (_historyService != null)
             {
-                foreach (var item in this.historyService.LockedItems)
+                foreach (var item in _historyService.LockedItems)
                 {
-                    if (this.ShouldShowItem(item))
+                    if (ShouldShowItem(item))
                     {
-                        this.filteredLockedItems.Add(item);
+                        _filteredLockedItems.Add(item);
                     }
                 }
 
-                foreach (var item in this.historyService.NormalItems.Reverse())
+                foreach (var item in _historyService.NormalItems.Reverse())
                 {
-                    if (this.ShouldShowItem(item))
+                    if (ShouldShowItem(item))
                     {
-                        this.filteredNormalItems.Add(item);
+                        _filteredNormalItems.Add(item);
                     }
                 }
             }
 
             // Update main filtered items to show normal items (locked items are in separate list)
-            this.FilteredItems.Clear();
-            this.FilteredItems.AddRange(this.filteredNormalItems);
+            FilteredItems.Clear();
+            FilteredItems.AddRange(_filteredNormalItems);
 
-            this.lockedItemsListView!.reorderable = !this.IsFiltered();
-            this.RefreshLockedSection();
+            _lockedItemsListView!.reorderable = !IsFiltered();
+            RefreshLockedSection();
         }
 
         protected override void RefreshPreferencesDependentUI()
         {
             base.RefreshPreferencesDependentUI();
 
-            if (this.lockedItemsListView!.fixedItemHeight != this.Service.ItemHeight)
+            if (_lockedItemsListView!.fixedItemHeight != Service.ItemHeight)
             {
-                this.lockedItemsListView.fixedItemHeight = this.Service.ItemHeight;
-                this.lockedItemsListView.Rebuild();
+                _lockedItemsListView.fixedItemHeight = Service.ItemHeight;
+                _lockedItemsListView.Rebuild();
             }
 
-            this.UpdateLockedSectionHeight();
+            UpdateLockedSectionHeight();
         }
 
         private void CreateLockedItemsSection()
         {
-            this.lockedItemsListView = new ListView
+            _lockedItemsListView = new ListView
             {
-                itemsSource = this.filteredLockedItems,
-                fixedItemHeight = this.Service.ItemHeight,
+                itemsSource = _filteredLockedItems,
+                fixedItemHeight = Service.ItemHeight,
                 selectionType = SelectionType.None,
                 reorderable = true,
-                makeItem = this.MakeListItem,
-                bindItem = this.BindLockedListItem,
+                makeItem = MakeListItem,
+                bindItem = BindLockedListItem,
                 reorderMode = ListViewReorderMode.Animated,
             };
-            this.lockedItemsListView.style.flexShrink = 0;
+            _lockedItemsListView.style.flexShrink = 0;
 
-            this.lockedItemsListView.RegisterCallback<ClickEvent>(this.OnLockedListClick);
-            this.lockedItemsListView.AddManipulator(new ContextualMenuManipulator(this.OnLockedListContextMenu));
+            _lockedItemsListView.RegisterCallback<ClickEvent>(OnLockedListClick);
+            _lockedItemsListView.AddManipulator(new ContextualMenuManipulator(OnLockedListContextMenu));
 
-            this.lockedItemsListView.itemIndexChanged += this.OnLockedItemReordered;
+            _lockedItemsListView.itemIndexChanged += OnLockedItemReordered;
 
-            var index = this.MainListView.parent.IndexOf(this.MainListView);
-            this.MainListView.parent.Insert(index, this.lockedItemsListView);
+            var index = MainListView.parent.IndexOf(MainListView);
+            MainListView.parent.Insert(index, _lockedItemsListView);
         }
 
         private void BindLockedListItem(VisualElement element, int index)
         {
-            if (index >= this.filteredLockedItems.Count)
+            if (index >= _filteredLockedItems.Count)
             {
                 return;
             }
 
-            var item = this.filteredLockedItems[index];
-            this.BindHistoryItem(element, item);
+            var item = _filteredLockedItems[index];
+            BindHistoryItem(element, item);
         }
 
         private void BindHistoryItem(VisualElement element, SelectionHistoryItem item)
         {
-            this.BindListItemCommon(element, item);
-            this.BindPinButton(element, item);
-            this.UpdateItemLockClasses(element, item.IsLocked);
+            BindListItemCommon(element, item);
+            BindPinButton(element, item);
+            UpdateItemLockClasses(element, item.IsLocked);
         }
 
         private void BindPinButton(VisualElement element, SelectionHistoryItem item)
@@ -276,8 +276,8 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 
             pinButton.text = string.Empty;
             pinButton.tooltip = item.IsLocked ? "Unlock from top" : "Lock to top";
-            this.UpdateLockButtonClasses(pinButton, item.IsLocked);
-            this.BindButtonClickAction(pinButton, () => this.historyService?.ToggleLock(item), this.OnPinButtonClick);
+            UpdateLockButtonClasses(pinButton, item.IsLocked);
+            BindButtonClickAction(pinButton, () => _historyService?.ToggleLock(item), OnPinButtonClick);
         }
 
         private void UpdateLockButtonClasses(VisualElement element, bool isLocked)
@@ -315,69 +315,69 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
                 return;
             }
 
-            var item = this.GetItemAtPosition(this.lockedItemsListView, evt.localPosition);
+            var item = GetItemAtPosition(_lockedItemsListView, evt.localPosition);
             if (item != null)
             {
                 var currentTime = EditorApplication.timeSinceStartup;
-                var timeSinceLastClick = currentTime - this.lastLockedClickTime;
+                var timeSinceLastClick = currentTime - _lastLockedClickTime;
 
-                if (Equals(this.lastLockedClickedItem, item) && timeSinceLastClick < this.Service.DoubleClickThreshold)
+                if (Equals(_lastLockedClickedItem, item) && timeSinceLastClick < Service.DoubleClickThreshold)
                 {
-                    this.OnListItemDoubleClicked(item);
-                    this.lastLockedClickedItem = null;
+                    OnListItemDoubleClicked(item);
+                    _lastLockedClickedItem = null;
                 }
                 else
                 {
-                    this.OnListItemClicked(item);
-                    this.lastLockedClickedItem = item;
+                    OnListItemClicked(item);
+                    _lastLockedClickedItem = item;
                 }
 
-                this.lastLockedClickTime = currentTime;
+                _lastLockedClickTime = currentTime;
             }
         }
 
         private void OnLockedListContextMenu(ContextualMenuPopulateEvent evt)
         {
-            var item = this.GetItemAtPosition(this.lockedItemsListView, evt.localMousePosition);
+            var item = GetItemAtPosition(_lockedItemsListView, evt.localMousePosition);
             if (item != null)
             {
-                this.CreateContextMenu(evt, item);
+                CreateContextMenu(evt, item);
             }
         }
 
         private void RefreshLockedSection()
         {
-            this.lockedItemsListView?.RefreshItems();
-            this.UpdateLockedSectionHeight();
+            _lockedItemsListView?.RefreshItems();
+            UpdateLockedSectionHeight();
         }
 
         private void UpdateLockedSectionHeight()
         {
-            if (this.lockedItemsListView == null)
+            if (_lockedItemsListView == null)
             {
                 return;
             }
 
-            var itemHeight = this.Service.ItemHeight;
-            var lockedItemCount = this.filteredLockedItems.Count;
+            var itemHeight = Service.ItemHeight;
+            var lockedItemCount = _filteredLockedItems.Count;
 
             if (lockedItemCount == 0)
             {
                 // Hide locked section if no items
-                this.lockedItemsListView.style.height = 0;
-                this.lockedItemsListView.style.display = DisplayStyle.None;
+                _lockedItemsListView.style.height = 0;
+                _lockedItemsListView.style.display = DisplayStyle.None;
                 return;
             }
 
             // Show locked section
-            this.lockedItemsListView.style.display = DisplayStyle.Flex;
+            _lockedItemsListView.style.display = DisplayStyle.Flex;
 
             var contentHeight = lockedItemCount * itemHeight;
 
             // Get total available height (subtract toolbar and status bar)
-            var rootHeight = this.MainListView.parent.resolvedStyle.height;
-            var toolbarHeight = this.Toolbar.resolvedStyle.height;
-            var statusBarHeight = this.Service.ShowStatusBar ? this.StatusBar.resolvedStyle.height : 0f;
+            var rootHeight = MainListView.parent.resolvedStyle.height;
+            var toolbarHeight = Toolbar.resolvedStyle.height;
+            var statusBarHeight = Service.ShowStatusBar ? StatusBar.resolvedStyle.height : 0f;
             var availableHeight = Mathf.Max(0, rootHeight - toolbarHeight - statusBarHeight);
 
             if (float.IsNaN(availableHeight))
@@ -388,7 +388,7 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
             // Apply 80% max height limit, ensuring normal items get at least 20%
             var maxLockedHeight = availableHeight * 0.8f;
 
-            this.lockedItemsListView.style.height = Mathf.Min(contentHeight, maxLockedHeight);
+            _lockedItemsListView.style.height = Mathf.Min(contentHeight, maxLockedHeight);
         }
 
         private void OnPinButtonClick(ClickEvent evt)
@@ -398,17 +398,17 @@ namespace BovineLabs.Core.Editor.Windows.SelectionHistory
 
         private void OnLockedItemReordered(int fromIndex, int toIndex)
         {
-            this.historyService?.ReorderLockedItem(fromIndex, toIndex);
+            _historyService?.ReorderLockedItem(fromIndex, toIndex);
         }
 
         private bool IsFiltered()
         {
-            return !string.IsNullOrEmpty(this.CurrentSearchText) || this.CurrentTypeFilter != "All";
+            return !string.IsNullOrEmpty(CurrentSearchText) || CurrentTypeFilter != "All";
         }
 
         private void OnWindowResize(GeometryChangedEvent evt)
         {
-            this.UpdateLockedSectionHeight();
+            UpdateLockedSectionHeight();
         }
 
         private static void OpenObject(SelectionHistoryItem item)

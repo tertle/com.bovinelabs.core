@@ -132,7 +132,7 @@
             foreach (var authoring in authorings)
             {
                 var so = new SerializedObject(authoring);
-                var settingsProperty = so.FindProperty("settings");
+                var settingsProperty = so.FindProperty("_settings");
 
                 // Clear up null references
                 for (var index = settingsProperty.arraySize - 1; index >= 0; index--)
@@ -219,7 +219,7 @@
                 }
 
                 var serializedObject = new SerializedObject(authoring);
-                var settingsProperty = serializedObject.FindProperty("settings");
+                var settingsProperty = serializedObject.FindProperty("_settings");
                 settingsProperty.arraySize = 0;
                 serializedObject.ApplyModifiedProperties();
                 AssetDatabase.SaveAssetIfDirty(authoring);

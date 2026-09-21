@@ -77,7 +77,7 @@
 
             public void Execute(int index)
             {
-                this.Counter[index] = this.Streams.Ptr[index].Count();
+                Counter[index] = Streams.Ptr[index].Count();
             }
         }
 
@@ -93,12 +93,12 @@
 
             public void Execute()
             {
-                var count = mathex.sum(this.Counter);
-                var requiredSize = this.HashMap.Count() + count;
+                var count = mathex.sum(Counter);
+                var requiredSize = HashMap.Count() + count;
 
-                if (this.HashMap.Capacity < requiredSize)
+                if (HashMap.Capacity < requiredSize)
                 {
-                    this.HashMap.Capacity = requiredSize;
+                    HashMap.Capacity = requiredSize;
                 }
             }
         }
@@ -115,12 +115,12 @@
 
             public void Execute()
             {
-                var count = mathex.sum(this.Counter);
-                var requiredSize = this.HashMap.Count() + count;
+                var count = mathex.sum(Counter);
+                var requiredSize = HashMap.Count() + count;
 
-                if (this.HashMap.Capacity < requiredSize)
+                if (HashMap.Capacity < requiredSize)
                 {
-                    this.HashMap.Capacity = requiredSize;
+                    HashMap.Capacity = requiredSize;
                 }
             }
         }

@@ -20,7 +20,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [TestCase(4, 4)]
         public void RegularMap_InitAndFill_InitializeReserveAndGaps(int capacity, int count)
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 DynamicHashMapHelper<int>.Init(bytes, capacity, sizeof(byte), 0);
                 var data = bytes.AsHelper<int>();
@@ -43,7 +43,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void RegularMap_RemoveAndResize_PreserveLiveIndicesAboveCount()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 DynamicHashMapHelper<int>.Init(bytes, 4, sizeof(byte), 0);
                 var data = bytes.AsHelper<int>();
@@ -79,7 +79,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void RegularMap_DenseGrowthThenShiftDown_ClearsVacatedSuffix()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 DynamicHashMapHelper<int>.Init(bytes, 1, sizeof(byte), 0);
                 var data = bytes.AsHelper<int>();
@@ -104,7 +104,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [TestCase(true)]
         public void RegularMap_ClearAndReuse_ResetsPayloadAndChains(bool dense)
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 DynamicHashMapHelper<int>.Init(bytes, 4, sizeof(byte), 0);
                 var data = bytes.AsHelper<int>();
@@ -136,7 +136,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void RegularMap_MultiRemoveAndIteratorRemove_ClearExactSlots()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 DynamicHashMapHelper<int>.Init(bytes, 4, sizeof(byte), 0);
                 var data = bytes.AsHelper<int>();
@@ -160,7 +160,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void DenseRebuild_InitializesWholeLayoutAndDiscardsFinalUnusedPrefix()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 var size = DynamicHashMapHelper<int>.CalculateDataSize(3, sizeof(byte), out _);
                 bytes.ResizeUninitialized(size);
@@ -183,7 +183,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void HashSet_InitializesUnusedKeysWithoutValueStorage()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 DynamicHashMapHelper<int>.Init(bytes, 4, 0, 0);
                 var data = bytes.AsHelper<int>();
@@ -199,7 +199,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void RegularMap_PhysicalReallocation_PreservesEntriesAndInitializesNewReserve()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 DynamicHashMapHelper<int>.Init(bytes, 1, sizeof(byte), 0);
                 var data = bytes.AsHelper<int>();
@@ -224,7 +224,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void UntypedMap_SmallValuesAndRawLengths_HaveZeroSlotTails()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 DynamicUntypedHashMapHelper<int>.Init(bytes, 1, 1, 0);
                 var data = bytes.AsUntypedHelper<int>();
@@ -269,7 +269,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void UntypedMap_RemoveSwapLastAndGrow_PreservesOtherPayloads()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 DynamicUntypedHashMapHelper<int>.Init(bytes, 4, 4, 0);
                 var data = bytes.AsUntypedHelper<int>();
@@ -298,7 +298,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void UntypedBuffer_GrowthAndRemoval_ClearGapsAndRetiredStorage()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 DynamicUntypedBufferHelper.Init(bytes, 1, 1, 0);
                 var data = bytes.AsUntypedBufferHelper();
@@ -336,7 +336,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void OneHashColumn_RemoveGrowShrinkAndClear_PreservesLiveValues()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 OneHash.Init(bytes, 4, 0);
                 var data = bytes.AsVariableHelper<int, long, byte, MultiHashColumn<byte>>();
@@ -388,7 +388,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void OneOrderedColumn_RemoveAndGrow_PreservesSortedChain()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 OneOrdered.Init(bytes, 4, 0);
                 var data = bytes.AsVariableHelper<int, long, byte, OrderedListColumn<byte>>();
@@ -432,7 +432,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void TwoColumns_SparseGrowthShrinkAndClear_PreserveBothIndexes()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 TwoColumns.Init(bytes, 4, 0);
                 var data = bytes.AsVariableHelper<int, long, byte, MultiHashColumn<byte>, short, OrderedListColumn<short>>();
@@ -483,7 +483,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void PerfectMap_UnoccupiedKeysAreZeroAndNullValueIsPreserved()
         {
-            this.AssertPoisonIndependent(bytes =>
+            AssertPoisonIndependent(bytes =>
             {
                 var keys = new NativeArray<int>(2, Allocator.Temp);
                 var values = new NativeArray<long>(2, Allocator.Temp);
@@ -652,15 +652,15 @@ namespace BovineLabs.Core.Tests.Iterators
         {
             // Finish each scenario before creating the next entity: structural changes can
             // invalidate previously acquired DynamicBuffer safety handles.
-            var first = this.Capture(0xa5, scenario, reserve);
-            var second = this.Capture(0x5a, scenario, reserve);
+            var first = Capture(0xa5, scenario, reserve);
+            var second = Capture(0x5a, scenario, reserve);
             CollectionAssert.AreEqual(first, second, "Logical byte buffers depend on the original allocation contents.");
         }
 
         private byte[] Capture(byte poison, Action<DynamicBuffer<byte>> scenario, int reserve)
         {
-            var entity = this.Manager.CreateEntity(typeof(PackedMemoryTestByte));
-            var bytes = this.Manager.GetBuffer<PackedMemoryTestByte>(entity).Reinterpret<byte>();
+            var entity = Manager.CreateEntity(typeof(PackedMemoryTestByte));
+            var bytes = Manager.GetBuffer<PackedMemoryTestByte>(entity).Reinterpret<byte>();
             // Keep enough capacity to exercise overlapping old/new layouts without a
             // physical reallocation hiding poison bytes behind a fresh zeroed allocation.
             bytes.ResizeUninitialized(reserve);

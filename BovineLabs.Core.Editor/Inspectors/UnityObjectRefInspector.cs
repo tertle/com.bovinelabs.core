@@ -1,5 +1,4 @@
-﻿#pragma warning disable SA1402
-
+﻿
 namespace BovineLabs.Core.Editor.Inspectors
 {
     using BovineLabs.Core.Editor.Internal;
@@ -14,29 +13,29 @@ namespace BovineLabs.Core.Editor.Inspectors
     internal abstract class UnityObjectRefInspector<T> : PropertyInspector<UnityObjectRef<T>>
         where T : Object
     {
-        private ObjectField objectField;
+        private ObjectField _objectField;
 
         public override VisualElement Build()
         {
-            this.objectField = new ObjectField { enabledSelf = !this.IsReadOnly };
-            InspectorUtility.AddRuntimeBar(this.objectField);
+            _objectField = new ObjectField { enabledSelf = !IsReadOnly };
+            InspectorUtility.AddRuntimeBar(_objectField);
 
-            this.Update();
+            Update();
 
-            this.objectField.RegisterValueChangedCallback(evt =>
+            _objectField.RegisterValueChangedCallback(evt =>
             {
-                this.Target = (T)evt.newValue;
+                Target = (T)evt.newValue;
             });
 
-            return this.objectField;
+            return _objectField;
         }
 
         public override void Update()
         {
-            var target = this.Target;
+            var target = Target;
 
-            this.objectField!.value = target.Value;
-            this.objectField!.label = target.Value == null ? this.DisplayName : $"{this.DisplayName} : {target.Value.name}";
+            _objectField!.value = target.Value;
+            _objectField!.label = target.Value == null ? DisplayName : $"{DisplayName} : {target.Value.name}";
         }
     }
 

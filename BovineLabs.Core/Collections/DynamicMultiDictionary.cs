@@ -38,7 +38,7 @@ namespace BovineLabs.Core.Collections
         private const int MaxTombstoneFactorNumerator = 2;
         private const int MaxTombstoneFactorDenominator = 10;
 
-        private DynamicBuffer<TEntry> buffer;
+        private DynamicBuffer<TEntry> _buffer;
 
         private struct Header
         {
@@ -52,20 +52,20 @@ namespace BovineLabs.Core.Collections
             CheckCapacity(buffer.Length);
             CheckEntrySize();
 
-            this.buffer = buffer;
+            _buffer = buffer;
         }
 
-        public readonly bool IsCreated => this.buffer.IsCreated;
+        public readonly bool IsCreated => _buffer.IsCreated;
 
-        public readonly bool IsEmpty => this.Count == 0;
+        public readonly bool IsEmpty => Count == 0;
 
         public readonly int Count
         {
             get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return this.GetCount();
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return GetCount();
             }
         }
 
@@ -73,9 +73,9 @@ namespace BovineLabs.Core.Collections
         {
             get
             {
-                this.buffer.CheckReadAccess();
-                this.RefCheck();
-                return this.buffer.Length;
+                _buffer.CheckReadAccess();
+                RefCheck();
+                return _buffer.Length;
             }
         }
 
@@ -84,8 +84,8 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         public void EnsureCapacity(int capacity)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
 
             if (capacity < 0)
             {
@@ -97,10 +97,10 @@ namespace BovineLabs.Core.Collections
                 return;
             }
 
-            var currentCapacity = this.buffer.Length;
+            var currentCapacity = _buffer.Length;
             if (capacity <= currentCapacity)
             {
-                this.EnsureHeader(currentCapacity);
+                EnsureHeader(currentCapacity);
                 return;
             }
 
@@ -110,7 +110,7 @@ namespace BovineLabs.Core.Collections
                 throw new InvalidOperationException("DynamicMultiDictionary capacity overflow");
             }
 
-            this.Resize(newCapacity);
+            Resize(newCapacity);
         }
 
         /// <summary>
@@ -118,20 +118,20 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         public void Add(TKey key, TValue value)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
 
             while (true)
             {
-                var capacity = this.buffer.Length;
+                var capacity = _buffer.Length;
                 if (capacity == 0)
                 {
-                    this.Resize(1);
+                    Resize(1);
                     continue;
                 }
 
-                var headerSlotCreated = this.EnsureHeaderSlot(capacity);
-                var entries = (TEntry*)this.buffer.GetUnsafePtr();
+                var headerSlotCreated = EnsureHeaderSlot(capacity);
+                var entries = (TEntry*)_buffer.GetUnsafePtr();
                 ref var header = ref GetHeader(entries, capacity);
                 if (headerSlotCreated)
                 {
@@ -147,13 +147,13 @@ namespace BovineLabs.Core.Collections
 
                 if (ShouldRehash(tombstones, capacity))
                 {
-                    this.Rehash(capacity);
+                    Rehash(capacity);
                     continue;
                 }
 
                 if (ShouldGrow(count + tombstones, capacity))
                 {
-                    this.Resize(GrowCapacity(capacity));
+                    Resize(GrowCapacity(capacity));
                     continue;
                 }
 
@@ -204,7 +204,7 @@ namespace BovineLabs.Core.Collections
                     return;
                 }
 
-                this.Resize(GrowCapacity(capacity));
+                Resize(GrowCapacity(capacity));
             }
         }
 
@@ -214,28 +214,28 @@ namespace BovineLabs.Core.Collections
         public bool TryAddUniquePair<T>(TKey key, T value)
             where T : unmanaged, IEquatable<TValue>
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
             CheckValueSize<T>();
 
-            if (this.Contains(key, value))
+            if (Contains(key, value))
             {
                 return false;
             }
 
-            this.Add(key, UnsafeUtility.As<T, TValue>(ref value));
+            Add(key, UnsafeUtility.As<T, TValue>(ref value));
             return true;
         }
 
         public readonly bool TryGetFirstValue(TKey key, out TValue value, out HashMapIterator<TKey> it)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
+            _buffer.CheckReadAccess();
+            RefCheck();
 
             it = default;
             it.Key = key;
 
-            var capacity = this.buffer.Length;
+            var capacity = _buffer.Length;
             if (capacity == 0)
             {
                 InvalidateIterator(ref it);
@@ -243,7 +243,7 @@ namespace BovineLabs.Core.Collections
                 return false;
             }
 
-            var entries = (TEntry*)this.buffer.GetUnsafeReadOnlyPtr();
+            var entries = (TEntry*)_buffer.GetUnsafeReadOnlyPtr();
             var mask = capacity - 1;
             var tag = ComputeTag(key, out var hash);
             var start = (int)(hash & (uint)mask);
@@ -276,10 +276,10 @@ namespace BovineLabs.Core.Collections
 
         public readonly bool TryGetNextValue(out TValue value, ref HashMapIterator<TKey> it)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
+            _buffer.CheckReadAccess();
+            RefCheck();
 
-            var capacity = this.buffer.Length;
+            var capacity = _buffer.Length;
             if (capacity == 0 || it.NextEntryIndex < 0)
             {
                 InvalidateIterator(ref it);
@@ -287,7 +287,7 @@ namespace BovineLabs.Core.Collections
                 return false;
             }
 
-            var entries = (TEntry*)this.buffer.GetUnsafeReadOnlyPtr();
+            var entries = (TEntry*)_buffer.GetUnsafeReadOnlyPtr();
             var mask = capacity - 1;
             var tag = ComputeTag(it.Key, out var hash);
             var start = (int)(hash & (uint)mask);
@@ -320,9 +320,9 @@ namespace BovineLabs.Core.Collections
 
         public readonly bool ContainsKey(TKey key)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
-            return this.TryGetFirstValue(key, out _, out _);
+            _buffer.CheckReadAccess();
+            RefCheck();
+            return TryGetFirstValue(key, out _, out _);
         }
 
         /// <summary>
@@ -331,11 +331,11 @@ namespace BovineLabs.Core.Collections
         public readonly bool Contains<T>(TKey key, T value)
             where T : unmanaged, IEquatable<TValue>
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
+            _buffer.CheckReadAccess();
+            RefCheck();
             CheckValueSize<T>();
 
-            if (!this.TryGetFirstValue(key, out var item, out var it))
+            if (!TryGetFirstValue(key, out var item, out var it))
             {
                 return false;
             }
@@ -347,24 +347,24 @@ namespace BovineLabs.Core.Collections
                     return true;
                 }
             }
-            while (this.TryGetNextValue(out item, ref it));
+            while (TryGetNextValue(out item, ref it));
 
             return false;
         }
 
         public readonly int CountValuesForKey(TKey key)
         {
-            this.buffer.CheckReadAccess();
-            this.RefCheck();
+            _buffer.CheckReadAccess();
+            RefCheck();
 
             var count = 0;
-            if (!this.TryGetFirstValue(key, out _, out var it))
+            if (!TryGetFirstValue(key, out _, out var it))
             {
                 return count;
             }
 
             count++;
-            while (this.TryGetNextValue(out _, ref it))
+            while (TryGetNextValue(out _, ref it))
             {
                 count++;
             }
@@ -374,17 +374,17 @@ namespace BovineLabs.Core.Collections
 
         public int Remove(TKey key)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
 
-            var capacity = this.buffer.Length;
+            var capacity = _buffer.Length;
             if (capacity == 0)
             {
                 return 0;
             }
 
-            var headerSlotCreated = this.EnsureHeaderSlot(capacity);
-            var entries = (TEntry*)this.buffer.GetUnsafePtr();
+            var headerSlotCreated = EnsureHeaderSlot(capacity);
+            var entries = (TEntry*)_buffer.GetUnsafePtr();
             ref var header = ref GetHeader(entries, capacity);
             if (headerSlotCreated)
             {
@@ -438,11 +438,11 @@ namespace BovineLabs.Core.Collections
         public bool Remove<T>(TKey key, T value)
             where T : unmanaged, IEquatable<TValue>
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
             CheckValueSize<T>();
 
-            if (!this.TryGetFirstValue(key, out var item, out var it))
+            if (!TryGetFirstValue(key, out var item, out var it))
             {
                 return false;
             }
@@ -454,27 +454,27 @@ namespace BovineLabs.Core.Collections
                     continue;
                 }
 
-                this.Remove(it);
+                Remove(it);
                 return true;
             }
-            while (this.TryGetNextValue(out item, ref it));
+            while (TryGetNextValue(out item, ref it));
 
             return false;
         }
 
         public void Remove(HashMapIterator<TKey> it)
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
 
-            var capacity = this.buffer.Length;
+            var capacity = _buffer.Length;
             if (capacity == 0 || (uint)it.EntryIndex >= (uint)capacity)
             {
                 throw new ArgumentException("DynamicMultiDictionary iterator is invalid", nameof(it));
             }
 
-            var headerSlotCreated = this.EnsureHeaderSlot(capacity);
-            var entries = (TEntry*)this.buffer.GetUnsafePtr();
+            var headerSlotCreated = EnsureHeaderSlot(capacity);
+            var entries = (TEntry*)_buffer.GetUnsafePtr();
             ref var header = ref GetHeader(entries, capacity);
             if (headerSlotCreated)
             {
@@ -498,17 +498,17 @@ namespace BovineLabs.Core.Collections
 
         public void Clear()
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
 
-            var capacity = this.buffer.Length;
+            var capacity = _buffer.Length;
             if (capacity == 0)
             {
                 return;
             }
 
-            this.EnsureHeaderSlot(capacity);
-            var entries = (TEntry*)this.buffer.GetUnsafePtr();
+            EnsureHeaderSlot(capacity);
+            var entries = (TEntry*)_buffer.GetUnsafePtr();
             ClearEntries(entries, capacity);
             ref var header = ref GetHeader(entries, capacity);
             InitializeHeader(entries, capacity, ref header, 0, 0);
@@ -519,18 +519,18 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         public void ReconstructAfterRemap()
         {
-            this.buffer.CheckWriteAccess();
-            this.RefCheck();
+            _buffer.CheckWriteAccess();
+            RefCheck();
 
-            var capacity = this.buffer.Length;
+            var capacity = _buffer.Length;
             if (capacity == 0)
             {
                 return;
             }
 
-            this.EnsureHeaderSlot(capacity);
+            EnsureHeaderSlot(capacity);
             var sizeOfEntry = UnsafeUtility.SizeOf<TEntry>();
-            var entries = (TEntry*)this.buffer.GetUnsafePtr();
+            var entries = (TEntry*)_buffer.GetUnsafePtr();
             var oldEntries = (TEntry*)UnsafeUtility.Malloc((long)sizeOfEntry * capacity, UnsafeUtility.AlignOf<TEntry>(), Allocator.Temp);
 
             UnsafeUtility.MemCpy(oldEntries, entries, (long)sizeOfEntry * capacity);
@@ -710,14 +710,14 @@ namespace BovineLabs.Core.Collections
 
         private readonly int GetCount()
         {
-            var capacity = this.buffer.Length;
+            var capacity = _buffer.Length;
             if (capacity == 0)
             {
                 return 0;
             }
 
-            var entries = (TEntry*)this.buffer.GetUnsafeReadOnlyPtr();
-            if (this.buffer.Capacity > capacity)
+            var entries = (TEntry*)_buffer.GetUnsafeReadOnlyPtr();
+            if (_buffer.Capacity > capacity)
             {
                 ref var header = ref GetHeader(entries, capacity);
                 if (IsHeaderValid(ref header, capacity))
@@ -743,10 +743,10 @@ namespace BovineLabs.Core.Collections
             CheckCapacity(newCapacity);
             CheckEntrySize();
 
-            var oldCapacity = this.buffer.Length;
+            var oldCapacity = _buffer.Length;
             if (oldCapacity == newCapacity)
             {
-                this.EnsureHeader(newCapacity);
+                EnsureHeader(newCapacity);
                 return;
             }
 
@@ -755,8 +755,8 @@ namespace BovineLabs.Core.Collections
             {
                 var sizeOfEntry = UnsafeUtility.SizeOf<TEntry>();
                 oldEntries = (TEntry*)UnsafeUtility.Malloc((long)sizeOfEntry * oldCapacity, UnsafeUtility.AlignOf<TEntry>(), Allocator.Temp);
-                UnsafeUtility.MemCpy(oldEntries, this.buffer.GetUnsafePtr(), (long)sizeOfEntry * oldCapacity);
-                this.buffer.Clear();
+                UnsafeUtility.MemCpy(oldEntries, _buffer.GetUnsafePtr(), (long)sizeOfEntry * oldCapacity);
+                _buffer.Clear();
             }
 
             if (newCapacity == 0)
@@ -764,10 +764,10 @@ namespace BovineLabs.Core.Collections
                 return;
             }
 
-            this.buffer.ResizeUninitialized(newCapacity);
-            this.EnsureHeaderSlot(newCapacity);
+            _buffer.ResizeUninitialized(newCapacity);
+            EnsureHeaderSlot(newCapacity);
 
-            var entries = (TEntry*)this.buffer.GetUnsafePtr();
+            var entries = (TEntry*)_buffer.GetUnsafePtr();
             ClearEntries(entries, newCapacity);
             ref var header = ref GetHeader(entries, newCapacity);
             InitializeHeader(entries, newCapacity, ref header, 0, 0);
@@ -814,9 +814,9 @@ namespace BovineLabs.Core.Collections
 
         private void Rehash(int capacity)
         {
-            this.EnsureHeaderSlot(capacity);
+            EnsureHeaderSlot(capacity);
             var sizeOfEntry = UnsafeUtility.SizeOf<TEntry>();
-            var entries = (TEntry*)this.buffer.GetUnsafePtr();
+            var entries = (TEntry*)_buffer.GetUnsafePtr();
             var oldEntries = (TEntry*)UnsafeUtility.Malloc((long)sizeOfEntry * capacity, UnsafeUtility.AlignOf<TEntry>(), Allocator.Temp);
 
             UnsafeUtility.MemCpy(oldEntries, entries, (long)sizeOfEntry * capacity);
@@ -834,12 +834,12 @@ namespace BovineLabs.Core.Collections
                 return false;
             }
 
-            if (this.buffer.Capacity > capacity)
+            if (_buffer.Capacity > capacity)
             {
                 return false;
             }
 
-            this.buffer.EnsureCapacity(capacity + 1);
+            _buffer.EnsureCapacity(capacity + 1);
             return true;
         }
 
@@ -850,8 +850,8 @@ namespace BovineLabs.Core.Collections
                 return;
             }
 
-            var headerSlotCreated = this.EnsureHeaderSlot(capacity);
-            var entries = (TEntry*)this.buffer.GetUnsafePtr();
+            var headerSlotCreated = EnsureHeaderSlot(capacity);
+            var entries = (TEntry*)_buffer.GetUnsafePtr();
             ref var header = ref GetHeader(entries, capacity);
             if (headerSlotCreated)
             {
@@ -867,12 +867,12 @@ namespace BovineLabs.Core.Collections
         [Conditional("UNITY_DOTS_DEBUG")]
         private readonly void RefCheck()
         {
-            if (this.buffer.Length > this.buffer.Capacity)
+            if (_buffer.Length > _buffer.Capacity)
             {
                 throw new InvalidOperationException("DynamicMultiDictionary buffer length exceeds capacity");
             }
 
-            CheckCapacity(this.buffer.Length);
+            CheckCapacity(_buffer.Length);
             CheckEntrySize();
         }
 

@@ -10,7 +10,7 @@
 
         public Ptr(void* value)
         {
-            this.Value = value;
+            Value = value;
         }
 
         public static implicit operator void*(Ptr ptr)
@@ -25,12 +25,12 @@
 
         public bool Equals(Ptr other)
         {
-            return this.Value == other.Value;
+            return Value == other.Value;
         }
 
         public override int GetHashCode()
         {
-            return unchecked((int)(long)this.Value);
+            return unchecked((int)(long)Value);
         }
     }
 }

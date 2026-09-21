@@ -11,15 +11,15 @@
         private const int Idx = 3;
         private const int Shift = (1 << Idx) - 1;
 
-        private T data;
+        private T _data;
 
         public int Length => UnsafeUtility.SizeOf<T>() << 3;
 
         public void Set(int pos, bool value)
         {
-            this.CheckArgs(pos, 1);
+            CheckArgs(pos, 1);
 
-            fixed (T* t = &this.data)
+            fixed (T* t = &_data)
             {
                 var ptr = (byte*)t;
 
@@ -34,9 +34,9 @@
 
         public bool IsSet(int pos)
         {
-            this.CheckArgs(pos, 1);
+            CheckArgs(pos, 1);
 
-            fixed (T* t = &this.data)
+            fixed (T* t = &_data)
             {
                 var ptr = (byte*)t;
 
@@ -49,7 +49,7 @@
 
         public void Reset()
         {
-            fixed (T* t = &this.data)
+            fixed (T* t = &_data)
             {
                 UnsafeUtility.MemClear(t, UnsafeUtility.SizeOf<T>());
             }
@@ -58,9 +58,9 @@
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         private void CheckArgs(int pos, int numBits)
         {
-            if (pos < 0 || pos >= this.Length || numBits < 1)
+            if (pos < 0 || pos >= Length || numBits < 1)
             {
-                throw new ArgumentException($"BitArray invalid arguments: pos {pos} (must be 0-{this.Length}), numBits {numBits} (must be greater than 0).");
+                throw new ArgumentException($"BitArray invalid arguments: pos {pos} (must be 0-{Length}), numBits {numBits} (must be greater than 0).");
             }
         }
     }

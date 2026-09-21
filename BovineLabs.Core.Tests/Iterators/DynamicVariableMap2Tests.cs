@@ -14,7 +14,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void KeysAndColumnsPointers_AreAligned_SmallCapacity()
         {
-            var map = this.CreateSmallCapacityMap();
+            var map = CreateSmallCapacityMap();
 
             var helper = map.Helper;
             Assert.IsNotNull((IntPtr)helper, "Helper pointer should not be null");
@@ -44,7 +44,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void WhenRemovingItems_ShouldUpdateCollectionCorrectly()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
             map.Add(1, 0.5f, 5, 10);
             map.Add(2, -1.5f, 7, 20);
             map.Add(3, 35.5f, 9, 30);
@@ -76,7 +76,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void TryAddVsAdd_ShouldBehaveDifferently_WithDuplicateKeys()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
             map.Add(42, 42.5f, 100, 25);
 
             // TryAdd returns false and doesn't modify the map for duplicate keys
@@ -95,7 +95,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void Replace_WithNonExistentKey_ShouldThrow()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
             map.Add(100, 100.5f, 50, 25);
 
             Assert.Throws<ArgumentException>(() => map.Replace(999, 75, 40), "Replace should throw ArgumentException for non-existent key");
@@ -104,7 +104,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void DifferentColumnCombinations_ShouldWorkIndependently()
         {
-            var map = this.CreateMap();
+            var map = CreateMap();
 
             // Add items with various column combinations
             map.Add(1, 1.0f, 10, 100);
@@ -128,9 +128,8 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private DynamicVariableMap<int, float, short, MultiHashColumn<short>, byte, MultiHashColumn<byte>> CreateMap(int growth = 64)
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicVariableMap2TestsBuffer));
-            return this
-                .Manager
+            var entity = Manager.CreateEntity(typeof(DynamicVariableMap2TestsBuffer));
+            return Manager
                 .GetBuffer<DynamicVariableMap2TestsBuffer>(entity)
                 .InitializeVariableMap<DynamicVariableMap2TestsBuffer, int, float, short, MultiHashColumn<short>, byte, MultiHashColumn<byte>>(0, growth)
                 .AsVariableMap<DynamicVariableMap2TestsBuffer, int, float, short, MultiHashColumn<short>, byte, MultiHashColumn<byte>>();
@@ -138,9 +137,8 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private DynamicVariableMap<long, short, short, MultiHashColumn<short>, byte, MultiHashColumn<byte>> CreateSmallCapacityMap()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicVariableMap2TestsLongKeyShortValueBuffer));
-            return this
-                .Manager
+            var entity = Manager.CreateEntity(typeof(DynamicVariableMap2TestsLongKeyShortValueBuffer));
+            return Manager
                 .GetBuffer<DynamicVariableMap2TestsLongKeyShortValueBuffer>(entity)
                 .InitializeVariableMap<DynamicVariableMap2TestsLongKeyShortValueBuffer, long, short, short, MultiHashColumn<short>, byte, MultiHashColumn<byte>>(0, 1)
                 .AsVariableMap<DynamicVariableMap2TestsLongKeyShortValueBuffer, long, short, short, MultiHashColumn<short>, byte, MultiHashColumn<byte>>();

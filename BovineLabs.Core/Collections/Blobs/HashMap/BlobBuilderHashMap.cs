@@ -7,7 +7,7 @@
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-        private BlobBuilderHashMapData<TKey, TValue> data;
+        private BlobBuilderHashMapData<TKey, TValue> _data;
 
         internal BlobBuilderHashMap(int capacity, int bucketCapacityRatio, ref BlobBuilder blobBuilder, ref BlobHashMapData<TKey, TValue> data)
         {
@@ -23,17 +23,17 @@
             }
 #endif
 
-            this.data = new BlobBuilderHashMapData<TKey, TValue>(capacity, bucketCapacityRatio, ref blobBuilder, ref data);
+            _data = new BlobBuilderHashMapData<TKey, TValue>(capacity, bucketCapacityRatio, ref blobBuilder, ref data);
         }
 
-        public int Capacity => this.data.KeyCapacity;
+        public int Capacity => _data.KeyCapacity;
 
-        public int Count => this.data.Count;
+        public int Count => _data.Count;
 
         public void Add(TKey key, TValue item)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (!this.data.TryAdd(key, item, false))
+            if (!_data.TryAdd(key, item, false))
             {
                 throw new ArgumentException($"An item with key {key} already exists", nameof(key));
             }
@@ -44,17 +44,17 @@
 
         public ref TValue AddUnique(TKey key)
         {
-            return ref this.data.AddUnique(key, false);
+            return ref _data.AddUnique(key, false);
         }
 
         public bool TryAdd(TKey key, TValue value)
         {
-            return this.data.TryAdd(key, value, false);
+            return _data.TryAdd(key, value, false);
         }
 
         public bool ContainsKey(TKey key)
         {
-            return this.data.ContainsKey(key);
+            return _data.ContainsKey(key);
         }
     }
 }

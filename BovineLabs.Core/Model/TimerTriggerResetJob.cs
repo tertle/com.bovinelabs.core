@@ -20,12 +20,12 @@
         public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
         {
             // RO so we don't trigger filter unless required
-            var remainings = chunk.GetRequiredComponentDataPtrRO(ref this.RemainingHandle);
+            var remainings = chunk.GetRequiredComponentDataPtrRO(ref RemainingHandle);
 
             var length = UnsafeUtility.SizeOf<float>() * chunk.Count;
-            if (UnsafeUtility.MemCmp(remainings, this.Zeros, length) != 0)
+            if (UnsafeUtility.MemCmp(remainings, Zeros, length) != 0)
             {
-                chunk.SetChangeFilter(ref this.RemainingHandle);
+                chunk.SetChangeFilter(ref RemainingHandle);
             }
         }
     }

@@ -17,6 +17,6 @@ namespace BovineLabs.Core.Internal
         public HashSet<UntypedWeakReferenceId> Blobs { get; } = new();
 
         public bool IsEmpty =>
-            this.Archives.Count == 0 && this.Files.Count == 0 && this.Objects.Count == 0 && this.Scenes.Count == 0 && this.Blobs.Count == 0;
+            Archives.Count == 0 && Files.Count == 0 && Objects.Count == 0 && Scenes.Count == 0 && Blobs.Count == 0;
     }
 }

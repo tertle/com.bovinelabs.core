@@ -5,46 +5,46 @@
 
     public struct EntityManagerCommands : IEntityCommands
     {
-        private EntityManager entityManager;
-        private BlobAssetStore blobAssetStore;
+        private EntityManager _entityManager;
+        private BlobAssetStore _blobAssetStore;
 
         public EntityManagerCommands(EntityManager entityManager, Entity localEntity = default, BlobAssetStore blobAssetStore = default)
         {
-            this.entityManager = entityManager;
-            this.Entity = localEntity;
-            this.blobAssetStore = blobAssetStore;
+            _entityManager = entityManager;
+            Entity = localEntity;
+            _blobAssetStore = blobAssetStore;
         }
 
         public Entity Entity { get; set; }
 
         public Entity CreateEntity()
         {
-            this.Entity = this.entityManager.CreateEntity();
-            return this.Entity;
+            Entity = _entityManager.CreateEntity();
+            return Entity;
         }
 
         public Entity Instantiate(Entity prefab)
         {
-            this.Entity = this.entityManager.Instantiate(prefab);
-            return this.Entity;
+            Entity = _entityManager.Instantiate(prefab);
+            return Entity;
         }
 
         public void SetName(FixedString64Bytes name)
         {
-            this.entityManager.SetName(this.Entity, name);
+            _entityManager.SetName(Entity, name);
         }
 
         public void SetName(Entity entity, FixedString64Bytes name)
         {
-            this.entityManager.SetName(entity, name);
+            _entityManager.SetName(entity, name);
         }
 
         public void AddBlobAsset<T>(ref BlobAssetReference<T> blobAssetReference, out Hash128 objectHash)
             where T : unmanaged
         {
-            if (this.blobAssetStore.IsCreated)
+            if (_blobAssetStore.IsCreated)
             {
-                this.blobAssetStore.TryAdd(ref blobAssetReference, out objectHash);
+                _blobAssetStore.TryAdd(ref blobAssetReference, out objectHash);
             }
             else
             {
@@ -55,71 +55,71 @@
         public void AddComponent<T>()
             where T : unmanaged, IComponentData
         {
-            this.AddComponent<T>(this.Entity);
+            AddComponent<T>(Entity);
         }
 
         public void AddComponent<T>(Entity entity)
             where T : unmanaged, IComponentData
         {
-            this.entityManager.AddComponent<T>(entity);
+            _entityManager.AddComponent<T>(entity);
         }
 
         public void AddComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            this.AddComponent(this.Entity, component);
+            AddComponent(Entity, component);
         }
 
         public void AddComponent<T>(Entity entity, in T component)
             where T : unmanaged, IComponentData
         {
-            this.entityManager.AddComponentData(entity, component);
+            _entityManager.AddComponentData(entity, component);
         }
 
         public void AddComponent(in ComponentTypeSet components)
         {
-            this.AddComponent(this.Entity, components);
+            AddComponent(Entity, components);
         }
 
         public void AddComponent(Entity entity, in ComponentTypeSet components)
         {
-            this.entityManager.AddComponent(entity, components);
+            _entityManager.AddComponent(entity, components);
         }
 
         public void SetComponent<T>(in T component)
             where T : unmanaged, IComponentData
         {
-            this.SetComponent(this.Entity, component);
+            SetComponent(Entity, component);
         }
 
         public void SetComponent<T>(Entity entity, in T component)
             where T : unmanaged, IComponentData
         {
-            this.entityManager.SetComponentData(entity, component);
+            _entityManager.SetComponentData(entity, component);
         }
 
         public DynamicBuffer<T> AddBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            return this.AddBuffer<T>(this.Entity);
+            return AddBuffer<T>(Entity);
         }
 
         public DynamicBuffer<T> AddBuffer<T>(Entity entity)
             where T : unmanaged, IBufferElementData
         {
-            return this.entityManager.AddBuffer<T>(entity);
+            return _entityManager.AddBuffer<T>(entity);
         }
 
         public DynamicBuffer<T> SetBuffer<T>()
             where T : unmanaged, IBufferElementData
         {
-            return this.SetBuffer<T>(this.Entity);
+            return SetBuffer<T>(Entity);
         }
 
         public DynamicBuffer<T> SetBuffer<T>(Entity entity)
             where T : unmanaged, IBufferElementData
         {
-            var buffer = this.entityManager.GetBuffer<T>(entity);
+            var buffer = _entityManager.GetBuffer<T>(entity);
             buffer.Clear();
             return buffer;
         }
@@ -127,37 +127,37 @@
         public void AppendToBuffer<T>(in T element)
             where T : unmanaged, IBufferElementData
         {
-            this.AppendToBuffer(this.Entity, element);
+            AppendToBuffer(Entity, element);
         }
 
         public void AppendToBuffer<T>(Entity entity, in T element)
             where T : unmanaged, IBufferElementData
         {
-            this.entityManager.GetBuffer<T>(entity).Add(element);
+            _entityManager.GetBuffer<T>(entity).Add(element);
         }
 
         public void SetComponentEnabled<T>(bool enabled)
             where T : unmanaged, IEnableableComponent
         {
-            this.SetComponentEnabled<T>(this.Entity, enabled);
+            SetComponentEnabled<T>(Entity, enabled);
         }
 
         public void SetComponentEnabled<T>(Entity entity, bool enabled)
             where T : unmanaged, IEnableableComponent
         {
-            this.entityManager.SetComponentEnabled<T>(entity, enabled);
+            _entityManager.SetComponentEnabled<T>(entity, enabled);
         }
 
         public void AddSharedComponent<T>(Entity entity, in T component)
             where T : unmanaged, ISharedComponentData
         {
-            this.entityManager.AddSharedComponent(entity, component);
+            _entityManager.AddSharedComponent(entity, component);
         }
 
         public void SetSharedComponent<T>(Entity entity, in T component)
             where T : unmanaged, ISharedComponentData
         {
-            this.entityManager.SetSharedComponent(entity, component);
+            _entityManager.SetSharedComponent(entity, component);
         }
     }
 }

@@ -10,7 +10,7 @@
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            var attr = (MinMaxAttribute)this.attribute;
+            var attr = (MinMaxAttribute)attribute;
 
             if (property.type == "Vector2")
             {

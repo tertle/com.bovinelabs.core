@@ -20,11 +20,11 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void GeneratedSerializer_RoundTripsDuplicatesAndPreservesValueOrder()
         {
-            var sourceBuffer = this.CreateMultiHashMapBuffer();
+            var sourceBuffer = CreateMultiHashMapBuffer();
             var source = sourceBuffer.AsMultiHashMap<DynamicMultiHashMapTestsBuffer, int, byte>();
             FillOrderedDuplicateWorkload(ref source);
 
-            var targetBuffer = this.RoundTripGenerated(sourceBuffer);
+            var targetBuffer = RoundTripGenerated(sourceBuffer);
             var rebuilt = targetBuffer.AsMultiHashMap<DynamicMultiHashMapTestsBuffer, int, byte>();
 
             AssertOrderedDuplicateWorkload(rebuilt);
@@ -34,7 +34,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void RawSerializer_RoundTripsDuplicateIdenticalPairs()
         {
-            var sourceBuffer = this.CreateRawMultiHashMapBuffer();
+            var sourceBuffer = CreateRawMultiHashMapBuffer();
             var source = sourceBuffer.AsMultiHashMap<DynamicMultiHashMapRawStableModeTestsBuffer, int, byte>();
             source.Add(5, 9);
             source.Add(5, 9);
@@ -46,7 +46,7 @@ namespace BovineLabs.Core.Tests.Iterators
             DynamicMultiHashMapNetcodeSerializer<DynamicMultiHashMapRawStableModeTestsBuffer, int, byte>.CopyToSnapshot(
                 IntPtr.Zero, (IntPtr)snapshot.GetUnsafePtr(), 0, 1, (IntPtr)sourceBytes.GetPtr(), 1, sourceBytes.Length);
 
-            var targetBuffer = this.CreateRawMultiHashMapBuffer();
+            var targetBuffer = CreateRawMultiHashMapBuffer();
             var targetBytes = targetBuffer.Reinterpret<byte>();
             targetBytes.ResizeUninitialized(sourceBytes.Length);
 
@@ -67,7 +67,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void RawStructSerializer_RoundTripsStructKeyAndBLId()
         {
-            var sourceBuffer = this.CreateRawStructMultiHashMapBuffer();
+            var sourceBuffer = CreateRawStructMultiHashMapBuffer();
             var source = sourceBuffer.AsMultiHashMap<DynamicMultiHashMapRawStableObjectIdTestsBuffer, GeneratedStableKey, BLId>();
             var firstTarget = new GeneratedStableKey { Id = 5, Version = 1 };
             var secondTarget = new GeneratedStableKey { Id = 6, Version = 1 };
@@ -81,7 +81,7 @@ namespace BovineLabs.Core.Tests.Iterators
             DynamicMultiHashMapRawStableObjectIdTestsBufferDynamicMultiHashMapGhostSerializer.CopyToSnapshot(
                 IntPtr.Zero, (IntPtr)snapshot.GetUnsafePtr(), 0, 1, (IntPtr)sourceBytes.GetPtr(), 1, sourceBytes.Length);
 
-            var targetBuffer = this.CreateRawStructMultiHashMapBuffer();
+            var targetBuffer = CreateRawStructMultiHashMapBuffer();
             var targetBytes = targetBuffer.Reinterpret<byte>();
             targetBytes.ResizeUninitialized(sourceBytes.Length);
 
@@ -107,7 +107,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public unsafe void GeneratedStructCodec_RoundTripsThroughEmittedSerializer()
         {
-            var sourceBuffer = this.CreateGeneratedStructMultiHashMapBuffer();
+            var sourceBuffer = CreateGeneratedStructMultiHashMapBuffer();
             var source = sourceBuffer.AsMultiHashMap<DynamicMultiHashMapGeneratedStructTestsBuffer, GeneratedPaddedKey, GeneratedMixedValue>();
             var key = new GeneratedPaddedKey { A = 1, B = 10, @event = 100 };
             var collidingKey = new GeneratedPaddedKey { A = 2, B = 10, @event = 99 };
@@ -121,7 +121,7 @@ namespace BovineLabs.Core.Tests.Iterators
             DynamicMultiHashMapGeneratedStructTestsBufferDynamicMultiHashMapGhostSerializer.CopyToSnapshot(
                 IntPtr.Zero, (IntPtr)snapshot.GetUnsafePtr(), 0, 1, (IntPtr)sourceBytes.GetPtr(), 1, sourceBytes.Length);
 
-            var targetBuffer = this.CreateGeneratedStructMultiHashMapBuffer();
+            var targetBuffer = CreateGeneratedStructMultiHashMapBuffer();
             var targetBytes = targetBuffer.Reinterpret<byte>();
             targetBytes.ResizeUninitialized(sourceBytes.Length);
 
@@ -198,7 +198,7 @@ namespace BovineLabs.Core.Tests.Iterators
                 DynamicMultiHashMapTestsBufferDynamicMultiHashMapGhostSerializer.CopyToSnapshot(
                     IntPtr.Zero, (IntPtr)snapshot.GetUnsafePtr(), 0, 1, (IntPtr)sourceBytes.GetPtr(), 1, sourceBytes.Length);
 
-                var targetBuffer = this.CreateMultiHashMapBuffer();
+                var targetBuffer = CreateMultiHashMapBuffer();
                 var targetBytes = targetBuffer.Reinterpret<byte>();
                 targetBytes.ResizeUninitialized(sourceBytes.Length);
 
@@ -217,29 +217,29 @@ namespace BovineLabs.Core.Tests.Iterators
 
         private DynamicBuffer<DynamicMultiHashMapTestsBuffer> CreateMultiHashMapBuffer()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicMultiHashMapTestsBuffer));
-            return this.Manager.GetBuffer<DynamicMultiHashMapTestsBuffer>(entity)
+            var entity = Manager.CreateEntity(typeof(DynamicMultiHashMapTestsBuffer));
+            return Manager.GetBuffer<DynamicMultiHashMapTestsBuffer>(entity)
                 .InitializeMultiHashMap<DynamicMultiHashMapTestsBuffer, int, byte>(0, MinGrowth);
         }
 
         private DynamicBuffer<DynamicMultiHashMapRawStableModeTestsBuffer> CreateRawMultiHashMapBuffer()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicMultiHashMapRawStableModeTestsBuffer));
-            return this.Manager.GetBuffer<DynamicMultiHashMapRawStableModeTestsBuffer>(entity)
+            var entity = Manager.CreateEntity(typeof(DynamicMultiHashMapRawStableModeTestsBuffer));
+            return Manager.GetBuffer<DynamicMultiHashMapRawStableModeTestsBuffer>(entity)
                 .InitializeMultiHashMap<DynamicMultiHashMapRawStableModeTestsBuffer, int, byte>(0, MinGrowth);
         }
 
         private DynamicBuffer<DynamicMultiHashMapRawStableObjectIdTestsBuffer> CreateRawStructMultiHashMapBuffer()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicMultiHashMapRawStableObjectIdTestsBuffer));
-            return this.Manager.GetBuffer<DynamicMultiHashMapRawStableObjectIdTestsBuffer>(entity)
+            var entity = Manager.CreateEntity(typeof(DynamicMultiHashMapRawStableObjectIdTestsBuffer));
+            return Manager.GetBuffer<DynamicMultiHashMapRawStableObjectIdTestsBuffer>(entity)
                 .InitializeMultiHashMap<DynamicMultiHashMapRawStableObjectIdTestsBuffer, GeneratedStableKey, BLId>(0, MinGrowth);
         }
 
         private DynamicBuffer<DynamicMultiHashMapGeneratedStructTestsBuffer> CreateGeneratedStructMultiHashMapBuffer()
         {
-            var entity = this.Manager.CreateEntity(typeof(DynamicMultiHashMapGeneratedStructTestsBuffer));
-            return this.Manager.GetBuffer<DynamicMultiHashMapGeneratedStructTestsBuffer>(entity)
+            var entity = Manager.CreateEntity(typeof(DynamicMultiHashMapGeneratedStructTestsBuffer));
+            return Manager.GetBuffer<DynamicMultiHashMapGeneratedStructTestsBuffer>(entity)
                 .InitializeMultiHashMap<DynamicMultiHashMapGeneratedStructTestsBuffer, GeneratedPaddedKey, GeneratedMixedValue>(0, MinGrowth);
         }
 

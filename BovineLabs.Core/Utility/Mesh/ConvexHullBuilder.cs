@@ -654,14 +654,14 @@ namespace BovineLabs.Core.Utility
 
             public Data(Allocator allocator)
             {
-                this.Faces = new NativeHashMap<int, Face>(0, allocator);
-                this.OpenSet = new NativeList<PointFace>(0, allocator);
-                this.LitFaces = new NativeHashSet<int>(0, allocator);
-                this.Horizon = new NativeList<HorizonEdge>(0, allocator);
-                this.HullVerts = new NativeHashMap<int, int>(0, allocator);
+                Faces = new NativeHashMap<int, Face>(0, allocator);
+                OpenSet = new NativeList<PointFace>(0, allocator);
+                LitFaces = new NativeHashSet<int>(0, allocator);
+                Horizon = new NativeList<HorizonEdge>(0, allocator);
+                HullVerts = new NativeHashMap<int, int>(0, allocator);
 
-                this.OpenSetTail = -1;
-                this.FaceCount = 0;
+                OpenSetTail = -1;
+                FaceCount = 0;
             }
         }
 
@@ -682,24 +682,24 @@ namespace BovineLabs.Core.Utility
 
             public Face(int v0, int v1, int v2, int o0, int o1, int o2, float3 normal)
             {
-                this.Vertex0 = v0;
-                this.Vertex1 = v1;
-                this.Vertex2 = v2;
-                this.Opposite0 = o0;
-                this.Opposite1 = o1;
-                this.Opposite2 = o2;
-                this.Normal = normal;
+                Vertex0 = v0;
+                Vertex1 = v1;
+                Vertex2 = v2;
+                Opposite0 = o0;
+                Opposite1 = o1;
+                Opposite2 = o2;
+                Normal = normal;
             }
 
             public bool Equals(Face other)
             {
-                return this.Vertex0 == other.Vertex0 &&
-                    this.Vertex1 == other.Vertex1 &&
-                    this.Vertex2 == other.Vertex2 &&
-                    this.Opposite0 == other.Opposite0 &&
-                    this.Opposite1 == other.Opposite1 &&
-                    this.Opposite2 == other.Opposite2 &&
-                    this.Normal.Equals(other.Normal);
+                return Vertex0 == other.Vertex0 &&
+                    Vertex1 == other.Vertex1 &&
+                    Vertex2 == other.Vertex2 &&
+                    Opposite0 == other.Opposite0 &&
+                    Opposite1 == other.Opposite1 &&
+                    Opposite2 == other.Opposite2 &&
+                    Normal.Equals(other.Normal);
             }
         }
 
@@ -711,9 +711,9 @@ namespace BovineLabs.Core.Utility
 
             public PointFace(int p, int f, float d)
             {
-                this.Point = p;
-                this.Face = f;
-                this.Distance = d;
+                Point = p;
+                Face = f;
+                Distance = d;
             }
         }
 

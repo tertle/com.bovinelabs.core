@@ -78,16 +78,16 @@ namespace BovineLabs.Core.UI
 
         private sealed class ThemeBinding
         {
-            private readonly VisualElement root;
+            private readonly VisualElement _root;
 
             public ThemeBinding(VisualElement root)
             {
-                this.root = root;
-                root.RegisterCallback<AttachToPanelEvent>(this.OnAttach);
-                root.RegisterCallback<DetachFromPanelEvent>(this.OnDetach);
+                _root = root;
+                root.RegisterCallback<AttachToPanelEvent>(OnAttach);
+                root.RegisterCallback<DetachFromPanelEvent>(OnDetach);
                 if (root.panel != null)
                 {
-                    ThemeChanged += this.OnThemeChanged;
+                    ThemeChanged += OnThemeChanged;
                 }
             }
 
@@ -102,31 +102,31 @@ namespace BovineLabs.Core.UI
                     }
                 }
 
-                if (!this.root.styleSheets.Contains(styleSheet))
+                if (!_root.styleSheets.Contains(styleSheet))
                 {
-                    this.root.styleSheets.Add(styleSheet);
+                    _root.styleSheets.Add(styleSheet);
                 }
 
-                this.root.AddToClassList(RootClass);
-                this.OnThemeChanged(Theme);
+                _root.AddToClassList(RootClass);
+                OnThemeChanged(Theme);
             }
 
             private void OnAttach(AttachToPanelEvent evt)
             {
-                ThemeChanged -= this.OnThemeChanged;
-                ThemeChanged += this.OnThemeChanged;
-                this.Refresh();
+                ThemeChanged -= OnThemeChanged;
+                ThemeChanged += OnThemeChanged;
+                Refresh();
             }
 
             private void OnDetach(DetachFromPanelEvent evt)
             {
-                ThemeChanged -= this.OnThemeChanged;
+                ThemeChanged -= OnThemeChanged;
             }
 
             private void OnThemeChanged(BovineTheme value)
             {
-                this.root.EnableInClassList(WorksClass, value == BovineTheme.BovineWorks);
-                this.root.EnableInClassList(CuratorClass, value == BovineTheme.Curator);
+                _root.EnableInClassList(WorksClass, value == BovineTheme.BovineWorks);
+                _root.EnableInClassList(CuratorClass, value == BovineTheme.Curator);
             }
         }
     }

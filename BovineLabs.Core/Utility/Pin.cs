@@ -28,7 +28,7 @@
                 // TODO can use this in coreclr update
                 // System.Runtime.CompilerServices.Unsafe.SkipInit(out this);
                 this = default;
-                this.Object = o;
+                Object = o;
             }
         }
 

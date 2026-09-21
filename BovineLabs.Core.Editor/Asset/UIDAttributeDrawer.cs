@@ -20,7 +20,7 @@ namespace BovineLabs.Core.Editor.Asset
                 return new Label($"{nameof(UIDAttribute)} on non int field");
             }
 
-            var keyedAsset = (UIDAttribute)this.attribute;
+            var keyedAsset = (UIDAttribute)attribute;
             var assets = GetBestType(keyedAsset.Type);
 
             if (assets.Count == 0)

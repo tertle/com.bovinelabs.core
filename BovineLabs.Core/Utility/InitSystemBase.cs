@@ -7,7 +7,7 @@ namespace BovineLabs.Core.Utility
     {
         protected override void OnUpdate()
         {
-            var initialization = this.World.GetExistingSystemManaged<InitializationSystemGroup>();
+            var initialization = World.GetExistingSystemManaged<InitializationSystemGroup>();
             initialization.RemoveSystemFromUpdateList(this);
         }
     }

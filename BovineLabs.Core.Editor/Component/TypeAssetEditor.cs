@@ -11,7 +11,7 @@
     [CustomEditor(typeof(TypeAsset))]
     public class TypeAssetEditor : ElementEditor
     {
-        private Button button;
+        private Button _button;
 
         protected virtual string SearchQuery => "unmanaged=true";
 
@@ -19,7 +19,7 @@
         {
             return property.name switch
             {
-                "typeName" => this.button = new Button(() => this.Search(property))
+                "_typeName" => _button = new Button(() => Search(property))
                 {
                     text = FormatName(property.stringValue),
                     tooltip = property.stringValue,
@@ -30,7 +30,7 @@
 
         private void Search(SerializedProperty property)
         {
-            var context = SearchService.CreateContext(TypeAsset.SearchProviderType, this.SearchQuery);
+            var context = SearchService.CreateContext(TypeAsset.SearchProviderType, SearchQuery);
 
             var viewState =
                 new SearchViewState(context,
@@ -48,8 +48,8 @@
 
                         property.stringValue = item.data as string ?? string.Empty;
                         property.serializedObject.ApplyModifiedProperties();
-                        this.button!.text = FormatName(property.stringValue);
-                        this.button.tooltip = property.stringValue;
+                        _button!.text = FormatName(property.stringValue);
+                        _button.tooltip = property.stringValue;
                     },
                 };
 

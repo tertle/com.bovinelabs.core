@@ -15,9 +15,9 @@ namespace BovineLabs.Core.Editor.VFXGraphTemplateWindow
         [NoAutoStaticsCleanup]
         private static readonly UITemplate Window = new(RootUIPath + "VFXGraphTemplateWindow");
 
-        private TextField nameField;
-        private TextField categoryField;
-        private TextField descriptionField;
+        private TextField _nameField;
+        private TextField _categoryField;
+        private TextField _descriptionField;
 
         [MenuItem(EditorMenus.RootMenuTools + "Create VFX Template", priority = -15)]
         private static void ShowWindow()
@@ -30,14 +30,14 @@ namespace BovineLabs.Core.Editor.VFXGraphTemplateWindow
 
         private void OnEnable()
         {
-            var root = this.rootVisualElement;
+            var root = rootVisualElement;
 
             Window.Clone(root);
 
-            this.rootVisualElement.Q<Button>().clicked += this.CreateTemplate;
-            this.nameField = this.rootVisualElement.Q<TextField>("Name");
-            this.categoryField = this.rootVisualElement.Q<TextField>("Category");
-            this.descriptionField = this.rootVisualElement.Q<TextField>("Description");
+            rootVisualElement.Q<Button>().clicked += CreateTemplate;
+            _nameField = rootVisualElement.Q<TextField>("Name");
+            _categoryField = rootVisualElement.Q<TextField>("Category");
+            _descriptionField = rootVisualElement.Q<TextField>("Description");
         }
 
         private void CreateTemplate()
@@ -48,7 +48,7 @@ namespace BovineLabs.Core.Editor.VFXGraphTemplateWindow
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(this.nameField!.value))
+            if (string.IsNullOrWhiteSpace(_nameField!.value))
             {
                 BLGlobalLogger.LogErrorString("No name set");
                 return;
@@ -56,9 +56,9 @@ namespace BovineLabs.Core.Editor.VFXGraphTemplateWindow
 
             VFXTemplateHelper.TrySetTemplate(path, new VFXTemplateDescriptor
             {
-                name = this.nameField.value,
-                category = this.categoryField!.value,
-                description = this.descriptionField!.value,
+                name = _nameField.value,
+                category = _categoryField!.value,
+                description = _descriptionField!.value,
             });
         }
 

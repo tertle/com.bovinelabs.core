@@ -10,22 +10,22 @@
     internal class ConfigVarSharedStaticStringContainer<T> : IConfigVarContainer<T>
         where T : unmanaged
     {
-        private readonly SharedStatic<T> field;
+        private readonly SharedStatic<T> _field;
 
         public ConfigVarSharedStaticStringContainer(SharedStatic<T> field)
         {
-            this.field = field;
+            _field = field;
         }
 
         T IConfigVarContainer<T>.Value
         {
-            get => this.field.Data;
-            set => this.field.Data = value;
+            get => _field.Data;
+            set => _field.Data = value;
         }
 
         string IConfigVarContainer.StringValue
         {
-            get => this.field switch
+            get => _field switch
             {
                 SharedStatic<FixedString32Bytes> s32 => s32.Data.ToString(),
                 SharedStatic<FixedString64Bytes> s64 => s64.Data.ToString(),
@@ -37,7 +37,7 @@
 
             set
             {
-                switch (this.field)
+                switch (_field)
                 {
                     case SharedStatic<FixedString32Bytes> s32:
                         s32.Data = new FixedString32Bytes(value);
@@ -69,7 +69,7 @@
         {
             get
             {
-                return this.field switch
+                return _field switch
                 {
                     SharedStatic<FixedString32Bytes> => typeof(FixedString32Bytes),
                     SharedStatic<FixedString64Bytes> => typeof(FixedString64Bytes),

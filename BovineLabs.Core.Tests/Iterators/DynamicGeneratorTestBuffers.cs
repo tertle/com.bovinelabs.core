@@ -80,12 +80,12 @@ namespace BovineLabs.Core.Tests.Iterators
 
         public bool Equals(GeneratedPaddedKey other)
         {
-            return this.A == other.A && this.B == other.B && this.@event == other.@event;
+            return A == other.A && B == other.B && @event == other.@event;
         }
 
         public override int GetHashCode()
         {
-            return (((this.B * 397) ^ this.A) * 397) ^ this.@event;
+            return (((B * 397) ^ A) * 397) ^ @event;
         }
     }
 
@@ -102,12 +102,12 @@ namespace BovineLabs.Core.Tests.Iterators
 
         public bool Equals(GeneratedStableKey other)
         {
-            return this.Id == other.Id && this.Version == other.Version;
+            return Id == other.Id && Version == other.Version;
         }
 
         public override int GetHashCode()
         {
-            return (this.Id * 397) ^ this.Version;
+            return (Id * 397) ^ Version;
         }
     }
 

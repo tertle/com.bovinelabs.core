@@ -24,10 +24,10 @@ namespace BovineLabs.Core.Settings
 
         protected sealed override void Initialize()
         {
-            Assert.AreEqual(this.GetType(), typeof(T));
+            Assert.AreEqual(GetType(), typeof(T));
             I = this as T;
 
-            this.OnInitialize();
+            OnInitialize();
         }
 
         protected virtual void OnInitialize()
@@ -57,7 +57,7 @@ namespace BovineLabs.Core.Settings
 #if UNITY_EDITOR
         internal void InitializeCreatedAsset()
         {
-            this.Initialize();
+            Initialize();
         }
 #endif
 

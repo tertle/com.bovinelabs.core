@@ -5,12 +5,12 @@
 
     public class LimitedRateNoCatchUpManager : IRateManager
     {
-        private bool didPushTime;
-        private double lastPushedTime;
+        private bool _didPushTime;
+        private double _lastPushedTime;
 
         public LimitedRateNoCatchUpManager(float defaultFixedTimestep)
         {
-            this.Timestep = defaultFixedTimestep;
+            Timestep = defaultFixedTimestep;
         }
 
         public float Timestep { get; set; }
@@ -18,26 +18,26 @@
         public bool ShouldGroupUpdate(ComponentSystemGroup group)
         {
             // Already pushed this frame
-            if (this.didPushTime)
+            if (_didPushTime)
             {
                 group.World.PopTime();
-                this.didPushTime = false;
+                _didPushTime = false;
                 return false;
             }
 
-            var deltaTime = (float)(group.World.Unmanaged.Time.ElapsedTime - this.lastPushedTime);
+            var deltaTime = (float)(group.World.Unmanaged.Time.ElapsedTime - _lastPushedTime);
 
             // Not enough time elapsed
-            if (group.World.Unmanaged.Time.ElapsedTime - this.lastPushedTime < this.Timestep)
+            if (group.World.Unmanaged.Time.ElapsedTime - _lastPushedTime < Timestep)
             {
                 return false;
             }
 
-            this.lastPushedTime = group.World.Unmanaged.Time.ElapsedTime;
+            _lastPushedTime = group.World.Unmanaged.Time.ElapsedTime;
 
             group.World.PushTime(new TimeData(group.World.Unmanaged.Time.ElapsedTime, deltaTime));
 
-            this.didPushTime = true;
+            _didPushTime = true;
             return true;
         }
     }

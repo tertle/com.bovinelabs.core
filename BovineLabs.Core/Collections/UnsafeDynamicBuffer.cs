@@ -20,84 +20,84 @@ namespace BovineLabs.Core.Collections
         where T : unmanaged, IBufferElementData
     {
         [NoAlias]
-        private BufferHeader* buffer;
+        private BufferHeader* _buffer;
 
         // Stores original internal capacity of the buffer header, so heap excess can be removed entirely when trimming.
-        private int internalCapacity;
+        private int _internalCapacity;
 
         internal UnsafeDynamicBuffer(BufferHeader* header, int internalCapacity)
         {
-            this.buffer = header;
-            this.internalCapacity = internalCapacity;
+            _buffer = header;
+            _internalCapacity = internalCapacity;
         }
 
         public int Length
         {
-            readonly get => this.buffer->Length;
-            set => this.ResizeUninitialized(value);
+            readonly get => _buffer->Length;
+            set => ResizeUninitialized(value);
         }
 
         public int Capacity
         {
             readonly get
             {
-                return this.buffer->Capacity;
+                return _buffer->Capacity;
             }
 
             set
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-                if (value < this.Length)
+                if (value < Length)
                 {
-                    throw new InvalidOperationException($"Capacity {value} can't be set smaller than Length {this.Length}");
+                    throw new InvalidOperationException($"Capacity {value} can't be set smaller than Length {Length}");
                 }
 #endif
-                BufferHeader.SetCapacity(this.buffer, value, UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), BufferHeader.TrashMode.RetainOldData, false,
-                    0, this.internalCapacity);
+                BufferHeader.SetCapacity(_buffer, value, UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), BufferHeader.TrashMode.RetainOldData, false,
+                    0, _internalCapacity);
             }
         }
 
-        public readonly bool IsEmpty => !this.IsCreated || this.Length == 0;
+        public readonly bool IsEmpty => !IsCreated || Length == 0;
 
-        public readonly bool IsCreated => this.buffer != null;
+        public readonly bool IsCreated => _buffer != null;
 
         public T this[int index]
         {
             readonly get
             {
-                this.CheckBounds(index);
-                return UnsafeUtility.ReadArrayElement<T>(BufferHeader.GetElementPointer(this.buffer), index);
+                CheckBounds(index);
+                return UnsafeUtility.ReadArrayElement<T>(BufferHeader.GetElementPointer(_buffer), index);
             }
 
             set
             {
-                this.CheckBounds(index);
-                UnsafeUtility.WriteArrayElement(BufferHeader.GetElementPointer(this.buffer), index, value);
+                CheckBounds(index);
+                UnsafeUtility.WriteArrayElement(BufferHeader.GetElementPointer(_buffer), index, value);
             }
         }
 
         public ref T ElementAt(int index)
         {
-            this.CheckBounds(index);
-            return ref UnsafeUtility.ArrayElementAsRef<T>(BufferHeader.GetElementPointer(this.buffer), index);
+            CheckBounds(index);
+            return ref UnsafeUtility.ArrayElementAsRef<T>(BufferHeader.GetElementPointer(_buffer), index);
         }
 
         public void ResizeUninitialized(int length)
         {
-            this.EnsureCapacity(length);
-            this.buffer->Length = length;
+            EnsureCapacity(length);
+            _buffer->Length = length;
         }
 
         public void Resize(int length, NativeArrayOptions options)
         {
-            this.EnsureCapacity(length);
+            EnsureCapacity(length);
 
-            var oldLength = this.buffer->Length;
-            this.buffer->Length = length;
+            var oldLength = _buffer->Length;
+            _buffer->Length = length;
             if (options == NativeArrayOptions.ClearMemory && oldLength < length)
             {
                 var num = length - oldLength;
-                var ptr = BufferHeader.GetElementPointer(this.buffer);
+                var ptr = BufferHeader.GetElementPointer(_buffer);
                 var sizeOf = UnsafeUtility.SizeOf<T>();
                 UnsafeUtility.MemClear(ptr + (oldLength * sizeOf), num * sizeOf);
             }
@@ -105,7 +105,7 @@ namespace BovineLabs.Core.Collections
 
         public void EnsureCapacity(int length)
         {
-            BufferHeader.EnsureCapacity(this.buffer, length, UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), BufferHeader.TrashMode.RetainOldData, false,
+            BufferHeader.EnsureCapacity(_buffer, length, UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), BufferHeader.TrashMode.RetainOldData, false,
                 0);
         }
 
@@ -114,15 +114,15 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         public void Clear()
         {
-            this.buffer->Length = 0;
+            _buffer->Length = 0;
         }
 
         public void TrimExcess()
         {
-            var oldPtr = this.buffer->Pointer;
-            var length = this.buffer->Length;
+            var oldPtr = _buffer->Pointer;
+            var length = _buffer->Length;
 
-            if (length == this.Capacity || oldPtr == null)
+            if (length == Capacity || oldPtr == null)
             {
                 return;
             }
@@ -134,9 +134,9 @@ namespace BovineLabs.Core.Collections
             byte* newPtr;
 
             // If the size fits in the internal buffer, prefer to move the elements back there.
-            if (length <= this.internalCapacity)
+            if (length <= _internalCapacity)
             {
-                newPtr = (byte*)(this.buffer + 1);
+                newPtr = (byte*)(_buffer + 1);
                 isInternal = true;
             }
             else
@@ -147,27 +147,27 @@ namespace BovineLabs.Core.Collections
 
             UnsafeUtility.MemCpy(newPtr, oldPtr, (long)elemSize * length);
 
-            this.buffer->Capacity = Math.Max(length, this.internalCapacity);
-            this.buffer->Pointer = isInternal ? null : newPtr;
+            _buffer->Capacity = Math.Max(length, _internalCapacity);
+            _buffer->Pointer = isInternal ? null : newPtr;
 
             CollectionMemory.Free(oldPtr, Allocator.Persistent);
         }
 
         public int Add(T elem)
         {
-            var length = this.Length;
-            this.ResizeUninitialized(length + 1);
+            var length = Length;
+            ResizeUninitialized(length + 1);
             this[length] = elem;
             return length;
         }
 
         public void Insert(int index, T elem)
         {
-            var length = this.Length;
-            this.ResizeUninitialized(length + 1);
-            this.CheckBounds(index); // CheckBounds after ResizeUninitialized since index == length is allowed
+            var length = Length;
+            ResizeUninitialized(length + 1);
+            CheckBounds(index); // CheckBounds after ResizeUninitialized since index == length is allowed
             var elemSize = UnsafeUtility.SizeOf<T>();
-            var basePtr = BufferHeader.GetElementPointer(this.buffer);
+            var basePtr = BufferHeader.GetElementPointer(_buffer);
             UnsafeUtility.MemMove(basePtr + ((index + 1) * elemSize), basePtr + (index * elemSize), (long)elemSize * (length - index));
             this[index] = elem;
         }
@@ -175,43 +175,43 @@ namespace BovineLabs.Core.Collections
         public void AddRange(NativeArray<T> newElems)
         {
             var elemSize = UnsafeUtility.SizeOf<T>();
-            var oldLength = this.Length;
-            this.ResizeUninitialized(oldLength + newElems.Length);
+            var oldLength = Length;
+            ResizeUninitialized(oldLength + newElems.Length);
 
-            var basePtr = BufferHeader.GetElementPointer(this.buffer);
+            var basePtr = BufferHeader.GetElementPointer(_buffer);
             UnsafeUtility.MemCpy(basePtr + ((long)oldLength * elemSize), newElems.GetUnsafeReadOnlyPtr(), (long)elemSize * newElems.Length);
         }
 
         public void RemoveRange(int index, int count)
         {
-            this.CheckBounds(index);
+            CheckBounds(index);
             if (count == 0)
             {
                 return;
             }
 
-            this.CheckBounds((index + count) - 1);
+            CheckBounds((index + count) - 1);
 
             var elemSize = UnsafeUtility.SizeOf<T>();
-            var basePtr = BufferHeader.GetElementPointer(this.buffer);
+            var basePtr = BufferHeader.GetElementPointer(_buffer);
 
-            UnsafeUtility.MemMove(basePtr + (index * elemSize), basePtr + ((index + count) * elemSize), (long)elemSize * (this.Length - count - index));
+            UnsafeUtility.MemMove(basePtr + (index * elemSize), basePtr + ((index + count) * elemSize), (long)elemSize * (Length - count - index));
 
-            this.buffer->Length -= count;
+            _buffer->Length -= count;
         }
 
         public void RemoveRangeSwapBack(int index, int count)
         {
-            this.CheckBounds(index);
+            CheckBounds(index);
             if (count == 0)
             {
                 return;
             }
 
-            this.CheckBounds((index + count) - 1);
+            CheckBounds((index + count) - 1);
 
-            ref var l = ref this.buffer->Length;
-            var basePtr = BufferHeader.GetElementPointer(this.buffer);
+            ref var l = ref _buffer->Length;
+            var basePtr = BufferHeader.GetElementPointer(_buffer);
             var elemSize = UnsafeUtility.SizeOf<T>();
             var copyFrom = math.max(l - count, index + count);
             void* dst = basePtr + (index * elemSize);
@@ -222,19 +222,19 @@ namespace BovineLabs.Core.Collections
 
         public void RemoveAt(int index)
         {
-            this.RemoveRange(index, 1);
+            RemoveRange(index, 1);
         }
 
         public void RemoveAtSwapBack(int index)
         {
-            this.CheckBounds(index);
+            CheckBounds(index);
 
-            ref var l = ref this.buffer->Length;
+            ref var l = ref _buffer->Length;
             l -= 1;
             var newLength = l;
             if (index != newLength)
             {
-                var basePtr = BufferHeader.GetElementPointer(this.buffer);
+                var basePtr = BufferHeader.GetElementPointer(_buffer);
                 UnsafeUtility.WriteArrayElement(basePtr, index, UnsafeUtility.ReadArrayElement<T>(basePtr, newLength));
             }
         }
@@ -242,13 +242,13 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void* GetUnsafePtr()
         {
-            return BufferHeader.GetElementPointer(this.buffer);
+            return BufferHeader.GetElementPointer(_buffer);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void* GetUnsafeReadOnlyPtr()
         {
-            return BufferHeader.GetElementPointer(this.buffer);
+            return BufferHeader.GetElementPointer(_buffer);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -269,7 +269,7 @@ namespace BovineLabs.Core.Collections
             where TU : unmanaged, IBufferElementData
         {
             AssertReinterpretSizesMatch<TU>();
-            return new UnsafeDynamicBuffer<TU>(this.buffer, this.internalCapacity);
+            return new UnsafeDynamicBuffer<TU>(_buffer, _internalCapacity);
         }
 
         /// <summary>
@@ -277,7 +277,7 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         public readonly NativeArray<T> AsNativeArray()
         {
-            var shadow = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(BufferHeader.GetElementPointer(this.buffer), this.Length, Allocator.None);
+            var shadow = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(BufferHeader.GetElementPointer(_buffer), Length, Allocator.None);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref shadow, AtomicSafetyHandle.GetTempMemoryHandle());
 #endif
@@ -286,7 +286,7 @@ namespace BovineLabs.Core.Collections
 
         public readonly NativeArray<T>.Enumerator GetEnumerator()
         {
-            var array = this.AsNativeArray();
+            var array = AsNativeArray();
             return new NativeArray<T>.Enumerator(ref array);
         }
 
@@ -302,38 +302,38 @@ namespace BovineLabs.Core.Collections
 
         public readonly NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
         {
-            return CollectionHelper.CreateNativeArray(this.AsNativeArray(), allocator);
+            return CollectionHelper.CreateNativeArray(AsNativeArray(), allocator);
         }
 
         public void CopyFrom(NativeArray<T> v)
         {
             //todo remove workaround: See DOTS-1454
-            this.ResizeUninitialized(v.Length);
+            ResizeUninitialized(v.Length);
             var vs = new NativeSlice<T>(v);
-            vs.CopyTo(this.AsNativeArray());
+            vs.CopyTo(AsNativeArray());
         }
 
         public void CopyFrom(NativeSlice<T> v)
         {
-            this.ResizeUninitialized(v.Length);
-            v.CopyTo(this.AsNativeArray());
+            ResizeUninitialized(v.Length);
+            v.CopyTo(AsNativeArray());
         }
 
         public void CopyFrom(UnsafeDynamicBuffer<T> v)
         {
-            this.ResizeUninitialized(v.Length);
+            ResizeUninitialized(v.Length);
 
-            UnsafeUtility.MemCpy(BufferHeader.GetElementPointer(this.buffer), BufferHeader.GetElementPointer(v.buffer),
-                this.Length * UnsafeUtility.SizeOf<T>());
+            UnsafeUtility.MemCpy(BufferHeader.GetElementPointer(_buffer), BufferHeader.GetElementPointer(v._buffer),
+                Length * UnsafeUtility.SizeOf<T>());
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
         private readonly void CheckBounds(int index)
         {
-            if ((uint)index >= (uint)this.Length)
+            if ((uint)index >= (uint)Length)
             {
-                throw new IndexOutOfRangeException($"Index {index} is out of range in DynamicBuffer of '{this.Length}' Length.");
+                throw new IndexOutOfRangeException($"Index {index} is out of range in DynamicBuffer of '{Length}' Length.");
             }
         }
     }
@@ -341,13 +341,13 @@ namespace BovineLabs.Core.Collections
     internal sealed class DynamicBufferDebugView<T>
         where T : unmanaged, IBufferElementData
     {
-        private readonly UnsafeDynamicBuffer<T> buffer;
+        private readonly UnsafeDynamicBuffer<T> _buffer;
 
         public DynamicBufferDebugView(UnsafeDynamicBuffer<T> source)
         {
-            this.buffer = source;
+            _buffer = source;
         }
 
-        public T[] Items => this.buffer.AsNativeArray().ToArray();
+        public T[] Items => _buffer.AsNativeArray().ToArray();
     }
 }

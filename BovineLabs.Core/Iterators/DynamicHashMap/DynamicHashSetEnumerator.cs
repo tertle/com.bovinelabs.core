@@ -12,30 +12,30 @@
         where T : unmanaged, IEquatable<T>
     {
         [NativeDisableUnsafePtrRestriction]
-        private DynamicHashMapHelper<T>.Enumerator enumerator;
+        private DynamicHashMapHelper<T>.Enumerator _enumerator;
 
         internal unsafe DynamicHashSetEnumerator(DynamicHashMapHelper<T>* data)
         {
-            this.enumerator = new DynamicHashMapHelper<T>.Enumerator(data);
+            _enumerator = new DynamicHashMapHelper<T>.Enumerator(data);
         }
 
         public T Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => this.enumerator.GetCurrentKey();
+            get => _enumerator.GetCurrentKey();
         }
 
-        object IEnumerator.Current => this.Current;
+        object IEnumerator.Current => Current;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            return this.enumerator.MoveNext();
+            return _enumerator.MoveNext();
         }
 
         public void Reset()
         {
-            this.enumerator.Reset();
+            _enumerator.Reset();
         }
 
         public void Dispose()

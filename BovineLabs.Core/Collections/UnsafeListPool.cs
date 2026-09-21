@@ -7,38 +7,38 @@ namespace BovineLabs.Core.Collections
     public readonly struct UnsafeListPool<T> : IDisposable
         where T : unmanaged
     {
-        private readonly UnmanagedPool<UnsafeList<T>> pool;
+        private readonly UnmanagedPool<UnsafeList<T>> _pool;
 
         public UnsafeListPool(int capacity, Allocator allocator = Allocator.Persistent)
         {
-            this.pool = new UnmanagedPool<UnsafeList<T>>(capacity, allocator);
+            _pool = new UnmanagedPool<UnsafeList<T>>(capacity, allocator);
         }
 
-        public bool IsCreated => this.pool.IsCreated;
+        public bool IsCreated => _pool.IsCreated;
 
         public void Dispose()
         {
-            while (this.pool.TryGet(out var list))
+            while (_pool.TryGet(out var list))
             {
                 list.Dispose();
             }
 
-            this.pool.Dispose();
+            _pool.Dispose();
         }
 
         public bool TryAdd(UnsafeList<T> element)
         {
-            return this.pool.TryAdd(element);
+            return _pool.TryAdd(element);
         }
 
         public bool TryGet(out UnsafeList<T> element)
         {
-            return this.pool.TryGet(out element);
+            return _pool.TryGet(out element);
         }
 
         public UnsafeList<T> GetOrCreate(int minimumCapacity, AllocatorManager.AllocatorHandle listAllocator)
         {
-            if (this.TryGet(out var list))
+            if (TryGet(out var list))
             {
                 return list;
             }
@@ -48,7 +48,7 @@ namespace BovineLabs.Core.Collections
 
         public void ReturnOrDispose(UnsafeList<T> list)
         {
-            if (this.TryAdd(list))
+            if (TryAdd(list))
             {
                 return;
             }

@@ -10,70 +10,70 @@
     public readonly unsafe struct UnmanagedPool<T> : IDisposable
         where T : unmanaged
     {
-        private readonly int capacity;
-        private readonly Allocator allocator;
+        private readonly int _capacity;
+        private readonly Allocator _allocator;
 
         [NativeDisableUnsafePtrRestriction]
-        private readonly T* buffer;
+        private readonly T* _buffer;
 
         [NativeDisableUnsafePtrRestriction]
-        private readonly int* length;
+        private readonly int* _length;
 
         [NativeDisableUnsafePtrRestriction]
-        private readonly SpinLock* spinner;
+        private readonly SpinLock* _spinner;
 
         public UnmanagedPool(int capacity, Allocator allocator = Allocator.Persistent)
         {
             capacity = GetCapacity(capacity);
-            this.capacity = capacity;
-            this.allocator = allocator;
+            _capacity = capacity;
+            _allocator = allocator;
 
-            this.buffer = (T*)UnsafeUtility.MallocTracked(sizeof(T) * capacity, UnsafeUtility.AlignOf<T>(), allocator, 0);
-            this.length = (int*)UnsafeUtility.MallocTracked(sizeof(int), UnsafeUtility.AlignOf<int>(), allocator, 0);
-            *this.length = 0;
-            this.spinner = (SpinLock*)UnsafeUtility.MallocTracked(sizeof(SpinLock), UnsafeUtility.AlignOf<SpinLock>(), allocator, 0);
-            *this.spinner = default;
+            _buffer = (T*)UnsafeUtility.MallocTracked(sizeof(T) * capacity, UnsafeUtility.AlignOf<T>(), allocator, 0);
+            _length = (int*)UnsafeUtility.MallocTracked(sizeof(int), UnsafeUtility.AlignOf<int>(), allocator, 0);
+            *_length = 0;
+            _spinner = (SpinLock*)UnsafeUtility.MallocTracked(sizeof(SpinLock), UnsafeUtility.AlignOf<SpinLock>(), allocator, 0);
+            *_spinner = default;
         }
 
-        public bool IsCreated => this.buffer != null;
+        public bool IsCreated => _buffer != null;
 
         public void Dispose()
         {
-            UnsafeUtility.FreeTracked(this.buffer, this.allocator);
-            UnsafeUtility.FreeTracked(this.length, this.allocator);
-            UnsafeUtility.FreeTracked(this.spinner, this.allocator);
+            UnsafeUtility.FreeTracked(_buffer, _allocator);
+            UnsafeUtility.FreeTracked(_length, _allocator);
+            UnsafeUtility.FreeTracked(_spinner, _allocator);
         }
 
         public bool TryAdd(T element)
         {
-            this.spinner->Acquire();
+            _spinner->Acquire();
 
-            if (*this.length < this.capacity)
+            if (*_length < _capacity)
             {
-                this.buffer[*this.length] = element;
-                *this.length += 1;
-                this.spinner->Release();
+                _buffer[*_length] = element;
+                *_length += 1;
+                _spinner->Release();
                 return true;
             }
 
-            this.spinner->Release();
+            _spinner->Release();
             return false;
         }
 
         public bool TryGet(out T element)
         {
-            this.spinner->Acquire();
+            _spinner->Acquire();
 
-            if (*this.length > 0)
+            if (*_length > 0)
             {
-                *this.length -= 1;
-                element = this.buffer[*this.length];
-                this.spinner->Release();
+                *_length -= 1;
+                element = _buffer[*_length];
+                _spinner->Release();
                 return true;
             }
 
             element = default;
-            this.spinner->Release();
+            _spinner->Release();
             return false;
         }
 

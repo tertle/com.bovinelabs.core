@@ -13,13 +13,13 @@ namespace BovineLabs.Core.Tests.Utility
         [TestCase(2)]
         public void IsSectionPendingUnload_InheritsContainingSectionRequestWithoutChangingOtherSections(int pendingDepth)
         {
-            this.World.GetOrCreateSystem<TestSystem>();
-            ref var state = ref this.WorldUnmanaged.GetExistingSystemState<TestSystem>();
-            var root = this.CreateSection();
-            var child = this.CreateSection(root);
-            var grandchild = this.CreateSection(child);
-            var sibling = this.CreateSection(root);
-            var unrelated = this.CreateSection();
+            World.GetOrCreateSystem<TestSystem>();
+            ref var state = ref WorldUnmanaged.GetExistingSystemState<TestSystem>();
+            var root = CreateSection();
+            var child = CreateSection(root);
+            var grandchild = CreateSection(child);
+            var sibling = CreateSection(root);
+            var unrelated = CreateSection();
             var sections = new[] { root, child, grandchild };
 
             foreach (var section in sections)
@@ -27,18 +27,18 @@ namespace BovineLabs.Core.Tests.Utility
                 Assert.IsFalse(SubSceneUtil.IsSectionPendingUnload(ref state, section));
             }
 
-            this.Manager.RemoveComponent<RequestSceneLoaded>(sections[pendingDepth]);
+            Manager.RemoveComponent<RequestSceneLoaded>(sections[pendingDepth]);
 
             for (var depth = 0; depth < sections.Length; depth++)
             {
                 Assert.AreEqual(depth >= pendingDepth, SubSceneUtil.IsSectionPendingUnload(ref state, sections[depth]));
-                Assert.AreEqual(depth != pendingDepth, this.Manager.HasComponent<RequestSceneLoaded>(sections[depth]));
+                Assert.AreEqual(depth != pendingDepth, Manager.HasComponent<RequestSceneLoaded>(sections[depth]));
             }
 
             Assert.AreEqual(pendingDepth == 0, SubSceneUtil.IsSectionPendingUnload(ref state, sibling));
-            Assert.IsTrue(this.Manager.HasComponent<RequestSceneLoaded>(sibling));
+            Assert.IsTrue(Manager.HasComponent<RequestSceneLoaded>(sibling));
             Assert.IsFalse(SubSceneUtil.IsSectionPendingUnload(ref state, unrelated));
-            this.Manager.AddComponent<RequestSceneLoaded>(sections[pendingDepth]);
+            Manager.AddComponent<RequestSceneLoaded>(sections[pendingDepth]);
             foreach (var section in sections)
             {
                 Assert.IsFalse(SubSceneUtil.IsSectionPendingUnload(ref state, section));
@@ -47,14 +47,14 @@ namespace BovineLabs.Core.Tests.Utility
 
         private Entity CreateSection(Entity parentSection = default)
         {
-            var scene = this.Manager.CreateEntity(typeof(SceneReference));
-            var section = this.Manager.CreateEntity(typeof(SceneSectionData), typeof(SceneEntityReference), typeof(RequestSceneLoaded));
-            this.Manager.SetComponentData(section, new SceneEntityReference { SceneEntity = scene });
+            var scene = Manager.CreateEntity(typeof(SceneReference));
+            var section = Manager.CreateEntity(typeof(SceneSectionData), typeof(SceneEntityReference), typeof(RequestSceneLoaded));
+            Manager.SetComponentData(section, new SceneEntityReference { SceneEntity = scene });
             if (parentSection != Entity.Null)
             {
                 var parentTag = new SceneTag { SceneEntity = parentSection };
-                this.Manager.AddSharedComponent(scene, parentTag);
-                this.Manager.AddSharedComponent(section, parentTag);
+                Manager.AddSharedComponent(scene, parentTag);
+                Manager.AddSharedComponent(section, parentTag);
             }
 
             return section;

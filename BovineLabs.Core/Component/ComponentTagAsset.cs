@@ -12,7 +12,7 @@
             if (!TypeManager.GetTypeInfo(typeIndex).IsZeroSized)
             {
                 throw new InvalidCastException(
-                    $"Type '{TypeManager.GetType(typeIndex)}' assigned to {nameof(ComponentTagAsset)} '{this.name}' is not zero-sized.");
+                    $"Type '{TypeManager.GetType(typeIndex)}' assigned to {nameof(ComponentTagAsset)} '{name}' is not zero-sized.");
             }
         }
     }

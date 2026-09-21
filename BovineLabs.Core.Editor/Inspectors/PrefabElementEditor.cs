@@ -8,32 +8,32 @@
 
     public abstract class PrefabElementEditor : ElementEditor
     {
-        private SerializedObject prefabObject;
+        private SerializedObject _prefabObject;
 
         protected virtual bool AllowChangesIfNoPrefab => true;
 
-        private bool IsPrefab => ((Component)this.target).IsPrefab();
+        private bool IsPrefab => ((Component)target).IsPrefab();
 
         protected override bool PreElementCreation(VisualElement root)
         {
-            if (this.IsPrefab)
+            if (IsPrefab)
             {
                 return true;
             }
 
-            var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(this.target);
+            var prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(target);
             if (string.IsNullOrEmpty(prefabPath))
             {
-                return this.AllowChangesIfNoPrefab;
+                return AllowChangesIfNoPrefab;
             }
 
-            var prefab = AssetDatabase.LoadAssetAtPath(prefabPath, this.target.GetType());
+            var prefab = AssetDatabase.LoadAssetAtPath(prefabPath, target.GetType());
             if (prefab == null)
             {
-                return this.AllowChangesIfNoPrefab;
+                return AllowChangesIfNoPrefab;
             }
 
-            this.prefabObject = new SerializedObject(prefab);
+            _prefabObject = new SerializedObject(prefab);
 
             var label = new Label("Changes are applied to the prefab");
             ElementUtility.AddLabelStyles(label);
@@ -44,15 +44,15 @@
 
         protected override VisualElement CreateElement(SerializedProperty property)
         {
-            if (this.IsPrefab || this.prefabObject == null)
+            if (IsPrefab || _prefabObject == null)
             {
                 return CreatePropertyField(property);
             }
 
-            var prefabProperty = this.prefabObject.FindProperty(property.propertyPath);
+            var prefabProperty = _prefabObject.FindProperty(property.propertyPath);
             Assert.IsNotNull(prefabProperty);
 
-            return CreatePropertyField(prefabProperty, this.prefabObject);
+            return CreatePropertyField(prefabProperty, _prefabObject);
         }
 
         protected override void PostElementCreation(VisualElement root, bool createdElements)

@@ -96,7 +96,7 @@
                 Ordered.Data = new UnsafeList<FixedNameValue<TV>>(0, Allocator.Domain);
             }
 
-            foreach (var nv in this.Keys)
+            foreach (var nv in Keys)
             {
                 Forward.Data.Add(nv.Name, nv.Value);
 

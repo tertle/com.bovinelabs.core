@@ -8,20 +8,20 @@
 
     public unsafe struct MemoryAllocator : IDisposable
     {
-        private NativeHashSet<Ptr> allocated;
+        private NativeHashSet<Ptr> _allocated;
 
         public MemoryAllocator(Allocator allocator)
         {
-            this.Allocator = allocator;
-            this.allocated = new NativeHashSet<Ptr>(0, allocator);
+            Allocator = allocator;
+            _allocated = new NativeHashSet<Ptr>(0, allocator);
         }
 
         public Allocator Allocator { get; }
 
         public void* Allocate(int itemSizeInBytes, int alignmentInBytes, int items = 1)
         {
-            var ptr = AllocatorManager.Allocate(this.Allocator, itemSizeInBytes, alignmentInBytes, items);
-            this.allocated.Add(ptr);
+            var ptr = AllocatorManager.Allocate(Allocator, itemSizeInBytes, alignmentInBytes, items);
+            _allocated.Add(ptr);
             return ptr;
         }
 
@@ -29,7 +29,7 @@
             where T : unmanaged
         {
             Debug.Assert(count > 0);
-            return (T*)this.Allocate(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), count);
+            return (T*)Allocate(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), count);
         }
 
         // TODO turn into array
@@ -39,7 +39,7 @@
             var newCapacity = math.max(capacity, 64 / UnsafeUtility.SizeOf<T>());
             newCapacity = math.ceilpow2(newCapacity);
 
-            var buffer = this.Create<T>(newCapacity);
+            var buffer = Create<T>(newCapacity);
 
             return new UnsafeList<T>
             {
@@ -51,20 +51,20 @@
 
         public void FreeAll()
         {
-            using var array = this.allocated.ToNativeArray(Allocator.Temp);
+            using var array = _allocated.ToNativeArray(Allocator.Temp);
 
             foreach (var ptr in array)
             {
-                AllocatorManager.Free(this.Allocator, ptr);
+                AllocatorManager.Free(Allocator, ptr);
             }
 
-            this.allocated.Clear();
+            _allocated.Clear();
         }
 
         public void Dispose()
         {
-            this.FreeAll();
-            this.allocated.Dispose();
+            FreeAll();
+            _allocated.Dispose();
         }
     }
 }

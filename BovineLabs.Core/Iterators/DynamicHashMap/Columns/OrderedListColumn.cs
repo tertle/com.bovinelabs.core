@@ -16,41 +16,41 @@ namespace BovineLabs.Core.Iterators.Columns
     public unsafe struct OrderedListColumn<T> : IColumn<T>
         where T : unmanaged, IEquatable<T>, IComparable<T>
     {
-        private int keysOffset;
-        private int nextOffset;
-        private int prevOffset;
-        private int head;
-        private int capacity;
+        private int _keysOffset;
+        private int _nextOffset;
+        private int _prevOffset;
+        private int _head;
+        private int _capacity;
 
-        private T* Keys => (T*)((byte*)UnsafeUtility.AddressOf(ref this) + this.keysOffset);
-        private int* Next => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + this.nextOffset);
-        private int* Prev => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + this.prevOffset);
+        private T* Keys => (T*)((byte*)UnsafeUtility.AddressOf(ref this) + _keysOffset);
+        private int* Next => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + _nextOffset);
+        private int* Prev => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + _prevOffset);
 
         /// <summary>
         /// Indexes storage, not sorted position. Use GetFirst/GetNext for sorted traversal.
         /// </summary>
         public T GetValue(int idx)
         {
-            return UnsafeUtility.ReadArrayElement<T>(this.Keys, idx);
+            return UnsafeUtility.ReadArrayElement<T>(Keys, idx);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetFirst()
         {
-            return this.head;
+            return _head;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetNext(int current)
         {
-            return this.Next[current];
+            return Next[current];
         }
 
         public bool TryGetFirst(out T value, out OrderedListIterator it)
         {
             it.EntryIndex = -1;
-            it.NextEntryIndex = this.head;
-            return this.TryGetNext(out value, ref it);
+            it.NextEntryIndex = _head;
+            return TryGetNext(out value, ref it);
         }
 
         public bool TryGetNext(out T value, ref OrderedListIterator it)
@@ -65,20 +65,20 @@ namespace BovineLabs.Core.Iterators.Columns
                 return false;
             }
 
-            it.NextEntryIndex = this.Next[entryIdx];
+            it.NextEntryIndex = Next[entryIdx];
             it.EntryIndex = entryIdx;
-            value = this.GetValue(entryIdx);
+            value = GetValue(entryIdx);
             return true;
         }
 
         void IColumn<T>.Initialize(int offset, int newCapacity)
         {
-            this.capacity = newCapacity;
+            _capacity = newCapacity;
 
-            this.keysOffset = offset;
-            this.nextOffset = CollectionHelper.Align(this.keysOffset + (sizeof(T) * newCapacity), UnsafeUtility.AlignOf<int>());
-            this.prevOffset = CollectionHelper.Align(this.nextOffset + (sizeof(int) * newCapacity), UnsafeUtility.AlignOf<int>());
-            this.head = -1;
+            _keysOffset = offset;
+            _nextOffset = CollectionHelper.Align(_keysOffset + (sizeof(T) * newCapacity), UnsafeUtility.AlignOf<int>());
+            _prevOffset = CollectionHelper.Align(_nextOffset + (sizeof(int) * newCapacity), UnsafeUtility.AlignOf<int>());
+            _head = -1;
         }
 
         int IColumn<T>.CalculateDataSize(int newCapacity)
@@ -96,19 +96,19 @@ namespace BovineLabs.Core.Iterators.Columns
 
         void IColumn<T>.Add(T key, int idx)
         {
-            this.AddInternal(key, idx);
+            AddInternal(key, idx);
         }
 
         void IColumn<T>.Remove(int idx)
         {
-            this.RemoveInternal(idx);
+            RemoveInternal(idx);
         }
 
         void IColumn<T>.Replace(T newKey, int idx)
         {
-            var keys = this.Keys;
-            var prev = this.Prev;
-            var next = this.Next;
+            var keys = Keys;
+            var prev = Prev;
+            var next = Next;
             var oldKey = keys[idx];
 
             // If the value hasn't changed, nothing to do
@@ -134,17 +134,17 @@ namespace BovineLabs.Core.Iterators.Columns
             else
             {
                 // Need to reposition: remove and re-add
-                this.RemoveInternal(idx);
-                this.AddInternal(newKey, idx);
+                RemoveInternal(idx);
+                AddInternal(newKey, idx);
             }
         }
 
         void IColumn<T>.Clear()
         {
-            UnsafeUtility.MemClear(this.Keys, (long)this.capacity * sizeof(T));
-            UnsafeUtility.MemSet(this.Next, 0xff, this.capacity * sizeof(int));
-            UnsafeUtility.MemSet(this.Prev, 0xff, this.capacity * sizeof(int));
-            this.head = -1;
+            UnsafeUtility.MemClear(Keys, (long)_capacity * sizeof(T));
+            UnsafeUtility.MemSet(Next, 0xff, _capacity * sizeof(int));
+            UnsafeUtility.MemSet(Prev, 0xff, _capacity * sizeof(int));
+            _head = -1;
         }
 
         void* IColumn<T>.StartResize()
@@ -171,32 +171,32 @@ namespace BovineLabs.Core.Iterators.Columns
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddInternal(T key, int idx)
         {
-            var keys = this.Keys;
-            var next = this.Next;
-            var prev = this.Prev;
+            var keys = Keys;
+            var next = Next;
+            var prev = Prev;
 
             keys[idx] = key;
             next[idx] = -1;
             prev[idx] = -1;
 
             // If list is empty, make this the head
-            if (this.head == -1)
+            if (_head == -1)
             {
-                this.head = idx;
+                _head = idx;
                 return;
             }
 
             // If new value should be the new head
-            if (key.CompareTo(keys[this.head]) < 0)
+            if (key.CompareTo(keys[_head]) < 0)
             {
-                next[idx] = this.head;
-                prev[this.head] = idx;
-                this.head = idx;
+                next[idx] = _head;
+                prev[_head] = idx;
+                _head = idx;
                 return;
             }
 
             // Find the correct position to insert
-            var current = this.head;
+            var current = _head;
             while (next[current] != -1 && keys[next[current]].CompareTo(key) < 0)
             {
                 current = next[current];
@@ -217,8 +217,8 @@ namespace BovineLabs.Core.Iterators.Columns
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void RemoveInternal(int idx)
         {
-            var next = this.Next;
-            var prev = this.Prev;
+            var next = Next;
+            var prev = Prev;
 
             var prevNode = prev[idx];
             var nextNode = next[idx];
@@ -231,7 +231,7 @@ namespace BovineLabs.Core.Iterators.Columns
             else
             {
                 // idx was the head
-                this.head = nextNode;
+                _head = nextNode;
             }
 
             // Update next node's prev pointer
@@ -240,63 +240,63 @@ namespace BovineLabs.Core.Iterators.Columns
                 prev[nextNode] = prevNode;
             }
 
-            UnsafeUtility.MemClear(this.Keys + idx, sizeof(T));
+            UnsafeUtility.MemClear(Keys + idx, sizeof(T));
             next[idx] = -1;
             prev[idx] = -1;
         }
 
         private readonly struct Resize
         {
-            private readonly int oldCapacity;
-            private readonly int oldHead;
-            private readonly T* oldKeys;
-            private readonly int* oldNext;
-            private readonly int* oldPrev;
+            private readonly int _oldCapacity;
+            private readonly int _oldHead;
+            private readonly T* _oldKeys;
+            private readonly int* _oldNext;
+            private readonly int* _oldPrev;
 
             public Resize(ref OrderedListColumn<T> column)
             {
-                this.oldCapacity = column.capacity;
-                this.oldHead = column.head;
-                this.oldKeys = (T*)UnsafeUtility.Malloc(this.oldCapacity * sizeof(T), UnsafeUtility.AlignOf<T>(), Allocator.Temp);
-                this.oldNext = (int*)UnsafeUtility.Malloc(this.oldCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
-                this.oldPrev = (int*)UnsafeUtility.Malloc(this.oldCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
+                _oldCapacity = column._capacity;
+                _oldHead = column._head;
+                _oldKeys = (T*)UnsafeUtility.Malloc(_oldCapacity * sizeof(T), UnsafeUtility.AlignOf<T>(), Allocator.Temp);
+                _oldNext = (int*)UnsafeUtility.Malloc(_oldCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
+                _oldPrev = (int*)UnsafeUtility.Malloc(_oldCapacity * sizeof(int), UnsafeUtility.AlignOf<int>(), Allocator.Temp);
 
-                UnsafeUtility.MemCpy(this.oldKeys, column.Keys, this.oldCapacity * sizeof(T));
-                UnsafeUtility.MemCpy(this.oldNext, column.Next, this.oldCapacity * sizeof(int));
-                UnsafeUtility.MemCpy(this.oldPrev, column.Prev, this.oldCapacity * sizeof(int));
+                UnsafeUtility.MemCpy(_oldKeys, column.Keys, _oldCapacity * sizeof(T));
+                UnsafeUtility.MemCpy(_oldNext, column.Next, _oldCapacity * sizeof(int));
+                UnsafeUtility.MemCpy(_oldPrev, column.Prev, _oldCapacity * sizeof(int));
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public T GetValue(int idx)
             {
-                return this.oldKeys[idx];
+                return _oldKeys[idx];
             }
 
             public void Increase(ref OrderedListColumn<T> helper)
             {
-                Check.Assume(helper.capacity > this.oldCapacity);
+                Check.Assume(helper._capacity > _oldCapacity);
 
                 var keys = helper.Keys;
                 var next = helper.Next;
                 var prev = helper.Prev;
-                helper.head = this.oldHead;
+                helper._head = _oldHead;
 
-                UnsafeUtility.MemClear(keys, (long)helper.capacity * sizeof(T));
-                for (var idx = this.oldHead; idx != -1; idx = this.oldNext[idx])
+                UnsafeUtility.MemClear(keys, (long)helper._capacity * sizeof(T));
+                for (var idx = _oldHead; idx != -1; idx = _oldNext[idx])
                 {
-                    UnsafeUtility.MemCpy(keys + idx, this.oldKeys + idx, sizeof(T));
+                    UnsafeUtility.MemCpy(keys + idx, _oldKeys + idx, sizeof(T));
                 }
 
-                UnsafeUtility.MemCpy(next, this.oldNext, this.oldCapacity * sizeof(int));
-                UnsafeUtility.MemCpy(prev, this.oldPrev, this.oldCapacity * sizeof(int));
+                UnsafeUtility.MemCpy(next, _oldNext, _oldCapacity * sizeof(int));
+                UnsafeUtility.MemCpy(prev, _oldPrev, _oldCapacity * sizeof(int));
 
-                UnsafeUtility.MemSet(next + this.oldCapacity, 0xff, (helper.capacity - this.oldCapacity) * sizeof(int));
-                UnsafeUtility.MemSet(prev + this.oldCapacity, 0xff, (helper.capacity - this.oldCapacity) * sizeof(int));
+                UnsafeUtility.MemSet(next + _oldCapacity, 0xff, (helper._capacity - _oldCapacity) * sizeof(int));
+                UnsafeUtility.MemSet(prev + _oldCapacity, 0xff, (helper._capacity - _oldCapacity) * sizeof(int));
 
                 // Clean up internal temporary allocations
-                UnsafeUtility.Free(this.oldKeys, Allocator.Temp);
-                UnsafeUtility.Free(this.oldNext, Allocator.Temp);
-                UnsafeUtility.Free(this.oldPrev, Allocator.Temp);
+                UnsafeUtility.Free(_oldKeys, Allocator.Temp);
+                UnsafeUtility.Free(_oldNext, Allocator.Temp);
+                UnsafeUtility.Free(_oldPrev, Allocator.Temp);
             }
         }
     }

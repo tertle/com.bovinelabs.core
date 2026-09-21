@@ -59,12 +59,12 @@ namespace BovineLabs.Core.Editor.Asset
         [UsedImplicitly(ImplicitUseKindFlags.Access)]
         private void OnPreprocessAsset()
         {
-            if (isProcessing || InFlightAssets.Contains(this.assetPath) || !ShouldQueueImportedAsset(this.assetPath))
+            if (isProcessing || InFlightAssets.Contains(assetPath) || !ShouldQueueImportedAsset(assetPath))
             {
                 return;
             }
 
-            PreviousImports[this.assetPath] = CapturePreviousImport(this.assetPath);
+            PreviousImports[assetPath] = CapturePreviousImport(assetPath);
         }
 
         [UsedImplicitly(ImplicitUseKindFlags.Access)]
@@ -780,40 +780,40 @@ namespace BovineLabs.Core.Editor.Asset
 
         private readonly struct AutoRefKey : IEquatable<AutoRefKey>
         {
-            private readonly Type definingType;
-            private readonly string managerType;
-            private readonly string fieldName;
-            private readonly string referenceFieldName;
+            private readonly Type _definingType;
+            private readonly string _managerType;
+            private readonly string _fieldName;
+            private readonly string _referenceFieldName;
 
             public AutoRefKey(Type definingType, AutoRefAttribute attribute)
             {
-                this.definingType = definingType;
-                this.managerType = attribute.ManagerType;
-                this.fieldName = attribute.FieldName;
-                this.referenceFieldName = attribute.ReferenceFieldName ?? string.Empty;
+                _definingType = definingType;
+                _managerType = attribute.ManagerType;
+                _fieldName = attribute.FieldName;
+                _referenceFieldName = attribute.ReferenceFieldName ?? string.Empty;
             }
 
             public bool Equals(AutoRefKey other)
             {
-                return this.definingType == other.definingType &&
-                    string.Equals(this.managerType, other.managerType, StringComparison.Ordinal) &&
-                    string.Equals(this.fieldName, other.fieldName, StringComparison.Ordinal) &&
-                    string.Equals(this.referenceFieldName, other.referenceFieldName, StringComparison.Ordinal);
+                return _definingType == other._definingType &&
+                    string.Equals(_managerType, other._managerType, StringComparison.Ordinal) &&
+                    string.Equals(_fieldName, other._fieldName, StringComparison.Ordinal) &&
+                    string.Equals(_referenceFieldName, other._referenceFieldName, StringComparison.Ordinal);
             }
 
             public override bool Equals(object obj)
             {
-                return obj is AutoRefKey other && this.Equals(other);
+                return obj is AutoRefKey other && Equals(other);
             }
 
             public override int GetHashCode()
             {
                 unchecked
                 {
-                    var hashCode = this.definingType.GetHashCode();
-                    hashCode = (hashCode * 397) ^ StringComparer.Ordinal.GetHashCode(this.managerType);
-                    hashCode = (hashCode * 397) ^ StringComparer.Ordinal.GetHashCode(this.fieldName);
-                    hashCode = (hashCode * 397) ^ StringComparer.Ordinal.GetHashCode(this.referenceFieldName);
+                    var hashCode = _definingType.GetHashCode();
+                    hashCode = (hashCode * 397) ^ StringComparer.Ordinal.GetHashCode(_managerType);
+                    hashCode = (hashCode * 397) ^ StringComparer.Ordinal.GetHashCode(_fieldName);
+                    hashCode = (hashCode * 397) ^ StringComparer.Ordinal.GetHashCode(_referenceFieldName);
                     return hashCode;
                 }
             }
@@ -821,35 +821,35 @@ namespace BovineLabs.Core.Editor.Asset
 
         private readonly struct ImportedObjectKey : IEquatable<ImportedObjectKey>
         {
-            private readonly Type type;
-            private readonly string guid;
-            private readonly long localFileID;
+            private readonly Type _type;
+            private readonly string _guid;
+            private readonly long _localFileID;
 
             public ImportedObjectKey(Type type, string guid, long localFileID)
             {
-                this.type = type;
-                this.guid = guid;
-                this.localFileID = localFileID;
+                _type = type;
+                _guid = guid;
+                _localFileID = localFileID;
             }
 
             public bool Equals(ImportedObjectKey other)
             {
-                return this.type == other.type && this.localFileID == other.localFileID &&
-                    string.Equals(this.guid, other.guid, StringComparison.Ordinal);
+                return _type == other._type && _localFileID == other._localFileID &&
+                    string.Equals(_guid, other._guid, StringComparison.Ordinal);
             }
 
             public override bool Equals(object obj)
             {
-                return obj is ImportedObjectKey other && this.Equals(other);
+                return obj is ImportedObjectKey other && Equals(other);
             }
 
             public override int GetHashCode()
             {
                 unchecked
                 {
-                    var hashCode = this.type.GetHashCode();
-                    hashCode = (hashCode * 397) ^ StringComparer.Ordinal.GetHashCode(this.guid);
-                    hashCode = (hashCode * 397) ^ this.localFileID.GetHashCode();
+                    var hashCode = _type.GetHashCode();
+                    hashCode = (hashCode * 397) ^ StringComparer.Ordinal.GetHashCode(_guid);
+                    hashCode = (hashCode * 397) ^ _localFileID.GetHashCode();
                     return hashCode;
                 }
             }
@@ -864,42 +864,42 @@ namespace BovineLabs.Core.Editor.Asset
 
         private class Processor
         {
-            private readonly string filter;
-            private readonly Dictionary<int, int> map = new();
-            private readonly Type type;
+            private readonly string _filter;
+            private readonly Dictionary<int, int> _map = new();
+            private readonly Type _type;
 
-            private bool isInitialized;
+            private bool _isInitialized;
 
             public Processor(Type type)
             {
-                this.type = type;
-                this.filter = $"t:{type.Name}";
+                _type = type;
+                _filter = $"t:{type.Name}";
             }
 
             public void Reset()
             {
-                this.isInitialized = false;
-                this.map.Clear();
+                _isInitialized = false;
+                _map.Clear();
             }
 
             public bool Process(Object obj)
             {
                 var asset = (IUID)obj;
 
-                if (!this.isInitialized)
+                if (!_isInitialized)
                 {
-                    this.isInitialized = true;
-                    this.BuildMap();
+                    _isInitialized = true;
+                    BuildMap();
                 }
 
-                this.map.TryGetValue(asset.ID, out var count);
+                _map.TryGetValue(asset.ID, out var count);
 
                 if (asset.ID == 0 || count > 1)
                 {
-                    var newId = GetFirstFreeID(this.map);
-                    this.map[asset.ID] = count - 1; // update the old ID
+                    var newId = GetFirstFreeID(_map);
+                    _map[asset.ID] = count - 1; // update the old ID
                     asset.ID = newId;
-                    this.map[newId] = 1;
+                    _map[newId] = 1;
 
                     EditorUtility.SetDirty(obj);
                     return true;
@@ -910,9 +910,9 @@ namespace BovineLabs.Core.Editor.Asset
 
             private void BuildMap()
             {
-                Assert.AreEqual(0, this.map.Count);
+                Assert.AreEqual(0, _map.Count);
 
-                var paths = AssetDatabase.FindAssets(this.filter).Select(AssetDatabase.GUIDToAssetPath).Distinct();
+                var paths = AssetDatabase.FindAssets(_filter).Select(AssetDatabase.GUIDToAssetPath).Distinct();
 
                 foreach (var path in paths)
                 {
@@ -925,15 +925,15 @@ namespace BovineLabs.Core.Editor.Asset
                             continue;
                         }
 
-                        if (!this.type.IsInstanceOfType(asset))
+                        if (!_type.IsInstanceOfType(asset))
                         {
                             continue;
                         }
 
                         var uid = (IUID)asset;
-                        this.map.TryGetValue(uid.ID, out var count);
+                        _map.TryGetValue(uid.ID, out var count);
                         count++;
-                        this.map[uid.ID] = count;
+                        _map[uid.ID] = count;
                     }
                 }
             }
@@ -942,33 +942,33 @@ namespace BovineLabs.Core.Editor.Asset
         private class GlobalProcessor
         {
             private const string Filter = "t:ScriptableObject";
-            private readonly Dictionary<int, int> map = new();
-            private bool isInitialized;
+            private readonly Dictionary<int, int> _map = new();
+            private bool _isInitialized;
 
             public void Reset()
             {
-                this.isInitialized = false;
-                this.map.Clear();
+                _isInitialized = false;
+                _map.Clear();
             }
 
             public bool Process(Object obj)
             {
                 var asset = (IUIDGlobal)obj;
 
-                if (!this.isInitialized)
+                if (!_isInitialized)
                 {
-                    this.isInitialized = true;
-                    this.BuildMap();
+                    _isInitialized = true;
+                    BuildMap();
                 }
 
-                this.map.TryGetValue(asset.ID, out var count);
+                _map.TryGetValue(asset.ID, out var count);
 
                 if (asset.ID == 0 || count > 1)
                 {
-                    var newId = GetFirstFreeID(this.map);
-                    this.map[asset.ID] = count - 1; // update the old ID
+                    var newId = GetFirstFreeID(_map);
+                    _map[asset.ID] = count - 1; // update the old ID
                     asset.ID = newId;
-                    this.map[newId] = 1;
+                    _map[newId] = 1;
 
                     EditorUtility.SetDirty(obj);
                     return true;
@@ -979,7 +979,7 @@ namespace BovineLabs.Core.Editor.Asset
 
             private void BuildMap()
             {
-                Assert.AreEqual(0, this.map.Count);
+                Assert.AreEqual(0, _map.Count);
 
                 var paths = AssetDatabase.FindAssets(Filter).Select(AssetDatabase.GUIDToAssetPath).Distinct();
 
@@ -999,9 +999,9 @@ namespace BovineLabs.Core.Editor.Asset
                             continue;
                         }
 
-                        this.map.TryGetValue(uid.ID, out var count);
+                        _map.TryGetValue(uid.ID, out var count);
                         count++;
-                        this.map[uid.ID] = count;
+                        _map[uid.ID] = count;
                     }
                 }
             }

@@ -35,9 +35,9 @@ namespace BovineLabs.Core.Collections
         /// </summary>
         public float Length;
 
-        public int Count => this.Knots.Length;
+        public int Count => Knots.Length;
 
-        public BezierKnot this[int index] => this.Knots[index];
+        public BezierKnot this[int index] => Knots[index];
 
         public static BlobAssetReference<BlobSpline> Create(ISpline spline, float4x4 transform, Allocator allocator = Allocator.Persistent)
         {
@@ -114,17 +114,17 @@ namespace BovineLabs.Core.Collections
 
         public Spline ToSpline()
         {
-            var spline = new Spline(this.Count, this.Closed);
+            var spline = new Spline(Count, Closed);
 
-            if (this.Count == 0)
+            if (Count == 0)
             {
                 return spline;
             }
 
-            var knots = new BezierKnot[this.Count];
-            for (var i = 0; i < this.Count; ++i)
+            var knots = new BezierKnot[Count];
+            for (var i = 0; i < Count; ++i)
             {
-                knots[i] = this.Knots[i];
+                knots[i] = Knots[i];
             }
 
             spline.Knots = knots;
@@ -132,7 +132,7 @@ namespace BovineLabs.Core.Collections
             return spline;
         }
 
-        public BezierCurve GetCurve(int index) => this.Curves[index];
+        public BezierCurve GetCurve(int index) => Curves[index];
 
         /// <summary>
         /// The returned tangent is not normalized.
@@ -140,7 +140,7 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Evaluate(float t, out float3 position, out float3 tangent, out float3 upVector)
         {
-            if (this.Count < 1)
+            if (Count < 1)
             {
                 position = float3.zero;
                 tangent = new float3(0f, 0f, 1f);
@@ -148,12 +148,12 @@ namespace BovineLabs.Core.Collections
                 return false;
             }
 
-            var curveIndex = this.SplineToCurveT(t, out var curveT);
-            var curve = this.GetCurve(curveIndex);
+            var curveIndex = SplineToCurveT(t, out var curveT);
+            var curve = GetCurve(curveIndex);
 
             position = EvaluatePosition(curve, curveT);
             tangent = EvaluateTangent(curve, curveT);
-            upVector = this.GetCurveUpVector(curveIndex, curveT);
+            upVector = GetCurveUpVector(curveIndex, curveT);
 
             return true;
         }
@@ -164,27 +164,27 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Evaluate(float t, out float3 position, out float3 tangent)
         {
-            var success = this.Evaluate(t, out position, out tangent, out _);
+            var success = Evaluate(t, out position, out tangent, out _);
             return success;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Evaluate(float t, out float3 position)
         {
-            var success = this.Evaluate(t, out position, out _, out _);
+            var success = Evaluate(t, out position, out _, out _);
             return success;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3 EvaluatePosition(float t)
         {
-            return this.Evaluate(t, out var position) ? position : float3.zero;
+            return Evaluate(t, out var position) ? position : float3.zero;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3 EvaluatePosition(int curveIndex, float curveT)
         {
-            return EvaluatePosition(this.GetCurve(curveIndex), curveT);
+            return EvaluatePosition(GetCurve(curveIndex), curveT);
         }
 
         /// <summary>
@@ -193,42 +193,42 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3 EvaluateTangent(float t)
         {
-            if (this.Count < 1)
+            if (Count < 1)
             {
                 return new float3(0f, 0f, 1f);
             }
 
-            var curveIndex = this.SplineToCurveT(t, out var curveT);
-            return EvaluateTangent(this.GetCurve(curveIndex), curveT);
+            var curveIndex = SplineToCurveT(t, out var curveT);
+            return EvaluateTangent(GetCurve(curveIndex), curveT);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3 EvaluateUpVector(float t)
         {
-            if (this.Count < 1)
+            if (Count < 1)
             {
                 return new float3(0f, 1f, 0f);
             }
 
-            var curveIndex = this.SplineToCurveT(t, out var curveT);
-            return this.GetCurveUpVector(curveIndex, curveT);
+            var curveIndex = SplineToCurveT(t, out var curveT);
+            return GetCurveUpVector(curveIndex, curveT);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int SplineToCurveT(float splineT, out float curveT)
         {
-            return this.SplineToCurveT(splineT, out curveT, true);
+            return SplineToCurveT(splineT, out curveT, true);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float CurveToSplineT(float curve)
         {
-            if (this.Count <= 1 || curve <= 0f)
+            if (Count <= 1 || curve <= 0f)
             {
                 return 0f;
             }
 
-            var curveCount = this.Closed ? this.Count : math.max(0, this.Count - 1);
+            var curveCount = Closed ? Count : math.max(0, Count - 1);
             if (curve >= curveCount)
             {
                 return 1f;
@@ -239,25 +239,25 @@ namespace BovineLabs.Core.Collections
 
             for (var i = 0; i < curveIndex; ++i)
             {
-                accumulatedLength += this.GetCurveLength(i);
+                accumulatedLength += GetCurveLength(i);
             }
 
-            accumulatedLength += this.GetCurveLength(curveIndex) * math.frac(curve);
+            accumulatedLength += GetCurveLength(curveIndex) * math.frac(curve);
 
-            return this.Length <= math.EPSILON ? 0f : accumulatedLength / this.Length;
+            return Length <= math.EPSILON ? 0f : accumulatedLength / Length;
         }
 
         public float GetCurveLength(int curveIndex)
         {
-            return this.SegmentLengthsLookupTable[(curveIndex * SegmentResolution) + SegmentResolution - 1].Distance;
+            return SegmentLengthsLookupTable[(curveIndex * SegmentResolution) + SegmentResolution - 1].Distance;
         }
 
         public float3 GetCurveUpVector(int index, float t)
         {
             // Value  is not cached, compute the value directly on demand
-            if (this.UpVectorsLookupTable.Length == 0)
+            if (UpVectorsLookupTable.Length == 0)
             {
-                return this.CalculateUpVector(index, t);
+                return CalculateUpVector(index, t);
             }
 
             var curveIndex = index * SegmentResolution;
@@ -267,7 +267,7 @@ namespace BovineLabs.Core.Collections
             {
                 if (t <= curveT + offset)
                 {
-                    var value = math.lerp(this.UpVectorsLookupTable[curveIndex + i], this.UpVectorsLookupTable[curveIndex + i + 1], (t - curveT) / offset);
+                    var value = math.lerp(UpVectorsLookupTable[curveIndex + i], UpVectorsLookupTable[curveIndex + i + 1], (t - curveT) / offset);
 
                     return value;
                 }
@@ -276,17 +276,17 @@ namespace BovineLabs.Core.Collections
             }
 
             // Otherwise, no value has been found, return the one at the end of the segment
-            return this.UpVectorsLookupTable[curveIndex + SegmentResolution - 1];
+            return UpVectorsLookupTable[curveIndex + SegmentResolution - 1];
         }
 
         public float GetCurveInterpolation(int curveIndex, float curveDistance)
         {
-            if (curveIndex < 0 || curveIndex >= this.SegmentLengthsLookupTable.Length || curveDistance <= 0)
+            if (curveIndex < 0 || curveIndex >= SegmentLengthsLookupTable.Length || curveDistance <= 0)
             {
                 return 0f;
             }
 
-            var curveLength = this.GetCurveLength(curveIndex);
+            var curveLength = GetCurveLength(curveIndex);
             if (curveDistance >= curveLength)
             {
                 return 1f;
@@ -299,18 +299,18 @@ namespace BovineLabs.Core.Collections
                 return 0f;
             }
 
-            var cl = this.SegmentLengthsLookupTable[startIndex + SegmentResolution - 1].Distance;
+            var cl = SegmentLengthsLookupTable[startIndex + SegmentResolution - 1].Distance;
 
             if (curveDistance >= cl)
             {
                 return 1f;
             }
 
-            var prev = this.SegmentLengthsLookupTable[startIndex];
+            var prev = SegmentLengthsLookupTable[startIndex];
 
             for (var i = 1; i < SegmentResolution; i++)
             {
-                var current = this.SegmentLengthsLookupTable[startIndex + i];
+                var current = SegmentLengthsLookupTable[startIndex + i];
                 if (curveDistance < current.Distance)
                 {
                     return math.lerp(prev.T, current.T, (curveDistance - prev.Distance) / (current.Distance - prev.Distance));
@@ -325,23 +325,23 @@ namespace BovineLabs.Core.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int SplineToCurveT(float splineT, out float curveT, bool useLookup)
         {
-            var knotCount = this.Count;
-            if (knotCount <= 1 || this.Length <= math.EPSILON)
+            var knotCount = Count;
+            if (knotCount <= 1 || Length <= math.EPSILON)
             {
                 curveT = 0f;
                 return 0;
             }
 
             splineT = math.clamp(splineT, 0f, 1f);
-            var targetLength = splineT * this.Length;
+            var targetLength = splineT * Length;
 
             var start = 0f;
-            var curveCount = this.Closed ? knotCount : math.max(0, knotCount - 1);
+            var curveCount = Closed ? knotCount : math.max(0, knotCount - 1);
 
             for (var i = 0; i < curveCount; ++i)
             {
                 var index = i % knotCount;
-                var curveLength = this.GetCurveLength(index);
+                var curveLength = GetCurveLength(index);
 
                 if ((targetLength <= start + curveLength) || (i == curveCount - 1))
                 {
@@ -351,9 +351,9 @@ namespace BovineLabs.Core.Collections
                         return index;
                     }
 
-                    if (useLookup && this.SegmentLengthsLookupTable.Length > 0)
+                    if (useLookup && SegmentLengthsLookupTable.Length > 0)
                     {
-                        curveT = this.GetCurveInterpolation(index, targetLength - start);
+                        curveT = GetCurveInterpolation(index, targetLength - start);
                     }
                     else
                     {
@@ -367,17 +367,17 @@ namespace BovineLabs.Core.Collections
             }
 
             curveT = 1f;
-            return this.Closed ? knotCount - 1 : math.max(0, knotCount - 2);
+            return Closed ? knotCount - 1 : math.max(0, knotCount - 2);
         }
 
         private float3 CalculateUpVector(int curveIndex, float curveT)
         {
-            if (this.Count < 1)
+            if (Count < 1)
             {
                 return float3.zero;
             }
 
-            var curve = this.GetCurve(curveIndex);
+            var curve = GetCurve(curveIndex);
 
             var curveStartRotation = this[curveIndex].Rotation;
             var curveStartUp = math.rotate(curveStartRotation, math.up());
@@ -386,7 +386,7 @@ namespace BovineLabs.Core.Collections
                 return curveStartUp;
             }
 
-            var endKnotIndex = this.NextIndex(curveIndex);
+            var endKnotIndex = NextIndex(curveIndex);
             var curveEndRotation = this[endKnotIndex].Rotation;
             var curveEndUp = math.rotate(curveEndRotation, math.up());
             if (math.abs(curveT - 1f) < math.EPSILON)
@@ -594,7 +594,7 @@ namespace BovineLabs.Core.Collections
 
         public int NextIndex(int index)
         {
-            return NextIndex(index, this.Count, this.Closed);
+            return NextIndex(index, Count, Closed);
         }
 
         private static int NextIndex(int index, int count, bool wrap)

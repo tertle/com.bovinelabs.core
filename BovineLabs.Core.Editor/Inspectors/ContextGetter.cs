@@ -52,7 +52,7 @@
 
     internal class ContextGetter<T> : IContextGetter
     {
-        private readonly EntityInspectorContext context;
+        private readonly EntityInspectorContext _context;
 
         public ContextGetter(object inspector)
         {
@@ -61,17 +61,17 @@
                 throw new ArgumentException($"Inspector is not {nameof(InspectorBase<T>)}", nameof(inspector));
             }
 
-            this.context = propertyInspector.GetContext<EntityInspectorContext>();
+            _context = propertyInspector.GetContext<EntityInspectorContext>();
         }
 
-        public InspectionContext Context => this.context;
+        public InspectionContext Context => _context;
 
-        public Entity Entity => this.context.Entity;
+        public Entity Entity => _context.Entity;
 
-        public World World => this.context.World;
+        public World World => _context.World;
 
-        public EntityManager EntityManager => this.context.EntityManager;
+        public EntityManager EntityManager => _context.EntityManager;
 
-        public bool IsReadOnly => this.context.EntityContainer.IsReadOnly;
+        public bool IsReadOnly => _context.EntityContainer.IsReadOnly;
     }
 }

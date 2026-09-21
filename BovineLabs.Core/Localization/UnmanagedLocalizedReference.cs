@@ -17,8 +17,8 @@ namespace BovineLabs.Core.Localization
 
         public UnmanagedLocalizedReference(Hash128 tableReference, long entryReference)
         {
-            this.TableReference = tableReference;
-            this.EntryReference = entryReference;
+            TableReference = tableReference;
+            EntryReference = entryReference;
         }
 
         public UnmanagedLocalizedReference(GUID tableReference, long entryReference)
@@ -26,7 +26,7 @@ namespace BovineLabs.Core.Localization
         {
         }
 
-        public readonly bool IsValid => this.TableReference.IsValid && this.EntryReference != 0;
+        public readonly bool IsValid => TableReference.IsValid && EntryReference != 0;
 
         public static bool TryCreate<TEntry>(LocalizedEntry<TEntry> reference, out UnmanagedLocalizedReference localizedReference)
             where TEntry : class, IResourceEntry
@@ -73,18 +73,18 @@ namespace BovineLabs.Core.Localization
         public readonly LocalizedString AsLocalizedString()
         {
             var reference = new LocalizedString();
-            reference.SetReference(this.ToTableReference(), this.EntryReference);
+            reference.SetReference(ToTableReference(), EntryReference);
             return reference;
         }
 
         public readonly LocalizationTableReference ToTableReference()
         {
-            return this.TableReference.IsValid ? LocalizationTableReference.FromGuid(this.TableReference.ToString()) : default;
+            return TableReference.IsValid ? LocalizationTableReference.FromGuid(TableReference.ToString()) : default;
         }
 
         public readonly LocalizationTableEntryReference ToTableEntryReference()
         {
-            return this.EntryReference;
+            return EntryReference;
         }
 
         public static bool operator ==(UnmanagedLocalizedReference left, UnmanagedLocalizedReference right)
@@ -99,19 +99,19 @@ namespace BovineLabs.Core.Localization
 
         public readonly bool Equals(UnmanagedLocalizedReference other)
         {
-            return this.TableReference.Equals(other.TableReference) && this.EntryReference == other.EntryReference;
+            return TableReference.Equals(other.TableReference) && EntryReference == other.EntryReference;
         }
 
         public override readonly bool Equals(object obj)
         {
-            return obj is UnmanagedLocalizedReference other && this.Equals(other);
+            return obj is UnmanagedLocalizedReference other && Equals(other);
         }
 
         public override readonly int GetHashCode()
         {
             unchecked
             {
-                return (this.TableReference.GetHashCode() * 397) ^ this.EntryReference.GetHashCode();
+                return (TableReference.GetHashCode() * 397) ^ EntryReference.GetHashCode();
             }
         }
 

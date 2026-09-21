@@ -20,26 +20,28 @@ namespace BovineLabs.Core.Collections
         public static int ForEachCount => UnsafeThreadStream.ForEachCount;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Required by safety injection.")]
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve Unity safety-handle field names.")]
         private AtomicSafetyHandle m_Safety;
 
-        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Required by safety injection.")]
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve the established static safety ID name.")]
+        [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Preserve the established static safety ID name.")]
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeThreadStream>();
 #endif
 
-        private UnsafeThreadStream stream;
+        private UnsafeThreadStream _stream;
 
         public NativeThreadStream(AllocatorManager.AllocatorHandle allocator)
         {
             Allocate(out this, allocator);
-            this.stream.AllocateForEach();
+            _stream.AllocateForEach();
         }
 
-        public bool IsCreated => this.stream.IsCreated;
+        public bool IsCreated => _stream.IsCreated;
 
         public bool IsEmpty()
         {
-            return this.stream.IsEmpty();
+            return _stream.IsEmpty();
         }
 
         public Reader AsReader()
@@ -60,51 +62,51 @@ namespace BovineLabs.Core.Collections
 
         public int Count()
         {
-            this.CheckReadAccess();
-            return this.stream.Count();
+            CheckReadAccess();
+            return _stream.Count();
         }
 
         public NativeArray<T> ToNativeArray<T>(Allocator allocator)
             where T : unmanaged
         {
-            this.CheckReadAccess();
-            return this.stream.ToNativeArray<T>(allocator);
+            CheckReadAccess();
+            return _stream.ToNativeArray<T>(allocator);
         }
 
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.Release(this.m_Safety);
+            AtomicSafetyHandle.Release(m_Safety);
 #endif
-            this.stream.Dispose();
+            _stream.Dispose();
         }
 
         public JobHandle Dispose(JobHandle dependency)
         {
-            var jobHandle = this.stream.Dispose(dependency);
+            var jobHandle = _stream.Dispose(dependency);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.Release(this.m_Safety);
+            AtomicSafetyHandle.Release(m_Safety);
 #endif
             return jobHandle;
         }
 
         public bool Equals(NativeThreadStream other)
         {
-            return this.stream.Equals(other.stream);
+            return _stream.Equals(other._stream);
         }
 
         [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode", Justification = "Only changes in dispose.")]
         public override int GetHashCode()
         {
-            return this.stream.GetHashCode();
+            return _stream.GetHashCode();
         }
 
         private static void Allocate(out NativeThreadStream stream, AllocatorManager.AllocatorHandle allocator)
         {
             CollectionChecks.CheckAllocator(allocator);
 
-            UnsafeThreadStream.AllocateBlock(out stream.stream, allocator);
+            UnsafeThreadStream.AllocateBlock(out stream._stream, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             stream.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
@@ -128,7 +130,7 @@ namespace BovineLabs.Core.Collections
         private void CheckReadAccess()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(this.m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
         }
     }
