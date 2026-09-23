@@ -8,6 +8,8 @@
 ### Changed
 * `mathex.GenerateGaussianNoise` and `UntypedDynamicHashMapIterator.Current` return `Tu` values. Use `Item1`/`Item2` or deconstruct instead of accessing named tuple fields.
 * Facet generation preserves public helper and constructor parameter names when private fields use an underscore prefix.
+* Existing serialized private fields in Core settings and authoring were renamed to `_camelCase`; migrate external assets and property paths, including `SettingsAuthoring` and transform/physics authoring fields, before importing the updated source.
+* Shared UI themes now load from `CoreSettings.ThemeStyleSheet` instead of Resources. Assign the stylesheet on existing settings assets, enable `IncludeInReleaseBuild` when needed, and replace `BovineThemeUtility.StyleSheetResource` path references.
 * Optional localization integration now targets the built-in Localization Runtime module, including stable unmanaged references and shared resource-table editor utilities.
 
 ## [2.0.0-pre.3] - 2026-09-18
