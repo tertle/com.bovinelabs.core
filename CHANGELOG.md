@@ -2,7 +2,11 @@
 
 ## [2.0.0-pre.4] - Unreleased
 
+### Added
+* Unmanaged `Tu<T>`, `Tu<T1, T2>`, and `Tu<T1, T2, T3>` values for Burst and CoreCLR.
+
 ### Changed
+* `mathex.GenerateGaussianNoise` and `UntypedDynamicHashMapIterator.Current` return `Tu` values. Use `Item1`/`Item2` or deconstruct instead of accessing named tuple fields.
 * Facet generation preserves public helper and constructor parameter names when private fields use an underscore prefix.
 * Optional localization integration now targets the built-in Localization Runtime module, including stable unmanaged references and shared resource-table editor utilities.
 

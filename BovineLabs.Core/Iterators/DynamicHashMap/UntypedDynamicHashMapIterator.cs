@@ -8,7 +8,7 @@
 
     [NativeContainer]
     [NativeContainerIsReadOnly]
-    public unsafe struct UntypedDynamicHashMapIterator : IEnumerator<(IntPtr Key, IntPtr Value)>
+    public unsafe struct UntypedDynamicHashMapIterator : IEnumerator<Tu<IntPtr, IntPtr>>
     {
         private readonly int _keySize;
         private readonly int _valueSize;
@@ -23,18 +23,18 @@
             _enumerator = new UntypedDynamicHashMapHelper.Enumerator(data);
         }
 
-        public (IntPtr Key, IntPtr Value) Current
+        public Tu<IntPtr, IntPtr> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                var current = _enumerator.GetCurrent();
+                var (helperPtr, index) = _enumerator.GetCurrent();
 
-                var helper = (UntypedDynamicHashMapHelper*)current.UntypedDynamicHashMapHelper;
-                var key = helper->Keys + (_keySize * current.Index);
-                var value = helper->Values + (_valueSize * current.Index);
+                var helper = (UntypedDynamicHashMapHelper*)helperPtr;
+                var key = helper->Keys + (_keySize * index);
+                var value = helper->Values + (_valueSize * index);
 
-                return ((IntPtr)key, (IntPtr)value);
+                return new Tu<IntPtr, IntPtr>((IntPtr)key, (IntPtr)value);
             }
         }
 

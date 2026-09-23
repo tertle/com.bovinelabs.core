@@ -106,7 +106,9 @@
 
             for (; i < halfLength; i++, j--)
             {
-                (array[i], array[j]) = (array[j], array[i]);
+                var value = array[i];
+                array[i] = array[j];
+                array[j] = value;
             }
         }
 

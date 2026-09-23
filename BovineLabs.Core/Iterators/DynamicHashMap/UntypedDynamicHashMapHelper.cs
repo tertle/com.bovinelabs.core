@@ -124,9 +124,9 @@
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal (IntPtr UntypedDynamicHashMapHelper, int Index) GetCurrent()
+            internal Tu<IntPtr, int> GetCurrent()
             {
-                return ((IntPtr)Data, Index);
+                return new Tu<IntPtr, int>((IntPtr)Data, Index);
             }
         }
     }

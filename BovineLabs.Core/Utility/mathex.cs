@@ -423,7 +423,9 @@
             for (var n = array.Length - 1; n > 0; n--)
             {
                 var r = random.NextInt(n + 1);
-                (array[r], array[n]) = (array[n], array[r]);
+                var value = array[r];
+                array[r] = array[n];
+                array[n] = value;
             }
         }
 
@@ -481,7 +483,7 @@
         /// <summary>
         /// mu is the mean; sigma is the standard deviation. Source: https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform.
         /// </summary>
-        public static (float z0, float z1) GenerateGaussianNoise(ref Random random, float mu, float sigma)
+        public static Tu<float, float> GenerateGaussianNoise(ref Random random, float mu, float sigma)
         {
             float u1;
             do
@@ -498,7 +500,7 @@
             var z0 = (R * math.cos(theta)) + mu;
             var z1 = (R * math.sin(theta)) + mu;
 
-            return (z0, z1);
+            return new Tu<float, float>(z0, z1);
         }
 
         // <copyright file="Gamma.cs" company="Math.NET">
