@@ -32,10 +32,10 @@
 #else
         internal ChangeFilterLookup(TypeIndex typeIndex, EntityDataAccess* access)
         {
-            this.typeIndex = typeIndex;
-            this.access = access;
-            this.cache = default;
-            this.globalSystemVersion = access->EntityComponentStore->GlobalSystemVersion;
+            _typeIndex = typeIndex;
+            _access = access;
+            _cache = default;
+            _globalSystemVersion = access->EntityComponentStore->GlobalSystemVersion;
         }
 #endif
 

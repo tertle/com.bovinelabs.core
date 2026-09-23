@@ -66,10 +66,10 @@
 #else
         internal UntypedDynamicBuffer(BufferHeader* header, int internalCapacity, int elementSize, int alignOf)
         {
-            this.buffer = header;
-            this.internalCapacity = internalCapacity;
-            this.ElementSize = elementSize;
-            this.alignOf = alignOf;
+            _buffer = header;
+            _internalCapacity = internalCapacity;
+            ElementSize = elementSize;
+            _alignOf = alignOf;
         }
 #endif
 
@@ -107,7 +107,7 @@
                     m_useMemoryInitPattern == 1, m_memoryInitPattern, _internalCapacity);
 #else
                 BufferHeader.SetCapacity(
-                    this.buffer, value, this.ElementSize, this.alignOf, BufferHeader.TrashMode.RetainOldData, false, 0, this.internalCapacity);
+                    _buffer, value, ElementSize, _alignOf, BufferHeader.TrashMode.RetainOldData, false, 0, _internalCapacity);
 #endif
             }
         }
@@ -200,7 +200,7 @@
             BufferHeader.EnsureCapacity(_buffer, length, ElementSize, _alignOf, BufferHeader.TrashMode.RetainOldData,
                 m_useMemoryInitPattern == 1, m_memoryInitPattern);
 #else
-            BufferHeader.EnsureCapacity(this.buffer, length, this.ElementSize, this.alignOf, BufferHeader.TrashMode.RetainOldData, false, 0);
+            BufferHeader.EnsureCapacity(_buffer, length, ElementSize, _alignOf, BufferHeader.TrashMode.RetainOldData, false, 0);
 #endif
         }
 

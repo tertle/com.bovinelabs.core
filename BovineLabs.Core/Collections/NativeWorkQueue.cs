@@ -98,8 +98,8 @@ namespace BovineLabs.Core.Collections
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
 
-            *_queueWriteHead = 0; // math.min(*this.queueWriteHead, this.Capacity);
-            *_queueReadHead = 0; // math.min(*this.queueReadHead, *this.queueWriteHead);
+            *_queueWriteHead = 0;
+            *_queueReadHead = 0;
         }
 
         public JobHandle Update(JobHandle handle)
@@ -218,10 +218,10 @@ namespace BovineLabs.Core.Collections
 #else
             internal ParallelReader(NativeWorkQueue<T> workQueue)
             {
-                this.queue = workQueue.queue;
-                this.queueReadHead = workQueue.queueReadHead;
-                this.queueWriteHead = workQueue.queueWriteHead;
-                this.Capacity = workQueue.Capacity;
+                _queue = workQueue._queue;
+                _queueReadHead = workQueue._queueReadHead;
+                _queueWriteHead = workQueue._queueWriteHead;
+                Capacity = workQueue.Capacity;
             }
 #endif
             public int Capacity { get; }
@@ -289,10 +289,10 @@ namespace BovineLabs.Core.Collections
 #else
             internal ParallelWriter(NativeWorkQueue<T> workQueue)
             {
-                this.queue = workQueue.queue;
-                this.queueWriteHead = workQueue.queueWriteHead;
-                this.currentRef = workQueue.currentRef;
-                this.Capacity = workQueue.Capacity;
+                _queue = workQueue._queue;
+                _queueWriteHead = workQueue._queueWriteHead;
+                _currentRef = workQueue._currentRef;
+                Capacity = workQueue.Capacity;
             }
 #endif
 

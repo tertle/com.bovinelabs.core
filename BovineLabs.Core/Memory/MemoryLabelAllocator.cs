@@ -127,7 +127,7 @@
             var allocated = Interlocked.Increment(ref _allocationCount);
             Assert.IsTrue(allocated > 0, "MemoryLabelAllocator allocation count overflowed.");
 #else
-            Interlocked.Increment(ref this.allocationCount);
+            Interlocked.Increment(ref _allocationCount);
 #endif
             return AllocatorManager.kErrorNone;
         }
@@ -145,7 +145,7 @@
                 var remaining = Interlocked.Decrement(ref _allocationCount);
                 Assert.IsTrue(remaining >= 0, "MemoryLabelAllocator allocation count went negative.");
 #else
-                Interlocked.Decrement(ref this.allocationCount);
+                Interlocked.Decrement(ref _allocationCount);
 #endif
             }
 

@@ -8,13 +8,13 @@ namespace BovineLabs.Core
     {
         protected override void OnCreate()
         {
-            this.EntityManager.CreateEntity(typeof(SelectedEntity), typeof(SelectedEntities));
+            EntityManager.CreateEntity(typeof(SelectedEntity), typeof(SelectedEntities));
         }
 
         protected override void OnUpdate()
         {
             // In debug builds you can't select entities, at least not via this system
-            this.World.GetExistingSystemManaged<InitializationSystemGroup>().RemoveSystemFromUpdateList(this);
+            World.GetExistingSystemManaged<InitializationSystemGroup>().RemoveSystemFromUpdateList(this);
         }
     }
 }

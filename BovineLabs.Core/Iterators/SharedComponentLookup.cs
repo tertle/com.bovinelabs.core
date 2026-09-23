@@ -32,8 +32,8 @@
 #else
         internal SharedComponentLookup(TypeIndex typeIndex, EntityDataAccess* access)
         {
-            this.m_Access = access;
-            this.m_TypeIndex = typeIndex;
+            _access = access;
+            _typeIndex = typeIndex;
         }
 #endif
 

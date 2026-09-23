@@ -57,7 +57,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             rootVisualElement.Q<TextField>("directory").SetEnabled(false);
 
 #if !UNITY_NETCODE
-            foreach (var toggle in this.rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().ToList())
+            foreach (var toggle in rootVisualElement.Q("referenceCommon").Children().OfType<Toggle>().ToList())
             {
                 if (toggle.label is "Unity.Netcode" or "Unity.Networking.Transport")
                 {
@@ -65,7 +65,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
                 }
             }
 
-            foreach (var toggle in this.rootVisualElement.Q("toggleCommon").Children().OfType<Toggle>().ToList())
+            foreach (var toggle in rootVisualElement.Q("toggleCommon").Children().OfType<Toggle>().ToList())
             {
                 if (toggle.label == "Server")
                 {

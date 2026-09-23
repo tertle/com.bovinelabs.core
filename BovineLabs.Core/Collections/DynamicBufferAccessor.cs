@@ -41,15 +41,15 @@
             _isReadOnly = readOnly;
         }
 #else
-            internal DynamicBufferAccessor(byte* basePointer, int length, int stride, int elementSize, int elementAlign, int internalCapacity)
-            {
-                this.pointer = basePointer;
-                this.internalCapacity = internalCapacity;
-                this.ElementSize = elementSize;
-                this.ElementAlign = elementAlign;
-                this.stride = stride;
-                this.Length = length;
-            }
+        internal DynamicBufferAccessor(byte* basePointer, int length, int stride, int elementSize, int elementAlign, int internalCapacity)
+        {
+            _pointer = basePointer;
+            _internalCapacity = internalCapacity;
+            ElementSize = elementSize;
+            ElementAlign = elementAlign;
+            _stride = stride;
+            Length = length;
+        }
 #endif
 
         public DynamicBuffer<T> GetBuffer<T>(int index)
@@ -62,7 +62,7 @@
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             return new DynamicBuffer<T>(header, _safety0, _arrayInvalidationSafety, _isReadOnly, false, 0, _internalCapacity);
 #else
-            return new DynamicBuffer<T>(header, this.internalCapacity);
+            return new DynamicBuffer<T>(header, _internalCapacity);
 #endif
         }
 
@@ -76,7 +76,7 @@
             return new UntypedDynamicBuffer(header, _safety0, _arrayInvalidationSafety, _isReadOnly, false, 0, _internalCapacity,
                 ElementSize, ElementAlign);
 #else
-            return new UntypedDynamicBuffer(header, this.internalCapacity, this.ElementSize, this.ElementAlign);
+            return new UntypedDynamicBuffer(header, _internalCapacity, ElementSize, ElementAlign);
 #endif
         }
 

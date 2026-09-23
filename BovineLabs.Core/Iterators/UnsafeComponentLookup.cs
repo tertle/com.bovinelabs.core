@@ -35,11 +35,11 @@
 #else
         internal UnsafeComponentLookup(int typeIndex, EntityDataAccess* access)
         {
-            this.typeIndex = typeIndex;
-            this.access = access;
-            this.cache = default;
-            this.globalSystemVersion = access->EntityComponentStore->GlobalSystemVersion;
-            this.isZeroSized = ComponentType.FromTypeIndex(typeIndex).IsZeroSized ? (byte)1 : (byte)0;
+            _typeIndex = typeIndex;
+            _access = access;
+            _cache = default;
+            _globalSystemVersion = access->EntityComponentStore->GlobalSystemVersion;
+            _isZeroSized = ComponentType.FromTypeIndex(typeIndex).IsZeroSized ? (byte)1 : (byte)0;
         }
 #endif
 

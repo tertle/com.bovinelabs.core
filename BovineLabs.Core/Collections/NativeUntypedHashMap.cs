@@ -152,7 +152,7 @@ namespace BovineLabs.Core.Collections
             {
                 Data = new NativeUntypedHashMapDispose<TKey>
                 {
-                    Buffer = this.data,
+                    Buffer = data,
                 },
             }.Schedule(inputDeps);
 #endif

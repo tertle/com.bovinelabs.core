@@ -75,7 +75,7 @@ namespace BovineLabs.Core.Editor.Settings
 #if !UNITY_NETCODE
             if (!authoring && world is "client" or "server")
             {
-                authoring = this.defaultSettingsAuthoring;
+                authoring = _defaultSettingsAuthoring;
             }
 #endif
 

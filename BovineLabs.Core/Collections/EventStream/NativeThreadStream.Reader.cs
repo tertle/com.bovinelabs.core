@@ -97,7 +97,7 @@ namespace BovineLabs.Core.Collections
                         _reader.m_CurrentBlockEnd = (byte*)_reader.m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
                     }
 #else
-                    this.reader.m_CurrentBlockEnd = (byte*)this.reader.m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
+                    _reader.m_CurrentBlockEnd = (byte*)_reader.m_CurrentBlock + UnsafeThreadStreamBlockData.AllocationSize;
 #endif
                     ptr = _reader.m_CurrentPtr;
                     _reader.m_CurrentPtr += size;

@@ -5,18 +5,18 @@ namespace Unity.Netcode
 
     public struct InputEvent
     {
-        public readonly bool IsSet => this.Count > 0;
+        public readonly bool IsSet => Count > 0;
 
         public uint Count;
 
         public void Set()
         {
-            this.Count++;
+            Count++;
         }
 
         public readonly FixedString32Bytes ToFixedString()
         {
-            return $"InputEvent[{this.Count}]";
+            return $"InputEvent[{Count}]";
         }
     }
 }
