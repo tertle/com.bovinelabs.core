@@ -10,6 +10,40 @@ namespace BovineLabs.Core.Tests.Collections
 
     public class DynamicMultiDictionaryTests : ECSTestsFixture
     {
+        [TestCase(0)]
+        [TestCase(0x7f7f7f7f)]
+        public void InvalidSpareHeaderRecountsEntriesAndRecoversOnWrite(int spareValue)
+        {
+            var entity = Manager.CreateEntity(typeof(TestEntry));
+            var buffer = Manager.GetBuffer<TestEntry>(entity);
+            var map = buffer.AsDynamicMultiDictionary<int, int, TestEntry>();
+            map.EnsureCapacity(8);
+            map.Add(1, 10);
+            map.Add(1, 11);
+            map.Add(9, 90);
+            Assert.AreEqual(1, map.Remove(9));
+
+            // Unity can copy Length entries while leaving the capacity-only header cleared or uninitialized.
+            var capacity = buffer.Length;
+            buffer.ResizeUninitialized(capacity + 1);
+            buffer[capacity] = new TestEntry
+            {
+                TagField = (uint)spareValue,
+                KeyField = spareValue,
+            };
+            buffer.Length = capacity;
+
+            Assert.AreEqual(2, map.Count);
+            Assert.AreEqual(2, map.Remove(1));
+            map.Add(25, 250);
+            map.Add(25, 251);
+            Assert.AreEqual(2, map.Count);
+            AssertValues(map, 25, 250, 251);
+            Assert.AreEqual(0, map.CountValuesForKey(1));
+            Assert.AreEqual(0, map.CountValuesForKey(9));
+            Assert.AreEqual(capacity, map.Capacity);
+        }
+
         [Test]
         public void ReconstructAfterRemapUpdatesTags()
         {

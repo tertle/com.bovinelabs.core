@@ -9,6 +9,38 @@ namespace BovineLabs.Core.Tests.Collections
 
     public class DynamicHashSetTests : ECSTestsFixture
     {
+        [TestCase(0)]
+        [TestCase(0x7f7f7f7f)]
+        public void InvalidSpareHeaderRecountsEntriesAndRecoversOnWrite(int spareValue)
+        {
+            var set = CreateSet(out _, out var buffer);
+            set.EnsureCapacity(8);
+            set.Add(1);
+            set.Add(9);
+            set.Add(17);
+            Assert.IsTrue(set.Remove(9));
+
+            // Unity can copy Length entries while leaving the capacity-only header cleared or uninitialized.
+            var capacity = buffer.Length;
+            buffer.ResizeUninitialized(capacity + 1);
+            buffer[capacity] = new TestEntry
+            {
+                TagField = (uint)spareValue,
+                KeyField = spareValue,
+            };
+            buffer.Length = capacity;
+
+            Assert.AreEqual(2, set.Count);
+            Assert.IsTrue(set.Remove(17));
+            set.Add(25);
+            Assert.AreEqual(2, set.Count);
+            Assert.IsTrue(set.Contains(1));
+            Assert.IsTrue(set.Contains(25));
+            Assert.IsFalse(set.Contains(9));
+            Assert.IsFalse(set.Contains(17));
+            Assert.AreEqual(capacity, set.Capacity);
+        }
+
         [Test]
         public void EmptyBufferSupportsZeroCapacityReads()
         {

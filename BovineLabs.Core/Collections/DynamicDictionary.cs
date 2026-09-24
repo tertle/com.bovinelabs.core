@@ -506,7 +506,8 @@ namespace BovineLabs.Core.Collections
         {
             var count = header.CountPlusOne - 1;
             var tombstones = header.TombstonesPlusOne - 1;
-            return header.CountPlusOne > 0 && header.TombstonesPlusOne > 0 && count >= 0 && tombstones >= 0 && count + tombstones <= capacity;
+            // Capacity-only memory may be uninitialized after a buffer copy; validate without overflowing its contents.
+            return header.CountPlusOne > 0 && header.TombstonesPlusOne > 0 && count >= 0 && tombstones >= 0 && (long)count + tombstones <= capacity;
         }
 
         private static void EnsureHeaderValid(TEntry* entries, int capacity, ref Header header)

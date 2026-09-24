@@ -9,6 +9,40 @@ namespace BovineLabs.Core.Tests.Collections
 
     public class DynamicDictionaryTests : ECSTestsFixture
     {
+        [TestCase(0)]
+        [TestCase(0x7f7f7f7f)]
+        public void InvalidSpareHeaderRecountsEntriesAndRecoversOnWrite(int spareValue)
+        {
+            var entity = Manager.CreateEntity(typeof(TestEntry));
+            var buffer = Manager.GetBuffer<TestEntry>(entity);
+            var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
+            map.EnsureCapacity(8);
+            map.Add(1, 10);
+            map.Add(9, 90);
+            map.Add(17, 170);
+            Assert.IsTrue(map.Remove(9));
+
+            // Unity can copy Length entries while leaving the capacity-only header cleared or uninitialized.
+            var capacity = buffer.Length;
+            buffer.ResizeUninitialized(capacity + 1);
+            buffer[capacity] = new TestEntry
+            {
+                TagField = (uint)spareValue,
+                KeyField = spareValue,
+            };
+            buffer.Length = capacity;
+
+            Assert.AreEqual(2, map.Count);
+            Assert.IsTrue(map.Remove(17));
+            map.Add(25, 250);
+            Assert.AreEqual(2, map.Count);
+            Assert.AreEqual(10, map[1]);
+            Assert.AreEqual(250, map[25]);
+            Assert.IsFalse(map.ContainsKey(9));
+            Assert.IsFalse(map.ContainsKey(17));
+            Assert.AreEqual(capacity, map.Capacity);
+        }
+
         [Test]
         public void IndexerSetAddsAndUpdates()
         {
