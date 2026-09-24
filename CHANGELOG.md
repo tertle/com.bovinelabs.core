@@ -4,6 +4,7 @@
 
 ### Added
 * Unmanaged `Tu<T>`, `Tu<T1, T2>`, and `Tu<T1, T2, T3>` values for Burst and CoreCLR.
+* Shared editor utilities for regenerating generated sample assets and launching sample scenes in Play Mode.
 
 ### Changed
 * `mathex.GenerateGaussianNoise` and `UntypedDynamicHashMapIterator.Current` return `Tu` values. Use `Item1`/`Item2` or deconstruct instead of accessing named tuple fields.
