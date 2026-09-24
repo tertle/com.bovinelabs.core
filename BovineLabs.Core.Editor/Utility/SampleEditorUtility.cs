@@ -39,9 +39,14 @@ namespace BovineLabs.Core.Editor.Utility
 
         public static void Play(string scenePath, Action prepare)
         {
-            if (!CanUseMenu || !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            if (!SaveScenesForGeneration(out var discardUnsavedScenes))
             {
                 return;
+            }
+
+            if (discardUnsavedScenes)
+            {
+                EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             }
 
             prepare();
@@ -55,7 +60,33 @@ namespace BovineLabs.Core.Editor.Utility
             EditorApplication.isPlaying = true;
         }
 
-        public static void RebuildGeneratedAssets(string generatedRoot, Action generate)
+        public static bool SaveScenesForGeneration(out bool discardUnsavedScenes)
+        {
+            discardUnsavedScenes = false;
+            if (!CanUseMenu || Application.isBatchMode)
+            {
+                return false;
+            }
+
+            var scenes = Enumerable.Range(0, SceneManager.sceneCount).Select(SceneManager.GetSceneAt)
+                .Where(scene => scene.isDirty || (string.IsNullOrEmpty(scene.path) && scene.rootCount != 0)).ToArray();
+            if (scenes.Length == 0)
+            {
+                return true;
+            }
+
+            if (EditorUtility.DisplayDialog("Save Open Scenes",
+                    "The sample will temporarily close open scenes. Save modified and populated untitled scenes before continuing?",
+                    "Save", "Don't Save"))
+            {
+                return EditorSceneManager.SaveScenes(scenes) && CanGenerateAutomatically;
+            }
+
+            discardUnsavedScenes = true;
+            return CanUseMenu;
+        }
+
+        public static void RebuildGeneratedAssets(string generatedRoot, Action generate, bool discardUnsavedScenes = false)
         {
             var fullRoot = Path.GetFullPath(generatedRoot);
             var assetsRoot = Path.GetFullPath(Application.dataPath) + Path.DirectorySeparatorChar;
@@ -64,7 +95,7 @@ namespace BovineLabs.Core.Editor.Utility
                 throw new ArgumentException("The generated folder must be inside an imported sample under Assets.", nameof(generatedRoot));
             }
 
-            if (!CanGenerateAutomatically)
+            if (!CanUseMenu || (discardUnsavedScenes && Application.isBatchMode) || (!discardUnsavedScenes && !CanGenerateAutomatically))
             {
                 throw new InvalidOperationException("Save modified scenes, close populated untitled scenes and leave Play or Prefab Mode before generating.");
             }
