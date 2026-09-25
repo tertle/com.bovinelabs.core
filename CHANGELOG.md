@@ -13,6 +13,9 @@
 * Shared UI themes now load from `CoreSettings.ThemeStyleSheet` instead of Resources. Assign the stylesheet on existing settings assets, enable `IncludeInReleaseBuild` when needed, and replace `BovineThemeUtility.StyleSheetResource` path references.
 * Optional localization integration now targets the built-in Localization Runtime module, including stable unmanaged references and shared resource-table editor utilities.
 
+### Fixed
+* Dynamic dictionaries, multi-dictionaries, and hash sets now validate capacity-only headers without overflow and recover correctly after buffer copies.
+
 ## [2.0.0-pre.3] - 2026-09-18
 
 ### Added
