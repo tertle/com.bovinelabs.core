@@ -15,6 +15,7 @@
 
 ### Fixed
 * Dynamic dictionaries, multi-dictionaries, and hash sets now validate capacity-only headers without overflow and recover correctly after buffer copies.
+* ConfigVar discovery no longer initializes Entities before the Player engine is ready, preventing a native startup crash with Unity 6.7.
 
 ## [2.0.0-pre.3] - 2026-09-18
 

@@ -8,7 +8,6 @@ namespace BovineLabs.Core.ConfigVars
     using BovineLabs.Core.Utility;
     using Unity.Burst;
     using Unity.Collections;
-    using Unity.Entities;
     using Unity.Scripting.LifecycleManagement;
     using UnityEngine;
 #if UNITY_EDITOR
@@ -48,8 +47,6 @@ namespace BovineLabs.Core.ConfigVars
         [OnCodeLoaded]
         private static void Initialize()
         {
-            TypeManager.Initialize();
-
             // We make sure to always initialize the logger first so we can use this here
             foreach (var (configVar, field) in FindAllConfigVars().OrderByDescending(v => v.ConfigVar.Name == BLLogger.LogLevelName))
             {
