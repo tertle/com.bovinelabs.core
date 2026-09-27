@@ -8,7 +8,7 @@ using BovineLabs.Core.Utility;
 
 ## Choosing it
 
-Use `PooledNativeList<T>` when all of these are true:
+Consider `PooledNativeList<T>` when all of these are true:
 
 - `T` is unmanaged.
 - The list is acquired, used, and disposed in one synchronous scope.
@@ -16,6 +16,8 @@ Use `PooledNativeList<T>` when all of these are true:
 - No scheduled work needs the list after that scope exits.
 
 Use a normal `NativeList<T>` with an appropriate allocator when the container must cross frames, be passed to a job scheduled for later, have explicit allocator ownership, or be disposed through a `JobHandle`. For per-update system scratch allocated before scheduling, the world update allocator is usually the simpler owner.
+
+Pooling is not inherently faster than `Allocator.Temp`. Benchmark the actual workload: repeated acquire/use/return operations within one job can reuse one buffer, while isolated allocations may favor Temp. Prepopulate the pool when measuring steady-state reuse and measure first-use allocation separately.
 
 ## Basic usage
 

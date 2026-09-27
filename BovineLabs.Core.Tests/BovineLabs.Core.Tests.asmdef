@@ -13,6 +13,7 @@
     "Unity.Mathematics",
     "Unity.Mathematics.Extensions",
     "Unity.NetCode",
+    "Unity.PerformanceTesting",
     "Unity.Scenes",
     "Unity.Transforms",
     "UnityEngine.TestRunner",
@@ -32,6 +33,11 @@
     "UNITY_INCLUDE_TESTS"
   ],
   "versionDefines": [
+    {
+      "name": "com.unity.test-framework.performance",
+      "expression": "",
+      "define": "UNITY_PERFORMANCE_TESTING"
+    },
     {
       "name": "com.unity.netcode",
       "expression": "7.0.0",

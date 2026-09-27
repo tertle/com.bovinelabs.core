@@ -147,12 +147,8 @@ namespace BovineLabs.Core.Utility
             {
                 var refArr = refs.AsArray();
 
-                using var vcountPool = PooledNativeList<int>.Make();
-                var vcount = vcountPool.List;
-                vcount.Capacity = math.max(vcount.Capacity, 8);
-                using var vidsPool = PooledNativeList<int>.Make();
-                var vids = vidsPool.List;
-                vids.Capacity = math.max(vids.Capacity, 8);
+                var vcount = new NativeList<int>(8, Allocator.Temp);
+                var vids = new NativeList<int>(8, Allocator.Temp);
                 int vsize;
                 for (var i = 0; i < vertexCount; i++)
                 {
