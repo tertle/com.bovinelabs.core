@@ -34,6 +34,17 @@ foreach (var value in pooled.List)
 
 Disposal clears the list and returns its backing memory to the current thread's pool.
 
+## Fixed-length array leases
+
+`PooledNativeArray<T>` uses the same pool and exposes a fixed-length `NativeArray<T>` view:
+
+```csharp
+using var pooled = PooledNativeArray<int>.Make(count, NativeArrayOptions.UninitializedMemory);
+var array = pooled.Array;
+```
+
+`Make(length)` clears the requested elements by default. Use `UninitializedMemory` only when every element will be written before it is read. Zero length is supported; negative lengths throw. Dispose the wrapper, never the array view. Do not copy the wrapper or retain the view after disposal. The same synchronous, same-thread ownership rules below apply; acquiring and disposing inside a job is supported. This shares the list pool's capacity reuse and growth behavior rather than creating a separate pool.
+
 ## Job-local usage
 
 Acquire the wrapper inside the job invocation that consumes it:

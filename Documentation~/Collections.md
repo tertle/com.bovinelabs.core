@@ -18,6 +18,7 @@ using BovineLabs.Core.Collections;
 | A dictionary or set stored on one entity | [Entry-backed dynamic collections](DynamicCollections.md) | Entity's `DynamicBuffer<T>` |
 | A specialized byte-backed map on one entity | [Generated dynamic hash maps](DynamicHashMap.md) | Entity's `DynamicBuffer<byte>` |
 | A short-lived list reused on the current thread | [`PooledNativeList<T>`](PooledNativeList.md) | `using` scope, then thread-local pool |
+| A fixed-length array reused on the current thread | [`PooledNativeArray<T>`](PooledNativeList.md#fixed-length-array-leases) | `using` scope, sharing the list pool |
 | Many producers and one frame consumer | [`SingletonCollectionUtil`](SingletonCollection.md) | Owning system and rewindable allocator |
 | Maximum control with safety disabled | `Unsafe*` collection or lookup | Expert caller |
 
