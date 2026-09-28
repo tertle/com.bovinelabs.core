@@ -133,19 +133,19 @@ namespace BovineLabs.Core.Graphics
     }
 
     /// <summary>
-    /// An unmanaged and Burst-compatible interface for SparseUploader.
+    /// An unmanaged and Burst-compatible interface for BovineSparseUploader.
     /// </summary>
     /// <remarks>
-    /// This should be created each frame by a call to SparseUploader.Begin and is later returned by a call to SparseUploader.EndAndCommit.
+    /// This should be created each frame by a call to BovineSparseUploader.Begin and is later returned by a call to BovineSparseUploader.EndAndCommit.
     /// </remarks>
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct ThreadedSparseUploader
+    public unsafe struct ThreadedBovineSparseUploader
     {
         // TODO: safety handle?
         [NativeDisableUnsafePtrRestriction] internal ThreadedSparseUploaderData* m_Data;
 
         /// <summary>
-        /// Indicates whether the SparseUploader is valid and can be used.
+        /// Indicates whether the BovineSparseUploader is valid and can be used.
         /// </summary>
         public bool IsValid => m_Data != null;
 
@@ -183,10 +183,10 @@ namespace BovineLabs.Core.Graphics
         }
 
         /// <summary>
-        /// Adds a new pending upload operation to execute when you call SparseUploader.EndAndCommit.
+        /// Adds a new pending upload operation to execute when you call BovineSparseUploader.EndAndCommit.
         /// </summary>
         /// <remarks>
-        /// When this operation executes, the SparseUploader copies data from the source pointer.
+        /// When this operation executes, the BovineSparseUploader copies data from the source pointer.
         /// </remarks>
         /// <param name="src">The source pointer of data to upload.</param>
         /// <param name="size">The amount of data, in bytes, to read from the source pointer.</param>
@@ -199,7 +199,7 @@ namespace BovineLabs.Core.Graphics
 
             if (!allocSucceeded)
             {
-                Debug.Log("SparseUploader failed to allocate upload memory for AddUpload operation");
+                Debug.Log("BovineSparseUploader failed to allocate upload memory for AddUpload operation");
                 return;
             }
 
@@ -218,6 +218,36 @@ namespace BovineLabs.Core.Graphics
                 count = (uint)repeatCount
             };
             UnsafeUtility.MemCpy(dst + operationOffset, &op, opsize);
+        }
+
+        /// <summary>Reserves uninitialized staging memory for a producer to fill directly.</summary>
+        /// <remarks>
+        /// Size must be positive and divisible by four. Destination offsets must be nonnegative multiples of four.
+        /// The returned memory is write-only and only four-byte alignment is guaranteed. Fully initialize it before EndAndCommit.
+        /// A successful reservation cannot be cancelled. Complete every producer before commit; never retain the pointer afterward.
+        /// Budget the payload and descriptor in Begin just as for AddUpload. Failure returns false and a null pointer without reserving an operation.
+        /// </remarks>
+        public bool TryReserveUpload(int size, int offsetInBytes, out void* payload, int repeatCount = 1)
+        {
+            var operationSize = UnsafeUtility.SizeOf<Operation>();
+            if (!TryAlloc(operationSize, size, out var dst, out var operationOffset, out var dataOffset))
+            {
+                payload = null;
+                return false;
+            }
+
+            var operation = new Operation
+            {
+                type = (uint)OperationType.Upload,
+                srcOffset = (uint)dataOffset,
+                dstOffset = (uint)offsetInBytes,
+                dstOffsetExtra = 0,
+                size = (uint)size,
+                count = (uint)math.max(1, repeatCount)
+            };
+            UnsafeUtility.MemCpy(dst + operationOffset, &operation, operationSize);
+            payload = dst + dataOffset;
+            return true;
         }
 
         /// <summary>Stages independent equal-sized uploads using bounded shared reservations.</summary>
@@ -263,7 +293,7 @@ namespace BovineLabs.Core.Graphics
 
                 if (allocatedCount == 0)
                 {
-                    Debug.Log("SparseUploader failed to allocate upload memory for AddUploads operation");
+                    Debug.Log("BovineSparseUploader failed to allocate upload memory for AddUploads operation");
                     return;
                 }
 
@@ -289,10 +319,10 @@ namespace BovineLabs.Core.Graphics
         }
 
         /// <summary>
-        /// Adds a new pending upload operation to execute when you call SparseUploader.EndAndCommit.
+        /// Adds a new pending upload operation to execute when you call BovineSparseUploader.EndAndCommit.
         /// </summary>
         /// <remarks>
-        /// When this operation executes, the SparseUploader copies data from the source value.
+        /// When this operation executes, the BovineSparseUploader copies data from the source value.
         /// </remarks>
         /// <param name="val">The source data to upload.</param>
         /// <param name="offsetInBytes">The destination offset of the data in the GPU buffer.</param>
@@ -305,10 +335,10 @@ namespace BovineLabs.Core.Graphics
         }
 
         /// <summary>
-        /// Adds a new pending upload operation to execute when you call SparseUploader.EndAndCommit.
+        /// Adds a new pending upload operation to execute when you call BovineSparseUploader.EndAndCommit.
         /// </summary>
         /// <remarks>
-        /// When this operation executes, the SparseUploader copies data from the source array.
+        /// When this operation executes, the BovineSparseUploader copies data from the source array.
         /// </remarks>
         /// <param name="array">The source array of data to upload.</param>
         /// <param name="offsetInBytes">The destination offset of the data in the GPU buffer.</param>
@@ -345,7 +375,7 @@ namespace BovineLabs.Core.Graphics
 
             if (!allocSucceeded)
             {
-                Debug.Log("SparseUploader failed to allocate upload memory for AddMatrixUpload operation");
+                Debug.Log("BovineSparseUploader failed to allocate upload memory for AddMatrixUpload operation");
                 return;
             }
 
@@ -384,10 +414,10 @@ namespace BovineLabs.Core.Graphics
         }
 
         /// <summary>
-        /// Adds a new pending matrix upload operation to execute when you call SparseUploader.EndAndCommit.
+        /// Adds a new pending matrix upload operation to execute when you call BovineSparseUploader.EndAndCommit.
         /// </summary>
         /// <remarks>
-        /// When this operation executes, the SparseUploader copies data from the source pointer.
+        /// When this operation executes, the BovineSparseUploader copies data from the source pointer.
         /// </remarks>
         /// <param name="src">A pointer to a memory area that contains matrices of the type specified by srcType.</param>
         /// <param name="numMatrices">The number of matrices to upload.</param>
@@ -400,10 +430,10 @@ namespace BovineLabs.Core.Graphics
         }
 
         /// <summary>
-        /// Adds a new pending matrix upload operation to execute when you call SparseUploader.EndAndCommit.
+        /// Adds a new pending matrix upload operation to execute when you call BovineSparseUploader.EndAndCommit.
         /// </summary>
         /// <remarks>
-        /// When this operation executes, the SparseUploader copies data from the source pointer.
+        /// When this operation executes, the BovineSparseUploader copies data from the source pointer.
         ///
         /// The upload operation automatically inverts matrices during the upload operation and it then stores the inverted matrices in a
         /// separate offset in the GPU buffer.
@@ -420,10 +450,10 @@ namespace BovineLabs.Core.Graphics
         }
 
         /// <summary>
-        /// Adds a new pending upload operation to execute when you call SparseUploader.EndAndCommit.
+        /// Adds a new pending upload operation to execute when you call BovineSparseUploader.EndAndCommit.
         /// </summary>
         /// <remarks>
-        /// When this operation executes, the SparseUploader copies data from the source pointer.
+        /// When this operation executes, the BovineSparseUploader copies data from the source pointer.
         ///
         /// The upload operations reads data with the specified source stride from the source pointer and then stores the data with the specified destination stride.
         /// </remarks>
@@ -445,7 +475,7 @@ namespace BovineLabs.Core.Graphics
 
             if (!allocSucceeded)
             {
-                Debug.Log("SparseUploader failed to allocate upload memory for AddStridedUpload operation");
+                Debug.Log("BovineSparseUploader failed to allocate upload memory for AddStridedUpload operation");
                 return;
             }
 
@@ -563,26 +593,26 @@ namespace BovineLabs.Core.Graphics
     }
 
     /// <summary>
-    /// Represents SparseUploader statistics.
+    /// Represents BovineSparseUploader statistics.
     /// </summary>
-    public struct SparseUploaderStats
+    public struct BovineSparseUploaderStats
     {
         /// <summary>
-        /// The amount of GPU memory the SparseUploader uses internally.
+        /// The amount of GPU memory the BovineSparseUploader uses internally.
         /// </summary>
         /// <remarks>
-        /// This value doesn't include memory in the managed GPU buffer that you pass into the SparseUploader on construction,
-        /// or when you use SparseUploader.ReplaceBuffer.
+        /// This value doesn't include memory in the managed GPU buffer that you pass into the BovineSparseUploader on construction,
+        /// or when you use BovineSparseUploader.ReplaceBuffer.
         /// </remarks>
         public long BytesGPUMemoryUsed;
 
         /// <summary>
-        /// The amount of memory the SparseUploader used to upload during the current frame.
+        /// The amount of memory the BovineSparseUploader used to upload during the current frame.
         /// </summary>
         public long BytesGPUMemoryUploadedCurr;
 
         /// <summary>
-        /// The highest amount of memory the SparseUploader used for upload during a previous frame.
+        /// The highest amount of memory the BovineSparseUploader used for upload during a previous frame.
         /// </summary>
         public long BytesGPUMemoryUploadedMax;
     }
@@ -591,10 +621,10 @@ namespace BovineLabs.Core.Graphics
     /// Provides utility methods that you can use to upload data into GPU memory.
     /// </summary>
     /// <remarks>
-    /// To add uploads from jobs, use a ThreadedSparseUploader which you can create using SparseUploader.Begin.
-    /// If you add uploads from jobs, the ThreadedSparseUploader submits them to the GPU in a series of compute shader dispatches when you call SparseUploader.EndAndCommit.
+    /// To add uploads from jobs, use a ThreadedBovineSparseUploader which you can create using BovineSparseUploader.Begin.
+    /// If you add uploads from jobs, the ThreadedBovineSparseUploader submits them to the GPU in a series of compute shader dispatches when you call BovineSparseUploader.EndAndCommit.
     /// </remarks>
-    public unsafe struct SparseUploader : IDisposable
+    public unsafe struct BovineSparseUploader : IDisposable
     {
         const int k_MaxThreadGroupsPerDispatch = 65535;
 
@@ -612,6 +642,7 @@ namespace BovineLabs.Core.Graphics
         class FrameData
         {
             public Stack<int> m_Buffers;
+            public GraphicsFence m_Fence;
 
             public FrameData()
             {
@@ -621,6 +652,7 @@ namespace BovineLabs.Core.Graphics
 
         Stack<FrameData> m_FreeFrameData;
         List<FrameData> m_FrameData;
+        readonly bool m_UseGraphicsFence;
 
         ThreadedSparseUploaderData* m_ThreadData;
 
@@ -641,10 +673,11 @@ namespace BovineLabs.Core.Graphics
         /// </summary>
         /// <param name="destinationBuffer">The target buffer to write uploads into.</param>
         /// <param name="bufferChunkSize">The upload buffer chunk size.</param>
+        /// <param name="useGraphicsFence">Retire staging only after GPU completion, allowing multiple commits per rendered frame. Requires graphics-fence support.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="destinationBuffer"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when <paramref name="destinationBuffer"/> is invalid or has an incompatible target type.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="bufferChunkSize"/> is less than or equal to zero.</exception>
-        public SparseUploader(GraphicsBuffer destinationBuffer, int bufferChunkSize = 16 * 1024 * 1024)
+        public BovineSparseUploader(GraphicsBuffer destinationBuffer, int bufferChunkSize = 16 * 1024 * 1024, bool useGraphicsFence = false)
         {
             if (destinationBuffer == null)
                 throw new ArgumentNullException(nameof(destinationBuffer), "Destination buffer cannot be null.");
@@ -658,7 +691,11 @@ namespace BovineLabs.Core.Graphics
             if (bufferChunkSize <= 0)
                 throw new ArgumentOutOfRangeException(nameof(bufferChunkSize), bufferChunkSize, "Buffer chunk size must be greater than zero.");
 
+            if (useGraphicsFence && !SystemInfo.supportsGraphicsFence)
+                throw new NotSupportedException("Graphics-fence retirement requires graphics-fence support.");
+
             m_BufferChunkSize = bufferChunkSize;
+            m_UseGraphicsFence = useGraphicsFence;
 
             m_DestinationBuffer = destinationBuffer;
 
@@ -690,7 +727,7 @@ namespace BovineLabs.Core.Graphics
         }
 
         /// <summary>
-        /// Disposes of the SparseUploader.
+        /// Disposes of the BovineSparseUploader.
         /// </summary>
         public void Dispose()
         {
@@ -788,16 +825,20 @@ namespace BovineLabs.Core.Graphics
         {
             int numFree = 0;
 
-            // Count frames instead of using async readback to determine completion, because
-            // using async readback prevents Unity from letting the device idle, which is really
-            // bad for power usage.
-            // Add 1 to the device frame count to account for two frames overlapping on
-            // CPU side before reaching the GPU.
-            int maxBufferedFrames = NumFramesInFlight + 1;
-
-            // If we have more buffered frames than the maximum, free all the excess
-            if (m_FrameData.Count > maxBufferedFrames)
-                numFree = m_FrameData.Count - maxBufferedFrames;
+            if (m_UseGraphicsFence)
+            {
+                while (numFree < m_FrameData.Count && m_FrameData[numFree].m_Fence.passed)
+                {
+                    numFree++;
+                }
+            }
+            else
+            {
+                // The default path retains the upstream one-commit-per-frame contract.
+                // Include one extra frame for overlapping CPU submission.
+                int maxBufferedFrames = NumFramesInFlight + 1;
+                numFree = math.max(0, m_FrameData.Count - maxBufferedFrames);
+            }
 
             for (int i = 0; i < numFree; ++i)
             {
@@ -816,18 +857,18 @@ namespace BovineLabs.Core.Graphics
         }
 
         /// <summary>
-        /// Begins a new upload frame and returns a new ThreadedSparseUploader that is valid until the next call to
-        /// SparseUploader.EndAndCommit.
+        /// Begins a new upload frame and returns a new ThreadedBovineSparseUploader that is valid until the next call to
+        /// BovineSparseUploader.EndAndCommit.
         /// </summary>
         /// <remarks>
-        /// You must follow this method with a call to SparseUploader.EndAndCommit later in the frame. You must also pass
-        /// the returned value from a Begin method to the next SparseUploader.EndAndCommit.
+        /// You must follow this method with a call to BovineSparseUploader.EndAndCommit later in the frame. You must also pass
+        /// the returned value from a Begin method to the next BovineSparseUploader.EndAndCommit.
         /// </remarks>
         /// <param name="maxDataSizeInBytes">An upper bound of total data size that you want to upload this frame.</param>
         /// <param name="biggestDataUpload">The size of the largest upload operation that will occur.</param>
         /// <param name="maxOperationCount">An upper bound of the total number of upload operations that will occur this frame.</param>
-        /// <returns>Returns a new ThreadedSparseUploader that must be passed to SparseUploader.EndAndCommit later.</returns>
-        public ThreadedSparseUploader Begin(int maxDataSizeInBytes, int biggestDataUpload, int maxOperationCount)
+        /// <returns>Returns a new ThreadedBovineSparseUploader that must be passed to BovineSparseUploader.EndAndCommit later.</returns>
+        public ThreadedBovineSparseUploader Begin(int maxDataSizeInBytes, int biggestDataUpload, int maxOperationCount)
         {
             // First: recover all buffers from the previous frames (if any)
             RecoverBuffers();
@@ -869,7 +910,7 @@ namespace BovineLabs.Core.Graphics
             m_ThreadData->m_NumBuffers = numBuffersNeeded;
 
             // TODO: set safety handle on thread data
-            return new ThreadedSparseUploader
+            return new ThreadedBovineSparseUploader
             {
                 m_Data = m_ThreadData
             };
@@ -900,15 +941,15 @@ namespace BovineLabs.Core.Graphics
         }
 
         /// <summary>
-        /// Ends an upload frame and dispatches any upload operations added to the passed in ThreadedSparseUploader.
+        /// Ends an upload frame and dispatches any upload operations added to the passed in ThreadedBovineSparseUploader.
         /// </summary>
-        /// <param name="tsu">The ThreadedSparseUploader to consume and process upload dispatches for. You must have created this with a call to SparseUploader.Begin.</param>
-        public void EndAndCommit(ThreadedSparseUploader tsu)
+        /// <param name="tsu">The ThreadedBovineSparseUploader to consume and process upload dispatches for. You must have created this with a call to BovineSparseUploader.Begin.</param>
+        public void EndAndCommit(ThreadedBovineSparseUploader tsu)
         {
-            // Enforce that EndAndCommit is only called with a valid ThreadedSparseUploader
+            // Enforce that EndAndCommit is only called with a valid ThreadedBovineSparseUploader
             if (!tsu.IsValid)
             {
-                Debug.LogError("Invalid ThreadedSparseUploader passed to EndAndCommit");
+                Debug.LogError("Invalid ThreadedBovineSparseUploader passed to EndAndCommit");
                 return;
             }
 
@@ -942,7 +983,20 @@ namespace BovineLabs.Core.Graphics
                 }
             }
 
-            m_FrameData.Add(frameData);
+            if (frameData.m_Buffers.Count > 0)
+            {
+                if (m_UseGraphicsFence)
+                {
+                    frameData.m_Fence = UnityEngine.Graphics.CreateGraphicsFence(
+                        GraphicsFenceType.CPUSynchronisation, SynchronisationStageFlags.ComputeProcessing);
+                }
+
+                m_FrameData.Add(frameData);
+            }
+            else
+            {
+                m_FreeFrameData.Push(frameData);
+            }
 
             if (m_MappedBuffers.IsCreated)
                 m_MappedBuffers.Dispose();
@@ -1000,9 +1054,9 @@ namespace BovineLabs.Core.Graphics
         /// Calculates statistics about the current and previous frame uploads.
         /// </summary>
         /// <returns>Returns a new statistics struct that contains information about the frame uploads.</returns>
-        public SparseUploaderStats ComputeStats()
+        public BovineSparseUploaderStats ComputeStats()
         {
-            var stats = default(SparseUploaderStats);
+            var stats = default(BovineSparseUploaderStats);
 
             var totalUploadMemory = m_UploadBufferPool.TotalBufferSize;
             stats.BytesGPUMemoryUsed = totalUploadMemory;

@@ -3,11 +3,13 @@
 ## [2.0.0-pre.4] - Unreleased
 
 ### Added
-* Opt-in `BovineLabs.Core.Graphics.SparseUploader` with batched copy reservations, compact strided staging, and single-page allocation sizing. See the sparse uploader guide for measured Editor performance and inherited lifetime constraints.
+* Direct sparse-upload reservations for producer-written staging, with optional GPU-fence retirement for multiple uploads per rendered frame.
+* Opt-in `BovineLabs.Core.Graphics.BovineSparseUploader` with batched copy reservations, compact strided staging, and single-page allocation sizing. See the sparse uploader guide for measured Editor performance and inherited lifetime constraints.
 * Unmanaged `Tu<T>`, `Tu<T1, T2>`, and `Tu<T1, T2, T3>` values for Burst and CoreCLR.
 * Shared editor utilities for regenerating generated sample assets and launching sample scenes in Play Mode.
 
 ### Changed
+* Renamed Core's uploader types to `BovineSparseUploader`, `ThreadedBovineSparseUploader`, and `BovineSparseUploaderStats` to avoid ambiguity with Unity's types. Update callers of the earlier Core names directly.
 * `mathex.GenerateGaussianNoise` and `UntypedDynamicHashMapIterator.Current` return `Tu` values. Use `Item1`/`Item2` or deconstruct instead of accessing named tuple fields.
 * Facet generation preserves public helper and constructor parameter names when private fields use an underscore prefix.
 * Existing serialized private fields in Core settings and authoring were renamed to `_camelCase`; migrate external assets and property paths, including `SettingsAuthoring` and transform/physics authoring fields, before importing the updated source.

@@ -50,7 +50,7 @@ The following Core source includes code adapted from Unity packages:
 - `BovineLabs.Core.Editor/Inspectors/BaseFieldInspector.cs` and part of `DynamicListElement.cs` from `com.unity.entities`.
 - `BovineLabs.Core/Utility/SpinLock.cs` from `com.unity.collections`.
 - `BovineLabs.Core/Utility/TypeManagerUtil.cs` from `com.unity.entities`.
-- `BovineLabs.Core/Graphics/SparseUploader.cs` and `Resources/BovineLabs/CoreSparseUploader.compute` from `com.unity.entities.graphics`.
+- `BovineLabs.Core/Graphics/BovineSparseUploader.cs` and `Resources/BovineLabs/CoreSparseUploader.compute` from `com.unity.entities.graphics`.
 - `SourceGenerators~/CodeGenHelpers/SourceGenHelpers.cs` from Netcode for Entities.
 
 The corresponding upstream package copyright notices are:
