@@ -199,22 +199,6 @@
     color: var(--bl-text);
 }
 
-.bl-theme-selector {
-    align-self: flex-start;
-    flex-shrink: 0;
-    min-width: 175px;
-}
-
-.bl-theme-selector > .unity-base-field {
-    margin: 0;
-}
-
-.bl-theme-selector .unity-base-field__label {
-    min-width: 0;
-    width: auto;
-    margin-right: 8px;
-}
-
 .bl-theme .bl-section-title {
     font-size: var(--bl-section-size);
     -unity-font-style: bold;
@@ -226,9 +210,4 @@
     color: var(--bl-text-muted);
     white-space: normal;
     margin-top: 8px;
-}
-
-.bl-appearance-preferences {
-    flex-grow: 1;
-    padding: 16px;
 }

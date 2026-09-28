@@ -1,4 +1,3 @@
 /* Shared entry point. Import this after a UI Toolkit base theme. */
 @import url("BovineWorks.uss");
-@import url("Curator.uss");
 @import url("Controls.uss");

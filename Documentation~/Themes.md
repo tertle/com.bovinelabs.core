@@ -1,8 +1,8 @@
 # Shared UI themes
 
-Core provides **Bovine Works** and **The Curator** for BovineLabs samples and opt-in editor tools. Bovine Works is the default. Installing Core does not theme game UI, native Unity windows, or custom inspectors.
+Core provides **Bovine Works** as the fixed appearance for BovineLabs samples and opt-in editor tools. Installing Core does not theme game UI, native Unity windows, or custom inspectors.
 
-In Unity, choose **Edit > Preferences > BovineLabs > Appearance**. Theme selection lives in Preferences; sample panels do not include their own selectors. Changes apply immediately to attached, opted-in panels. The editor stores the choice in `EditorPrefs`; a built player stores its own choice in `PlayerPrefs`.
+All opted-in panels use Bovine Works; there is no appearance selector or saved theme preference.
 
 ## Use in a sample
 
@@ -23,7 +23,7 @@ Create `CoreSettings` through the Core settings panel if it does not already exi
 
 Migration: the shared stylesheets moved out of `Resources`, preserving their GUIDs. Replace uses of the removed `BovineThemeUtility.StyleSheetResource` path with `CoreSettings.I.ThemeStyleSheet`, and update any path-based USS imports to the location below.
 
-An existing C#-owned root can opt in with `BovineThemeUtility.Apply(root)`. Repeated calls are safe. Theme bindings subscribe while the root belongs to a panel, unsubscribe when it detaches, and refresh to the latest selection when it reattaches. `BovineThemeUtility.Theme` selects the shared theme programmatically.
+An existing C#-owned root can opt in with `BovineThemeUtility.Apply(root)`. Repeated calls are safe.
 
 ## Opt an editor window in later
 
@@ -40,7 +40,7 @@ public void CreateGUI()
 }
 ```
 
-`bl-theme-window` opts into the opaque theme background. The plain theme root is transparent. Use the shared Appearance preference for theme selection. Replace window-owned hardcoded decorative colours with theme tokens as that window adopts the theme.
+`bl-theme-window` opts into the opaque theme background. The plain theme root is transparent. Replace window-owned hardcoded decorative colours with theme tokens as that window adopts the theme.
 
 For a `SettingsProvider`, add a new `BovineThemeRoot` child to the activation root and build the page inside that child. Unity reuses the activation root between preference pages, so applying the theme directly to it would also style other providers. Keep all theme classes and stylesheets on the child you own.
 
@@ -52,12 +52,11 @@ The shared files live under `Packages/com.bovinelabs.core/BovineLabs.Core/UI/The
 
 | File | Responsibility |
 | --- | --- |
-| `BovineLabs.uss` | Imports the palettes and controls |
+| `BovineLabs.uss` | Imports the Bovine Works palette and controls |
 | `BovineWorks.uss` | Warm black, bone, vermilion; compact square geometry |
-| `Curator.uss` | Slate, brass, plum; slightly softer geometry |
 | `Controls.uss` | Scoped native UITK states and reusable presentation classes |
 
-Palette selectors combine `.bl-theme` with `.bl-theme--bovine-works` or `.bl-theme--curator`. You can import the USS and apply these classes yourself when runtime preference binding is unnecessary.
+Palette selectors combine `.bl-theme` with `.bl-theme--bovine-works`. You can also import the USS and apply these classes yourself.
 
 Use semantic tokens in sample-specific USS:
 
@@ -85,7 +84,7 @@ Use semantic tokens in sample-specific USS:
 | `--bl-radius`, `--bl-radius-large` | Control and panel corners |
 | `--bl-title-size`, `--bl-section-size` | Sample heading sizes |
 
-Reusable classes include `bl-panel`, `bl-title`, `bl-section-title`, `bl-description`, `bl-muted`, and `bl-button--primary`. They supply presentation, not screen hierarchy. Theme selectors use `bl-theme-selector`.
+Reusable classes include `bl-panel`, `bl-title`, `bl-section-title`, `bl-description`, `bl-muted`, and `bl-button--primary`. They supply presentation, not screen hierarchy.
 
 Keep meaningful item categories, team colours, health, and other game data distinct from the brand palette. When authoring specialised controls, use suitably scoped selectors for their primary, selected, disabled, and semantic states so shared control defaults cannot override them.
 
