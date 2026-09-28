@@ -53,6 +53,7 @@ Source generators are distributed with the runtime assembly. A consuming runtime
 | Create extensible enum/layer-style keys | [K](K.md) |
 | Bridge from Burst code to a managed callback | [Burst trampoline](BurstTrampoline.md) |
 | Reuse a temporary `NativeList<T>` allocation | [PooledNativeList](PooledNativeList.md) |
+| Stage many small or strided copies into a raw GPU buffer | [Sparse uploader](SparseUploader.md) |
 | Create ScriptableObject references and stable IDs | [Asset](Asset.md) |
 | Build a UI Toolkit or Graph Toolkit inspector | [Inspectors](Inspectors.md) |
 | Share a selectable visual theme across samples and opt-in editor tools | [UI themes](Themes.md) |
@@ -115,4 +116,5 @@ An API behind one of these symbols is unavailable until the matching package is 
 - [Extensions](Extensions.md)
 - [Global random](GlobalRandom.md)
 - [PooledNativeList](PooledNativeList.md)
+- [Sparse uploader](SparseUploader.md)
 - [Utility](Utility.md)

@@ -3,6 +3,7 @@
 ## [2.0.0-pre.4] - Unreleased
 
 ### Added
+* Opt-in `BovineLabs.Core.Graphics.SparseUploader` with batched copy reservations, compact strided staging, and single-page allocation sizing. See the sparse uploader guide for measured Editor performance and inherited lifetime constraints.
 * Unmanaged `Tu<T>`, `Tu<T1, T2>`, and `Tu<T1, T2, T3>` values for Burst and CoreCLR.
 * Shared editor utilities for regenerating generated sample assets and launching sample scenes in Play Mode.
 

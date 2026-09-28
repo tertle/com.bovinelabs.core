@@ -50,6 +50,7 @@ The following Core source includes code adapted from Unity packages:
 - `BovineLabs.Core.Editor/Inspectors/BaseFieldInspector.cs` and part of `DynamicListElement.cs` from `com.unity.entities`.
 - `BovineLabs.Core/Utility/SpinLock.cs` from `com.unity.collections`.
 - `BovineLabs.Core/Utility/TypeManagerUtil.cs` from `com.unity.entities`.
+- `BovineLabs.Core/Graphics/SparseUploader.cs` and `Resources/BovineLabs/CoreSparseUploader.compute` from `com.unity.entities.graphics`.
 - `SourceGenerators~/CodeGenHelpers/SourceGenHelpers.cs` from Netcode for Entities.
 
 The corresponding upstream package copyright notices are:
@@ -58,6 +59,7 @@ The corresponding upstream package copyright notices are:
 - `com.unity.platforms` copyright © 2020 Unity Technologies ApS.
 - `com.unity.collections` copyright © 2024 Unity Technologies.
 - `com.unity.entities` copyright © 2024 Unity Technologies.
+- `com.unity.entities.graphics` copyright © 2024 Unity Technologies ApS.
 - Netcode for Entities copyright © 2025 Unity Technologies.
 
 These portions are licensed under the [Unity Companion License](https://unity.com/legal/licenses/unity-companion-license) for Unity-dependent

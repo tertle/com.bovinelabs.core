@@ -27,4 +27,5 @@
   - [Extensions](Extensions.md)
   - [Global random](GlobalRandom.md)
   - [PooledNativeList](PooledNativeList.md)
+  - [Sparse uploader](SparseUploader.md)
   - [Utility](Utility.md)

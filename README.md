@@ -56,6 +56,7 @@ Then follow [Getting started](Documentation~/getting-started.md).
 | [Entity commands](Documentation~/EntityCommands.md) | Reusing entity-shape builders across bakers, command buffers, jobs, and tests |
 | [Settings](Documentation~/Settings.md) | Settings assets, ECS baking, world routing, and startup singletons |
 | [ConfigVars](Documentation~/ConfigVars.md) | Burst-readable runtime variables, command-line overrides, EditorPrefs, and the ConfigVars window |
+| [Sparse uploader](Documentation~/SparseUploader.md) | Batched CPU-to-GPU uploads, compact strided staging, ownership limits, and measured performance |
 | [Debugging and logging](Documentation~/Debug.md) | `Check`, `BLLogger`, `BLGlobalLogger`, build gates, and entity-selection state |
 | [Testing](Documentation~/Testing.md) | `BovineLabs.Testing`, `ECSTestsFixture`, leak checks, and math assertions |
 | [Inspectors](Documentation~/Inspectors.md) | UI Toolkit editor bases, Graph Toolkit drawers, prefab-aware editing, and built-in drawers |
