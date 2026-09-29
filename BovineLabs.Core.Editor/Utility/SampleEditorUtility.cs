@@ -27,7 +27,7 @@ namespace BovineLabs.Core.Editor.Utility
                 for (var index = 0; index < SceneManager.sceneCount; index++)
                 {
                     var scene = SceneManager.GetSceneAt(index);
-                    if (scene.isDirty || (string.IsNullOrEmpty(scene.path) && scene.rootCount != 0))
+                    if (NeedsSaving(scene))
                     {
                         return false;
                     }
@@ -69,7 +69,7 @@ namespace BovineLabs.Core.Editor.Utility
             }
 
             var scenes = Enumerable.Range(0, SceneManager.sceneCount).Select(SceneManager.GetSceneAt)
-                .Where(scene => scene.isDirty || (string.IsNullOrEmpty(scene.path) && scene.rootCount != 0)).ToArray();
+                .Where(NeedsSaving).ToArray();
             if (scenes.Length == 0)
             {
                 return true;
@@ -132,6 +132,29 @@ namespace BovineLabs.Core.Editor.Utility
                     EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
                 }
             }
+        }
+
+        private static bool NeedsSaving(Scene scene)
+        {
+            if (!string.IsNullOrEmpty(scene.path))
+            {
+                return scene.isDirty;
+            }
+
+            // Untitled scenes can contain unsaved editor helpers even when the Hierarchy looks empty.
+            // Check descendants too: a child's save flags need not match its parent's.
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                foreach (var transform in root.GetComponentsInChildren<Transform>(true))
+                {
+                    if ((transform.gameObject.hideFlags & HideFlags.DontSaveInEditor) == 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         [InitializeOnLoadMethod]
