@@ -91,14 +91,16 @@ namespace BovineLabs.Core.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(hashMap.GetSafety());
 #endif
-                var data = hashMap.GetWriter().GetBuffer();
+                var writer = hashMap.GetWriter();
+                var data = writer.GetBuffer();
+                var threadIndex = writer.GetThreadIndex();
 
                 if (ContainsKey(data, key))
                 {
                     return false;
                 }
 
-                if (!data->TryReserveParallel(1, out var idx))
+                if (!UnsafeParallelHashMapBase<TKey, TValue>.TryAllocEntry(data, threadIndex, out var idx))
                 {
                     _fallback.Enqueue(new FallbackData(key, item));
                     return true;
@@ -125,6 +127,7 @@ namespace BovineLabs.Core.Collections
 
                     if (ContainsKey(data, key))
                     {
+                        UnsafeParallelHashMapBase<TKey, TValue>.FreeEntry(data, idx, threadIndex);
                         return false;
                     }
                 }

@@ -132,6 +132,154 @@ namespace BovineLabs.Core.Tests.Collections
             }
         }
 
+        [TestCase(1)]
+        [TestCase(15)]
+        [TestCase(16)]
+        [TestCase(17)]
+        [TestCase(100000)]
+        public void Add_FromParallelJobAtCapacity_ReadsAllEntries(int capacity)
+        {
+            var map = new NativeParallelHashMapFallback<int, int>(capacity, Allocator.TempJob);
+            var keys = new NativeArray<int>(capacity, Allocator.TempJob);
+
+            try
+            {
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    keys[i] = i;
+                }
+
+                new WriteJob
+                {
+                    Keys = keys,
+                    Writer = map.AsWriter(),
+                }.ScheduleParallel(keys.Length, 1, default).Complete();
+
+                map.Apply(default, out var reader).Complete();
+
+                Assert.AreEqual(capacity, reader.Count());
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    Assert.IsTrue(reader.TryGetValue(i, out var value));
+                    Assert.AreEqual(i * 10, value);
+                }
+            }
+            finally
+            {
+                keys.Dispose();
+                map.Dispose();
+            }
+        }
+
+        [Test]
+        public void Add_ParallelDuplicateKeysInSameBucket_ReadsUniqueKeysAndValues()
+        {
+            const int uniqueCount = 32;
+            var map = new NativeParallelHashMapFallback<int, int>(64, Allocator.TempJob);
+            var keys = new NativeArray<int>(100000, Allocator.TempJob);
+
+            try
+            {
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    keys[i] = (i % uniqueCount) * 512;
+                }
+
+                var handle = new WriteJob
+                {
+                    Keys = keys,
+                    Writer = map.AsWriter(),
+                }.ScheduleParallel(keys.Length, 1, default);
+
+                map.Apply(handle, out var reader).Complete();
+
+                Assert.AreEqual(uniqueCount, reader.Count());
+                for (var i = 0; i < uniqueCount; i++)
+                {
+                    var key = i * 512;
+                    Assert.IsTrue(reader.TryGetValue(key, out var value));
+                    Assert.AreEqual(key * 10, value);
+                }
+            }
+            finally
+            {
+                keys.Dispose();
+                map.Dispose();
+            }
+        }
+
+        [TestCase(0, false)]
+        [TestCase(1, false)]
+        [TestCase(1, true)]
+        public void Add_CachedWriterAfterApplyResizeAndClear_ReadsNewEntries(int capacity, bool scheduledClear)
+        {
+            const int count = 100000;
+            var map = new NativeParallelHashMapFallback<int, int>(capacity, Allocator.TempJob);
+            var keys = new NativeArray<int>(count, Allocator.TempJob);
+
+            try
+            {
+                var writer = map.AsWriter();
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    keys[i] = i;
+                }
+
+                var handle = new WriteJob
+                {
+                    Keys = keys,
+                    Writer = writer,
+                }.ScheduleParallel(keys.Length, 1, default);
+
+                handle.Complete();
+                Assert.AreEqual(count - capacity, map.Fallback.Count);
+                map.Apply(default, out var reader).Complete();
+
+                Assert.AreEqual(count, reader.Count());
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    Assert.IsTrue(reader.TryGetValue(i, out var value));
+                    Assert.AreEqual(i * 10, value);
+                }
+
+                if (scheduledClear)
+                {
+                    map.Clear(default).Complete();
+                }
+                else
+                {
+                    map.Clear();
+                }
+
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    keys[i] = i + count;
+                }
+
+                new WriteJob
+                {
+                    Keys = keys,
+                    Writer = writer,
+                }.ScheduleParallel(keys.Length, 1, default).Complete();
+
+                map.Apply(default, out reader).Complete();
+
+                Assert.AreEqual(count, reader.Count());
+                Assert.IsFalse(reader.ContainsKey(0));
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    var key = i + count;
+                    Assert.IsTrue(reader.TryGetValue(key, out var value));
+                    Assert.AreEqual(key * 10, value);
+                }
+            }
+            finally
+            {
+                keys.Dispose();
+                map.Dispose();
+            }
+        }
+
         [TestCase(false)]
         [TestCase(true)]
         public void Clear_WithPendingFallback_DoesNotRestoreEntriesOnApply(bool scheduled)

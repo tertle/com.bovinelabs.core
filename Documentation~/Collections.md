@@ -53,6 +53,8 @@ Core includes:
 
 The fallback maps pair a fixed-capacity parallel map with a queue. Parallel writers enqueue entries that cannot reserve a slot; `Apply(...)` folds the fallback queue into a resized map before readers use it. Chain the writer dependency into `Apply` and use the returned read-only view only after that handle.
 
+`NativeParallelHashMapFallback` reserves entries in worker-local batches to reduce contention. A writer can fall back while another worker still holds unused slots; `Apply` reuses those slots before growing the map.
+
 ## Thread-local and work-processing containers
 
 | Type | Behavior |

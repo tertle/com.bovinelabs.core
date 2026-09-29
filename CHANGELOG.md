@@ -17,6 +17,7 @@
 * Optional localization integration now targets the built-in Localization Runtime module, including stable unmanaged references and shared resource-table editor utilities.
 
 ### Fixed
+* Parallel fallback hash-map writers reserve worker-local batches instead of contending on one allocation counter for every key, and return unused entries after duplicate insertion races.
 * Dynamic dictionaries, multi-dictionaries, and hash sets now validate capacity-only headers without overflow and recover correctly after buffer copies.
 * ConfigVar discovery no longer initializes Entities before the Player engine is ready, preventing a native startup crash with Unity 6.7.
 
