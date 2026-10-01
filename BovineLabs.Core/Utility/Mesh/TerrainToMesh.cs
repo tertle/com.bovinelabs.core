@@ -16,25 +16,32 @@ namespace BovineLabs.Core.Utility
 
     public static class TerrainToMesh
     {
-        public static Result Convert(TerrainData terrainData, Allocator allocator = Allocator.TempJob)
+        public enum Output
         {
-            var request = ConvertAsync(terrainData, allocator);
+            FullMesh,
+            GeometryOnly,
+        }
+
+        public static Result Convert(TerrainData terrainData, Allocator allocator = Allocator.TempJob, Output output = Output.FullMesh)
+        {
+            var request = ConvertAsync(terrainData, allocator, output);
             request.WaitForCompletion();
             return request;
         }
 
-        public static Result ConvertAsync(TerrainData terrainData, Allocator allocator = Allocator.TempJob)
+        public static Result ConvertAsync(TerrainData terrainData, Allocator allocator = Allocator.TempJob, Output output = Output.FullMesh)
         {
             var width = terrainData.heightmapTexture.width;
             var height = terrainData.heightmapTexture.height;
             var heightmap = terrainData.GetHeights(0, 0, width, height);
             var holes = terrainData.GetHoles(0, 0, width - 1, height - 1);
 
-            return ConvertAsync(width, height, terrainData.heightmapScale, heightmap, holes, allocator);
+            return ConvertAsync(width, height, terrainData.heightmapScale, heightmap, holes, allocator, output);
         }
 
         public static Result ConvertAsync(
-            int width, int height, Vector3 heightmapScale, float[,] heightmap, bool[,] holes, Allocator allocator = Allocator.TempJob)
+            int width, int height, Vector3 heightmapScale, float[,] heightmap, bool[,] holes, Allocator allocator = Allocator.TempJob,
+            Output output = Output.FullMesh)
         {
             var vertexCount = width * height;
             var job = default(ComputeTerrainMeshJob);
@@ -53,10 +60,11 @@ namespace BovineLabs.Core.Utility
             job.Width = width;
             job.Height = height;
             job.HeightmapScale = heightmapScale;
+            job.GeometryOnly = output == Output.GeometryOnly;
 
             job.Positions = new NativeArray<float3>(vertexCount, allocator);
-            job.Uvs = new NativeArray<float2>(vertexCount, allocator);
-            job.Normals = new NativeArray<float3>(vertexCount, allocator);
+            job.Uvs = new NativeArray<float2>(job.GeometryOnly ? 0 : vertexCount, allocator);
+            job.Normals = new NativeArray<float3>(job.GeometryOnly ? 0 : vertexCount, allocator);
             job.Indices = new NativeArray<int>((width - 1) * (height - 1) * 6, allocator);
 
             var jobHandle = job.ScheduleParallel(vertexCount, math.max(width, 128), default);
@@ -90,8 +98,11 @@ namespace BovineLabs.Core.Utility
 
                 var mesh = new Mesh { indexFormat = IndexFormat.UInt32 };
                 mesh.SetVertices(_job.Positions);
-                mesh.SetUVs(0, _job.Uvs);
-                mesh.SetNormals(_job.Normals);
+                if (!_job.GeometryOnly)
+                {
+                    mesh.SetUVs(0, _job.Uvs);
+                    mesh.SetNormals(_job.Normals);
+                }
                 mesh.SetIndices(TriangleIndicesWithoutHoles(Allocator.Temp).AsArray(), MeshTopology.Triangles, 0);
 
                 return mesh;
@@ -156,6 +167,7 @@ namespace BovineLabs.Core.Utility
             public int Width;
             public int Height;
             public float3 HeightmapScale;
+            public bool GeometryOnly;
 
             public NativeArray<float3> Positions;
             public NativeArray<float2> Uvs;
@@ -183,8 +195,11 @@ namespace BovineLabs.Core.Utility
                 var v = new float3(x, Heightmap[(y * Width) + x], y);
 
                 Positions[vertexIndex] = v * HeightmapScale;
-                Uvs[vertexIndex] = v.xz / new float2(Width, Height);
-                Normals[vertexIndex] = CalculateTerrainNormal(Heightmap, x, y, Width, Height, HeightmapScale);
+                if (!GeometryOnly)
+                {
+                    Uvs[vertexIndex] = v.xz / new float2(Width, Height);
+                    Normals[vertexIndex] = CalculateTerrainNormal(Heightmap, x, y, Width, Height, HeightmapScale);
+                }
 
                 if (x < Width - 1 && y < Height - 1)
                 {

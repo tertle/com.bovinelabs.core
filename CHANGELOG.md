@@ -3,6 +3,7 @@
 ## [2.0.0-pre.4] - Unreleased
 
 ### Added
+* `TerrainToMesh.Output.GeometryOnly` omits UVs and normals, reducing peak native buffer memory by 19% on a 513×513 terrain conversion fixture. Conversion defaults to `FullMesh`.
 * Direct sparse-upload reservations for producer-written staging, with optional GPU-fence retirement for multiple uploads per rendered frame.
 * Opt-in `BovineLabs.Core.Graphics.BovineSparseUploader` with batched copy reservations, compact strided staging, and single-page allocation sizing. See the sparse uploader guide for measured Editor performance and inherited lifetime constraints.
 * Unmanaged `Tu<T>`, `Tu<T1, T2>`, and `Tu<T1, T2, T3>` values for Burst and CoreCLR.

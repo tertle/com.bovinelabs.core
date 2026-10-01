@@ -47,6 +47,11 @@
       "name": "com.unity.modules.localizationruntime",
       "expression": "",
       "define": "UNITY_LOCALIZATION"
+    },
+    {
+      "name": "com.unity.modules.terrain",
+      "expression": "",
+      "define": "UNITY_TERRAIN"
     }
   ],
   "noEngineReferences": false
