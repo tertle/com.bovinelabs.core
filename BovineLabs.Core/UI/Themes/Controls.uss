@@ -143,6 +143,109 @@
     border-color: var(--bl-secondary-accent);
 }
 
+/* Scrollbars retain Unity's proportional thumb length and scrolling behavior. */
+.bl-theme .unity-scroller {
+    background-color: transparent;
+    border-width: 0;
+}
+
+.bl-theme .unity-scroller--vertical {
+    width: 10px;
+    min-width: 10px;
+    margin-left: 4px;
+}
+
+.bl-theme .unity-scroller--horizontal {
+    height: 10px;
+    min-height: 10px;
+    margin-top: 4px;
+}
+
+.bl-theme .unity-scroller__low-button,
+.bl-theme .unity-scroller__high-button,
+.bl-theme .unity-scroller .unity-base-slider__dragger-border {
+    display: none;
+}
+
+.bl-theme .unity-scroller__slider,
+.bl-theme .unity-scroller .unity-base-slider__input,
+.bl-theme .unity-scroller .unity-base-slider__drag-container {
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    background-image: none;
+    border-width: 0;
+}
+
+.bl-theme .unity-scroller__slider {
+    flex-grow: 1;
+}
+
+.bl-theme .unity-scroller--vertical > .unity-scroller__slider {
+    min-width: 0;
+    min-height: 18px;
+}
+
+.bl-theme .unity-scroller--horizontal > .unity-scroller__slider {
+    min-width: 18px;
+    min-height: 0;
+}
+
+.bl-theme .unity-scroller--vertical .unity-base-slider__drag-container {
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.bl-theme .unity-scroller--horizontal .unity-base-slider__drag-container {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.bl-theme .unity-scroller .unity-base-slider__tracker {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    height: auto;
+    background-color: var(--bl-background);
+    background-image: none;
+    border-width: 0;
+    border-radius: var(--bl-radius);
+}
+
+.bl-theme .unity-scroller .unity-base-slider__dragger {
+    margin: 0;
+    background-color: var(--bl-border);
+    background-image: none;
+    border-width: 0;
+    border-radius: var(--bl-radius);
+}
+
+.bl-theme .unity-scroller--vertical .unity-base-slider__dragger {
+    left: 0;
+    width: 6px;
+    min-width: 6px;
+}
+
+.bl-theme .unity-scroller--horizontal .unity-base-slider__dragger {
+    top: 0;
+    height: 6px;
+    min-height: 6px;
+}
+
+.bl-theme .unity-scroller:hover:enabled .unity-base-slider__dragger,
+.bl-theme .unity-scroller .unity-base-slider__drag-container:active .unity-base-slider__dragger,
+.bl-theme .unity-scroller .unity-scroller__slider:focus .unity-base-slider__dragger,
+.bl-theme .unity-scroller .unity-base-slider__input:focus .unity-base-slider__dragger {
+    background-color: var(--bl-secondary-accent);
+}
+
+.bl-theme .unity-scroller:disabled .unity-base-slider__dragger {
+    background-color: var(--bl-surface);
+    opacity: 0.55;
+}
+
 .bl-theme .unity-progress-bar__background {
     background-color: var(--bl-panel);
     border-color: var(--bl-border);
