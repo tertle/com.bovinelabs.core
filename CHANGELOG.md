@@ -19,6 +19,7 @@
 * Optional localization integration now targets the built-in Localization Runtime module, including stable unmanaged references and shared resource-table editor utilities.
 
 ### Fixed
+* Inspector component search initializes from the GameObject header instead of scanning Inspector windows during startup and selection changes.
 * Editor settings authoring assignments are validated before replacement, and incomplete settings loading or baking stops previews until a domain reload.
 * Parallel fallback hash-map writers reserve worker-local batches instead of contending on one allocation counter for every key, and return unused entries after duplicate insertion races.
 * Dynamic dictionaries, multi-dictionaries, and hash sets now validate capacity-only headers without overflow and recover correctly after buffer copies.
