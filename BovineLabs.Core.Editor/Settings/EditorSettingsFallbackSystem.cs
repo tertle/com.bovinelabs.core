@@ -3,38 +3,146 @@ namespace BovineLabs.Core.Editor.Settings
     using System;
     using System.Collections.Generic;
     using BovineLabs.Core.Authoring.Settings;
+    using BovineLabs.Core.Settings;
+    using BovineLabs.Core.Utility;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Scenes;
     using UnityEditor;
+    using UnityEngine;
+    using Hash128 = Unity.Entities.Hash128;
+    using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
     [WorldSystemFilter(WorldSystemFilterFlags.Editor)]
     [UpdateAfter(typeof(SceneSystemGroup))]
     [UpdateInGroup(typeof(InitializationSystemGroup))]
+    // Asset discovery, imports and editor-world control require managed Unity APIs.
     public partial class EditorSettingsFallbackSystem : SystemBase
     {
-        private readonly List<Fallback> _fallbacks = new();
         private EntityQuery _settingsQuery;
+        private NativeList<EditorSettingsFallbackState> _fallbacks;
+        private bool _initialized;
+        private uint _revision;
 
         protected override void OnCreate()
         {
-            _settingsQuery = GetEntityQuery(ComponentType.ReadOnly<SettingsPrefabIdentity>());
+            _settingsQuery = SystemAPI.QueryBuilder().WithAll<SettingsPrefabIdentity>().Build();
+            _fallbacks = new NativeList<EditorSettingsFallbackState>(Allocator.Persistent);
+        }
 
-            if (!EditorSettingsUtility.TryGetSettings<EditorSettings>(out var settings))
+        protected override void OnDestroy()
+        {
+            try
             {
+                for (var index = 0; index < _fallbacks.Length; index++)
+                {
+                    SetActive(EntityManager, ref _fallbacks.ElementAt(index), false);
+                }
+            }
+            finally
+            {
+                _fallbacks.Dispose();
+            }
+        }
+
+        protected override void OnUpdate()
+        {
+            // Asset discovery, import and streaming form one editor boundary. Failure must stop consumers in this frame.
+            try
+            {
+                if (!_initialized || _revision != EditorSettingsAssetPostprocessor.Revision)
+                {
+                    ReconcileSettings();
+                }
+
+                for (var index = 0; index < _fallbacks.Length; index++)
+                {
+                    RefreshRoot(ref _fallbacks.ElementAt(index));
+                }
+
+                var settingsEntities = _settingsQuery.ToEntityArray(Allocator.Temp);
+                var settingsIdentities = _settingsQuery.ToComponentDataArray<SettingsPrefabIdentity>(Allocator.Temp);
+                foreach (var identity in settingsIdentities)
+                {
+                    if (!identity.Ready)
+                    {
+                        var path = AssetDatabase.GUIDToAssetPath(identity.PrefabGuid.ToString());
+                        throw new InvalidOperationException($"Editor settings prefab '{path}' did not finish baking all of its settings.");
+                    }
+                }
+
+                // Resolve every route before changing any fallback instance.
+                for (var index = 0; index < _fallbacks.Length; index++)
+                {
+                    ref var fallback = ref _fallbacks.ElementAt(index);
+                    var authoritativeCount = 0;
+                    for (var i = 0; i < settingsEntities.Length; i++)
+                    {
+                        if (settingsEntities[i] != fallback.Instance && settingsIdentities[i].PrefabGuid == fallback.PrefabGuid)
+                        {
+                            authoritativeCount++;
+                        }
+                    }
+
+                    if (authoritativeCount > 1)
+                    {
+                        throw new InvalidOperationException($"More than one authoritative instance of editor settings prefab '{fallback.Path}' exists.");
+                    }
+
+                    fallback.AuthoritativeCount = authoritativeCount;
+                }
+
+                for (var index = 0; index < _fallbacks.Length; index++)
+                {
+                    ref var fallback = ref _fallbacks.ElementAt(index);
+                    SetActive(EntityManager, ref fallback, fallback.AuthoritativeCount == 0);
+                    if (fallback.AuthoritativeCount == 0 && !_settingsQuery.MatchesIgnoreFilter(fallback.Instance))
+                    {
+                        throw new InvalidOperationException($"Editor settings prefab '{fallback.Path}' produced an inactive fallback. Enable its root before reloading the domain.");
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                World.QuitUpdate = true;
                 World.GetExistingSystemManaged<InitializationSystemGroup>().Enabled = false;
                 World.GetExistingSystemManaged<SimulationSystemGroup>().Enabled = false;
                 World.GetExistingSystemManaged<PresentationSystemGroup>().Enabled = false;
-                BLGlobalLogger.LogErrorString("Could not load EditorSettings, disabling EditorWorld. This should work again after a domain reload");
-                return;
+                Enabled = false;
+                BLGlobalLogger.LogErrorString($"Editor world settings could not be prepared. Previews are disabled; fix the settings and reload the domain.\n{exception}");
             }
+        }
 
-            var loaded = new HashSet<Hash128>();
-            if (settings.DefaultSettingsAuthoring)
+        private void ReconcileSettings()
+        {
+            var revision = EditorSettingsAssetPostprocessor.Revision;
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
             {
-                LoadFallback(settings.DefaultSettingsAuthoring, loaded);
+                throw new InvalidOperationException("Settings cannot be reconciled while scripts are compiling or assets are importing.");
             }
 
+            if (!EditorSettingsUtility.TryGetSettings<EditorSettings>(out var settings))
+            {
+                throw new InvalidOperationException("EditorSettings could not be loaded. Open BovineLabs > Settings to configure it.");
+            }
+
+            foreach (var type in ReflectionUtility.GetAllImplementationsRootOnly<ISettings, ScriptableObject>())
+            {
+                if (typeof(SettingsBase).IsAssignableFrom(type) && PackageInfo.FindForAssembly(type.Assembly) != null &&
+                    !EditorSettingsUtility.TryGetSettings(type, out _))
+                {
+                    throw new InvalidOperationException($"Package settings asset '{type.FullName}' is missing. Open BovineLabs > Settings to create it.");
+                }
+            }
+
+            // Open SubScenes completed live baking before this system. Their existing settings may still use the old assignments.
+            if (EditorSettingsUtility.UpdateSettings(settings) && !_settingsQuery.IsEmptyIgnoreFilter)
+            {
+                throw new InvalidOperationException("Settings authoring assignments were repaired while editor settings were already active. Reload the domain to bake the repaired assignments before consumers run.");
+            }
+
+            var authorings = new Dictionary<Hash128, SettingsAuthoring>();
+            AddAuthoring(settings.DefaultSettingsAuthoring);
             foreach (var world in settings.AdditionalEditorWorldSettings)
             {
                 if (string.IsNullOrWhiteSpace(world))
@@ -44,186 +152,131 @@ namespace BovineLabs.Core.Editor.Settings
 
                 if (!settings.TryGetAuthoring(world, out var authoring) || !authoring)
                 {
-                    continue;
+                    throw new InvalidOperationException($"Additional editor world settings route '{world}' has no settings authoring prefab.");
                 }
 
-                LoadFallback(authoring, loaded);
-            }
-        }
-
-        protected override void OnDestroy()
-        {
-            foreach (var fallback in _fallbacks)
-            {
-                SetActive(fallback, false);
-            }
-        }
-
-        protected override void OnUpdate()
-        {
-            foreach (var fallback in _fallbacks)
-            {
-                RefreshRoot(fallback);
+                AddAuthoring(authoring);
             }
 
-            using var settingsEntities = _settingsQuery.ToEntityArray(Allocator.Temp);
-            using var settingsIdentities = _settingsQuery.ToComponentDataArray<SettingsPrefabIdentity>(Allocator.Temp);
-
-            foreach (var fallback in _fallbacks)
+            if (_initialized)
             {
-                if (!fallback.Valid)
+                if (authorings.Count != _fallbacks.Length)
                 {
-                    continue;
+                    throw new InvalidOperationException("The editor world settings prefab routes changed. Reload the domain to load the new routes.");
                 }
 
-                var authoritativeCount = 0;
-                for (var i = 0; i < settingsEntities.Length; i++)
+                foreach (var fallback in _fallbacks)
                 {
-                    if (!fallback.PrefabEntities.Contains(settingsEntities[i]) && settingsIdentities[i].PrefabGuid == fallback.PrefabGuid)
+                    if (!authorings.ContainsKey(fallback.PrefabGuid))
                     {
-                        authoritativeCount++;
+                        throw new InvalidOperationException("The editor world settings prefab routes changed. Reload the domain to load the new routes.");
                     }
                 }
-
-                SetActive(fallback, authoritativeCount == 0);
-
-                if (authoritativeCount > 1 && fallback.AuthoritativeCount <= 1)
+            }
+            else
+            {
+                foreach (var pair in authorings)
                 {
-                    BLGlobalLogger.LogErrorString(
-                        $"More than one authoritative instance of editor settings prefab '{fallback.Path}' exists in the Editor world.");
+                    var sceneEntity = SceneSystem.LoadSceneAsync(World.Unmanaged, pair.Key, new SceneSystem.LoadParameters
+                    {
+                        Flags = SceneLoadFlags.BlockOnImport | SceneLoadFlags.BlockOnStreamIn | SceneLoadFlags.NewInstance,
+                    });
+
+                    _fallbacks.Add(new EditorSettingsFallbackState
+                    {
+                        PrefabGuid = pair.Key,
+                        SceneEntity = sceneEntity,
+                    });
                 }
 
-                fallback.AuthoritativeCount = authoritativeCount;
+                _initialized = true;
+            }
+
+            // Initial requests and changed prefab assignments were submitted after the normal scene-group update.
+            World.GetExistingSystemManaged<SceneSystemGroup>().Update();
+            _revision = revision;
+            return;
+
+            void AddAuthoring(SettingsAuthoring authoring)
+            {
+                var prefabGuid = SettingsAuthoring.GetPrefabGuid(authoring);
+                authorings.TryAdd(prefabGuid, authoring);
             }
         }
 
-        private void LoadFallback(SettingsAuthoring authoring, HashSet<Hash128> loaded)
+        private void RefreshRoot(ref EditorSettingsFallbackState fallback)
         {
-            var prefabGuid = SettingsAuthoring.GetPrefabGuid(authoring);
-            if (!loaded.Add(prefabGuid))
+            var entityManager = EntityManager;
+            if (!SceneSystem.IsSceneLoaded(World.Unmanaged, fallback.SceneEntity) || !entityManager.HasComponent<PrefabRoot>(fallback.SceneEntity))
             {
-                return;
+                var streamingState = SceneSystem.GetSceneStreamingState(World.Unmanaged, fallback.SceneEntity);
+                throw new InvalidOperationException($"Editor settings prefab '{fallback.Path}' did not finish loading ({streamingState}).");
             }
 
-            var path = AssetDatabase.GetAssetPath(authoring);
-            var sceneEntity = SceneSystem.LoadSceneAsync(World.Unmanaged, prefabGuid, new SceneSystem.LoadParameters
-            {
-                Flags = SceneLoadFlags.BlockOnImport | SceneLoadFlags.BlockOnStreamIn | SceneLoadFlags.NewInstance,
-            });
-
-            _fallbacks.Add(new Fallback(prefabGuid, sceneEntity, path));
-        }
-
-        private void RefreshRoot(Fallback fallback)
-        {
-            if (!EntityManager.Exists(fallback.SceneEntity) || !EntityManager.HasComponent<PrefabRoot>(fallback.SceneEntity))
-            {
-                if (fallback.Root != Entity.Null && !EntityManager.Exists(fallback.Root))
-                {
-                    fallback.Reset();
-                }
-
-                return;
-            }
-
-            var root = EntityManager.GetComponentData<PrefabRoot>(fallback.SceneEntity).Root;
-            if (root == fallback.Root && EntityManager.Exists(root))
-            {
-                return;
-            }
-
-            SetActive(fallback, false);
-            fallback.Reset(root);
-
-            if (!EntityManager.Exists(root) || !EntityManager.HasComponent<SettingsPrefabIdentity>(root))
+            var root = entityManager.GetComponentData<PrefabRoot>(fallback.SceneEntity).Root;
+            if (!entityManager.HasComponent<SettingsPrefabIdentity>(root))
             {
                 throw new InvalidOperationException($"Loaded editor settings prefab '{fallback.Path}' has no settings identity on its root.");
             }
 
-            var identity = EntityManager.GetComponentData<SettingsPrefabIdentity>(root);
+            var identity = entityManager.GetComponentData<SettingsPrefabIdentity>(root);
             if (identity.PrefabGuid != fallback.PrefabGuid)
             {
                 throw new InvalidOperationException($"Loaded editor settings prefab '{fallback.Path}' has an unexpected settings identity.");
             }
 
-            if (EntityManager.HasBuffer<LinkedEntityGroup>(root))
+            if (!identity.Ready)
             {
-                foreach (var linkedEntity in EntityManager.GetBuffer<LinkedEntityGroup>(root))
+                throw new InvalidOperationException($"Editor settings prefab '{fallback.Path}' did not finish baking all of its settings.");
+            }
+
+            if (!entityManager.HasComponent<Prefab>(root))
+            {
+                throw new InvalidOperationException($"Loaded editor settings prefab '{fallback.Path}' is not a prefab.");
+            }
+
+            if (!entityManager.HasComponent<SettingsPrefabIdentity>(fallback.Instance))
+            {
+                fallback.Instance = Entity.Null;
+            }
+
+            if (root == fallback.Root)
+            {
+                return;
+            }
+
+            if (entityManager.HasBuffer<LinkedEntityGroup>(root))
+            {
+                foreach (var linkedEntity in entityManager.GetBuffer<LinkedEntityGroup>(root))
                 {
-                    CapturePrefabEntity(fallback, linkedEntity.Value);
+                    if (linkedEntity.Value != root && entityManager.HasComponent<SettingsPrefabIdentity>(linkedEntity.Value))
+                    {
+                        throw new InvalidOperationException($"Editor settings prefab '{fallback.Path}' contains another settings authoring prefab. Use separate routes for settings prefabs.");
+                    }
+                }
+            }
+
+            SetActive(entityManager, ref fallback, false);
+            fallback.Root = root;
+        }
+
+        private static void SetActive(EntityManager entityManager, ref EditorSettingsFallbackState fallback, bool active)
+        {
+            if (active)
+            {
+                if (!entityManager.HasComponent<SettingsPrefabIdentity>(fallback.Instance))
+                {
+                    fallback.Instance = entityManager.Instantiate(fallback.Root);
                 }
             }
             else
             {
-                CapturePrefabEntity(fallback, root);
-            }
-
-            if (fallback.PrefabEntities.Count == 0)
-            {
-                throw new InvalidOperationException($"Loaded editor settings prefab '{fallback.Path}' has no Prefab entities to activate.");
-            }
-
-            fallback.Valid = true;
-        }
-
-        private void CapturePrefabEntity(Fallback fallback, Entity entity)
-        {
-            if (EntityManager.Exists(entity) && EntityManager.HasComponent<Prefab>(entity))
-            {
-                fallback.PrefabEntities.Add(entity);
-            }
-        }
-
-        private void SetActive(Fallback fallback, bool active)
-        {
-            foreach (var entity in fallback.PrefabEntities)
-            {
-                if (!EntityManager.Exists(entity))
+                if (entityManager.HasComponent<SettingsPrefabIdentity>(fallback.Instance))
                 {
-                    continue;
+                    entityManager.DestroyEntity(fallback.Instance);
                 }
 
-                var isPrefab = EntityManager.HasComponent<Prefab>(entity);
-                if (active && isPrefab)
-                {
-                    EntityManager.RemoveComponent<Prefab>(entity);
-                }
-                else if (!active && !isPrefab)
-                {
-                    EntityManager.AddComponent<Prefab>(entity);
-                }
-            }
-        }
-
-        private sealed class Fallback
-        {
-            public Fallback(Hash128 prefabGuid, Entity sceneEntity, string path)
-            {
-                PrefabGuid = prefabGuid;
-                SceneEntity = sceneEntity;
-                Path = path;
-            }
-
-            public Hash128 PrefabGuid { get; }
-
-            public Entity SceneEntity { get; }
-
-            public string Path { get; }
-
-            public List<Entity> PrefabEntities { get; } = new();
-
-            public Entity Root { get; private set; }
-
-            public bool Valid { get; set; }
-
-            public int AuthoritativeCount { get; set; } = -1;
-
-            public void Reset(Entity root = default)
-            {
-                Root = root;
-                PrefabEntities.Clear();
-                Valid = false;
-                AuthoritativeCount = -1;
+                fallback.Instance = Entity.Null;
             }
         }
     }

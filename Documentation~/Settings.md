@@ -125,7 +125,7 @@ when they already have `SettingsAuthoring` on the root; Core does not overwrite 
 
 Use `[SettingSubDirectory("UI")]` to create a new settings asset under `Assets/Settings/Settings/UI`. The configured root path in **Core > Editor Settings** is applied when an asset is created. Existing assets are discovered anywhere in the project and are not moved when the root or attribute changes.
 
-Only one asset of each settings type is valid. If duplicates exist, editor retrieval logs an error and uses one result; singleton initialization can initialize multiple assets and leave an order-dependent value in `T.I`.
+Only one asset of each settings type is valid. Editor retrieval and authoring reconciliation reject duplicates; singleton initialization can initialize multiple assets and leave an order-dependent value in `T.I`.
 
 ## Route ECS Settings to Worlds
 
@@ -136,7 +136,7 @@ Core configures the standard routing when it creates `EditorSettings`. Configure
 1. Create any extra prefabs containing `SettingsAuthoring` for project-specific routes.
 2. Assign the default prefab to **Default Settings Authoring** when overriding `GameSettings`.
 3. Add or change world-key and prefab pairs under **Settings Authoring**.
-4. Click **Update Settings** to clear and rebuild every authoring assignment.
+4. Click **Update Settings** to validate and rebuild every authoring assignment.
 
 Routing behavior:
 
@@ -147,7 +147,12 @@ Routing behavior:
 - If none of the declared keys resolves to an assigned authoring, the setting falls back to default.
 - Repeating a resolved authoring in the attribute does not duplicate the asset in that authoring.
 
-Opening the Settings window or calling `EditorSettingsUtility.GetSettings<T>()` asks the editor utility to add a `SettingsBase` to its configured authoring. Use **Update Settings** after changing keys, prefabs, attributes, or multi-world mappings so every assignment is rebuilt from a clean state.
+Opening the Settings window or calling `EditorSettingsUtility.GetSettings<T>()` asks the editor utility to add a `SettingsBase` to its configured authoring.
+The Editor world also reconciles assignments on startup and after settings assets or authoring prefabs are imported. Reconciliation resolves and validates
+the complete asset and route snapshot before writing any prefab. Unresolved references, duplicate settings assets, and invalid configured routes are errors;
+existing assignments are preserved when validation fails. Each changed prefab array is saved once and synchronously imported, while unchanged arrays are left alone.
+If reconciliation repairs assignments after settings are already active in the Editor world, previews stop until a domain reload so an older SubScene bake cannot reach consumers.
+Use **Update Settings** after changing attributes or multi-world mappings without an asset import.
 
 The selected authoring prefab still has to be present in content baked into the intended ECS world. The attribute alone does not load a SubScene or prefab.
 
@@ -155,17 +160,28 @@ The selected authoring prefab still has to be present in content baked into the 
 
 Editor systems can require settings even when the SubScene that normally contains them is not open. Core always loads **Default Settings Authoring** as an
 Editor fallback. **Additional Editor World Settings** contains route keys resolved through the existing **Settings Authoring** mappings and includes
-`client` by default. Unresolved additional routes remain dormant until their `SettingsAuthoring` is configured. Core loads each resolved prefab through
+`client` by default. Every additional route must resolve to a configured `SettingsAuthoring`. Core loads each resolved prefab through
 `SceneSystem`, so normal baker dependencies continue to invalidate and rebake it when a referenced settings asset changes. Empty keys are invalid and
-throw when the Editor world is created.
+prevent the Editor world from running.
 
-The fallback is active only while no normal instance of that same prefab exists in the Editor world. When a SubScene supplies the prefab, Core restores
-`Prefab` to the fallback's original linked entities; when that instance disappears, Core removes `Prefab` again. The fallback therefore remains loaded for
-dependency tracking without creating duplicate settings singletons. Existing `Disabled` components on linked entities are never changed.
+The fallback is active only while no normal instance of that same prefab exists in the Editor world. Core instantiates the loaded prefab for the fallback
+and destroys that instance when a SubScene supplies the same prefab. When the normal instance disappears, Core instantiates the fallback again. The source
+prefab remains loaded for dependency tracking without creating duplicate settings singletons. Normal prefab instantiation preserves linked entities and
+their `Disabled` components. Nested settings authoring prefabs must use separate routes.
 
-`SettingsAuthoring` is only valid on a prefab root; baking throws when it is placed on a scene GameObject or below a prefab root. Systems in Simulation or
-Presentation observe the resolved settings state. An Initialization system that consumes these settings must update after
-`EditorSettingsFallbackSystem`.
+`SettingsAuthoring` is only valid on a prefab root; baking throws when it is placed on a scene GameObject or an ordinary child of a prefab root. For editor baking, its
+identity is marked ready only after every assigned setting has baked successfully. Core requires every selected prefab to finish loading with a ready
+identity and rejects incomplete or duplicate authoritative instances before activating fallbacks.
+
+If configuration, reconciliation, import, or baking fails, Core stops the current Editor world update and disables Initialization, Simulation, and
+Presentation. Fix the reported configuration and reload the domain to restore previews. Changing the selected editor prefab routes also requires a domain
+reload. Player baking and runtime systems are unaffected by this editor readiness policy.
+
+`EditorSettingsFallbackSystem` uses `SystemBase` because asset discovery, synchronous imports, and editor-world control require managed Unity APIs.
+Systems that can run with Burst use `ISystem` with `[BurstCompile]` on `OnUpdate`.
+
+Systems in Simulation or Presentation observe the resolved settings state. An Initialization system that consumes these settings must update after
+`EditorSettingsFallbackSystem`; its `OnCreate` cannot consume the asynchronously loaded settings.
 
 ## Retrieve Settings in Editor and Authoring Code
 
@@ -278,6 +294,8 @@ For a fully custom panel, derive directly from `SettingsBasePanel<T>`. Override 
 - Click **Update Settings** after routing changes.
 - Confirm the selected authoring prefab or SubScene is actually baked into the world.
 - Confirm the settings `Bake` method adds the expected component.
+- If the Editor world was disabled, fix its reported settings error and reload the domain. A ready prefab identity confirms that every assigned settings
+  baker completed; it does not create missing package settings assets. Open **BovineLabs > Settings** to create those assets before reloading.
 
 ### ECS singleton access reports zero or multiple matches
 

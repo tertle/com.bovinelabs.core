@@ -5,5 +5,6 @@ namespace BovineLabs.Core.Authoring.Settings
     internal struct SettingsPrefabIdentity : IComponentData
     {
         public Hash128 PrefabGuid;
+        public bool Ready;
     }
 }

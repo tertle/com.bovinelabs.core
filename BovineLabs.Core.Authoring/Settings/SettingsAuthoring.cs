@@ -51,21 +51,38 @@
                 AddComponent<SettingsTag>(entity);
 
                 var prefabGuid = GetPrefabGuid(authoring);
-                if (IsBakingForEditor())
+                var isEditor = IsBakingForEditor();
+                if (isEditor)
                 {
-                    AddComponent(entity, new SettingsPrefabIdentity { PrefabGuid = prefabGuid });
+                    AddComponent(entity, new SettingsPrefabIdentity {
+                        PrefabGuid = prefabGuid
+                    });
                 }
 
                 foreach (var setting in authoring._settings.Distinct())
                 {
                     if (!setting)
                     {
+                        if (isEditor)
+                        {
+                            throw new InvalidOperationException($"Settings prefab '{AssetDatabase.GetAssetPath(authoring)}' has an unresolved settings reference.");
+                        }
+
                         BLGlobalLogger.LogWarning512($"Setting is not set on {authoring.gameObject.name} in {authoring.gameObject.scene.name}");
                         continue;
                     }
 
                     DependsOn(setting);
                     setting.Bake(this);
+                }
+
+                if (isEditor)
+                {
+                    SetComponent(entity, new SettingsPrefabIdentity
+                    {
+                        PrefabGuid = prefabGuid,
+                        Ready = true,
+                    });
                 }
             }
         }
