@@ -177,6 +177,10 @@ If configuration, reconciliation, import, or baking fails, Core stops the curren
 Presentation. Fix the reported configuration and reload the domain to restore previews. Changing the selected editor prefab routes also requires a domain
 reload. Player baking and runtime systems are unaffected by this editor readiness policy.
 
+While the Editor is compiling scripts or importing assets, Core quietly pauses the Editor world update groups. It retries settings preparation once the Editor
+is ready, restoring the previous Simulation and Presentation enabled states. Normal compilation and import activity does not report a settings error or require
+a domain reload to resume previews.
+
 `EditorSettingsFallbackSystem` uses `SystemBase` because asset discovery, synchronous imports, and editor-world control require managed Unity APIs.
 Systems that can run with Burst use `ISystem` with `[BurstCompile]` on `OnUpdate`.
 

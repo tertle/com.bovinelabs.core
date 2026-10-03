@@ -23,6 +23,7 @@ namespace BovineLabs.Core.Editor.Settings
         private NativeList<EditorSettingsFallbackState> _fallbacks;
         private bool _initialized;
         private uint _revision;
+        private EditorApplication.CallbackFunction _resumeUpdate;
 
         protected override void OnCreate()
         {
@@ -32,6 +33,8 @@ namespace BovineLabs.Core.Editor.Settings
 
         protected override void OnDestroy()
         {
+            EditorApplication.update -= _resumeUpdate;
+
             try
             {
                 for (var index = 0; index < _fallbacks.Length; index++)
@@ -47,6 +50,38 @@ namespace BovineLabs.Core.Editor.Settings
 
         protected override void OnUpdate()
         {
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+            {
+                // Pause consumers until the Editor is ready, without treating normal compilation/imports as settings failures.
+                var initialization = World.GetExistingSystemManaged<InitializationSystemGroup>();
+                var simulation = World.GetExistingSystemManaged<SimulationSystemGroup>();
+                var presentation = World.GetExistingSystemManaged<PresentationSystemGroup>();
+                var simulationEnabled = simulation.Enabled;
+                var presentationEnabled = presentation.Enabled;
+                World.QuitUpdate = true;
+                initialization.Enabled = false;
+                simulation.Enabled = false;
+                presentation.Enabled = false;
+
+                _resumeUpdate = () =>
+                {
+                    if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+                    {
+                        return;
+                    }
+
+                    EditorApplication.update -= _resumeUpdate;
+                    _resumeUpdate = null;
+                    World.QuitUpdate = false;
+                    initialization.Enabled = true;
+                    simulation.Enabled = simulationEnabled;
+                    presentation.Enabled = presentationEnabled;
+                    EditorApplication.QueuePlayerLoopUpdate();
+                };
+                EditorApplication.update += _resumeUpdate;
+                return;
+            }
+
             // Asset discovery, import and streaming form one editor boundary. Failure must stop consumers in this frame.
             try
             {
@@ -116,11 +151,6 @@ namespace BovineLabs.Core.Editor.Settings
         private void ReconcileSettings()
         {
             var revision = EditorSettingsAssetPostprocessor.Revision;
-            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
-            {
-                throw new InvalidOperationException("Settings cannot be reconciled while scripts are compiling or assets are importing.");
-            }
-
             if (!EditorSettingsUtility.TryGetSettings<EditorSettings>(out var settings))
             {
                 throw new InvalidOperationException("EditorSettings could not be loaded. Open BovineLabs > Settings to configure it.");
