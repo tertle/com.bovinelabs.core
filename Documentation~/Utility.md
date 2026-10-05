@@ -62,13 +62,9 @@ Important constraints:
 
 `QueryEntityEnumerator` exposes low-level chunk iteration for an `EntityQuery`, including enabled masks through `ChunkEntityEnumerator`. Prefer Unity's normal query/job APIs unless this manual iteration is required. The caller owns dependency completion and must not perform structural changes while using the raw iteration state.
 
-### `WriteGroupMatcher<T>`
-
-`WriteGroupMatcher<T>` is a specialized helper for matching write-group component relationships. Use it only when implementing generic ECS code that must reproduce write-group filtering rules. It owns a persistent native array; complete its readers and call `Dispose()` from the owning system.
-
 ### Query groups
 
-`[QueryGroup(typeof(Target))]` in `BovineLabs.Core.Utility` declares a component or buffer as an override of `Target`. Multiple targets are supported and duplicate declarations are deduplicated. These relationships are independent of Unity's deprecated `WriteGroupAttribute`; existing write-group consumers are unchanged.
+`[QueryGroup(typeof(Target))]` in `BovineLabs.Core.Utility` declares a component or buffer as an override of `Target`. Multiple targets are supported and duplicate declarations are deduplicated. BovineLabs library queries use these relationships independently of Unity's deprecated write groups.
 
 `TypeManagerEx` discovers registered component attributes once on code load and releases its native metadata on code unload. Its main-thread `Initialize()` is idempotent. Register closed generic components with Entities before initialization; types registered afterward are outside this snapshot. `GetQueryGroupCount(TypeIndex)` and the borrowed `GetQueryGroups(TypeIndex)` pointer are Burst-compatible; the pointer must not be retained across code unloading. No debug-name cache is created.
 
@@ -79,7 +75,7 @@ The extensions in `BovineLabs.Core.Extensions` provide:
 - `WithAnyQueryGroup<T>()` / `WithNoneQueryGroup<T>()`: add direct members to `Any` / `None` regardless of the target's access mode. Both also accept `ComponentType`. An empty group adds no constraints, including for `WithAnyQueryGroup`.
 - `WithQueryGroupFilter()`: reproduces the former `FilterWriteGroup` rules using the new attribute. Unmentioned direct members of writable targets are added to `None`. Explicit constraints and transitive members of read-only targets are permitted. `All`, `Any`, `Disabled`, and `Present` targets are considered; `None` and `Absent` also count as explicit mentions. Call this after all constraints for each query description, before `Build` or `AddAdditionalQuery`; it applies immediately, so later constraints are not considered.
 
-`QueryGroupMatcher<T>` matches direct members in a chunk, including enabled bits for enableable components and buffers. Missing members do not match. Ordinary members match the entire chunk, including prefab and disabled-entity archetypes; query selection controls which chunks are inspected. Like `WriteGroupMatcher<T>`, the owner must complete readers and dispose its persistent array.
+`QueryGroupMatcher<T>` matches direct members in a chunk, including enabled bits for enableable components and buffers. Missing members do not match. Ordinary members match the entire chunk, including prefab and disabled-entity archetypes; query selection controls which chunks are inspected. The owner must complete readers and dispose its persistent array.
 
 ## Math and geometry
 

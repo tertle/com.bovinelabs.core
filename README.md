@@ -6,7 +6,7 @@ For support and discussions, join [Discord](https://discord.gg/RTsw6Cxvw3).
 
 ## Requirements
 
-- Unity 6000.7 or newer.
+- Unity 6000.7.0b3 or newer.
 - Unity Entities 6.7.0 or newer.
 - Netcode and Unity Physics integrations require their matching Unity packages at 6.7.0 or newer. Input System 1.20.0 or newer enables Input Action asset inspectors. Localization, Splines, Terrain, and VFX integrations are compiled when their matching supported packages or Unity modules are available.
 

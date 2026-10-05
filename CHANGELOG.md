@@ -10,6 +10,7 @@
 * Shared editor utilities for regenerating generated sample assets and launching sample scenes in Play Mode.
 
 ### Changed
+* Unity 6000.7.0b3 or newer is required.
 * `mathex.GenerateGaussianNoise` and `UntypedDynamicHashMapIterator.Current` return `Tu` values. Use `Item1`/`Item2` or deconstruct instead of accessing named tuple fields.
 * Facet generation preserves public helper and constructor parameter names when private fields use an underscore prefix.
 * Existing serialized private fields in Core settings and authoring were renamed to `_camelCase`; migrate external assets and property paths, including `SettingsAuthoring` and transform/physics authoring fields, before importing the updated source.

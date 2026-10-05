@@ -34,7 +34,8 @@
             _query = new EntityQueryBuilder(Allocator.Temp)
                 .WithAllRW<TRemaining, TOn>()
                 .WithAll<TActive, TDuration>()
-                .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState | EntityQueryOptions.FilterWriteGroup)
+                .WithOptions(EntityQueryOptions.IgnoreComponentEnabledState)
+                .WithQueryGroupFilter()
                 .Build(ref state);
         }
 

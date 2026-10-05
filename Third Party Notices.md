@@ -49,7 +49,7 @@ The following Core source includes code adapted from Unity packages:
 - `BovineLabs.Core.Editor/SearchWindow` from `com.unity.platforms`.
 - `BovineLabs.Core.Editor/Inspectors/BaseFieldInspector.cs` and part of `DynamicListElement.cs` from `com.unity.entities`.
 - `BovineLabs.Core/Utility/SpinLock.cs` from `com.unity.collections`.
-- `BovineLabs.Core/Utility/TypeManagerUtil.cs` from `com.unity.entities`.
+- `BovineLabs.Core/Extensions/EntityQueryBuilderQueryGroupExtensions.cs` derives its writable-target filtering rules from `com.unity.entities`.
 - `BovineLabs.Core/Graphics/BovineSparseUploader.cs` and `Resources/BovineLabs/CoreSparseUploader.compute` from `com.unity.entities.graphics`.
 - `SourceGenerators~/CodeGenHelpers/SourceGenHelpers.cs` from Netcode for Entities.
 

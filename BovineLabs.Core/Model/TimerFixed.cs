@@ -1,5 +1,6 @@
 ﻿namespace BovineLabs.Core.Model
 {
+    using BovineLabs.Core.Extensions;
     using Unity.Assertions;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
@@ -43,7 +44,7 @@
             _query = new EntityQueryBuilder(Allocator.Temp)
                 .WithAllRW<TRemaining, TOn>()
                 .WithAll<TActive>()
-                .WithOptions(EntityQueryOptions.FilterWriteGroup)
+                .WithQueryGroupFilter()
                 .Build(ref state);
         }
 
