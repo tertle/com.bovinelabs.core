@@ -167,7 +167,7 @@
 
             foreach (var authoring in authorings)
             {
-                foreach (var setting in ReadAssignedSettings(authoring))
+                foreach (var setting in ReadAssignedSettings(authoring, skipUnresolved: true))
                 {
                     AddResolvedSetting(setting);
                 }
@@ -214,7 +214,7 @@
             }
         }
 
-        private static List<SettingsBase> ReadAssignedSettings(SettingsAuthoring authoring)
+        private static List<SettingsBase> ReadAssignedSettings(SettingsAuthoring authoring, bool skipUnresolved = false)
         {
             var serializedObject = new SerializedObject(authoring);
             var settingsProperty = serializedObject.FindProperty("_settings");
@@ -224,6 +224,11 @@
                 var setting = settingsProperty.GetArrayElementAtIndex(index).objectReferenceValue as SettingsBase;
                 if (!setting)
                 {
+                    if (skipUnresolved)
+                    {
+                        continue;
+                    }
+
                     var path = AssetDatabase.GetAssetPath(authoring);
                     throw new InvalidOperationException($"Settings prefab '{path}' has an unresolved settings reference at index {index}.");
                 }

@@ -149,7 +149,8 @@ Routing behavior:
 
 Opening the Settings window or calling `EditorSettingsUtility.GetSettings<T>()` asks the editor utility to add a `SettingsBase` to its configured authoring.
 The Editor world also reconciles assignments on startup and after settings assets or authoring prefabs are imported. Reconciliation resolves and validates
-the complete asset and route snapshot before writing any prefab. Unresolved references, duplicate settings assets, and invalid configured routes are errors;
+the complete asset and route snapshot before writing any prefab. Empty and unresolved prefab entries are removed while assignments are rebuilt from resolved
+settings assets and their current routes. Existing settings assets that cannot be loaded, duplicate settings assets, and invalid configured routes are errors;
 existing assignments are preserved when validation fails. Each changed prefab array is saved once and synchronously imported, while unchanged arrays are left alone.
 If reconciliation repairs assignments after settings are already active in the Editor world, previews stop until a domain reload so an older SubScene bake cannot reach consumers.
 Use **Update Settings** after changing attributes or multi-world mappings without an asset import.
