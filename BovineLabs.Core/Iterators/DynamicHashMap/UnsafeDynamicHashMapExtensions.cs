@@ -1,7 +1,7 @@
 ﻿namespace BovineLabs.Core.Iterators
 {
     using BovineLabs.Core.Collections;
-    using Unity.Assertions;
+    using UnityEngine.Assertions;
 
     public static unsafe class UnsafeDynamicHashMapExtensions
     {

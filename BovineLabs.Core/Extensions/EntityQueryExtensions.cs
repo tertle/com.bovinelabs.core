@@ -83,14 +83,6 @@
 #endif
 
             impl->GetSingletonChunkAndEntity(typeIndex, out var indexInArchetype, out var chunk, out var entityIndexInChunk);
-#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
-#pragma warning disable 0618
-            if (Hint.Unlikely(impl->_Access->EntityComponentStore->m_RecordToJournal != 0) && !isReadOnly)
-            {
-                impl->RecordSingletonJournalRW(chunk, typeIndex, EntitiesJournaling.RecordType.GetBufferRW);
-#pragma warning restore 0618
-            }
-#endif
 
             var archetype = impl->_Access->EntityComponentStore->GetArchetype(chunk);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

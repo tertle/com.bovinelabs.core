@@ -5,10 +5,10 @@ namespace BovineLabs.Core.Iterators
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Iterators.Columns;
-    using Unity.Assertions;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+    using UnityEngine.Assertions;
 
     public static unsafe class DynamicExtensions
     {

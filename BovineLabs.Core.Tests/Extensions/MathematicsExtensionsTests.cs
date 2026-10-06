@@ -3,7 +3,6 @@
     using BovineLabs.Core.Extensions;
     using NUnit.Framework;
     using Unity.Mathematics;
-    using Assert = UnityEngine.Assertions.Assert;
 
     public class MathematicsExtensionsTests
     {

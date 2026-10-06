@@ -14,7 +14,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
     {
         private const string AssemblyInfoTemplate = "using System.Runtime.CompilerServices;\n";
 
-        private const string DisableAutoCreationTemplate = "using Unity.Entities;\n\n[assembly: DisableAutoCreation]";
         private const string InternalAccessTemplate = "\n[assembly: InternalsVisibleTo(\"{0}\")]";
 
         private const string RootUIPath = "Packages/com.bovinelabs.core/Editor Default Resources/AssemblyBuilder/";
@@ -92,7 +91,7 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
         private void Create()
         {
-            var activeFolderPath = ProjectView.Internal.GetDirectory().TrimEnd('/', '\\');;
+            var activeFolderPath = ProjectView.Internal.GetDirectory().TrimEnd('/', '\\');
 
             var assemblyToggles = rootVisualElement.Query<Toggle>(className: "assembly").Where(t => t.value).ToList();
 
@@ -111,7 +110,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
             }
 
             var internalAccess = GetToggleValue("internalAccess");
-            var disableAutoCreation = GetToggleValue("disableAutoCreation");
             var allowUnsafeCode = GetToggleValue("allowUnsafeCode");
             var addAnchor = GetToggleValue("addAnchor");
 
@@ -234,13 +232,6 @@ namespace BovineLabs.Core.Editor.AssemblyBuilder
 
                                 references.Add("BovineLabs.Testing");
                                 references.Add("Unity.PerformanceTesting");
-
-                                if (disableAutoCreation)
-                                {
-                                    var assemblyInfoPath = GetAssemblyInfoPath(folder);
-                                    var text = GetAssemblyInfoHeader() + DisableAutoCreationTemplate;
-                                    File.WriteAllText(assemblyInfoPath, text);
-                                }
                             }
                             else if (label == "Editor")
                             {

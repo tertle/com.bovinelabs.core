@@ -78,7 +78,7 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
                 {
                     var value = JobReader.Read<int>();
 
-                    UnityEngine.Assertions.Assert.AreEqual(index, value);
+                    Assert.AreEqual(index, value);
                 }
             }
         }

@@ -2,9 +2,9 @@
 {
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.PropertyDrawers;
-    using Unity.Assertions;
     using UnityEditor;
     using UnityEngine;
+    using UnityEngine.Assertions;
     using UnityEngine.UIElements;
 
     [CustomPropertyDrawer(typeof(PrefabElementAttribute))]

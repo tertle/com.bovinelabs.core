@@ -47,16 +47,6 @@
             var elementSize = typeInfo.ElementSize;
             var elementAlign = typeInfo.AlignmentInBytes;
 
-#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
-#pragma warning disable 0618
-            if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0) && !chunkBufferTypeHandle.IsReadOnly)
-            {
-                chunk.JournalAddRecord(EntitiesJournaling.RecordType.GetBufferRW, chunkBufferTypeHandle.m_TypeIndex,
-                    chunkBufferTypeHandle.m_GlobalSystemVersion);
-            }
-#pragma warning restore 0618
-#endif
-
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             return new DynamicBufferAccessor(ptr, length, stride, elementSize, elementAlign, internalCapacity, chunkBufferTypeHandle.IsReadOnly,
                 chunkBufferTypeHandle.m_Safety0, chunkBufferTypeHandle.m_Safety1);
@@ -286,21 +276,5 @@
             ptrChunkDisabledCount = chunks.GetPointerToChunkDisabledCountForType(memoryOrderIndexInArchetype, chunkListIndex);
             return chunks.GetEnabledArrayForTypeInChunk(memoryOrderIndexInArchetype, chunkListIndex);
         }
-
-#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
-#pragma warning disable 0618
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void JournalAddRecord(
-            this ref ArchetypeChunk chunk, EntitiesJournaling.RecordType recordType, TypeIndex typeIndex, uint globalSystemVersion, void* data = null,
-            int dataLength = 0)
-        {
-            fixed (ArchetypeChunk* archetypeChunk = &chunk)
-            {
-                EntitiesJournaling.AddRecord(recordType, archetypeChunk->m_EntityComponentStore, globalSystemVersion, archetypeChunk, 1, types: &typeIndex,
-                    typeCount: 1, data: data, dataLength: dataLength);
-            }
-        }
-#pragma warning restore 0618
-#endif
     }
 }

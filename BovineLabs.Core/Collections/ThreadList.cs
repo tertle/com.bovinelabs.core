@@ -2,10 +2,10 @@ namespace BovineLabs.Core.Collections
 {
     using System.Runtime.InteropServices;
     using BovineLabs.Core.Internal;
-    using Unity.Assertions;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
+    using UnityEngine.Assertions;
 
     public unsafe struct ThreadList
     {

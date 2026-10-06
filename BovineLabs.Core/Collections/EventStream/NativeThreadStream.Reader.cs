@@ -4,10 +4,10 @@ namespace BovineLabs.Core.Collections
     using System.Diagnostics;
     using BovineLabs.Core.Internal;
     using System.Diagnostics.CodeAnalysis;
-    using Unity.Assertions;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
+    using UnityEngine.Assertions;
 
     public unsafe partial struct NativeThreadStream
     {

@@ -1,13 +1,13 @@
 ﻿namespace BovineLabs.Core.Model
 {
     using BovineLabs.Core.Extensions;
-    using Unity.Assertions;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using Unity.Mathematics;
+    using UnityEngine.Assertions;
 #if UNITY_BURST_EXPERIMENTAL_LOOP_INTRINSICS
     using Unity.Burst.CompilerServices;
 #endif

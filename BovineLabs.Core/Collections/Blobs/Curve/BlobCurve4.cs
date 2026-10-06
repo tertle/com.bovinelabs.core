@@ -5,13 +5,13 @@
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
-    using Unity.Assertions;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using Unity.Mathematics;
     using UnityEngine;
+    using UnityEngine.Assertions;
 
     [StructLayout(LayoutKind.Sequential)]
     public struct BlobCurve4 : IBlobCurve<float4>

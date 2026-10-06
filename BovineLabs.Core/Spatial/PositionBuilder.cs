@@ -1,6 +1,5 @@
 ﻿namespace BovineLabs.Core.Spatial
 {
-    using Unity.Assertions;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -9,6 +8,7 @@
     using Unity.Jobs;
     using Unity.Mathematics;
     using Unity.Transforms;
+    using UnityEngine.Assertions;
 
     public struct SpatialPosition : ISpatialPosition, ISpatialPosition3
     {

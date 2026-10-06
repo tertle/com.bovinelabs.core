@@ -1,8 +1,8 @@
 ﻿namespace BovineLabs.Core.Collections
 {
-    using Unity.Assertions;
     using Unity.Mathematics;
     using UnityEngine;
+    using UnityEngine.Assertions;
 
     public struct BlobCurveSegment2
     {

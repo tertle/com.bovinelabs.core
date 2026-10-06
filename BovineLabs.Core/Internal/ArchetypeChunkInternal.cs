@@ -27,16 +27,6 @@
             }
 
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, handle.GlobalSystemVersion);
-
-#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
-            if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
-            {
-                var ptr = ChunkDataUtility.GetComponentDataWithTypeRW(chunk.m_Chunk, archetype, 0, handle.m_TypeIndex, handle.GlobalSystemVersion,
-                    ref handle.m_LookupCache);
-
-                chunk.JournalAddRecordGetComponentDataRW(ref handle, ptr, handle.m_SizeInChunk * chunk.Count);
-            }
-#endif
         }
 
         public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ref ComponentTypeHandle<T> handle, uint version)
@@ -58,16 +48,6 @@
             }
 
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, version);
-
-#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
-            if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
-            {
-                var ptr = ChunkDataUtility.GetComponentDataWithTypeRW(chunk.m_Chunk, archetype, 0, handle.m_TypeIndex, handle.GlobalSystemVersion,
-                    ref handle.m_LookupCache);
-
-                chunk.JournalAddRecordGetComponentDataRW(ref handle, ptr, handle.m_SizeInChunk * chunk.Count);
-            }
-#endif
         }
 
         public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ref BufferTypeHandle<T> handle)
@@ -90,15 +70,6 @@
 
             // This should (=S) be thread safe int writes are atomic in c#
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, handle.GlobalSystemVersion);
-
-#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
-            if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
-            {
-#pragma warning disable 0618
-                chunk.JournalAddRecord(EntitiesJournaling.RecordType.GetBufferRW, handle.m_TypeIndex, handle.m_GlobalSystemVersion);
-#pragma warning restore 0618
-            }
-#endif
         }
 
         public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ref BufferTypeHandle<T> handle, uint version)
@@ -121,15 +92,6 @@
 
             // This should (=S) be thread safe int writes are atomic in c#
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, version);
-
-#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
-            if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
-            {
-#pragma warning disable 0618
-                chunk.JournalAddRecord(EntitiesJournaling.RecordType.GetBufferRW, handle.m_TypeIndex, handle.m_GlobalSystemVersion);
-#pragma warning restore 0618
-            }
-#endif
         }
 
         public static unsafe void SetChangeFilter(this ArchetypeChunk chunk, ref DynamicComponentTypeHandle handle)
@@ -145,20 +107,6 @@
             }
 
             archetype->Chunks.SetChangeVersion(typeIndexInArchetype, chunk.m_Chunk.ListIndex, handle.GlobalSystemVersion);
-
-#if UNITY_INCLUDE_INSTRUMENTATION && !DISABLE_ENTITIES_JOURNALING
-            if (Hint.Unlikely(chunk.m_EntityComponentStore->m_RecordToJournal != 0))
-            {
-                var ptr = ChunkDataUtility.GetComponentDataRW(chunk.m_Chunk, archetype, 0, typeIndexInArchetype, handle.GlobalSystemVersion);
-                var typeSize = archetype->SizeOfs[typeIndexInArchetype];
-                var length = chunk.Count;
-                var byteLen = length * typeSize;
-
-#pragma warning disable 0618
-                chunk.JournalAddRecord(EntitiesJournaling.RecordType.GetComponentDataRW, handle.m_TypeIndex, handle.m_GlobalSystemVersion, ptr, byteLen);
-#pragma warning restore 0618
-            }
-#endif
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
