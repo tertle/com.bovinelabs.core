@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.0.0-pre.4] - Unreleased
+## [2.0.0-pre.4] - 2026-10-07
 
 ### Added
 * Query-group overrides with `QueryGroupAttribute`, `QueryGroupMatcher<T>`, query-builder filters, and a Burst-readable `TypeManagerEx` registry.
