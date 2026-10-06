@@ -1,14 +1,13 @@
 root = true
 
+# Shared C# preferences. Sync standalone BovineLabs copies with .agents/scripts/Sync-PackageEditorConfig.ps1.
 [*.cs]
 csharp_new_line_before_open_brace = control_blocks
 csharp_preserve_single_line_blocks = false
-
-# C# preferences for this standalone BovineLabs package.
-[{BovineLabs.*/**,SourceGenerators~/BovineLabs.*/**}.cs]
 indent_style = space
 indent_size = 4
 max_line_length = 160
+csharp_style_namespace_declarations = block_scoped
 
 dotnet_style_qualification_for_field = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
@@ -24,7 +23,14 @@ dotnet_naming_rule.private_fields_underscored.symbols = private_fields
 dotnet_naming_rule.private_fields_underscored.style = underscored_camel
 dotnet_naming_rule.private_fields_underscored.severity = suggestion
 
-# Static fields (including constants) are outside the instance-field convention.
+dotnet_naming_symbols.non_private_fields.applicable_kinds = field
+dotnet_naming_symbols.non_private_fields.applicable_accessibilities = public, internal, protected, protected_internal, private_protected
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_naming_rule.non_private_fields_pascal_case.symbols = non_private_fields
+dotnet_naming_rule.non_private_fields_pascal_case.style = pascal_case
+dotnet_naming_rule.non_private_fields_pascal_case.severity = suggestion
+
+# Private static fields (including constants) are outside the private instance-field convention.
 dotnet_naming_symbols.private_static_fields.applicable_kinds = field
 dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
 dotnet_naming_symbols.private_static_fields.required_modifiers = static
