@@ -3,6 +3,7 @@
 ## [2.0.0-pre.4] - Unreleased
 
 ### Added
+* Query-group overrides with `QueryGroupAttribute`, `QueryGroupMatcher<T>`, query-builder filters, and a Burst-readable `TypeManagerEx` registry.
 * `TerrainToMesh.Output.GeometryOnly` omits UVs and normals, reducing peak native buffer memory by 19% on a 513×513 terrain conversion fixture. Conversion defaults to `FullMesh`.
 * Direct sparse-upload reservations for producer-written staging, with optional GPU-fence retirement for multiple uploads per rendered frame.
 * Opt-in `BovineLabs.Core.Graphics.BovineSparseUploader` with batched copy reservations, compact strided staging, and single-page allocation sizing. See the sparse uploader guide for measured Editor performance and inherited lifetime constraints.
@@ -10,6 +11,7 @@
 * Shared editor utilities for regenerating generated sample assets and launching sample scenes in Play Mode.
 
 ### Changed
+* Timer queries now use Core query groups. Replace custom `[WriteGroup]` overrides with `[QueryGroup]`, and apply `WithQueryGroupFilter()` after all query constraints.
 * Unity 6000.7.0b3 or newer is required.
 * `mathex.GenerateGaussianNoise` and `UntypedDynamicHashMapIterator.Current` return `Tu` values. Use `Item1`/`Item2` or deconstruct instead of accessing named tuple fields.
 * Facet generation preserves public helper and constructor parameter names when private fields use an underscore prefix.
@@ -25,6 +27,9 @@
 * Parallel fallback hash-map writers reserve worker-local batches instead of contending on one allocation counter for every key, and return unused entries after duplicate insertion races.
 * Dynamic dictionaries, multi-dictionaries, and hash sets now validate capacity-only headers without overflow and recover correctly after buffer copies.
 * ConfigVar discovery no longer initializes Entities before the Player engine is ready, preventing a native startup crash with Unity 6.7.
+
+### Removed
+* `WriteGroupMatcher<T>`, `TypeManagerUtil.GetWriteGroupComponents`, and `WithAnyWriteGroup`/`WithNoneWriteGroup`; use the corresponding query-group APIs.
 
 ## [2.0.0-pre.3] - 2026-09-18
 
