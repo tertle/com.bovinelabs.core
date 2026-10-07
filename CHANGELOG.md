@@ -1,6 +1,15 @@
 # Changelog
 
-## [2.0.0-pre.5] - Unreleased
+## [2.0.0-pre.5] - 2026-10-07
+
+### Changed
+* Unity 7000.0.0a7 or newer is required.
+* Assertions use `UnityEngine.Assertions` for Unity 7 compatibility.
+* Removed obsolete assembly-level automatic type registration overrides and explicit component registrations.
+
+### Removed
+* Entities Journaling integration in chunk and query extensions, change-filter helpers, and the ECS test fixture, including the `ArchetypeChunkExtensions.JournalAddRecord` helper.
+* The Assembly Builder's **Disable Auto Creation** option for generated test assemblies.
 
 ## [2.0.0-pre.4] - 2026-10-07
 
