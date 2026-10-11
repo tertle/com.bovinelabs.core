@@ -109,8 +109,9 @@ This requires exactly one matching component in the world. Avoid loading multipl
 
 In an interactive editor, when the Package Manager adds or updates a package, Core makes one pass over every settings type owned by an installed package and
 creates any missing assets after registration finishes. The pass includes settings activated in an existing package by a newly installed optional dependency.
-It does not run on ordinary domain reloads, create settings declared by project assemblies, or remove settings left behind by removed packages. Open
-**BovineLabs > Settings** to create project settings or after editing an embedded package without changing its registration.
+That package-registration pass does not run on ordinary domain reloads, create settings declared by project assemblies, or remove settings left behind by
+removed packages. Editor world preparation also creates missing package `SettingsBase` assets and `EditorSettings`, including after editing an embedded
+package without changing its registration. Open **BovineLabs > Settings** to create project settings and other settings assets.
 
 1. Open **BovineLabs > Settings** and select a settings panel.
 2. Configure the generated asset.
@@ -126,6 +127,11 @@ when they already have `SettingsAuthoring` on the root; Core does not overwrite 
 Use `[SettingSubDirectory("UI")]` to create a new settings asset under `Assets/Settings/Settings/UI`. The configured root path in **Core > Editor Settings** is applied when an asset is created. Existing assets are discovered anywhere in the project and are not moved when the root or attribute changes.
 
 Only one asset of each settings type is valid. Editor retrieval and authoring reconciliation reject duplicates; singleton initialization can initialize multiple assets and leave an order-dependent value in `T.I`.
+
+Editor discovery caches settings asset GUIDs in `SessionState` across domain reloads. Each reload still resolves and loads the assets, validates their types,
+and checks authoring assignments. Adding, deleting, moving, or changing the type of a settings asset invalidates discovery, as does a change to the concrete
+settings types after compilation. Value edits and authoring or route edits trigger validation without repeating unchanged asset searches. Import-time
+searches are not retained, and closing the Editor discards the session cache.
 
 ## Route ECS Settings to Worlds
 
@@ -152,7 +158,8 @@ The Editor world also reconciles assignments on startup and after settings asset
 the complete asset and route snapshot before writing any prefab. Empty and unresolved prefab entries are removed while assignments are rebuilt from resolved
 settings assets and their current routes. Existing settings assets that cannot be loaded, duplicate settings assets, and invalid configured routes are errors;
 existing assignments are preserved when validation fails. Each changed prefab array is saved once and synchronously imported, while unchanged arrays are left alone.
-If reconciliation repairs assignments after settings are already active in the Editor world, previews stop until a domain reload so an older SubScene bake cannot reach consumers.
+If missing-asset creation or reconciliation repairs assignments after settings are already active in the Editor world, Core pauses previews and requests a
+domain reload automatically so an older SubScene bake cannot reach consumers. When no settings are active yet, preparation continues with the repaired prefabs.
 Use **Update Settings** after changing attributes or multi-world mappings without an asset import.
 
 The selected authoring prefab still has to be present in content baked into the intended ECS world. The attribute alone does not load a SubScene or prefab.

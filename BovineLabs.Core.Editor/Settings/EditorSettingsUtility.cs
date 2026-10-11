@@ -18,6 +18,11 @@
         [NoAutoStaticsCleanup]
         private static readonly Dictionary<Type, ISettings> CachedSettings = new();
 
+        internal static void ClearCachedSettings()
+        {
+            CachedSettings.Clear();
+        }
+
         public static T GetSettings<T>() where T : ScriptableObject, ISettings
         {
             var type = typeof(T);
@@ -125,13 +130,13 @@
 
             var authorings = GetConfiguredAuthorings(editorSettings);
             var settingsByType = new Dictionary<Type, SettingsBase>();
-            var assetGuids = new HashSet<string>(AssetDatabase.FindAssets("t:SettingsBase"), StringComparer.Ordinal);
+            var assetGuids = new HashSet<string>(SettingsAssetCache.FindAssets("t:SettingsBase"), StringComparer.Ordinal);
 
-            foreach (var type in TypeCache.GetTypesDerivedFrom<SettingsBase>().Where(type => !type.IsAbstract && !type.ContainsGenericParameters)
+            foreach (var type in SettingsAssetCache.SettingsTypes.Where(type => typeof(SettingsBase).IsAssignableFrom(type))
                          .OrderBy(type => type.FullName, StringComparer.Ordinal))
             {
                 var filter = type.Namespace == null ? type.Name : $"{type.Namespace}.{type.Name}";
-                assetGuids.UnionWith(AssetDatabase.FindAssets($"t:{filter}"));
+                assetGuids.UnionWith(SettingsAssetCache.FindAssets($"t:{filter}"));
 
                 // Type searches can also be incomplete while the library is being imported.
                 var expectedPath = GetExpectedSettingsPath(editorSettings, type);
@@ -299,6 +304,7 @@
                 SettingsAuthoring.GetPrefabGuid(authoring);
             }
 
+            SettingsAssetCache.TrackAuthorings(authorings);
             return authorings;
         }
 
@@ -343,7 +349,7 @@
             }
 
             var filter = type.Namespace == null ? type.Name : $"{type.Namespace}.{type.Name}";
-            var assets = AssetDatabase.FindAssets($"t:{filter}");
+            var assets = SettingsAssetCache.FindAssets($"t:{filter}");
 
             ScriptableObject instance;
             var created = false;
@@ -390,6 +396,7 @@
                         instance = ScriptableObject.CreateInstance(type);
                         AssetDatabase.CreateAsset(instance, path);
                         AssetDatabase.SaveAssets();
+                        SettingsAssetCache.Invalidate();
                         created = true;
                     }
 
@@ -481,7 +488,7 @@
 
         private static EditorSettings GetEditorSettings()
         {
-            var assets = AssetDatabase.FindAssets($"t:{nameof(EditorSettings)}");
+            var assets = SettingsAssetCache.FindAssets($"t:{nameof(EditorSettings)}");
             if (assets.Length == 0)
             {
                 return null;

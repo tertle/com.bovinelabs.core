@@ -3,15 +3,12 @@ namespace BovineLabs.Core.Editor.Settings
     using System;
     using System.Collections.Generic;
     using BovineLabs.Core.Authoring.Settings;
-    using BovineLabs.Core.Settings;
-    using BovineLabs.Core.Utility;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Scenes;
     using UnityEditor;
     using UnityEngine;
     using Hash128 = Unity.Entities.Hash128;
-    using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
     [WorldSystemFilter(WorldSystemFilterFlags.Editor)]
     [UpdateAfter(typeof(SceneSystemGroup))]
@@ -87,7 +84,10 @@ namespace BovineLabs.Core.Editor.Settings
             {
                 if (!_initialized || _revision != EditorSettingsAssetPostprocessor.Revision)
                 {
-                    ReconcileSettings();
+                    if (!ReconcileSettings())
+                    {
+                        return;
+                    }
                 }
 
                 for (var index = 0; index < _fallbacks.Length; index++)
@@ -148,27 +148,36 @@ namespace BovineLabs.Core.Editor.Settings
             }
         }
 
-        private void ReconcileSettings()
+        private bool ReconcileSettings()
         {
             var revision = EditorSettingsAssetPostprocessor.Revision;
+            var settingsCreated = false;
             if (!EditorSettingsUtility.TryGetSettings<EditorSettings>(out var settings))
             {
-                throw new InvalidOperationException("EditorSettings could not be loaded. Open BovineLabs > Settings to configure it.");
+                settings = EditorSettingsUtility.GetSettings<EditorSettings>();
+                settingsCreated = true;
             }
 
-            foreach (var type in ReflectionUtility.GetAllImplementationsRootOnly<ISettings, ScriptableObject>())
+            foreach (var type in SettingsAssetCache.PackageSettingsTypes)
             {
-                if (typeof(SettingsBase).IsAssignableFrom(type) && PackageInfo.FindForAssembly(type.Assembly) != null &&
-                    !EditorSettingsUtility.TryGetSettings(type, out _))
+                if (!EditorSettingsUtility.TryGetSettings(type, out _))
                 {
-                    throw new InvalidOperationException($"Package settings asset '{type.FullName}' is missing. Open BovineLabs > Settings to create it.");
+                    EditorSettingsUtility.GetSettings(type);
+                    settingsCreated = true;
                 }
             }
 
             // Open SubScenes completed live baking before this system. Their existing settings may still use the old assignments.
-            if (EditorSettingsUtility.UpdateSettings(settings) && !_settingsQuery.IsEmptyIgnoreFilter)
+            var assignmentsChanged = EditorSettingsUtility.UpdateSettings(settings);
+            if ((settingsCreated || assignmentsChanged) && !_settingsQuery.IsEmptyIgnoreFilter)
             {
-                throw new InvalidOperationException("Settings authoring assignments were repaired while editor settings were already active. Reload the domain to bake the repaired assignments before consumers run.");
+                World.QuitUpdate = true;
+                World.GetExistingSystemManaged<InitializationSystemGroup>().Enabled = false;
+                World.GetExistingSystemManaged<SimulationSystemGroup>().Enabled = false;
+                World.GetExistingSystemManaged<PresentationSystemGroup>().Enabled = false;
+                Enabled = false;
+                EditorUtility.RequestScriptReload();
+                return false;
             }
 
             var authorings = new Dictionary<Hash128, SettingsAuthoring>();
@@ -225,7 +234,7 @@ namespace BovineLabs.Core.Editor.Settings
             // Initial requests and changed prefab assignments were submitted after the normal scene-group update.
             World.GetExistingSystemManaged<SceneSystemGroup>().Update();
             _revision = revision;
-            return;
+            return true;
 
             void AddAuthoring(SettingsAuthoring authoring)
             {
