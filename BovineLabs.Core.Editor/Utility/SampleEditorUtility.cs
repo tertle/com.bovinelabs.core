@@ -11,6 +11,7 @@ namespace BovineLabs.Core.Editor.Utility
     public static class SampleEditorUtility
     {
         private const string PlayRequestKey = "BovineLabs.Samples.PlayScene";
+        private const string PlayRequestFrameKey = "BovineLabs.Samples.PlayFrame";
 
         public static bool CanUseMenu => !EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isCompiling &&
             !EditorApplication.isUpdating && PrefabStageUtility.GetCurrentPrefabStage() == null;
@@ -168,20 +169,31 @@ namespace BovineLabs.Core.Editor.Utility
         {
             if (change == PlayModeStateChange.EnteredPlayMode && !string.IsNullOrEmpty(SessionState.GetString(PlayRequestKey, string.Empty)))
             {
-                // Explicit sample launches take precedence after the host project's startup-scene handlers finish.
-                EditorApplication.delayCall += OpenRequestedSample;
+                // Progress updates can pump delayCall between PlayMode callbacks. Wait for a player frame so all startup swaps have finished.
+                SessionState.SetInt(PlayRequestFrameKey, Time.frameCount);
+                EditorApplication.update -= OpenRequestedSample;
+                EditorApplication.update += OpenRequestedSample;
             }
             else if (change == PlayModeStateChange.EnteredEditMode)
             {
+                EditorApplication.update -= OpenRequestedSample;
                 SessionState.EraseString(PlayRequestKey);
+                SessionState.EraseInt(PlayRequestFrameKey);
             }
         }
 
         private static void OpenRequestedSample()
         {
+            if (!EditorApplication.isPlaying || Time.frameCount <= SessionState.GetInt(PlayRequestFrameKey, int.MaxValue))
+            {
+                return;
+            }
+
+            EditorApplication.update -= OpenRequestedSample;
             var path = SessionState.GetString(PlayRequestKey, string.Empty);
             SessionState.EraseString(PlayRequestKey);
-            if (EditorApplication.isPlaying && !string.IsNullOrEmpty(path) && SceneManager.GetActiveScene().path != path)
+            SessionState.EraseInt(PlayRequestFrameKey);
+            if (!string.IsNullOrEmpty(path) && SceneManager.GetActiveScene().path != path)
             {
                 EditorSceneManager.LoadSceneInPlayMode(path, new LoadSceneParameters(LoadSceneMode.Single));
             }
