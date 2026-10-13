@@ -7,6 +7,7 @@
 
 ### Fixed
 * Editor world preparation creates missing package settings and `EditorSettings` assets. Repairs made while settings are already active pause previews and automatically request a domain reload before consumers resume.
+* Sample scene launches wait for the first player frame so host startup-scene handlers cannot replace the requested sample.
 
 ## [2.0.0-pre.5] - 2026-10-07
 
