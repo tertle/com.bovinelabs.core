@@ -155,7 +155,7 @@ namespace BovineLabs.Core.Extensions
         }
 
         internal static SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
-            where T : struct, ISharedComponentData
+            where T : unmanaged, ISharedComponentData
         {
             var access = entityManager.GetCheckedEntityDataAccess();
             var typeIndex = TypeManager.GetTypeIndex<T>();

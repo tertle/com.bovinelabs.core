@@ -6,7 +6,7 @@
 
     [NativeContainer]
     public unsafe struct SharedComponentDataFromIndex<T>
-        where T : struct, ISharedComponentData
+        where T : unmanaged, ISharedComponentData
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Preserve Unity safety-handle field names.")]
@@ -44,7 +44,7 @@
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                return _access->GetSharedComponentData<T>(index);
+                return _access->GetSharedComponentData_Unmanaged<T>(index);
             }
         }
 
