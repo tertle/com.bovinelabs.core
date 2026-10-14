@@ -28,7 +28,8 @@ namespace BovineLabs.Core.Utility
             var groupsByTarget = new Dictionary<int, HashSet<TypeIndex>>();
             foreach (var typeInfo in TypeManager.AllTypes)
             {
-                if (typeInfo.Type == null)
+                if (typeInfo.Type == null ||
+                    typeInfo.Category is TypeManager.TypeCategory.TransformData or TypeManager.TypeCategory.UnityEngineObject)
                 {
                     continue;
                 }

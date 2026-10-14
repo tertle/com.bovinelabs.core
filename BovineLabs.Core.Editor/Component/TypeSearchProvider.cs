@@ -69,7 +69,8 @@
             var type = Type.GetType((string)item.data);
             foreach (var candidate in TypeManager.AllTypes)
             {
-                if (candidate.Type == type && candidate.Category != TypeManager.TypeCategory.UnityEngineObject)
+                if (candidate.Type == type &&
+                    candidate.Category is not (TypeManager.TypeCategory.TransformData or TypeManager.TypeCategory.UnityEngineObject))
                 {
                     info = candidate;
                     return true;
