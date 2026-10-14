@@ -8,6 +8,7 @@
 * Editor settings discovery caches asset GUIDs across domain reloads and avoids repeating unchanged searches after value, authoring, or route edits while preserving validation.
 
 ### Fixed
+* Query-group registration and ECS component inspection exclude transform and Unity object types that cannot be used as component query candidates.
 * Shared-component index reads use the current unmanaged Entities API, fixing compilation on Unity 7000.0.0a9.
 * Editor world preparation creates missing package settings and `EditorSettings` assets. Repairs made while settings are already active pause previews and automatically request a domain reload before consumers resume.
 * Sample scene launches wait for the first player frame so host startup-scene handlers cannot replace the requested sample.
