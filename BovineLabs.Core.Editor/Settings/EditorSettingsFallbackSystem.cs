@@ -3,6 +3,7 @@ namespace BovineLabs.Core.Editor.Settings
     using System;
     using System.Collections.Generic;
     using BovineLabs.Core.Authoring.Settings;
+    using BovineLabs.Core.Settings;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Scenes;
@@ -160,6 +161,11 @@ namespace BovineLabs.Core.Editor.Settings
 
             foreach (var type in SettingsAssetCache.PackageSettingsTypes)
             {
+                if (type.IsDefined(typeof(SettingsOptionalAttribute), false))
+                {
+                    continue;
+                }
+
                 if (!EditorSettingsUtility.TryGetSettings(type, out _))
                 {
                     EditorSettingsUtility.GetSettings(type);

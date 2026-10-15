@@ -14,6 +14,8 @@ For process-wide developer tuning, command-line overrides, or Burst-compatible v
 
 Implementing `ISettings` provides Settings-window discovery and asset creation. It does not by itself include the asset in a player or create ECS data.
 
+Editor world preparation creates missing package `SettingsBase` assets by default. Mark a settings class with `[SettingsOptional]` to require explicit creation instead. Package registration, automatic asset references and Settings-window discovery also leave missing optional settings absent. Create them through the type's `CreateAssetMenu` entry or `EditorSettingsUtility.GetSettings<T>()`; existing assets appear in the Settings window, receive automatic asset references and keep their normal settings-authoring routes.
+
 ## Assemblies
 
 The Core assemblies have `autoReferenced` disabled:

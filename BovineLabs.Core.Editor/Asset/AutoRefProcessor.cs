@@ -527,6 +527,11 @@ namespace BovineLabs.Core.Editor.Asset
                 return null;
             }
 
+            if (managerType.IsDefined(typeof(SettingsOptionalAttribute), false))
+            {
+                return null;
+            }
+
             return (ScriptableObject)EditorSettingsUtility.GetSettings(managerType);
         }
 

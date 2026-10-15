@@ -6,6 +6,7 @@
 * Unity 7000.0.0a9 or newer is required.
 * `SharedComponentDataFromIndex<T>` requires unmanaged shared-component types.
 * Editor settings discovery caches asset GUIDs across domain reloads and avoids repeating unchanged searches after value, authoring, or route edits while preserving validation.
+* `[SettingsOptional]` leaves package settings uncreated until explicitly requested; existing settings assets still use normal authoring routes.
 
 ### Fixed
 * Query-group registration and ECS component inspection exclude transform and Unity object types that cannot be used as component query candidates.

@@ -89,6 +89,7 @@ namespace BovineLabs.Core.Editor.Settings
         {
             var settingsTypes = ReflectionUtility.GetAllImplementationsRootOnly<ISettings, ScriptableObject>()
                 .Where(type => PackageInfo.FindForAssembly(type.Assembly) != null)
+                .Where(type => !type.IsDefined(typeof(SettingsOptionalAttribute), false))
                 .OrderBy(type => type == typeof(EditorSettings) ? 0 : 1)
                 .ThenBy(type => type.FullName, StringComparer.Ordinal);
 

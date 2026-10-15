@@ -59,6 +59,11 @@
             // Create an implementations for all settings without a custom implementation
             foreach (var s in _settingsPanelMap)
             {
+                if (s.Key.IsDefined(typeof(SettingsOptionalAttribute), false) && !EditorSettingsUtility.TryGetSettings(s.Key, out _))
+                {
+                    continue;
+                }
+
                 ISettingsPanel panel;
                 try
                 {
