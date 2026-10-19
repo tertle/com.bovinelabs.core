@@ -154,3 +154,7 @@ They do not define a versioned save format, perform schema migration, normalize 
 - `SetNotBurstCompiled(ref bool)` is discarded by Burst and can detect whether a path is running without Burst.
 
 For assertions and logging, see [Debug](Debug.md).
+
+## Scene camera
+
+The **Scene Camera** overlay in `BovineLabs.Core.Editor` displays the Scene view camera's world-space position and Euler rotation in degrees. Toggle it from the Scene view's **Overlays** menu. Values update as you navigate; type an X, Y, or Z value or drag an axis label to adjust the camera immediately. Position edits preserve rotation and zoom; rotation edits turn the camera in place while preserving position and zoom. Rotation is read-only in 2D mode. Each Scene view controls its own camera.
