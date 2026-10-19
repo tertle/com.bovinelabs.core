@@ -199,7 +199,7 @@ namespace BovineLabs.Core.Graphics
 
             if (!allocSucceeded)
             {
-                Debug.Log("BovineSparseUploader failed to allocate upload memory for AddUpload operation");
+                BLGlobalLogger.LogError("BovineSparseUploader failed to allocate upload memory for AddUpload operation");
                 return;
             }
 
@@ -293,7 +293,7 @@ namespace BovineLabs.Core.Graphics
 
                 if (allocatedCount == 0)
                 {
-                    Debug.Log("BovineSparseUploader failed to allocate upload memory for AddUploads operation");
+                    BLGlobalLogger.LogError("BovineSparseUploader failed to allocate upload memory for AddUploads operation");
                     return;
                 }
 
@@ -375,7 +375,7 @@ namespace BovineLabs.Core.Graphics
 
             if (!allocSucceeded)
             {
-                Debug.Log("BovineSparseUploader failed to allocate upload memory for AddMatrixUpload operation");
+                BLGlobalLogger.LogError("BovineSparseUploader failed to allocate upload memory for AddMatrixUpload operation");
                 return;
             }
 
@@ -475,7 +475,7 @@ namespace BovineLabs.Core.Graphics
 
             if (!allocSucceeded)
             {
-                Debug.Log("BovineSparseUploader failed to allocate upload memory for AddStridedUpload operation");
+                BLGlobalLogger.LogError("BovineSparseUploader failed to allocate upload memory for AddStridedUpload operation");
                 return;
             }
 
