@@ -2,6 +2,9 @@
 
 ## [2.0.0-pre.6] - Unreleased
 
+### Added
+* Scene Camera overlay for viewing and editing the Scene view camera's world position and rotation, with rotation read-only in 2D mode.
+
 ### Changed
 * Unity 7000.0.0a9 or newer is required.
 * Sparse-upload allocation failures are reported as errors through `BLGlobalLogger`.
