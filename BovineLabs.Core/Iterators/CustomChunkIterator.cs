@@ -1,6 +1,7 @@
-﻿namespace BovineLabs.Core.Iterators
+namespace BovineLabs.Core.Iterators
 {
     using System.Runtime.CompilerServices;
+    using BovineLabs.Core.Internal;
     using Unity.Burst.Intrinsics;
     using Unity.Entities;
     using Unity.Mathematics;

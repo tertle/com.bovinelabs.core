@@ -1,4 +1,4 @@
-﻿namespace BovineLabs.Core.Collections
+namespace BovineLabs.Core.Collections
 {
     using System;
     using Unity.Collections.LowLevel.Unsafe;
@@ -19,7 +19,7 @@
         private BlobBuilderArray<int> _buckets;
         private BlobBuilderArray<int> _count;
 
-        internal BlobBuilderHashMapData(int capacity, int bucketCapacityRatio, ref BlobBuilder blobBuilder, ref BlobHashMapData<TKey, TValue> data)
+        internal unsafe BlobBuilderHashMapData(int capacity, int bucketCapacityRatio, ref BlobBuilder blobBuilder, ref BlobHashMapData<TKey, TValue> data)
         {
             var bucketCapacity = math.ceilpow2(capacity * bucketCapacityRatio);
 
@@ -27,16 +27,16 @@
             _bucketCapacityMask = data.BucketCapacityMask = bucketCapacity - 1;
             KeyCapacity = capacity;
 
-            _values = blobBuilder.Allocate(ref data.Values, capacity);
-            _keys = blobBuilder.Allocate(ref data.Keys, capacity);
-            _next = blobBuilder.Allocate(ref data.Next, capacity);
-            _buckets = blobBuilder.Allocate(ref data.Buckets, bucketCapacity);
+            _values = new BlobBuilderArray<TValue>(blobBuilder.Allocate(ref data.Values, capacity).GetUnsafePtr(), capacity);
+            _keys = new BlobBuilderArray<TKey>(blobBuilder.Allocate(ref data.Keys, capacity).GetUnsafePtr(), capacity);
+            _next = new BlobBuilderArray<int>(blobBuilder.Allocate(ref data.Next, capacity).GetUnsafePtr(), capacity);
+            _buckets = new BlobBuilderArray<int>(blobBuilder.Allocate(ref data.Buckets, bucketCapacity).GetUnsafePtr(), bucketCapacity);
 
             // so far the only way I've found to modify the true count on the data itself (without using unsafe code)
             // is by storing it in an array we can still access in the Add method.
             // count is only used in GetKeyArray and GetValueArray to size the array to the true count instead of capacity
             // count and keyCapacity are like
-            _count = blobBuilder.Allocate(ref data.Count, 1);
+            _count = new BlobBuilderArray<int>(blobBuilder.Allocate(ref data.Count, 1).GetUnsafePtr(), 1);
 
             Clear();
         }

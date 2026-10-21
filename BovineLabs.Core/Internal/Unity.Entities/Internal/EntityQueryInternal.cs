@@ -1,4 +1,4 @@
-﻿namespace BovineLabs.Core.Internal
+namespace BovineLabs.Core.Internal
 {
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -12,6 +12,11 @@
 
     public static unsafe class EntityQueryInternal
     {
+        public static bool IsCreated(this EntityQueryMask mask)
+        {
+            return mask.IsCreated();
+        }
+
         public static SharedComponentData GetSharedFilters(this EntityQuery query)
         {
             return UnsafeUtility.As<EntityQueryFilter.SharedComponentData, SharedComponentData>(ref query._GetImpl()->_Filter.Shared);

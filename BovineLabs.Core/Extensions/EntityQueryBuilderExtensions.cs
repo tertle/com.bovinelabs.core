@@ -1,4 +1,4 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
     using Unity.Collections;
     using Unity.Entities;
@@ -21,7 +21,8 @@
                 },
             };
 
-            return entityQueryBuilder.WithAll(ref list);
+            entityQueryBuilder.WithAll(ref list);
+            return entityQueryBuilder;
         }
 
         public static EntityQueryBuilder WithAllRW(this EntityQueryBuilder entityQueryBuilder, ComponentType type)
@@ -40,7 +41,8 @@
                 },
             };
 
-            return entityQueryBuilder.WithAll(ref list);
+            entityQueryBuilder.WithAll(ref list);
+            return entityQueryBuilder;
         }
 
         public static EntityQueryBuilder WithAny(this EntityQueryBuilder entityQueryBuilder, ComponentType type)
@@ -59,7 +61,8 @@
                 },
             };
 
-            return entityQueryBuilder.WithAny(ref list);
+            entityQueryBuilder.WithAny(ref list);
+            return entityQueryBuilder;
         }
 
         public static EntityQueryBuilder WithAnyRW(this EntityQueryBuilder entityQueryBuilder, ComponentType type)
@@ -78,7 +81,8 @@
                 },
             };
 
-            return entityQueryBuilder.WithAny(ref list);
+            entityQueryBuilder.WithAny(ref list);
+            return entityQueryBuilder;
         }
 
         public static EntityQueryBuilder WithNone(this EntityQueryBuilder entityQueryBuilder, ComponentType type)
@@ -89,7 +93,8 @@
             }
 
             var list = new FixedList32Bytes<ComponentType> { type };
-            return entityQueryBuilder.WithNone(ref list);
+            entityQueryBuilder.WithNone(ref list);
+            return entityQueryBuilder;
         }
 
     }

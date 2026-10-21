@@ -1,6 +1,7 @@
-﻿namespace BovineLabs.Core.Editor.Inspectors
+namespace BovineLabs.Core.Editor.Inspectors
 {
     using System;
+    using BovineLabs.Core.Extensions;
     using Unity.Entities;
     using Unity.Entities.UI;
     using UnityEngine.UIElements;
@@ -12,7 +13,7 @@
             var chunk = new TextField
             {
                 label = DisplayName,
-                value = new IntPtr(Target.m_Chunk).ToString(),
+                value = new IntPtr(Target.ChunkIndex()).ToString(),
             };
 
             chunk.SetEnabled(false);

@@ -4,6 +4,7 @@ namespace BovineLabs.Core.Utility
     using BovineLabs.Core.Collections;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Iterators;
+    using BovineLabs.Core.Internal;
     using Unity.Collections;
     using Unity.Entities;
 
@@ -58,7 +59,7 @@ namespace BovineLabs.Core.Utility
             foreach (var component in _enableComponentTypes)
             {
                 // Group members are optional in any particular archetype.
-                if (ChunkDataUtility.GetIndexInTypeArray(chunk.Archetype.Archetype, component.TypeIndex) < 0)
+                if (!chunk.HasComponent(component))
                 {
                     continue;
                 }

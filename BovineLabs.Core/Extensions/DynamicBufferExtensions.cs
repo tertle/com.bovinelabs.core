@@ -1,9 +1,10 @@
-﻿namespace BovineLabs.Core.Extensions
+namespace BovineLabs.Core.Extensions
 {
     using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using BovineLabs.Core.Assertions;
+    using BovineLabs.Core.Internal;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
@@ -48,9 +49,7 @@
         public static void* GetPtr<T>(this DynamicBuffer<T> buffer)
             where T : unmanaged
         {
-            var ptr = UnsafeUtility.As<DynamicBuffer<T>, IntPtr>(ref buffer);
-            var header = (BufferHeader*)ptr;
-            return BufferHeader.GetElementPointer(header);
+            return DynamicBufferAccess.GetPtr(buffer);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -59,8 +58,8 @@
             where T : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(buffer.m_Safety0);
-            AtomicSafetyHandle.CheckReadAndThrow(buffer.m_Safety1);
+            AtomicSafetyHandle.CheckReadAndThrow(DynamicBufferAccess.GetSafety0(buffer));
+            AtomicSafetyHandle.CheckReadAndThrow(DynamicBufferAccess.GetSafety1(buffer));
 #endif
         }
 
@@ -70,9 +69,9 @@
             where T : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(buffer.m_Safety0);
-            AtomicSafetyHandle.CheckWriteAndThrow(buffer.m_Safety1);
-            Check.Assume(buffer.m_IsReadOnly == 0);
+            AtomicSafetyHandle.CheckWriteAndThrow(DynamicBufferAccess.GetSafety0(buffer));
+            AtomicSafetyHandle.CheckWriteAndThrow(DynamicBufferAccess.GetSafety1(buffer));
+            Check.Assume(!DynamicBufferAccess.IsReadOnly(buffer));
 #endif
         }
 

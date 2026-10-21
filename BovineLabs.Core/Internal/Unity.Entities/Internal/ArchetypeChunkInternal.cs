@@ -1,4 +1,4 @@
-﻿namespace BovineLabs.Core.Internal
+namespace BovineLabs.Core.Internal
 {
     using System;
     using System.Diagnostics;
@@ -8,6 +8,11 @@
 
     public static class ArchetypeChunkInternal
     {
+        public static unsafe bool HasComponent(this ArchetypeChunk chunk, ComponentType componentType)
+        {
+            return ChunkDataUtility.GetIndexInTypeArray(chunk.Archetype.Archetype, componentType.TypeIndex) >= 0;
+        }
+
         public static unsafe void SetChangeFilter<T>(this ArchetypeChunk chunk, ref ComponentTypeHandle<T> handle)
             where T : unmanaged, IComponentData
         {

@@ -1,4 +1,4 @@
-﻿namespace BovineLabs.Core.Spatial
+namespace BovineLabs.Core.Spatial
 {
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
@@ -35,7 +35,8 @@
         {
             _transformHandle.Update(ref state);
 
-            positions = state.WorldRewindableAllocator.AllocateNativeArray<SpatialPosition>(_query.CalculateEntityCount());
+            positions = CollectionHelper.CreateNativeArray<SpatialPosition>(
+                _query.CalculateEntityCount(), state.WorldUpdateAllocator, NativeArrayOptions.UninitializedMemory);
 
             var firstEntityIndices = _query.CalculateBaseEntityIndexArrayAsync(state.WorldUpdateAllocator, dependency, out dependency);
 

@@ -1,6 +1,7 @@
 namespace BovineLabs.Core.Extensions
 {
     using BovineLabs.Core.Utility;
+    using EntityQueryBuilderAccess = BovineLabs.Core.Internal.EntityQueryBuilderAccess;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
@@ -47,25 +48,24 @@ namespace BovineLabs.Core.Extensions
         /// </summary>
         public static EntityQueryBuilder WithQueryGroupFilter(this EntityQueryBuilder builder)
         {
-            var data = builder._builderDataPtr;
             var explicitTypes = new UnsafeList<TypeIndex>(16, Allocator.Temp);
-            AddExplicitTypes(data->_all, ref explicitTypes);
-            AddExplicitTypes(data->_any, ref explicitTypes);
-            AddExplicitTypes(data->_none, ref explicitTypes);
-            AddExplicitTypes(data->_disabled, ref explicitTypes);
-            AddExplicitTypes(data->_absent, ref explicitTypes);
-            AddExplicitTypes(data->_present, ref explicitTypes);
+            AddExplicitTypes(EntityQueryBuilderAccess.GetAll(builder), ref explicitTypes);
+            AddExplicitTypes(EntityQueryBuilderAccess.GetAny(builder), ref explicitTypes);
+            AddExplicitTypes(EntityQueryBuilderAccess.GetNone(builder), ref explicitTypes);
+            AddExplicitTypes(EntityQueryBuilderAccess.GetDisabled(builder), ref explicitTypes);
+            AddExplicitTypes(EntityQueryBuilderAccess.GetAbsent(builder), ref explicitTypes);
+            AddExplicitTypes(EntityQueryBuilderAccess.GetPresent(builder), ref explicitTypes);
 
-            IncludeReadOnlyGroups(data->_all, ref explicitTypes);
-            IncludeReadOnlyGroups(data->_any, ref explicitTypes);
-            IncludeReadOnlyGroups(data->_disabled, ref explicitTypes);
-            IncludeReadOnlyGroups(data->_present, ref explicitTypes);
+            IncludeReadOnlyGroups(EntityQueryBuilderAccess.GetAll(builder), ref explicitTypes);
+            IncludeReadOnlyGroups(EntityQueryBuilderAccess.GetAny(builder), ref explicitTypes);
+            IncludeReadOnlyGroups(EntityQueryBuilderAccess.GetDisabled(builder), ref explicitTypes);
+            IncludeReadOnlyGroups(EntityQueryBuilderAccess.GetPresent(builder), ref explicitTypes);
 
-            ExcludeWritableGroups(data->_all, explicitTypes, ref data->_none);
-            ExcludeWritableGroups(data->_any, explicitTypes, ref data->_none);
-            ExcludeWritableGroups(data->_disabled, explicitTypes, ref data->_none);
-            ExcludeWritableGroups(data->_present, explicitTypes, ref data->_none);
-            data->_isFinalized = 0;
+            ExcludeWritableGroups(EntityQueryBuilderAccess.GetAll(builder), explicitTypes, ref EntityQueryBuilderAccess.GetNone(builder));
+            ExcludeWritableGroups(EntityQueryBuilderAccess.GetAny(builder), explicitTypes, ref EntityQueryBuilderAccess.GetNone(builder));
+            ExcludeWritableGroups(EntityQueryBuilderAccess.GetDisabled(builder), explicitTypes, ref EntityQueryBuilderAccess.GetNone(builder));
+            ExcludeWritableGroups(EntityQueryBuilderAccess.GetPresent(builder), explicitTypes, ref EntityQueryBuilderAccess.GetNone(builder));
+            EntityQueryBuilderAccess.Invalidate(builder);
             return builder;
         }
 

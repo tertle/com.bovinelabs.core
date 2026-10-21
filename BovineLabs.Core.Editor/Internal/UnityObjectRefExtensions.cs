@@ -1,5 +1,6 @@
-﻿namespace BovineLabs.Core.Editor.Internal
+namespace BovineLabs.Core.Editor.Internal
 {
+    using BovineLabs.Core.Internal;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using Unity.Entities.Serialization;
@@ -11,7 +12,7 @@
         public static UntypedWeakReferenceId ToUntypedWeakReferenceId<T>(this UnityObjectRef<T> unityObjectRef)
             where T : Object
         {
-            var guid = GlobalObjectId.GetGlobalObjectIdSlow(unityObjectRef.Id.entityId);
+            var guid = GlobalObjectId.GetGlobalObjectIdSlow(unityObjectRef.GetEntityId());
 
             var rgGuid = UnsafeUtility.As<GlobalObjectId, RuntimeGlobalObjectId>(ref guid);
             return new UntypedWeakReferenceId(rgGuid, WeakReferenceGenerationType.UnityObject);
