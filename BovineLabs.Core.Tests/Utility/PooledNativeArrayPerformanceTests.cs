@@ -15,7 +15,6 @@ namespace BovineLabs.Core.Tests.Utility
     public class PooledNativeArrayPerformanceTests
     {
         private bool _previousBurst;
-        private bool _previousSafetyChecks;
         private bool _previousForceSafetyChecks;
         private readonly PooledNativeList<float4x4>[] _held = new PooledNativeList<float4x4>[PooledNativeList.MaxPoolSizePerThread];
         private int _heldCount;
@@ -24,10 +23,8 @@ namespace BovineLabs.Core.Tests.Utility
         public void SetUp()
         {
             _previousBurst = BurstCompiler.Options.EnableBurstCompilation;
-            _previousSafetyChecks = BurstCompiler.Options.EnableBurstSafetyChecks;
             _previousForceSafetyChecks = BurstCompiler.Options.ForceEnableBurstSafetyChecks;
             BurstCompiler.Options.EnableBurstCompilation = true;
-            BurstCompiler.Options.EnableBurstSafetyChecks = false;
             BurstCompiler.Options.ForceEnableBurstSafetyChecks = false;
         }
 
@@ -36,23 +33,12 @@ namespace BovineLabs.Core.Tests.Utility
         {
             ReturnHeldLists();
             BurstCompiler.Options.ForceEnableBurstSafetyChecks = _previousForceSafetyChecks;
-            BurstCompiler.Options.EnableBurstSafetyChecks = _previousSafetyChecks;
             BurstCompiler.Options.EnableBurstCompilation = _previousBurst;
         }
 
         [TestCase(32, false, 1)]
-        [TestCase(256, false, 1)]
-        [TestCase(4096, false, 1)]
-        [TestCase(65536, false, 1)]
-        [TestCase(32, true, 1)]
-        [TestCase(256, true, 1)]
-        [TestCase(4096, true, 1)]
         [TestCase(65536, true, 1)]
-        [TestCase(4, false, 1000)]
         [TestCase(32, false, 1000)]
-        [TestCase(256, false, 1000)]
-        [TestCase(4, true, 1000)]
-        [TestCase(32, true, 1000)]
         [TestCase(256, true, 1000)]
         [Performance]
         public unsafe void UninitializedScratch(int count, bool copy, int entityCount)

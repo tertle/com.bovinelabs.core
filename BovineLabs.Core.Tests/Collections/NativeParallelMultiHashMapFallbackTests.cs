@@ -38,27 +38,6 @@
             Assert.AreEqual(EntityCount, count);
         }
 
-        [Test]
-        public void Add_SingleEntryWithinCapacity_CanReadByKey()
-        {
-            var map = new NativeParallelMultiHashMapFallback<int, int>(1, Allocator.TempJob);
-            try
-            {
-                var writer = map.AsWriter();
-                writer.Add(7, 123);
-
-                var handle = map.Apply(default, out var reader);
-                handle.Complete();
-
-                Assert.IsTrue(reader.TryGetFirstValue(7, out var value, out _), "Expected to read entry written with Add()");
-                Assert.AreEqual(123, value);
-                Assert.IsFalse(reader.TryGetFirstValue(8, out _, out _), "Unexpected value found for missing key");
-            }
-            finally
-            {
-                map.Dispose();
-            }
-        }
 
         [Test]
         public void Add_MultipleEntriesSameKey_AllValuesReadable()

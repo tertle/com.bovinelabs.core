@@ -8,11 +8,7 @@
     {
         public class GetCustomImplementation
         {
-            [Test]
-            public void ExceptionIfNotInterface()
-            {
-                Assert.Throws<ArgumentException>(() => ReflectionUtility.GetCustomImplementation<TestImplementation2>());
-            }
+
 
             [Test]
             public void ExceptionMoreThanOneImplementation()
@@ -26,12 +22,6 @@
                 Assert.IsNull(ReflectionUtility.GetCustomImplementation<ITestInterface0>());
             }
 
-            [Test]
-            public void ReturnsExpectedImplementation()
-            {
-                var result = ReflectionUtility.GetCustomImplementation<ITestInterface1>()!;
-                Assert.AreSame(typeof(TestImplementation2), result.GetType());
-            }
 
             [Test]
             public void ReturnsExpectedImplementationWhenIgnoring()

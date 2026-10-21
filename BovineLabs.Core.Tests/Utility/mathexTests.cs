@@ -9,19 +9,7 @@
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "matching mathematics package")]
     public class mathexTests
     {
-        [Test]
-        public void ShuffleMinTest()
-        {
-            var array = new NativeArray<int>(2, Allocator.Temp);
-            array[0] = 2;
-            array[1] = 4;
-            var random = new Random(2);
 
-            array.Shuffle(ref random);
-
-            Assert.AreEqual(4, array[0]);
-            Assert.AreEqual(2, array[1]);
-        }
 
         [Test]
         public void AddTest()

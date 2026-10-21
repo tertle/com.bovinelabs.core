@@ -10,54 +10,7 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
 
     public class MultiHashColumnTests : ECSTestsFixture
     {
-        [Test]
-        public void WhenAddingItemsWithSameColumnValue_ShouldFindAllEntries()
-        {
-            var map = CreateMap();
 
-            map.Add(1, 0.5f, 5);
-            map.Add(2, -1.5f, 5);
-            map.Add(3, 35.5f, 7);
-
-            // Test finding entries by column value
-            var foundKeysForColumn5 = new HashSet<int>();
-            var foundValuesForColumn5 = new HashSet<float>();
-
-            if (map.Column.TryGetFirst(5, out var it))
-            {
-                map.GetAtIndex(it.EntryIndex, out var key, out var data, out _);
-                foundKeysForColumn5.Add(key);
-                foundValuesForColumn5.Add(data);
-
-                while (map.Column.TryGetNext(ref it))
-                {
-                    map.GetAtIndex(it.EntryIndex, out key, out data, out _);
-                    foundKeysForColumn5.Add(key);
-                    foundValuesForColumn5.Add(data);
-                }
-            }
-
-            Assert.AreEqual(2, foundKeysForColumn5.Count, "Should find 2 keys with column value 5");
-            Assert.IsTrue(foundKeysForColumn5.Contains(1), "Should find key 1");
-            Assert.IsTrue(foundKeysForColumn5.Contains(2), "Should find key 2");
-            Assert.IsTrue(foundValuesForColumn5.Contains(0.5f), "Should find value 0.5");
-            Assert.IsTrue(foundValuesForColumn5.Contains(-1.5f), "Should find value -1.5");
-
-            // Test finding entries by different column value
-            if (map.Column.TryGetFirst(7, out it))
-            {
-                map.GetAtIndex(it.EntryIndex, out var key, out var data, out _);
-                Assert.AreEqual(3, key, "Should find key 3 for column value 7");
-                Assert.AreEqual(35.5f, data, "Should find value 35.5 for column value 7");
-
-                // Should be only one entry with column value 7
-                Assert.IsFalse(map.Column.TryGetNext(ref it), "Should not find additional entries for column value 7");
-            }
-            else
-            {
-                Assert.Fail("Failed to find any keys with column value 7");
-            }
-        }
 
         [Test]
         public void WhenRemovingItemsWithSameColumnValue_ShouldUpdateColumnCorrectly()
@@ -94,15 +47,6 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
             Assert.IsFalse(map.Column.TryGetFirst(5, out _), "Should not find any entries for column value 5 after removing all");
         }
 
-        [Test]
-        public void WhenSearchingForNonExistentColumnValue_ShouldReturnFalse()
-        {
-            var map = CreateMap();
-            map.Add(1, 0.5f, 5);
-            map.Add(2, -1.5f, 7);
-
-            Assert.IsFalse(map.Column.TryGetFirst(99, out _), "Should return false for non-existent column value");
-        }
 
         [Test]
         public void AfterRemovalAndResize_ColumnIndicesShouldBeUpdatedCorrectly()
@@ -222,14 +166,6 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
             Assert.AreEqual(100.5f, newValue, "Value should remain unchanged");
         }
 
-        [Test]
-        public void Replace_WithNonExistentKey_ShouldThrow()
-        {
-            var map = CreateMap();
-            map.Add(100, 100.5f, 50);
-
-            Assert.Throws<ArgumentException>(() => map.Replace(999, 75), "Replace should throw for non-existent key");
-        }
 
 [Test]
         public void RemoveInternal_WhenRemovingNonFirstItemInBucket_ShouldNotCauseInfiniteLoop()

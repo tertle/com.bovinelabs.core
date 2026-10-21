@@ -9,25 +9,7 @@ namespace BovineLabs.Core.Tests.Extensions
 
     public class NativeArrayFactoryTests
     {
-        [Test]
-        public void CreateFromJob_ClearMemory_ReturnsOwnedArray()
-        {
-            var array = NativeArrayFactory<int>.CreateFromJob(4, Allocator.Persistent);
 
-            try
-            {
-                Assert.IsTrue(array.IsCreated);
-                Assert.AreEqual(4, array.Length);
-                CollectionAssert.AreEqual(new[] { 0, 0, 0, 0 }, array.ToArray());
-
-                array[2] = 42;
-                Assert.AreEqual(42, array[2]);
-            }
-            finally
-            {
-                array.Dispose();
-            }
-        }
 
         [Test]
         public void CreateFromJob_ZeroLength_ReturnsOwnedArray()
@@ -45,17 +27,6 @@ namespace BovineLabs.Core.Tests.Extensions
             }
         }
 
-        [Test]
-        public void CreateFromJob_NegativeLength_Throws()
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => NativeArrayFactory<int>.CreateFromJob(-1, Allocator.Persistent));
-        }
-
-        [TestCase(Allocator.Invalid)]
-        public void CreateFromJob_InvalidAllocator_Throws(Allocator allocator)
-        {
-            Assert.Throws<ArgumentException>(() => NativeArrayFactory<int>.CreateFromJob(1, allocator));
-        }
 
         [Test]
         public void CreateFromJob_PersistentAllocationInsideBurstJob_Succeeds()

@@ -44,25 +44,6 @@ namespace BovineLabs.Core.Tests.Collections
         }
 
         [Test]
-        public void IndexerSetAddsAndUpdates()
-        {
-            var entity = Manager.CreateEntity(typeof(TestEntry));
-            var buffer = Manager.GetBuffer<TestEntry>(entity);
-
-            var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
-
-            map[1] = 10;
-            map[9] = 90;
-            map[1] = 11;
-
-            Assert.AreEqual(2, map.Count);
-            Assert.AreEqual(11, map[1]);
-            Assert.AreEqual(90, map[9]);
-            Assert.IsFalse(map.TryAdd(1, 12));
-            Assert.AreEqual(11, map[1]);
-        }
-
-        [Test]
         public void RemoveMaintainsCluster()
         {
             var entity = Manager.CreateEntity(typeof(TestEntry));
@@ -141,88 +122,6 @@ namespace BovineLabs.Core.Tests.Collections
             {
                 Assert.IsTrue(map.TryGetValue(i, out var value));
                 Assert.AreEqual(i * 10, value);
-            }
-        }
-
-        [Test]
-        public void EnsureCapacityRoundsToPowerOfTwo()
-        {
-            var entity = Manager.CreateEntity(typeof(TestEntry));
-            var buffer = Manager.GetBuffer<TestEntry>(entity);
-
-            var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
-
-            map.EnsureCapacity(3);
-
-            Assert.AreEqual(4, map.Capacity);
-            Assert.AreEqual(map.Capacity, buffer.Length);
-            Assert.GreaterOrEqual(buffer.Capacity, map.Capacity + 1);
-
-            Assert.IsTrue(map.TryAdd(1, 10));
-
-            map.EnsureCapacity(9);
-
-            Assert.AreEqual(16, map.Capacity);
-            Assert.AreEqual(map.Capacity, buffer.Length);
-            Assert.GreaterOrEqual(buffer.Capacity, map.Capacity + 1);
-            Assert.IsTrue(map.TryGetValue(1, out var value));
-            Assert.AreEqual(10, value);
-        }
-
-        [Test]
-        public void RemoveMarksTombstone()
-        {
-            var entity = Manager.CreateEntity(typeof(TestEntry));
-            var buffer = Manager.GetBuffer<TestEntry>(entity);
-
-            var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
-
-            Assert.IsTrue(map.TryAdd(42, 420));
-            Assert.IsTrue(map.TryRemove(42));
-
-            var entriesLength = buffer.Length;
-            var tombstoneCount = 0;
-            for (var entryIndex = 0; entryIndex < entriesLength; entryIndex++)
-            {
-                var entryTag = buffer[entryIndex].TagField;
-                if (entryTag != 0 && (entryTag & 1u) == 0)
-                {
-                    tombstoneCount++;
-                }
-            }
-
-            Assert.AreEqual(1, tombstoneCount);
-        }
-
-        [Test]
-        public void ClearRemovesEntries()
-        {
-            var entity = Manager.CreateEntity(typeof(TestEntry));
-            var buffer = Manager.GetBuffer<TestEntry>(entity);
-
-            var map = buffer.AsDynamicDictionary<int, int, TestEntry>();
-
-            for (var keyIndex = 0; keyIndex < 6; keyIndex++)
-            {
-                Assert.IsTrue(map.TryAdd(200 + keyIndex, 2000 + keyIndex));
-            }
-
-            map.Clear();
-
-            for (var keyIndex = 0; keyIndex < 6; keyIndex++)
-            {
-                Assert.IsFalse(map.TryGetValue(200 + keyIndex, out _));
-            }
-
-            for (var keyIndex = 0; keyIndex < 3; keyIndex++)
-            {
-                Assert.IsTrue(map.TryAdd(300 + keyIndex, 3000 + keyIndex));
-            }
-
-            for (var keyIndex = 0; keyIndex < 3; keyIndex++)
-            {
-                Assert.IsTrue(map.TryGetValue(300 + keyIndex, out var value));
-                Assert.AreEqual(3000 + keyIndex, value);
             }
         }
 

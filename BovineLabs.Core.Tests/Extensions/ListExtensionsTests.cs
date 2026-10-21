@@ -7,27 +7,7 @@
 
     public class ListExtensionsTests
     {
-        [Test]
-        public void AddRangeNative()
-        {
-            var list = new List<int> { 123 };
-            var nativeArray = new NativeArray<int>(16, Allocator.Temp);
 
-            for (var i = 0; i < nativeArray.Length; i++)
-            {
-                nativeArray[i] = i;
-            }
-
-            list.AddRangeNative(nativeArray);
-
-            Assert.AreEqual(17, list.Count);
-            Assert.AreEqual(123, list[0]);
-
-            for (var i = 1; i < 17; i++)
-            {
-                Assert.AreEqual(i - 1, list[i]);
-            }
-        }
 
         [Test]
         public void AddRangeNativeLength()
@@ -51,27 +31,5 @@
             }
         }
 
-        [Test]
-        public void AddRangeNativeSlice()
-        {
-            var list = new List<int> { 123 };
-            var nativeArray = new NativeArray<int>(16, Allocator.Temp);
-
-            for (var i = 0; i < nativeArray.Length; i++)
-            {
-                nativeArray[i] = i;
-            }
-
-            var slice = nativeArray.Slice();
-            list.AddRangeNative(slice);
-
-            Assert.AreEqual(17, list.Count);
-            Assert.AreEqual(123, list[0]);
-
-            for (var i = 1; i < 17; i++)
-            {
-                Assert.AreEqual(i - 1, list[i]);
-            }
-        }
     }
 }

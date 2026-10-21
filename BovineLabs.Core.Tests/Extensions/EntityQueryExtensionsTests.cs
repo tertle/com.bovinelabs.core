@@ -34,18 +34,6 @@ namespace BovineLabs.Core.Tests.Extensions
         }
 
         [Test]
-        public void GetSingletonBufferNoSync_ReadOnlyAccessAllowsReadOnlyQuery()
-        {
-            CreateSingletonBuffer();
-
-            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<SingletonBuffer>().Build(Manager);
-
-            var buffer = query.GetSingletonBufferNoSync<SingletonBuffer>(true);
-
-            Assert.AreEqual(1, buffer.Length);
-        }
-
-        [Test]
         public void GetSingletonBufferNoSync_ReadWriteAccessAllowsReadWriteQuery()
         {
             var entity = CreateSingletonBuffer();

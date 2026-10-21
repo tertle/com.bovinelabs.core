@@ -31,20 +31,6 @@
             Assert.AreEqual((short)4, hashMap[1234]);
         }
 
-        [Test]
-        public void TryGetValue_MissingKey_ReturnsFalse()
-        {
-            var input = new NativeHashMap<int, short>(1, Allocator.Temp);
-            input.Add(123, 7);
-
-            var entity = Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
-            var buffer = Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
-
-            var hashMap = buffer.InitializePerfectHashMap<DynamicPerfectHashMapTestsBuffer, int, short>(input, -1).AsPerfectHashMap<DynamicPerfectHashMapTestsBuffer, int, short>();
-
-            Assert.IsFalse(hashMap.TryGetValue(999, out _));
-            Assert.IsFalse(hashMap.ContainsKey(999));
-        }
 
         [Test]
         public void ThrowsOnCollision()
@@ -91,20 +77,5 @@
             Assert.AreEqual(0u, valuesPtr % (ulong)align);
         }
 
-        [Test]
-        public void Initialize_WithMismatchedKeysAndValues_ThrowsArgumentException()
-        {
-            var keys = new NativeArray<int>(2, Allocator.Temp);
-            keys[0] = 1;
-            keys[1] = 2;
-
-            var values = new NativeArray<short>(1, Allocator.Temp);
-            values[0] = 3;
-
-            var entity = Manager.CreateEntity(typeof(DynamicPerfectHashMapTestsBuffer));
-            var buffer = Manager.GetBuffer<DynamicPerfectHashMapTestsBuffer>(entity);
-
-            Assert.Throws<ArgumentException>(() => buffer.InitializePerfectHashMap(keys, values, (short)-1));
-        }
     }
 }

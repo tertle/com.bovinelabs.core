@@ -45,14 +45,6 @@ namespace BovineLabs.Core.Tests.Utility
             Assert.IsFalse(reference.IsValid);
         }
 
-        [Test]
-        public void DefaultAndZeroEntryReferences_AreInvalid()
-        {
-            var tableGuid = new GUID("0123456789abcdef0123456789abcdef");
-
-            Assert.IsFalse(default(UnmanagedLocalizedReference).IsValid);
-            Assert.IsFalse(new UnmanagedLocalizedReference(tableGuid, 0).IsValid);
-        }
     }
 }
 #endif

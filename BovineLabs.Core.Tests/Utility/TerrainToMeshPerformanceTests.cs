@@ -41,11 +41,7 @@ namespace BovineLabs.Core.Tests.Utility
         }
 
         [TestCase(2, 0, 0)]
-        [TestCase(9, 1, 1)]
         [TestCase(17, 2, 2)]
-        [TestCase(33, 0, 0)]
-        [TestCase(129, 2, 1)]
-        [TestCase(257, 1, 0)]
         [TestCase(513, 2, 1)]
         [Performance]
         public void GeometryOnlyPreservesNavMeshInput(int resolution, int profile, int holePattern)

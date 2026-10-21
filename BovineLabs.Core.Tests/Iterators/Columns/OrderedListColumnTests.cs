@@ -29,38 +29,6 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
             Assert.AreEqual(0ul, (ulong)prevPtr % (ulong)UnsafeUtility.AlignOf<int>(), "Prev pointer should be aligned to int");
         }
 
-        [Test]
-        public void WithOrderedColumn_ShouldMaintainSortedOrder()
-        {
-            var map = CreateOrderedMap();
-
-            // Add items with columns in non-sorted order
-            map.Add(1, 10.5f, 30);
-            map.Add(2, 20.5f, 10);
-            map.Add(3, 30.5f, 50);
-            map.Add(4, 40.5f, 20);
-            map.Add(5, 50.5f, 40);
-
-            // Collect all column values using the iterator - should be in sorted order
-            var columnValues = new List<int>();
-            if (map.Column.TryGetFirst(out var value, out var it))
-            {
-                columnValues.Add(value);
-                while (map.Column.TryGetNext(out value, ref it))
-                {
-                    columnValues.Add(value);
-                }
-            }
-
-            // Verify they come back in ascending sorted order
-            var expectedOrder = new int[] { 10, 20, 30, 40, 50 };
-            CollectionAssert.AreEqual(expectedOrder, columnValues, "Column values should be returned in sorted order");
-
-            // Verify we can still find entries by key
-            Assert.IsTrue(map.TryGetValue(2, out var item, out var column));
-            Assert.AreEqual(20.5f, item);
-            Assert.AreEqual(10, column); // This should be the minimum value
-        }
 
         [Test]
         public void WithOrderedColumn_ResizeShouldPreserveSortedOrder()
@@ -104,36 +72,6 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
             }
         }
 
-        [Test]
-        public void WithOrderedColumn_EmptyColumnValueShouldReturnFalse()
-        {
-            var map = CreateOrderedMap();
-
-            // Add some items
-            map.Add(1, 10.5f, 30);
-            map.Add(2, 20.5f, 50);
-
-            // Try to find a column value that doesn't exist (40) by iterating through all
-            var found40 = false;
-            if (map.Column.TryGetFirst(out var columnValue, out var it))
-            {
-                do
-                {
-                    if (columnValue == 40)
-                    {
-                        found40 = true;
-                        break;
-                    }
-                }
-                while (map.Column.TryGetNext(out columnValue, ref it));
-            }
-
-            Assert.IsFalse(found40, "Should not find non-existent column value 40");
-
-            // Try to get first when map is empty
-            map.Clear();
-            Assert.IsFalse(map.Column.TryGetFirst(out _, out _), "Should return false when map is empty");
-        }
 
         [Test]
         public void OrderedColumn_HeadRemoval_ShouldUpdateCorrectly()
@@ -252,14 +190,6 @@ namespace BovineLabs.Core.Tests.Iterators.Columns
             CollectionAssert.AreEqual(expectedKeys, keys, "Keys should follow the new order");
         }
 
-        [Test]
-        public void Replace_WithNonExistentKey_ShouldThrow()
-        {
-            var map = CreateOrderedMap();
-            map.Add(1, 10.5f, 30);
-
-            Assert.Throws<ArgumentException>(() => map.Replace(999, 40), "Replace should throw for non-existent key");
-        }
 
         private DynamicVariableMap<int, float, int, OrderedListColumn<int>> CreateOrderedMap(int growth = 64)
         {

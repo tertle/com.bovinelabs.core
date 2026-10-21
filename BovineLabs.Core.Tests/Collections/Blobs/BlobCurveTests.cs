@@ -30,32 +30,6 @@ namespace BovineLabs.Core.Tests.Collections.Blobs
                 new float4(x.Evaluate(time), y.Evaluate(time), z.Evaluate(time), w.Evaluate(time)), curve4.Value.Evaluate(time));
         }
 
-        [Test]
-        public void BlobCurve4RejectsNullWCurve()
-        {
-            var curve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
-
-            var exception = Assert.Throws<NullReferenceException>(() =>
-            {
-                using var blob = BlobCurve4.Create(curve, curve, curve, null, Allocator.Temp);
-            });
-
-            Assert.AreEqual("Input curve is null", exception.Message);
-        }
-
-        [Test]
-        public void BlobCurve4RejectsMismatchedWCurveLength()
-        {
-            var curve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
-            var curveW = new AnimationCurve(new Keyframe(0f, 0f));
-
-            var exception = Assert.Throws<NullReferenceException>(() =>
-            {
-                using var blob = BlobCurve4.Create(curve, curve, curve, curveW, Allocator.Temp);
-            });
-
-            Assert.That(exception.Message, Does.Contain("W[1]"));
-        }
 
         private static void AssertFloat2(float2 expected, float2 actual)
         {

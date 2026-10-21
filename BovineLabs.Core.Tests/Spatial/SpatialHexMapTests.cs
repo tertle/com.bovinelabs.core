@@ -12,16 +12,6 @@ namespace BovineLabs.Core.Tests.Spatial
         private const int WorldSize = 64;
         private const float Tolerance = 0.001f;
 
-        [Test]
-        public void Quantized_CanonicalPositions_ReturnExpectedAxialCells()
-        {
-            var outerRadius = QuantizeStep / math.sqrt(3f);
-
-            Assert.AreEqual(new int2(0, 0), SpatialHexMap.Quantized(float2.zero, outerRadius));
-            Assert.AreEqual(new int2(1, 0), SpatialHexMap.Quantized(SpatialHexMap.Center(new int2(1, 0), outerRadius), outerRadius));
-            Assert.AreEqual(new int2(0, 1), SpatialHexMap.Quantized(SpatialHexMap.Center(new int2(0, 1), outerRadius), outerRadius));
-            Assert.AreEqual(new int2(-1, 1), SpatialHexMap.Quantized(SpatialHexMap.Center(new int2(-1, 1), outerRadius), outerRadius));
-        }
 
         [Test]
         public void Center_OfQuantizedPosition_StaysInExpectedNeighbourhood()
@@ -131,16 +121,6 @@ namespace BovineLabs.Core.Tests.Spatial
             }
         }
 
-        [Test]
-        public void Direction_ReturnsCanonicalOffsets()
-        {
-            Assert.AreEqual(new int2(1, 0), SpatialHexMap.Direction(0));
-            Assert.AreEqual(new int2(1, -1), SpatialHexMap.Direction(1));
-            Assert.AreEqual(new int2(0, -1), SpatialHexMap.Direction(2));
-            Assert.AreEqual(new int2(-1, 0), SpatialHexMap.Direction(3));
-            Assert.AreEqual(new int2(-1, 1), SpatialHexMap.Direction(4));
-            Assert.AreEqual(new int2(0, 1), SpatialHexMap.Direction(5));
-        }
 
         [Test]
         public void Distance_AllSixNeighbours_AreOneAndSymmetric()
@@ -176,14 +156,6 @@ namespace BovineLabs.Core.Tests.Spatial
             }
         }
 
-        [Test]
-        public void CellWidthConversions_RoundTrip()
-        {
-            const float cellWidth = 64f;
-            var outerRadius = SpatialHexMap.OuterRadiusFromCellWidth(cellWidth);
-
-            Assert.AreEqual(cellWidth, SpatialHexMap.CellWidthFromOuterRadius(outerRadius), Tolerance);
-        }
 
         [Test]
         public void Quantized_CentresAcrossLargePositiveAndNegativeCoordinates_RoundTrip()

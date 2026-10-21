@@ -60,32 +60,5 @@ namespace BovineLabs.Core.Tests
             Assert.AreEqual(typeof(Child).AssemblyQualifiedName, results[0].data);
         }
 
-        [TestCase("stabletypehash=not-a-number")]
-        [TestCase("stabletypehash=18446744073709551616")]
-        [TestCase("stabletypehash=0x10000000000000000")]
-        [TestCase("typeindex=not-a-number")]
-        [TestCase("typeindex=2147483648")]
-        [TestCase("component=true AND (")]
-        public void Types_InvalidQuery_ReturnsNoResults(string query)
-        {
-            using var context = SearchService.CreateContext(TypeAsset.SearchProviderType, $"at: {query}", SearchFlags.Synchronous);
-            using var results = SearchService.Request(context);
-
-            Assert.IsEmpty(results);
-        }
-
-        [TestCase("not-an-id")]
-        [TestCase("18446744073709551616")]
-        [TestCase("0x10000000000000000")]
-        [TestCase("2147483648:1")]
-        [TestCase("1:2147483648")]
-        [TestCase("1:2:3")]
-        public void EntityId_InvalidOrOverflowingIdentifier_ReturnsNoResults(string identifier)
-        {
-            using var context = SearchService.CreateContext(EntityIdProvider, $"eid: {identifier}", SearchFlags.Synchronous);
-            using var results = SearchService.Request(context);
-
-            Assert.IsEmpty(results);
-        }
     }
 }

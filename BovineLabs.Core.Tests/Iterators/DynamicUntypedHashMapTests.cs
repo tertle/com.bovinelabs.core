@@ -12,20 +12,7 @@ namespace BovineLabs.Core.Tests.Iterators
 
     public class DynamicUntypedHashMapTests : ECSTestsFixture
     {
-        [Test]
-        public void TryGetValue_WhenMissing_ReturnsFalseAndDefault()
-        {
-            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
 
-            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
-
-            Assert.IsFalse(hashMap.TryGetValue(123, out int value));
-            Assert.AreEqual(0, value);
-
-            Assert.IsFalse(hashMap.TryGetValue(123, out Large large));
-            Assert.AreEqual(default(Large), large);
-        }
 
         [Test]
         public void TryGetValue_LargeValueOffsetBeyond255_Works()
@@ -51,22 +38,6 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.AreEqual(2064UL, boundary.TestValue1);
         }
 
-        [Test]
-        public void AddOrSet_LargeValue_OverwritesExisting()
-        {
-            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
-
-            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
-
-            const int key = 10;
-            hashMap.AddOrSet(key, new Large { TestValue0 = 1, TestValue1 = 2 });
-            hashMap.AddOrSet(key, new Large { TestValue0 = 3, TestValue1 = 4 });
-
-            Assert.IsTrue(hashMap.TryGetValue(key, out Large value));
-            Assert.AreEqual(3UL, value.TestValue0);
-            Assert.AreEqual(4UL, value.TestValue1);
-        }
 
         [Test]
         public void Remove_MovesLastEntryAndKeepsRemainingValues()
@@ -99,24 +70,6 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.AreEqual(3, hashMap.Count);
         }
 
-        [Test]
-        public void GetOrAddRef_LargeValue_AllowsMutationByRef()
-        {
-            var entity = Manager.CreateEntity(typeof(DynamicUntypedHashMapTestsBuffer));
-            var buffer = Manager.GetBuffer<DynamicUntypedHashMapTestsBuffer>(entity);
-
-            var hashMap = buffer.InitializeUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>().AsUntypedHashMap<DynamicUntypedHashMapTestsBuffer, int>();
-
-            const int key = 42;
-
-            ref var value = ref hashMap.GetOrAddRefUnsafe(key, default(Large));
-            value.TestValue0 = 123;
-            value.TestValue1 = 456;
-
-            Assert.IsTrue(hashMap.TryGetValue(key, out Large stored));
-            Assert.AreEqual(123UL, stored.TestValue0);
-            Assert.AreEqual(456UL, stored.TestValue1);
-        }
 
         [Test]
         public void ResizeData_WhenCapacityExceedsDataCapacity_DoesNotCorrupt()

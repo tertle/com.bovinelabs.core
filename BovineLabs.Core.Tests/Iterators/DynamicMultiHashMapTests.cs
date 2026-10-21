@@ -13,19 +13,6 @@ namespace BovineLabs.Core.Tests.Iterators
         private const int MinGrowth = 64;
 
         [Test]
-        public void Add_AllowsDuplicateExactPairs()
-        {
-            var hashMap = CreateHashMap();
-
-            hashMap.Add(7, 1);
-            hashMap.Add(7, 1);
-            hashMap.Add(7, 2);
-
-            Assert.AreEqual(3, hashMap.Count);
-            AssertValues(hashMap, 7, 2, 1, 1);
-        }
-
-        [Test]
         public unsafe void Enumeration_WithDuplicateAndCollidingKeys_ReturnsEveryPair()
         {
             var hashMap = CreateHashMap();

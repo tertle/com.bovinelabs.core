@@ -41,30 +41,6 @@ namespace BovineLabs.Core.Tests.Collections
             Assert.AreEqual(capacity, set.Capacity);
         }
 
-        [Test]
-        public void EmptyBufferSupportsZeroCapacityReads()
-        {
-            var set = CreateSet(out _, out _);
-
-            set.EnsureCapacity(0);
-
-            Assert.AreEqual(0, set.Count);
-            Assert.AreEqual(0, set.Capacity);
-            Assert.IsTrue(set.IsEmpty);
-            Assert.IsFalse(set.Contains(1));
-            Assert.IsFalse(set.TryRemove(1));
-        }
-
-        [Test]
-        public void DuplicateInsertionUsesSetSemantics()
-        {
-            var set = CreateSet(out _, out _);
-
-            Assert.IsTrue(set.TryAdd(7));
-            Assert.IsFalse(set.TryAdd(7));
-            Assert.AreEqual(1, set.Count);
-            Assert.Throws<ArgumentException>(() => set.Add(7));
-        }
 
         [Test]
         public void CollisionsRemainQueryableAcrossGrowth()

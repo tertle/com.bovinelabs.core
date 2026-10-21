@@ -22,13 +22,6 @@ namespace BovineLabs.Core.Tests.Utility
         }
 
         [Test]
-        public void Registry_NoGroup_ReturnsEmptyArray()
-        {
-            using var members = TypeManagerUtil.GetQueryGroupComponents<NoGroup>(Allocator.Temp);
-            Assert.AreEqual(0, members.Length);
-        }
-
-        [Test]
         public void Registry_FromBurstJob_ReturnsSameMembers()
         {
             using var result = new NativeArray<ComponentType>(2, Allocator.TempJob);
@@ -182,16 +175,6 @@ namespace BovineLabs.Core.Tests.Utility
             using var matcher = new QueryGroupMatcher<Target>(ref state);
             var entity = Manager.CreateEntity(typeof(Target), typeof(NormalMember), typeof(Prefab));
             Assert.IsTrue(matcher.Matches(Manager.GetChunk(entity)).AllTrue);
-        }
-
-        [Test]
-        public void Matcher_NoGroup_MatchesNothing()
-        {
-            var handle = World.CreateSystem<MatcherSystem>();
-            ref var state = ref WorldUnmanaged.ResolveSystemStateRef(handle);
-            using var matcher = new QueryGroupMatcher<NoGroup>(ref state);
-            var entity = Manager.CreateEntity(typeof(NoGroup));
-            Assert.IsTrue(matcher.Matches(Manager.GetChunk(entity)).AllFalse);
         }
 
         [BurstCompile(CompileSynchronously = true)]

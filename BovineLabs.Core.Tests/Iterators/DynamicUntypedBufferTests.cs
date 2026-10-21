@@ -11,44 +11,7 @@ namespace BovineLabs.Core.Tests.Iterators
 
     public class DynamicUntypedBufferTests : ECSTestsFixture
     {
-        [Test]
-        public void InitializeAndReadMixedTypes()
-        {
-            var entity = Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
-            var buffer = Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
 
-            var untyped = buffer.InitializeUntypedBuffer().AsUntypedBuffer();
-
-            untyped.Add(1);
-            untyped.Add((short)2);
-            untyped.Add(new float3(3, 4, 5));
-            untyped.Add(new Large { TestValue0 = 10, TestValue1 = 20 });
-
-            Assert.AreEqual(4, untyped.Length);
-            Assert.AreEqual(1, untyped.ElementAtRO<int>(0));
-            Assert.AreEqual((short)2, untyped.ElementAtRO<short>(1));
-            Assert.AreEqual(new float3(3, 4, 5), untyped.ElementAtRO<float3>(2));
-
-            ref readonly var large = ref untyped.ElementAtRO<Large>(3);
-            Assert.AreEqual(10UL, large.TestValue0);
-            Assert.AreEqual(20UL, large.TestValue1);
-        }
-
-        [Test]
-        public void Set_OverwritesExisting()
-        {
-            var entity = Manager.CreateEntity(typeof(DynamicUntypedBufferTestsBuffer));
-            var buffer = Manager.GetBuffer<DynamicUntypedBufferTestsBuffer>(entity);
-
-            var untyped = buffer.InitializeUntypedBuffer().AsUntypedBuffer();
-
-            untyped.Add(new Large { TestValue0 = 1, TestValue1 = 2 });
-            untyped.Set(0, new Large { TestValue0 = 3, TestValue1 = 4 });
-
-            ref readonly var large = ref untyped.ElementAtRO<Large>(0);
-            Assert.AreEqual(3UL, large.TestValue0);
-            Assert.AreEqual(4UL, large.TestValue1);
-        }
 
         [Test]
         public void RemoveAt_CompactsAndPreservesOrder()

@@ -14,16 +14,6 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
     {
 
         [Test]
-        public void ItemCount([Values(JobsUtility.MaxJobThreadCount + 1)] int count)
-        {
-            using var stream = new NativeThreadStream(Allocator.TempJob);
-            var fillInts = new WriteIntsJob { Writer = stream.AsWriter() };
-            fillInts.ScheduleParallel(count, 1, default).Complete();
-
-            Assert.AreEqual((count * (count - 1)) / 2, stream.Count());
-        }
-
-        [Test]
         public void WriteRead([Values(JobsUtility.MaxJobThreadCount + 1)] int count)
         {
             using var stream = new NativeThreadStream(Allocator.TempJob);
@@ -36,6 +26,7 @@ namespace BovineLabs.Core.Tests.Collections.ThreadStream
 
             res0.Complete();
             res1.Complete();
+            Assert.AreEqual((count * (count - 1)) / 2, stream.Count());
         }
 
         [Test]

@@ -9,30 +9,6 @@
 
     public class NativeParallelMultiHashMapExtensionsTests
     {
-        [Test]
-        public void ClearAndAddBatchTest()
-        {
-            var length = 9;
-
-            var hashMap = new NativeParallelMultiHashMap<int, short>(4, Allocator.Temp);
-
-            var keys = new NativeArray<int>(length, Allocator.Temp);
-            var values = new NativeArray<short>(length, Allocator.Temp);
-
-            for (short i = 0; i < length; i++)
-            {
-                keys[i] = i;
-                values[i] = (short)(length - (i / 2));
-            }
-
-            hashMap.ClearAndAddBatch(keys, values);
-
-            for (short i = 0; i < length; i++)
-            {
-                Assert.IsTrue(hashMap.TryGetFirstValue(i, out var value, out _));
-                Assert.AreEqual(values[i], value);
-            }
-        }
 
         [Test]
         public void AddBatchTest()

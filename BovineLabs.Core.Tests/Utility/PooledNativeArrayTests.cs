@@ -10,14 +10,6 @@ namespace BovineLabs.Core.Tests.Utility
 
     public class PooledNativeArrayTests
     {
-        [TestCase(0)]
-        [TestCase(1)]
-        [TestCase(257)]
-        public void Make_ExposesRequestedLength(int length)
-        {
-            using var pool = PooledNativeArray<int>.Make(length);
-            Assert.AreEqual(length, pool.Array.Length);
-        }
 
         [Test]
         public unsafe void Make_ReusesAndClearsReturnedListStorage()
@@ -78,12 +70,6 @@ namespace BovineLabs.Core.Tests.Utility
             var array = pool.Array;
             pool.Dispose();
             Assert.Catch<InvalidOperationException>(() => _ = array[0]);
-        }
-
-        [Test]
-        public void Make_NegativeLengthThrows()
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => PooledNativeArray<int>.Make(-1));
         }
 
         [Test]

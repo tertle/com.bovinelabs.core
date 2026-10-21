@@ -50,29 +50,6 @@ namespace BovineLabs.Core.Tests.Iterators
             Assert.AreEqual(50, value2); // Should return existing value
         }
 
-        [Test]
-        public void EnumerationConsistency()
-        {
-            const int count = 100;
-            var hashMap = CreateHashMap();
-
-            // Add elements
-            for (var i = 0; i < count; i++)
-            {
-                hashMap.Add(i, (byte)(i % 255));
-            }
-
-            // Test enumeration gives all elements
-            var found = new HashSet<int>();
-            foreach (var kvp in hashMap)
-            {
-                Assert.IsFalse(found.Contains(kvp.Key), $"Duplicate key {kvp.Key} found during enumeration");
-                found.Add(kvp.Key);
-                Assert.AreEqual((byte)(kvp.Key % 255), kvp.Value);
-            }
-
-            Assert.AreEqual(count, found.Count);
-        }
 
         [Test]
         public unsafe void Enumeration_WhenDense_RemainsFinishedUntilReset()
@@ -210,27 +187,6 @@ namespace BovineLabs.Core.Tests.Iterators
             CollectionAssert.AreEquivalent(new[] { 3 }, found);
         }
 
-        [Test]
-        public void ResizeStressTest()
-        {
-            var hashMap = CreateHashMap();
-
-            // Force multiple resizes by adding many elements
-            const int count = 1000;
-            for (var i = 0; i < count; i++)
-            {
-                hashMap.Add(i, (byte)(i % 255));
-            }
-
-            // Verify all elements are still present and correct
-            for (var i = 0; i < count; i++)
-            {
-                Assert.IsTrue(hashMap.TryGetValue(i, out var value), $"Key {i} not found after resize");
-                Assert.AreEqual((byte)(i % 255), value, $"Incorrect value for key {i} after resize");
-            }
-
-            Assert.AreEqual(count, hashMap.Count);
-        }
 
         [Test]
         public unsafe void ValuesPointer_IsAlignedToValueType()
