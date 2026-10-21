@@ -12,6 +12,11 @@ namespace BovineLabs.Core.Internal
 
     public static unsafe class EntityQueryInternal
     {
+        public static void SetChangedFilterRequiredVersion(this EntityQuery query, uint version)
+        {
+            query.SetChangedFilterRequiredVersion(version);
+        }
+
         public static bool IsCreated(this EntityQueryMask mask)
         {
             return mask.IsCreated();
