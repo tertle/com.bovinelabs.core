@@ -4,9 +4,11 @@
 
 ### Added
 * Scene Camera overlay for viewing and editing the Scene view camera's world position and rotation, with rotation read-only in 2D mode.
+* Core accessors for Unity 7 blob ownership, blob reference copying and reconstruction, system-group traversal, entity identity, and world time.
 
 ### Changed
-* Unity 7000.0.0a9 or newer is required.
+* Unity 7000.0.0a11 or newer is required.
+* Entities access types now live in Core's Unity.Entities integration assembly, with type forwarders preserving existing Core assembly references.
 * Sparse-upload allocation failures are reported as errors through `BLGlobalLogger`.
 * `SharedComponentDataFromIndex<T>` requires unmanaged shared-component types.
 * Editor settings discovery caches asset GUIDs across domain reloads and avoids repeating unchanged searches after value, authoring, or route edits while preserving validation.
