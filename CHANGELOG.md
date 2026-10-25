@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.0.0-pre.6] - Unreleased
+## [2.0.0-pre.6] - 2026-10-26
 
 ### Added
 * Scene Camera overlay for viewing and editing the Scene view camera's world position and rotation, with rotation read-only in 2D mode.
@@ -15,6 +15,7 @@
 * `[SettingsOptional]` leaves package settings uncreated until explicitly requested; existing settings assets still use normal authoring routes.
 
 ### Fixed
+* Query-group storage accommodates sparse Unity 7 registered type indices, preventing out-of-range access during registration.
 * Query-group registration and ECS component inspection exclude transform and Unity object types that cannot be used as component query candidates.
 * Shared-component index reads use the current unmanaged Entities API, fixing compilation on Unity 7000.0.0a9.
 * Editor world preparation creates missing package settings and `EditorSettings` assets. Repairs made while settings are already active pause previews and automatically request a domain reload before consumers resume.
