@@ -49,10 +49,12 @@ namespace BovineLabs.Core.Utility
 
             var data = new GroupData
             {
-                Ranges = new UnsafeList<GroupRange>(TypeManager.GetTypeCount(), Allocator.Persistent),
+                Ranges = new UnsafeList<GroupRange>(TypeManager.MaximumTypesCount, Allocator.Persistent),
                 Members = new UnsafeList<TypeIndex>(0, Allocator.Persistent),
             };
-            data.Ranges.Resize(TypeManager.GetTypeCount(), NativeArrayOptions.ClearMemory);
+
+            // Registered type indices are sparse, so GetTypeCount() can be smaller than the highest index.
+            data.Ranges.Resize(TypeManager.MaximumTypesCount, NativeArrayOptions.ClearMemory);
 
             // Follow type-index order so enumeration is stable regardless of reflection/attribute order.
             foreach (var typeInfo in TypeManager.AllTypes)
