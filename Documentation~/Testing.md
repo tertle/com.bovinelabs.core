@@ -44,8 +44,10 @@ The fixture creates one isolated world per test and exposes:
 | `Manager` | The world's `EntityManager` |
 | `ManagerDebug` | `EntityManagerDebug` for consistency checks |
 | `BlobAssetStore` | Shared temporary blob store for baker-style setup and entity-command tests |
+| `TestWorldFlags` | Flags of the test world; override for a role world such as `WorldFlags.GameServer` or `WorldFlags.GameClient` |
+| `ForceJobsDebugger` | Whether setup forces the Jobs Debugger on; benchmarks override it to return `false` |
 
-Setup also enables the Jobs Debugger, creates Core debug state, and preserves the previous player loop and default injection world. Teardown completes tracked jobs, destroys systems, checks entity-manager consistency, disposes the world and blob store, and restores the previous global state.
+Setup also forces the Jobs Debugger on, creates Core debug state, starts from the default player loop, and pushes the test world on the world stack. Teardown destroys any additional worlds, completes tracked jobs, destroys systems, checks entity-manager consistency, pops and disposes the world, disposes the blob store, and restores the previous global state.
 
 ```csharp
 namespace MyGame.Tests
@@ -79,7 +81,31 @@ namespace MyGame.Tests
 
 If a fixture overrides `Setup()` or `TearDown()`, call the base implementation. Complete or assign every scheduled job before teardown.
 
-Override `IsEditModeTest` only when the test world should use `WorldFlags.Game` instead of `WorldFlags.Editor`.
+Override `IsEditModeTest` only when the test world should use `WorldFlags.Game` instead of `WorldFlags.Editor`, and `TestWorldFlags` for any other role. Benchmarks that set their own Burst and job-worker state override `ForceJobsDebugger` to return `false`, so they measure with the Editor's Jobs Debugger setting.
+
+## Additional worlds
+
+Create every other world a test needs through the fixture instead of constructing `World` directly, so it gets the same teardown checks:
+
+| Member | Purpose |
+|---|---|
+| `CreateWorld(name, flags)` | Creates an empty world. It is not pushed on the world stack and has no Core debug state, so serialization and transfer tests see only their own entities. |
+| `AddWorld(world)` | Adopts a world created elsewhere, such as by `ClientServerBootstrap`. |
+| `DisposeWorld(world)` | Destroys an additional world before the test ends, for tests that observe what happens once a world is gone. |
+
+Teardown destroys the remaining additional worlds in reverse order before the test world. Each completes its tracked jobs, destroys its systems, checks entity-manager consistency, and is removed from the player loop before it is disposed. Add a `BLLogger` entity or `BLDebugSystem` to an additional world whose systems log.
+
+```csharp
+[Test]
+public void SaveRestoresIntoAFreshWorld()
+{
+    var target = this.CreateWorld("Restore target");
+
+    // Save from this.World, restore into target, then assert on target.EntityManager.
+}
+```
+
+A test decorated with `[TestLeakDetection]` checks only allocations made within its method, so it creates and disposes its worlds there with `CreateWorld` and `DisposeWorld` instead of using the test world.
 
 ## Leak detection
 
