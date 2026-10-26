@@ -26,7 +26,7 @@
         [NoAutoStaticsCleanup]
         public static T I
         {
-            get => GetSingleton(ref settings);
+            get => GetSingleton(settings);
             private set => settings = value;
         }
 

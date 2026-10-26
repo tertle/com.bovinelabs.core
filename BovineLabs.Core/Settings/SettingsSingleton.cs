@@ -1,6 +1,7 @@
 namespace BovineLabs.Core.Settings
 {
     using System;
+    using System.Linq;
     using Unity.Entities;
     using Unity.Scripting.LifecycleManagement;
     using UnityEngine;
@@ -18,7 +19,7 @@ namespace BovineLabs.Core.Settings
         [NoAutoStaticsCleanup]
         public static T I
         {
-            get => GetSingleton(ref settings)!;
+            get => GetSingleton(settings);
             private set => settings = value;
         }
 
@@ -40,16 +41,23 @@ namespace BovineLabs.Core.Settings
     {
         public virtual bool IncludeInBuild => true;
 
-        // Simple helper for setting up singletons
-        protected static T GetSingleton<T>(ref T field)
+        // Managed readers can run before LoadAll, such as OnValidate during a code reload, so resolve the asset on first read.
+        protected static T GetSingleton<T>(T field)
             where T : SettingsSingleton
         {
-            if (!field)
+            if (field)
             {
-                field = CreateInstance<T>();
+                return field;
             }
 
-            return field;
+            var settings = FindAll(typeof(T));
+            if (settings.Length != 1)
+            {
+                throw new InvalidOperationException($"Expected one {typeof(T).Name} settings asset in the project or the build, found {settings.Length}.");
+            }
+
+            settings[0].Initialize();
+            return (T)settings[0];
         }
 
         protected abstract void Initialize();
@@ -61,31 +69,27 @@ namespace BovineLabs.Core.Settings
         }
 #endif
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
+        // Before Unity creates any system, so OnCreate and Burst readers of K settings see the real assets. Players find the
+        // assets CoreBuildSetup adds to the preloaded assets.
+        [OnCodeInitializing]
         private static void LoadAll()
         {
-#if UNITY_EDITOR
-            var settingsGuids = AssetDatabase.FindAssets($"t:{nameof(SettingsSingleton)} a:all");
-
-            foreach (var guid in settingsGuids)
+            foreach (var setting in FindAll(typeof(SettingsSingleton)))
             {
-                var settingsPath = AssetDatabase.GUIDToAssetPath(guid);
-                var setting = AssetDatabase.LoadAssetAtPath<SettingsSingleton>(settingsPath);
-#else
-            var kvSettings = Resources.FindObjectsOfTypeAll<SettingsSingleton>();
-            foreach (var setting in kvSettings)
-            {
-#endif
                 setting.Initialize();
             }
         }
 
-#if UNITY_EDITOR
-        [InitializeOnLoadMethod]
-        private static void InitializeInEditor()
+        private static SettingsSingleton[] FindAll(Type type)
         {
-            LoadAll();
-        }
+#if UNITY_EDITOR
+            return AssetDatabase.FindAssets($"t:{type.Name} a:all")
+                .Select(guid => AssetDatabase.LoadAssetAtPath<SettingsSingleton>(AssetDatabase.GUIDToAssetPath(guid)))
+                .Where(type.IsInstanceOfType)
+                .ToArray();
+#else
+            return Resources.FindObjectsOfTypeAll(type).Cast<SettingsSingleton>().ToArray();
 #endif
+        }
     }
 }
