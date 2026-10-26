@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+* `ECSTestsFixture` pushes its test world on the active world stack and pops it at teardown instead of setting the obsolete `World.DefaultGameObjectInjectionWorld`. On Unity 7000.0.0a11 each set pushed a world that was never popped, so the test framework failed to dispose every fixture world.
+
 ## [2.0.0-pre.6] - 2026-10-26
 
 ### Added

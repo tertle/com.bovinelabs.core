@@ -10,7 +10,6 @@ namespace BovineLabs.Testing
     {
         private bool _jobsDebuggerWasEnabled;
         private PlayerLoopSystem _previousPlayerLoop;
-        private World _previousWorld;
 
         private World _world;
 
@@ -33,8 +32,8 @@ namespace BovineLabs.Testing
             _previousPlayerLoop = PlayerLoop.GetCurrentPlayerLoop();
             PlayerLoop.SetPlayerLoop(PlayerLoop.GetDefaultPlayerLoop());
 
-            _previousWorld = World.DefaultGameObjectInjectionWorld;
-            _world = World.DefaultGameObjectInjectionWorld = new World("Test World", IsEditModeTest ? WorldFlags.Editor : WorldFlags.Game);
+            _world = new World("Test World", IsEditModeTest ? WorldFlags.Editor : WorldFlags.Game);
+            World.PushWorldStack(_world);
             World.UpdateAllocatorEnableBlockFree = true;
             Manager = World.EntityManager;
             ManagerDebug = new EntityManager.EntityManagerDebug(Manager);
@@ -60,11 +59,9 @@ namespace BovineLabs.Testing
 
             ManagerDebug.CheckInternalConsistency();
 
+            World.PopWorldStack(_world);
             World.Dispose();
             _world = null;
-
-            World.DefaultGameObjectInjectionWorld = _previousWorld;
-            _previousWorld = null;
 
             Manager = default;
 
