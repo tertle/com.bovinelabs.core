@@ -470,7 +470,14 @@ namespace BovineLabs.FacetGenerator
 
             if (hasSingletonAttribute)
             {
-                if (fieldSymbol.Type is INamedTypeSymbol { Name: "DynamicBuffer", TypeArguments: { Length: 1 } } && !hasReadOnlyAttribute)
+                var isNativeArray = fieldSymbol.Type is INamedTypeSymbol { Name: "NativeArray", TypeArguments: { Length: 1 } };
+                if (isNativeArray && !TryGetBufferArrayElementType(fieldSymbol.Type, out _))
+                {
+                    diagnostics?.Add(FacetDiagnostics.UnsupportedField(fieldSymbol, fieldSymbol.Locations.FirstOrDefault()));
+                    return false;
+                }
+
+                if ((isNativeArray || fieldSymbol.Type is INamedTypeSymbol { Name: "DynamicBuffer", TypeArguments: { Length: 1 } }) && !hasReadOnlyAttribute)
                 {
                     diagnostics?.Add(FacetDiagnostics.ReadOnlySingletonBuffer(fieldSymbol, fieldSymbol.Locations.FirstOrDefault()));
                     return false;
@@ -567,6 +574,7 @@ namespace BovineLabs.FacetGenerator
                     kind = FacetFieldKind.EnabledRefRO;
                     break;
                 case "DynamicBuffer":
+                case "NativeArray" when TryGetBufferArrayElementType(namedType, out _):
                     kind = FacetFieldKind.DynamicBuffer;
                     break;
                 default:
@@ -581,7 +589,25 @@ namespace BovineLabs.FacetGenerator
                 kind == FacetFieldKind.EnabledRefRO ||
                 hasReadOnlyAttribute;
 
-            field = new FacetField(fieldSymbol, componentType, kind, isOptional, isReadOnly, hasReadOnlyAttribute, isBufferElement);
+            field = new FacetField(
+                fieldSymbol, componentType, kind, isOptional, isReadOnly, hasReadOnlyAttribute, isBufferElement, namedType.Name == "NativeArray");
+            return true;
+        }
+
+        /// <summary>
+        /// A NativeArray&lt;T&gt; of an IBufferElementData is a buffer field read through DynamicBuffer.AsNativeArray, so code holding only arrays
+        /// can still construct the facet.
+        /// </summary>
+        private static bool TryGetBufferArrayElementType(ITypeSymbol type, out ITypeSymbol elementType)
+        {
+            elementType = null;
+            if (type is not INamedTypeSymbol { Name: "NativeArray", TypeArguments: { Length: 1 } } namedType ||
+                !namedType.TypeArguments[0].AllInterfaces.Any(i => i.ToDisplayString() == "Unity.Entities.IBufferElementData"))
+            {
+                return false;
+            }
+
+            elementType = namedType.TypeArguments[0];
             return true;
         }
 

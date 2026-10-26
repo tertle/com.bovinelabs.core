@@ -5,6 +5,7 @@
 ### Added
 * `ECSTestsFixture.TestWorldFlags` sets the test world's role, and `ForceJobsDebugger` lets benchmarks keep the Editor's Jobs Debugger setting.
 * `ECSTestsFixture.CreateWorld`, `AddWorld` and `DisposeWorld` manage additional worlds, including `ClientServerBootstrap` worlds. Teardown destroys them in reverse order before the test world, with the same job, system and consistency checks, and removes them from the player loop.
+* Facets accept `NativeArray<T>` fields of buffer elements, entity or `[ReadOnly] [Singleton]`, read through `DynamicBuffer<T>.AsNativeArray()`, so code holding only arrays can construct the facet.
 
 ### Fixed
 * Settings singletons load at `[OnCodeInitializing]`, before Unity creates any system, instead of at `BeforeSplashScreen` in Players. On Unity 7000.0.0a12 systems are created first, so their reads made an empty fallback instance that loading then initialized in place of the real asset.

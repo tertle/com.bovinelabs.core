@@ -20,7 +20,7 @@ namespace BovineLabs.FacetGenerator
             "BLFCT0002",
             "Facet field type not supported",
             "Field '{0}' of type '{1}' is not supported. Supported types are RefRO<T>, RefRW<T>, EnabledRefRO<T>, " +
-            "FacetEnabledRefRW<T>, DynamicBuffer<T>, ComponentLookup<T>, BufferLookup<T>, Entity, EntityStorageInfo, " +
+            "FacetEnabledRefRW<T>, DynamicBuffer<T>, NativeArray<T> of an IBufferElementData, ComponentLookup<T>, BufferLookup<T>, Entity, EntityStorageInfo, " +
             "EntityStorageInfoLookup, and fields marked with [Singleton].",
             Category,
             DiagnosticSeverity.Error,
@@ -60,8 +60,8 @@ namespace BovineLabs.FacetGenerator
 
         internal static readonly DiagnosticDescriptor ReadOnlySingletonBufferDescriptor = new DiagnosticDescriptor(
             "BLFCT0007",
-            "DynamicBuffer singleton must be ReadOnly",
-            "Singleton DynamicBuffer field '{0}' must be marked with [ReadOnly]",
+            "Buffer singleton must be ReadOnly",
+            "Singleton DynamicBuffer or NativeArray field '{0}' must be marked with [ReadOnly]",
             Category,
             DiagnosticSeverity.Error,
             true);

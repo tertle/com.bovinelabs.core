@@ -851,20 +851,28 @@ namespace BovineLabs.FacetGenerator
                     break;
 
                 case FacetFieldKind.DynamicBuffer:
+                    var buffer = field.IsBufferArray ? $"{name}Buffer" : name;
                     if (field.IsOptional)
                     {
-                        writer.AppendLine($"{lookup}.TryGetBuffer(entity, out var {name});");
+                        writer.AppendLine($"{lookup}.TryGetBuffer(entity, out var {buffer});");
                     }
                     else if (inTryGet)
                     {
-                        using (writer.Block($"if (!{lookup}.TryGetBuffer(entity, out var {name}))"))
+                        using (writer.Block($"if (!{lookup}.TryGetBuffer(entity, out var {buffer}))"))
                         {
                             writer.AppendLine("return false;");
                         }
                     }
                     else
                     {
-                        writer.AppendLine($"var {name} = {lookup}[entity];");
+                        writer.AppendLine($"var {buffer} = {lookup}[entity];");
+                    }
+
+                    if (field.IsBufferArray)
+                    {
+                        writer.AppendLine(field.IsOptional
+                            ? $"var {name} = {buffer}.IsCreated ? {buffer}.AsNativeArray() : default;"
+                            : $"var {name} = {buffer}.AsNativeArray();");
                     }
 
                     break;
@@ -987,9 +995,10 @@ namespace BovineLabs.FacetGenerator
                     break;
 
                 case FacetFieldKind.DynamicBuffer:
+                    var element = field.IsBufferArray ? $"{resolved}[index].AsNativeArray()" : $"{resolved}[index]";
                     if (field.IsOptional)
                     {
-                        writer.AppendLine($"var {name} = {resolved}.Length != 0 ? {resolved}[index] : default;");
+                        writer.AppendLine($"var {name} = {resolved}.Length != 0 ? {element} : default;");
                     }
                     else if (inTryGet)
                     {
@@ -999,11 +1008,11 @@ namespace BovineLabs.FacetGenerator
                             writer.AppendLine("return false;");
                         }
 
-                        writer.AppendLine($"var {name} = {resolved}[index];");
+                        writer.AppendLine($"var {name} = {element};");
                     }
                     else
                     {
-                        writer.AppendLine($"var {name} = {resolved}[index];");
+                        writer.AppendLine($"var {name} = {element};");
                     }
 
                     break;
@@ -1142,8 +1151,15 @@ namespace BovineLabs.FacetGenerator
             return field.ComponentTypeName.Replace("<", "&lt;").Replace(">", "&gt;");
         }
 
-        private static bool TryGetDynamicBufferElementType(ITypeSymbol typeSymbol, out ITypeSymbol elementType)
+        /// <summary>The element type of a singleton buffer field, a DynamicBuffer&lt;T&gt; or, read through AsNativeArray, a NativeArray&lt;T&gt;.</summary>
+        private static bool TryGetSingletonBufferElementType(ITypeSymbol typeSymbol, out ITypeSymbol elementType, out bool isArray)
         {
+            isArray = TryGetBufferArrayElementType(typeSymbol, out elementType);
+            if (isArray)
+            {
+                return true;
+            }
+
             if (typeSymbol is INamedTypeSymbol { Name: "DynamicBuffer", TypeArguments: { Length: 1 } } namedType)
             {
                 elementType = namedType.TypeArguments[0];
@@ -1158,10 +1174,11 @@ namespace BovineLabs.FacetGenerator
         {
             var typeName = GetXmlSafeTypeName(field);
 
-            if (TryGetDynamicBufferElementType(field.ComponentTypeSymbol, out var elementType))
+            if (TryGetSingletonBufferElementType(field.ComponentTypeSymbol, out var elementType, out var isArray))
             {
                 var elementTypeName = elementType.ToDisplayString(ShortTypeFormat).Replace("<", "&lt;").Replace(">", "&gt;");
-                return $"Singleton value for {typeName} which is typically retrieved via SystemAPI.GetSingletonBuffer&lt;{elementTypeName}&gt;(true).";
+                var asArray = isArray ? ".AsNativeArray()" : string.Empty;
+                return $"Singleton value for {typeName} which is typically retrieved via SystemAPI.GetSingletonBuffer&lt;{elementTypeName}&gt;(true){asArray}.";
             }
 
             return $"Singleton value for {typeName} which is typically retrieved via SystemAPI.GetSingleton&lt;{typeName}&gt;().";
@@ -1174,7 +1191,7 @@ namespace BovineLabs.FacetGenerator
 
         private static string GetSingletonQueryComponentTypeName(FacetField field)
         {
-            if (TryGetDynamicBufferElementType(field.ComponentTypeSymbol, out var elementType))
+            if (TryGetSingletonBufferElementType(field.ComponentTypeSymbol, out var elementType, out _))
             {
                 return elementType.ToDisplayString(ShortTypeFormat);
             }
@@ -1194,10 +1211,11 @@ namespace BovineLabs.FacetGenerator
         {
             var queryFieldName = GetSingletonDataQueryFieldName(dependency);
 
-            if (TryGetDynamicBufferElementType(dependency.Field.ComponentTypeSymbol, out var elementType))
+            if (TryGetSingletonBufferElementType(dependency.Field.ComponentTypeSymbol, out var elementType, out var isArray))
             {
                 var elementTypeName = elementType.ToDisplayString(ShortTypeFormat);
-                return $"{dataParameterName}.{queryFieldName}.GetSingletonBufferNoSync<{elementTypeName}>(true)";
+                var asArray = isArray ? ".AsNativeArray()" : string.Empty;
+                return $"{dataParameterName}.{queryFieldName}.GetSingletonBufferNoSync<{elementTypeName}>(true){asArray}";
             }
 
             return $"{dataParameterName}.{queryFieldName}.GetSingleton<{dependency.Field.ComponentTypeName}>()";

@@ -165,7 +165,7 @@ namespace BovineLabs.FacetGenerator
     {
         public FacetField(
             IFieldSymbol symbol, ITypeSymbol componentType, FacetFieldKind kind, bool isOptional, bool isReadOnly, bool hasReadOnlyAttribute,
-            bool isBufferElement = false)
+            bool isBufferElement = false, bool isBufferArray = false)
         {
             Symbol = symbol;
             ComponentTypeSymbol = componentType;
@@ -174,6 +174,7 @@ namespace BovineLabs.FacetGenerator
             IsReadOnly = isReadOnly;
             HasReadOnlyAttribute = hasReadOnlyAttribute;
             IsBufferElement = isBufferElement;
+            IsBufferArray = isBufferArray;
             FieldTypeName = symbol.Type.ToDisplayString(FacetGenerator.ShortTypeFormat);
             ComponentTypeName = componentType.ToDisplayString(FacetGenerator.ShortTypeFormat);
             ArgumentName = FieldName is "entity" or "facet" ? $"{FieldName}Value" : FieldName;
@@ -192,6 +193,9 @@ namespace BovineLabs.FacetGenerator
         public bool HasReadOnlyAttribute { get; }
 
         public bool IsBufferElement { get; }
+
+        /// <summary>A <see cref="FacetFieldKind.DynamicBuffer"/> field declared as NativeArray&lt;T&gt;, read through DynamicBuffer.AsNativeArray.</summary>
+        public bool IsBufferArray { get; }
 
         public bool IsEntity => Kind == FacetFieldKind.Entity;
 
