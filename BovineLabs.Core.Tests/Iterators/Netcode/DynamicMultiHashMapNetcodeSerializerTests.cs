@@ -147,7 +147,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void GeneratedRegistration_CoversRootAndChildBufferSelection()
         {
-            using var world = new World("DynamicMultiHashMap Netcode Collection Test", WorldFlags.GameServer);
+            var world = CreateWorld("DynamicMultiHashMap Netcode Collection Test", WorldFlags.GameServer);
             CreateGeneratedSerializerCollection(world);
 
             using var query = world.EntityManager.CreateEntityQuery(ComponentType.ReadOnly<GhostComponentSerializerCollectionData>());
@@ -163,7 +163,7 @@ namespace BovineLabs.Core.Tests.Iterators
         [Test]
         public void SerializerState_HasDistinctMapAndMultiHashMapHashes()
         {
-            using var world = new World("DynamicMultiHashMap State Test", WorldFlags.GameServer);
+            var world = CreateWorld("DynamicMultiHashMap State Test", WorldFlags.GameServer);
             CreateGeneratedSerializerCollection(world);
             var states = CreateSerializerStates(world);
 
