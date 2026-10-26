@@ -7,6 +7,7 @@
 - Use a `partial struct` that implements `IFacet`.
 - Supported entity fields include `RefRO<T>`, `RefRW<T>`, `EnabledRefRO<T>`, `FacetEnabledRefRW<T>`, `DynamicBuffer<T>`, `ComponentLookup<T>`, `BufferLookup<T>`, `Entity`, `EntityStorageInfo`, and `EntityStorageInfoLookup`.
 - Supported shared fields include plain component fields marked with `[Singleton]` and read-only singleton buffers marked with `[ReadOnly] [Singleton]`.
+- A buffer field, entity or singleton, can be declared as `NativeArray<T>` of its `IBufferElementData` instead of `DynamicBuffer<T>`; the generated helpers resolve it with `AsNativeArray()`. Such a facet can also be constructed from arrays alone, for data built outside ECS, and its jobs index arrays rather than buffers.
 - Mark nested facets with `[Facet]`.
 - Add `[FacetOptional]` to component refs, enabled refs, dynamic buffers, or nested facets that may be missing from the target entity. It does not make `Entity`, lookup, or entity-storage metadata fields conditionally available.
 - Use `RefRO<T>` or `EnabledRefRO<T>` instead of applying `[ReadOnly]` to a `RefRW<T>` or `FacetEnabledRefRW<T>` field; the generator reports `BLFCT0004` for that combination. Apply `[ReadOnly]` to buffers, lookups, nested facets, and singleton fields when those fields need read-only access. Singleton buffers require it.
@@ -87,7 +88,9 @@ var intrinsicConditionWrites = SystemAPI.GetSingleton<IntrinsicConditionWriteQue
 this.intrinsicWriters.Update(ref state, in essenceConfig, in intrinsicConditionWrites);
 ```
 
-Singleton query access follows the field attributes. `[ReadOnly] [Singleton]` fields use read-only queries, while non-read-only singleton component fields use read/write queries. Singleton buffer fields must be `[ReadOnly]`.
+Singleton query access follows the field attributes. `[ReadOnly] [Singleton]` fields use read-only queries, while non-read-only singleton component fields use read/write queries. Singleton buffer fields, `DynamicBuffer<T>` or `NativeArray<T>`, must be `[ReadOnly]`.
+
+Singleton buffers are read without a sync point. The `SingletonData` queries declare the system's read access, so jobs it schedules after `state.Dependency` wait for writers; main-thread reads need the writers completed first, such as with `state.CompleteDependency()`.
 
 ## Embedding facets
 
