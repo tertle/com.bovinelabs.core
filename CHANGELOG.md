@@ -4,6 +4,8 @@
 
 ### Fixed
 * `ECSTestsFixture` pushes its test world on the active world stack and pops it at teardown instead of setting the obsolete `World.DefaultGameObjectInjectionWorld`. On Unity 7000.0.0a11 each set pushed a world that was never popped, so the test framework failed to dispose every fixture world.
+* Settings singletons load at `[OnCodeInitializing]`, before Unity creates any system, instead of at `BeforeSplashScreen` in Players. On Unity 7000.0.0a12 systems are created first, so their reads made an empty fallback instance that loading then initialized in place of the real asset.
+* `SettingsSingleton<T>.I` and `KSettingsBase<T, TV>.I` read before loading resolve and initialize their settings asset instead of creating an empty instance, and throw when the project or build does not contain exactly one. `SettingsSingleton.GetSingleton` takes the field by value.
 
 ## [2.0.0-pre.6] - 2026-10-26
 
