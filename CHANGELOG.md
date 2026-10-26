@@ -1,9 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [2.0.0-pre.7] - Unreleased
 
 ### Fixed
-* `ECSTestsFixture` pushes its test world on the active world stack and pops it at teardown instead of setting the obsolete `World.DefaultGameObjectInjectionWorld`. On Unity 7000.0.0a11 each set pushed a world that was never popped, so the test framework failed to dispose every fixture world.
 * Settings singletons load at `[OnCodeInitializing]`, before Unity creates any system, instead of at `BeforeSplashScreen` in Players. On Unity 7000.0.0a12 systems are created first, so their reads made an empty fallback instance that loading then initialized in place of the real asset.
 * `SettingsSingleton<T>.I` and `KSettingsBase<T, TV>.I` read before loading resolve and initialize their settings asset instead of creating an empty instance, and throw when the project or build does not contain exactly one. `SettingsSingleton.GetSingleton` takes the field by value.
 
@@ -14,7 +13,7 @@
 * Core accessors for Unity 7 blob ownership, blob reference copying and reconstruction, system-group traversal, entity identity, and world time.
 
 ### Changed
-* Unity 7000.0.0a11 or newer is required.
+* Unity 7000.0.0a12 or newer is required.
 * Entities access types now live in Core's Unity.Entities integration assembly, with type forwarders preserving existing Core assembly references.
 * Sparse-upload allocation failures are reported as errors through `BLGlobalLogger`.
 * `SharedComponentDataFromIndex<T>` requires unmanaged shared-component types.
@@ -22,6 +21,7 @@
 * `[SettingsOptional]` leaves package settings uncreated until explicitly requested; existing settings assets still use normal authoring routes.
 
 ### Fixed
+* `ECSTestsFixture` pushes its test world on the active world stack and pops it at teardown instead of setting the obsolete `World.DefaultGameObjectInjectionWorld`.
 * Query-group storage accommodates sparse Unity 7 registered type indices, preventing out-of-range access during registration.
 * Query-group registration and ECS component inspection exclude transform and Unity object types that cannot be used as component query candidates.
 * Shared-component index reads use the current unmanaged Entities API, fixing compilation on Unity 7000.0.0a9.
