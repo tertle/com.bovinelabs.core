@@ -99,8 +99,6 @@ namespace Example.Settings
 
 `SettingsAuthoring` adds `SettingsTag` to its entity, registers a baking dependency on each distinct settings asset, and invokes `Bake` on that asset. All settings assigned to one authoring component bake onto the same entity.
 
-`SettingsAuthoring.Settings` exposes the complete assigned list before any individual `Bake` runs. Settings that coordinate ownership can inspect that list without depending on bake order; all assigned assets still participate in dependency tracking.
-
 At runtime, read the component through normal ECS APIs:
 
 ```csharp

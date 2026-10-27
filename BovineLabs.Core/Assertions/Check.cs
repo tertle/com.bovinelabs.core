@@ -29,6 +29,7 @@
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void IsTrue(bool condition)
         {
             if (condition)
@@ -42,6 +43,7 @@
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void IsTrue(bool condition, string message)
         {
             if (condition)
