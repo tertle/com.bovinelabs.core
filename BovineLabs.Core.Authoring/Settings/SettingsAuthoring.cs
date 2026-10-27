@@ -1,7 +1,6 @@
 ﻿namespace BovineLabs.Core.Authoring.Settings
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using BovineLabs.Core.Settings;
     using Unity.Entities;
@@ -13,9 +12,6 @@
     {
         [SerializeField]
         private SettingsBase[] _settings = Array.Empty<SettingsBase>();
-
-        /// <summary>The settings assigned to this baking route, available before any individual setting is baked.</summary>
-        public IReadOnlyList<SettingsBase> Settings => _settings;
 
         internal static Hash128 GetPrefabGuid(SettingsAuthoring authoring)
         {
