@@ -90,7 +90,7 @@ this.intrinsicWriters.Update(ref state, in essenceConfig, in intrinsicConditionW
 
 Singleton query access follows the field attributes. `[ReadOnly] [Singleton]` fields use read-only queries, while non-read-only singleton component fields use read/write queries. Singleton buffer fields, `DynamicBuffer<T>` or `NativeArray<T>`, must be `[ReadOnly]`.
 
-Singleton buffers are read without a sync point. The `SingletonData` queries declare the system's read access, so jobs it schedules after `state.Dependency` wait for writers; main-thread reads need the writers completed first, such as with `state.CompleteDependency()`.
+Singleton buffers are read without a sync point. The `SingletonData` queries declare the system's read access, so jobs it schedules after `state.Dependency` wait for writers; main-thread reads need the writers completed first. Pass `completeSingletonDependency: true` to `Update(ref state, data)` when a job writes a singleton component or buffer; it completes the singleton queries' jobs before reading. Leave it off when jobs only read the singletons or write inside native containers they hold.
 
 ## Embedding facets
 
