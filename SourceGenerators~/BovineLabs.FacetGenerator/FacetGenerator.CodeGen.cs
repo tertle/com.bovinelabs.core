@@ -377,12 +377,15 @@ namespace BovineLabs.FacetGenerator
                 var updateFromData = lookup.AddMethod("Update", Accessibility.Public).WithReturnType("void");
                 updateFromData.AddParameter("ref SystemState", "state");
                 updateFromData.AddParameter("SingletonData", "data");
+                updateFromData.AddParameterWithDefaultValue("bool", "completeSingletonDependency", "false");
                 updateFromData.WithSummary($"Refreshes lookups for {data.TypeName} and updates singleton caches.")
                     .WithParameterDoc("state", "System state used to update handles.")
-                    .WithParameterDoc("data", $"Singleton queries used to resolve {data.TypeName} singletons.");
+                    .WithParameterDoc("data", $"Singleton queries used to resolve {data.TypeName} singletons.")
+                    .WithParameterDoc("completeSingletonDependency", SingletonCompletionDoc);
 
                 updateFromData.WithBody(body =>
                 {
+                    AppendSingletonCompletion(body, singletonDependencies);
                     foreach (var dependency in singletonDependencies)
                     {
                         var expression = GetSingletonDataResolveExpression(dependency, "data");
@@ -654,12 +657,15 @@ namespace BovineLabs.FacetGenerator
                 var updateFromData = typeHandle.AddMethod("Update", Accessibility.Public).WithReturnType("void");
                 updateFromData.AddParameter("ref SystemState", "state");
                 updateFromData.AddParameter("SingletonData", "data");
+                updateFromData.AddParameterWithDefaultValue("bool", "completeSingletonDependency", "false");
                 updateFromData.WithSummary($"Updates type handles for {data.TypeName} and refreshes singleton caches.")
                     .WithParameterDoc("state", "System state used to update handles.")
-                    .WithParameterDoc("data", $"Singleton queries used to resolve {data.TypeName} singletons.");
+                    .WithParameterDoc("data", $"Singleton queries used to resolve {data.TypeName} singletons.")
+                    .WithParameterDoc("completeSingletonDependency", SingletonCompletionDoc);
 
                 updateFromData.WithBody(body =>
                 {
+                    AppendSingletonCompletion(body, singletonDependencies);
                     foreach (var dependency in singletonDependencies)
                     {
                         var expression = GetSingletonDataResolveExpression(dependency, "data");
@@ -1205,6 +1211,23 @@ namespace BovineLabs.FacetGenerator
             // RW dependency without RW access: allows safe writes to native containers stored on the singleton.
             var with = field.HasReadOnlyAttribute ? $"WithAll<{componentTypeName}>()" : $"WithAllRW<{componentTypeName}>()";
             return $"{with}.WithOptions(EntityQueryOptions.IncludeSystems)";
+        }
+
+        private const string SingletonCompletionDoc =
+            "Completes the jobs writing the singletons before they are read on the main thread. Needed when a job writes a singleton component " +
+            "or buffer; not when jobs only read them or write inside native containers they hold.";
+
+        private static void AppendSingletonCompletion(ICodeWriter body, IEnumerable<FacetSingletonDependency> singletonDependencies)
+        {
+            body.AppendLine("if (completeSingletonDependency)");
+            body.AppendLine("{");
+            foreach (var dependency in singletonDependencies)
+            {
+                body.AppendLine($"    data.{GetSingletonDataQueryFieldName(dependency)}.CompleteDependency();");
+            }
+
+            body.AppendLine("}");
+            body.NewLine();
         }
 
         private static string GetSingletonDataResolveExpression(FacetSingletonDependency dependency, string dataParameterName)

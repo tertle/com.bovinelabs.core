@@ -9,17 +9,14 @@
     ".NETStandard,Version=v2.0/": {
       "BovineLabs.FacetGenerator/1.0.0": {
         "dependencies": {
-          "Microsoft.CodeAnalysis.CSharp": "4.1.0",
-          "NETStandard.Library": "2.0.3"
+          "Microsoft.CodeAnalysis.CSharp": "4.1.0"
         },
         "runtime": {
           "BovineLabs.FacetGenerator.dll": {}
         }
       },
-      "Microsoft.CodeAnalysis.Analyzers/3.3.3": {},
       "Microsoft.CodeAnalysis.Common/4.1.0": {
         "dependencies": {
-          "Microsoft.CodeAnalysis.Analyzers": "3.3.3",
           "System.Collections.Immutable": "5.0.0",
           "System.Memory": "4.5.4",
           "System.Reflection.Metadata": "5.0.0",
@@ -30,48 +27,62 @@
         "runtime": {
           "lib/netstandard2.0/Microsoft.CodeAnalysis.dll": {
             "assemblyVersion": "4.1.0.0",
-            "fileVersion": "4.100.22.11411"
+            "fileVersion": "4.100.22.11411",
+            "localPath": "Microsoft.CodeAnalysis.dll"
           }
         },
         "resources": {
           "lib/netstandard2.0/cs/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "cs"
+            "locale": "cs",
+            "localPath": "cs/Microsoft.CodeAnalysis.resources.dll"
           },
           "lib/netstandard2.0/de/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "de"
+            "locale": "de",
+            "localPath": "de/Microsoft.CodeAnalysis.resources.dll"
           },
           "lib/netstandard2.0/es/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "es"
+            "locale": "es",
+            "localPath": "es/Microsoft.CodeAnalysis.resources.dll"
           },
           "lib/netstandard2.0/fr/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "fr"
+            "locale": "fr",
+            "localPath": "fr/Microsoft.CodeAnalysis.resources.dll"
           },
           "lib/netstandard2.0/it/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "it"
+            "locale": "it",
+            "localPath": "it/Microsoft.CodeAnalysis.resources.dll"
           },
           "lib/netstandard2.0/ja/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "ja"
+            "locale": "ja",
+            "localPath": "ja/Microsoft.CodeAnalysis.resources.dll"
           },
           "lib/netstandard2.0/ko/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "ko"
+            "locale": "ko",
+            "localPath": "ko/Microsoft.CodeAnalysis.resources.dll"
           },
           "lib/netstandard2.0/pl/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "pl"
+            "locale": "pl",
+            "localPath": "pl/Microsoft.CodeAnalysis.resources.dll"
           },
           "lib/netstandard2.0/pt-BR/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "pt-BR"
+            "locale": "pt-BR",
+            "localPath": "pt-BR/Microsoft.CodeAnalysis.resources.dll"
           },
           "lib/netstandard2.0/ru/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "ru"
+            "locale": "ru",
+            "localPath": "ru/Microsoft.CodeAnalysis.resources.dll"
           },
           "lib/netstandard2.0/tr/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "tr"
+            "locale": "tr",
+            "localPath": "tr/Microsoft.CodeAnalysis.resources.dll"
           },
           "lib/netstandard2.0/zh-Hans/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "zh-Hans"
+            "locale": "zh-Hans",
+            "localPath": "zh-Hans/Microsoft.CodeAnalysis.resources.dll"
           },
           "lib/netstandard2.0/zh-Hant/Microsoft.CodeAnalysis.resources.dll": {
-            "locale": "zh-Hant"
+            "locale": "zh-Hant",
+            "localPath": "zh-Hant/Microsoft.CodeAnalysis.resources.dll"
           }
         }
       },
@@ -82,62 +93,71 @@
         "runtime": {
           "lib/netstandard2.0/Microsoft.CodeAnalysis.CSharp.dll": {
             "assemblyVersion": "4.1.0.0",
-            "fileVersion": "4.100.22.11411"
+            "fileVersion": "4.100.22.11411",
+            "localPath": "Microsoft.CodeAnalysis.CSharp.dll"
           }
         },
         "resources": {
           "lib/netstandard2.0/cs/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "cs"
+            "locale": "cs",
+            "localPath": "cs/Microsoft.CodeAnalysis.CSharp.resources.dll"
           },
           "lib/netstandard2.0/de/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "de"
+            "locale": "de",
+            "localPath": "de/Microsoft.CodeAnalysis.CSharp.resources.dll"
           },
           "lib/netstandard2.0/es/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "es"
+            "locale": "es",
+            "localPath": "es/Microsoft.CodeAnalysis.CSharp.resources.dll"
           },
           "lib/netstandard2.0/fr/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "fr"
+            "locale": "fr",
+            "localPath": "fr/Microsoft.CodeAnalysis.CSharp.resources.dll"
           },
           "lib/netstandard2.0/it/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "it"
+            "locale": "it",
+            "localPath": "it/Microsoft.CodeAnalysis.CSharp.resources.dll"
           },
           "lib/netstandard2.0/ja/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "ja"
+            "locale": "ja",
+            "localPath": "ja/Microsoft.CodeAnalysis.CSharp.resources.dll"
           },
           "lib/netstandard2.0/ko/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "ko"
+            "locale": "ko",
+            "localPath": "ko/Microsoft.CodeAnalysis.CSharp.resources.dll"
           },
           "lib/netstandard2.0/pl/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "pl"
+            "locale": "pl",
+            "localPath": "pl/Microsoft.CodeAnalysis.CSharp.resources.dll"
           },
           "lib/netstandard2.0/pt-BR/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "pt-BR"
+            "locale": "pt-BR",
+            "localPath": "pt-BR/Microsoft.CodeAnalysis.CSharp.resources.dll"
           },
           "lib/netstandard2.0/ru/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "ru"
+            "locale": "ru",
+            "localPath": "ru/Microsoft.CodeAnalysis.CSharp.resources.dll"
           },
           "lib/netstandard2.0/tr/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "tr"
+            "locale": "tr",
+            "localPath": "tr/Microsoft.CodeAnalysis.CSharp.resources.dll"
           },
           "lib/netstandard2.0/zh-Hans/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "zh-Hans"
+            "locale": "zh-Hans",
+            "localPath": "zh-Hans/Microsoft.CodeAnalysis.CSharp.resources.dll"
           },
           "lib/netstandard2.0/zh-Hant/Microsoft.CodeAnalysis.CSharp.resources.dll": {
-            "locale": "zh-Hant"
+            "locale": "zh-Hant",
+            "localPath": "zh-Hant/Microsoft.CodeAnalysis.CSharp.resources.dll"
           }
-        }
-      },
-      "Microsoft.NETCore.Platforms/1.1.0": {},
-      "NETStandard.Library/2.0.3": {
-        "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.1.0"
         }
       },
       "System.Buffers/4.5.1": {
         "runtime": {
           "lib/netstandard2.0/System.Buffers.dll": {
             "assemblyVersion": "4.0.3.0",
-            "fileVersion": "4.6.28619.1"
+            "fileVersion": "4.6.28619.1",
+            "localPath": "System.Buffers.dll"
           }
         }
       },
@@ -148,7 +168,8 @@
         "runtime": {
           "lib/netstandard2.0/System.Collections.Immutable.dll": {
             "assemblyVersion": "5.0.0.0",
-            "fileVersion": "5.0.20.51904"
+            "fileVersion": "5.0.20.51904",
+            "localPath": "System.Collections.Immutable.dll"
           }
         }
       },
@@ -161,7 +182,8 @@
         "runtime": {
           "lib/netstandard2.0/System.Memory.dll": {
             "assemblyVersion": "4.0.1.1",
-            "fileVersion": "4.6.28619.1"
+            "fileVersion": "4.6.28619.1",
+            "localPath": "System.Memory.dll"
           }
         }
       },
@@ -169,7 +191,8 @@
         "runtime": {
           "lib/netstandard2.0/System.Numerics.Vectors.dll": {
             "assemblyVersion": "4.1.3.0",
-            "fileVersion": "4.6.25519.3"
+            "fileVersion": "4.6.25519.3",
+            "localPath": "System.Numerics.Vectors.dll"
           }
         }
       },
@@ -180,7 +203,8 @@
         "runtime": {
           "lib/netstandard2.0/System.Reflection.Metadata.dll": {
             "assemblyVersion": "5.0.0.0",
-            "fileVersion": "5.0.20.51904"
+            "fileVersion": "5.0.20.51904",
+            "localPath": "System.Reflection.Metadata.dll"
           }
         }
       },
@@ -188,7 +212,8 @@
         "runtime": {
           "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll": {
             "assemblyVersion": "5.0.0.0",
-            "fileVersion": "5.0.20.51904"
+            "fileVersion": "5.0.20.51904",
+            "localPath": "System.Runtime.CompilerServices.Unsafe.dll"
           }
         }
       },
@@ -199,7 +224,8 @@
         "runtime": {
           "lib/netstandard2.0/System.Text.Encoding.CodePages.dll": {
             "assemblyVersion": "4.1.1.0",
-            "fileVersion": "4.6.27129.4"
+            "fileVersion": "4.6.27129.4",
+            "localPath": "System.Text.Encoding.CodePages.dll"
           }
         }
       },
@@ -210,7 +236,8 @@
         "runtime": {
           "lib/netstandard2.0/System.Threading.Tasks.Extensions.dll": {
             "assemblyVersion": "4.2.0.1",
-            "fileVersion": "4.6.28619.1"
+            "fileVersion": "4.6.28619.1",
+            "localPath": "System.Threading.Tasks.Extensions.dll"
           }
         }
       }
@@ -221,13 +248,6 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
-    },
-    "Microsoft.CodeAnalysis.Analyzers/3.3.3": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-j/rOZtLMVJjrfLRlAMckJLPW/1rze9MT1yfWqSIbUPGRu1m1P0fuo9PmqapwsmePfGB5PJrudQLvmUOAMF0DqQ==",
-      "path": "microsoft.codeanalysis.analyzers/3.3.3",
-      "hashPath": "microsoft.codeanalysis.analyzers.3.3.3.nupkg.sha512"
     },
     "Microsoft.CodeAnalysis.Common/4.1.0": {
       "type": "package",
@@ -242,20 +262,6 @@
       "sha512": "sha512-sbu6kDGzo9bfQxuqWpeEE7I9P30bSuZEnpDz9/qz20OU6pm79Z63+/BsAzO2e/R/Q97kBrpj647wokZnEVr97w==",
       "path": "microsoft.codeanalysis.csharp/4.1.0",
       "hashPath": "microsoft.codeanalysis.csharp.4.1.0.nupkg.sha512"
-    },
-    "Microsoft.NETCore.Platforms/1.1.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A==",
-      "path": "microsoft.netcore.platforms/1.1.0",
-      "hashPath": "microsoft.netcore.platforms.1.1.0.nupkg.sha512"
-    },
-    "NETStandard.Library/2.0.3": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-st47PosZSHrjECdjeIzZQbzivYBJFv6P2nv4cj2ypdI204DO+vZ7l5raGMiX4eXMJ53RfOIg+/s4DHVZ54Nu2A==",
-      "path": "netstandard.library/2.0.3",
-      "hashPath": "netstandard.library.2.0.3.nupkg.sha512"
     },
     "System.Buffers/4.5.1": {
       "type": "package",

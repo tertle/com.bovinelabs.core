@@ -4,8 +4,9 @@ namespace BovineLabs.Core.Tests.Facet
     using NUnit.Framework;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Jobs;
 
-    public class FacetBufferArrayTests : ECSTestsFixture
+    public partial class FacetBufferArrayTests : ECSTestsFixture
     {
         [Test]
         public void Lookup_ReadsBuffersAsArrays()
@@ -41,6 +42,22 @@ namespace BovineLabs.Core.Tests.Facet
             var chunks = query.ToArchetypeChunkArray(Allocator.Temp);
 
             AssertFacet(typeHandle.Resolve(chunks[0])[0]);
+        }
+
+        [Test]
+        public void Lookup_CompletesSingletonWriters()
+        {
+            var entity = CreateEntity();
+            World.CreateSystem<WriterSystem>().Update(WorldUnmanaged);
+            ref var state = ref CreateTestSystemState();
+            var data = default(FacetBufferArrayFacet.SingletonData);
+            var lookup = default(FacetBufferArrayFacet.Lookup);
+            data.Create(ref state);
+            lookup.Create(ref state);
+            lookup.Update(ref state, data, true);
+
+            Assert.IsTrue(lookup.TryGet(entity, out var facet));
+            Assert.AreEqual(9, facet.Shared[0].Value);
         }
 
         [Test]
@@ -107,6 +124,24 @@ namespace BovineLabs.Core.Tests.Facet
         {
             public void OnUpdate(ref SystemState state)
             {
+            }
+        }
+
+        private partial struct WriterSystem : ISystem
+        {
+            public void OnUpdate(ref SystemState state)
+            {
+                state.Dependency = new WriteJob { Shared = SystemAPI.GetSingletonBuffer<SingletonB>() }.Schedule(state.Dependency);
+            }
+
+            private struct WriteJob : IJob
+            {
+                public DynamicBuffer<SingletonB> Shared;
+
+                public void Execute()
+                {
+                    this.Shared[0] = new SingletonB { Value = 9 };
+                }
             }
         }
     }
