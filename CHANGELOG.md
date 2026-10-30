@@ -3,6 +3,7 @@
 ## [2.0.0-pre.7] - Unreleased
 
 ### Added
+* Facet lookup and type-handle `Update(ref state, data)` overloads accept `completeSingletonDependency: true` to complete singleton query dependencies before reading components or buffers on the main thread.
 * `ECSTestsFixture.TestWorldFlags` sets the test world's role, and `ForceJobsDebugger` lets benchmarks keep the Editor's Jobs Debugger setting.
 * `ECSTestsFixture.CreateWorld`, `AddWorld` and `DisposeWorld` manage additional worlds, including `ClientServerBootstrap` worlds. Teardown destroys them in reverse order before the test world, with the same job, system and consistency checks, and removes them from the player loop.
 * Facets accept `NativeArray<T>` fields of buffer elements, entity or `[ReadOnly] [Singleton]`, read through `DynamicBuffer<T>.AsNativeArray()`, so code holding only arrays can construct the facet.
