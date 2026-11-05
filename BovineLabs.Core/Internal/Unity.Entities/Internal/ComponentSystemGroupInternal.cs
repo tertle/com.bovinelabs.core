@@ -6,22 +6,22 @@ namespace BovineLabs.Core.Internal
     {
         public static int GetUpdateSystemCount(this ComponentSystemGroup group)
         {
-            return group.m_MasterUpdateList.Length;
+            return group.m_UpdateList.Length;
         }
 
         public static bool IsManagedUpdateSystem(this ComponentSystemGroup group, int index)
         {
-            return group.m_MasterUpdateList[index].IsManaged;
+            return group.World.Unmanaged.GetSystemTypeIndex(group.m_UpdateList[index]).IsManaged;
         }
 
         public static ComponentSystemBase GetManagedUpdateSystem(this ComponentSystemGroup group, int index)
         {
-            return group.m_managedSystemsToUpdate[group.m_MasterUpdateList[index].Index];
+            return group.World.Unmanaged.ResolveSystemStateRef(group.m_UpdateList[index]).ManagedSystem;
         }
 
         public static SystemHandle GetUnmanagedUpdateSystem(this ComponentSystemGroup group, int index)
         {
-            return group.UnmanagedSystems[group.m_MasterUpdateList[index].Index];
+            return group.m_UpdateList[index];
         }
     }
 }

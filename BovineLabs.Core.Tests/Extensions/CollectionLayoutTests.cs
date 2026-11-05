@@ -5,13 +5,14 @@ namespace BovineLabs.Core.Tests.Extensions
     using System.Reflection;
     using BovineLabs.Core.Extensions;
     using BovineLabs.Core.Internal;
+    using BovineLabs.Core.Memory;
     using NUnit.Framework;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs;
 
-    public unsafe class CollectionLayoutTests
+    public class CollectionLayoutTests
     {
         private const BindingFlags Fields = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
@@ -43,21 +44,6 @@ namespace BovineLabs.Core.Tests.Extensions
         }
 
         [Test]
-        public void CoreTypeForwardersResolveToTheBridge()
-        {
-            var core = typeof(BovineLabs.Core.Jobs.JobHashMapDefer).Assembly;
-            foreach (var type in new[]
-            {
-                typeof(HashMapHelper<>), typeof(UnsafeParallelHashMapData), typeof(Bitwise), typeof(MemoryUtil), typeof(CollectionInternal),
-                typeof(NativeHashMapFactory<,>), typeof(NativeHashSetFactory<>),
-            })
-            {
-                Assert.That(type.Assembly.GetName().Name, Is.EqualTo("Unity.Collections"));
-                Assert.That(core.GetType(type.FullName, true), Is.EqualTo(type));
-            }
-        }
-
-        [Test]
         public void SafetyAccessorReturnsTheOriginalHandleByReference()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -76,19 +62,6 @@ namespace BovineLabs.Core.Tests.Extensions
                 list.Dispose();
             }
 #endif
-        }
-
-        [Test]
-        public void MemoryLabelCreationRunsInBurst()
-        {
-            using var result = new NativeReference<int>(Allocator.TempJob);
-            new CreateLabel
-            {
-                Category = "Core tests",
-                Name = "Burst collections bridge",
-                Result = result,
-            }.Schedule().Complete();
-            Assert.That(result.Value, Is.EqualTo(1));
         }
 
         [Test]
@@ -129,7 +102,7 @@ namespace BovineLabs.Core.Tests.Extensions
         [Test]
         public void CustomAllocatorSupportsWrapperAllocationGrowthAndFree()
         {
-            var allocator = new AllocatorHelper<BovineLabs.Core.Memory.MemoryLabelAllocator>(Allocator.Persistent);
+            var allocator = new AllocatorHelper<MemoryLabelAllocator>(Allocator.Persistent);
             allocator.Allocator.Initialize("Core tests", "Collections layout");
             try
             {
@@ -181,19 +154,6 @@ namespace BovineLabs.Core.Tests.Extensions
             Assert.That(sum, Is.EqualTo(30));
             unsafeMap.Dispose(default(JobHandle)).Complete();
             Assert.That(unsafeMap.IsCreated, Is.False);
-        }
-
-        [BurstCompile(CompileSynchronously = true)]
-        private struct CreateLabel : IJob
-        {
-            public FixedString32Bytes Category;
-            public FixedString64Bytes Name;
-            public NativeReference<int> Result;
-
-            public void Execute()
-            {
-                Result.Value = MemoryUtil.CreateLabel(Category, Name).IsCreated ? 1 : 0;
-            }
         }
 
         [BurstCompile(CompileSynchronously = true)]

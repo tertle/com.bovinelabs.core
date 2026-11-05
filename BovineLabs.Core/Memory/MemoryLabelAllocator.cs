@@ -4,7 +4,6 @@
     using System.Threading;
     using AOT;
     using BovineLabs.Core.Assertions;
-    using BovineLabs.Core.Internal;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
@@ -38,7 +37,7 @@
 
         public void Initialize(FixedString32Bytes category, FixedString64Bytes name)
         {
-            var label = MemoryUtil.CreateLabel(category, name);
+            var label = MemoryLabel.Create(category, name);
             _memoryLabel = label;
         }
 
@@ -73,7 +72,7 @@
 
         [BurstCompile(CompileSynchronously = true)]
         [MonoPInvokeCallback(typeof(AllocatorManager.TryFunction))]
-        private static int Try(IntPtr state, ref AllocatorManager.Block block)
+        internal static int Try(IntPtr state, ref AllocatorManager.Block block)
         {
             return ((MemoryLabelAllocator*)state)->Try(ref block);
         }
