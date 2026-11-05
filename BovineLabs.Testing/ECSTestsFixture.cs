@@ -12,6 +12,7 @@ namespace BovineLabs.Testing
         private readonly List<World> _additionalWorlds = new();
 
         private bool _jobsDebuggerWasEnabled;
+        private int _previousLogLevel;
         private PlayerLoopSystem _previousPlayerLoop;
 
         private World _world;
@@ -55,6 +56,10 @@ namespace BovineLabs.Testing
                 JobsUtility.JobDebuggerEnabled = true;
             }
 
+            // The log level is a local config var; tests use its default so LogAssert sees the same messages on every machine.
+            _previousLogLevel = BLLogger.CurrentLogLevel.Data;
+            BLLogger.CurrentLogLevel.Data = BLLogger.LogLevelDefaultValue;
+
             BLDebugSystem.Create(_world);
 
             BlobAssetStore = new BlobAssetStore(128);
@@ -88,6 +93,7 @@ namespace BovineLabs.Testing
             BlobAssetStore.Dispose();
 
             JobsUtility.JobDebuggerEnabled = _jobsDebuggerWasEnabled;
+            BLLogger.CurrentLogLevel.Data = _previousLogLevel;
 
             PlayerLoop.SetPlayerLoop(_previousPlayerLoop);
         }
