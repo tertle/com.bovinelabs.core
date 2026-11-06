@@ -10,8 +10,12 @@
 * Facets accept `NativeArray<T>` fields of buffer elements, entity or `[ReadOnly] [Singleton]`, read through `DynamicBuffer<T>.AsNativeArray()`, so code holding only arrays can construct the facet.
 
 ### Fixed
+* Updated memory-label allocation and system-group access for Unity 7000.0.0a16 compatibility, and removed the obsolete Editor-world initialization hook.
 * Settings singletons load at `[OnCodeInitializing]`, before Unity creates any system, instead of at `BeforeSplashScreen` in Players. On Unity 7000.0.0a12 systems are created first, so their reads made an empty fallback instance that loading then initialized in place of the real asset.
 * `SettingsSingleton<T>.I` and `KSettingsBase<T, TV>.I` read before loading resolve and initialize their settings asset instead of creating an empty instance, and throw when the project or build does not contain exactly one. `SettingsSingleton.GetSingleton` takes the field by value.
+
+### Removed
+* Removed `BovineLabs.Core.Internal.MemoryUtil.CreateLabel`; use `Unity.Collections.MemoryLabel.Create` instead.
 
 ## [2.0.0-pre.6] - 2026-10-26
 
