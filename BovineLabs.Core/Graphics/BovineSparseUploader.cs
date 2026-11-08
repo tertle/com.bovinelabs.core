@@ -82,6 +82,62 @@ namespace BovineLabs.Core.Graphics
             return count;
         }
 
+        /// <summary>
+        /// Reserves as many of the first <paramref name="requestedCount"/> 3x4 matrices as fit, with one operation per run of consecutive
+        /// <paramref name="indices"/>. Returns the matrices reserved, zero when not even one fits.
+        /// </summary>
+        public int TryAllocMatrices(int* indices, int requestedCount, out int operationCount, out byte* ptr, out int operationOffset, out int dataOffset)
+        {
+            var operationSize = UnsafeUtility.SizeOf<Operation>();
+            var matrixSize = sizeof(float3x4);
+            long originalMarker;
+            long newMarker;
+            long currentOperationOffset;
+            long currentDataOffset;
+            int count;
+            int operations;
+            do
+            {
+                originalMarker = Interlocked.Read(ref m_Marker);
+                UnpackMarker(originalMarker, out currentOperationOffset, out currentDataOffset);
+                var available = currentDataOffset - currentOperationOffset;
+                var used = 0L;
+                count = 0;
+                operations = 0;
+                while (count < requestedCount)
+                {
+                    var newRun = count == 0 || indices[count] != indices[count - 1] + 1;
+                    var cost = matrixSize + (newRun ? operationSize : 0);
+                    if (used + cost > available)
+                    {
+                        break;
+                    }
+
+                    used += cost;
+                    operations += newRun ? 1 : 0;
+                    count++;
+                }
+
+                if (count == 0)
+                {
+                    ptr = null;
+                    operationCount = 0;
+                    operationOffset = 0;
+                    dataOffset = 0;
+                    return 0;
+                }
+
+                newMarker = PackMarker(currentOperationOffset + ((long)operations * operationSize), currentDataOffset - ((long)count * matrixSize));
+            }
+            while (Interlocked.CompareExchange(ref m_Marker, newMarker, originalMarker) != originalMarker);
+
+            ptr = m_Data;
+            operationCount = operations;
+            operationOffset = (int)currentOperationOffset;
+            dataOffset = (int)(currentDataOffset - ((long)count * matrixSize));
+            return count;
+        }
+
         public bool TryAlloc(int operationSize, int dataSize, out byte* ptr, out int operationOffset, out int dataOffset)
         {
             long originalMarker;
@@ -447,6 +503,77 @@ namespace BovineLabs.Core.Graphics
         public void AddMatrixUploadAndInverse(void* src, int numMatrices, int offset, int offsetInverse, MatrixType srcType, MatrixType dstType)
         {
             MatrixUploadHelper(src, numMatrices, offset, offsetInverse, srcType, dstType);
+        }
+
+        /// <summary>Stages independent 3x4 matrix uploads and their inverses, reserving staging memory for up to 64 matrices at a time.</summary>
+        /// <remarks>
+        /// Matrix i goes to <c>offset + indices[i] * 48</c> and its inverse to <c>offsetInverse + indices[i] * 48</c>. Consecutive indices share
+        /// one operation. Budget each matrix in Begin as one 48-byte payload and one operation, with a largest upload of at least 48 bytes.
+        /// Complete all producers before EndAndCommit.
+        /// </remarks>
+        /// <param name="matrices">The matrices, copied during this call.</param>
+        /// <param name="indices">The destination element index of each matrix.</param>
+        /// <param name="count">Number of matrices.</param>
+        /// <param name="offset">Byte offset of element zero of the matrices.</param>
+        /// <param name="offsetInverse">Byte offset of element zero of the inverses.</param>
+        public void AddMatrixUploadsAndInverse(float3x4* matrices, int* indices, int count, int offset, int offsetInverse)
+        {
+            var operationSize = UnsafeUtility.SizeOf<Operation>();
+            while (count > 0)
+            {
+                var requestedCount = math.min(count, 64);
+                var buffer = m_Data->m_CurrBuffer;
+                var allocatedCount = 0;
+                var operationCount = 0;
+                byte* destination = null;
+                var operationOffset = 0;
+                var dataOffset = 0;
+                while (buffer < m_Data->m_NumBuffers)
+                {
+                    allocatedCount = m_Data->m_Buffers[buffer].TryAllocMatrices(
+                        indices, requestedCount, out operationCount, out destination, out operationOffset, out dataOffset);
+                    if (allocatedCount > 0)
+                    {
+                        break;
+                    }
+
+                    // Advance only when a single matrix cannot fit; Begin budgets single-operation tail waste.
+                    buffer = Interlocked.CompareExchange(ref m_Data->m_CurrBuffer, buffer + 1, buffer);
+                }
+
+                if (allocatedCount == 0)
+                {
+                    BLGlobalLogger.LogError("BovineSparseUploader failed to allocate upload memory for AddMatrixUploadsAndInverse operation");
+                    return;
+                }
+
+                UnsafeUtility.MemCpy(destination + dataOffset, matrices, (long)allocatedCount * sizeof(float3x4));
+                var start = 0;
+                for (var o = 0; o < operationCount; o++)
+                {
+                    var end = start + 1;
+                    while (end < allocatedCount && indices[end] == indices[end - 1] + 1)
+                    {
+                        end++;
+                    }
+
+                    var operation = new Operation
+                    {
+                        type = (uint)OperationType.Matrix_Inverse_3x4,
+                        srcOffset = (uint)(dataOffset + (start * sizeof(float3x4))),
+                        dstOffset = (uint)(offset + (indices[start] * sizeof(float3x4))),
+                        dstOffsetExtra = (uint)(offsetInverse + (indices[start] * sizeof(float3x4))),
+                        size = (uint)((end - start) * sizeof(float3x4)),
+                        count = 1,
+                    };
+                    UnsafeUtility.MemCpy(destination + operationOffset + (o * operationSize), &operation, operationSize);
+                    start = end;
+                }
+
+                matrices += allocatedCount;
+                indices += allocatedCount;
+                count -= allocatedCount;
+            }
         }
 
         /// <summary>
