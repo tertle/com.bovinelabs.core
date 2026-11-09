@@ -10,6 +10,7 @@
 * Facets accept `NativeArray<T>` fields of buffer elements, entity or `[ReadOnly] [Singleton]`, read through `DynamicBuffer<T>.AsNativeArray()`, so code holding only arrays can construct the facet.
 * `ThreadedBovineSparseUploader.AddMatrixUploadsAndInverse` stages 3x4 matrices and their inverses to indexed elements, reserving staging memory for up to 64 matrices at a time and merging consecutive indices into one operation, so parallel producers no longer contend on the shared allocation for every matrix.
 * `EntityManager.Instantiate<T>(srcEntity, sharedComponent)` and `Instantiate<T>(srcEntity, outputEntities, sharedComponent)` instantiate with an unmanaged shared component value replaced on every entity of the clone that has it, linked entity group included, creating clones straight in that value's chunks instead of moving them afterwards. Checks builds throw when no entity of the group has the type.
+* `EntityReservation` reserves entity ids before their entities exist, as `EntityCommandBuffer.Instantiate` does at record time, and `EntityManager.InstantiateExisting<T>(entities, groups)` fills reserved ids with clones of several prefabs in one structural change, each `InstantiateGroup<T>` optionally creating its run straight in the chunks of a shared component value. Linked entity group roots take the reserved ids; their other members get new ones.
 
 ### Fixed
 * Updated memory-label allocation and system-group access for Unity 7000.0.0a16 compatibility, and removed the obsolete Editor-world initialization hook.

@@ -158,6 +158,91 @@ namespace BovineLabs.Core.Tests.Extensions
             Assert.IsFalse(HasValue(9));
         }
 
+        [Test]
+        public void InstantiateExisting_CreatesReservedEntitiesPerGroup()
+        {
+            var first = CreatePrefab(1);
+            var second = CreatePrefab(1);
+            Manager.SetComponentData(second, new InstantiateData { Value = 3 });
+
+            using var entities = new NativeArray<Entity>(5, Allocator.Temp);
+            EntityReservation.Reserve(entities);
+            foreach (var entity in entities)
+            {
+                Assert.IsFalse(Manager.Exists(entity));
+            }
+
+            var groups = new NativeArray<InstantiateGroup<InstantiateShared>>(3, Allocator.Temp);
+            groups[0] = Group(first, 0, 2, 4);
+            groups[1] = Group(second, 2, 2, 5);
+            groups[2] = Group(second, 4, 1);
+            Manager.InstantiateExisting(entities, groups);
+
+            var expected = new[] { 4, 4, 5, 5, 1 };
+            for (var i = 0; i < entities.Length; i++)
+            {
+                Assert.IsTrue(Manager.Exists(entities[i]));
+                Assert.IsFalse(Manager.HasComponent<Prefab>(entities[i]));
+                Assert.AreEqual(expected[i], Manager.GetSharedComponent<InstantiateShared>(entities[i]).Value);
+            }
+
+            Assert.AreEqual(0, Manager.GetComponentData<InstantiateData>(entities[0]).Value);
+            Assert.AreEqual(3, Manager.GetComponentData<InstantiateData>(entities[2]).Value);
+            Assert.AreEqual(Manager.GetChunk(entities[2]), Manager.GetChunk(entities[3]));
+            Assert.AreNotEqual(Manager.GetChunk(entities[0]), Manager.GetChunk(entities[2]));
+        }
+
+        [Test]
+        public void InstantiateExisting_ReservedRootGetsNewChildren()
+        {
+            var root = CreatePrefab(1);
+            Manager.AddComponent<InstantiateReference>(root);
+            var child = CreatePrefab(1);
+            Manager.SetComponentData(root, new InstantiateReference { Value = child });
+            var group = Manager.AddBuffer<LinkedEntityGroup>(root);
+            group.Add(root);
+            group.Add(child);
+
+            using var entities = new NativeArray<Entity>(2, Allocator.Temp);
+            EntityReservation.Reserve(entities);
+            var groups = new NativeArray<InstantiateGroup<InstantiateShared>>(1, Allocator.Temp);
+            groups[0] = Group(root, 0, 2, 6);
+            Manager.InstantiateExisting(entities, groups);
+
+            foreach (var entity in entities)
+            {
+                var members = Manager.GetBuffer<LinkedEntityGroup>(entity);
+                Assert.AreEqual(entity, members[0].Value);
+                Assert.AreNotEqual(child, members[1].Value);
+                Assert.AreEqual(6, Manager.GetSharedComponent<InstantiateShared>(members[1].Value).Value);
+                Assert.AreEqual(members[1].Value, Manager.GetComponentData<InstantiateReference>(entity).Value);
+            }
+
+            var firstChild = Manager.GetBuffer<LinkedEntityGroup>(entities[0])[1].Value;
+            Assert.AreNotEqual(firstChild, Manager.GetBuffer<LinkedEntityGroup>(entities[1])[1].Value);
+        }
+
+        [Test]
+        public unsafe void EntityReservation_ReleaseFreesTheEntity()
+        {
+            var entity = EntityReservation.Reserve();
+            EntityReservation.Release(&entity, 1);
+
+            Assert.IsFalse(Manager.Exists(entity));
+        }
+
+        private static InstantiateGroup<InstantiateShared> Group(Entity prefab, int start, int count, int? value = null)
+        {
+            return new InstantiateGroup<InstantiateShared>
+            {
+                Prefab = prefab,
+                Start = start,
+                Count = count,
+                Value = new InstantiateShared { Value = value ?? 0 },
+                SetValue = value.HasValue,
+            };
+        }
+
         private Entity CreatePrefab(int value)
         {
             var prefab = Manager.CreateEntity(typeof(InstantiateShared), typeof(InstantiateData), typeof(Prefab));

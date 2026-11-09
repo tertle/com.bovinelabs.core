@@ -221,6 +221,84 @@ namespace BovineLabs.Core.Extensions
             access->EndStructuralChanges(ref changes);
         }
 
+        /// <summary>
+        /// Instantiates each group's prefab into reserved root entities, in one structural change: group <c>i</c> fills
+        /// <c>entities[Start .. Start + Count]</c>, ids from <see cref="EntityReservation"/> that have not been filled. With
+        /// <see cref="InstantiateGroup{T}.SetValue"/>, the group's clones are created in the chunks of its <see cref="InstantiateGroup{T}.Value"/>
+        /// as <see cref="Instantiate{T}(EntityManager, Entity, NativeArray{Entity}, T)"/> does; without, they keep the prefab's values. Child
+        /// entities of a <see cref="LinkedEntityGroup"/> are created, as only roots are reserved.
+        /// </summary>
+        /// <exception cref="ArgumentException">In checks builds, when a group's range leaves <paramref name="entities"/>, or a group setting its
+        /// value has no entity with <typeparamref name="T"/>.</exception>
+        public static void InstantiateExisting<T>(this EntityManager entityManager, NativeArray<Entity> entities, NativeArray<InstantiateGroup<T>> groups)
+            where T : unmanaged, ISharedComponentData
+        {
+            if (groups.Length == 0)
+            {
+                return;
+            }
+
+            var access = entityManager.GetCheckedEntityDataAccess();
+            var entityComponentStore = access->EntityComponentStore;
+            foreach (var group in groups)
+            {
+                CheckGroupRange(group.Start, group.Count, entities.Length);
+                var archetype = entityComponentStore->GetArchetype(group.Prefab);
+                access->PrepareForAdditiveStructuralChanges(archetype->InstantiateArchetype);
+                entityComponentStore->AssertCanInstantiateEntities(group.Prefab);
+                if (group.SetValue)
+                {
+                    AssertGroupHasSharedComponent<T>(entityComponentStore, group.Prefab);
+                }
+            }
+
+            var changes = access->BeginAdditiveStructuralChanges();
+
+            var typeIndex = TypeManager.GetTypeIndex<T>();
+            var existing = new NativeArray<EntityComponentStoreInstantiate.ExistingGroup>(
+                groups.Length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            for (var i = 0; i < groups.Length; i++)
+            {
+                var group = groups[i];
+
+                // Each insert's reference is released by EndStructuralChanges; each chunk created for the value takes its own.
+                existing[i] = new EntityComponentStoreInstantiate.ExistingGroup
+                {
+                    Prefab = group.Prefab,
+                    Start = group.Start,
+                    Count = group.Count,
+                    Type = group.SetValue ? typeIndex : TypeIndex.Null,
+                    SharedComponentIndex = group.SetValue ? access->InsertSharedComponent_Unmanaged(group.Value) : 0,
+                };
+            }
+
+            if (StructuralChangesProfiler.Enabled)
+            {
+                access->StructuralChangesRecorder.Begin(StructuralChangesProfiler.StructuralChangeType.CreateEntity, in access->m_WorldUnmanaged);
+            }
+
+            EntityComponentStoreInstantiate.InstantiateExistingGroups(
+                entityComponentStore, (Entity*)entities.GetUnsafeReadOnlyPtr(), (EntityComponentStoreInstantiate.ExistingGroup*)existing.GetUnsafeReadOnlyPtr(),
+                existing.Length);
+
+            if (StructuralChangesProfiler.Enabled)
+            {
+                access->StructuralChangesRecorder.End();
+            }
+
+            access->EndStructuralChanges(ref changes);
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private static void CheckGroupRange(int start, int count, int length)
+        {
+            if (start < 0 || count < 0 || start + count > length)
+            {
+                throw new ArgumentException($"An instantiate group's range {start} + {count} leaves the {length} reserved entities.");
+            }
+        }
+
         // A value that lands on no entity is a wrong prefab or type: the call would silently be a plain Instantiate.
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [Conditional("UNITY_DOTS_DEBUG")]
@@ -246,8 +324,10 @@ namespace BovineLabs.Core.Extensions
                 return;
             }
 
+            var entityName = srcEntity.ToFixedString();
+            var typeName = typeIndex.ToFixedString();
             throw new ArgumentException(
-                $"Neither {srcEntity} nor its LinkedEntityGroup has {typeof(T).Name}, so instantiating it with that shared component would set nothing.");
+                $"Neither {entityName} nor its LinkedEntityGroup has {typeName}, so instantiating it with that shared component would set nothing.");
         }
 
         internal static SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
