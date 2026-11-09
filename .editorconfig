@@ -2,12 +2,19 @@ root = true
 
 # Shared C# preferences. Sync standalone BovineLabs copies with .agents/scripts/Sync-PackageEditorConfig.ps1.
 [*.cs]
-csharp_new_line_before_open_brace = control_blocks
-csharp_preserve_single_line_blocks = false
+csharp_new_line_before_open_brace = all
+csharp_preserve_single_line_blocks = true
 indent_style = space
 indent_size = 4
 max_line_length = 160
 csharp_style_namespace_declarations = block_scoped
+
+# Rider: braces on their own line; parameters and initializers wrap only when a line is too long.
+resharper_csharp_brace_style = next_line
+resharper_csharp_wrap_parameters_style = wrap_if_long
+resharper_csharp_wrap_after_declaration_lpar = false
+resharper_csharp_place_simple_initializer_on_single_line = true
+resharper_csharp_wrap_object_and_collection_initializer_style = chop_if_long
 
 dotnet_style_qualification_for_field = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
