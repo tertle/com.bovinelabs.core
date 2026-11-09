@@ -9,6 +9,7 @@
 * `ECSTestsFixture.CreateWorld`, `AddWorld` and `DisposeWorld` manage additional worlds, including `ClientServerBootstrap` worlds. Teardown destroys them in reverse order before the test world, with the same job, system and consistency checks, and removes them from the player loop.
 * Facets accept `NativeArray<T>` fields of buffer elements, entity or `[ReadOnly] [Singleton]`, read through `DynamicBuffer<T>.AsNativeArray()`, so code holding only arrays can construct the facet.
 * `ThreadedBovineSparseUploader.AddMatrixUploadsAndInverse` stages 3x4 matrices and their inverses to indexed elements, reserving staging memory for up to 64 matrices at a time and merging consecutive indices into one operation, so parallel producers no longer contend on the shared allocation for every matrix.
+* `EntityManager.Instantiate<T>(srcEntity, sharedComponent)` and `Instantiate<T>(srcEntity, outputEntities, sharedComponent)` instantiate with an unmanaged shared component value replaced on every entity of the clone that has it, linked entity group included, creating clones straight in that value's chunks instead of moving them afterwards. Checks builds throw when no entity of the group has the type.
 
 ### Fixed
 * Updated memory-label allocation and system-group access for Unity 7000.0.0a16 compatibility, and removed the obsolete Editor-world initialization hook.

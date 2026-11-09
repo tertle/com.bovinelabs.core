@@ -1,9 +1,11 @@
 namespace BovineLabs.Core.Extensions
 {
     using System;
+    using System.Diagnostics;
     using BovineLabs.Core.Collections;
     using BovineLabs.Core.Iterators;
     using Unity.Collections;
+    using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
 
     public static unsafe class EntityManagerExtensions
@@ -152,6 +154,100 @@ namespace BovineLabs.Core.Extensions
             var e = em.CreateEntity(s);
             em.SetName(e, name);
             return e;
+        }
+
+        /// <summary>
+        /// Instantiates <paramref name="srcEntity"/> as <see cref="EntityManager.Instantiate(Entity)"/> does, with <paramref name="sharedComponent"/>
+        /// as the value of <typeparamref name="T"/> on every entity of the clone that has <typeparamref name="T"/>, its
+        /// <see cref="LinkedEntityGroup"/> included. The clone is created in the chunks of that value, so no chunk move follows, as one would after
+        /// <see cref="EntityManager.SetSharedComponent{T}(Entity, T)"/>. Entities without <typeparamref name="T"/> are instantiated unchanged.
+        /// </summary>
+        /// <exception cref="ArgumentException">In checks builds, when neither <paramref name="srcEntity"/> nor any entity of its
+        /// <see cref="LinkedEntityGroup"/> has <typeparamref name="T"/>.</exception>
+        public static Entity Instantiate<T>(this EntityManager entityManager, Entity srcEntity, T sharedComponent)
+            where T : unmanaged, ISharedComponentData
+        {
+            Entity entity;
+            InstantiateWithSharedComponent(entityManager, srcEntity, &entity, 1, sharedComponent);
+            return entity;
+        }
+
+        /// <summary>
+        /// Makes <c>outputEntities.Length</c> clones of <paramref name="srcEntity"/> as
+        /// <see cref="EntityManager.Instantiate(Entity, NativeArray{Entity})"/> does, with <paramref name="sharedComponent"/> as the value of
+        /// <typeparamref name="T"/> on every entity of each clone that has <typeparamref name="T"/>, its <see cref="LinkedEntityGroup"/> included.
+        /// Clones are created in the chunks of that value, so no chunk move follows. Entities without <typeparamref name="T"/> are instantiated
+        /// unchanged. To give clones different values, call once per value.
+        /// </summary>
+        /// <exception cref="ArgumentException">In checks builds, when neither <paramref name="srcEntity"/> nor any entity of its
+        /// <see cref="LinkedEntityGroup"/> has <typeparamref name="T"/>.</exception>
+        public static void Instantiate<T>(this EntityManager entityManager, Entity srcEntity, NativeArray<Entity> outputEntities, T sharedComponent)
+            where T : unmanaged, ISharedComponentData
+        {
+            InstantiateWithSharedComponent(entityManager, srcEntity, (Entity*)outputEntities.GetUnsafePtr(), outputEntities.Length, sharedComponent);
+        }
+
+        private static void InstantiateWithSharedComponent<T>(EntityManager entityManager, Entity srcEntity, Entity* outputEntities, int count,
+            T sharedComponent)
+            where T : unmanaged, ISharedComponentData
+        {
+            var access = entityManager.GetCheckedEntityDataAccess();
+            var entityComponentStore = access->EntityComponentStore;
+            var archetype = entityComponentStore->GetArchetype(srcEntity);
+            access->PrepareForAdditiveStructuralChanges(archetype->InstantiateArchetype);
+
+            entityComponentStore->AssertEntitiesExist(&srcEntity, 1);
+            entityComponentStore->AssertCanInstantiateEntities(srcEntity);
+            AssertGroupHasSharedComponent<T>(entityComponentStore, srcEntity);
+
+            var changes = access->BeginAdditiveStructuralChanges();
+
+            // The reference this insert takes is released by EndStructuralChanges; each chunk created for the value takes its own.
+            var sharedComponentIndex = access->InsertSharedComponent_Unmanaged(sharedComponent);
+
+            if (StructuralChangesProfiler.Enabled)
+            {
+                access->StructuralChangesRecorder.Begin(StructuralChangesProfiler.StructuralChangeType.CreateEntity, in access->m_WorldUnmanaged);
+            }
+
+            EntityComponentStoreInstantiate.InstantiateWithSharedComponent(
+                entityComponentStore, &srcEntity, outputEntities, count, TypeManager.GetTypeIndex<T>(), sharedComponentIndex);
+
+            if (StructuralChangesProfiler.Enabled)
+            {
+                access->StructuralChangesRecorder.End();
+            }
+
+            access->EndStructuralChanges(ref changes);
+        }
+
+        // A value that lands on no entity is a wrong prefab or type: the call would silently be a plain Instantiate.
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("UNITY_DOTS_DEBUG")]
+        private static void AssertGroupHasSharedComponent<T>(EntityComponentStore* entityComponentStore, Entity srcEntity)
+            where T : unmanaged, ISharedComponentData
+        {
+            var typeIndex = TypeManager.GetTypeIndex<T>();
+            var linkedGroupType = TypeManager.GetTypeIndex<LinkedEntityGroup>();
+            if (entityComponentStore->HasComponent(srcEntity, linkedGroupType, out _))
+            {
+                var header = (BufferHeader*)entityComponentStore->GetComponentDataWithTypeRO(srcEntity, linkedGroupType);
+                var entities = (Entity*)BufferHeader.GetElementPointer(header);
+                for (var i = 0; i < header->Length; i++)
+                {
+                    if (entityComponentStore->HasComponent(entities[i], typeIndex, out _))
+                    {
+                        return;
+                    }
+                }
+            }
+            else if (entityComponentStore->HasComponent(srcEntity, typeIndex, out _))
+            {
+                return;
+            }
+
+            throw new ArgumentException(
+                $"Neither {srcEntity} nor its LinkedEntityGroup has {typeof(T).Name}, so instantiating it with that shared component would set nothing.");
         }
 
         internal static SharedComponentDataFromIndex<T> GetSharedComponentDataFromIndex<T>(this EntityManager entityManager, bool isReadOnly = true)
