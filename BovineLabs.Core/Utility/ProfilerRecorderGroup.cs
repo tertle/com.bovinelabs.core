@@ -62,16 +62,22 @@ namespace BovineLabs.Core.Utility
             get
             {
                 var value = 0L;
-                foreach (var recorder in _recorders)
+                for (var i = 0; i < _recorders.Length; i++)
                 {
-                    if (recorder.Valid && recorder.Count > 0)
-                    {
-                        value += recorder.LastValue;
-                    }
+                    value += GetLastValue(i);
                 }
 
                 return value;
             }
+        }
+
+        /// <summary>
+        /// Reads the counter at its constructor index, returning zero when no sample is available.
+        /// </summary>
+        public long GetLastValue(int counterIndex)
+        {
+            var recorder = _recorders[counterIndex];
+            return recorder.Valid && recorder.Count > 0 ? recorder.LastValue : 0;
         }
 
         public void Dispose()

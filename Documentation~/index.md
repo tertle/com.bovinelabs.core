@@ -23,7 +23,7 @@ Core provides:
 
 ## Requirements and assemblies
 
-Core 2.0.0-pre.7 requires Unity 7000.0.0a16 or newer and Unity Entities 6.7.0 or newer. Unity Input System 1.20.0 or newer is optional and enables the Core editor inspectors for Input Action assets.
+Core 2.0.0-pre.8 requires Unity 7000.0.0a16 or newer and Unity Entities 6.7.0 or newer. Unity Input System 1.20.0 or newer is optional and enables the Core editor inspectors for Input Action assets.
 
 All public Core assemblies have `autoReferenced` disabled. Reference only the surfaces the consuming assembly uses:
 

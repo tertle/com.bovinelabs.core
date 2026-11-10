@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.0-pre.8] - Unreleased
+
+### Added
+* Added indexed access to individual samples in `ProfilerRecorderGroup`.
+
 ## [2.0.0-pre.7] - 2026-11-10
 
 ### Added
