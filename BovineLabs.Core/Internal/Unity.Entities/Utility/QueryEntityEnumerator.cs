@@ -16,13 +16,13 @@
 
             var queryImpl = query._GetImpl();
             _chunkCacheIterator = new UnsafeChunkCacheIterator(queryImpl->_Filter, queryImpl->_QueryData->HasEnableableComponents != 0,
-                queryImpl->GetMatchingChunkCache(), queryImpl->_QueryData->MatchingArchetypes.Ptr);
+                queryImpl->GetQueryChunks());
         }
 
         public bool MoveNextChunk(out ArchetypeChunk chunk, out ChunkEntityEnumerator chunkEnumerator)
         {
-            var result = _chunkCacheIterator.MoveNextChunk(ref _chunkIndex, out chunk, out _, out var useEnabledMaskBit, ref _chunkEnabledMask);
-            chunkEnumerator = new ChunkEntityEnumerator(useEnabledMaskBit != 0, _chunkEnabledMask, chunk.Count);
+            var result = _chunkCacheIterator.MoveNextChunk(ref _chunkIndex, out chunk, out var entityCount, out var useEnabledMask, ref _chunkEnabledMask);
+            chunkEnumerator = new ChunkEntityEnumerator(useEnabledMask != 0, _chunkEnabledMask, entityCount);
             return result;
         }
 

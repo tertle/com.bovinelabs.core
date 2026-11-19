@@ -46,8 +46,7 @@
 #endif
             public T JobData;
 
-            public UnsafeMatchingArchetypePtrList MatchingArchetypes;
-            public UnsafeCachedChunkList CachedChunks;
+            public QueryChunks Chunks;
             public EntityQueryFilter Filter;
 
             public int IsParallel;
@@ -118,7 +117,7 @@
                 queryImpl->SyncFilterTypes();
 
                 var chunkCacheIterator = new UnsafeChunkCacheIterator(queryImpl->_Filter, queryImpl->_QueryData->HasEnableableComponents != 0,
-                    queryImpl->GetMatchingChunkCache(), queryImpl->_QueryData->MatchingArchetypes.Ptr);
+                    queryImpl->GetQueryChunks());
 
                 var chunkIndex = -1;
                 v128 chunkEnabledMask = default;
@@ -130,16 +129,15 @@
             else
             {
                 // Fast path for queries with no filtering and no enableable components
-                var cachedChunkList = queryImpl->GetMatchingChunkCache();
-                var chunkIndices = cachedChunkList.ChunkIndices;
-                var chunkCount = cachedChunkList.Length;
-                var chunk = new ArchetypeChunk(ChunkIndex.Null, cachedChunkList.EntityComponentStore);
+                var chunks = queryImpl->GetQueryChunks();
+                var cursor = chunks.GetCursor();
+                var chunk = new ArchetypeChunk(ChunkIndex.Null, chunks.EntityComponentStore);
                 v128 defaultMask = default;
-                for (var chunkIndex = 0; chunkIndex < chunkCount; ++chunkIndex)
+                while (cursor.MoveNext())
                 {
-                    chunk.m_Chunk = chunkIndices[chunkIndex];
+                    chunk.m_Chunk = cursor.Chunk;
                     Assert.AreNotEqual(0, chunk.Count);
-                    jobData.Execute(chunk, chunkIndex, false, defaultMask);
+                    jobData.Execute(chunk, cursor.Index, false, defaultMask);
                 }
             }
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
@@ -158,9 +156,8 @@
             }
 
             var queryData = queryImpl->_QueryData;
-            var cachedChunks = queryImpl->GetMatchingChunkCache();
-            var totalChunkCount = cachedChunks.Length;
             var isParallel = mode == ScheduleMode.Parallel;
+            var chunks = isParallel ? queryImpl->GetQueryChunksForParallelJob() : queryImpl->GetQueryChunks();
 
             var jobChunkWrapper = new JobChunkWrapper<T>
             {
@@ -172,8 +169,7 @@
                     ? (int*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(chunkBaseEntityIndices)
                     : null,
 #endif
-                MatchingArchetypes = queryData->MatchingArchetypes,
-                CachedChunks = cachedChunks,
+                Chunks = chunks,
                 Filter = queryImpl->_Filter,
                 JobData = jobData,
                 IsParallel = isParallel ? 1 : 0,
@@ -186,8 +182,9 @@
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref jobChunkWrapper), reflectionData, dependsOn, mode);
 
-            var result = !isParallel ? JobsUtility.Schedule(ref scheduleParams) : JobsUtility.ScheduleParallelFor(ref scheduleParams, totalChunkCount, 1);
-            return result;
+            return isParallel
+                ? JobsUtility.ScheduleParallelFor(ref scheduleParams, chunks.CalculateLength(), 1)
+                : JobsUtility.Schedule(ref scheduleParams);
         }
 
         internal struct JobChunkProducer<T>
@@ -210,9 +207,9 @@
             internal static unsafe void Execute(
                 ref JobChunkWrapper<T> jobWrapper, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
             {
-                var chunks = jobWrapper.CachedChunks;
-                var chunkCacheIterator = new UnsafeChunkCacheIterator(jobWrapper.Filter, jobWrapper.QueryHasEnableableComponents != 0, jobWrapper.CachedChunks,
-                    jobWrapper.MatchingArchetypes.Ptr);
+                var chunks = jobWrapper.Chunks;
+                var cursor = chunks.GetCursor();
+                var chunkCacheIterator = new UnsafeChunkCacheIterator(jobWrapper.Filter, jobWrapper.QueryHasEnableableComponents != 0, chunks);
 
                 var isParallel = jobWrapper.IsParallel == 1;
                 var isFiltering = jobWrapper.Filter.RequiresMatchesFilter;
@@ -222,7 +219,7 @@
                 while (true)
                 {
                     var beginChunkIndex = 0;
-                    var endChunkIndex = chunks.Length;
+                    var endChunkIndex = int.MaxValue;
 
                     // If we are running the job in parallel, steal some work.
                     if (isParallel)
@@ -243,13 +240,14 @@
                     // Do the actual user work.
                     if (jobWrapper.QueryHasEnableableComponents == 0 && !isFiltering)
                     {
-                        // Fast path with no entity/chunk filtering active: we can just iterate over the cached chunk list directly.
-                        var chunkIndices = chunks.ChunkIndices;
+                        // Traverse archetype chunks directly when no filters or enableable components apply.
                         var chunk = new ArchetypeChunk(ChunkIndex.Null, chunks.EntityComponentStore);
                         v128 defaultMask = default;
-                        for (var chunkIndex = beginChunkIndex; chunkIndex < endChunkIndex; ++chunkIndex)
+                        cursor.SeekBefore(beginChunkIndex);
+                        while (cursor.MoveNext() && cursor.Index < endChunkIndex)
                         {
-                            chunk.m_Chunk = chunkIndices[chunkIndex];
+                            var chunkIndex = cursor.Index;
+                            chunk.m_Chunk = cursor.Chunk;
                             Assert.AreNotEqual(0, chunk.Count);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                             // For containers passed in the job struct, parallel jobs can limit writes to a range of indices.
@@ -273,8 +271,7 @@
                     else
                     {
                         // With any filtering active, we need to iterate using the UnsafeChunkCacheIterator.
-                        // Update cache range
-                        chunkCacheIterator.Length = endChunkIndex;
+                        chunkCacheIterator.EndIndex = endChunkIndex;
                         var chunkIndex = beginChunkIndex - 1;
 
                         v128 chunkEnabledMask = default;

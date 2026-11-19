@@ -5,6 +5,12 @@
 ### Added
 * Added indexed access to individual samples in `ProfilerRecorderGroup`.
 
+### Changed
+* Unity 7000.0.0a20 or newer is required.
+
+### Fixed
+* Updated query enumeration and worker-begin/end chunk jobs for archetype-based chunk traversal in Unity 7000.0.0a20.
+
 ## [2.0.0-pre.7] - 2026-11-10
 
 ### Added
