@@ -21,7 +21,7 @@
             _capacity = data.Capacity = GetRequiredCapacity(hashmap);
             data.NullValue = nullValue;
 
-            _values = builder.Allocate(ref data.Values, data.Capacity);
+            _values = new BlobBuilderArray<TValue>(builder.Allocate(ref data.Values, _capacity).GetUnsafePtr(), _capacity);
 
             // Write null values
             UnsafeUtility.MemCpyReplicate(_values.GetUnsafePtr(), &nullValue, sizeof(TValue), data.Capacity);
