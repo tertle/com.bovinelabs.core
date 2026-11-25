@@ -36,7 +36,7 @@
         private static void ClickEvent(Rect worldBound)
         {
             var menu = new GenericMenu();
-            menu.AddItem(EditorGUIUtility.TrTextContent("Domain"), false, EditorUtility.RequestScriptReload);
+            menu.AddItem(EditorGUIUtility.TrTextContent("Code"), false, EditorUtility.RequestScriptReload);
             menu.AddItem(EditorGUIUtility.TrTextContent("SubScenes"), false, EntitiesCacheUtility.UpdateEntitySceneGlobalDependency);
             menu.DropDown(worldBound);
         }
