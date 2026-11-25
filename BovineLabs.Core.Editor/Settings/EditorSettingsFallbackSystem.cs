@@ -32,18 +32,24 @@ namespace BovineLabs.Core.Editor.Settings
         protected override void OnDestroy()
         {
             EditorApplication.update -= _resumeUpdate;
+            _fallbacks.Dispose();
+        }
 
-            try
+        protected override void OnStopRunning()
+        {
+            // Scene unloading needs the streaming system, which is still available when systems stop running.
+            for (var index = 0; index < _fallbacks.Length; index++)
             {
-                for (var index = 0; index < _fallbacks.Length; index++)
+                ref var fallback = ref _fallbacks.ElementAt(index);
+                SetActive(EntityManager, ref fallback, false);
+                if (EntityManager.HasComponent<SceneReference>(fallback.SceneEntity))
                 {
-                    SetActive(EntityManager, ref _fallbacks.ElementAt(index), false);
+                    SceneSystem.UnloadScene(World.Unmanaged, fallback.SceneEntity, SceneSystem.UnloadParameters.DestroyMetaEntities);
                 }
             }
-            finally
-            {
-                _fallbacks.Dispose();
-            }
+
+            _fallbacks.Clear();
+            _initialized = false;
         }
 
         protected override void OnUpdate()

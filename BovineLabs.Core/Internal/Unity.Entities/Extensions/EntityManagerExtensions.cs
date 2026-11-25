@@ -24,6 +24,27 @@ namespace BovineLabs.Core.Extensions
             return entityManager.GetCheckedEntityDataAccess()->EntityComponentStore->m_Archetypes.Length;
         }
 
+        /// <summary>
+        /// Destroys system-owned entities identified by <typeparamref name="T"/> before Fast Enter Play Mode can transfer them to the play world.
+        /// </summary>
+        public static void DestroyEditorEntities<T>(this EntityManager entityManager)
+        {
+            if ((entityManager.WorldUnmanaged.Flags & WorldFlags.Editor) == WorldFlags.Editor)
+            {
+                entityManager.DestroyEntitiesWithoutScene<T>();
+            }
+        }
+
+        /// <summary>
+        /// Destroys non-prefab entities identified by <typeparamref name="T"/> without a <see cref="SceneTag"/> and their linked children.
+        /// </summary>
+        public static void DestroyEntitiesWithoutScene<T>(this EntityManager entityManager)
+        {
+            using var query = new EntityQueryBuilder(Allocator.Temp).WithAll<T>().WithNone<SceneTag>()
+                .WithOptions(EntityQueryOptions.IncludeDisabledEntities | EntityQueryOptions.IgnoreComponentEnabledState).Build(entityManager);
+            entityManager.DestroyEntity(query.ToEntityArray(Allocator.Temp));
+        }
+
         // Only use these for tests
         public static ComponentLookup<T> GetComponentLookup<T>(this EntityManager entityManager, bool isReadOnly = false)
             where T : unmanaged, IComponentData

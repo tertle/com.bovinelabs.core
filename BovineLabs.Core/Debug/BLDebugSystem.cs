@@ -44,6 +44,11 @@
             Create(World);
         }
 
+        protected override void OnDestroy()
+        {
+            EntityManager.DestroyEditorEntities<BLLogger>();
+        }
+
         protected override void OnUpdate()
         {
             var frameCount = UnityEngine.Time.frameCount;

@@ -37,6 +37,7 @@
 
         protected override void OnDestroy()
         {
+            EntityManager.DestroyEntitiesWithoutScene<SelectedEntity>();
             _instanceIds.Dispose();
             _entities.Dispose();
             _entityLookup.Dispose();
