@@ -4,11 +4,14 @@
 
 ### Added
 * Added indexed access to individual samples in `ProfilerRecorderGroup`.
+* `EntityManager.DestroyEditorEntities<T>` and `DestroyEntitiesWithoutScene<T>` remove system-owned entities and their linked children while preserving scene entities.
 
 ### Changed
-* Unity 7000.0.0a20 or newer is required.
+* Unity 7000.0.0a21 or newer is required.
+* The reload toolbar menu labels script reload as **Code** instead of **Domain**.
 
 ### Fixed
+* Editor-world teardown removes debug loggers and selection entities, and unloads fallback settings scenes while scene streaming is still available.
 * Updated query enumeration and worker-begin/end chunk jobs for archetype-based chunk traversal in Unity 7000.0.0a20.
 
 ## [2.0.0-pre.7] - 2026-11-10
