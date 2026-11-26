@@ -7,7 +7,7 @@
 * `EntityManager.DestroyEditorEntities<T>` and `DestroyEntitiesWithoutScene<T>` remove system-owned entities and their linked children while preserving scene entities.
 
 ### Changed
-* Unity 7000.0.0a21 or newer is required.
+* Unity 7000.0.0a22 or newer is required.
 * The reload toolbar menu labels script reload as **Code** instead of **Domain**.
 
 ### Fixed
