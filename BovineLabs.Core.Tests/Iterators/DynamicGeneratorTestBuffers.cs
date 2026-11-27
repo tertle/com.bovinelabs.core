@@ -6,8 +6,9 @@ namespace BovineLabs.Core.Tests.Iterators
     using BovineLabs.Core.Iterators.Columns;
     using Unity.Entities;
     using Unity.Netcode;
+    using GhostMap = BovineLabs.Core.Iterators.GhostDynamicHashMapAttribute;
 
-    [GhostDynamicHashMap(SendDataForChildEntity = true)]
+    [GhostMap(SendDataForChildEntity = true)]
     [InternalBufferCapacity(0)]
     internal struct DynamicHashMapTestsBuffer : IDynamicHashMap<int, byte>
     {

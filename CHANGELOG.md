@@ -12,6 +12,7 @@
 * The reload toolbar menu labels script reload as **Code** instead of **Domain**.
 
 ### Fixed
+* Dynamic hash-map serializer generation recognizes C# aliases of `[GhostDynamicHashMap]`.
 * Editor-world teardown removes debug loggers and selection entities, and unloads fallback settings scenes while scene streaming is still available.
 * Updated query enumeration and worker-begin/end chunk jobs for archetype-based chunk traversal in Unity 7000.0.0a20.
 

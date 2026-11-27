@@ -27,9 +27,11 @@ namespace BovineLabs.DynamicGenerator
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var candidates = context.SyntaxProvider
-                .CreateSyntaxProvider(IsSyntaxTargetForGeneration, GetCandidate)
-                .Where(static candidate => candidate != null);
+            var candidates = context.SyntaxProvider.ForAttributeWithMetadataName(
+                AttributeMetadataName,
+                static (node, _) => node is StructDeclarationSyntax,
+                static (ctx, _) => new DynamicHashMapNetcodeCandidate(
+                    (StructDeclarationSyntax)ctx.TargetNode, (INamedTypeSymbol)ctx.TargetSymbol, ctx.Attributes[0]));
 
             context.RegisterSourceOutput(candidates, static (productionContext, candidate) => Execute(productionContext, candidate));
         }
@@ -60,56 +62,6 @@ namespace BovineLabs.DynamicGenerator
             {
                 SourceGenHelpers.Log(ex.ToString());
             }
-        }
-
-        private static bool IsSyntaxTargetForGeneration(SyntaxNode syntaxNode, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (syntaxNode is not TypeDeclarationSyntax typeDeclaration || typeDeclaration.AttributeLists.Count == 0 ||
-                typeDeclaration.Kind() != SyntaxKind.StructDeclaration)
-            {
-                return false;
-            }
-
-            foreach (var attributeList in typeDeclaration.AttributeLists)
-            {
-                foreach (var attribute in attributeList.Attributes)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    var name = attribute.Name.ToString();
-                    if (name.EndsWith("GhostDynamicHashMap", StringComparison.Ordinal) ||
-                        name.EndsWith("GhostDynamicHashMapAttribute", StringComparison.Ordinal))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private static DynamicHashMapNetcodeCandidate GetCandidate(GeneratorSyntaxContext ctx, CancellationToken cancellationToken)
-        {
-            var typeDeclaration = (TypeDeclarationSyntax)ctx.Node;
-            var typeSymbol = ctx.SemanticModel.GetDeclaredSymbol(typeDeclaration, cancellationToken);
-            if (typeSymbol == null)
-            {
-                return null;
-            }
-
-            foreach (var attribute in typeSymbol.GetAttributes())
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (IsDynamicHashMapGhostSerializerAttribute(attribute))
-                {
-                    return new DynamicHashMapNetcodeCandidate(typeDeclaration, typeSymbol, attribute);
-                }
-            }
-
-            return null;
         }
 
         private static DynamicHashMapNetcodeResult GetSemanticTargetForGeneration(DynamicHashMapNetcodeCandidate candidate, CancellationToken cancellationToken)
@@ -884,12 +836,6 @@ namespace BovineLabs.DynamicGenerator
             }
 
             return false;
-        }
-
-        private static bool IsDynamicHashMapGhostSerializerAttribute(AttributeData attribute)
-        {
-            var attributeName = attribute.AttributeClass?.ToDisplayString();
-            return attributeName == AttributeMetadataName;
         }
 
         private static DynamicHashMapCollectionKind GetCollectionKind(INamedTypeSymbol mapInterface)
