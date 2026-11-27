@@ -7,6 +7,7 @@
 * `EntityManager.DestroyEditorEntities<T>` and `DestroyEntitiesWithoutScene<T>` remove system-owned entities and their linked children while preserving scene entities.
 
 ### Changed
+* The facet and dynamic source generators build against Roslyn 5.6.0, the compiler API shipped with Unity 7000.0.0a22.
 * Unity 7000.0.0a22 or newer is required.
 * `IBitArray<T>` now inherits `System.Numerics.IBitwiseOperators<T, T, T>`. All six bit-array types support XOR (`^`). Use `&`, `|`, and `~` in place of `BitAnd`, `BitOr`, and `BitNot`.
 * The reload toolbar menu labels script reload as **Code** instead of **Domain**.
