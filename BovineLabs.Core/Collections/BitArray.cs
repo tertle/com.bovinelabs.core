@@ -3,6 +3,7 @@ namespace BovineLabs.Core.Collections
 {
     using System;
     using System.Diagnostics;
+    using System.Numerics;
     using System.Runtime.CompilerServices;
     using System.Text.RegularExpressions;
     using Unity.Burst.Intrinsics;
@@ -13,7 +14,7 @@ namespace BovineLabs.Core.Collections
     /// <summary>
     /// Adapted from com.unity.render-pipelines.core@12.0.0/Runtime/Utilities/BitArray for generics and Burst.
     /// </summary>
-    public interface IBitArray<T> : IEquatable<T>
+    public interface IBitArray<T> : IEquatable<T>, IBitwiseOperators<T, T, T>
         where T : unmanaged, IBitArray<T>
     {
         uint Capacity { get; }
@@ -27,21 +28,6 @@ namespace BovineLabs.Core.Collections
         bool this[uint index] { get; set; }
 
         bool this[int index] { get; set; }
-
-        /// <summary>
-        /// Both arrays must have the same capacity; does not mutate either array.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        T BitAnd(T other);
-
-        /// <summary>
-        /// Both arrays must have the same capacity; does not mutate either array.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        T BitOr(T other);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        T BitNot();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         int CountBits();
@@ -126,6 +112,12 @@ namespace BovineLabs.Core.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray8 operator ^(BitArray8 a, BitArray8 b)
+        {
+            return new BitArray8((byte)(a._data ^ b._data));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray8 a, BitArray8 b)
         {
             return a._data == b._data;
@@ -135,24 +127,6 @@ namespace BovineLabs.Core.Collections
         public static bool operator !=(BitArray8 a, BitArray8 b)
         {
             return a._data != b._data;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray8 BitAnd(BitArray8 other)
-        {
-            return this & other;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray8 BitOr(BitArray8 other)
-        {
-            return this | other;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray8 BitNot()
-        {
-            return ~this;
         }
 
         public readonly int CountBits()
@@ -251,6 +225,12 @@ namespace BovineLabs.Core.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray16 operator ^(BitArray16 a, BitArray16 b)
+        {
+            return new BitArray16((ushort)(a._data ^ b._data));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray16 a, BitArray16 b)
         {
             return a._data == b._data;
@@ -260,24 +240,6 @@ namespace BovineLabs.Core.Collections
         public static bool operator !=(BitArray16 a, BitArray16 b)
         {
             return a._data != b._data;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray16 BitAnd(BitArray16 other)
-        {
-            return this & other;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray16 BitOr(BitArray16 other)
-        {
-            return this | other;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray16 BitNot()
-        {
-            return ~this;
         }
 
         public readonly int CountBits()
@@ -376,6 +338,12 @@ namespace BovineLabs.Core.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray32 operator ^(BitArray32 a, BitArray32 b)
+        {
+            return new BitArray32(a._data ^ b._data);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray32 a, BitArray32 b)
         {
             return a._data == b._data;
@@ -385,24 +353,6 @@ namespace BovineLabs.Core.Collections
         public static bool operator !=(BitArray32 a, BitArray32 b)
         {
             return a._data != b._data;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray32 BitAnd(BitArray32 other)
-        {
-            return this & other;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray32 BitOr(BitArray32 other)
-        {
-            return this | other;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray32 BitNot()
-        {
-            return ~this;
         }
 
         public readonly int CountBits()
@@ -506,6 +456,12 @@ namespace BovineLabs.Core.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray64 operator ^(BitArray64 a, BitArray64 b)
+        {
+            return new BitArray64(a._data ^ b._data);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray64 a, BitArray64 b)
         {
             return a._data == b._data;
@@ -515,24 +471,6 @@ namespace BovineLabs.Core.Collections
         public static bool operator !=(BitArray64 a, BitArray64 b)
         {
             return a._data != b._data;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray64 BitAnd(BitArray64 other)
-        {
-            return this & other;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray64 BitOr(BitArray64 other)
-        {
-            return this | other;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray64 BitNot()
-        {
-            return ~this;
         }
 
         public readonly int CountBits()
@@ -650,6 +588,12 @@ namespace BovineLabs.Core.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray128 operator ^(BitArray128 a, BitArray128 b)
+        {
+            return new BitArray128(a._data1 ^ b._data1, a._data2 ^ b._data2);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray128 a, BitArray128 b)
         {
             return a._data1 == b._data1 && a._data2 == b._data2;
@@ -659,24 +603,6 @@ namespace BovineLabs.Core.Collections
         public static bool operator !=(BitArray128 a, BitArray128 b)
         {
             return a._data1 != b._data1 || a._data2 != b._data2;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray128 BitAnd(BitArray128 other)
-        {
-            return this & other;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray128 BitOr(BitArray128 other)
-        {
-            return this | other;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray128 BitNot()
-        {
-            return ~this;
         }
 
         public readonly int CountBits()
@@ -819,6 +745,12 @@ namespace BovineLabs.Core.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BitArray256 operator ^(BitArray256 a, BitArray256 b)
+        {
+            return new BitArray256(a._data1 ^ b._data1, a._data2 ^ b._data2, a._data3 ^ b._data3, a._data4 ^ b._data4);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitArray256 a, BitArray256 b)
         {
             return a._data1 == b._data1 && a._data2 == b._data2 && a._data3 == b._data3 && a._data4 == b._data4;
@@ -834,24 +766,6 @@ namespace BovineLabs.Core.Collections
         {
             // Means only 1 bit set
             return math.countbits(_data1) + math.countbits(_data2) + math.countbits(_data3) + math.countbits(_data4) == 1;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray256 BitAnd(BitArray256 other)
-        {
-            return this & other;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray256 BitOr(BitArray256 other)
-        {
-            return this | other;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly BitArray256 BitNot()
-        {
-            return ~this;
         }
 
         public readonly int CountBits()

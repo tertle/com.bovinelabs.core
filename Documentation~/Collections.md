@@ -32,6 +32,8 @@ using BovineLabs.Core.Collections;
 | `BitArray8`, `BitArray16`, `BitArray32`, `BitArray64`, `BitArray128`, `BitArray256` | Serializable fixed-capacity bit arrays with indexing and bitwise operations |
 | `MiniString` | Compact UTF-8 text whose storage must fit in a small unmanaged value |
 
+`IBitArray<T>` inherits `System.Numerics.IBitwiseOperators<T, T, T>`. Generic code constrained by either interface can use `&`, `|`, `^`, and `~` on all six mask widths.
+
 These values do not use an allocator. Capacity is fixed; check the type's behavior when full rather than assuming it can grow.
 
 ## Keyed and perfect maps

@@ -8,6 +8,7 @@
 
 ### Changed
 * Unity 7000.0.0a22 or newer is required.
+* `IBitArray<T>` now inherits `System.Numerics.IBitwiseOperators<T, T, T>`. All six bit-array types support XOR (`^`). Use `&`, `|`, and `~` in place of `BitAnd`, `BitOr`, and `BitNot`.
 * The reload toolbar menu labels script reload as **Code** instead of **Domain**.
 
 ### Fixed
