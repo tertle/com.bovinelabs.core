@@ -226,7 +226,7 @@ var settings = this.DependsOn(AuthoringSettingsUtility.GetSettings<GameplaySetti
 
 `AuthoringSettingsUtility.GetSettings<T>()` finds an existing asset and throws when none exists. Open the Settings window first to create it. When another baker reads the asset, register it with `DependsOn` so edits invalidate the bake.
 
-`AuthoringSettingsUtility.TryGetSettings<T>()` reports absence without creating an asset.
+`AuthoringSettingsUtility.GetSettings<T>(required: false)` returns null when the asset is missing. Both forms use the same lookup cache, refreshed when the asset database changes.
 
 ## Global SettingsSingleton Assets
 

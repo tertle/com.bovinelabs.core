@@ -2,59 +2,53 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using BovineLabs.Core.Settings;
     using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEngine;
-    using Object = UnityEngine.Object;
 
     public static class AuthoringSettingsUtility
     {
         [NoAutoStaticsCleanup]
-        private static readonly Dictionary<Type, ISettings> CachedSettings = new();
+        private static readonly Dictionary<Type, (uint Revision, ScriptableObject Asset)> CachedSettings = new();
 
         public static T GetSettings<T>()
             where T : ScriptableObject, ISettings
         {
-            var type = typeof(T);
-
-            if (CachedSettings.TryGetValue(type, out var cached) && cached as Object != null)
-            {
-                return (T)cached;
-            }
-
-            var result = TryGetSettings<T>(type, out var settings);
-            if (!result)
-            {
-                throw new Exception($"Settings not found for {typeof(T)}, ensure they've been created by opening the settings window");
-            }
-
-            CachedSettings[type] = settings!;
-            return settings!;
+            return GetSettings<T>(required: true);
         }
 
-        public static bool TryGetSettings<T>(out T settings)
+        /// <summary> Finds existing settings, returning null for a missing asset when it is optional. </summary>
+        public static T GetSettings<T>(bool required)
             where T : ScriptableObject, ISettings
         {
             var type = typeof(T);
-            return TryGetSettings(type, out settings);
-        }
-
-        private static bool TryGetSettings<T>(Type type, out T settings)
-            where T : ScriptableObject, ISettings
-        {
-            var filter = type.Namespace == null ? type.Name : $"{type.Namespace}.{type.Name}";
-            var assets = AssetDatabase.FindAssets($"t:{filter}");
-
-            if (assets.Length == 0)
+            var revision = AssetDatabase.GlobalArtifactDependencyVersion;
+            T settings;
+            if (CachedSettings.TryGetValue(type, out var cached) && cached.Revision == revision &&
+                (cached.Asset is null || cached.Asset != null))
             {
-                settings = null;
-                return false;
+                settings = (T)cached.Asset;
+            }
+            else
+            {
+                var filter = type.Namespace == null ? type.Name : $"{type.Namespace}.{type.Name}";
+                var assets = AssetDatabase.FindAssets($"t:{filter}");
+                settings = assets.Length == 0 ? null : AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(assets[0]));
+
+                // An in-progress refresh can temporarily hide settings from the search.
+                if (settings != null || (assets.Length == 0 && !EditorApplication.isUpdating))
+                {
+                    CachedSettings[type] = (revision, settings);
+                }
             }
 
-            settings = AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(assets.First()));
-            return true;
+            if (required && settings == null)
+            {
+                throw new Exception($"Settings not found for {type}, ensure they've been created by opening the settings window");
+            }
+
+            return settings;
         }
     }
 }
