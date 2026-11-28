@@ -3,14 +3,28 @@ namespace BovineLabs.Core.Editor.Settings
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading.Tasks;
+    using BovineLabs.Core.Settings;
+    using Unity.Profiling;
     using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEditor.Build;
+    using UnityEngine;
 
     public static partial class ScriptingDefineSymbolsEditor
     {
+        private const string ConfiguredDefinesKey = "BovineLabs.Core.Editor.ScriptingDefineSymbolsEditor.ConfiguredDefines.v1";
+
+        [NoAutoStaticsCleanup]
+        private static readonly ProfilerMarker InitializeMarker = new("BovineLabs.Core.Editor.ScriptingDefineSymbolsEditor.Initialize");
+
         public static void ApplyDefinesToAll(IReadOnlyCollection<string> scriptingDefines, IReadOnlyCollection<string> removeDefines)
+        {
+            // The inspector and EnsureDefines can both change the settings object before it is saved.
+            SessionState.EraseString(ConfiguredDefinesKey);
+            ApplyToInstalledTargets(scriptingDefines, removeDefines);
+        }
+
+        private static void ApplyToInstalledTargets(IReadOnlyCollection<string> scriptingDefines, IReadOnlyCollection<string> removeDefines)
         {
             foreach (var target in GetInstalledNamedBuildTargets())
             {
@@ -21,19 +35,48 @@ namespace BovineLabs.Core.Editor.Settings
         [OnCodeInitializing]
         private static void Initialize()
         {
+            using var marker = InitializeMarker.Auto();
+
+            var scriptingDefines = GetConfiguredDefines();
+            if (scriptingDefines.Length != 0)
+            {
+                ApplyToInstalledTargets(scriptingDefines, Array.Empty<string>());
+            }
+        }
+
+        private static string[] GetConfiguredDefines()
+        {
+            var useCache = !AssetDatabase.IsAssetImportWorkerProcess();
+            var revision = useCache ? SettingsAssetChangeTracker.Revision : 0;
+            if (useCache)
+            {
+                var json = SessionState.GetString(ConfiguredDefinesKey, string.Empty);
+                if (json.Length != 0)
+                {
+                    var cached = JsonUtility.FromJson<ConfiguredDefines>(json);
+                    if (cached.Revision == revision)
+                    {
+                        return cached.Symbols;
+                    }
+                }
+            }
+
             if (!EditorSettingsUtility.TryGetSettings<EditorSettings>(out var settings))
             {
-                return;
+                return Array.Empty<string>();
             }
 
-            var scriptingDefines = settings!.ScriptingDefineSymbols;
-
-            if (scriptingDefines.Count == 0)
+            var symbols = settings.ScriptingDefineSymbols.ToArray();
+            if (useCache)
             {
-                return;
+                SessionState.SetString(ConfiguredDefinesKey, JsonUtility.ToJson(new ConfiguredDefines
+                {
+                    Revision = revision,
+                    Symbols = symbols,
+                }));
             }
 
-            ApplyDefinesToAll(scriptingDefines, Array.Empty<string>());
+            return symbols;
         }
 
         private static void ApplyDefines(NamedBuildTarget target, IReadOnlyCollection<string> addDefines, IReadOnlyCollection<string> removeDefines)
@@ -60,7 +103,10 @@ namespace BovineLabs.Core.Editor.Settings
                 defineList.Add(s);
             }
 
-            PlayerSettings.SetScriptingDefineSymbols(target, defineList.ToArray());
+            if (!defines.SequenceEqual(defineList, StringComparer.Ordinal))
+            {
+                PlayerSettings.SetScriptingDefineSymbols(target, defineList.ToArray());
+            }
         }
 
         private static IEnumerable<NamedBuildTarget> GetInstalledNamedBuildTargets()
@@ -107,6 +153,13 @@ namespace BovineLabs.Core.Editor.Settings
             }
 
             return NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+        }
+
+        [Serializable]
+        private sealed class ConfiguredDefines
+        {
+            public int Revision;
+            public string[] Symbols;
         }
     }
 }

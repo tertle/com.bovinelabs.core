@@ -8,6 +8,7 @@ namespace BovineLabs.Core.ConfigVars
     using BovineLabs.Core.Utility;
     using Unity.Burst;
     using Unity.Collections;
+    using Unity.Profiling;
     using Unity.Scripting.LifecycleManagement;
     using UnityEngine;
 #if UNITY_EDITOR
@@ -28,6 +29,16 @@ namespace BovineLabs.Core.ConfigVars
 
         public static IEnumerable<(ConfigVarAttribute ConfigVar, FieldInfo Field)> FindAllConfigVars()
         {
+#if UNITY_EDITOR
+            foreach (var field in TypeCache.GetFieldsWithAttribute<ConfigVarAttribute>())
+            {
+                var type = field.DeclaringType;
+                if (field.IsStatic && !type.ContainsGenericParameters && type.IsDefined(typeof(ConfigurableAttribute), true))
+                {
+                    yield return (field.GetCustomAttribute<ConfigVarAttribute>(), field);
+                }
+            }
+#else
             foreach (var type in ReflectionUtility.GetAllWithAttribute<ConfigurableAttribute>())
             {
                 foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public))
@@ -42,11 +53,17 @@ namespace BovineLabs.Core.ConfigVars
                     yield return (configVar, field);
                 }
             }
+#endif
         }
+
+        [NoAutoStaticsCleanup]
+        private static readonly ProfilerMarker CodeLoadedMarker = new("BovineLabs.Core.ConfigVarManager.Initialize");
 
         [OnCodeLoaded]
         private static void Initialize()
         {
+            using var marker = CodeLoadedMarker.Auto();
+
             // We make sure to always initialize the logger first so we can use this here
             foreach (var (configVar, field) in FindAllConfigVars().OrderByDescending(v => v.ConfigVar.Name == BLLogger.LogLevelName))
             {

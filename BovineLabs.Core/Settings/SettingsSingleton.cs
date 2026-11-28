@@ -3,6 +3,7 @@ namespace BovineLabs.Core.Settings
     using System;
     using System.Linq;
     using Unity.Entities;
+    using Unity.Profiling;
     using Unity.Scripting.LifecycleManagement;
     using UnityEngine;
     using UnityEngine.Assertions;
@@ -69,11 +70,16 @@ namespace BovineLabs.Core.Settings
         }
 #endif
 
+        [NoAutoStaticsCleanup]
+        private static readonly ProfilerMarker CodeInitializingMarker = new("BovineLabs.Core.SettingsSingleton.LoadAll");
+
         // Before Unity creates any system, so OnCreate and Burst readers of K settings see the real assets. Players find the
         // assets CoreBuildSetup adds to the preloaded assets.
         [OnCodeInitializing]
         private static void LoadAll()
         {
+            using var marker = CodeInitializingMarker.Auto();
+
             foreach (var setting in FindAll(typeof(SettingsSingleton)))
             {
                 setting.Initialize();
@@ -83,7 +89,10 @@ namespace BovineLabs.Core.Settings
         private static SettingsSingleton[] FindAll(Type type)
         {
 #if UNITY_EDITOR
-            return AssetDatabase.FindAssets($"t:{type.Name} a:all")
+            var guids = type == typeof(SettingsSingleton)
+                ? SettingsSingletonAssetCache.FindGuids()
+                : AssetDatabase.FindAssets($"t:{type.Name} a:all");
+            return guids
                 .Select(guid => AssetDatabase.LoadAssetAtPath<SettingsSingleton>(AssetDatabase.GUIDToAssetPath(guid)))
                 .Where(type.IsInstanceOfType)
                 .ToArray();

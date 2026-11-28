@@ -8,6 +8,7 @@
     using BovineLabs.Core.Extensions;
     using Unity.Burst;
     using Unity.Entities.Editor;
+    using Unity.Profiling;
     using Unity.Scripting.LifecycleManagement;
     using UnityEditor;
     using UnityEditor.UIElements;
@@ -31,9 +32,14 @@
         [NoAutoStaticsCleanup]
         private static readonly ConditionalWeakTable<VisualElement, InspectorSearchField> SearchFields = new();
 
+        [NoAutoStaticsCleanup]
+        private static readonly ProfilerMarker CodeInitializingMarker = new("BovineLabs.Core.Editor.InspectorSearch.Initialize");
+
         [OnCodeInitializing]
         private static void Initialize()
         {
+            using var marker = CodeInitializingMarker.Auto();
+
             if (!IsEnabled.Data)
             {
                 return;

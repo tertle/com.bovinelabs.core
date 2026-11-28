@@ -4,6 +4,7 @@
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Mathematics;
+    using Unity.Profiling;
     using Unity.Scripting.LifecycleManagement;
     using Random = Unity.Mathematics.Random;
 
@@ -298,9 +299,14 @@
             return Thread.NextQuaternionRotation();
         }
 
+        [NoAutoStaticsCleanup]
+        private static readonly ProfilerMarker CodeLoadedMarker = new("BovineLabs.Core.GlobalRandom.Initialize");
+
         [OnCodeLoaded]
         private static void Initialize()
         {
+            using var marker = CodeLoadedMarker.Auto();
+
             ThreadRandoms.Data = new ThreadRandom((uint)UnityEngine.Random.Range(0, int.MaxValue), Allocator.Persistent);
         }
 

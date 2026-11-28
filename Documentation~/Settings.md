@@ -135,6 +135,13 @@ and checks authoring assignments. Adding, deleting, moving, or changing the type
 settings types after compilation. Value edits and authoring or route edits trigger validation without repeating unchanged asset searches. Import-time
 searches are not retained, and closing the Editor discards the session cache.
 
+The Editor's singleton startup also caches the project-wide GUID search across code reloads. It resolves and initializes the assets before ECS systems
+start. Asset inventory changes and changes to the concrete singleton types invalidate that search. The first search during an unsettled refresh warms the
+cache after the Asset Database settles.
+
+The Editor caches the required scripting define list for the session and refreshes it when its settings inputs change. On code reload it checks installed
+build targets for missing required symbols and writes Player Settings only when the resulting list differs.
+
 ## Route ECS Settings to Worlds
 
 `SettingsWorldAttribute` is an editor-time routing key. It does not inspect or filter ECS worlds at runtime.

@@ -1,6 +1,7 @@
 ﻿namespace BovineLabs.Core.Utility
 {
     using Unity.Entities;
+    using Unity.Profiling;
     using Unity.Scripting.LifecycleManagement;
 #if UNITY_EDITOR
     using UnityEditor;
@@ -10,10 +11,15 @@
 
     internal static partial class WorldSafeShutdown
     {
+        [NoAutoStaticsCleanup]
+        private static readonly ProfilerMarker CodeInitializingMarker = new("BovineLabs.Core.WorldSafeShutdown.Initialize");
+
         // Can't use [OnExitingPlayMode] because it gets called after OnDisable/OnDestroy
         [OnCodeInitializing]
         private static void Initialize()
         {
+            using var marker = CodeInitializingMarker.Auto();
+
 #if UNITY_EDITOR
             EditorApplication.playModeStateChanged += change =>
             {

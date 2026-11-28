@@ -7,6 +7,7 @@ namespace BovineLabs.Core.Utility
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Jobs.LowLevel.Unsafe;
+    using Unity.Profiling;
     using Unity.Scripting.LifecycleManagement;
 
     public unsafe struct PooledNativeList<T> : IDisposable
@@ -112,9 +113,14 @@ namespace BovineLabs.Core.Utility
         internal const int MaxPoolSizePerThread = 8;
         internal static readonly SharedStatic<Data> Pool = SharedStatic<Data>.GetOrCreate<Data>();
 
+        [NoAutoStaticsCleanup]
+        private static readonly ProfilerMarker CodeLoadedMarker = new("BovineLabs.Core.PooledNativeList.Initialize");
+
         [OnCodeLoaded]
         private static void Initialize()
         {
+            using var marker = CodeLoadedMarker.Auto();
+
             Pool.Data = new Data(Allocator.Persistent);
         }
 

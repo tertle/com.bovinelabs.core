@@ -1,16 +1,26 @@
 namespace BovineLabs.Core.Utility
 {
+#if UNITY_EDITOR
+    using System;
+#endif
     using System.Collections.Generic;
     using System.Reflection;
     using Unity.Burst;
     using Unity.Collections;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+    using Unity.Profiling;
     using Unity.Scripting.LifecycleManagement;
+#if UNITY_EDITOR
+    using UnityEditor;
+#endif
 
     /// <summary>Code-lifetime, Burst-readable metadata for registered query-group components.</summary>
     public static unsafe partial class TypeManagerEx
     {
+        [NoAutoStaticsCleanup]
+        private static readonly ProfilerMarker InitializeMarker = new("BovineLabs.Core.TypeManagerEx.Initialize");
+
         [NoAutoStaticsCleanup]
         private static readonly SharedStatic<GroupData> Groups = SharedStatic<GroupData>.GetOrCreate<TypeManagerExContext>();
 
@@ -18,6 +28,8 @@ namespace BovineLabs.Core.Utility
         [OnCodeLoaded]
         public static void Initialize()
         {
+            using var marker = InitializeMarker.Auto();
+
             if (Groups.Data.Ranges.IsCreated)
             {
                 return;
@@ -26,6 +38,9 @@ namespace BovineLabs.Core.Utility
             TypeManager.Initialize();
 
             var groupsByTarget = new Dictionary<int, HashSet<TypeIndex>>();
+#if UNITY_EDITOR
+            var annotatedTypes = new HashSet<Type>(TypeCache.GetTypesWithAttribute<QueryGroupAttribute>());
+#endif
             foreach (var typeInfo in TypeManager.AllTypes)
             {
                 if (typeInfo.Type == null ||
@@ -33,6 +48,13 @@ namespace BovineLabs.Core.Utility
                 {
                     continue;
                 }
+
+#if UNITY_EDITOR
+                if (!annotatedTypes.Contains(typeInfo.Type))
+                {
+                    continue;
+                }
+#endif
 
                 foreach (var attribute in typeInfo.Type.GetCustomAttributes<QueryGroupAttribute>())
                 {
