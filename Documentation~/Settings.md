@@ -267,12 +267,10 @@ var bootConfig = GameBootstrapSettings.I.BootConfig;
 
 ### Initialization
 
-- Players initialize loaded singleton assets before the splash screen.
-- The shared BovineLabs `[InitializeOnLoad]` editor initializer initializes singleton assets after editor load.
-- `OnInitialize()` runs after the concrete asset becomes `T.I`; use it to rebuild non-serialized state.
-- `T.I` lazily creates a transient default instance when no asset has initialized. This keeps the property non-null but does not provide configured serialized values and does not call `OnInitialize()` on that transient instance.
-
-Treat a transient singleton as a setup failure when configured data is required.
+- Players initialize the preloaded settings at `AfterAssembliesLoaded`. K tables are ready for gameplay world startup without first reading `T.I`.
+- In the Editor, `OnCodeInitializing` loads settings through the Asset Database so Edit Mode and baking can also read them.
+- `OnInitialize()` runs after the concrete asset becomes `T.I`. Use it to rebuild non-serialized state.
+- An early managed read of `T.I` resolves and initializes the configured asset. It throws if it cannot find exactly one asset of that type.
 
 ### Build inclusion
 
@@ -284,7 +282,7 @@ Before a player build, `CoreBuildSetup`:
 
 The build processor therefore owns preloaded-asset handling for this settings type. Do not rely on manually maintained `SettingsSingleton` entries in `PlayerSettings.preloadedAssets`.
 
-Override `IncludeInBuild` and return `false` only when the configured asset must be excluded from the player. Accessing `T.I` in that player can still create an unconfigured transient instance.
+Override `IncludeInBuild` and return `false` for settings that Player code can run without.
 
 ## Customize the Settings Window
 
@@ -330,4 +328,4 @@ When a baker fetches another settings asset through `AuthoringSettingsUtility`, 
 
 - Confirm its asset exists and is unique.
 - Confirm `IncludeInBuild` is `true`.
-- Do not access `T.I` so early that it creates a transient instance before configured assets initialize.
+- Read K tables after settings initialization. Unity does not guarantee ordering between callbacks registered for the same runtime initialization phase.

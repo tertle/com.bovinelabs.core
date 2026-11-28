@@ -5,6 +5,9 @@
 ### Changed
 * Cached settings asset discovery and scripting define checks across Editor reloads. Used Unity TypeCache for Editor config var discovery and reduced reflection during query group registration.
 
+### Fixed
+* Players initialize preloaded settings at `AfterAssembliesLoaded` so K lookups work during gameplay world startup.
+
 ## [2.0.0-pre.8] - 2026-11-28
 
 ### Added

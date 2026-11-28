@@ -71,14 +71,18 @@ namespace BovineLabs.Core.Settings
 #endif
 
         [NoAutoStaticsCleanup]
-        private static readonly ProfilerMarker CodeInitializingMarker = new("BovineLabs.Core.SettingsSingleton.LoadAll");
+        private static readonly ProfilerMarker LoadAllMarker = new("BovineLabs.Core.SettingsSingleton.LoadAll");
 
-        // Before Unity creates any system, so OnCreate and Burst readers of K settings see the real assets. Players find the
-        // assets CoreBuildSetup adds to the preloaded assets.
+#if UNITY_EDITOR
+        // Edit-mode systems and bakers need the Asset Database settings before Play Mode.
         [OnCodeInitializing]
+#else
+        // CoreBuildSetup's preloaded assets are available at this point in Player startup.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+#endif
         private static void LoadAll()
         {
-            using var marker = CodeInitializingMarker.Auto();
+            using var marker = LoadAllMarker.Auto();
 
             foreach (var setting in FindAll(typeof(SettingsSingleton)))
             {
